@@ -3,10 +3,10 @@
 **Wave 3. Size: large, and the most custom UI in the app.** Apply `wave-3-checklist.md`.
 
 **Owns:**
-- `Core/Training/Subviews/WorkoutTracker/**`, including `ExerciseTracker`, `SetTracker`,
+- `Core/Training/Session/WorkoutTracker/**`, including `ExerciseTracker`, `SetTracker`,
   `SetTrackerRow`, `SetKeyboard`, `WarmupSets` and `WorkoutNotes`
-- `Core/Training/Subviews/WorkoutSessionDetail/**`
-- `Components/Views/Training/SetDetailRow.swift`, which moves to `Core/Training/Components/`
+- `Core/Training/Session/WorkoutSessionDetail/**`
+- `Components/Views/Training/SetDetailRow.swift`, which moves to `Core/Training/Session/`
   (coordinate: WP-10 moves the rest of `Components/Views/Training`)
 
 **Care:** `SetKeyboardView` and `SetTrackerRowView` are the good examples of accessibility in the

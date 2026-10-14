@@ -126,17 +126,9 @@ struct WorkoutPreviousNoteTests {
 @MainActor
 struct ExerciseNoteSheetTests {
 
-    private final class Interactor: SpyGlobalInteractor, ExerciseTrackerInteractor {
-        var allExercises: [ExerciseModel] = []
-        func exerciseNote(for exerciseId: String) -> String? { nil }
-        func setExerciseNote(_ note: String?, for exerciseId: String) async throws { }
-    }
+    private typealias Interactor = ExerciseTrackerInteractorDouble
 
-    private final class Router: ExerciseTrackerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        private(set) var delegates: [WorkoutNotesDelegate] = []
-        func showWorkoutNotesView(delegate: WorkoutNotesDelegate) { delegates.append(delegate) }
-    }
+    private typealias Router = ExerciseTrackerRouterDouble
 
     @Test("Test The Sheet Starts From This Session's Note With Last Session's As The Hint")
     func testTheSheetStartsFromThisSessionsNoteWithLastSessionsAsTheHint() throws {
@@ -232,7 +224,7 @@ struct WorkoutFinishNoteTests {
         let router = WorkoutTrackerRouterDouble()
         let presenter = try WorkoutTrackerPresenter(interactor: interactor, router: router)
 
-        presenter.presentWorkoutNotes()
+        presenter.onWorkoutNotesPressed()
         let delegate = try #require(router.notesDelegates.first)
         #expect(delegate.notes.wrappedValue == "Deload week")
 

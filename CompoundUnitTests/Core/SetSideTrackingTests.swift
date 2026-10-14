@@ -21,23 +21,7 @@ struct SetSideTrackingTests {
 
     // MARK: - Doubles
 
-    private final class ListInteractor: SpyGlobalInteractor, SetTrackerInteractor {
-        var userId: String? = "user-1"
-        var currentUser: UserModel? = UserModel(userId: "user-1")
-        var systemExercises: [ExerciseModel] = []
-        var userExercises: [ExerciseModel] = []
-        var allExercises: [ExerciseModel] = []
-        var favouriteGymProfile: GymProfileModel?
-        var workoutGymProfile: GymProfileModel?
-        var workoutSettings: WorkoutSettings = WorkoutSettings(authorId: "user-1")
-
-        func getPreference(templateId: String) -> ExerciseUnitPreference {
-            ExerciseUnitPreference(exerciseModelId: templateId)
-        }
-
-        func setWeightUnit(_ unit: ExerciseWeightUnit, for templateId: String) { }
-        func setDistanceUnit(_ unit: ExerciseDistanceUnit, for templateId: String) { }
-    }
+    private typealias ListInteractor = ExerciseTrackerInteractorDouble
 
     private final class RowInteractor: SpyGlobalInteractor, SetTrackerRowInteractor {
         var workoutSettings: WorkoutSettings = WorkoutSettings(authorId: "user-1")
@@ -54,29 +38,11 @@ struct SetSideTrackingTests {
         }
     }
 
-    /// The alerts this screen raises go through `GlobalRouter` extensions, which dispatch
-    /// statically and never reach a double — so nothing here records them.
-    private final class ListRouter: SetTrackerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-
-        func showWorkoutExerciseEquipmentSheetView(delegate: WorkoutExerciseEquipmentSheetDelegate) { }
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
-        func showRestModal(
-            primaryButtonAction: @escaping () -> Void,
-            secondaryButtonAction: @escaping () -> Void,
-            minutesSelection: Binding<Int>,
-            secondsSelection: Binding<Int>
-        ) { }
-        func showWarmupSetsView(delegate: WarmupSetsDelegate) { }
-        func showExerciseSettingsView(delegate: ExerciseSettingsDelegate) { }
-        func showSetTargetView(delegate: SetTargetDelegate) { }
-        func showSwapExercisePickerView(alternativeIds: [String], onSelect: @escaping (ExerciseModel) -> Void) { }
-    }
+    private typealias ListRouter = ExerciseTrackerRouterDouble
 
     private final class RowRouter: SetTrackerRowRouter {
         let router: AnyRouter = TestRouting.anyRouter
 
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
         func showRestModal(
             primaryButtonAction: @escaping () -> Void,
             secondaryButtonAction: @escaping () -> Void,
@@ -103,9 +69,9 @@ struct SetSideTrackingTests {
         }
     }
 
-    private func makeListPresenter() -> (SetTrackerPresenter, ListInteractor) {
+    private func makeListPresenter() -> (ExerciseTrackerPresenter, ListInteractor) {
         let interactor = ListInteractor()
-        return (SetTrackerPresenter(interactor: interactor, router: ListRouter()), interactor)
+        return (ExerciseTrackerPresenter(interactor: interactor, router: ListRouter()), interactor)
     }
 
     private func makeRowPresenter() -> (SetTrackerRowPresenter, RowInteractor) {
@@ -190,7 +156,7 @@ struct SetSideTrackingTests {
         let (presenter, _) = makeListPresenter()
         let box = MutableExercise(exercise(sets: onePair))
 
-        presenter.deleteSet(setId: "s1", exercise: box.binding)
+        makeRowPresenter().0.deleteSet(setId: "s1", exercise: box.binding)
         presenter.addSet(exercise: box.binding)
         presenter.addSet(exercise: box.binding)
 
@@ -246,7 +212,6 @@ struct SetSideTrackingTests {
     /// and claim the user had done work on one arm they never did on the other.
     @Test("Test Deleting Either Half Removes The Whole Set")
     func testDeletingEitherHalfRemovesTheWholeSet() {
-        let (listPresenter, _) = makeListPresenter()
         let (rowPresenter, _) = makeRowPresenter()
         let fromList = MutableExercise(exercise(sets: onePair + [
             set(id: "s3", index: 3, side: .left), set(id: "s4", index: 4, side: .right)
@@ -255,7 +220,7 @@ struct SetSideTrackingTests {
             set(id: "s3", index: 3, side: .left), set(id: "s4", index: 4, side: .right)
         ]))
 
-        listPresenter.deleteSet(setId: "s1", exercise: fromList.binding)
+        rowPresenter.deleteSet(setId: "s1", exercise: fromList.binding)
         rowPresenter.deleteSet(setId: "s4", exercise: fromRow.binding)
 
         #expect(fromList.value.sets.map(\.id) == ["s3", "s4"])
@@ -265,7 +230,7 @@ struct SetSideTrackingTests {
     /// Warm-ups stay single-sided, so deleting one takes only that row with it.
     @Test("Test Deleting A Warm-Up Takes Nothing Else")
     func testDeletingAWarmUpTakesNothingElse() {
-        let (presenter, _) = makeListPresenter()
+        let (presenter, _) = makeRowPresenter()
         let box = MutableExercise(exercise(sets: [
             set(id: "w1", index: 1, isWarmup: true)
         ] + onePair))
@@ -341,10 +306,9 @@ struct SetSideTrackingTests {
     func testAHandSetRestBeatsTheSideScaling() {
         let (presenter, interactor) = makeRowPresenter()
         interactor.workoutSettings.restBetweenSideSets = true
-        presenter.updateRestBefore(setId: "s1", seconds: 30)
         let left = set(id: "s1", index: 1, side: .left)
 
-        let rest = presenter.restAfterCompleting(left, in: exercise(sets: [left, set(id: "s2", index: 2, side: .right)]))
+        let rest = presenter.restAfterCompleting(left, in: exercise(sets: [left, set(id: "s2", index: 2, side: .right)]), customRestSeconds: 30)
 
         #expect(rest == 30)
     }

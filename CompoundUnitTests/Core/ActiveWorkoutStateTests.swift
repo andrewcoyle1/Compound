@@ -7,7 +7,7 @@ import Testing
 import Foundation
 @testable import Compound
 
-/// The active-workout screen's rules: which row is current, the progress header, the
+/// The active-workout screen's rules: which row is current, the
 /// progression reason, where the rest timer sits, the log button, and loads rounded to plates.
 @MainActor
 struct ActiveWorkoutStateTests {
@@ -75,18 +75,6 @@ struct ActiveWorkoutStateTests {
         #expect(ActiveWorkout.rowState(of: squat.sets[0], in: squat) == .current)
         #expect(ActiveWorkout.rowState(of: squat.sets[1], in: squat) == .done)
         #expect(ActiveWorkout.rowState(of: squat.sets[2], in: squat) == .upcoming)
-    }
-
-    @Test("Test The Header Counts Working Sets Only, A Pair Once")
-    func testProgress() {
-        let exercises = [
-            exercise("e1", sets: [set("w", isWarmup: true, doneAt: 0), set("s1", doneAt: 1), set("s2")]),
-            exercise("e2", sets: [set("l", side: .left, doneAt: 2), set("r", side: .right)])
-        ]
-
-        let progress = ActiveWorkout.progress(of: exercises, currentIndex: 1)
-
-        #expect(progress == .init(doneWorkingSets: 1, totalWorkingSets: 3, exerciseNumber: 2, exerciseCount: 2))
     }
 
     // MARK: - Progression reason
@@ -251,65 +239,30 @@ struct ActiveWorkoutStateTests {
         #expect(title(amrap) == "Log set 1 · 100 kg × 10")
     }
 
-    @Test("Test Up Next Shows The Plan And Last Time's Top Set")
-    func testUpNextSummary() {
-        let bench = exercise("e2", sets: [set("a"), set("b"), set("c")], targets: [SetTarget(setNumber: 1, minReps: 8, maxReps: 12)])
-        let last = exercise("e0", sets: [set("a", weightKg: 80, doneAt: 0), set("b", weightKg: 82.5, doneAt: 1)])
+    // MARK: - Filling a row
 
-        #expect(ActiveWorkout.upNextSummary(for: bench, last: last, unit: .kilograms, distanceUnit: .meters) == "3 sets · 8–12 reps · Last 82.5 kg × 5")
+    /// Last time's figures fill what the exercise tracks; a set with no weight last time keeps its
+    /// own, and a timed set takes only the time.
+    @Test("Test Filling From Last Time Copies The Mode's Figures")
+    func testFillingFromLastTime() {
+        var prev = set("p", reps: 8, weightKg: nil)
+        prev.bands = ["Red"]
+        let filled = ActiveWorkout.filling(set("s", reps: nil, weightKg: 40), fromPrevious: prev, trackingMode: .weightReps)
+        #expect(filled.weightKg == 40)
+        #expect(filled.reps == 8)
+        #expect(filled.bands == ["Red"])
+
+        prev.durationSec = 45
+        let timed = ActiveWorkout.filling(set("s", reps: nil, weightKg: nil), fromPrevious: prev, trackingMode: .timeOnly)
+        #expect(timed.durationSec == 45)
+        #expect(timed.reps == nil)
     }
 
-    @Test("Test An Exercise Left Half Done Says How Far It Got")
-    func testUpNextProgress() {
-        let bench = exercise("e2", sets: [set("a", doneAt: 0), set("b"), set("c")])
-        #expect(ActiveWorkout.upNextSummary(for: bench, last: nil, unit: .kilograms, distanceUnit: .meters) == "1 of 3 sets")
-    }
-
-    @Test("Test A Finished Exercise Shows Today's Top Set")
-    func testCompletedSummary() {
-        let bench = exercise("e1", sets: [
-            set("w", weightKg: 40, isWarmup: true, doneAt: 0),
-            set("a", weightKg: 80, doneAt: 1),
-            set("b", reps: 6, weightKg: 85, doneAt: 2)
-        ])
-
-        #expect(ActiveWorkout.completedSummary(for: bench, unit: .kilograms, distanceUnit: .meters) == "2 sets · Top 85 kg × 6")
-    }
-
-    private func timed(_ id: String, seconds: Int?, meters: Double? = nil, doneAt offset: TimeInterval) -> WorkoutSetModel {
-        WorkoutSetModel(
-            id: id, authorId: "author-1", index: 1, reps: nil, weightKg: nil, durationSec: seconds, distanceMeters: meters,
-            rpe: nil, side: nil, isWarmup: false, completedAt: start.addingTimeInterval(offset), dateCreated: start
-        )
-    }
-
-    private func exercise(_ id: String, mode: TrackingMode, sets: [WorkoutSetModel]) -> WorkoutExerciseModel {
-        WorkoutExerciseModel(id: id, authorId: "author-1", templateId: "template-\(id)", name: "Plank", trackingMode: mode, index: 1, sets: sets)
-    }
-
-    /// Every timed set weighs nothing and has no reps, so "heaviest" picked the first; the longest
-    /// hold is the top one.
-    @Test("Test A Timed Exercise's Top Set Is The Longest")
-    func testTimedTopSet() {
-        let plank = exercise("e1", mode: .timeOnly, sets: [
-            timed("a", seconds: 30, doneAt: 0), timed("b", seconds: 45, doneAt: 1), timed("c", seconds: 40, doneAt: 2)
-        ])
-
-        #expect(ActiveWorkout.completedSummary(for: plank, unit: .kilograms, distanceUnit: .meters) == "3 sets · Top \(Format.duration(45))")
-        #expect(ActiveWorkout.upNextSummary(for: exercise("e2", mode: .timeOnly, sets: []), last: plank, unit: .kilograms, distanceUnit: .meters)
-            .hasSuffix("Last \(Format.duration(45))"))
-    }
-
-    @Test("Test A Distance Exercise's Top Set Is The Farthest")
-    func testDistanceTopSet() {
-        let row = exercise("e1", mode: .distanceTime, sets: [
-            timed("a", seconds: 90, meters: 400, doneAt: 0), timed("b", seconds: 200, meters: 800, doneAt: 1), timed("c", seconds: 95, meters: 500, doneAt: 2)
-        ])
-        let figures = "\(Format.distance(meters: 800, exerciseUnit: .meters)) · \(Format.duration(200))"
-
-        #expect(ActiveWorkout.completedSummary(for: row, unit: .kilograms, distanceUnit: .meters) == "3 sets · Top \(figures)")
-        #expect(ActiveWorkout.upNextSummary(for: exercise("e2", mode: .distanceTime, sets: []), last: row, unit: .kilograms, distanceUnit: .meters)
-            .hasSuffix("Last \(figures)"))
+    @Test("Test A Suggestion Fills Only What It Names")
+    func testASuggestionFillsOnlyWhatItNames() {
+        let filled = ActiveWorkout.filling(set("s", reps: 5, weightKg: 100), from: SuggestedSet(reps: 9))
+        #expect(filled.reps == 9)
+        #expect(filled.weightKg == 100)
     }
 
     // MARK: - Plates
@@ -447,8 +400,6 @@ struct ActiveWorkoutPresenterTests {
 
         presenter.onPrimaryActionPressed()
         #expect(presenter.currentExercise?.id == "e2")
-        #expect(presenter.upNextExercises.isEmpty)
-        #expect(presenter.completedExercises.map(\.id) == ["e1"])
     }
 
     /// Unticking the set a rest follows calls the rest off, and the timer goes with it.
@@ -463,6 +414,19 @@ struct ActiveWorkoutPresenterTests {
 
         #expect(interactor.didCancelRest)
         #expect(presenter.restTimer(for: presenter.workoutSession.exercises[0]) == nil)
+    }
+
+    /// Someone who trains without a timer gets their set logged and nothing else: a rest
+    /// appearing uninvited is the whole reason the setting exists.
+    @Test("Test No Rest Starts When Rest Timers Are Off")
+    func testNoRestWhenRestTimersAreOff() throws {
+        let (presenter, interactor) = try makePresenter(sets: [openSet("s1"), openSet("s2")])
+        interactor.workoutSettings.useRestTimers = false
+
+        presenter.onPrimaryActionPressed()
+
+        #expect(presenter.workoutSession.exercises[0].sets[0].completedAt != nil)
+        #expect(interactor.restEndTime == nil)
     }
 
     // MARK: - Reordering
@@ -609,19 +573,6 @@ struct ActiveWorkoutPresenterTests {
         #expect(presenter.restTimer(for: presenter.workoutSession.exercises[0]) == nil)
     }
 
-    /// Up Next leaves out the card and anything finished, so a drag in it must land in the right
-    /// place among the exercises it does not show.
-    @Test("Test Reordering Up Next Maps Round The Rows It Does Not Show")
-    func testMoveUpNext() throws {
-        let presenter = try makeWorkout(["a", "b", "c", "d"], done: ["b"])
-        #expect(presenter.upNextExercises.map(\.id) == ["c", "d"])
-
-        presenter.moveUpNext(from: IndexSet(integer: 1), to: 0)
-
-        #expect(presenter.workoutSession.exercises.map(\.id) == ["a", "b", "d", "c"])
-        #expect(presenter.currentExercise?.id == "a")
-    }
-
     /// Finishing an exercise opens the next with sets left, as the log button's Next would, not
     /// one done earlier that happens to come next in the list. It waits for the rest first.
     @Test("Test Finishing An Exercise Skips Over One Already Done")
@@ -686,16 +637,6 @@ extension ActiveWorkoutStateTests {
         // Time and distance have no load to add bodyweight to.
         let plank = WorkoutSetModel(id: "p", authorId: "author-1", index: 1, durationSec: 90, isWarmup: false, dateCreated: start)
         #expect(ActiveWorkout.figures(of: plank, trackingMode: .timeOnly, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == Format.duration(90))
-    }
-
-    @Test("Test The Summaries Read BW With The Bodyweight Contribution Shown")
-    func testBodyweightSummaries() {
-        let pullUps = exercise("e1", name: "Pull-Up", sets: [set("a", reps: 8, weightKg: 10, doneAt: 0), set("b", reps: 6, weightKg: 20, doneAt: 1)])
-        let kg20 = Format.weight(kg: 20, unit: .kilograms)
-
-        #expect(ActiveWorkout.completedSummary(for: pullUps, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == "2 sets · Top BW + \(kg20) × 6")
-        let today = exercise("e2", name: "Pull-Up", sets: [set("c")])
-        #expect(ActiveWorkout.upNextSummary(for: today, last: pullUps, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == "1 set · Last BW + \(kg20) × 6")
     }
 }
 

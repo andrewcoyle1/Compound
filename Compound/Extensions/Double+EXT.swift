@@ -72,4 +72,10 @@ extension Double {
 
     /// One tonne of food, or a million servings. Nothing legitimate comes near it.
     private static let maximumEnteredAmount: Double = 1_000_000
+
+    /// To three decimal places, clearing the noise a unit conversion leaves: 100 kg in pounds is
+    /// 220.462, not 220.46226218487757.
+    var roundedToThousandths: Double {
+        (self * 1000).rounded() / 1000
+    }
 }

@@ -250,18 +250,9 @@ private struct ActiveSessionScreen<Content: View>: View {
                     if plansSets { await seedSetPlan() }
                     if ProcessInfo.processInfo.arguments.contains("UI_TEST_SUPERSET") { seedSuperset() }
                     if ProcessInfo.processInfo.arguments.contains("UI_TEST_PLAN_NOTES") { seedPlanNotes() }
-                    if ProcessInfo.processInfo.arguments.contains("UI_TEST_STRIP_OFF") { await hideExerciseStrip() }
                     isReady = true
                 }
         }
-    }
-
-    /// `UI_TEST_STRIP_OFF`: the tracker as it is with the exercise strip switched off, so Up Next
-    /// and Completed are on screen for the tests that use them.
-    private func hideExerciseStrip() async {
-        var settings = interactor.workoutSettings
-        settings.showExerciseStrip = false
-        try? await interactor.saveWorkoutSettings(settings)
     }
 
     /// `UI_TEST_SET_PLAN`: Workout Settings › Set Plan on, and the first exercise's working sets laid

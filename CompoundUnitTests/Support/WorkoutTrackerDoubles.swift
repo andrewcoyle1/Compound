@@ -53,7 +53,17 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     var workoutTemplates: [String: WorkoutTemplateModel] = [:]
     /// A store of its own, so one test's screen state never reaches another, while a presenter
     /// rebuilt on the same double, as after a minimise, still finds it.
-    let activeWorkoutScreenStateStore = UserDefaults(suiteName: "WorkoutTrackerInteractorDouble-\(UUID().uuidString)") ?? .standard
+    let screenStateStore = UserDefaults(suiteName: "WorkoutTrackerInteractorDouble-\(UUID().uuidString)") ?? .standard
+    func loadScreenState(sessionId: String) -> ActiveWorkoutScreenState {
+        ActiveWorkoutScreenState.load(sessionId: sessionId, from: screenStateStore)
+    }
+    func saveScreenState(_ state: ActiveWorkoutScreenState) { state.save(to: screenStateStore) }
+
+    private(set) var healthWorkoutSessionId: String?
+    func markHealthWorkoutStarted(sessionId: String) { healthWorkoutSessionId = sessionId }
+    func clearHealthWorkoutSessionId() { healthWorkoutSessionId = nil }
+    private(set) var isScreenKeptAwake = false
+    func setScreenKeptAwake(_ awake: Bool) { isScreenKeptAwake = awake }
 
     func setActiveWorkoutGymProfile(_ profile: GymProfileModel?) { activeWorkoutGymProfile = profile }
     func getGymProfile(gymProfileId: String) async throws -> GymProfileModel {
@@ -77,7 +87,6 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     func setWorkoutConfiguration(activityType: HKWorkoutActivityType, location: HKWorkoutSessionLocationType) { }
 
     func startWorkout(workout: WorkoutSessionModel) { }
-    func saveWorkoutSession(_ session: WorkoutSessionModel) async throws { }
     /// Runs after each save lands, so a test can stand in for the observation firing mid-write.
     var onUpdateActiveSession: (() -> Void)?
 
@@ -85,10 +94,6 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
         savedActiveSessions.append(session)
         activeSession = session
         onUpdateActiveSession?()
-    }
-    func getWorkoutSession(id: String) async throws -> WorkoutSessionModel {
-        guard let activeSession else { throw WorkoutTrackerPresenter.WorkoutTrackerError.noActiveWorkout }
-        return activeSession
     }
     func endWorkoutSession(_ session: WorkoutSessionModel) async throws {
         endWorkoutSessionAttempts += 1
@@ -419,7 +424,6 @@ final class SetTrackerRowRouterDouble: SetTrackerRowRouter {
 
     func showPlateCalculatorView(delegate: PlateCalculatorDelegate) { plateCalculators.append(delegate) }
 
-    func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
     func showRestModal(
         primaryButtonAction: @escaping () -> Void,
         secondaryButtonAction: @escaping () -> Void,

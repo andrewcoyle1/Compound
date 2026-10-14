@@ -1,6 +1,6 @@
 # The workout tracker as a system
 
-Scope: the live tracker (`Compound/Core/Training/Subviews/WorkoutTracker/`), Live Activity and
+Scope: the live tracker (`Compound/Core/Training/Session/WorkoutTracker/`), Live Activity and
 Dynamic Island (`WorkoutSessionActivity/`, `Compound/Managers/LiveActivities/`, `Shared/`), the
 intents (`Compound/Managers/Training/WorkoutRestTimerIntents.swift`), rest notifications
 (`Compound/Managers/HKWorkout/RestOverNotifying.swift`), `HKWorkoutManager`, the Training

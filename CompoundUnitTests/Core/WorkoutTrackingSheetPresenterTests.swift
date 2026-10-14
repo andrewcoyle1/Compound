@@ -268,91 +268,6 @@ struct WorkoutEquipmentSheetPresenterTests {
     }
 }
 
-/// The warm-up sheet: the same set rows, filtered to the warm-up sets of one exercise.
-///
-/// It owns no logic of its own — the exercise arrives already bound — so what matters is that it
-/// is recorded in analytics under its own name and that its dismissal is safe to call.
-@MainActor
-struct WarmupSetsPresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, WarmupSetsInteractor { }
-
-    /// `WarmupSetsRouter` adds nothing to `GlobalRouter`, so `dismissScreen()` is an extension
-    /// method that dispatches statically and never reaches this double.
-    private final class Router: WarmupSetsRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-    }
-
-    @MainActor
-    private final class Box {
-        var value: WorkoutExerciseModel
-
-        init(_ value: WorkoutExerciseModel) {
-            self.value = value
-        }
-
-        var binding: Binding<WorkoutExerciseModel> {
-            Binding(
-                get: { MainActor.assumeIsolated { self.value } },
-                set: { newValue in MainActor.assumeIsolated { self.value = newValue } }
-            )
-        }
-    }
-
-    private func exercise() -> WorkoutExerciseModel {
-        WorkoutExerciseModel(
-            id: "exercise-1",
-            authorId: "user-1",
-            templateId: "template-1",
-            name: "Bench Press",
-            trackingMode: .weightReps,
-            index: 1,
-            sets: []
-        )
-    }
-
-    @Test("Test The Warmup Sheet Holds The Exercise It Was Opened With")
-    func testTheWarmupSheetHoldsTheExerciseItWasOpenedWith() {
-        let model = exercise()
-        let presenter = WarmupSetsPresenter(
-            interactor: Interactor(),
-            router: Router(),
-            exercise: model
-        )
-
-        #expect(presenter.exercise.id == model.id)
-        #expect(presenter.exercise.templateId == model.templateId)
-    }
-
-    @Test("Test The Warmup Sheet Records Appearing And Disappearing")
-    func testTheWarmupSheetRecordsAppearingAndDisappearing() {
-        let interactor = Interactor()
-        let presenter = WarmupSetsPresenter(interactor: interactor, router: Router(), exercise: exercise())
-        let box = Box(exercise())
-        let delegate = WarmupSetsDelegate(exercise: box.binding)
-
-        presenter.onViewAppear(delegate: delegate)
-        presenter.onViewDisappear(delegate: delegate)
-
-        #expect(interactor.trackedScreenEventNames == ["WarmupSetsView_Appear"])
-        #expect(interactor.trackedEventNames == ["WarmupSetsView_Disappear"])
-    }
-
-    /// Closing the sheet leaves the exercise exactly as it was — the sets were edited in place
-    /// through the binding, so dismissal must not be a save or a revert.
-    @Test("Test Dismissing The Warmup Sheet Changes Nothing")
-    func testDismissingTheWarmupSheetChangesNothing() {
-        let interactor = Interactor()
-        let presenter = WarmupSetsPresenter(interactor: interactor, router: Router(), exercise: exercise())
-        let before = presenter.exercise
-
-        presenter.onDismissPressed()
-
-        #expect(presenter.exercise == before)
-        #expect(interactor.trackedEventNames.isEmpty)
-    }
-}
-
 /// The picker for swapping one exercise for another mid-workout — the rack is taken, so something
 /// else has to do.
 ///
@@ -468,21 +383,9 @@ struct SwapExercisePickerPresenterTests {
 @MainActor
 struct ExerciseTrackerPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, ExerciseTrackerInteractor {
-        var allExercises: [ExerciseModel] = []
-        var notes: [String: String] = [:]
+    private typealias Interactor = ExerciseTrackerInteractorDouble
 
-        func exerciseNote(for exerciseId: String) -> String? {
-            notes[exerciseId]
-        }
-
-        func setExerciseNote(_ note: String?, for exerciseId: String) async throws { }
-    }
-
-    private final class Router: ExerciseTrackerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        func showWorkoutNotesView(delegate: WorkoutNotesDelegate) { }
-    }
+    private typealias Router = ExerciseTrackerRouterDouble
 
     private func exercise(templateId: String = "template-1") -> WorkoutExerciseModel {
         WorkoutExerciseModel(

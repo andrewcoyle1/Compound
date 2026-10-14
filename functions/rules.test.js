@@ -339,6 +339,7 @@ const share = (from, to, over = {}) => ({ id: "sh1", from_user_id: from, to_user
 
 t("shares: sender creates a pending share for someone else who has not blocked them", async () => {
     await assertSucceeds(setDoc(doc(db(BOB), "shares/sh1"), share(BOB, ALICE)));
+    await assertSucceeds(setDoc(doc(db(BOB), "shares/sh4"), share(BOB, ALICE, { id: "sh4", kind: "mesocycle" })));
     await assertFails(setDoc(doc(db(BOB), "shares/sh2"), share(BOB, BOB, { id: "sh2" })));
     await assertFails(setDoc(doc(db(MALLORY), "shares/sh3"), share(MALLORY, ALICE, { id: "sh3" })));
 });

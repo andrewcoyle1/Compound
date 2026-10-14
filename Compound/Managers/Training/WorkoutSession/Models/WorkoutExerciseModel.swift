@@ -287,6 +287,53 @@ extension WorkoutExerciseModel {
     /// exercise: a stored image returns before it is ever evaluated.
     func imageName(in library: @autoclosure () -> [ExerciseModel]) -> String? {
         if let imageName, !imageName.isEmpty { return imageName }
-        return library().first { $0.id == templateId }.flatMap { Constants.exerciseImageName(for: $0) }
+        return libraryModel(in: library()).flatMap { Constants.exerciseImageName(for: $0) }
+    }
+
+    /// `preference` (the template's units) with this exercise's own weight unit in place, when it
+    /// has one: an exercise switched to pounds mid-workout keeps pounds.
+    func units(_ preference: ExerciseUnitPreference) -> ExerciseUnitPreference {
+        var units = preference
+        units.weightUnit = weightUnit ?? preference.weightUnit
+        return units
+    }
+
+    /// One more set — which is two rows for an exercise whose sides are split, so the user is
+    /// never handed a left with no right to follow it.
+    func addingSet(authorId: String, now: Date = Date()) -> WorkoutExerciseModel {
+        var exercise = self
+        // One past the highest index, not one past the count. Deleting a set does not renumber the
+        // rest, so after deleting any set but the last, the count no longer reaches the top index
+        // and this handed the new set an index another set already held. Warm-up sets share the
+        // same numbering, which makes it easier still to hit.
+        var nextIndex = (sets.map(\.index).max() ?? 0) + 1
+        for side in sidesPerSet {
+            // Carry forward the figures of the last set on the same side, so a left set copies the
+            // left arm's weight rather than the right one's. Not a drop's: it is lighter than the set.
+            let ownSets = sets.filter { !$0.isSubSet }
+            let lastSet = ownSets.last(where: { side == nil || $0.side == side }) ?? ownSets.last
+            exercise.sets.append(WorkoutSetModel(
+                id: UUID().uuidString,
+                authorId: authorId,
+                index: nextIndex,
+                reps: lastSet?.reps,
+                weightKg: lastSet?.weightKg,
+                durationSec: lastSet?.durationSec,
+                distanceMeters: lastSet?.distanceMeters,
+                rpe: lastSet?.rpe,
+                side: side,
+                bands: lastSet?.bands,
+                isWarmup: false,
+                completedAt: nil,
+                dateCreated: now
+            ))
+            nextIndex += 1
+        }
+        return exercise
+    }
+
+    /// The library exercise this one was made from, by `templateId`.
+    func libraryModel(in library: [ExerciseModel]) -> ExerciseModel? {
+        library.first { $0.id == templateId }
     }
 }

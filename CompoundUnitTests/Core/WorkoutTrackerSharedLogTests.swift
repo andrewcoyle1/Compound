@@ -45,7 +45,7 @@ struct WorkoutTrackerSharedLogTests {
     }
 
     private func storedFocus(_ interactor: WorkoutTrackerInteractorDouble) -> String? {
-        ActiveWorkoutScreenState.load(sessionId: "session-1", from: interactor.activeWorkoutScreenStateStore).focusExerciseId
+        interactor.loadScreenState(sessionId: "session-1").focusExerciseId
     }
 
     private var superset: [WorkoutExerciseModel] {
@@ -84,7 +84,7 @@ struct WorkoutTrackerSharedLogTests {
     @Test("Test A Rebuilt Tracker Opens On The Stored Focus")
     func testRebuiltTrackerRestoresFocus() throws {
         let (_, interactor) = try screen(superset)
-        ActiveWorkoutScreenState(sessionId: "session-1", focusExerciseId: "b").save(to: interactor.activeWorkoutScreenStateStore)
+        ActiveWorkoutScreenState(sessionId: "session-1", focusExerciseId: "b").save(to: interactor.screenStateStore)
 
         let rebuilt = try WorkoutTrackerPresenter(interactor: interactor, router: WorkoutTrackerRouterDouble(), saveRetryBackoff: .testImmediate)
 

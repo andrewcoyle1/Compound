@@ -108,7 +108,7 @@ struct WorkoutTrackerQuickFinishTests {
 
         #expect(presenter.isDone)
         #expect(router.shown == ["workoutNotes", "summary"])
-        presenter.cancelPendingSave()
+        presenter.pendingFinishTask?.cancel()
     }
 
     /// Cancelling the sheet leaves the workout running.
@@ -136,6 +136,6 @@ struct WorkoutTrackerQuickFinishTests {
 
         #expect(presenter.isDone)
         #expect(router.shown == ["workoutNotes", "summary"])
-        presenter.cancelPendingSave()
+        presenter.pendingFinishTask?.cancel()
     }
 }

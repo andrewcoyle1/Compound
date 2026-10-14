@@ -131,7 +131,7 @@ struct WorkoutTrackerPresenterTests {
             exercise(id: "e2", index: 2, sets: [set(1)])
         ])
 
-        #expect(screen.presenter.expandedExerciseId == "e2")
+        #expect(screen.presenter.cardExerciseId == "e2")
         #expect(screen.presenter.currentExerciseIndex == 1)
     }
 
@@ -145,7 +145,7 @@ struct WorkoutTrackerPresenterTests {
         ])
 
         #expect(screen.presenter.currentExerciseIndex == 1)
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     // MARK: - Smart warm-ups
@@ -303,7 +303,7 @@ struct WorkoutTrackerPresenterTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e2")
+        #expect(screen.presenter.cardExerciseId == "e2")
         #expect(screen.presenter.currentExerciseIndex == 1)
     }
 
@@ -321,7 +321,7 @@ struct WorkoutTrackerPresenterTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     /// Part of an exercise is not the exercise. Advancing on the first of three sets would move the
@@ -340,7 +340,7 @@ struct WorkoutTrackerPresenterTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     /// After the workout's final set there is nowhere to go and no rest: the card stays and the
@@ -354,12 +354,12 @@ struct WorkoutTrackerPresenterTests {
 
         screen.presenter.onPrimaryActionPressed()
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
         #expect(screen.interactor.startedRests.isEmpty)
         #expect(screen.presenter.primaryAction == .finish)
     }
 
-    /// T3: the card stays on the finished exercise while its rest runs, so the set just done can
+    /// The card stays on the finished exercise while its rest runs, so the set just done can
     /// be checked or another added, and moves on when the rest ends or is skipped.
     @Test("Test A Finished Exercise Stays During Its Rest, Then Moves On", arguments: [false, true])
     func testAFinishedExerciseStaysDuringItsRest(skip: Bool) throws {
@@ -370,7 +370,7 @@ struct WorkoutTrackerPresenterTests {
 
         screen.presenter.onPrimaryActionPressed()
         #expect(screen.interactor.startedRests == [90])
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
         #expect(screen.presenter.primaryAction == .next(exerciseId: "e2"))
 
         if skip {
@@ -380,7 +380,7 @@ struct WorkoutTrackerPresenterTests {
             screen.presenter.onRestEnded()
         }
 
-        #expect(screen.presenter.expandedExerciseId == "e2")
+        #expect(screen.presenter.cardExerciseId == "e2")
         #expect(screen.presenter.currentExerciseIndex == 1)
     }
 
@@ -394,7 +394,7 @@ struct WorkoutTrackerPresenterTests {
         ])
         let reversed = Array(screen.presenter.workoutSession.exercises.reversed())
 
-        screen.presenter.applyReorderedExercises(reversed, movedFrom: 1, movedTo: 0)
+        screen.presenter.applyReorderedExercises(reversed)
 
         #expect(screen.presenter.workoutSession.exercises.map(\.id) == ["e2", "e1"])
         #expect(screen.presenter.workoutSession.exercises.map(\.index) == [1, 2])
@@ -412,7 +412,7 @@ struct WorkoutTrackerPresenterTests {
         ])
         let reversed = Array(screen.presenter.workoutSession.exercises.reversed())
 
-        screen.presenter.applyReorderedExercises(reversed, movedFrom: 1, movedTo: 0)
+        screen.presenter.applyReorderedExercises(reversed)
 
         #expect(screen.presenter.workoutSession.exercises.last?.sets.map(\.index) == [1, 2])
     }

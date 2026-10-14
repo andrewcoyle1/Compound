@@ -23,6 +23,14 @@ import SwiftUI
 struct WorkoutSessionDetailPresenterTests {
 
     final class Interactor: SpyGlobalInteractor, WorkoutSessionDetailInteractor {
+
+        var workoutSessions: [WorkoutSessionModel] = []
+
+        func stravaAuthenticate() async throws { }
+
+        func stravaQueueBackfill() -> Int { 0 }
+
+        func stravaSyncPendingUploads() async { }
         var allExercises: [ExerciseModel] = []
         var workoutSettings = WorkoutSettings(authorId: "author-1")
         var currentWeightKilograms: Double?
@@ -555,5 +563,27 @@ extension WorkoutSessionDetailPresenterTests {
         screen.interactor.preferences["template-a"] = ExerciseUnitPreference(exerciseModelId: "template-a", weightUnit: .pounds)
 
         #expect(screen.presenter.exerciseSummary(bench) == "1 set · 2,204.6 lb volume")
+    }
+
+    // MARK: - The Strava offer
+
+    /// The summary of a person's first finished workout offers Strava once it has saved. A
+    /// session opened from history never does.
+    @Test("Test The Summary Of A First Workout Offers Strava")
+    func testTheSummaryOfAFirstWorkoutOffersStrava() async {
+        let interactor = Interactor()
+        let router = Router()
+        let defaults = TestManagers.scratchDefaults("strava-offer-\(UUID().uuidString)")
+        let finished = session()
+        interactor.workoutSessions = [finished]
+
+        let browsing = WorkoutSessionDetailPresenter(interactor: interactor, router: router, defaults: defaults)
+        await browsing.onSummaryTask(session: finished)
+        #expect(router.dialogTitles.isEmpty)
+
+        let summary = WorkoutSessionDetailPresenter(interactor: interactor, router: router, isWorkoutSummary: true, defaults: defaults)
+        await summary.onSummaryTask(session: finished)
+        #expect(router.dialogTitles == ["Upload Workouts to Strava?"])
+        #expect(interactor.trackedEventNames.contains("strava_offer_shown"))
     }
 }

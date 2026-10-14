@@ -56,6 +56,7 @@ enum Symbol {
     static let cardio = "figure.run"
     static let muscleGroup = "figure.arms.open"
     static let note = "note.text"
+    static let addNote = "note.text.badge.plus"
     /// The user's own note on an exercise, kept from session to session.
     static let pinnedNote = "pin.fill"
     /// Putting an exercise off until the end of the workout, or bringing it up next.
@@ -64,7 +65,6 @@ enum Symbol {
     /// A step along the strip, layout-direction aware.
     static let moveEarlier = "arrow.backward"
     static let moveLater = "arrow.forward"
-    static let reorder = "arrow.up.arrow.down"
     static let swap = "arrow.left.arrow.right"
     static let smartProgression = "wand.and.stars"
 
@@ -132,6 +132,11 @@ enum Symbol {
     /// Puts the set keypad away without logging.
     static let hideKeyboard = "keyboard.chevron.compact.down"
     static let decrease = "minus"
+    /// The set keypad's delete key.
+    static let deleteBackward = "delete.left"
+    /// The tracker's way out: the workout carries on in the Live Activity.
+    static let minimize = "chevron.down"
+    static let pause = "pause"
 
     // Status
     static let info = "info.circle"

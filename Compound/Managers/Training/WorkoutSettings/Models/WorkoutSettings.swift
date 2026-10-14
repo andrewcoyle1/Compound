@@ -20,11 +20,6 @@ struct WorkoutSettings: DataSyncModelProtocol {
     /// document saved before the setting existed still decodes; nil reads as on.
     var showOnLockScreen: Bool?
     var showsOnLockScreen: Bool { showOnLockScreen ?? true }
-    /// The exercise strip over the tracker, and the card sliding in from the side it sits on.
-    /// Optional so a document saved before the setting existed still decodes; nil reads as on
-    /// (the default since 7 Oct 2026; it shipped off while it was being tried).
-    var showExerciseStrip: Bool?
-    var showsExerciseStrip: Bool { showExerciseStrip ?? true }
     /// Workout Settings › Set Plan: the template owns each set's kind and its plan (drops,
     /// mini-sets, an AMRAP target), and a session is created from it. Optional so a document
     /// saved before the setting existed still decodes; nil reads as off.
@@ -115,7 +110,6 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case showWorkoutTimer = "show_workout_timer"
         case showBodyweightContribution = "show_bodyweight_contribution"
         case showOnLockScreen = "show_on_lock_screen"
-        case showExerciseStrip = "show_exercise_strip"
         case setPlanning = "set_planning"
         case exerciseAutoNext = "exercise_auto_next"
         case propagateChanges = "propagate_changes"

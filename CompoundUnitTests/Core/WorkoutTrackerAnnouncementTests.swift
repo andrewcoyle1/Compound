@@ -89,7 +89,7 @@ struct WorkoutTrackerAnnouncementTests {
     @Test func theRestOverListenerAnnouncesTheOwnersNotification() async throws {
         let (presenter, _) = try makeScreen()
         let spy = TrackerAnnouncementSpy()
-        let listener = spy.listen { Task { await presenter.observeRestOverAnnouncements() } }
+        let listener = spy.listen { Task { await presenter.observeRestCompletions() } }
         defer { listener.cancel() }
         for _ in 0..<10 { await Task.yield() }
 
@@ -155,32 +155,7 @@ struct WorkoutTrackerAnnouncementTests {
         #expect(before == ["Log set 1", "Log set", "Log"])
     }
 
-    // MARK: - Up Next actions (M1)
-
-    @Test func moveUpAndMoveDownAreOfferedOnlyWhereARowCanGo() throws {
-        let (presenter, _) = try makeScreen(["bench", "row", "curl", "dip"])
-        #expect(presenter.upNextExercises.map(\.id) == ["row", "curl", "dip"])
-
-        #expect(presenter.upNextMoveDestination(of: "row", by: -1) == nil)
-        #expect(presenter.upNextMoveDestination(of: "dip", by: 1) == nil)
-        #expect(presenter.upNextMoveDestination(of: "curl", by: -1) == 0)
-        #expect(presenter.upNextMoveDestination(of: "curl", by: 1) == 3)
-    }
-
-    @Test func movingARowSaysWhereItWent() throws {
-        let (presenter, _) = try makeScreen(["bench", "row", "curl", "dip"])
-        let spy = TrackerAnnouncementSpy()
-
-        spy.listen { presenter.onUpNextMovePressed("curl", by: -1) }
-        #expect(presenter.upNextExercises.map(\.id) == ["curl", "row", "dip"])
-
-        spy.listen { presenter.onUpNextMovePressed("row", by: 1) }
-        #expect(presenter.upNextExercises.map(\.id) == ["curl", "dip", "row"])
-        #expect(spy.texts == ["Position 1 of 3", "Position 3 of 3"])
-
-        // The card's exercise is not in Up Next and does not move.
-        #expect(presenter.workoutSession.exercises.first?.id == "bench")
-    }
+    // MARK: - Strip actions (M1)
 
     @Test func movingAStripItemSaysWhereItWent() throws {
         let (presenter, _) = try makeScreen(["bench", "row", "curl", "dip"])

@@ -285,6 +285,34 @@ through workload identity federation; no key is stored anywhere.
 - The Cloud Billing API is enabled on the project because firebase-tools checks billing and the
   deploy account cannot enable APIs.
 
+## Flutter app (`app/`)
+
+The Flutter rebuild that will replace this SwiftUI app: Android first, then iOS. The plan, the
+milestones and the Firestore contract are in `docs/specs/flutter/`. Build agents read
+`agent-brief.md` there first, and judgement calls made without the owner are logged in
+`decisions.md`.
+
+- **Stack:** Very Good Core template with VGV layered architecture. Packages live in `app/packages/`
+  and features in `app/lib/<feature>/{bloc,view}`. Bloc, go_router, very_good_analysis.
+- **Flavors:**
+  - `development` uses `compound-development`. Its iOS bundle id is
+    `com.andrewcoyle.compound.flutter.dev`, so it installs beside the Swift dev app.
+  - `staging` uses in-memory fakes and no Firebase.
+  - `production` is not configured yet.
+  - Run with `flutter run --flavor development -t lib/main_development.dart` from `app/`.
+- **Firebase config is gitignored** because the repo is public: `lib/firebase_options_*.dart`,
+  `google-services.json` and `GoogleService-Info.plist`. Regenerate them with
+  `flutterfire configure` (the arguments are in `docs/specs/flutter/decisions.md`). CI copies
+  `lib/firebase_options_development.dart.example`.
+- **Tests:** use the very_good_cli MCP `test` tool. A hook blocks `very_good test` and
+  `very_good create` in the shell. Packages are held to 100% coverage.
+- **Strings:** after adding English ARB messages, run `python3 scripts/arb-spanish.py`. It
+  copies the Spanish from `Compound/Localizable.xcstrings`; translate whatever it lists by hand.
+- **CI:** `.github/workflows/flutter.yml` runs on PRs touching `app/`, `contracts/` or itself.
+  `ci.yml` (Swift) skips PRs into `feature/flutter`.
+- **Firestore contract:** shared fixtures in `contracts/firestore/` must round-trip through both
+  the Swift and Dart models. No Flutter code may write to a collection whose model fails it.
+
 ## Branching
 
 Two long-lived branches, `main` and `development`.

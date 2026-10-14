@@ -33,3 +33,11 @@ jobs:
       # The contract test reads ../../../contracts/firestore, so the whole repository is checked
       # out (the workflow's default). Packages are held at 100%.
       min_coverage: 100
+
+  app_ui:
+    name: app_ui
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/app_ui
+      flutter_version: "3.47.7"
+      min_coverage: 100

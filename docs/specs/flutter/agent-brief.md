@@ -25,6 +25,14 @@ manager or model by name.
   - Repositories take every SDK object (`FirebaseFirestore`, `FirebaseAuth`, `GoogleSignIn`)
     through the constructor. Blocs and Cubits hold the state. Widgets never touch a repository
     or Firebase directly.
+- **The `staging` flavor is the mock build.** It has no Firebase, and the app must be fully usable
+  in it.
+  - Every repository has an in-memory implementation alongside its Firebase one.
+  - `main_staging.dart` wires those in, seeded with realistic sample data in the spirit of the
+    Swift app's `.mock` values: a signed-in user, workouts, meals, weigh-ins and the rest.
+  - Every screen you build must work in staging. Check it with
+    `flutter run --flavor staging -t lib/main_staging.dart` on a simulator if your task allows
+    one; otherwise widget-test the screen with the in-memory repositories.
 - **Coverage:** packages under `app/packages/` must reach **100%**. The app itself is reported
   only. Run the package's tests with the MCP `test` tool and `min_coverage: "100"`.
 - **Before you push:** `dart format`, `flutter analyze` with no issues, and tests passing.

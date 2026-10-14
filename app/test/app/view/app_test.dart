@@ -1,11 +1,13 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -29,6 +31,7 @@ void main() {
           workoutSessionRepository: InMemoryWorkoutSessionRepository(
             sessions: const [],
           ),
+          nutritionRepository: InMemoryNutritionRepository(),
         ),
       );
       await tester.pumpAndSettle();
@@ -57,6 +60,7 @@ void main() {
           ),
           userRepository: seededUsers(),
           workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
         ),
       );
       await tester.pumpAndSettle();
@@ -83,6 +87,7 @@ void main() {
           ),
           userRepository: seededUsers(),
           workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
         ),
       );
       await tester.pumpAndSettle();
@@ -96,6 +101,11 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.widgetWithText(AppBar, title), findsOneWidget);
+        // Nutrition is ported; the others are still placeholders.
+        expect(
+          find.byType(NutritionView),
+          title == 'Nutrition' ? findsOneWidget : findsNothing,
+        );
       }
 
       // Tapping the current tab again stays on it.
@@ -119,6 +129,7 @@ void main() {
           ),
           userRepository: seededUsers(),
           workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
         ),
       );
       await tester.pumpAndSettle();

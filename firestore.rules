@@ -522,7 +522,7 @@ service cloud.firestore {
                     && request.resource.data.id == share_id
                     && request.resource.data.to_user_id is string
                     && request.resource.data.to_user_id != request.auth.uid
-                    && request.resource.data.kind in ['template', 'program']
+                    && request.resource.data.kind in ['template', 'program', 'mesocycle']
                     && request.resource.data.status == 'pending'
                     && !isBlockedBy(request.resource.data.to_user_id);
       allow update: if isAuthed() && resource.data.to_user_id == request.auth.uid

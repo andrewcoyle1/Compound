@@ -1,0 +1,29 @@
+{
+  "defaultRangeId": "stack_contract_full",
+  "description": "The newer one",
+  "id": "pin_loaded_machine_contract_full",
+  "imageName": "leg_curl_icon",
+  "isActive": true,
+  "name": "Leg Curl Two",
+  "ranges": [
+    {
+      "addOns": [
+        1.25,
+        2.5
+      ],
+      "id": "stack_contract_full",
+      "increment": 2.5,
+      "isActive": true,
+      "maxWeight": 92.5,
+      "minWeight": 2.5,
+      "name": "Main Stack",
+      "unit": "kilograms",
+      "weights": [
+        2.5,
+        5.5,
+        8.5
+      ]
+    }
+  ],
+  "typeId": "seated_leg_curl_machine"
+}

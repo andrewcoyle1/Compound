@@ -1,0 +1,19 @@
+{
+  "id": "old_bands",
+  "name": "Legacy old_bands",
+  "range": [
+    {
+      "id": "b1",
+      "name": "Light",
+      "availableResistance": 4
+    },
+    {
+      "id": "b2",
+      "name": "Heavy"
+    },
+    {
+      "id": "b3",
+      "availableResistance": 8.5
+    }
+  ]
+}

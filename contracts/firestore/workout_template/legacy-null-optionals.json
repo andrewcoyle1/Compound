@@ -1,0 +1,15 @@
+{
+  "author_id": "user_contract_minimal",
+  "date_created": {
+    "$timestamp": "2026-08-02T09:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-08-02T09:00:00.000Z"
+  },
+  "exercises": [],
+  "name": "Empty",
+  "workout_id": "template_contract_minimal",
+  "description": null,
+  "gym_profile_id": null,
+  "image_url": null
+}

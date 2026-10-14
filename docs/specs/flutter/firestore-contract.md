@@ -82,3 +82,9 @@ data disappear from the iOS app without an error. The contract makes that a fail
      new folder.
 4. **Rules:** add its `full` fixture to the contract test in `functions/rules.test.js`, at its
    real path.
+5. **App data a decoder reads:** `GymProfileModel`'s decoder appends every catalogue item a stored
+   list lacks, so the catalogue is part of the contract. The Swift test records it to
+   `contracts/firestore/gym_equipment_catalogue.json` (each nested entry's random id made
+   `<item id>_<n>`), and `compound_models` embeds that file with `tool/embed_json.dart`; a test on
+   each side fails when it drifts. Canonical gym fixtures therefore hold the whole catalogue, and
+   legacy cases that exercise the merge use lists whose catalogue has no random ids.

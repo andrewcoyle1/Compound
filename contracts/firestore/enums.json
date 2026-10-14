@@ -37,6 +37,13 @@
     "5-6",
     "daily"
   ],
+  "ExerciseType": [
+    "compoundUpper",
+    "compoundLower",
+    "isolationUpper",
+    "isolationLower",
+    "core"
+  ],
   "ExerciseWeightUnit": [
     "kilograms",
     "pounds"
@@ -52,6 +59,17 @@
     "abandoned",
     "paused"
   ],
+  "InitialLogFillOption": [
+    "smartProgression",
+    "previousValues",
+    "empty"
+  ],
+  "Laterality": [
+    "bilateral",
+    "unilateral",
+    "assymetrical",
+    "unilateralBilateral"
+  ],
   "LengthUnitPreference": [
     "centimeters",
     "inches"
@@ -60,6 +78,34 @@
     "ingredient",
     "recipe",
     "quick_add"
+  ],
+  "Muscles": [
+    "triceps",
+    "upperTraps",
+    "obliques",
+    "neck",
+    "lats",
+    "forearms",
+    "sideDelts",
+    "rearDelts",
+    "frontDelts",
+    "chest",
+    "biceps",
+    "upperBack",
+    "lowerBack",
+    "abs",
+    "serratus",
+    "quads",
+    "hamstrings",
+    "glutes",
+    "calves",
+    "abductors",
+    "adductors",
+    "tibialis"
+  ],
+  "MuscleTargetType": [
+    "primary",
+    "secondary"
   ],
   "NutrientKey": [
     "calories",
@@ -127,6 +173,15 @@
     "maintain",
     "gainWeight"
   ],
+  "PreviousWorkoutReferenceOption": [
+    "anyExercise",
+    "anyWorkout",
+    "workoutsInProgram"
+  ],
+  "ProgressionAdjustmentMode": [
+    "weightFirst",
+    "repsFirst"
+  ],
   "SetKind": [
     "standard",
     "drop",
@@ -163,6 +218,19 @@
   "TimestampSide": [
     "left",
     "right"
+  ],
+  "TrackableExerciseMetric": [
+    "reps",
+    "repsPerSide",
+    "weight",
+    "weightPerSide",
+    "weightPerSidePersistent",
+    "weightPerSideAssistance",
+    "duration",
+    "durationPerSide",
+    "distanceShort",
+    "distanceShortPerSide",
+    "distanceLong"
   ],
   "TrackingMode": [
     "weightReps",

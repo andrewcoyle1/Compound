@@ -1,0 +1,26 @@
+{
+  "description": "The rack by the window",
+  "id": "free_weights_contract_full",
+  "imageName": "dumbbells_icon",
+  "isActive": true,
+  "isPlates": false,
+  "name": "Window Dumbbells",
+  "needsColour": true,
+  "range": [
+    {
+      "availableWeights": 12.5,
+      "count": 2,
+      "id": "free_weights_contract_full_1",
+      "isActive": true,
+      "plateColour": "#FF3B30",
+      "unit": "kilograms"
+    },
+    {
+      "availableWeights": 27.5,
+      "id": "free_weights_contract_full_2",
+      "isActive": false,
+      "unit": "pounds"
+    }
+  ],
+  "typeId": "dumbbells"
+}

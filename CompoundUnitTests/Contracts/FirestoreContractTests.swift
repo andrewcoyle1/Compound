@@ -35,7 +35,7 @@ struct FirestoreContractTests {
 
     // MARK: - The models under contract
 
-    private struct Contract {
+    struct Contract {
         let directory: String
         /// The encoded sample for each canonical case.
         let samples: [String: [String: Any]]
@@ -47,7 +47,7 @@ struct FirestoreContractTests {
         let fullSample: Any
     }
 
-    private static func contract<T: Codable>(
+    static func contract<T: Codable>(
         _ type: T.Type, directory: String, full: T, minimal: T, namedFields: [String]
     ) throws -> Contract {
         let encoder = Firestore.Encoder()
@@ -61,7 +61,8 @@ struct FirestoreContractTests {
     }
 
     private static func contracts() throws -> [Contract] {
-        try userAndTrainingContracts() + nutritionContracts() + bodyAndGoalContracts()
+        try userAndTrainingContracts() + nutritionContracts() + bodyAndGoalContracts() + libraryContracts()
+            + gymContracts()
     }
 
     private static func userAndTrainingContracts() throws -> [Contract] {
@@ -328,7 +329,7 @@ struct FirestoreContractTests {
             "MealItemSourceType": MealItemSourceType.allCases.map(\.rawValue),
             "NutrientKey": NutrientKey.allCases.map(\.rawValue),
             "TimestampSide": timestampSides.map(\.rawValue)
-        ].merging(try Self.bodyAndGoalEnums()) { $1 }
+        ].merging(try Self.bodyAndGoalEnums()) { $1 }.merging(Self.libraryEnums()) { $1 }
         let url = Self.root.appendingPathComponent("enums.json")
         if ProcessInfo.processInfo.environment["RECORD_CONTRACTS"] == "1" { try Self.write(enums, to: url) }
         let fixture = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: [String]])
@@ -370,7 +371,7 @@ struct FirestoreContractTests {
 
     // MARK: - Fixture files
 
-    private static let root = URL(fileURLWithPath: #filePath)
+    static let root = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         .appendingPathComponent("contracts/firestore")
 
@@ -395,12 +396,16 @@ struct FirestoreContractTests {
         try ContractJSON.firestore(try taggedFixture(directory, name))
     }
 
-    private static func write(_ object: Any, to url: URL) throws {
-        let data = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+    static func write(_ object: Any, to url: URL) throws {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data(try jsonText(object).utf8).write(to: url)
+    }
+
+    /// What `write` puts in a file.
+    static func jsonText(_ object: Any) throws -> String {
+        let data = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
         // JSONSerialization writes `"key" : value`; the usual spelling keeps hand-written fixtures alike.
-        let text = (String(bytes: data, encoding: .utf8) ?? "").replacingOccurrences(of: "\" : ", with: "\": ")
-        try Data((text + "\n").utf8).write(to: url)
+        return (String(bytes: data, encoding: .utf8) ?? "").replacingOccurrences(of: "\" : ", with: "\": ") + "\n"
     }
 }
 

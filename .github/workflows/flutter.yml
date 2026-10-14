@@ -11,6 +11,9 @@ on:
       - "CompoundUnitTests/Fixtures/coach-parity.json"
       - "CompoundUnitTests/Fixtures/nutrition-parity.json"
       - "CompoundUnitTests/Fixtures/progression-parity.json"
+      # training_library_repository embeds the bundled exercises and workouts.
+      - "Compound/SupportingFiles/Resources/PrebuiltExercises.json"
+      - "Compound/SupportingFiles/Resources/PrebuiltWorkouts.json"
       - ".github/workflows/flutter.yml"
 
 concurrency:
@@ -127,6 +130,16 @@ jobs:
       working_directory: app/packages/analytics_repository
       flutter_version: "3.47.7"
       # Packages are held at 100%.
+      min_coverage: 100
+
+  training_library_repository:
+    name: training_library_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/training_library_repository
+      flutter_version: "3.47.7"
+      # Its tests read ../../../contracts/firestore and the Swift app's Prebuilt*.json, which
+      # the package embeds byte for byte. Packages are held at 100%.
       min_coverage: 100
       # No blocs in a repository.
       run_bloc_lint: false

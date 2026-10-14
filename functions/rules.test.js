@@ -116,6 +116,36 @@ t("contract: the owner creates the full body measurement, steps, analytics setti
     await assertFails(setDoc(goalRef, { ...goal, starting_weight_kg: goal.starting_weight_kg + 1 }, { merge: true }));
 });
 
+t("contract: the author creates the full exercise and workout template where the app keeps them", async () => {
+    // The app keeps a user's exercises in the top-level exercise_templates, queried by author_id;
+    // there is no users/{uid}/exercises.
+    const exercise = contractFixture("exercise_model");
+    const uid = exercise.author_id;
+    await assertSucceeds(setDoc(doc(db(uid), `exercise_templates/${exercise.id}`), exercise));
+    await assertFails(setDoc(doc(db(BOB), `exercise_templates/bob_copy`), exercise));
+    await assertFails(setDoc(doc(db(uid), `users/${uid}/exercises/${exercise.id}`), exercise));
+    const template = contractFixture("workout_template");
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/workout_templates/${template.workout_id}`), template));
+    await assertSucceeds(setDoc(doc(db(uid), `workout_templates/${template.workout_id}`), template));
+    await assertFails(setDoc(doc(db(BOB), `workout_templates/bob_copy`), template));
+    await assertFails(setDoc(doc(db(BOB), `users/${BOB}/workout_templates/${template.workout_id}`), template));
+});
+
+t("contract: the owner creates the full gym profile and exercise and workout settings at their paths", async () => {
+    const gym = contractFixture("gym_profile");
+    const uid = gym.author_id;
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/gym_profiles/${gym.id}`), gym));
+    await assertFails(setDoc(doc(db(BOB), `users/${BOB}/gym_profiles/${gym.id}`), gym));
+    await assertFails(setDoc(doc(db(BOB), `users/${uid}/gym_profiles/bob_copy`), gym));
+    const exerciseSettings = contractFixture("exercise_settings");
+    await assertSucceeds(setDoc(
+        doc(db(uid), `users/${uid}/exercise_settings/${exerciseSettings.id}`), exerciseSettings,
+    ));
+    const workoutSettings = contractFixture("workout_settings");
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/workout_settings/workout_settings`), workoutSettings));
+    await assertFails(setDoc(doc(db(BOB), `users/${uid}/workout_settings/workout_settings`), workoutSettings));
+});
+
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.
 for (const [sub, key] of [
     ["body_measurements", "author_id"], ["steps", "author_id"], ["goals", "user_id"],

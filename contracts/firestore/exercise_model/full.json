@@ -1,0 +1,57 @@
+{
+  "alternate_names": [
+    "Pause Bench",
+    "Competition Bench"
+  ],
+  "author_id": "user_contract_full",
+  "body_weight_contribution": 0,
+  "bookmark_count": 1,
+  "click_count": 3,
+  "date_created": {
+    "$timestamp": "2026-09-01T10:00:00.125Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-10-01T11:30:00.500Z"
+  },
+  "description": "Two seconds still on the chest.",
+  "equipment_variations": [
+    {
+      "id": "variation_contract_full",
+      "resistance_equipment": [
+        {
+          "id": "olympic_barbell",
+          "kind": "loadableBar"
+        },
+        {
+          "id": "bumper_plates",
+          "kind": "freeWeight"
+        }
+      ],
+      "support_equipment": [
+        {
+          "id": "flat_bench",
+          "kind": "supportEquipment"
+        }
+      ]
+    }
+  ],
+  "favourite_count": 2,
+  "id": "exercise_model_contract_full",
+  "image_url": "https://example.com/paused-bench.jpg",
+  "is_bodyweight": false,
+  "is_system_exercise": false,
+  "laterality": "bilateral",
+  "muscle_groups": {
+    "chest": "primary",
+    "frontDelts": "secondary",
+    "triceps": "secondary"
+  },
+  "name": "Paused Bench Press",
+  "range_of_motion": 4,
+  "stability": 5,
+  "trackable_metrics": [
+    "reps",
+    "weight"
+  ],
+  "type": "compoundUpper"
+}

@@ -1,0 +1,1511 @@
+{
+  "accessory_equipment": [
+    {
+      "id": "ab_wheel",
+      "isActive": true,
+      "name": "Ab Wheel",
+      "typeId": "ab_wheel"
+    },
+    {
+      "id": "aerobic_steps",
+      "isActive": true,
+      "name": "Aerobic Steps",
+      "typeId": "aerobic_steps"
+    },
+    {
+      "id": "anchor_point_for_elastic_band",
+      "isActive": true,
+      "name": "Anchor Point For Elastic Band",
+      "typeId": "anchor_point_for_elastic_band"
+    },
+    {
+      "id": "anchor_point_for_suspension_trainer",
+      "isActive": true,
+      "name": "Anchor Point For Suspension Trainer",
+      "typeId": "anchor_point_for_suspension_trainer"
+    },
+    {
+      "id": "bench_press_board_block",
+      "isActive": true,
+      "name": "Bench Press Board/Block",
+      "typeId": "bench_press_board_block"
+    },
+    {
+      "id": "calf_raise_block",
+      "isActive": true,
+      "name": "Calf Raise Block",
+      "typeId": "calf_raise_block"
+    },
+    {
+      "id": "cuff_cable_attachment",
+      "isActive": true,
+      "name": "Cuff Cable Attachment",
+      "typeId": "cuff_cable_attachment"
+    },
+    {
+      "id": "deadlift_blocks",
+      "isActive": true,
+      "name": "Deadlift Blocks",
+      "typeId": "deadlift_blocks"
+    },
+    {
+      "id": "gymnastics_rings",
+      "isActive": true,
+      "name": "Gymnastics Rings",
+      "typeId": "gymnastics_rings"
+    },
+    {
+      "id": "landmine_attachment_wall_corner",
+      "isActive": true,
+      "name": "Landmine Attachment/Wall Corner",
+      "typeId": "landmine_attachment_wall_corner"
+    },
+    {
+      "id": "neutral_grip_landmine_row_attachment",
+      "isActive": true,
+      "name": "Neutral Grip Landmine Row Attachment",
+      "typeId": "neutral_grip_landmine_row_attachment"
+    },
+    {
+      "id": "nordic_hamstring_curl_strap",
+      "isActive": true,
+      "name": "Nordic Hamstring Curl Strap",
+      "typeId": "nordic_hamstring_curl_strap"
+    },
+    {
+      "id": "overhand_grip_landmine_attachment",
+      "isActive": true,
+      "name": "Overhand Grip Landmine Attachment",
+      "typeId": "overhand_grip_landmine_attachment"
+    },
+    {
+      "id": "plyometric_boxes",
+      "isActive": true,
+      "name": "Plyometric Boxes",
+      "typeId": "plyometric_boxes"
+    },
+    {
+      "id": "pull_up_bar",
+      "isActive": true,
+      "name": "Pull-Up Bar",
+      "typeId": "pull_up_bar"
+    },
+    {
+      "id": "push_up_handles",
+      "isActive": true,
+      "name": "Push-Up Handles",
+      "typeId": "push_up_handles"
+    },
+    {
+      "id": "slant_board",
+      "isActive": true,
+      "name": "Slant Board",
+      "typeId": "slant_board"
+    },
+    {
+      "id": "slingshot",
+      "isActive": true,
+      "name": "Slingshot",
+      "typeId": "slingshot"
+    },
+    {
+      "id": "split_squat_roller_stand",
+      "isActive": true,
+      "name": "Split Squat Roller Stand",
+      "typeId": "split_squat_roller_stand"
+    },
+    {
+      "id": "squat_box",
+      "isActive": true,
+      "name": "Squat Box",
+      "typeId": "squat_box"
+    },
+    {
+      "id": "stability_ball",
+      "isActive": true,
+      "name": "Stability Ball",
+      "typeId": "stability_ball"
+    },
+    {
+      "id": "staircase",
+      "isActive": true,
+      "name": "Staircase",
+      "typeId": "staircase"
+    },
+    {
+      "id": "suspension_trainer",
+      "isActive": true,
+      "name": "Suspension Trainer",
+      "typeId": "suspension_trainer"
+    },
+    {
+      "id": "v_bar_row_grip_attachment",
+      "isActive": true,
+      "name": "V-Bar Row Grip Attachment",
+      "typeId": "v_bar_row_grip_attachment"
+    },
+    {
+      "id": "yoga_blocks",
+      "isActive": true,
+      "name": "Yoga Blocks",
+      "typeId": "yoga_blocks"
+    }
+  ],
+  "author_id": "user_contract_minimal",
+  "bands": [
+    {
+      "id": "long_elastic_bands",
+      "isActive": true,
+      "name": "Long Elastic Bands",
+      "range": [
+
+      ],
+      "typeId": "long_elastic_bands"
+    },
+    {
+      "id": "short_elastic_bands",
+      "isActive": true,
+      "name": "Short Elastic Bands",
+      "range": [
+
+      ],
+      "typeId": "short_elastic_bands"
+    }
+  ],
+  "body_weights": [
+    {
+      "id": "ankle_weights",
+      "isActive": true,
+      "name": "Ankle Weights",
+      "range": [
+
+      ],
+      "typeId": "ankle_weights"
+    },
+    {
+      "id": "weighted_vest",
+      "isActive": true,
+      "name": "Weighted Vest",
+      "range": [
+
+      ],
+      "typeId": "weighted_vest"
+    }
+  ],
+  "cable_machines": [
+    {
+      "id": "cable_lat_pulldown_machine",
+      "isActive": true,
+      "name": "Cable Lat Pulldown Machine",
+      "ranges": [
+
+      ],
+      "typeId": "cable_lat_pulldown_machine"
+    },
+    {
+      "id": "pin-loaded_dual_cable_machine",
+      "isActive": true,
+      "name": "Pin-Loaded Dual Cable Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_dual_cable_machine"
+    },
+    {
+      "id": "pin-loaded_single_cable_machine",
+      "isActive": true,
+      "name": "Pin-Loaded Single Cable Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_single_cable_machine"
+    },
+    {
+      "id": "seated_cable_row_machine",
+      "isActive": true,
+      "name": "Seated Cable Row Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_cable_row_machine"
+    }
+  ],
+  "date_created": {
+    "$timestamp": "2026-07-02T07:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-07-02T07:00:00.000Z"
+  },
+  "fixed_weight_bars": [
+    {
+      "baseWeights": [
+
+      ],
+      "id": "fixed_weight_ez_bar",
+      "isActive": true,
+      "name": "Fixed Weight Ez Bar",
+      "typeId": "fixed_weight_ez_bar"
+    },
+    {
+      "baseWeights": [
+
+      ],
+      "id": "fixed_weight_straight_bar",
+      "isActive": true,
+      "name": "Fixed Weight Straight Bar",
+      "typeId": "fixed_weight_straight_bar"
+    }
+  ],
+  "free_weights": [
+    {
+      "id": "bumper_plates",
+      "isActive": true,
+      "isPlates": true,
+      "name": "Bumper Plates",
+      "needsColour": true,
+      "range": [
+
+      ],
+      "typeId": "bumper_plates"
+    },
+    {
+      "id": "dumbbells",
+      "isActive": true,
+      "isPlates": false,
+      "name": "Dumbbells",
+      "needsColour": false,
+      "range": [
+
+      ],
+      "typeId": "dumbbells"
+    },
+    {
+      "id": "kettlebells",
+      "isActive": true,
+      "isPlates": false,
+      "name": "Kettlebells",
+      "needsColour": false,
+      "range": [
+
+      ],
+      "typeId": "kettlebells"
+    },
+    {
+      "id": "medicine_ball",
+      "isActive": true,
+      "isPlates": false,
+      "name": "Medicine Ball",
+      "needsColour": false,
+      "range": [
+
+      ],
+      "typeId": "medicine_ball"
+    },
+    {
+      "id": "weight_plates",
+      "isActive": true,
+      "isPlates": true,
+      "name": "Weight Plates",
+      "needsColour": true,
+      "range": [
+
+      ],
+      "typeId": "weight_plates"
+    }
+  ],
+  "icon": "dumbbell",
+  "id": "gym_contract_minimal",
+  "loadable_accessory_equipment": [
+    {
+      "baseWeight": 2.5,
+      "id": "fat_grip_attachments",
+      "isActive": false,
+      "name": "Fat Grip Attachments",
+      "typeId": "fat_grip_attachments",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "id": "head_harness",
+      "isActive": true,
+      "name": "Head Harness",
+      "typeId": "head_harness",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "id": "loadable_dip_pull-up_belt",
+      "isActive": false,
+      "name": "Loadable Dip/Pull-Up Belt",
+      "typeId": "loadable_dip_pull-up_belt",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "id": "wrist_roller",
+      "isActive": true,
+      "name": "Wrist Roller",
+      "typeId": "wrist_roller",
+      "unit": "kilograms"
+    }
+  ],
+  "loadable_bars": [
+    {
+      "baseWeights": [
+
+      ],
+      "collarWeight": 2.5,
+      "id": "axle_bar",
+      "isActive": true,
+      "name": "Axle Bar",
+      "typeId": "axle_bar"
+    },
+    {
+      "baseWeights": [
+
+      ],
+      "collarWeight": 2.5,
+      "id": "barbell",
+      "isActive": true,
+      "name": "Barbell",
+      "typeId": "barbell"
+    },
+    {
+      "baseWeights": [
+
+      ],
+      "collarWeight": 2.5,
+      "id": "cambered_bench_bar",
+      "isActive": true,
+      "name": "Cambered Bench Bar",
+      "typeId": "cambered_bench_bar"
+    },
+    {
+      "baseWeights": [
+
+      ],
+      "collarWeight": 2.5,
+      "id": "cambered_squat_bar",
+      "isActive": true,
+      "name": "Cambered Squat Bar",
+      "typeId": "cambered_squat_bar"
+    },
+    {
+      "baseWeights": [
+
+      ],
+      "collarWeight": 2.5,
+      "id": "ez_bar",
+      "isActive": true,
+      "name": "EZ Bar",
+      "typeId": "ez_bar"
+    },
+    {
+      "baseWeights": [
+
+      ],
+      "collarWeight": 2.5,
+      "id": "safety_squat_bar",
+      "isActive": true,
+      "name": "Safety Squat Bar",
+      "typeId": "safety_squat_bar"
+    },
+    {
+      "baseWeights": [
+
+      ],
+      "collarWeight": 2.5,
+      "id": "strongman_log",
+      "isActive": true,
+      "name": "Strongman Log",
+      "typeId": "strongman_log"
+    },
+    {
+      "baseWeights": [
+
+      ],
+      "collarWeight": 2.5,
+      "id": "swiss_bar",
+      "isActive": true,
+      "name": "Swiss Bar",
+      "typeId": "swiss_bar"
+    },
+    {
+      "baseWeights": [
+
+      ],
+      "collarWeight": 2.5,
+      "id": "trap_bar",
+      "isActive": true,
+      "name": "Trap Bar",
+      "typeId": "trap_bar"
+    }
+  ],
+  "name": "",
+  "pin_loaded_machines": [
+    {
+      "id": "biceps_curl_machine_with_arms_at_side",
+      "isActive": true,
+      "name": "Biceps Curl Machine With Arms At Side",
+      "ranges": [
+
+      ],
+      "typeId": "biceps_curl_machine_with_arms_at_side"
+    },
+    {
+      "id": "chest-supported_pin-loaded_row_machine",
+      "isActive": true,
+      "name": "Chest-Supported Pin-Loaded Row Machine",
+      "ranges": [
+
+      ],
+      "typeId": "chest-supported_pin-loaded_row_machine"
+    },
+    {
+      "id": "kneeling_lower_trunk_rotation_machine",
+      "isActive": false,
+      "name": "Kneeling Lower Trunk Rotation Machine",
+      "ranges": [
+
+      ],
+      "typeId": "kneeling_lower_trunk_rotation_machine"
+    },
+    {
+      "id": "kneeling_pin-loaded_glute_kickback_machine",
+      "isActive": false,
+      "name": "Kneeling Pin-Loaded Glute Kickback Machine",
+      "ranges": [
+
+      ],
+      "typeId": "kneeling_pin-loaded_glute_kickback_machine"
+    },
+    {
+      "id": "lying_pin-loaded_chest_press_machine",
+      "isActive": false,
+      "name": "Lying Pin-Loaded Chest Press Machine",
+      "ranges": [
+
+      ],
+      "typeId": "lying_pin-loaded_chest_press_machine"
+    },
+    {
+      "id": "lying_pin-loaded_leg_curl_machine",
+      "isActive": true,
+      "name": "Lying Pin-Loaded Leg Curl Machine",
+      "ranges": [
+
+      ],
+      "typeId": "lying_pin-loaded_leg_curl_machine"
+    },
+    {
+      "id": "multi_hip_machine",
+      "isActive": false,
+      "name": "Multi-Hip Machine",
+      "ranges": [
+
+      ],
+      "typeId": "multi_hip_machine"
+    },
+    {
+      "id": "pec_deck",
+      "isActive": true,
+      "name": "Pec Deck",
+      "ranges": [
+
+      ],
+      "typeId": "pec_deck"
+    },
+    {
+      "id": "pin-loaded_abdominal_crunch_machine_with_chest_pad",
+      "isActive": false,
+      "name": "Pin-Loaded Abdominal Crunch Machine (With Chest Pad)",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_abdominal_crunch_machine_with_chest_pad"
+    },
+    {
+      "id": "pin-loaded_abdominal_crunch_machine_with_front_handles",
+      "isActive": false,
+      "name": "Pin-Loaded Abdominal Crunch Machine (With Front Handles)",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_abdominal_crunch_machine_with_front_handles"
+    },
+    {
+      "id": "pin-loaded_abdominal_crunch_machine_with_overhead_handles",
+      "isActive": false,
+      "name": "Pin-Loaded Abdominal Crunch Machine (With Overhead Handles)",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_abdominal_crunch_machine_with_overhead_handles"
+    },
+    {
+      "id": "pin-loaded_assisted_pull-up_dip_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Assisted Pull-Up/Dip Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_assisted_pull-up_dip_machine"
+    },
+    {
+      "id": "pin-loaded_back_extension_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Back Extension Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_back_extension_machine"
+    },
+    {
+      "id": "pin-loaded_chest_fly_machine_with_arm_pads",
+      "isActive": false,
+      "name": "Pin-Loaded Chest Fly Machine With Arm Pads",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_chest_fly_machine_with_arm_pads"
+    },
+    {
+      "id": "pin-loaded_dip_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Dip Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_dip_machine"
+    },
+    {
+      "id": "pin-loaded_hip_thrust_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Hip Thrust Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_hip_thrust_machine"
+    },
+    {
+      "id": "pin-loaded_leg_extension_machine",
+      "isActive": true,
+      "name": "Pin-Loaded Leg Extension Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_leg_extension_machine"
+    },
+    {
+      "id": "pin-loaded_leg_press_machine",
+      "isActive": true,
+      "name": "Pin-Loaded Leg Press Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_leg_press_machine"
+    },
+    {
+      "id": "pin-loaded_overhead_triceps_extension_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Overhead Triceps Extension Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_overhead_triceps_extension_machine"
+    },
+    {
+      "id": "pin-loaded_preacher_curl_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Preacher Curl Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_preacher_curl_machine"
+    },
+    {
+      "id": "pin-loaded_preacher_curl_triceps_extension_combo_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Preacher Curl/Triceps Extension Combo Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_preacher_curl_triceps_extension_combo_machine"
+    },
+    {
+      "id": "pin-loaded_pulldown_machine",
+      "isActive": true,
+      "name": "Pin-Loaded Pulldown Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_pulldown_machine"
+    },
+    {
+      "id": "pin-loaded_pullover_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Pullover Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_pullover_machine"
+    },
+    {
+      "id": "pin-loaded_reverse_hyperextension_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Reverse Hyperextension Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_reverse_hyperextension_machine"
+    },
+    {
+      "id": "pin-loaded_row_machine_without_chest_support",
+      "isActive": false,
+      "name": "Pin-Loaded Row Machine (Without Chest Support)",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_row_machine_without_chest_support"
+    },
+    {
+      "id": "pin-loaded_shoulder_press_machine",
+      "isActive": true,
+      "name": "Pin-Loaded Shoulder Press Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_shoulder_press_machine"
+    },
+    {
+      "id": "pin-loaded_tricep_extension_machine",
+      "isActive": false,
+      "name": "Pin-Loaded Tricep Extension Machine",
+      "ranges": [
+
+      ],
+      "typeId": "pin-loaded_tricep_extension_machine"
+    },
+    {
+      "id": "reclined_pin-loaded_incline_press_machine",
+      "isActive": false,
+      "name": "Reclined Pin-Loaded Incline Press Machine",
+      "ranges": [
+
+      ],
+      "typeId": "reclined_pin-loaded_incline_press_machine"
+    },
+    {
+      "id": "seated_lower_trunk_rotation_machine",
+      "isActive": false,
+      "name": "Seated Lower Trunk Rotation Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_lower_trunk_rotation_machine"
+    },
+    {
+      "id": "seated_pin-loaded_calf_raise_machine",
+      "isActive": false,
+      "name": "Seated Pin-Loaded Calf Raise Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_pin-loaded_calf_raise_machine"
+    },
+    {
+      "id": "seated_pin-loaded_chest_press_machine",
+      "isActive": true,
+      "name": "Seated Pin-Loaded Chest Press Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_pin-loaded_chest_press_machine"
+    },
+    {
+      "id": "seated_pin-loaded_hip_abduction_machine",
+      "isActive": false,
+      "name": "Seated Pin-Loaded Hip Abduction Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_pin-loaded_hip_abduction_machine"
+    },
+    {
+      "id": "seated_pin-loaded_hip_abduction_adduction_combo_machine",
+      "isActive": false,
+      "name": "Seated Pin-Loaded Hip Abduction/Adduction Combo Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_pin-loaded_hip_abduction_adduction_combo_machine"
+    },
+    {
+      "id": "seated_pin-loaded_hip_adduction_machine",
+      "isActive": false,
+      "name": "Seated Pin Loaded Hip Adduction Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_pin-loaded_hip_adduction_machine"
+    },
+    {
+      "id": "seated_pin-loaded_incline_press_machine",
+      "isActive": true,
+      "name": "Seated Pin-Loaded Incline Press Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_pin-loaded_incline_press_machine"
+    },
+    {
+      "id": "seated_pin-loaded_lateral_raise_machine",
+      "isActive": false,
+      "name": "Seated Pin-Loaded Lateral Raise Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_pin-loaded_lateral_raise_machine"
+    },
+    {
+      "id": "seated_pin-loaded_leg_curl_machine",
+      "isActive": true,
+      "name": "Seated Pin-Loaded Leg Curl Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_pin-loaded_leg_curl_machine"
+    },
+    {
+      "id": "seated_pin-loaded_shrug_machine",
+      "isActive": false,
+      "name": "Seated Pin Loaded Shrug Machine",
+      "ranges": [
+
+      ],
+      "typeId": "seated_pin-loaded_shrug_machine"
+    },
+    {
+      "id": "standing_pin-loaded_calf_raise_machine",
+      "isActive": false,
+      "name": "Standing Pin-Loaded Calf Raise Machine",
+      "ranges": [
+
+      ],
+      "typeId": "standing_pin-loaded_calf_raise_machine"
+    },
+    {
+      "id": "standing_pin-loaded_glute_kickback_machine",
+      "isActive": false,
+      "name": "Standing Pin-Loaded Glute Kickback Machine",
+      "ranges": [
+
+      ],
+      "typeId": "standing_pin-loaded_glute_kickback_machine"
+    },
+    {
+      "id": "standing_pin-loaded_lateral_raise_machine",
+      "isActive": false,
+      "name": "Standing Pin-Loaded Lateral Raise Machine",
+      "ranges": [
+
+      ],
+      "typeId": "standing_pin-loaded_lateral_raise_machine"
+    },
+    {
+      "id": "standing_pin-loaded_leg_curl_machine",
+      "isActive": false,
+      "name": "Standing Pin-Loaded Leg Curl Machine",
+      "ranges": [
+
+      ],
+      "typeId": "standing_pin-loaded_leg_curl_machine"
+    },
+    {
+      "id": "upper_trunk_rotation_machine_with_arm_or_shoulder_pads",
+      "isActive": false,
+      "name": "Upper Trunk Rotation Machine With Arm Or Shoulder Pads",
+      "ranges": [
+
+      ],
+      "typeId": "upper_trunk_rotation_machine_with_arm_or_shoulder_pads"
+    },
+    {
+      "id": "upper_trunk_rotation_machine_with_chest_pad",
+      "isActive": false,
+      "name": "Upper Trunk Rotation Machine With Chest Pad",
+      "ranges": [
+
+      ],
+      "typeId": "upper_trunk_rotation_machine_with_chest_pad"
+    }
+  ],
+  "plate_loaded_machines": [
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "ab_coaster_machine",
+      "isActive": false,
+      "name": "Ab Coaster Machine",
+      "sleeves": 2,
+      "typeId": "ab_coaster_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "center_pendulum_reverse_hyperextension_machine",
+      "isActive": true,
+      "name": "Center Pendulum Reverse Hyperextension Machine",
+      "sleeves": 1,
+      "typeId": "center_pendulum_reverse_hyperextension_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "chest-supported_plate-loaded_row_machine",
+      "isActive": false,
+      "name": "Chest-Supported Plate-Loaded Row Machine",
+      "sleeves": 2,
+      "typeId": "chest-supported_plate-loaded_row_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "chest-supported_t-bar_row_machine",
+      "isActive": true,
+      "name": "Chest-Supported T-Bar Row Machine",
+      "sleeves": 1,
+      "typeId": "chest-supported_t-bar_row_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "hack_squat_machine",
+      "isActive": true,
+      "name": "Hack Squat Machine",
+      "sleeves": 2,
+      "typeId": "hack_squat_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "kneeling_plate-loaded_glute_kickback_machine",
+      "isActive": false,
+      "name": "Kneeling Plate-Loaded Glute Kickback Machine",
+      "sleeves": 1,
+      "typeId": "kneeling_plate-loaded_glute_kickback_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "lever-arm_belt_squat_machine",
+      "isActive": true,
+      "name": "Lever-Arm Belt Squat Machine",
+      "sleeves": 1,
+      "typeId": "lever-arm_belt_squat_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "lying_decline_press_machine",
+      "isActive": false,
+      "name": "Lying Decline Press Machine",
+      "sleeves": 2,
+      "typeId": "lying_decline_press_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "lying_plate-loaded_chest_press_machine",
+      "isActive": false,
+      "name": "Lying Plate-Loaded Chest Press Machine",
+      "sleeves": 2,
+      "typeId": "lying_plate-loaded_chest_press_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "lying_plate-loaded_leg_curl_machine",
+      "isActive": false,
+      "name": "Lying Plate-Loaded Leg Curl Machine",
+      "sleeves": 2,
+      "typeId": "lying_plate-loaded_leg_curl_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "pendulum_squat_machine",
+      "isActive": true,
+      "name": "Pendulum Squat Machine",
+      "sleeves": 2,
+      "typeId": "pendulum_squat_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_abdominal_crunch_machine_with_chest_pad",
+      "isActive": false,
+      "name": "Plate-Loaded Abdominal Crunch Machine (with Chest Pad)",
+      "sleeves": 2,
+      "typeId": "plate-loaded_abdominal_crunch_machine_with_chest_pad",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_assisted_pull-up_dip_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Assisted Pull-Up/Dip Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_assisted_pull-up_dip_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_back_extension_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Back Extension Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_back_extension_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_crunch_back_extension_combo_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Crunch/Back Extension Combo Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_crunch_back_extension_combo_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_donkey_calf_raise_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Donkey Calf Raise Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_donkey_calf_raise_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_dual_cable_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Dual Cable Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_dual_cable_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_hip_thrust_machine_starting_from_the_bottom",
+      "isActive": false,
+      "name": "Plate-Loaded Hip Thrust Machine (Starting From The Bottom)",
+      "sleeves": 2,
+      "typeId": "plate-loaded_hip_thrust_machine_starting_from_the_bottom",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_hip_thrust_machine_starting_from_the_top",
+      "isActive": true,
+      "name": "Plate-Loaded Hip Thrust Machine (Starting From The Top)",
+      "sleeves": 2,
+      "typeId": "plate-loaded_hip_thrust_machine_starting_from_the_top",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_leg_extension_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Leg Extension Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_leg_extension_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_leg_press_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Leg Press Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_leg_press_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_low_row_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Low Row Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_low_row_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_overhead_triceps_extension_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Overhead Triceps Extension Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_overhead_triceps_extension_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_preacher_curl_machine",
+      "isActive": true,
+      "name": "Plate-Loaded Preacher Curl Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_preacher_curl_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_preacher_curl_triceps_extension_combo_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Preacher Curl/Triceps Extension Combo Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_preacher_curl_triceps_extension_combo_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_pulldown_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Pulldown Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_pulldown_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_pullover_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Pullover Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_pullover_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_shoulder_press_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Shoulder Press Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_shoulder_press_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_single_cable_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Single Cable Machine",
+      "sleeves": 1,
+      "typeId": "plate-loaded_single_cable_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "plate-loaded_triceps_extension_machine",
+      "isActive": false,
+      "name": "Plate-Loaded Triceps Extension Machine",
+      "sleeves": 2,
+      "typeId": "plate-loaded_triceps_extension_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "pulley_belt_squat_machine",
+      "isActive": false,
+      "name": "Pulley Belt Squat Machine",
+      "sleeves": 1,
+      "typeId": "pulley_belt_squat_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "reclined_plate-loaded_incline_press_machine",
+      "isActive": false,
+      "name": "Reclined Plate-Loaded Incline Press Machine",
+      "sleeves": 2,
+      "typeId": "reclined_plate-loaded_incline_press_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_decline_press_machine",
+      "isActive": false,
+      "name": "Seated Decline Press Machine",
+      "sleeves": 2,
+      "typeId": "seated_decline_press_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_calf_raise_machine",
+      "isActive": true,
+      "name": "Seated Plate-Loaded Calf Raise Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_calf_raise_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_chest_press_machine",
+      "isActive": false,
+      "name": "Seated Plate-Loaded Chest Press Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_chest_press_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_dip_machine",
+      "isActive": false,
+      "name": "Seated Plate-Loaded Dip Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_dip_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_hip_abduction_machine",
+      "isActive": false,
+      "name": "Seated Plate-Loaded Hip Abduction Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_hip_abduction_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_hip_abduction_adduction_combo_machine",
+      "isActive": false,
+      "name": "Seated Plate-Loaded Hip Abduction/Adduction Combo Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_hip_abduction_adduction_combo_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_hip_adduction_machine",
+      "isActive": false,
+      "name": "Seated Plate-Loaded Hip Adduction Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_hip_adduction_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_incline_press_machine",
+      "isActive": false,
+      "name": "Seated Plate-Loaded Incline Press Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_incline_press_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_lateral_raise_machine",
+      "isActive": false,
+      "name": "Seated Plate-Loaded Lateral Raise Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_lateral_raise_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_leg_curl_machine",
+      "isActive": false,
+      "name": "Seated Plate-Loaded Leg Curl Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_leg_curl_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "seated_plate-loaded_shrug_machine",
+      "isActive": false,
+      "name": "Seated Plate-Loaded Shrug Machine",
+      "sleeves": 2,
+      "typeId": "seated_plate-loaded_shrug_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "side_plate-loaded_reverse_hyperextension_machine",
+      "isActive": true,
+      "name": "Side-Plate-Loaded Reverse Hyperextension Machine",
+      "sleeves": 1,
+      "typeId": "side_plate-loaded_reverse_hyperextension_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "sled",
+      "isActive": true,
+      "name": "Sled",
+      "sleeves": 1,
+      "typeId": "sled",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "smith_machine",
+      "isActive": false,
+      "name": "Smith Machine",
+      "sleeves": 2,
+      "typeId": "smith_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "standing_plate-loaded_calf_raise_machine",
+      "isActive": false,
+      "name": "Standing Plate-Loaded Calf Raise Machine",
+      "sleeves": 2,
+      "typeId": "standing_plate-loaded_calf_raise_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "standing_plate-loaded_chest_press_machine",
+      "isActive": false,
+      "name": "Standing Plate-Loaded Chest Press Machine",
+      "sleeves": 2,
+      "typeId": "standing_plate-loaded_chest_press_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "standing_plate-loaded_finger_curl_machine",
+      "isActive": false,
+      "name": "Standing Plate-Loaded Finger Curl Machine",
+      "sleeves": 2,
+      "typeId": "standing_plate-loaded_finger_curl_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "standing_plate-loaded_glute_kickback_machine",
+      "isActive": false,
+      "name": "Standing Plate-Loaded Glute Kickback Machine",
+      "sleeves": 1,
+      "typeId": "standing_plate-loaded_glute_kickback_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "standing_plate-loaded_lateral_raise_machine",
+      "isActive": false,
+      "name": "Standing Plate-Loaded Lateral Raise Machine",
+      "sleeves": 2,
+      "typeId": "standing_plate-loaded_lateral_raise_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "standing_plate-loaded_leg_curl_machine",
+      "isActive": false,
+      "name": "Standing Plate-Loaded Leg Curl Machine",
+      "sleeves": 2,
+      "typeId": "standing_plate-loaded_leg_curl_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "standing_plate-loaded_shrug_machine",
+      "isActive": false,
+      "name": "Standing Plate-Loaded Shrug Machine",
+      "sleeves": 2,
+      "typeId": "standing_plate-loaded_shrug_machine",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "standing_t-bar_row_machine_without_chest_support",
+      "isActive": false,
+      "name": "Standing T-bar Row Machine (Without Chest Support)",
+      "sleeves": 1,
+      "typeId": "standing_t-bar_row_machine_without_chest_support",
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 2.5,
+      "excludesBaseFromLoad": true,
+      "id": "v-squat_machine",
+      "isActive": false,
+      "name": "V-Squat Machine",
+      "sleeves": 2,
+      "typeId": "v-squat_machine",
+      "unit": "kilograms"
+    }
+  ],
+  "support_equipment": [
+    {
+      "id": "adjustable_bench",
+      "isActive": true,
+      "name": "Adjustable Bench",
+      "typeId": "adjustable_bench"
+    },
+    {
+      "id": "captains_chair",
+      "isActive": true,
+      "name": "Captain's Chair",
+      "typeId": "captains_chair"
+    },
+    {
+      "id": "decline_bench",
+      "isActive": true,
+      "name": "Decline Bench",
+      "typeId": "decline_bench"
+    },
+    {
+      "id": "decline_bench_press_station",
+      "isActive": false,
+      "name": "Decline Bench Press Station",
+      "typeId": "decline_bench_press_station"
+    },
+    {
+      "id": "flat_bench",
+      "isActive": true,
+      "name": "Flat Bench",
+      "typeId": "flat_bench"
+    },
+    {
+      "id": "flat_bench_press_station",
+      "isActive": true,
+      "name": "Flat Bench Press Station",
+      "typeId": "flat_bench_press_station"
+    },
+    {
+      "id": "glute_ham_developer",
+      "isActive": true,
+      "name": "Glute Ham Developer",
+      "typeId": "glute_ham_developer"
+    },
+    {
+      "id": "hip_thrust_bench",
+      "isActive": false,
+      "name": "Hip Thrust Bench",
+      "typeId": "hip_thrust_bench"
+    },
+    {
+      "id": "incline_bench_press_station",
+      "isActive": true,
+      "name": "Incline Bench Press Station",
+      "typeId": "incline_bench_press_station"
+    },
+    {
+      "id": "multi-grip_pull-up_bar",
+      "isActive": true,
+      "name": "Multi-Grip Pull-Up Bar",
+      "typeId": "multi-grip_pull-up_bar"
+    },
+    {
+      "id": "nordic_hamstring_curl_bench",
+      "isActive": false,
+      "name": "Nordic Hamstring Curl Bench",
+      "typeId": "nordic_hamstring_curl_bench"
+    },
+    {
+      "id": "parallel_bars",
+      "isActive": true,
+      "name": "Parallel Bars",
+      "typeId": "parallel_bars"
+    },
+    {
+      "id": "power_rack",
+      "isActive": true,
+      "name": "Power Rack",
+      "typeId": "power_rack"
+    },
+    {
+      "id": "preacher_curl_bench",
+      "isActive": true,
+      "name": "Preacher Curl Bench",
+      "typeId": "preacher_curl_bench"
+    },
+    {
+      "id": "roman_chair",
+      "isActive": false,
+      "name": "Roman Chair",
+      "typeId": "roman_chair"
+    },
+    {
+      "id": "seal_row_bench",
+      "isActive": false,
+      "name": "Seal Row Bench",
+      "typeId": "seal_row_bench"
+    },
+    {
+      "id": "seated_bench",
+      "isActive": true,
+      "name": "Seated Bench",
+      "typeId": "seated_bench"
+    },
+    {
+      "id": "seated_overhead_press_station",
+      "isActive": false,
+      "name": "Seated Overhead Press Station",
+      "typeId": "seated_overhead_press_station"
+    },
+    {
+      "id": "squat_stand",
+      "isActive": false,
+      "name": "Squat Stand",
+      "typeId": "squat_stand"
+    }
+  ]
+}

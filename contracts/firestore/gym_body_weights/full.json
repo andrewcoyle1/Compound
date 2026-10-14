@@ -1,0 +1,17 @@
+{
+  "description": "Adjustable in small steps",
+  "id": "body_weights_contract_full",
+  "imageName": "weight_vest_icon",
+  "isActive": true,
+  "name": "Loaded Vest",
+  "range": [
+    {
+      "availableWeights": 2.5,
+      "id": "body_weights_contract_full_1",
+      "isActive": true,
+      "plateColour": "#34C759",
+      "unit": "kilograms"
+    }
+  ],
+  "typeId": "weight_vest"
+}

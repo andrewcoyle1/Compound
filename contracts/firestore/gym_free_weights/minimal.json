@@ -1,0 +1,11 @@
+{
+  "id": "free_weights_contract_minimal",
+  "isActive": false,
+  "isPlates": false,
+  "name": "Kettlebells",
+  "needsColour": false,
+  "range": [
+
+  ],
+  "typeId": "free_weights_contract_minimal"
+}

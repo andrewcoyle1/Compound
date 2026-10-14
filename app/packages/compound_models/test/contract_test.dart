@@ -75,6 +75,24 @@ final _models =
         roundTrip: (data) => FoodLogSettings.fromFirestore(data).toFirestore(),
         keys: FoodLogSettingsKeys.all,
       ),
+      'body_measurement': (
+        roundTrip: (data) =>
+            BodyMeasurementEntry.fromFirestore(data).toFirestore(),
+        keys: BodyMeasurementEntryKeys.all,
+      ),
+      'steps': (
+        roundTrip: (data) => StepsModel.fromFirestore(data).toFirestore(),
+        keys: StepsModelKeys.all,
+      ),
+      'analytics_settings': (
+        roundTrip: (data) =>
+            AnalyticsSettings.fromFirestore(data).toFirestore(),
+        keys: AnalyticsSettingsKeys.all,
+      ),
+      'weight_goal': (
+        roundTrip: (data) => WeightGoal.fromFirestore(data).toFirestore(),
+        keys: WeightGoalKeys.all,
+      ),
     };
 
 final _root = Directory('../../../contracts/firestore');
@@ -182,6 +200,10 @@ void main() {
         'MealItemSourceType': raw(MealItemSourceType.values),
         'NutrientKey': raw(NutrientKey.values),
         'TimestampSide': raw(TimestampSide.values),
+        'WeightSource': raw(WeightSource.values),
+        'StepsSource': raw(StepsSource.values),
+        'GoalStatus': raw(GoalStatus.values),
+        'OverarchingObjective': raw(OverarchingObjective.values),
       }),
     );
   });

@@ -46,6 +46,12 @@
     "female",
     "prefer_not_to_say"
   ],
+  "GoalStatus": [
+    "active",
+    "completed",
+    "abandoned",
+    "paused"
+  ],
   "LengthUnitPreference": [
     "centimeters",
     "inches"
@@ -116,6 +122,11 @@
     "alcohol",
     "water"
   ],
+  "OverarchingObjective": [
+    "loseWeight",
+    "maintain",
+    "gainWeight"
+  ],
   "SetKind": [
     "standard",
     "drop",
@@ -144,6 +155,11 @@
     "stretch",
     "hold"
   ],
+  "StepsSource": [
+    "manual",
+    "healthkit",
+    "imported"
+  ],
   "TimestampSide": [
     "left",
     "right"
@@ -153,6 +169,11 @@
     "repsOnly",
     "timeOnly",
     "distanceTime"
+  ],
+  "WeightSource": [
+    "manual",
+    "healthkit",
+    "imported"
   ],
   "WeightUnitPreference": [
     "kilograms",

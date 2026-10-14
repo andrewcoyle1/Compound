@@ -145,5 +145,209 @@
     "unitMiles": "Miles",
     "@unitMiles": {
         "description": "Distance unit name"
+    },
+    "trainingLibraryHeader": "Library",
+    "@trainingLibraryHeader": {
+        "description": "Training tab section header: what the user has built or done"
+    },
+    "workoutHistoryTitle": "Workout History",
+    "@workoutHistoryTitle": {
+        "description": "Title of the workout history screen, and the Training tab row that opens it"
+    },
+    "workoutHistoryEmptyTitle": "No Workout History",
+    "@workoutHistoryEmptyTitle": {
+        "description": "Workout history empty state title"
+    },
+    "workoutHistoryEmptyMessage": "Complete your first workout to see it here.",
+    "@workoutHistoryEmptyMessage": {
+        "description": "Workout history empty state message"
+    },
+    "workoutHistoryCompletedHeader": "Completed Workouts",
+    "@workoutHistoryCompletedHeader": {
+        "description": "Workout history section header, beside the number of workouts"
+    },
+    "workoutHistoryLoadFailure": "Your workouts couldn't be loaded.",
+    "@workoutHistoryLoadFailure": {
+        "description": "Shown when the workout history can't be read"
+    },
+    "tryAgainButton": "Try Again",
+    "@tryAgainButton": {
+        "description": "Button that retries a failed load"
+    },
+    "errorLabel": "Error",
+    "@errorLabel": {
+        "description": "Accessibility label of an error message's icon"
+    },
+    "statExercises": "Exercises",
+    "@statExercises": {
+        "description": "Stat label: number of exercises in a workout"
+    },
+    "statSets": "Sets",
+    "@statSets": {
+        "description": "Stat label: number of sets in a workout"
+    },
+    "statVolume": "Volume",
+    "@statVolume": {
+        "description": "Stat label: weight lifted in a workout"
+    },
+    "statDuration": "Duration",
+    "@statDuration": {
+        "description": "Stat label: how long a workout took"
+    },
+    "setCount": "{count, plural, =1{1 set} other{{count} sets}}",
+    "@setCount": {
+        "description": "A number of sets",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "repCount": "{count, plural, =1{1 rep} other{{count} reps}}",
+    "@repCount": {
+        "description": "A number of repetitions",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "highlightPersonalRecord": "PR: {exercise} {detail}",
+    "@highlightPersonalRecord": {
+        "description": "Workout highlight: a personal record, e.g. 'PR: Bench Press 100 kg × 5'",
+        "placeholders": {
+            "exercise": {
+                "type": "String"
+            },
+            "detail": {
+                "type": "String"
+            }
+        }
+    },
+    "highlightStreak": "{weeks, plural, =1{1-week streak} other{{weeks}-week streak}}",
+    "@highlightStreak": {
+        "description": "Workout highlight: the weekly streak when the workout was finished",
+        "placeholders": {
+            "weeks": {
+                "type": "int"
+            }
+        }
+    },
+    "highlightWeeklyWorkout": "{number}{ordinal, select, one{st} two{nd} few{rd} other{th}} workout of the week",
+    "@highlightWeeklyWorkout": {
+        "description": "Workout highlight: where the workout falls in its week, e.g. '3rd workout of the week'. 'ordinal' is the English ordinal category of the number",
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "ordinal": {
+                "type": "String"
+            }
+        }
+    },
+    "workoutSessionNotFound": "This workout couldn't be found.",
+    "@workoutSessionNotFound": {
+        "description": "Shown when a workout no longer exists"
+    },
+    "workoutSessionLoadFailure": "This workout couldn't be loaded.",
+    "@workoutSessionLoadFailure": {
+        "description": "Shown when a workout can't be read"
+    },
+    "workoutDetailsHeader": "Workout Details",
+    "@workoutDetailsHeader": {
+        "description": "Session detail section header: start time, duration, volume and notes"
+    },
+    "workoutStartTime": "Start Time",
+    "@workoutStartTime": {
+        "description": "Session detail row: when the workout started"
+    },
+    "workoutNotes": "Notes",
+    "@workoutNotes": {
+        "description": "Session detail row: the workout's notes"
+    },
+    "exerciseDetailsHeader": "Exercise Details",
+    "@exerciseDetailsHeader": {
+        "description": "Session detail section header above the exercises"
+    },
+    "exerciseSummary": "{sets} · {volume} volume",
+    "@exerciseSummary": {
+        "description": "Under an exercise in a workout: its sets and volume, e.g. '3 sets · 1,920 kg volume'",
+        "placeholders": {
+            "sets": {
+                "type": "String"
+            },
+            "volume": {
+                "type": "String"
+            }
+        }
+    },
+    "setLabel": "Set {number}{side}",
+    "@setLabel": {
+        "description": "A set's label; side is L or R for one side of a pair, else empty",
+        "placeholders": {
+            "number": {
+                "type": "String"
+            },
+            "side": {
+                "type": "String"
+            }
+        }
+    },
+    "setRpe": "RPE {value}",
+    "@setRpe": {
+        "description": "A set's rating of perceived exertion",
+        "placeholders": {
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "setDistanceInDuration": "{distance} in {duration}",
+    "@setDistanceInDuration": {
+        "description": "A distance set, e.g. '2 km in 7:45'",
+        "placeholders": {
+            "distance": {
+                "type": "String"
+            },
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "setWarmup": "Warm-up",
+    "@setWarmup": {
+        "description": "Marker on a warm-up set"
+    },
+    "setKindDrop": "Drop set",
+    "@setKindDrop": {
+        "description": "How a set was performed: Drop set"
+    },
+    "setKindAmrap": "AMRAP",
+    "@setKindAmrap": {
+        "description": "How a set was performed: AMRAP"
+    },
+    "setKindMyo": "Myo-reps",
+    "@setKindMyo": {
+        "description": "How a set was performed: Myo-reps"
+    },
+    "setKindRestPause": "Rest-pause",
+    "@setKindRestPause": {
+        "description": "How a set was performed: Rest-pause"
+    },
+    "setKindCluster": "Cluster",
+    "@setKindCluster": {
+        "description": "How a set was performed: Cluster"
+    },
+    "setKindPartials": "Partials",
+    "@setKindPartials": {
+        "description": "How a set was performed: Partials"
+    },
+    "setKindStretch": "Stretch",
+    "@setKindStretch": {
+        "description": "How a set was performed: Stretch"
+    },
+    "setKindHold": "Hold",
+    "@setKindHold": {
+        "description": "How a set was performed: Hold"
     }
 }

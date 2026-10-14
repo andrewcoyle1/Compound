@@ -4,8 +4,10 @@ import 'package:compound/app/app.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:compound/workout_history/workout_history.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:user_repository/user_repository.dart';
+import 'package:workout_session_repository/workout_session_repository.dart';
 
 void main() {
   final now = DateTime(2026, 10, 14, 12);
@@ -14,12 +16,19 @@ void main() {
     settings: {sampleUserId: sampleUserSettings(now: now)},
   );
 
+  WorkoutSessionRepository seededSessions() => InMemoryWorkoutSessionRepository(
+    sessions: sampleWorkoutSessions(uid: sampleUserId, now: now),
+  );
+
   group(App, () {
     testWidgets('signs in, then out, through the router', (tester) async {
       await tester.pumpWidget(
         App(
           authRepository: InMemoryAuthRepository(),
           userRepository: InMemoryUserRepository(),
+          workoutSessionRepository: InMemoryWorkoutSessionRepository(
+            sessions: const [],
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -47,6 +56,7 @@ void main() {
             user: InMemoryAuthRepository.sampleUser,
           ),
           userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
         ),
       );
       await tester.pumpAndSettle();
@@ -72,6 +82,7 @@ void main() {
             user: InMemoryAuthRepository.sampleUser,
           ),
           userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
         ),
       );
       await tester.pumpAndSettle();
@@ -96,6 +107,42 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Social'), findsOneWidget);
+    });
+
+    testWidgets('opens the workout history and a workout from Training', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        App(
+          authRepository: InMemoryAuthRepository(
+            user: InMemoryAuthRepository.sampleUser,
+          ),
+          userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('Training'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Workout History'));
+      await tester.pumpAndSettle();
+      expect(find.byType(WorkoutHistoryView), findsOneWidget);
+
+      // Newest first: yesterday's Push B.
+      await tester.tap(find.text('Push B'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Push B'), findsOneWidget);
+      expect(find.text('Dumbbell Seated Shoulder Press'), findsOneWidget);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(WorkoutHistoryView), findsOneWidget);
     });
   });
 }

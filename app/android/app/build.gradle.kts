@@ -96,6 +96,13 @@ flutter {
     source = "../.."
 }
 
+// Only the development flavor has a google-services.json (it is gitignored; production is not
+// configured yet and staging runs without Firebase), so a missing file must not fail the build.
+googleServices {
+    missingGoogleServicesStrategy =
+        com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy.WARN
+}
+
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.20")
 }

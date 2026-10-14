@@ -10,18 +10,25 @@ environment:
 dependencies:
   app_ui:
     path: packages/app_ui
+  auth_repository:
+    path: packages/auth_repository
   bloc: ^9.2.1
   compound_models:
     path: packages/compound_models
+  equatable: ^3.0.0
+  firebase_app_check: ^0.4.8
+  firebase_auth: ^6.7.0
+  firebase_core: ^4.15.0
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
   flutter_localizations:
     sdk: flutter
+  go_router: ^18.1.0
+  google_sign_in: ^7.2.0
   intl: ^0.20.2
   material_ui: ^1.1.1
 
-  firebase_core: any
 dev_dependencies:
   bloc_lint: ^0.4.2
   bloc_test: ^10.0.0

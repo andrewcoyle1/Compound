@@ -20,14 +20,16 @@ class AppBlocObserver extends BlocObserver {
   }
 }
 
+/// Runs the app. [builder] does the flavor's own setup (Firebase or not)
+/// and returns the root widget.
 Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   FlutterError.onError = (details) {
     log(details.exceptionAsString(), stackTrace: details.stack);
   };
 
   Bloc.observer = const AppBlocObserver();
-
-  // Add cross-flavor configuration here
 
   runApp(await builder());
 }

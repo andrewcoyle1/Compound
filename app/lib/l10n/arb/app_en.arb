@@ -1,7 +1,53 @@
 {
     "@@locale": "en",
-    "counterAppBarTitle": "Counter",
-    "@counterAppBarTitle": {
-        "description": "Text shown in the AppBar of the Counter Page"
+    "signInTitle": "Welcome to Compound.",
+    "@signInTitle": {
+        "description": "Heading on the sign-in screen"
+    },
+    "signInWithAppleButton": "Continue with Apple",
+    "@signInWithAppleButton": {
+        "description": "Button that signs in with an Apple account (iOS only)"
+    },
+    "signInWithGoogleButton": "Continue with Google",
+    "@signInWithGoogleButton": {
+        "description": "Button that signs in with a Google account"
+    },
+    "signInAnonymouslyButton": "Continue without an account",
+    "@signInAnonymouslyButton": {
+        "description": "Button that signs in with an anonymous account, which can be linked to Apple or Google later"
+    },
+    "signInFailure": "Something went wrong. Please try again.",
+    "@signInFailure": {
+        "description": "Snack bar shown when signing in fails"
+    },
+    "homeTitle": "Compound",
+    "@homeTitle": {
+        "description": "Title of the placeholder home screen"
+    },
+    "homeUserId": "User ID: {uid}",
+    "@homeUserId": {
+        "description": "The signed-in account's Firebase user id",
+        "placeholders": {
+            "uid": {
+                "type": "String"
+            }
+        }
+    },
+    "homeEmail": "Email: {email}",
+    "@homeEmail": {
+        "description": "The signed-in account's email address",
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "homeAnonymous": "Signed in without an account",
+    "@homeAnonymous": {
+        "description": "Shown instead of an email for an anonymous account"
+    },
+    "signOutButton": "Sign Out",
+    "@signOutButton": {
+        "description": "Button that signs out"
     }
 }

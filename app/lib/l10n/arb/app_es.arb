@@ -1,7 +1,13 @@
 {
     "@@locale": "es",
-    "counterAppBarTitle": "Contador",
-    "@counterAppBarTitle": {
-        "description": "Texto mostrado en la AppBar de la página del contador"
-    }
+    "signInTitle": "Te damos la bienvenida a Compound.",
+    "signInWithAppleButton": "Continuar con Apple",
+    "signInWithGoogleButton": "Continuar con Google",
+    "signInAnonymouslyButton": "Continuar sin cuenta",
+    "signInFailure": "Algo salió mal. Inténtalo de nuevo.",
+    "homeTitle": "Compound",
+    "homeUserId": "ID de usuario: {uid}",
+    "homeEmail": "Correo electrónico: {email}",
+    "homeAnonymous": "Sesión iniciada sin cuenta",
+    "signOutButton": "Cerrar sesión"
 }

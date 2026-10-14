@@ -1,10 +1,14 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/progress/progress.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -32,6 +36,7 @@ void main() {
             sessions: const [],
           ),
           nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
         ),
       );
       await tester.pumpAndSettle();
@@ -61,6 +66,7 @@ void main() {
           userRepository: seededUsers(),
           workoutSessionRepository: seededSessions(),
           nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
         ),
       );
       await tester.pumpAndSettle();
@@ -88,6 +94,7 @@ void main() {
           userRepository: seededUsers(),
           workoutSessionRepository: seededSessions(),
           nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
         ),
       );
       await tester.pumpAndSettle();
@@ -101,10 +108,15 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.widgetWithText(AppBar, title), findsOneWidget);
-        // Nutrition is ported; the others are still placeholders.
+        // Nutrition and Progress are ported; the others are still
+        // placeholders.
         expect(
           find.byType(NutritionView),
           title == 'Nutrition' ? findsOneWidget : findsNothing,
+        );
+        expect(
+          find.byType(ProgressPage),
+          title == 'Progress' ? findsOneWidget : findsNothing,
         );
       }
 
@@ -130,6 +142,7 @@ void main() {
           userRepository: seededUsers(),
           workoutSessionRepository: seededSessions(),
           nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
         ),
       );
       await tester.pumpAndSettle();
@@ -154,6 +167,57 @@ void main() {
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(find.byType(WorkoutHistoryView), findsOneWidget);
+    });
+
+    testWidgets('opens Weight Trend and its recorded data from Progress', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        App(
+          authRepository: InMemoryAuthRepository(
+            user: InMemoryAuthRepository.sampleUser,
+          ),
+          userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(
+            measurements: sampleBodyMeasurements(uid: sampleUserId, now: now),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('Progress'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Weight Trend'));
+      await tester.pumpAndSettle();
+      expect(find.byType(WeightMetricView), findsOneWidget);
+      expect(find.widgetWithText(AppBar, 'Weight Trend'), findsOneWidget);
+
+      await tester.scrollUntilVisible(
+        find.text('Show All Data'),
+        100,
+        scrollable: find
+            .descendant(
+              of: find.byType(MetricDetailView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.ensureVisible(find.text('Show All Data'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Show All Data'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'All Recorded Data'), findsOneWidget);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Weight Trend'), findsOneWidget);
     });
   });
 }

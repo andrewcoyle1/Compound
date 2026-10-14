@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:body_repository/body_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
@@ -66,6 +67,9 @@ Future<void> main() async {
         firestore: FirebaseFirestore.instance,
       ),
       nutritionRepository: FirestoreNutritionRepository(
+        firestore: FirebaseFirestore.instance,
+      ),
+      bodyRepository: FirestoreBodyRepository(
         firestore: FirebaseFirestore.instance,
       ),
     );

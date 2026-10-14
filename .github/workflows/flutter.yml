@@ -73,3 +73,12 @@ jobs:
       min_coverage: 100
       # No blocs in a repository.
       run_bloc_lint: false
+  strings:
+    name: Spanish strings
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      # Every English message needs its Spanish (the Swift app's 100% rule, carried over).
+      - run: python3 scripts/arb-spanish.py --self-test
+      - run: python3 scripts/arb-spanish.py --check

@@ -383,21 +383,9 @@ struct SwapExercisePickerPresenterTests {
 @MainActor
 struct ExerciseTrackerPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, ExerciseTrackerInteractor {
-        var allExercises: [ExerciseModel] = []
-        var notes: [String: String] = [:]
+    private typealias Interactor = ExerciseTrackerInteractorDouble
 
-        func exerciseNote(for exerciseId: String) -> String? {
-            notes[exerciseId]
-        }
-
-        func setExerciseNote(_ note: String?, for exerciseId: String) async throws { }
-    }
-
-    private final class Router: ExerciseTrackerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        func showWorkoutNotesView(delegate: WorkoutNotesDelegate) { }
-    }
+    private typealias Router = ExerciseTrackerRouterDouble
 
     private func exercise(templateId: String = "template-1") -> WorkoutExerciseModel {
         WorkoutExerciseModel(

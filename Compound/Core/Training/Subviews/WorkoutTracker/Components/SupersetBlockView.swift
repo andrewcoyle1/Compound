@@ -9,7 +9,7 @@
 //  one Add Round. The log button walks the same rounds, so the card stays put while the block
 //  has sets left and only the next row to log changes.
 //
-//  Each piece is one member's own set table drawing just that piece (`SetTrackerPiece`), so a
+//  Each piece is one member's own set table drawing just that piece (`ExerciseTrackerPiece`), so a
 //  row keeps its exercise's binding, menus, last-time figures and rest line.
 //
 
@@ -40,7 +40,7 @@ struct SupersetBlockView<Piece: View>: View {
 
     let card: SupersetCard
     /// One member's piece of the table.
-    @ViewBuilder let piece: (_ exerciseId: String, _ piece: SetTrackerPiece) -> Piece
+    @ViewBuilder let piece: (_ exerciseId: String, _ piece: ExerciseTrackerPiece) -> Piece
 
     /// The folded warm-ups the rest before goes under: the last, as on a single exercise's card.
     private var restAnchorRowId: String? {
@@ -127,11 +127,7 @@ struct SupersetBlockView<Piece: View>: View {
                 piece(member.id, .actions)
             }
         } label: {
-            // A real 44 pt frame, as the exercise card's menu has (`SetTrackerView.actionsMenu`).
-            Image(systemName: Symbol.more)
-                .imageScale(.large)
-                .frame(width: ControlSize.row, height: ControlSize.row)
-                .contentShape(.rect)
+            MoreMenuLabel()
         }
         .buttonStyle(.borderless)
         .accessibilityLabel("Superset options")
@@ -155,9 +151,7 @@ struct SupersetBlockView<Piece: View>: View {
     private var restBeforeRow: some View {
         if let restBefore = card.restBefore {
             InlineRestTimerRow(timer: restBefore)
-                .listRowSeparator(.hidden)
-                .listRowInsets(.vertical, 0)
-                .listRowInsets(.leading, 0)
+                .setTableRow()
         }
     }
 
@@ -220,7 +214,7 @@ private struct SupersetBlockPreview: View {
                             card: ExerciseCard(
                                 restTimer: restTimer(for: members[index]),
                                 piece: piece,
-                                memberLetter: ActiveWorkout.memberLabel(letter: "B", index: index)
+                                memberLabel: ActiveWorkout.memberLabel(letter: "B", index: index)
                             )
                         ))
                     }

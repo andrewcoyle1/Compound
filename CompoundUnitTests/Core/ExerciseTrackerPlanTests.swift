@@ -14,16 +14,9 @@ import Foundation
 @MainActor
 struct ExerciseTrackerPlanTests {
 
-    private final class Interactor: SpyGlobalInteractor, ExerciseTrackerInteractor {
-        var allExercises: [ExerciseModel] = []
-        func exerciseNote(for exerciseId: String) -> String? { nil }
-        func setExerciseNote(_ note: String?, for exerciseId: String) async throws { }
-    }
+    private typealias Interactor = ExerciseTrackerInteractorDouble
 
-    private final class Router: ExerciseTrackerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        func showWorkoutNotesView(delegate: WorkoutNotesDelegate) { }
-    }
+    private typealias Router = ExerciseTrackerRouterDouble
 
     private var presenter: ExerciseTrackerPresenter {
         ExerciseTrackerPresenter(interactor: Interactor(), router: Router())

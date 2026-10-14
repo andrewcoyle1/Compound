@@ -21,23 +21,7 @@ struct SetSideTrackingTests {
 
     // MARK: - Doubles
 
-    private final class ListInteractor: SpyGlobalInteractor, SetTrackerInteractor {
-        var userId: String? = "user-1"
-        var currentUser: UserModel? = UserModel(userId: "user-1")
-        var systemExercises: [ExerciseModel] = []
-        var userExercises: [ExerciseModel] = []
-        var allExercises: [ExerciseModel] = []
-        var favouriteGymProfile: GymProfileModel?
-        var workoutGymProfile: GymProfileModel?
-        var workoutSettings: WorkoutSettings = WorkoutSettings(authorId: "user-1")
-
-        func getPreference(templateId: String) -> ExerciseUnitPreference {
-            ExerciseUnitPreference(exerciseModelId: templateId)
-        }
-
-        func setWeightUnit(_ unit: ExerciseWeightUnit, for templateId: String) { }
-        func setDistanceUnit(_ unit: ExerciseDistanceUnit, for templateId: String) { }
-    }
+    private typealias ListInteractor = ExerciseTrackerInteractorDouble
 
     private final class RowInteractor: SpyGlobalInteractor, SetTrackerRowInteractor {
         var workoutSettings: WorkoutSettings = WorkoutSettings(authorId: "user-1")
@@ -54,16 +38,7 @@ struct SetSideTrackingTests {
         }
     }
 
-    /// The alerts this screen raises go through `GlobalRouter` extensions, which dispatch
-    /// statically and never reach a double — so nothing here records them.
-    private final class ListRouter: SetTrackerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-
-        func showWorkoutExerciseEquipmentSheetView(delegate: WorkoutExerciseEquipmentSheetDelegate) { }
-        func showExerciseSettingsView(delegate: ExerciseSettingsDelegate) { }
-        func showSetTargetView(delegate: SetTargetDelegate) { }
-        func showSwapExercisePickerView(alternativeIds: [String], onSelect: @escaping (ExerciseModel) -> Void) { }
-    }
+    private typealias ListRouter = ExerciseTrackerRouterDouble
 
     private final class RowRouter: SetTrackerRowRouter {
         let router: AnyRouter = TestRouting.anyRouter
@@ -94,9 +69,9 @@ struct SetSideTrackingTests {
         }
     }
 
-    private func makeListPresenter() -> (SetTrackerPresenter, ListInteractor) {
+    private func makeListPresenter() -> (ExerciseTrackerPresenter, ListInteractor) {
         let interactor = ListInteractor()
-        return (SetTrackerPresenter(interactor: interactor, router: ListRouter()), interactor)
+        return (ExerciseTrackerPresenter(interactor: interactor, router: ListRouter()), interactor)
     }
 
     private func makeRowPresenter() -> (SetTrackerRowPresenter, RowInteractor) {

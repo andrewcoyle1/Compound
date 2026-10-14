@@ -41,7 +41,7 @@ extension WorkoutTrackerView {
             let index = members.firstIndex { $0.id == exerciseId } ?? 0
             var delegate = delegate(for: binding(for: members[index]))
             delegate.card?.piece = piece
-            delegate.card?.memberLetter = ActiveWorkout.memberLabel(letter: card.letter, index: index)
+            delegate.card?.memberLabel = ActiveWorkout.memberLabel(letter: card.letter, index: index)
             return exerciseTrackerView(delegate)
         }
     }

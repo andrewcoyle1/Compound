@@ -99,7 +99,7 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Core/Profile` | 185 | 12,592 | Settings (behind the profile's gear) and every settings screen (training, nutrition, general, edit profile, legal) |
 | `Compound/Core/Sharing` | 8 | 526 | Share-to-follower and shared-item viewer |
 | `Compound/Core/TabBar` | 5 | 518 | Tab bar, DeepLink parsing, tab selection |
-| `Compound/Core/Training` | 266 | 27,211 | Training tab: workouts, tracker, programs, history, create flows |
+| `Compound/Core/Training` | 266 | 27,112 | Training tab: workouts, tracker, programs, history, create flows |
 | `Compound/Components` | 80 | 8,278 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
 | `Compound/Managers` | 305 | 38,610 | App-owned managers, models and services (see Managers table) |
 | `Compound/Root` | 22 | 3,710 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
@@ -108,7 +108,7 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/SupportingFiles` | 318 | 10,255 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 781 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 263 | 2,614 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 364 | 107,549 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUnitTests` | 365 | 107,513 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 9 | 1,149 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
 | `functions` | 20 | 27,997 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
@@ -118,7 +118,7 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 ## Screens and VIPER components
 
 Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift`. *Routes to* is what the module's router protocol can open; *Delegate / entry* is the input struct and the `showXView` defined at the bottom of its View file; *Extra files* are presenter splits and helper views.
-199 presenter-backed modules.
+198 presenter-backed modules.
 
 ### `Compound/Components` (3 modules)
 
@@ -343,19 +343,18 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **Today** | [Compound/Core/Today](Compound/Core/Today) | 1211 | AddMeal, CheckIn, Integrations, LogWeight, MesocycleLibrary, ProfileViewZoom, ScaleWeight, Steps, WeeklyReview, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker | TodayDelegate | TodayChecklist.swift, TodayPresenter+Checklist.swift | TodayPresenterTests.swift |
 | **WeeklyReview** | [WeeklyReview](Compound/Core/Today/WeeklyReview) | 628 |  | `showWeeklyReviewView` | WeeklyReview.swift, WeeklyReviewShareCardView.swift |  |
 
-### `Compound/Core/Training` (51 modules)
+### `Compound/Core/Training` (50 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
 | **Training** | [Compound/Core/Training](Compound/Core/Training) | 649 | CreateExercise, CreateMesocycle, CreateWorkout, EditMesocycle, ExerciseDetail, Exercises, MacrocycleDetail, Macrocycles, MesocycleLibrary, ProfileViewZoom, WorkoutHistory, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker, Workouts | TrainingDelegate |  | TrainingHomePresenterTests.swift, TrainingLibraryPresenterTests.swift, TrainingSettingsPresenterTests.swift |
 | **ExerciseListBuilder** | [Components/ExerciseListBuilder](Compound/Core/Training/Components/ExerciseListBuilder) | 673 | CreateExercise | ExerciseListBuilderDelegate, `showExerciseListBuilderView` | ExerciseFilters.swift |  |
-| **ExerciseTracker** | [Components/ExerciseTracker](Compound/Core/Training/Components/ExerciseTracker) | 569 | WorkoutNotes | ExerciseTrackerDelegate |  |  |
-| **SetTracker** | [Components/ExerciseTracker/SetTracker](Compound/Core/Training/Components/ExerciseTracker/SetTracker) | 1130 | ExerciseSettings, SetTarget, SwapExercisePicker, WorkoutExerciseEquipmentSheet | SetTrackerDelegate | SetTrackerDelegate.swift, SetTrackerView+Actions.swift, View+SetColumn.swift | SetTrackerPresenterTests.swift |
-| **SetTrackerRow** | [Components/ExerciseTracker/SetTracker/SetTrackerRow](Compound/Core/Training/Components/ExerciseTracker/SetTracker/SetTrackerRow) | 1237 | PlateCalculator, RestModal | SetTrackerRowDelegate | SetCompletionState.swift, SetStopwatch.swift, SetTrackerRowView+PreviousColumn.swift, SetTrackerRowView+SetType.swift |  |
-| **PlateCalculator** | [Components/ExerciseTracker/SetTracker/SetTrackerRow/PlateCalculator](Compound/Core/Training/Components/ExerciseTracker/SetTracker/SetTrackerRow/PlateCalculator) | 423 |  | PlateCalculatorDelegate, `showPlateCalculatorView` | PlateLoadingView.swift |  |
-| **SetKeyboard** | [Components/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard](Compound/Core/Training/Components/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard) | 1025 |  | `shownLoad` | SetKeyboardTextField.swift | SetKeyboardPresenterTests.swift |
-| **SwapExercisePicker** | [Components/ExerciseTracker/SetTracker/SwapExercisePicker](Compound/Core/Training/Components/ExerciseTracker/SetTracker/SwapExercisePicker) | 199 |  | `showSwapExercisePickerView` |  |  |
-| **WorkoutExerciseEquipmentSheet** | [Components/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet](Compound/Core/Training/Components/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet) | 360 | GymProfile | WorkoutExerciseEquipmentSheetDelegate, `showWorkoutExerciseEquipmentSheetView` |  |  |
+| **ExerciseTracker** | [Components/ExerciseTracker](Compound/Core/Training/Components/ExerciseTracker) | 1600 | ExerciseSettings, SetTarget, SwapExercisePicker, WorkoutExerciseEquipmentSheet, WorkoutNotes | ExerciseTrackerDelegate | ExerciseTrackerDelegate.swift, ExerciseTrackerPresenter+Notes.swift, ExerciseTrackerView+Actions.swift, ExerciseTrackerView+Card.swift, ExerciseTrackerView+Columns.swift, ExerciseTrackerView+Notes.swift, View+SetColumn.swift |  |
+| **SetTrackerRow** | [Components/ExerciseTracker/SetTrackerRow](Compound/Core/Training/Components/ExerciseTracker/SetTrackerRow) | 1237 | PlateCalculator, RestModal | SetTrackerRowDelegate | SetCompletionState.swift, SetStopwatch.swift, SetTrackerRowView+PreviousColumn.swift, SetTrackerRowView+SetType.swift |  |
+| **PlateCalculator** | [Components/ExerciseTracker/SetTrackerRow/PlateCalculator](Compound/Core/Training/Components/ExerciseTracker/SetTrackerRow/PlateCalculator) | 423 |  | PlateCalculatorDelegate, `showPlateCalculatorView` | PlateLoadingView.swift |  |
+| **SetKeyboard** | [Components/ExerciseTracker/SetTrackerRow/SetKeyboard](Compound/Core/Training/Components/ExerciseTracker/SetTrackerRow/SetKeyboard) | 1025 |  | `shownLoad` | SetKeyboardTextField.swift | SetKeyboardPresenterTests.swift |
+| **SwapExercisePicker** | [Components/ExerciseTracker/SwapExercisePicker](Compound/Core/Training/Components/ExerciseTracker/SwapExercisePicker) | 199 |  | `showSwapExercisePickerView` |  |  |
+| **WorkoutExerciseEquipmentSheet** | [Components/ExerciseTracker/WorkoutExerciseEquipmentSheet](Compound/Core/Training/Components/ExerciseTracker/WorkoutExerciseEquipmentSheet) | 360 | GymProfile | WorkoutExerciseEquipmentSheetDelegate, `showWorkoutExerciseEquipmentSheetView` |  |  |
 | **TodaysWorkoutCard** | [Components/TodaysWorkoutCard](Compound/Core/Training/Components/TodaysWorkoutCard) | 794 | WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker | TodaysWorkoutCardDelegate | MesocycleSchedule.swift, TodaysWorkoutCard.swift | TodaysWorkoutCardPresenterTests.swift |
 | **TrainingAccessory** | [Components/TrainingAccessory](Compound/Core/Training/Components/TrainingAccessory) | 288 | WorkoutTracker | TrainingAccessoryDelegate |  |  |
 | **WorkoutNotes** | [Components/WorkoutNotes](Compound/Core/Training/Components/WorkoutNotes) | 260 |  | WorkoutNotesDelegate, `showWorkoutNotesView` |  |  |

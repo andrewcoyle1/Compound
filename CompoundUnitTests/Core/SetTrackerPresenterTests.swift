@@ -21,71 +21,9 @@ struct SetTrackerPresenterTests {
 
     // MARK: - Doubles
 
-    private final class Interactor: SpyGlobalInteractor, SetTrackerInteractor {
-        var userId: String? = "user-1"
-        var currentUser: UserModel? = UserModel(userId: "user-1")
-        var systemExercises: [ExerciseModel] = []
-        var userExercises: [ExerciseModel] = []
-        var allExercises: [ExerciseModel] = []
-        var favouriteGymProfile: GymProfileModel?
-        var workoutGymProfile: GymProfileModel?
-        var workoutSettings: WorkoutSettings = WorkoutSettings(authorId: "user-1")
+    private typealias Interactor = ExerciseTrackerInteractorDouble
 
-        var preferences: [String: ExerciseUnitPreference] = [:]
-        private(set) var savedWeightUnits: [(String, ExerciseWeightUnit)] = []
-        private(set) var savedDistanceUnits: [(String, ExerciseDistanceUnit)] = []
-
-        func getPreference(templateId: String) -> ExerciseUnitPreference {
-            preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
-        }
-
-        /// Stores the unit as the manager does, as well as recording the call.
-        func setWeightUnit(_ unit: ExerciseWeightUnit, for templateId: String) {
-            savedWeightUnits.append((templateId, unit))
-            preferences[templateId, default: ExerciseUnitPreference(exerciseModelId: templateId)].weightUnit = unit
-        }
-
-        func setDistanceUnit(_ unit: ExerciseDistanceUnit, for templateId: String) {
-            savedDistanceUnits.append((templateId, unit))
-            preferences[templateId, default: ExerciseUnitPreference(exerciseModelId: templateId)].distanceUnit = unit
-        }
-    }
-
-    /// The alerts this screen raises — delete, superset, unit change — all go through
-    /// `showAlert(title:subtitle:buttons:)` and `showSimpleAlert`, which are `GlobalRouter`
-    /// extensions rather than requirements of `SetTrackerRouter`. They dispatch statically and
-    /// never reach this double, so the tests assert the state that is reachable instead.
-    private final class Router: SetTrackerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        private(set) var shown: [String] = []
-        var swapSelection: ExerciseModel?
-
-        func showWorkoutExerciseEquipmentSheetView(delegate: WorkoutExerciseEquipmentSheetDelegate) {
-            shown.append("equipment")
-        }
-
-        func showExerciseSettingsView(delegate: ExerciseSettingsDelegate) {
-            shown.append("exerciseSettings")
-        }
-
-        func showSetTargetView(delegate: SetTargetDelegate) {
-            shown.append("setTarget")
-        }
-
-        /// Hands back `swapSelection` when one is set, standing in for the user picking.
-        func showSwapExercisePickerView(alternativeIds: [String], onSelect: @escaping (ExerciseModel) -> Void) {
-            shown.append("swapPicker")
-            if let swapSelection {
-                onSelect(swapSelection)
-            }
-        }
-
-        /// A requirement of `GlobalRouter`, so unlike the alerts it does reach this double.
-        private(set) var confirmations: [String] = []
-        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
-            confirmations.append(title)
-        }
-    }
+    private typealias Router = ExerciseTrackerRouterDouble
 
     /// Holds the exercise being edited, so the presenter's `Binding`-taking methods can be driven
     /// without a view and the result read back.
@@ -108,7 +46,7 @@ struct SetTrackerPresenterTests {
     }
 
     private struct Screen {
-        let presenter: SetTrackerPresenter
+        let presenter: ExerciseTrackerPresenter
         let interactor: Interactor
         let router: Router
     }
@@ -117,7 +55,7 @@ struct SetTrackerPresenterTests {
         let interactor = Interactor()
         let router = Router()
         return Screen(
-            presenter: SetTrackerPresenter(interactor: interactor, router: router),
+            presenter: ExerciseTrackerPresenter(interactor: interactor, router: router),
             interactor: interactor,
             router: router
         )

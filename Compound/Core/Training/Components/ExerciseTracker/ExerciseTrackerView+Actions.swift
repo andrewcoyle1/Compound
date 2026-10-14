@@ -1,23 +1,24 @@
 //
-//  SetTrackerView+Actions.swift
+//  ExerciseTrackerView+Actions.swift
 //  Compound
 //
-//  The exercise's actions: the card's overflow menu and the editor's equipment button.
+//  The exercise's actions: the card's overflow menu, a superset member's submenu, and the
+//  editor's bar of chips.
 //
 
 import SwiftUI
 
-extension SetTrackerView {
+extension ExerciseTrackerView {
 
-    /// The chips over the table where the exercise has no card header, as when a finished
-    /// workout is being corrected.
-    var equipmentButton: some View {
+    /// The actions as chips over the table, where there is no card header to hold a menu: a
+    /// finished workout's editor.
+    var actionBar: some View {
         ScrollView(.horizontal) {
             HStack {
                 Group {
                     actionButtons()
                     Menu {
-                        moreButtons
+                        settingsAndDelete
                     } label: {
                         Label("More", systemImage: Symbol.more)
                             .tapTarget()
@@ -34,76 +35,59 @@ extension SetTrackerView {
         }
     }
 
-    /// The same actions as one overflow menu, for the card's title row.
+    /// The card's overflow menu, in its title row.
     var actionsMenu: some View {
         Menu {
-            if let card = delegate.card {
-                Button {
-                    card.onNotePressed()
-                } label: {
-                    Label("Notes", systemImage: Symbol.note)
-                }
-                if let onDoLater = card.exerciseCard.onDoLater {
-                    Button {
-                        onDoLater()
-                    } label: {
-                        Label("Do Later", systemImage: Symbol.doLater)
-                    }
-                }
-                if let onWatch = card.onWatch {
-                    Button {
-                        onWatch()
-                    } label: {
-                        Label("Watch", systemImage: Symbol.video)
-                    }
-                }
-                Divider()
-            }
-            actionButtons()
-            Divider()
-            moreButtons
+            menuItems(isMember: false)
         } label: {
-            // A real 44 pt frame: the accessibility audit measures the frame, not the hit area
-            // `tapTarget()` pads out behind it.
-            Image(systemName: Symbol.more)
-                .imageScale(.large)
-                .frame(width: ControlSize.row, height: ControlSize.row)
-                .contentShape(.rect)
+            MoreMenuLabel()
         }
         .buttonStyle(.borderless)
         .accessibilityLabel("Exercise options")
     }
 
-    /// One superset member's actions, as a submenu of the superset's menu
-    /// (`SupersetBlockView`). Do Later and Remove Superset are the block's, so its menu holds them.
+    /// A superset member's actions, as a submenu of the superset's menu (`SupersetBlockView`),
+    /// which holds Do Later and Remove Superset for the whole block.
     var memberActionsMenu: some View {
         Menu {
-            if let card = delegate.card {
-                Button {
-                    card.onNotePressed()
-                } label: {
-                    Label("Notes", systemImage: Symbol.note)
-                }
-                if let onWatch = card.onWatch {
-                    Button {
-                        onWatch()
-                    } label: {
-                        Label("Watch", systemImage: Symbol.video)
-                    }
-                }
-                Divider()
+            menuItems(isMember: true)
+        } label: {
+            Text([delegate.card?.memberLabel, delegate.exercise.wrappedValue.name].compactMap { $0 }.joined(separator: " "))
+        }
+    }
+
+    @ViewBuilder
+    private func menuItems(isMember: Bool) -> some View {
+        Button {
+            openNotes(on: .session)
+        } label: {
+            Label("Notes", systemImage: Symbol.note)
+        }
+        if !isMember, let onDoLater = delegate.card?.onDoLater {
+            Button {
+                onDoLater()
+            } label: {
+                Label("Do Later", systemImage: Symbol.doLater)
             }
+        }
+        if let onWatch = watchAction {
+            Button {
+                onWatch()
+            } label: {
+                Label("Watch", systemImage: Symbol.video)
+            }
+        }
+        Divider()
+        if isMember {
             Button {
                 presenter.addSet(exercise: delegate.exercise)
             } label: {
                 Label("Add Set", systemImage: Symbol.add)
             }
-            actionButtons(includesSuperset: false)
-            Divider()
-            moreButtons
-        } label: {
-            Text([delegate.card?.exerciseCard.memberLetter, delegate.exercise.wrappedValue.name].compactMap { $0 }.joined(separator: " "))
         }
+        actionButtons(includesSuperset: !isMember)
+        Divider()
+        settingsAndDelete
     }
 
     @ViewBuilder
@@ -170,7 +154,7 @@ extension SetTrackerView {
     }
 
     @ViewBuilder
-    private var moreButtons: some View {
+    private var settingsAndDelete: some View {
         Button {
             presenter.onExerciseSettingsPressed(exercise: delegate.exercise.wrappedValue)
         } label: {
@@ -182,5 +166,16 @@ extension SetTrackerView {
         } label: {
             Label("Delete", systemImage: Symbol.delete)
         }
+    }
+}
+
+/// The overflow menu's "…", in a real 44 pt frame: the accessibility audit measures the frame, not
+/// the hit area `tapTarget()` pads out behind it.
+struct MoreMenuLabel: View {
+    var body: some View {
+        Image(systemName: Symbol.more)
+            .imageScale(.large)
+            .frame(width: ControlSize.row, height: ControlSize.row)
+            .contentShape(.rect)
     }
 }

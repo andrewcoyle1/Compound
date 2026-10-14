@@ -2,345 +2,257 @@
 //  ExerciseTrackerView.swift
 //  Compound
 //
-//
+//  One exercise's set table: column headings, the rows, Add Set and the notes. On the live
+//  tracker it is the card's section, or one piece of a superset's card (`ExerciseTrackerPiece`);
+//  in a finished workout's editor, a row that opens onto it.
 //
 
 import SwiftUI
 
-struct ExerciseTrackerDelegate {
-    let exercise: Binding<WorkoutExerciseModel>
-    let lastExercise: WorkoutExerciseModel?
-    var isExpanded: Binding<Bool> = .constant(false)
-    var allWorkoutExercises: [WorkoutExerciseModel] = []
-    /// What the engine suggests for this exercise's working sets, shown by the Auto column.
-    var progressionSuggestion: ProgressionSuggestion?
-    /// The note this exercise was left with last session, shown as a hint when writing this one.
-    var previousNote: String?
-    var onSetSupersetGroup: @MainActor (String, String?) -> Void = { _, _ in }
-    var onDeleteExercise: @MainActor () -> Void = { }
-    /// Saves this session's note on the exercise; an empty string clears it.
-    var onUpdateNote: @MainActor (String) -> Void = { _ in }
-    /// Saves the exercise's mesocycle note; `nil` when it has none to edit, outside a mesocycle.
-    var onUpdateMesocycleNote: (@MainActor (String) -> Void)?
-    /// See `SetTrackerDelegate.onSwap`.
-    var onSwap: (@MainActor (ExerciseModel) -> Void)?
-    /// The live tracker draws the current exercise as an open card. `nil` is the collapsible row
-    /// a finished workout's editor uses.
-    var card: ExerciseCard?
-}
-
-/// What the live tracker's exercise card shows beyond the sets.
-struct ExerciseCard {
-    /// Why smart progression changed today's numbers, as a row above the sets until it is tapped.
-    var progressionNote: String?
-    var onProgressionNoteAcknowledged: @MainActor () -> Void = { }
-    var restTimer: InlineRestTimer?
-    /// Moves the exercise to the end of the workout; `nil` when there is nothing to put it behind.
-    var onDoLater: (@MainActor () -> Void)?
-    /// See `SetTrackerRowDelegate.onLogSet` and `onCustomRestChanged`.
-    var onLogSet: (@MainActor (String, Int?) -> Void)?
-    var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
-    /// Rests set by hand, by set id.
-    var customRestSeconds: [String: Int] = [:]
-    /// One piece of the table rather than all of it, for a superset's card to place among its
-    /// partners' rows. `nil` draws the whole table.
-    var piece: SetTrackerPiece?
-    /// The member's label on a superset's card ("B1", "B2"), which its header shows in place of the
-    /// superset's own label: the member header.
-    var memberLetter: String?
-    /// The bodyweight the movement lifts, while the setting is on: the header's badge and the rows'
-    /// "BW" labels. `nil` leaves the card as it was.
-    var bodyweight: BodyweightContribution?
-}
-
-struct ExerciseTrackerView<SetTracker: View>: View {
+struct ExerciseTrackerView<SetTrackerRow: View>: View {
 
     @State var presenter: ExerciseTrackerPresenter
     let delegate: ExerciseTrackerDelegate
 
-    @ScaledMetric(relativeTo: .body) private var thumbnailSide = ControlSize.thumbnail
-    @Environment(\.openURL) private var openURL
+    @ViewBuilder var setTrackerRow: (SetTrackerRowDelegate) -> SetTrackerRow
 
-    @ViewBuilder var setTracker: (SetTrackerDelegate) -> SetTracker
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+    /// The sets' circle (`SetTrackerRowView.setCircleSide`).
+    @ScaledMetric(relativeTo: .caption) private var addSetCircleSide: CGFloat = ControlSize.thumbnail - Spacing.xs
+    @ScaledMetric(relativeTo: .body) var thumbnailSide = ControlSize.thumbnail
+    @Environment(\.openURL) var openURL
+
+    /// Last or Auto, kept on the device. Read here rather than once per presenter, so a switch in
+    /// one superset member's headings reaches every member's rows.
+    @AppStorage(ExerciseTrackerPresenter.showAutoRangesKey) var showAutoRanges = false
+
+    /// Whether the logged warm-ups are shown row by row rather than as one line.
+    @State private var showsLoggedWarmups = false
+
+    /// The rows stack into two lines at accessibility sizes; the headers follow them.
+    var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
 
     var body: some View {
         if let card = delegate.card {
-            setTracker(setDelegate(card: SetTrackerCard(
-                header: { menu in AnyView(cardHeader(delegate.exercise.wrappedValue, card: card, menu: menu)) },
-                notes: hasNotes(delegate.exercise.wrappedValue) ? AnyView(noteCards(delegate.exercise.wrappedValue)) : nil,
-                onNotePressed: { openNotes(on: .session) },
-                onWatch: watchAction(for: delegate.exercise.wrappedValue),
-                exerciseCard: card
-            )))
+            Group {
+                if let piece = card.piece {
+                    pieceView(piece)
+                } else {
+                    Section {
+                        tableBody
+                    } header: {
+                        cardHeader(card)
+                    }
+                    .listSectionMargins(.top, Spacing.s)
+                }
+            }
             .environment(\.showsBodyweightLoad, card.bodyweight != nil)
         } else {
             DisclosureGroup(isExpanded: delegate.isExpanded) {
-                setTracker(setDelegate(card: nil))
+                tableBody
             } label: {
-                exerciseHeader(delegate.exercise.wrappedValue)
+                exerciseHeader
             }
         }
     }
 
-    private func openNotes(on tab: NoteTab.Kind) {
-        presenter.onNotePressed(
-            for: delegate.exercise.wrappedValue,
-            tab: tab,
-            previousNote: delegate.previousNote,
-            onSave: delegate.onUpdateNote,
-            onSaveMesocycleNote: delegate.onUpdateMesocycleNote
-        )
-    }
-
-    private func setDelegate(card: SetTrackerCard?) -> SetTrackerDelegate {
-        SetTrackerDelegate(
-            exercise: delegate.exercise,
-            lastExercise: delegate.lastExercise,
-            progressionSuggestion: delegate.progressionSuggestion,
-            allWorkoutExercises: delegate.allWorkoutExercises,
-            onSetSupersetGroup: delegate.onSetSupersetGroup,
-            onDeleteExercise: delegate.onDeleteExercise,
-            onSwap: delegate.onSwap,
-            card: card
-        )
-    }
-
-    // MARK: - Card
-
-    /// Watch in the card's menu, when the plan links a video the browser can open.
-    private func watchAction(for exercise: WorkoutExerciseModel) -> (@MainActor () -> Void)? {
-        guard let url = presenter.watchURL(for: exercise) else { return nil }
-        return { presenter.onWatchPressed(url, open: openURL) }
-    }
-
-    /// The card's title row. Kept short: the sets are the point, and the notes follow them.
-    private func cardHeader(_ exercise: WorkoutExerciseModel, card: ExerciseCard, menu: AnyView) -> some View {
-        // A superset member's actions are a submenu of the superset's one menu.
-        let menu = card.memberLetter == nil ? menu : AnyView(EmptyView())
-        return VStack(alignment: .leading, spacing: Spacing.xxs) {
-            if let bodyweight = card.bodyweight, bodyweight.contributionKg != nil {
-                // The badge sits before the menu, and goes under the name when the line
-                // cannot hold both, as at accessibility sizes.
-                ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .center, spacing: Spacing.s) {
-                        cardTitle(exercise, card: card)
-                        Spacer(minLength: 0)
-                        BodyweightContributionBadge(contribution: bodyweight)
-                        menu
-                    }
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        HStack(alignment: .center, spacing: Spacing.s) {
-                            cardTitle(exercise, card: card)
-                            Spacer(minLength: 0)
-                            menu
-                        }
-                        BodyweightContributionBadge(contribution: bodyweight)
-                    }
-                }
-            } else {
-                // The menu sits on the name's line, so it reads as the exercise's own.
-                HStack(alignment: .center, spacing: Spacing.s) {
-                    cardTitle(exercise, card: card)
-                    Spacer(minLength: 0)
-                    menu
-                }
-            }
-        }
-        .padding(.vertical, Spacing.s)
-    }
-
-    /// Whether any note is written, so an exercise without one gets no empty row under its sets.
-    private func hasNotes(_ exercise: WorkoutExerciseModel) -> Bool {
-        presenter.planNotes(for: exercise) != nil || presenter.note(for: exercise) != nil || exercise.notes != nil
-    }
-
-    /// Under the sets, one card per note written: the mesocycle note (the plan's notes, read-only
-    /// outside a mesocycle), the exercise note and this workout's. Each opens the sheet on its tab.
     @ViewBuilder
-    private func noteCards(_ exercise: WorkoutExerciseModel) -> some View {
-        let canEditPlan = delegate.onUpdateMesocycleNote != nil
-        VStack(spacing: Spacing.s) {
-            if let plan = presenter.planNotes(for: exercise) {
-                noteCard(canEditPlan ? "Mesocycle Note" : "Plan Note", symbol: Symbol.pinnedNote, text: plan, tab: canEditPlan ? .mesocycle : nil)
-                    .accessibilityIdentifier("ExerciseTracker.planNotes")
+    private var tableBody: some View {
+        // The table runs to the card's edge.
+        progressionNoteRow
+        Group {
+            VStack {
+                if delegate.card == nil {
+                    actionBar
+                }
+                columnHeaders(setLabel: nil)
             }
-            if let note = presenter.note(for: exercise) {
-                noteCard("Exercise Note", symbol: Symbol.pinnedNote, text: note, tab: .exercise)
+            loggedWarmupsGroup
+            // Under the folded warm-ups, so a rest after the last warm-up follows it.
+            if let timer = delegate.card?.restTimer, timer.anchor == .top {
+                InlineRestTimerRow(timer: timer)
             }
-            if let note = exercise.notes {
-                noteCard("Session Note", symbol: Symbol.note, text: note, tab: .session)
+            ForEach(delegate.exercise.wrappedValue.sets.filter { !$0.isWarmup || $0.completedAt == nil }) { set in
+                row(for: set)
+                restRow(below: set)
             }
+            addSetButton
+        }
+        .setTableRow()
+        .listSectionMargins(.top, 0)
+        notesRow
+    }
+
+    /// Why smart progression changed today's numbers, above the sets until it is tapped.
+    @ViewBuilder
+    private var progressionNoteRow: some View {
+        if let card = delegate.card, let note = card.progressionNote {
+            ProgressionNote(text: note, onAcknowledge: card.onProgressionNoteAcknowledged)
+                .listRowSeparator(.hidden)
         }
     }
 
-    /// A note set apart from anything the app says by its label, its symbol and a neutral fill
-    /// rather than a tint. `tab` nil is a note that cannot be edited here.
+    /// The notes under the add-set button, with the list's own insets like the title row.
     @ViewBuilder
-    private func noteCard(_ title: LocalizedStringKey, symbol: String, text: String, tab: NoteTab.Kind?) -> some View {
-        let content = VStack(alignment: .leading, spacing: Spacing.xxs) {
-            HStack {
-                Text(title)
-                    .font(.label)
-                    .foregroundStyle(.secondary)
-                Spacer(minLength: 0)
-                Image(systemName: symbol)
-                    .font(.label)
-                    .foregroundStyle(.secondary)
-                    .accessibilityHidden(true)
-            }
-            // Three lines either way: an editable note opens whole in its sheet, so More, a
-            // button inside the card's button, is only for one that cannot.
-            Group {
-                if tab == nil {
-                    ClampedNote(text: text)
-                } else {
-                    Text(text).lineLimit(3)
-                }
-            }
-            .font(.rowDetail)
-            .foregroundStyle(Color.primary)
-            .multilineTextAlignment(.leading)
+    private var notesRow: some View {
+        if delegate.card != nil, !shownNotes.isEmpty {
+            noteCards
+                .listRowSeparator(.hidden)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.s)
-        .background(Color.tintedSurface(.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
-        if let tab {
-            Button {
-                openNotes(on: tab)
+    }
+
+    /// Done warm-ups fold into one line, so the table starts at the work, and open on a tap to be
+    /// corrected.
+    @ViewBuilder
+    private var loggedWarmupsGroup: some View {
+        let loggedWarmups = delegate.exercise.wrappedValue.sets.filter { $0.isWarmup && $0.completedAt != nil }
+        if !loggedWarmups.isEmpty {
+            DisclosureGroup(isExpanded: $showsLoggedWarmups) {
+                ForEach(loggedWarmups) { set in
+                    row(for: set)
+                }
             } label: {
-                content.contentShape(.rect)
+                Label {
+                    Text("\(loggedWarmups.count) warm-ups")
+                } icon: {
+                    Image(systemName: Symbol.success)
+                        .foregroundStyle(.success)
+                }
+                .font(.rowDetail)
+                .frame(minHeight: ControlSize.row)
+                .padding(.leading, Spacing.l)
             }
-            .buttonStyle(.borderless)
-            .accessibilityLabel(Text(title))
-            .accessibilityValue(text)
-            .accessibilityHint("Edits the note")
+        }
+    }
+
+    private func row(
+        for set: WorkoutSetModel,
+        badge: String? = nil,
+        isNext: Bool? = nil,
+        separators: (top: Visibility, bottom: Visibility) = (.visible, .visible)
+    ) -> some View {
+        let exercise = delegate.exercise.wrappedValue
+        // The editor has no current row; a superset's card marks only the set it logs next.
+        let rowState: SetRowState? = if delegate.card == nil {
+            nil
+        } else if let isNext {
+            ActiveWorkout.blockRowState(of: set, in: exercise, isNext: isNext)
         } else {
-            content
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text(title))
-                .accessibilityValue(text)
+            ActiveWorkout.rowState(of: set, in: exercise)
         }
-    }
-
-    /// The member header's letter, when the card is a superset member's, then the name.
-    @ViewBuilder
-    private func cardTitle(_ exercise: WorkoutExerciseModel, card: ExerciseCard) -> some View {
-        if let letter = card.memberLetter {
-            Chip(letter, systemImage: Symbol.superset, tint: .superset)
-                .accessibilityLabel(String(localized: "Superset member \(letter)"))
-        }
-        // Under the superset's own title a member's name is a row's, not a section's.
-        Text(exercise.name)
-            .font(card.memberLetter == nil ? .sectionTitle : .rowTitle)
-            .accessibilityAddTraits(.isHeader)
-    }
-
-    @ViewBuilder
-    func exerciseHeader(_ exercise: WorkoutExerciseModel) -> some View {
-        HStack(alignment: .center) {
-            ExerciseImageView(name: exercise.name, imageName: presenter.imageName(for: exercise))
-                .frame(width: thumbnailSide, height: thumbnailSide)
-                .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
-                .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
-                Text(exercise.name)
-                    .font(.sectionTitle)
-                    .foregroundStyle(.primary)
-                    .multilineTextAlignment(.leading)
-
-                setProgress(exercise)
-
-                if let note = presenter.note(for: exercise) {
-                    Text(note)
-                        .font(.label)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(2)
-                }
-
-                if let sessionNote = exercise.notes {
-                    Label(sessionNote, systemImage: Symbol.note)
-                        .font(.label)
-                        .foregroundStyle(.primary)
-                        .lineLimit(2)
-                }
-            }
-
-            Spacer(minLength: 0)
-
-            noteButton(exercise)
-        }
-        .tappableBackground()
-        .listRowInsets(.vertical, .zero)
-    }
-
-    /// Counted in sets, not rows: three sets a side reads "Set 2/3", not "Set 4/6". A finished
-    /// exercise gets a check as well as the colour.
-    private func setProgress(_ exercise: WorkoutExerciseModel) -> some View {
-        let isDone = exercise.loggedSetCount == exercise.workingSetCount
-        return HStack(spacing: Spacing.xs) {
-            if isDone {
-                Image(systemName: Symbol.success)
-                    .accessibilityHidden(true)
-            }
-            Text("Set \(min(exercise.loggedSetCount + 1, exercise.workingSetCount))/\(exercise.workingSetCount)")
-        }
-        .font(.label)
-        .foregroundStyle(isDone ? AnyShapeStyle(.success) : AnyShapeStyle(.secondary))
-        .accessibilityElement(children: .combine)
-        .accessibilityValue(isDone ? String(localized: "All sets done") : "")
-    }
-
-    /// Borderless so a tap opens the note sheet rather than toggling the card it sits on.
-    private func noteButton(_ exercise: WorkoutExerciseModel) -> some View {
-        Button {
-            presenter.onNotePressed(
-                for: exercise,
-                previousNote: delegate.previousNote,
-                onSave: delegate.onUpdateNote
+        // Matched on the side as well as the number: a left set inheriting the right arm's last
+        // weight sends the user chasing the other arm's numbers. A drop is matched on its kind,
+        // and has no suggestion of its own: its parent's would fill it with the heavier figures.
+        return setTrackerRow(
+            SetTrackerRowDelegate(
+                exercise: delegate.exercise,
+                set: setBinding(for: set),
+                lastSet: ActiveWorkout.lastSet(for: set, in: exercise, last: delegate.lastExercise),
+                progressionSuggestion: set.isSubSet ? nil : delegate.progressionSuggestion?.suggestedSet(for: set, in: exercise),
+                showAutoRanges: showAutoRanges,
+                rowState: rowState,
+                onLogSet: delegate.card?.onLogSet,
+                onCustomRestChanged: delegate.card?.onCustomRestChanged,
+                customRestSeconds: delegate.card?.customRestSeconds[set.id],
+                badgeLabel: badge
             )
-        } label: {
-            Image(systemName: exercise.notes == nil ? Symbol.addNote : Symbol.note)
-                .tapTarget()
-        }
-        .buttonStyle(.borderless)
-        .accessibilityLabel(exercise.notes == nil ? String(localized: "Add note") : String(localized: "Edit note"))
+        )
+        .listRowSeparator(separators.top, edges: .top)
+        .listRowSeparator(separators.bottom, edges: .bottom)
     }
+
+    /// The set by id, not by position, as `WorkoutTrackerView.currentExerciseSection` binds the
+    /// exercise. A binding by index read `sets[4]` of four sets when an earlier set was deleted
+    /// with the keyboard open on the last, and trapped. Once the set is gone the getter hands back
+    /// what it last held, and the setter has nothing to write.
+    private func setBinding(for set: WorkoutSetModel) -> Binding<WorkoutSetModel> {
+        let exercise = delegate.exercise
+        let id = set.id
+        return Binding(
+            get: { exercise.wrappedValue.sets.first { $0.id == id } ?? set },
+            set: { updated in
+                guard let index = exercise.wrappedValue.sets.firstIndex(where: { $0.id == id }) else { return }
+                exercise.wrappedValue.sets[index] = updated
+            }
+        )
+    }
+
+    /// Under the set just logged: the rest it started. Correcting the set is the bar over the
+    /// log button (`WorkoutTrackerPresenter.restCorrection`).
+    @ViewBuilder
+    private func restRow(below set: WorkoutSetModel) -> some View {
+        if let timer = delegate.card?.restTimer, timer.anchor == .below(setId: set.id) {
+            InlineRestTimerRow(timer: timer)
+        }
+    }
+
+    private var addSetButton: some View {
+        Button {
+            presenter.addSet(exercise: delegate.exercise)
+        } label: {
+            // A circle in the Set column, as the sets' own are.
+            Image(systemName: Symbol.add)
+                .font(.label.weight(.semibold))
+                .foregroundStyle(.primary)
+                .frame(width: addSetCircleSide, height: addSetCircleSide)
+                .background(Color.tintedSurface(.secondary), in: .circle)
+                .overlay {
+                    if colorSchemeContrast == .increased {
+                        Circle().strokeBorder(.secondary, lineWidth: 1)
+                    }
+                }
+                .frame(minWidth: SetTrackerRowView.setColumnWidth, minHeight: ControlSize.row)
+                .contentShape(.circle)
+        }
+        .buttonStyle(.plain)
+        // On a superset's card each member has its own, so each says whose it is.
+        .accessibilityLabel(delegate.card?.piece == nil ? String(localized: "Add Set") : String(localized: "Add Set to \(delegate.exercise.wrappedValue.name)"))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, Spacing.xs)
+        .listRowInsets(.bottom, Spacing.s)
+    }
+
 }
 
-/// A note held to three lines under the sets, so a long one does not push the card off screen,
-/// with More to read the rest in place. More shows only when the note is actually cut short.
-private struct ClampedNote: View {
-    let text: String
-    var lineLimit = 3
+// MARK: - Pieces
 
-    @State private var isExpanded = false
-    @State private var fullHeight: CGFloat = 0
-    @State private var shownHeight: CGFloat = 0
+extension ExerciseTrackerView {
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xxs) {
-            Text(text)
-                .lineLimit(isExpanded ? nil : lineLimit)
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { shownHeight = $0 }
-                // The whole note laid out at the same width and hidden, to tell whether the
-                // line limit cuts it short.
-                .background {
-                    Text(text)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .hidden()
-                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { fullHeight = $0 }
-                }
-            if !isExpanded && fullHeight > shownHeight + 1 {
-                Button("More") {
-                    isExpanded = true
-                }
-                .fontWeight(.semibold)
-                .buttonStyle(.borderless)
-                // VoiceOver reads the whole note whatever its line limit.
-                .accessibilityHidden(true)
+    /// One piece of the table, laid out as the whole table lays it out.
+    @ViewBuilder
+    func pieceView(_ piece: ExerciseTrackerPiece) -> some View {
+        switch piece {
+        case .header:
+            if let card = delegate.card {
+                cardHeader(card)
             }
+        case .actions:
+            memberActionsMenu
+        case .progressionNote:
+            progressionNoteRow
+        case let .columnHeadings(label):
+            columnHeaders(setLabel: label).setTableRow()
+        case .loggedWarmups:
+            loggedWarmupsGroup.setTableRow()
+        case let .row(setId, badge, isNext, startsRound, endsRound):
+            if let set = delegate.exercise.wrappedValue.sets.first(where: { $0.id == setId }) {
+                Group {
+                    // One VoiceOver container per row, named for its set and exercise, so the
+                    // Containers rotor steps through the rounds: "B1, set 1, Bench Press", and a
+                    // drop under it "B1, set 1 drop set 1, Bench Press".
+                    let name = [ActiveWorkout.spokenBadge(badge), ActiveWorkout.subSetName(of: set, in: delegate.exercise.wrappedValue.sets)]
+                        .compactMap { $0 }.joined(separator: " ")
+                    // Within a round the rows run together; a separator divides the rounds.
+                    row(for: set, badge: badge, isNext: isNext, separators: (startsRound ? .visible : .hidden, endsRound ? .visible : .hidden))
+                        .accessibilityElement(children: .contain)
+                        .accessibilityLabel([name, delegate.exercise.wrappedValue.name].joined(separator: ", "))
+                    restRow(below: set)
+                }
+                .setTableRow()
+            }
+        case .notes:
+            notesRow
         }
     }
 }
@@ -414,8 +326,8 @@ extension CoreBuilder {
                 router: CoreRouter(router: router, builder: self)
             ),
             delegate: delegate,
-            setTracker: { delegate in
-                self.setTrackerView(router: router, delegate: delegate)
+            setTrackerRow: { delegate in
+                self.setTrackerRowView(router: router, delegate: delegate)
             }
         )
     }

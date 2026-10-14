@@ -2,7 +2,7 @@
 //  View+SetColumn.swift
 //  Compound
 //
-//  The set table's column frame, shared by the rows and their headings.
+//  The set table's column frame, shared by the rows and their headings, and its rows' insets.
 //
 
 import SwiftUI
@@ -17,5 +17,12 @@ extension View {
         } else {
             frame(width: width, height: height, alignment: .center)
         }
+    }
+
+    /// A row of the set table: no separator, and running to the card's edge.
+    func setTableRow() -> some View {
+        listRowSeparator(.hidden)
+            .listRowInsets(.vertical, 0)
+            .listRowInsets(.leading, 0)
     }
 }

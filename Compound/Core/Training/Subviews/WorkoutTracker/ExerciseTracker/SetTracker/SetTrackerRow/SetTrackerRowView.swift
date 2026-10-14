@@ -39,9 +39,6 @@ struct SetTrackerRowView: View {
     @Environment(\.showsBodyweightLoad) private var showsBodyweightLoad
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
-    /// The warm-up method and its sources, from the set number's menu.
-    @State private var showsWarmupMethod = false
-
     /// At accessibility sizes five fixed columns truncated every value to "4…", so the row stacks
     /// into two lines and the text keeps growing. Below them the table is as it always was.
     private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
@@ -78,26 +75,18 @@ struct SetTrackerRowView: View {
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             deleteSetButton
         }
-        // Rests run only on the live tracker, not in a finished workout's editor or the warm-up
-        // sheet.
+        // The rest timer's only way in. Rests run only on the live tracker, not in a finished
+        // workout's editor. VoiceOver lists it among the row's actions.
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             if presenter.onLogSet != nil {
                 restTimerButton
             }
         }
-        // Shortcuts to the set number's menu, which is the visible route to both actions.
+        // The long press offers what the trailing swipe does.
         .contextMenu {
-            if presenter.onLogSet != nil {
-                restTimerButton
-            }
             deleteSetButton
         }
         .moveDisabled(true)
-        .sheet(isPresented: $showsWarmupMethod) {
-            MethodInfoSheet(info: .warmupSets)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-        }
     }
 
     /// "Set 2", "Set A1", "Warmup set": what VoiceOver calls this row, and the start of each of
@@ -181,68 +170,61 @@ struct SetTrackerRowView: View {
         }
     }
 
+    /// The set's circle. On a set of its own it opens the set-type menu, with Add Another Drop or
+    /// Mini-Set under the types where the set takes them; a drop or mini-set is part of its set and
+    /// its circle only shows where it hangs from.
+    @ViewBuilder
     func setNumber(set: Binding<WorkoutSetModel>) -> some View {
-        Menu {
-            // A drop or mini-set is part of its set: it is added, typed and retyped from there.
-            if !set.wrappedValue.isSubSet {
-                // A menu toggle draws its own checkmark; the old label asked for a symbol named "".
-                Toggle("Warmup Set", isOn: set.isWarmup)
-
-                // What a warm-up is, how Compound builds them, and the sources.
-                Button {
-                    showsWarmupMethod = true
+        Group {
+            if ActiveWorkout.offersSetTypes(set.wrappedValue) {
+                Menu {
+                    setTypeItems(set: set)
                 } label: {
-                    Label("What's a warmup set?", systemImage: Symbol.info)
+                    setCircle(set: set.wrappedValue)
+                        .accessibilityHint("Set type")
                 }
+                .buttonStyle(.plain)
+            } else {
+                setCircle(set: set.wrappedValue)
             }
-            if ActiveWorkout.offersSetKinds(set.wrappedValue) {
-                setKindItems(set: set)
-            }
-
-            // The visible route to what the swipes and the long press also offer.
-            if presenter.onLogSet != nil {
-                restTimerButton
-            }
-            Divider()
-            deleteSetButton
-        } label: {
-            // Drawn here rather than by `.bordered`, which sizes the control to its text (19 × 28 pt
-            // for "1") whatever frame the label is given. A 44 pt frame is what a thumb needs and
-            // what the accessibility audit measures.
-            // The text stays the label's root so the menu's accessibility element is built from
-            // it; a shape on top made the audit see the number as text no element owns.
-            let tint: Color = set.wrappedValue.isWarmup ? .warmup : delegate.badgeLabel == nil ? .secondary : .superset
-            // The label colour on the tinted circle: orange "W" on its own 15 % fill was about
-            // 2:1 in light mode. The tint stays on the circle, and the letter says what it is (S4).
-            // A drop or mini-set has no number of its own, so its circle shows where it hangs from.
-            Group {
-                if set.wrappedValue.isSubSet {
-                    Image(systemName: Symbol.subSet)
-                } else {
-                    Text(setLabel(for: set.wrappedValue))
-                }
-            }
-                .font(set.wrappedValue.isWarmup ? .caption.weight(.semibold) : .caption)
-                .foregroundStyle(isDone ? .secondary : .primary)
-                // On the text, not the menu: the menu's inner button takes its accessibility from
-                // its label view, and left unlabeled it reads as text no element owns.
-                // Where the set stands is the row's to say, on the way into it.
-                .accessibilityLabel(rowName)
-                .accessibilityHint("Set options")
-                .frame(width: setCircleSide, height: setCircleSide)
-                .background(Color.tintedSurface(tint), in: .circle)
-                // Increase Contrast: the circle's edge in its full colour, where the fill alone is faint.
-                .overlay {
-                    if colorSchemeContrast == .increased {
-                        Circle().strokeBorder(tint, lineWidth: 1)
-                    }
-                }
-                .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
-                .contentShape(.circle)
         }
-        .buttonStyle(.plain)
         // A minimum, not a fixed width: the circle outgrows the column at the larger standard sizes.
         .frame(minWidth: SetTrackerRowView.setColumnWidth)
+    }
+
+    /// Drawn here rather than by `.bordered`, which sizes the control to its text (19 × 28 pt for
+    /// "1") whatever frame the label is given. A 44 pt frame is what a thumb needs and what the
+    /// accessibility audit measures. The text stays the label's root so the menu's accessibility
+    /// element is built from it; a shape on top made the audit see the number as text no element
+    /// owns.
+    private func setCircle(set: WorkoutSetModel) -> some View {
+        let tint: Color = set.isWarmup ? .warmup : delegate.badgeLabel == nil ? .secondary : .superset
+        // The label colour on the tinted circle: orange "W" on its own 15 % fill was about 2:1 in
+        // light mode. The tint stays on the circle, and the letter says what it is (S4). A drop or
+        // mini-set has no number of its own, so its circle shows where it hangs from.
+        return Group {
+            if set.isSubSet {
+                Image(systemName: Symbol.subSet)
+            } else {
+                Text(setLabel(for: set))
+            }
+        }
+        .font(set.isWarmup ? .caption.weight(.semibold) : .caption)
+        .foregroundStyle(isDone ? .secondary : .primary)
+        // On the text, not the menu: the menu's inner button takes its accessibility from its
+        // label view, and left unlabeled it reads as text no element owns. Where the set stands is
+        // the row's to say, on the way into it.
+        .accessibilityLabel(rowName)
+        .frame(width: setCircleSide, height: setCircleSide)
+        .background(Color.tintedSurface(tint), in: .circle)
+        // Increase Contrast: the circle's edge in its full colour, where the fill alone is faint.
+        .overlay {
+            if colorSchemeContrast == .increased {
+                Circle().strokeBorder(tint, lineWidth: 1)
+            }
+        }
+        .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
+        .contentShape(.circle)
     }
 
     /// What the circle beside a set shows. Both halves of a left/right pair carry the same number
@@ -589,31 +571,33 @@ extension SetTrackerRowView {
         return "\(target)+"
     }
 
-    /// The Set Type picker, then a drop or mini-set to add under the set.
+    /// The types, the set's own ticked, then another drop or mini-set where the set takes one.
     @ViewBuilder
-    func setKindItems(set: Binding<WorkoutSetModel>) -> some View {
-        Picker(selection: set.kind) {
-            ForEach(ActiveWorkout.setTypeOptions(for: set.wrappedValue), id: \.self) { kind in
-                Text(kind.displayName).tag(kind)
+    private func setTypeItems(set: Binding<WorkoutSetModel>) -> some View {
+        Picker("Set Type", selection: Binding(
+            get: { set.wrappedValue.typeChoice },
+            set: { presenter.onSetTypeSelected($0, setId: set.wrappedValue.id, setName: rowName, exercise: delegate.exercise) }
+        )) {
+            ForEach(ActiveWorkout.setTypeOptions(for: set.wrappedValue), id: \.self) { choice in
+                Text(choice.displayName).tag(choice)
             }
-        } label: {
-            Label("Set Type", systemImage: Symbol.set)
         }
-        .pickerStyle(.menu)
-        Divider()
-        Button {
-            presenter.addSubSet(.drop, to: set.wrappedValue.id, exercise: delegate.exercise)
-        } label: {
-            Label("Add Drop Set", systemImage: Symbol.add)
+        .pickerStyle(.inline)
+        if ActiveWorkout.offersDrop(set.wrappedValue) {
+            Button {
+                presenter.addSubSet(.drop, to: set.wrappedValue.id, exercise: delegate.exercise)
+            } label: {
+                Label("Add Another Drop", systemImage: Symbol.add)
+            }
+            .accessibilityLabel(String(localized: "Add another drop to \(rowName)"))
         }
-        .accessibilityLabel(String(localized: "Add drop set to \(rowName)"))
         if ActiveWorkout.offersMiniSet(set.wrappedValue) {
             Button {
                 presenter.addSubSet(.mini, to: set.wrappedValue.id, exercise: delegate.exercise)
             } label: {
-                Label("Add Mini-Set", systemImage: Symbol.add)
+                Label("Add Another Mini-Set", systemImage: Symbol.add)
             }
-            .accessibilityLabel(String(localized: "Add mini-set to \(rowName)"))
+            .accessibilityLabel(String(localized: "Add another mini-set to \(rowName)"))
         }
     }
 }

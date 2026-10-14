@@ -2,8 +2,8 @@
 //  SetKindUITests.swift
 //  CompoundUnitTests
 //
-//  Set kinds on the card, as rules: what the set-number menu offers, where a drop or mini-set
-//  goes, what deleting a set takes with it, what the log button says and which of last time's
+//  Set kinds on the card, as rules: what the set-number menu offers and what a pick there does,
+//  where a drop or mini-set goes, what deleting a set takes with it, what the log button says and which of last time's
 //  rows the Last column shows. `ActiveWorkout+SetKind`, `ActiveWorkout.logTitle` and the row
 //  presenter's `addSubSet` and `onDeleteSetPressed`.
 //
@@ -42,28 +42,111 @@ struct SetKindUITests {
 
     // MARK: - The menu
 
-    @Test("Test The Set Type Picker Offers Every Kind But Drop")
-    func testTheSetTypePickerOffersEveryKindButDrop() {
-        #expect(ActiveWorkout.setTypeOptions(for: set("s1")) == [.standard, .amrap, .myo, .restPause, .cluster])
-        // A template's drop set keeps its own kind among the options.
-        #expect(ActiveWorkout.setTypeOptions(for: set("s1", kind: .drop)).last == .drop)
+    @Test("Test The Set Type Menu Offers The Five Types")
+    func testTheSetTypeMenuOffersTheFiveTypes() {
+        let five: [SetTypeChoice] = [.kind(.standard), .warmup, .kind(.drop), .kind(.myo), .kind(.amrap)]
+        #expect(ActiveWorkout.setTypeOptions(for: set("s1")) == five)
+        #expect(ActiveWorkout.setTypeOptions(for: set("w1", warmup: true)) == five)
+        // A set a plan made rest-pause keeps its kind at the end, ticked.
+        #expect(ActiveWorkout.setTypeOptions(for: set("s1", kind: .restPause)) == five + [.kind(.restPause)])
+        #expect(set("w1", warmup: true).typeChoice == .warmup)
     }
 
-    @Test("Test Kinds Are Offered On Working Sets Only")
-    func testKindsAreOfferedOnWorkingSetsOnly() {
-        #expect(ActiveWorkout.offersSetKinds(set("s1")))
-        #expect(!ActiveWorkout.offersSetKinds(set("w1", warmup: true)))
-        #expect(!ActiveWorkout.offersSetKinds(set("d1", kind: .drop, parent: "s1")))
+    @Test("Test The Menu Opens From Sets Of Their Own Only")
+    func testTheMenuOpensFromSetsOfTheirOwnOnly() {
+        #expect(ActiveWorkout.offersSetTypes(set("s1")))
+        #expect(ActiveWorkout.offersSetTypes(set("w1", warmup: true)))
+        #expect(!ActiveWorkout.offersSetTypes(set("d1", kind: .drop, parent: "s1")))
     }
 
-    @Test("Test A Mini-Set Is Offered Only To A Set That Rests Within Itself")
-    func testAMiniSetIsOfferedOnlyToASetThatRestsWithinItself() {
+    @Test("Test Another Drop Or Mini-Set Is Offered Only Where The Type Takes One")
+    func testAnotherDropOrMiniSetIsOfferedOnlyWhereTheTypeTakesOne() {
+        #expect(ActiveWorkout.offersDrop(set("s1", kind: .drop)))
+        #expect(!ActiveWorkout.offersDrop(set("s1")))
+        #expect(!ActiveWorkout.offersDrop(set("d1", kind: .drop, parent: "s0")))
         #expect(ActiveWorkout.offersMiniSet(set("s1", kind: .myo)))
         #expect(ActiveWorkout.offersMiniSet(set("s1", kind: .restPause)))
         #expect(ActiveWorkout.offersMiniSet(set("s1", kind: .cluster)))
         #expect(!ActiveWorkout.offersMiniSet(set("s1")))
         #expect(!ActiveWorkout.offersMiniSet(set("s1", kind: .amrap)))
         #expect(!ActiveWorkout.offersMiniSet(set("m1", parent: "s0")))
+    }
+
+    // MARK: - Choosing a type
+
+    private func applying(_ choice: SetTypeChoice, to setId: String, in sets: [WorkoutSetModel]) -> [WorkoutSetModel] {
+        ActiveWorkout.applying(choice, to: setId, in: sets, firstSubSetId: "new", dropWeightKg: 80)
+    }
+
+    @Test("Test A Drop Set Gets Its First Drop")
+    func testADropSetGetsItsFirstDrop() {
+        let sets = applying(.kind(.drop), to: "s1", in: [set("s1"), set("s2")])
+
+        #expect(sets.map(\.id) == ["s1", "new", "s2"])
+        #expect(sets[0].kind == .drop)
+        #expect(sets[1].subSetKind == .drop)
+        #expect(sets[1].weightKg == 80)
+    }
+
+    @Test("Test A Myo Set Gets Its First Mini-Set At The Set's Weight")
+    func testAMyoSetGetsItsFirstMiniSet() {
+        let sets = applying(.kind(.myo), to: "s1", in: [set("s1")])
+
+        #expect(sets.map(\.subSetKind) == [nil, .mini])
+        #expect(sets[1].weightKg == 100)
+    }
+
+    @Test("Test A Drop Set Made Myo Swaps Its Drops For A Mini-Set")
+    func testADropSetMadeMyoSwapsItsDropsForAMiniSet() {
+        let sets = applying(.kind(.myo), to: "s1", in: [set("s1", kind: .drop), set("d1", kind: .drop, parent: "s1")])
+
+        #expect(sets.map(\.id) == ["s1", "new"])
+        #expect(sets[0].kind == .myo)
+        #expect(sets[1].subSetKind == .mini)
+    }
+
+    @Test("Test A Drop Set With Drops Keeps Them On A Repeat Pick")
+    func testARepeatPickChangesNothing() {
+        let before = [set("s1", kind: .drop), set("d1", kind: .drop, parent: "s1")]
+        #expect(applying(.kind(.drop), to: "s1", in: before) == before)
+    }
+
+    @Test("Test A Warm-Up Is Plain And Has No Sub-Rows")
+    func testAWarmUpIsPlainAndHasNoSubRows() {
+        let sets = applying(.warmup, to: "s1", in: [set("s1", kind: .drop), set("d1", kind: .drop, parent: "s1"), set("s2")])
+
+        #expect(sets.map(\.id) == ["s1", "s2"])
+        #expect(sets[0].isWarmup)
+        #expect(sets[0].kind == .standard)
+        // And back: a warm-up made a failure set is a working set again.
+        let failure = applying(.kind(.amrap), to: "s1", in: sets)
+        #expect(!failure[0].isWarmup)
+        #expect(failure[0].kind == .amrap)
+    }
+
+    @Test("Test Both Halves Of A Pair Take The Type")
+    func testBothHalvesOfAPairTakeTheType() {
+        let sets = applying(.kind(.amrap), to: "s1L", in: [set("s1L", side: .left), set("s1R", side: .right)])
+
+        #expect(sets.map(\.kind) == [.amrap, .amrap])
+    }
+
+    @Test("Test Changing A Type That Loses Logged Rows Asks First")
+    func testChangingATypeThatLosesLoggedRowsAsksFirst() {
+        let router = SetTrackerRowRouterDouble()
+        let interactor = SetTrackerRowInteractorDouble()
+        let presenter = SetTrackerRowPresenter(interactor: interactor, router: router)
+        let box = ExerciseBox(exercise([set("s1", kind: .drop), set("d1", kind: .drop, parent: "s1", logged: true), set("s2")]))
+
+        presenter.onSetTypeSelected(.kind(.standard), setId: "s1", setName: "Set 1", exercise: box.binding)
+        #expect(router.confirmations.map(\.title) == ["Change Set 1 to Standard?"])
+        #expect(box.exercise.sets.count == 3)
+
+        // Nothing logged to lose: it changes straight away and is recorded.
+        presenter.onSetTypeSelected(.kind(.myo), setId: "s2", setName: "Set 2", exercise: box.binding)
+        #expect(box.exercise.sets.last?.subSetKind == .mini)
+        #expect(router.confirmations.count == 1)
+        #expect(interactor.trackedEventNames.contains("SetTrackerRow_SetTypeChanged"))
     }
 
     // MARK: - Insertion

@@ -59,20 +59,54 @@ class SetTrackerRowPresenter {
     func addSubSet(_ subKind: SubSetKind, to setId: String, exercise: Binding<WorkoutExerciseModel>) {
         let current = exercise.wrappedValue
         guard let parent = current.sets.first(where: { $0.id == setId }) else { return }
-        let weightKg: Double?
-        switch subKind {
-        case .drop:
-            let unit = getUnitPreference(for: current).weightUnit
-            let step = WeightStepper.steps(for: current, profile: interactor.workoutGymProfile, unit: unit)
-            weightKg = ActiveWorkout.dropWeightKg(from: parent.weightKg, step: step, unit: unit)
-        case .mini:
-            weightKg = parent.weightKg
-        }
+        let weightKg = subKind == .drop ? dropWeightKg(below: parent, in: current) : parent.weightKg
         let sets = ActiveWorkout.addingSubSet(subKind, to: setId, in: current.sets, id: UUID().uuidString, weightKg: weightKg)
         withReducedMotionAnimation(.standard) {
             exercise.wrappedValue.sets = sets
         }
         interactor.playHaptic(option: .selection)
+    }
+
+    /// The set number's menu: makes the set a warm-up, a drop set, a myo set… A drop or myo set
+    /// gets its first drop or mini-set (`ActiveWorkout.applying`), and sub-rows the new type has
+    /// no use for go, asking first when any of them is logged.
+    func onSetTypeSelected(_ choice: SetTypeChoice, setId: String, setName: String, exercise: Binding<WorkoutExerciseModel>) {
+        let current = exercise.wrappedValue
+        guard let set = current.sets.first(where: { $0.id == setId }), set.typeChoice != choice else { return }
+        let updated = ActiveWorkout.applying(
+            choice,
+            to: setId,
+            in: current.sets,
+            firstSubSetId: UUID().uuidString,
+            dropWeightKg: dropWeightKg(below: set, in: current)
+        )
+        let kept = Set(updated.map(\.id))
+        let loggedLost = current.sets.filter { $0.completedAt != nil && !kept.contains($0.id) }.count
+        guard loggedLost > 0 else { return applySetType(choice, sets: updated, exercise: exercise) }
+        router.showConfirmationDialog(
+            title: String(localized: "Change \(setName) to \(choice.displayName)?"),
+            subtitle: String(localized: "This deletes \(loggedLost) logged rows under it.")
+        ) {
+            AnyView(VStack(spacing: Spacing.s) {
+                Button("Change", role: .destructive) { self.applySetType(choice, sets: updated, exercise: exercise) }
+                Button("Cancel", role: .cancel) { }
+            })
+        }
+    }
+
+    private func applySetType(_ choice: SetTypeChoice, sets: [WorkoutSetModel], exercise: Binding<WorkoutExerciseModel>) {
+        withReducedMotionAnimation(.standard) {
+            exercise.wrappedValue.sets = sets
+        }
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.setTypeChanged(type: choice.eventValue))
+    }
+
+    /// A drop's starting weight under `parent`: 20 % off, to a weight the equipment makes.
+    private func dropWeightKg(below parent: WorkoutSetModel, in exercise: WorkoutExerciseModel) -> Double? {
+        let unit = getUnitPreference(for: exercise).weightUnit
+        let step = WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit)
+        return ActiveWorkout.dropWeightKg(from: parent.weightKg, step: step, unit: unit)
     }
     
     /// On the live tracker the set is logged by the tracker, which rests and re-suggests after
@@ -329,10 +363,12 @@ extension SetTrackerRowPresenter {
         /// Every set logged, from a row, the set keyboard or the tracker's log button, which
         /// `source` tells apart.
         case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, source: String = "row")
+        case setTypeChanged(type: String)
 
         var eventName: String {
             switch self {
             case .setCompleted:             return "SetTrackerRow_SetCompleted"
+            case .setTypeChanged:           return "SetTrackerRow_SetTypeChanged"
             }
         }
 
@@ -346,6 +382,8 @@ extension SetTrackerRowPresenter {
                     "use_rest_timers": useRestTimers,
                     "rest_duration_seconds": restDurationSeconds
                 ]
+            case .setTypeChanged(let type):
+                return ["set_type": type]
             }
         }
 

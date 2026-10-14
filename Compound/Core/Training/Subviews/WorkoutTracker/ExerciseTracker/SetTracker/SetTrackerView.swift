@@ -299,13 +299,6 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             }
         }
 
-        Button {
-            presenter.onWarmupSetsPressed(delegate.exercise)
-        } label: {
-            Label("Warmup Sets…", systemImage: Symbol.warmup)
-                .tapTarget()
-        }
-
         if delegate.exercise.wrappedValue.isPerSide {
             // A toggle, so the menu draws a checkmark beside it while the sides are split; a tint
             // is not drawn inside a menu.

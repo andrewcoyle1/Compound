@@ -2,9 +2,10 @@
 //  ActiveWorkout+SetKind.swift
 //  Compound
 //
-//  Set kinds on the card: what the set-number menu offers, where a drop or mini-set goes, what
-//  deleting a set takes with it, what its rows are called, and which of last time's rows its Last
-//  column shows. The model is in `SetKind.swift`; this is how the tracker uses it.
+//  Set kinds on the card: what the set-number menu offers and what a pick there does, where a
+//  drop or mini-set goes, what deleting a set takes with it, what its rows are called, and which
+//  of last time's rows its Last column shows. The model is in `SetKind.swift`; this is how the
+//  tracker uses it.
 //
 
 import Foundation
@@ -16,7 +17,32 @@ enum SubSetKind: Equatable {
     case mini
 }
 
+/// A line of the set-number menu: a kind, or a warm-up, which is a flag on the set rather than a
+/// kind of its own.
+enum SetTypeChoice: Hashable {
+    case warmup
+    case kind(SetKind)
+
+    var displayName: String {
+        switch self {
+        case .warmup: String(localized: "Warm-up")
+        case .kind(let kind): kind.displayName
+        }
+    }
+
+    /// The choice as analytics records it.
+    var eventValue: String {
+        switch self {
+        case .warmup: "warmup"
+        case .kind(let kind): kind.rawValue
+        }
+    }
+}
+
 extension WorkoutSetModel {
+
+    /// What the set-number menu ticks for this set.
+    var typeChoice: SetTypeChoice { isWarmup ? .warmup : .kind(kind) }
 
     /// `nil` for a set of its own. A sub-row stored as `.standard` is a mini-set, whose rest
     /// follows its parent's kind (`RestDurationRules`), so it keeps up when the parent's changes.
@@ -33,8 +59,8 @@ extension SetKind {
         switch self {
         case .standard: String(localized: "Standard")
         case .drop: String(localized: "Drop Set")
-        case .amrap: String(localized: "Failure")
-        case .myo: String(localized: "Myo-reps")
+        case .amrap: String(localized: "Failure Set")
+        case .myo: String(localized: "Myo Set")
         case .restPause: String(localized: "Rest-pause")
         case .cluster: String(localized: "Cluster")
         case .partials: String(localized: "Lengthened partials")
@@ -59,22 +85,61 @@ extension ActiveWorkout {
 
     // MARK: - The set-number menu
 
-    /// The kinds the Set Type picker offers a set. A drop is added as a row of its own under the
-    /// set, so it is offered only to a set that already is one, as a template's drop set is.
-    static func setTypeOptions(for set: WorkoutSetModel) -> [SetKind] {
-        let options: [SetKind] = [.standard, .amrap, .myo, .restPause, .cluster]
-        return set.kind == .drop ? options + [.drop] : options
+    /// The types the set number's menu offers. A set a plan made another kind (rest-pause, a
+    /// cluster, partials…) keeps that kind at the end, so the menu still ticks what it is.
+    static func setTypeOptions(for set: WorkoutSetModel) -> [SetTypeChoice] {
+        let options: [SetTypeChoice] = [.kind(.standard), .warmup, .kind(.drop), .kind(.myo), .kind(.amrap)]
+        return options.contains(set.typeChoice) ? options : options + [set.typeChoice]
     }
 
-    /// Whether the menu offers a Set Type and a drop at all: not on a warm-up, and not on a
-    /// sub-row, which is reached through its parent.
-    static func offersSetKinds(_ set: WorkoutSetModel) -> Bool {
-        !set.isWarmup && !set.isSubSet
+    /// Whether the set number opens the type menu: not on a sub-row, which is part of its set.
+    static func offersSetTypes(_ set: WorkoutSetModel) -> Bool {
+        !set.isSubSet
+    }
+
+    /// Another drop belongs to a drop set.
+    static func offersDrop(_ set: WorkoutSetModel) -> Bool {
+        !set.isWarmup && !set.isSubSet && set.kind == .drop
     }
 
     /// A mini-set belongs to a set that rests within itself: myo-reps, rest-pause or a cluster.
     static func offersMiniSet(_ set: WorkoutSetModel) -> Bool {
-        offersSetKinds(set) && set.kind.restsWithinTheSet
+        !set.isWarmup && !set.isSubSet && set.kind.restsWithinTheSet
+    }
+
+    /// `sets` with `setId`, and the other half of its pair, made `choice`.
+    ///
+    /// Sub-rows the new type has no use for go: every one for a warm-up, a standard or a failure
+    /// set, the mini-sets of a set made a drop set and the drops of one made a myo set. A drop or
+    /// myo set left with none is given its first under `setId`, as Add Another would add it: a
+    /// drop at `dropWeightKg`, a mini-set at the set's weight.
+    static func applying(
+        _ choice: SetTypeChoice,
+        to setId: String,
+        in sets: [WorkoutSetModel],
+        firstSubSetId: String,
+        dropWeightKg: Double?
+    ) -> [WorkoutSetModel] {
+        guard let set = sets.first(where: { $0.id == setId }), set.typeChoice != choice else { return sets }
+        let family = Set(sets.pairedSetIds(for: setId))
+        let kind: SetKind = if case .kind(let kind) = choice { kind } else { .standard }
+        let subKind: SubSetKind? = choice == .warmup ? nil : kind == .drop ? .drop : kind.restsWithinTheSet ? .mini : nil
+
+        var updated = sets.filter { row in
+            guard let parentId = row.parentSetId, family.contains(parentId) else { return true }
+            // A drop is stored as one; a mini-set is stored plain. Partials and the like are neither.
+            return switch subKind {
+            case .drop: row.kind == .drop
+            case .mini: row.kind == .standard
+            case nil: false
+            }
+        }
+        for index in updated.indices where family.contains(updated[index].id) {
+            updated[index].isWarmup = choice == .warmup
+            updated[index].kind = kind
+        }
+        guard let subKind, subSets(of: setId, in: updated).isEmpty else { return updated }
+        return addingSubSet(subKind, to: setId, in: updated, id: firstSubSetId, weightKg: subKind == .drop ? dropWeightKg : set.weightKg)
     }
 
     // MARK: - Sub-rows

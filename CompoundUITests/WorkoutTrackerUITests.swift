@@ -320,16 +320,16 @@ final class WorkoutTrackerUITests: XCTestCase {
         attach(app, "12-superset-round-logged")
     }
 
-    /// WP-Q: a drop set added from the set-number menu sits under its set, and once its reps are
-    /// in, the log button logs the set and then the drop, with no rest between them.
-    func testADropSetAddedFromTheMenuIsLogged() {
+    /// The set number opens the set-type menu. Drop Set adds the set's first drop under it, and
+    /// once its reps are in, the log button logs the set and then the drop, with no rest between.
+    func testADropSetChosenFromTheMenuIsLogged() {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
         reachFirstWorkingSet(app)
 
         app.waitFor(app.buttons.matching(NSPredicate(format: "label == 'Set 1'")).firstMatch).tap()
-        app.waitFor(app.buttons["Add drop set to Set 1"]).tap()
+        app.waitFor(app.buttons["Drop Set"].firstMatch).tap()
         let dropReps = app.waitFor(app.textFields["Set 1, drop set 1, Reps"])
         attach(app, "13-drop-set-added")
 

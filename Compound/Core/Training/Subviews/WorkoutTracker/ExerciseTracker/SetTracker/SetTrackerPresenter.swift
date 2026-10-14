@@ -46,10 +46,6 @@ class SetTrackerPresenter {
         router.showWorkoutExerciseEquipmentSheetView(delegate: delegate)
     }
     
-    func onWarmupSetsPressed(_ exercise: Binding<WorkoutExerciseModel>) {
-        router.showWarmupSetsView(delegate: WarmupSetsDelegate(exercise: exercise))
-    }
-    
     func onExerciseSettingsPressed(exercise: WorkoutExerciseModel) {
         guard let exerciseModel = interactor.allExercises.first(where: { $0.id == exercise.templateId }) else { return }
         router.showExerciseSettingsView(delegate: ExerciseSettingsDelegate(exercise: exerciseModel))

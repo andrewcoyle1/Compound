@@ -64,10 +64,6 @@ struct SetTrackerPresenterTests {
             shown.append("equipment")
         }
 
-        func showWarmupSetsView(delegate: WarmupSetsDelegate) {
-            shown.append("warmupSets")
-        }
-
         func showExerciseSettingsView(delegate: ExerciseSettingsDelegate) {
             shown.append("exerciseSettings")
         }
@@ -570,16 +566,6 @@ struct SetTrackerPresenterTests {
         screen.presenter.onExerciseSettingsPressed(exercise: exercise(templateId: "missing", sets: []))
 
         #expect(screen.router.shown.isEmpty)
-    }
-
-    @Test("Test The Warmup Sets Screen Opens")
-    func testTheWarmupSetsScreenOpens() {
-        let screen = makeScreen()
-        let box = MutableExercise(exercise(sets: []))
-
-        screen.presenter.onWarmupSetsPressed(box.binding)
-
-        #expect(screen.router.shown == ["warmupSets"])
     }
 
     @Test("Test The Equipment Sheet Opens")

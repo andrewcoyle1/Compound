@@ -60,7 +60,6 @@ struct SetSideTrackingTests {
         let router: AnyRouter = TestRouting.anyRouter
 
         func showWorkoutExerciseEquipmentSheetView(delegate: WorkoutExerciseEquipmentSheetDelegate) { }
-        func showWarmupSetsView(delegate: WarmupSetsDelegate) { }
         func showExerciseSettingsView(delegate: ExerciseSettingsDelegate) { }
         func showSetTargetView(delegate: SetTargetDelegate) { }
         func showSwapExercisePickerView(alternativeIds: [String], onSelect: @escaping (ExerciseModel) -> Void) { }

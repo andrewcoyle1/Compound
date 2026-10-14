@@ -4273,22 +4273,32 @@
         }
       }
     },
+    "Add Another Drop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir otra serie descendente"
+          }
+        }
+      }
+    },
+    "Add Another Mini-Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir otra miniserie"
+          }
+        }
+      }
+    },
     "Add Day" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir día"
-          }
-        }
-      }
-    },
-    "Add Drop Set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir serie descendente"
           }
         }
       }
@@ -4380,16 +4390,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir comida"
-          }
-        }
-      }
-    },
-    "Add Mini-Set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir miniserie"
           }
         }
       }
@@ -4585,6 +4585,26 @@
         }
       }
     },
+    "Add another drop to %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir otra serie descendente a %@"
+          }
+        }
+      }
+    },
+    "Add another mini-set to %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir otra miniserie a %@"
+          }
+        }
+      }
+    },
     "Add band" : {
       "localizations" : {
         "es" : {
@@ -4612,16 +4632,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir máquina de poleas"
-          }
-        }
-      }
-    },
-    "Add drop set to %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir serie descendente a %@"
           }
         }
       }
@@ -4752,16 +4762,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añade mesociclos abajo. Se hacen en este orden."
-          }
-        }
-      }
-    },
-    "Add mini-set to %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir miniserie a %@"
           }
         }
       }
@@ -7525,6 +7525,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retos"
+          }
+        }
+      }
+    },
+    "Change" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar"
+          }
+        }
+      }
+    },
+    "Change %@ to %@?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cambiar %1$@ a %2$@?"
           }
         }
       }
@@ -24295,22 +24315,22 @@
         }
       }
     },
-    "Set options" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opciones de la serie"
-          }
-        }
-      }
-    },
     "Set timers for specific exercises" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fija temporizadores para ejercicios concretos"
+          }
+        }
+      }
+    },
+    "Set type" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo de serie"
           }
         }
       }
@@ -27603,6 +27623,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este día no tiene comidas registradas."
+          }
+        }
+      }
+    },
+    "This deletes %lld logged rows under it." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This deletes %lld logged row under it."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This deletes %lld logged rows under it."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Esto elimina %lld fila registrada debajo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Esto elimina %lld filas registradas debajo."
+                }
+              }
+            }
           }
         }
       }
@@ -31098,36 +31158,6 @@
         }
       }
     },
-    "Warmup Set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serie de calentamiento"
-          }
-        }
-      }
-    },
-    "Warmup Sets" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Series de calentamiento"
-          }
-        }
-      }
-    },
-    "Warmup Sets…" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Series de calentamiento…"
-          }
-        }
-      }
-    },
     "Warmup set" : {
       "localizations" : {
         "es" : {
@@ -32004,16 +32034,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Cuánto pesas?"
-          }
-        }
-      }
-    },
-    "What's a warmup set?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Qué es una serie de calentamiento?"
           }
         }
       }

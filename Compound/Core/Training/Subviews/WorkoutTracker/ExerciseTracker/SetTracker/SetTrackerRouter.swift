@@ -10,7 +10,6 @@ import SwiftUI
 @MainActor
 protocol SetTrackerRouter: GlobalRouter {
     func showWorkoutExerciseEquipmentSheetView(delegate: WorkoutExerciseEquipmentSheetDelegate)
-    func showWarmupSetsView(delegate: WarmupSetsDelegate)
     func showExerciseSettingsView(delegate: ExerciseSettingsDelegate)
     func showSetTargetView(delegate: SetTargetDelegate)
     /// `alternativeIds` are the plan's substitutions, listed first.

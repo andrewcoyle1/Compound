@@ -18,6 +18,15 @@ why, and what would change it. Review these with the `feature/flutter` → `deve
 | 14 Oct 2026 | M1 contract (#83) | Dart decoding is as strict as Swift: an unknown enum value, a missing required field or a wrong type throws (Doubles accept ints) | Swift silently drops documents it can't decode, so Dart must not be more lenient | — |
 | 14 Oct 2026 | M1 contract (#83) | Field-name constants go in `…Keys` classes; the Dart models are generated from one field table | The constructor, decoding, encoding and keys can't drift apart | — |
 | 14 Oct 2026 | M1 contract (#83) | A `compound_models` CI job at 100% coverage, pinned to Dart 3.13.5 | The app job runs at 0% and wouldn't enforce the package | — |
+| 14 Oct 2026 | M1 app_ui (#84) | Colours use the iOS system values, so the Flutter and Swift apps match; the accent is `colorScheme.primary` and on-accent is `onPrimary` | One brand on both platforms | The brand palette changes |
+| 14 Oct 2026 | M1 app_ui (#84) | Secondary text is darker than iOS (`#6C6C70` light, `#AEAEB2` dark) | It passes 4.5:1 contrast | — |
+| 14 Oct 2026 | M1 app_ui (#84) | System font with iOS sizes and tabular figures, not SF Rounded | SF Rounded can't be bundled on Android | A brand font is chosen |
+| 14 Oct 2026 | M1 app_ui (#84) | Icons are Flutter's built-in Material Icons (rounded); no new package | No extra dependency | An icon set is chosen |
+| 14 Oct 2026 | M1 app_ui (#84) | `AppFormat` only formats numbers and unit symbols; words and plurals live in the app's ARB strings | app_ui stays free of translations | — |
+| 14 Oct 2026 | M1 app_ui (#84) | Deferred to the first screen that needs them: Dashboard, BarChip, sheet presets, `Format.load`, haptics | YAGNI | — |
+| 14 Oct 2026 | Maths (#85) | `compound_maths` ports `functions/coach-maths.js` and is checked against `coach-parity.json` with the Swift and JS tolerance (1e-6) | Three copies of the maths, one fixture | — |
+| 14 Oct 2026 | Maths (#85) | Dates are `YYYY-MM-DD` day keys, as in the JS; age is passed in by the caller (default 30) | No clock inside the maths | — |
+| 14 Oct 2026 | Maths (#85) | `median([])` returns null, as in Swift (the JS returns NaN) | A straight port would crash on a log with no weigh-ins | — |
 
 To regenerate the gitignored dev config, run this from `app/`:
 

@@ -1,0 +1,11 @@
+{
+  "author_id": "user_legacy",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "id": "set_legacy",
+  "index": 2.0,
+  "isWarmup": false,
+  "load_count": 2.0,
+  "reps": 8.0
+}

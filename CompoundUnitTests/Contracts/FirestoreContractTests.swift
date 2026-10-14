@@ -71,9 +71,41 @@ struct FirestoreContractTests {
                 full: Samples.fullPrivateSettings, minimal: PrivateUserSettings(),
                 // Written whole through `saveDocument` (a merge), never field by field.
                 namedFields: []
+            ),
+            try contract(
+                WorkoutSessionModel.self, directory: "workout_session",
+                full: Samples.fullSession, minimal: Samples.minimalSession,
+                namedFields: Self.workoutSessionNamedFields
+            ),
+            // The session's nested types, each in its own folder so every lenient path in their
+            // decoders has a case of its own. Never written or queried by field name.
+            try contract(
+                WorkoutExerciseModel.self, directory: "workout_exercise",
+                full: Samples.fullExercise, minimal: Samples.minimalExercise, namedFields: []
+            ),
+            try contract(
+                WorkoutSetModel.self, directory: "workout_set",
+                full: Samples.fullSet, minimal: Samples.minimalSet, namedFields: []
+            ),
+            try contract(
+                SetTarget.self, directory: "set_target",
+                full: Samples.fullSetTarget, minimal: Samples.minimalSetTarget, namedFields: []
+            ),
+            try contract(
+                EquipmentVariation.self, directory: "equipment_variation",
+                full: Samples.fullEquipmentVariation, minimal: Samples.minimalEquipmentVariation, namedFields: []
             )
         ]
     }
+
+    /// Every session field the app updates or queries by name: `WorkoutSessionManager` (the
+    /// `author_id` listener, the template, collection-group and notification queries, and the
+    /// Strava and streak field writes), `FollowingQueries`, `FirebaseWorkoutSessionLikeService`
+    /// (`liked_by_user_ids`, spelled out there) and the `onReportCreated` function (`hidden`).
+    private static let workoutSessionNamedFields: [String] = ([
+        .id, .authorId, .dateCreated, .workoutTemplateId, .stravaActivityId, .weekStreakCount,
+        .likedByUserIds, .hidden
+    ] as [WorkoutSessionModel.CodingKeys]).map(\.rawValue) + ["liked_by_user_ids"]
 
     /// Every user-document field the app updates or queries by name: `UserManager`,
     /// `EditProfilePresenter`, `ExpenditurePresenter`, `UserManager+Username`,
@@ -175,8 +207,23 @@ struct FirestoreContractTests {
             case .kilograms, .pounds: break
             }
         }
+        // Not CaseIterable, so listed here; the switch fails to compile on a new case.
+        let setTypes: [SetTargetSetType] = [
+            .standard, .drop, .myo, .failure, .amrap, .restPause, .cluster, .partials, .stretch, .hold
+        ]
+        for setType in setTypes {
+            switch setType {
+            case .standard, .drop, .myo, .failure, .amrap, .restPause, .cluster, .partials, .stretch, .hold: break
+            }
+        }
         let enums: [String: [String]] = [
             "ActivityLevel": ActivityLevel.allCases.map(\.rawValue),
+            "EquipmentKind": EquipmentKind.allCases.map(\.rawValue),
+            "ExerciseWeightUnit": ExerciseWeightUnit.allCases.map(\.rawValue),
+            "SetKind": SetKind.allCases.map(\.rawValue),
+            "SetSide": SetSide.allCases.map(\.rawValue),
+            "SetTargetSetType": setTypes.map(\.rawValue),
+            "TrackingMode": TrackingMode.allCases.map(\.rawValue),
             "CardioFitnessLevel": CardioFitnessLevel.allCases.map(\.rawValue),
             "DistanceUnitPreference": DistanceUnitPreference.allCases.map(\.rawValue),
             "ExerciseFrequency": ExerciseFrequency.allCases.map(\.rawValue),
@@ -286,6 +333,132 @@ private enum Samples {
     ).withUsername("ada")
 
     static let minimalUser = UserModel(userId: "user_contract_minimal")
+
+    static let fullEquipmentVariation = EquipmentVariation(
+        id: "variation_contract_full",
+        resistanceEquipment: [
+            EquipmentRef(kind: .loadableBar, id: "olympic_barbell"),
+            EquipmentRef(kind: .freeWeight, id: "bumper_plates")
+        ],
+        supportEquipment: [EquipmentRef(kind: .supportEquipment, id: "flat_bench")]
+    )
+
+    static let minimalEquipmentVariation = EquipmentVariation(id: "variation_contract_minimal")
+
+    static let fullSetTarget = SetTarget(
+        id: "set_target_contract_full",
+        setNumber: 2,
+        minReps: 6,
+        maxReps: 10,
+        rirTarget: 1,
+        setType: .drop,
+        dropCount: 2,
+        dropStepPercent: 15,
+        dropReps: 8,
+        miniSetCount: 3,
+        amrapTargetReps: 12,
+        partialReps: 5,
+        holdSeconds: 30
+    )
+
+    static let minimalSetTarget = SetTarget(id: "set_target_contract_minimal", setNumber: 1)
+
+    static let fullSet: WorkoutSetModel = {
+        var set = WorkoutSetModel(
+            id: "set_contract_full",
+            authorId: "user_contract_full",
+            index: 3,
+            reps: 8,
+            weightKg: 82.5,
+            durationSec: 45,
+            distanceMeters: 400.5,
+            rpe: 8.5,
+            side: .left,
+            kind: .drop,
+            parentSetId: "set_contract_parent",
+            targetReps: 10,
+            bands: ["Red", "Blue"],
+            isWarmup: false,
+            completedAt: date("2026-10-12T17:41:02.750Z"),
+            dateCreated: date("2026-10-12T17:30:00.250Z")
+        )
+        set.weightUnit = .pounds
+        set.loadCount = 2
+        set.machineBaseKg = 20.5
+        return set
+    }()
+
+    static let minimalSet = WorkoutSetModel(
+        id: "set_contract_minimal",
+        authorId: "user_contract_minimal",
+        index: 1,
+        isWarmup: true,
+        dateCreated: date("2026-10-12T17:30:00.250Z")
+    )
+
+    static let fullExercise = WorkoutExerciseModel(
+        id: "exercise_contract_full",
+        authorId: "user_contract_full",
+        templateId: "bench_press",
+        name: "Bench Press",
+        trackingMode: .weightReps,
+        index: 1,
+        notes: "Pause on the chest",
+        imageName: "bench_press",
+        sets: [fullSet],
+        setTargets: [fullSetTarget],
+        chosenVariationId: "variation_contract_full",
+        equipmentVariations: [fullEquipmentVariation],
+        supersetGroupId: "superset_contract",
+        planNotes: "Elbows tucked",
+        planSlotId: "slot_contract",
+        restSeconds: 150,
+        linkURL: "https://example.com/bench",
+        substituteExerciseIds: ["dumbbell_bench_press"],
+        weightUnit: .pounds,
+        loadsPerSet: 2,
+        machineBaseKg: 20.5
+    )
+
+    static let minimalExercise = WorkoutExerciseModel(
+        id: "exercise_contract_minimal",
+        authorId: "user_contract_minimal",
+        templateId: "plank",
+        name: "Plank",
+        trackingMode: .timeOnly,
+        index: 1,
+        sets: []
+    )
+
+    static let fullSession: WorkoutSessionModel = {
+        var session = WorkoutSessionModel(
+            id: "session_contract_full",
+            authorId: "user_contract_full",
+            name: "Push A",
+            workoutTemplateId: "template_contract",
+            mesocycleId: "mesocycle_contract",
+            dateCreated: date("2026-10-12T17:30:00.250Z"),
+            notes: "Felt strong",
+            exercises: [fullExercise, minimalExercise],
+            deletedAt: date("2026-10-13T09:00:00.125Z"),
+            likedByUserIds: ["user_followed_1"],
+            weekStreakCount: 6
+        )
+        session.endSession(at: date("2026-10-12T18:35:10.500Z"), pausedSeconds: 120.5)
+        session.stravaActivityId = 12_345_678_901
+        session.gymProfileId = "gym_contract"
+        session.isDeload = true
+        session.hidden = false
+        return session
+    }()
+
+    static let minimalSession = WorkoutSessionModel(
+        id: "session_contract_minimal",
+        authorId: "user_contract_minimal",
+        name: "Rest day",
+        dateCreated: date("2026-10-13T08:00:00.000Z"),
+        exercises: []
+    )
 
     static let fullPrivateSettings = PrivateUserSettings(
         fcmToken: "fcm-token",

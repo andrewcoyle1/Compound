@@ -1,0 +1,28 @@
+{
+  "author_id": "user_contract_full",
+  "bands": [
+    "Red",
+    "Blue"
+  ],
+  "completed_at": {
+    "$timestamp": "2026-10-12T17:41:02.750Z"
+  },
+  "date_created": {
+    "$timestamp": "2026-10-12T17:30:00.250Z"
+  },
+  "distance_meters": 400.5,
+  "duration_sec": 45,
+  "id": "set_contract_full",
+  "index": 3,
+  "isWarmup": false,
+  "kind": "drop",
+  "load_count": 2,
+  "machine_base_kg": 20.5,
+  "parent_set_id": "set_contract_parent",
+  "reps": 8,
+  "rpe": 8.5,
+  "side": "left",
+  "target_reps": 10,
+  "weight_kg": 82.5,
+  "weight_unit": "pounds"
+}

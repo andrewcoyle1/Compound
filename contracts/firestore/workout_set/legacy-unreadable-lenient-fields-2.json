@@ -1,0 +1,15 @@
+{
+  "author_id": "user_legacy",
+  "bands": "Red",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "id": "set_legacy",
+  "index": 1,
+  "isWarmup": false,
+  "load_count": "2",
+  "machine_base_kg": true,
+  "weight_unit": [
+    "pounds"
+  ]
+}

@@ -28,6 +28,29 @@ final _models =
             PrivateUserSettings.fromFirestore(data).toFirestore(),
         keys: PrivateUserSettingsKeys.all,
       ),
+      'workout_session': (
+        roundTrip: (data) =>
+            WorkoutSessionModel.fromFirestore(data).toFirestore(),
+        keys: WorkoutSessionModelKeys.all,
+      ),
+      'workout_exercise': (
+        roundTrip: (data) =>
+            WorkoutExerciseModel.fromFirestore(data).toFirestore(),
+        keys: WorkoutExerciseModelKeys.all,
+      ),
+      'workout_set': (
+        roundTrip: (data) => WorkoutSetModel.fromFirestore(data).toFirestore(),
+        keys: WorkoutSetModelKeys.all,
+      ),
+      'set_target': (
+        roundTrip: (data) => SetTarget.fromFirestore(data).toFirestore(),
+        keys: SetTargetKeys.all,
+      ),
+      'equipment_variation': (
+        roundTrip: (data) =>
+            EquipmentVariation.fromFirestore(data).toFirestore(),
+        keys: EquipmentVariationKeys.all,
+      ),
     };
 
 final _root = Directory('../../../contracts/firestore');
@@ -120,6 +143,12 @@ void main() {
       enums,
       equals({
         'ActivityLevel': raw(ActivityLevel.values),
+        'EquipmentKind': raw(EquipmentKind.values),
+        'ExerciseWeightUnit': raw(ExerciseWeightUnit.values),
+        'SetKind': raw(SetKind.values),
+        'SetSide': raw(SetSide.values),
+        'SetTargetSetType': raw(SetTargetSetType.values),
+        'TrackingMode': raw(TrackingMode.values),
         'CardioFitnessLevel': raw(CardioFitnessLevel.values),
         'DistanceUnitPreference': raw(DistanceUnitPreference.values),
         'ExerciseFrequency': raw(ExerciseFrequency.values),

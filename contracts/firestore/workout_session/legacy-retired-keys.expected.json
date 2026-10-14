@@ -1,0 +1,14 @@
+{
+  "author_id": "user_legacy",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2025-06-01T07:05:30.500Z"
+  },
+  "exercises": [],
+  "id": "session_legacy",
+  "is_rest_day": false,
+  "liked_by_user_ids": [],
+  "name": "Legs"
+}

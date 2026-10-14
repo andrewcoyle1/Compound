@@ -8,6 +8,8 @@ environment:
   flutter: ^3.47.0
 
 dependencies:
+  app_ui:
+    path: packages/app_ui
   bloc: ^9.2.1
   compound_models:
     path: packages/compound_models

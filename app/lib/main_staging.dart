@@ -1,3 +1,4 @@
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
@@ -8,7 +9,7 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 /// The staging flavor, which is the Swift app's old Mock configuration:
 /// in-memory repositories and no Firebase, for previews and demos. Starts
 /// signed in as the seeded sample user; signing out and back in stays in
-/// memory.
+/// memory. Analytics only print to the console.
 Future<void> main() async {
   final now = DateTime.now();
   await bootstrap(
@@ -26,6 +27,9 @@ Future<void> main() async {
       nutritionRepository: InMemoryNutritionRepository(
         meals: sampleMealLogs(uid: sampleUserId, now: now),
         dietPlan: sampleDietPlan(uid: sampleUserId, now: now),
+      ),
+      analyticsRepository: const AnalyticsRepository(
+        services: [ConsoleService()],
       ),
     ),
   );

@@ -33,6 +33,19 @@ $ flutter run --flavor production --target lib/main_production.dart
 
 _\*Compound works on iOS, Android, Web, and Windows._
 
+### Mixpanel token
+
+The development flavor sends events to Mixpanel only when it is given the project token, which
+must never be committed (the repo is public). Put it in `app/dart_defines.json`, which is
+gitignored:
+
+```json
+{ "MIXPANEL_TOKEN": "<the token from Keys.swift>" }
+```
+
+and run with `--dart-define-from-file=dart_defines.json`. Without it, Mixpanel is off and Firebase
+Analytics, Crashlytics and the console still log.
+
 ---
 
 ## Running Tests 🧪

@@ -23,4 +23,3 @@ jobs:
       # Packages under app/packages are held at 100%; the app itself is reported, not gated
       # (docs/specs/flutter/plan.md, Coverage).
       min_coverage: 0
-      timeout_minutes: 30

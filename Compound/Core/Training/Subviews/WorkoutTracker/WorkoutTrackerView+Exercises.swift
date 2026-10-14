@@ -21,9 +21,7 @@ extension WorkoutTrackerView {
             if let members = ActiveWorkout.supersetBlock(containing: current.id, in: presenter.workoutSession.exercises) {
                 supersetCard(members, current: current)
             } else {
-                exerciseTrackerView(delegate(for: binding(for: current)), { duration in
-                    presenter.startRestTimer(durationSeconds: duration)
-                })
+                exerciseTrackerView(delegate(for: binding(for: current)))
             }
         }
     }
@@ -63,9 +61,7 @@ extension WorkoutTrackerView {
                 delegate.card?.onUndoManager = nil
                 // Smart progression's note speaks for the exercise the log button is on.
                 if member.id != current.id { delegate.card?.progressionNote = nil }
-                return exerciseTrackerView(delegate, { duration in
-                    presenter.startRestTimer(durationSeconds: duration)
-                })
+                return exerciseTrackerView(delegate)
             }
         )
     }
@@ -112,9 +108,6 @@ extension WorkoutTrackerView {
             },
             onDeleteExercise: {
                 presenter.deleteExercise(exerciseId)
-            },
-            onSetCompleted: { completedSet, _ in
-                presenter.applyLiveProgression(after: completedSet, in: exerciseId)
             },
             onUpdateNote: { note in
                 presenter.updateExerciseNotes(note, exerciseId: exerciseId)

@@ -290,7 +290,6 @@ extension WorkoutTrackerPresenter {
             exerciseId: exerciseId,
             useRestTimers: settings.useRestTimers,
             restDurationSeconds: rest ?? 0,
-            onStartRestIsNil: false,
             source: source
         ))
         if settings.useRestTimers, let rest {

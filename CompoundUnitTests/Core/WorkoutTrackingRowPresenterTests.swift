@@ -88,6 +88,13 @@ struct SetTrackerRowPresenterTests {
         let presenter: SetTrackerRowPresenter
         let interactor: Interactor
         let router: Router
+
+        /// Ticks the set as the row does, and returns the rest that follows it. The row works it
+        /// out for its rest picker; the live tracker logs the set and runs the rest itself.
+        @MainActor func complete(_ exercise: WorkoutExerciseModel, _ set: Binding<WorkoutSetModel>) -> [Int] {
+            presenter.onSetComplete(exercise, set)
+            return presenter.restAfterCompleting(set.wrappedValue, in: exercise).map { [$0] } ?? []
+        }
     }
 
     private func makeScreen() -> Screen {
@@ -220,45 +227,15 @@ struct SetTrackerRowPresenterTests {
 
     // MARK: - The rest that follows
 
-    @Test("Test Completing A Set Starts The Rest Timer")
-    func testCompletingASetStartsTheRestTimer() {
+    @Test("Test A Set Rests For The Default Length")
+    func testASetRestsForTheDefaultLength() {
         let screen = makeScreen()
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
         let box = Box(set())
 
-        screen.presenter.onSetComplete(exercise(), box.binding)
+        started += screen.complete(exercise(), box.binding)
 
         #expect(started == [90])
-    }
-
-    /// Someone who trains without a timer gets their set logged and nothing else — a rest screen
-    /// appearing uninvited is the whole reason the setting exists.
-    @Test("Test No Rest Starts When Rest Timers Are Off")
-    func testNoRestStartsWhenRestTimersAreOff() {
-        let screen = makeScreen()
-        screen.interactor.workoutSettings.useRestTimers = false
-        var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
-        let box = Box(set())
-
-        screen.presenter.onSetComplete(exercise(), box.binding)
-
-        #expect(box.value.completedAt != nil)
-        #expect(started.isEmpty)
-    }
-
-    /// Undoing a set must not start a rest — the user is correcting a mistake, not finishing work.
-    @Test("Test Undoing A Set Starts No Rest")
-    func testUndoingASetStartsNoRest() {
-        let screen = makeScreen()
-        var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
-        let box = Box(set(completedAt: Date()))
-
-        screen.presenter.onSetComplete(exercise(), box.binding)
-
-        #expect(started.isEmpty)
     }
 
     /// Heavy compound work is rested longer than accessory work, which is what the per-type
@@ -269,10 +246,9 @@ struct SetTrackerRowPresenterTests {
         screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .compoundLower)]
         screen.interactor.workoutSettings.restDurationsByExerciseType = [ExerciseType.compoundLower.rawValue: 240]
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
         let box = Box(set())
 
-        screen.presenter.onSetComplete(exercise(), box.binding)
+        started += screen.complete(exercise(), box.binding)
 
         #expect(started == [240])
     }
@@ -285,10 +261,9 @@ struct SetTrackerRowPresenterTests {
         screen.interactor.workoutSettings.restDurationsByExerciseType = [ExerciseType.compoundLower.rawValue: 240]
         screen.presenter.updateRestBefore(setId: "set-1", seconds: 45)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
         let box = Box(set())
 
-        screen.presenter.onSetComplete(exercise(), box.binding)
+        started += screen.complete(exercise(), box.binding)
 
         #expect(started == [45])
     }
@@ -302,10 +277,9 @@ struct SetTrackerRowPresenterTests {
         screen.interactor.workoutSettings.restDurationsByExerciseType = [ExerciseType.compoundLower.rawValue: 240]
         screen.interactor.restOverrides = ["template-1": 150]
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
         let box = Box(set())
 
-        screen.presenter.onSetComplete(exercise(), box.binding)
+        started += screen.complete(exercise(), box.binding)
 
         #expect(started == [150])
     }
@@ -319,13 +293,12 @@ struct SetTrackerRowPresenterTests {
         screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .compoundLower)]
         screen.interactor.restOverrides = [:]
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(exercise(), Box(set()).binding)
+        started += screen.complete(exercise(), Box(set()).binding)
         #expect(started == [120])
 
         screen.interactor.workoutSettings.restDurationsByExerciseType = [ExerciseType.compoundLower.rawValue: 240]
-        screen.presenter.onSetComplete(exercise(), Box(set(id: "set-2")).binding)
+        started += screen.complete(exercise(), Box(set(id: "set-2")).binding)
         #expect(started == [120, 240])
     }
 
@@ -335,9 +308,8 @@ struct SetTrackerRowPresenterTests {
         let screen = makeScreen()
         screen.interactor.restOverrides = ["template-2": 150]
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(exercise(), Box(set()).binding)
+        started += screen.complete(exercise(), Box(set()).binding)
 
         #expect(started == [90])
     }
@@ -349,9 +321,8 @@ struct SetTrackerRowPresenterTests {
         let screen = makeScreen()
         screen.interactor.restOverrides = ["template-1": 0]
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(exercise(), Box(set()).binding)
+        started += screen.complete(exercise(), Box(set()).binding)
 
         #expect(started == [90])
     }
@@ -363,9 +334,8 @@ struct SetTrackerRowPresenterTests {
         screen.interactor.restOverrides = ["template-1": 150]
         screen.presenter.updateRestBefore(setId: "set-1", seconds: 45)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(exercise(), Box(set()).binding)
+        started += screen.complete(exercise(), Box(set()).binding)
 
         #expect(started == [45])
     }
@@ -378,10 +348,9 @@ struct SetTrackerRowPresenterTests {
         screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .core)]
         screen.interactor.workoutSettings.restDurationsByExerciseType = [ExerciseType.compoundLower.rawValue: 240]
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
         let box = Box(set())
 
-        screen.presenter.onSetComplete(exercise(), box.binding)
+        started += screen.complete(exercise(), box.binding)
 
         #expect(started == [60])
     }
@@ -395,9 +364,8 @@ struct SetTrackerRowPresenterTests {
         let warmup = set(id: "w1", index: 1, isWarmup: true)
         let box = Box(warmup)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(
+        started += screen.complete(
             exercise(sets: [warmup, set(id: "w2", index: 2, isWarmup: true), set(id: "s1", index: 3)]),
             box.binding
         )
@@ -414,9 +382,8 @@ struct SetTrackerRowPresenterTests {
         let last = set(id: "w2", index: 2, isWarmup: true)
         let box = Box(last)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(
+        started += screen.complete(
             exercise(sets: [set(id: "w1", index: 1, isWarmup: true), last, set(id: "s1", index: 3)]),
             box.binding
         )
@@ -431,9 +398,8 @@ struct SetTrackerRowPresenterTests {
         let last = set(id: "w2", index: 2, isWarmup: true)
         let box = Box(last)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(
+        started += screen.complete(
             exercise(sets: [set(id: "w1", index: 1, isWarmup: true), last, set(id: "s1", index: 3)]),
             box.binding
         )
@@ -450,9 +416,8 @@ struct SetTrackerRowPresenterTests {
         let last = set(id: "s2", index: 2)
         let box = Box(last)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(exercise(sets: [set(id: "s1", index: 1), last]), box.binding)
+        started += screen.complete(exercise(sets: [set(id: "s1", index: 1), last]), box.binding)
 
         #expect(started == [45])
     }
@@ -464,9 +429,8 @@ struct SetTrackerRowPresenterTests {
         let last = set(id: "s2", index: 2)
         let box = Box(last)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(exercise(sets: [set(id: "s1", index: 1), last]), box.binding)
+        started += screen.complete(exercise(sets: [set(id: "s1", index: 1), last]), box.binding)
 
         #expect(box.value.completedAt != nil)
         #expect(started.isEmpty)
@@ -482,9 +446,8 @@ struct SetTrackerRowPresenterTests {
         let middle = set(id: "s2", index: 2)
         let box = Box(middle)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(
+        started += screen.complete(
             exercise(sets: [set(id: "s1", index: 1), middle, set(id: "s3", index: 3)]),
             box.binding
         )
@@ -500,9 +463,8 @@ struct SetTrackerRowPresenterTests {
         screen.presenter.updateRestBefore(setId: "w1", seconds: 45)
         let box = Box(warmup)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(exercise(sets: [warmup, set(id: "s1", index: 2)]), box.binding)
+        started += screen.complete(exercise(sets: [warmup, set(id: "s1", index: 2)]), box.binding)
 
         #expect(started == [45])
     }
@@ -515,9 +477,8 @@ struct SetTrackerRowPresenterTests {
         let last = set(id: "w2", index: 2, isWarmup: true)
         let box = Box(last)
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(
+        started += screen.complete(
             exercise(sets: [set(id: "w1", index: 1, isWarmup: true), last, set(id: "s1", index: 3)]),
             box.binding
         )
@@ -564,9 +525,8 @@ struct SetTrackerRowPresenterTests {
         screen.router.restPrimaryAction?()
 
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
         let box = Box(set())
-        screen.presenter.onSetComplete(exercise(), box.binding)
+        started += screen.complete(exercise(), box.binding)
 
         #expect(screen.presenter.restBeforeSetIdToSec["set-1"] == 135)
         #expect(started == [135])
@@ -696,11 +656,10 @@ extension SetTrackerRowPresenterTests {
         let screen = makeScreen()
         screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .compoundLower)]
         var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
 
-        screen.presenter.onSetComplete(exercise(), Box(set(reps: 5)).binding)
+        started += screen.complete(exercise(), Box(set(reps: 5)).binding)
         screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .isolationLower)]
-        screen.presenter.onSetComplete(exercise(), Box(set(id: "set-2")).binding)
+        started += screen.complete(exercise(), Box(set(id: "set-2")).binding)
 
         #expect(started == [180, 90])
     }

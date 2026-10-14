@@ -15,8 +15,6 @@ struct SetTrackerDelegate {
     var allWorkoutExercises: [WorkoutExerciseModel] = []
     var onSetSupersetGroup: @MainActor (String, String?) -> Void = { _, _ in }
     var onDeleteExercise: @MainActor () -> Void = { }
-    /// Called with the set that was just logged, so the screen can re-suggest what is left.
-    var onSetCompleted: @MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void = { _, _ in }
     /// The live tracker makes a swap itself, keeping the logged sets on the old exercise. `nil`
     /// swaps in place, as a finished workout's editor does. See `SetTrackerPresenter.onSwapPressed`.
     var onSwap: (@MainActor (ExerciseModel) -> Void)?
@@ -207,7 +205,6 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 showAutoRanges: delegate.card?.showAutoRanges ?? presenter.showAutoRanges,
                 rowState: delegate.card == nil ? nil : isNext.map { ActiveWorkout.blockRowState(of: set, in: exercise, isNext: $0) }
                     ?? ActiveWorkout.rowState(of: set, in: exercise),
-                onSetCompleted: delegate.onSetCompleted,
                 onLogSet: delegate.card?.onLogSet,
                 onCustomRestChanged: delegate.card?.onCustomRestChanged,
                 badgeLabel: badge
@@ -633,8 +630,7 @@ extension SetTrackerView {
 extension CoreBuilder {
     func setTrackerView(
         router: AnyRouter,
-        delegate: SetTrackerDelegate,
-        onStartRest: ((Int) -> Void)? = nil
+        delegate: SetTrackerDelegate
     ) -> some View {
         let presenter = SetTrackerPresenter(
             interactor: interactor,
@@ -644,7 +640,7 @@ extension CoreBuilder {
             presenter: presenter,
             delegate: delegate,
             setTrackerRow: { delegate in
-                self.setTrackerRowView(router: router, delegate: delegate, onStartRest: onStartRest)
+                self.setTrackerRowView(router: router, delegate: delegate)
             }
         )
     }

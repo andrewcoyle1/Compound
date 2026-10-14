@@ -11,11 +11,6 @@ class SetTrackerRowPresenter {
     var restPickerMinutesSelection: Int = 0
     var restPickerSecondsSelection: Int = 0
     var restBeforeSetIdToSec: [String: Int] = [:]
-    var onStartRest: ((Int) -> Void)?
-
-    /// Handed the set that was just logged. Smart progression uses it to re-suggest the sets of
-    /// this exercise that are still to come.
-    var onSetCompleted: (@MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void)?
     /// See `SetTrackerRowDelegate.onLogSet`.
     var onLogSet: (@MainActor (String, Int?) -> Void)?
     var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
@@ -84,6 +79,8 @@ class SetTrackerRowPresenter {
         interactor.playHaptic(option: .selection)
     }
     
+    /// On the live tracker the set is logged by the tracker, which rests and re-suggests after
+    /// it. Elsewhere (a finished workout's editor, the warm-up sheet) the row ticks it itself.
     func onSetComplete(_ exercise: WorkoutExerciseModel, _ set: Binding<WorkoutSetModel>) {
         if set.wrappedValue.completedAt == nil, let onLogSet {
             onLogSet(set.wrappedValue.id, restBeforeSetIdToSec[set.wrappedValue.id])
@@ -101,16 +98,8 @@ class SetTrackerRowPresenter {
                 setId: set.wrappedValue.id,
                 exerciseId: exercise.id,
                 useRestTimers: useRestTimers,
-                restDurationSeconds: duration ?? 0,
-                onStartRestIsNil: onStartRest == nil
+                restDurationSeconds: duration ?? 0
             ))
-            if useRestTimers, let duration {
-                onStartRest?(duration)
-            }
-            // Off by default. With it on, finishing a set re-suggests the ones still to come.
-            if interactor.workoutSettings.smartProgressionApplyInSession {
-                onSetCompleted?(set.wrappedValue, exercise)
-            }
         } else {
             set.wrappedValue.completedAt = nil
         }
@@ -358,7 +347,7 @@ extension SetTrackerRowPresenter {
     enum Event: LoggableEvent {
         /// Every set logged, from a row, the set keyboard or the tracker's log button, which
         /// `source` tells apart.
-        case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, onStartRestIsNil: Bool, source: String = "row")
+        case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, source: String = "row")
 
         var eventName: String {
             switch self {
@@ -368,14 +357,13 @@ extension SetTrackerRowPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .setCompleted(let setId, let exerciseId, let useRestTimers, let restDurationSeconds, let onStartRestIsNil, let source):
+            case .setCompleted(let setId, let exerciseId, let useRestTimers, let restDurationSeconds, let source):
                 return [
                     "source": source,
                     "set_id": setId,
                     "exercise_id": exerciseId,
                     "use_rest_timers": useRestTimers,
-                    "rest_duration_seconds": restDurationSeconds,
-                    "on_start_rest_is_nil": onStartRestIsNil
+                    "rest_duration_seconds": restDurationSeconds
                 ]
             }
         }

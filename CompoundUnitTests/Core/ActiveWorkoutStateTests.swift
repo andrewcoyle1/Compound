@@ -402,6 +402,19 @@ struct ActiveWorkoutPresenterTests {
         #expect(presenter.restTimer(for: presenter.workoutSession.exercises[0]) == nil)
     }
 
+    /// Someone who trains without a timer gets their set logged and nothing else: a rest
+    /// appearing uninvited is the whole reason the setting exists.
+    @Test("Test No Rest Starts When Rest Timers Are Off")
+    func testNoRestWhenRestTimersAreOff() throws {
+        let (presenter, interactor) = try makePresenter(sets: [openSet("s1"), openSet("s2")])
+        interactor.workoutSettings.useRestTimers = false
+
+        presenter.onPrimaryActionPressed()
+
+        #expect(presenter.workoutSession.exercises[0].sets[0].completedAt != nil)
+        #expect(interactor.restEndTime == nil)
+    }
+
     // MARK: - Reordering
 
     /// One open set per exercise; those in `done` are already logged.

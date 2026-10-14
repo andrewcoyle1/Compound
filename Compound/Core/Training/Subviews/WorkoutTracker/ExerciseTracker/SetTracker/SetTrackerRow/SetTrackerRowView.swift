@@ -10,8 +10,6 @@ struct SetTrackerRowDelegate {
     /// Done, current or upcoming, on the live tracker. `nil` draws every row alike, as the
     /// warm-up sheet does.
     var rowState: SetRowState?
-    /// Called with the set that was just logged, so the screen can re-suggest what is left.
-    var onSetCompleted: @MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void = { _, _ in }
     /// The live tracker logs the set itself, with any rest set by hand on this row, so its log
     /// button and this row's Done are one path. `nil` where there is no tracker: the warm-up sheet
     /// and a finished workout's editor.
@@ -83,16 +81,16 @@ struct SetTrackerRowView: View {
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             deleteSetButton
         }
-        // No rest runs when a finished workout is being corrected, which is the one place these
-        // rows are built without a rest handler.
+        // Rests run only on the live tracker, not in a finished workout's editor or the warm-up
+        // sheet.
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
-            if presenter.onStartRest != nil {
+            if presenter.onLogSet != nil {
                 restTimerButton
             }
         }
         // Shortcuts to the set number's menu, which is the visible route to both actions.
         .contextMenu {
-            if presenter.onStartRest != nil {
+            if presenter.onLogSet != nil {
                 restTimerButton
             }
             deleteSetButton
@@ -200,7 +198,7 @@ struct SetTrackerRowView: View {
             }
 
             // The visible route to what the swipes and the long press also offer.
-            if presenter.onStartRest != nil {
+            if presenter.onLogSet != nil {
                 restTimerButton
             }
             Divider()
@@ -652,15 +650,12 @@ extension CoreBuilder {
 
     func setTrackerRowView(
         router: AnyRouter,
-        delegate: SetTrackerRowDelegate,
-        onStartRest: ((Int) -> Void)? = nil
+        delegate: SetTrackerRowDelegate
     ) -> some View {
         let presenter = SetTrackerRowPresenter(
             interactor: interactor,
             router: CoreRouter(router: router, builder: self)
         )
-        presenter.onStartRest = onStartRest
-        presenter.onSetCompleted = delegate.onSetCompleted
         presenter.onLogSet = delegate.onLogSet
         presenter.onCustomRestChanged = delegate.onCustomRestChanged
         return SetTrackerRowView(presenter: presenter, delegate: delegate)

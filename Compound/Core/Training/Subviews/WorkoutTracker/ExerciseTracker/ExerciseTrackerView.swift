@@ -20,8 +20,6 @@ struct ExerciseTrackerDelegate {
     var previousNote: String?
     var onSetSupersetGroup: @MainActor (String, String?) -> Void = { _, _ in }
     var onDeleteExercise: @MainActor () -> Void = { }
-    /// Called with the set that was just logged, so the screen can re-suggest what is left.
-    var onSetCompleted: @MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void = { _, _ in }
     /// Saves this session's note on the exercise; an empty string clears it.
     var onUpdateNote: @MainActor (String) -> Void = { _ in }
     /// Saves the exercise's mesocycle note; `nil` when it has none to edit, outside a mesocycle.
@@ -112,7 +110,6 @@ struct ExerciseTrackerView<SetTracker: View>: View {
             allWorkoutExercises: delegate.allWorkoutExercises,
             onSetSupersetGroup: delegate.onSetSupersetGroup,
             onDeleteExercise: delegate.onDeleteExercise,
-            onSetCompleted: delegate.onSetCompleted,
             onSwap: delegate.onSwap,
             card: card
         )
@@ -398,8 +395,7 @@ private struct ClampedNote: View {
 extension CoreBuilder {
     func exerciseTrackerView(
         router: AnyRouter,
-        delegate: ExerciseTrackerDelegate,
-        onStartRest: ((Int) -> Void)? = nil
+        delegate: ExerciseTrackerDelegate
     ) -> some View {
         ExerciseTrackerView(
             presenter: ExerciseTrackerPresenter(
@@ -408,11 +404,7 @@ extension CoreBuilder {
             ),
             delegate: delegate,
             setTracker: { delegate in
-                self.setTrackerView(
-                    router: router,
-                    delegate: delegate,
-                    onStartRest: onStartRest
-                )
+                self.setTrackerView(router: router, delegate: delegate)
             }
         )
     }

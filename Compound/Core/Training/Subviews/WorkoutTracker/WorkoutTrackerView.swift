@@ -22,7 +22,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
     /// (a11y.md C1). See `WorkoutPrimaryCTA`.
     @AccessibilityFocusState var isPrimaryCTAFocused: Bool
 
-    @ViewBuilder var exerciseTrackerView: (ExerciseTrackerDelegate, ((Int) -> Void)?) -> ExerciseTracker
+    @ViewBuilder var exerciseTrackerView: (ExerciseTrackerDelegate) -> ExerciseTracker
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -156,12 +156,8 @@ extension CoreBuilder {
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             ),
-            exerciseTrackerView: { delegate, onStartRest in
-                self.exerciseTrackerView(
-                    router: router,
-                    delegate: delegate,
-                    onStartRest: onStartRest
-                )
+            exerciseTrackerView: { delegate in
+                self.exerciseTrackerView(router: router, delegate: delegate)
             }
         )
     }

@@ -19,6 +19,11 @@ protocol WorkoutSessionDetailInteractor: GlobalInteractor {
     func deleteWorkoutSession(id: String) async throws
     func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel]
     var stravaIsConnected: Bool { get }
+    /// The summary's Strava offer: whether the finished workout has saved, and the sign-in it runs.
+    var workoutSessions: [WorkoutSessionModel] { get }
+    func stravaAuthenticate() async throws
+    func stravaQueueBackfill() -> Int
+    func stravaSyncPendingUploads() async
     func stravaUpdateActivity(_ activityId: Int, from session: WorkoutSessionModel) async throws
 }
 

@@ -172,12 +172,11 @@ extension WorkoutTrackerPresenter {
 
     /// Puts deleted sets back where they were.
     private func restore(_ removed: [(offset: Int, set: WorkoutSetModel)], in exerciseId: String) {
-        guard let index = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
-        var sets = workoutSession.exercises[index].sets
-        for (offset, set) in removed where !sets.contains(where: { $0.id == set.id }) {
-            sets.insert(set, at: min(offset, sets.count))
+        guard var exercise = workoutSession.exercises.first(where: { $0.id == exerciseId }) else { return }
+        for (offset, set) in removed where !exercise.sets.contains(where: { $0.id == set.id }) {
+            exercise.sets.insert(set, at: min(offset, exercise.sets.count))
         }
-        workoutSession.exercises[index].sets = sets
+        replaceExercise(exercise)
     }
 
     /// Reps taps on one set undo together, back to what was logged (HIG: batch incremental

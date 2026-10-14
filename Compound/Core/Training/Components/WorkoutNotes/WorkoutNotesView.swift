@@ -36,8 +36,8 @@ struct WorkoutNotesDelegate {
     /// The tab the sheet opens on.
     var selectedTab: NoteTab.Kind = .single
     let onSave: () -> Void
-    var title: String = "Workout Notes"
-    var saveTitle: String = "Save"
+    var title = String(localized: "Workout Notes")
+    var saveTitle = String(localized: "Save")
     /// Runs once the sheet is fully gone, whichever button closed it. The finish screen uses it
     /// to end the workout only after its own sheet is out of the way.
     var onDidDismiss: (() -> Void)?
@@ -46,9 +46,9 @@ struct WorkoutNotesDelegate {
     init(
         notes: Binding<String>,
         onSave: @escaping () -> Void,
-        title: String = "Workout Notes",
+        title: String = String(localized: "Workout Notes"),
         hint: String? = nil,
-        saveTitle: String = "Save",
+        saveTitle: String = String(localized: "Save"),
         onDidDismiss: (() -> Void)? = nil
     ) {
         self.tabs = [NoteTab(kind: .single, text: notes, hint: hint)]

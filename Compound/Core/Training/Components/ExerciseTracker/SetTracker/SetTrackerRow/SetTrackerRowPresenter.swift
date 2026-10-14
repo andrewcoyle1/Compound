@@ -67,6 +67,23 @@ class SetTrackerRowPresenter {
         interactor.playHaptic(option: .selection)
     }
 
+    /// A tap on last time's figures or on smart progression's suggestion copies them into the set.
+    /// Not on a logged set, where a stray tap would overwrite what was recorded.
+    func onFillFromPrevious(_ prev: WorkoutSetModel, trackingMode: TrackingMode, set: Binding<WorkoutSetModel>) {
+        fill(set, with: ActiveWorkout.filling(set.wrappedValue, fromPrevious: prev, trackingMode: trackingMode), source: "last")
+    }
+
+    func onFillFromSuggestion(_ suggestion: SuggestedSet, set: Binding<WorkoutSetModel>) {
+        fill(set, with: ActiveWorkout.filling(set.wrappedValue, from: suggestion), source: "auto")
+    }
+
+    private func fill(_ set: Binding<WorkoutSetModel>, with filled: WorkoutSetModel, source: String) {
+        guard set.wrappedValue.completedAt == nil else { return }
+        set.wrappedValue = filled
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.setFilled(source: source))
+    }
+
     /// The set number's menu: makes the set a warm-up, a drop set, a myo set… A drop or myo set
     /// gets its first drop or mini-set (`ActiveWorkout.applying`), and sub-rows the new type has
     /// no use for go, asking first when any of them is logged.
@@ -364,11 +381,14 @@ extension SetTrackerRowPresenter {
         /// `source` tells apart.
         case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, source: String = "row")
         case setTypeChanged(type: String)
+        /// A row filled from "last" time's figures or the "auto" suggestion.
+        case setFilled(source: String)
 
         var eventName: String {
             switch self {
             case .setCompleted:             return "SetTrackerRow_SetCompleted"
             case .setTypeChanged:           return "SetTrackerRow_SetTypeChanged"
+            case .setFilled:                return "SetTrackerRow_SetFilled"
             }
         }
 
@@ -384,6 +404,8 @@ extension SetTrackerRowPresenter {
                 ]
             case .setTypeChanged(let type):
                 return ["set_type": type]
+            case .setFilled(let source):
+                return ["source": source]
             }
         }
 

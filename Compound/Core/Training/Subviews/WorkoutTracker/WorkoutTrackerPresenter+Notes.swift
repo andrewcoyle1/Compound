@@ -78,7 +78,7 @@ extension WorkoutTrackerPresenter {
                 },
                 title: String(localized: "Finish Workout"),
                 hint: nil,
-                saveTitle: "Finish",
+                saveTitle: String(localized: "Finish"),
                 onDidDismiss: {
                     guard didConfirm, !self.isDone else { return }
                     self.onFinishConfirmed()

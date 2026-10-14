@@ -372,7 +372,7 @@ struct SetTrackerRowView: View {
                     .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
                     .contentShape(.rect)
                     .anyButton {
-                        fill(delegate.set, from: suggestion)
+                        presenter.onFillFromSuggestion(suggestion, set: delegate.set)
                     }
                     .accessibilityHint("Fills this set")
                     .disabled(delegate.set.wrappedValue.completedAt != nil)
@@ -394,14 +394,6 @@ struct SetTrackerRowView: View {
             .font(font)
             .foregroundStyle(.secondary)
             .frame(minHeight: cellHeight)
-    }
-
-    /// Writes a suggestion into the row, leaving alone every metric it says nothing about.
-    private func fill(_ set: Binding<WorkoutSetModel>, from suggestion: SuggestedSet) {
-        if let weightKg = suggestion.weightKg { set.wrappedValue.weightKg = weightKg }
-        if let reps = suggestion.reps { set.wrappedValue.reps = reps }
-        if let durationSec = suggestion.durationSec { set.wrappedValue.durationSec = durationSec }
-        if let distanceMeters = suggestion.distanceMeters { set.wrappedValue.distanceMeters = distanceMeters }
     }
 
     private func autoRangeLabel(target: SetTarget) -> some View {
@@ -448,7 +440,7 @@ struct SetTrackerRowView: View {
         case .weightReps:
             // A set with no weight, as on a bodyweight lift, reads "8 reps" rather than nothing, or
             // "BW × 8" while the bodyweight contribution is shown.
-            if let reps = prev.reps,
+            if prev.reps != nil,
                let figures = ActiveWorkout.figures(
                    of: prev,
                    trackingMode: .weightReps,
@@ -456,23 +448,19 @@ struct SetTrackerRowView: View {
                    distanceUnit: unitPreference.distanceUnit,
                    showsBodyweight: showsBodyweightLoad
                ) {
-                fillFromPrevious(withEffort(columnText(figures), rpe: prev.rpe)) {
-                    if let weight = prev.weightKg { $0.weightKg = weight }
-                    $0.bands = prev.bands
-                    $0.reps = reps
-                }
+                fillFromPrevious(withEffort(columnText(figures), rpe: prev.rpe), prev: prev, trackingMode: trackingMode)
             } else {
                 emptyTargetLabel
             }
         case .repsOnly:
             if let reps = prev.reps {
-                fillFromPrevious(withEffort(columnText(String(reps)), rpe: prev.rpe)) { $0.reps = reps }
+                fillFromPrevious(withEffort(columnText(String(reps)), rpe: prev.rpe), prev: prev, trackingMode: trackingMode)
             } else {
                 emptyTargetLabel
             }
         case .timeOnly:
             if let duration = prev.durationSec {
-                fillFromPrevious(columnText(Format.duration(TimeInterval(duration)))) { $0.durationSec = duration }
+                fillFromPrevious(columnText(Format.duration(TimeInterval(duration))), prev: prev, trackingMode: trackingMode)
             } else {
                 emptyTargetLabel
             }
@@ -481,11 +469,10 @@ struct SetTrackerRowView: View {
                 let displayDistance = Format.distance(meters: distance, exerciseUnit: unitPreference.distanceUnit)
                 fillFromPrevious(
                     columnText("\(displayDistance) \(Format.duration(TimeInterval(duration)))", font: .caption2)
-                        .lineLimit(2)
-                ) {
-                    $0.distanceMeters = distance
-                    $0.durationSec = duration
-                }
+                        .lineLimit(2),
+                    prev: prev,
+                    trackingMode: trackingMode
+                )
             } else {
                 emptyTargetLabel
             }
@@ -506,12 +493,12 @@ struct SetTrackerRowView: View {
 
     /// A Prev value that fills this set when tapped, for every tracking mode. Not on a logged set,
     /// where a stray tap would overwrite what was recorded.
-    private func fillFromPrevious(_ label: some View, fill: @escaping (inout WorkoutSetModel) -> Void) -> some View {
+    private func fillFromPrevious(_ label: some View, prev: WorkoutSetModel, trackingMode: TrackingMode) -> some View {
         label
             .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
             .contentShape(.rect)
             .anyButton {
-                fill(&delegate.set.wrappedValue)
+                presenter.onFillFromPrevious(prev, trackingMode: trackingMode, set: delegate.set)
             }
             .accessibilityHint("Fills this set")
             .disabled(delegate.set.wrappedValue.completedAt != nil)

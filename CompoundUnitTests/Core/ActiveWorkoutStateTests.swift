@@ -251,6 +251,32 @@ struct ActiveWorkoutStateTests {
         #expect(title(amrap) == "Log set 1 · 100 kg × 10")
     }
 
+    // MARK: - Filling a row
+
+    /// Last time's figures fill what the exercise tracks; a set with no weight last time keeps its
+    /// own, and a timed set takes only the time.
+    @Test("Test Filling From Last Time Copies The Mode's Figures")
+    func testFillingFromLastTime() {
+        var prev = set("p", reps: 8, weightKg: nil)
+        prev.bands = ["Red"]
+        let filled = ActiveWorkout.filling(set("s", reps: nil, weightKg: 40), fromPrevious: prev, trackingMode: .weightReps)
+        #expect(filled.weightKg == 40)
+        #expect(filled.reps == 8)
+        #expect(filled.bands == ["Red"])
+
+        prev.durationSec = 45
+        let timed = ActiveWorkout.filling(set("s", reps: nil, weightKg: nil), fromPrevious: prev, trackingMode: .timeOnly)
+        #expect(timed.durationSec == 45)
+        #expect(timed.reps == nil)
+    }
+
+    @Test("Test A Suggestion Fills Only What It Names")
+    func testASuggestionFillsOnlyWhatItNames() {
+        let filled = ActiveWorkout.filling(set("s", reps: 5, weightKg: 100), from: SuggestedSet(reps: 9))
+        #expect(filled.reps == 9)
+        #expect(filled.weightKg == 100)
+    }
+
     // MARK: - Plates
 
     @Test("Test A Load Rounds To The Nearest Total The Plates Make")

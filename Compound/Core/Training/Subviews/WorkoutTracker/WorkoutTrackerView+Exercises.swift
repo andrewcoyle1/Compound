@@ -25,15 +25,11 @@ extension WorkoutTrackerView {
         }
     }
 
-    /// By id, not index: a binding by index can be read while the exercise it held is being
-    /// removed, and would then point at another exercise or past the end.
+    /// By id, not index: see `replaceExercise`.
     private func binding(for current: WorkoutExerciseModel) -> Binding<WorkoutExerciseModel> {
         Binding(
             get: { presenter.workoutSession.exercises.first { $0.id == current.id } ?? current },
-            set: { updated in
-                guard let index = presenter.workoutSession.exercises.firstIndex(where: { $0.id == current.id }) else { return }
-                presenter.workoutSession.exercises[index] = updated
-            }
+            set: { presenter.replaceExercise($0) }
         )
     }
 

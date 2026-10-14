@@ -106,8 +106,19 @@ extension WorkoutTrackerPresenter {
     }
 
     func setSupersetGroupId(_ groupId: String?, forExerciseId exerciseId: String) {
-        guard let idx = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
-        workoutSession.exercises[idx].supersetGroupId = groupId
+        guard var exercise = workoutSession.exercises.first(where: { $0.id == exerciseId }) else { return }
+        exercise.supersetGroupId = groupId
+        replaceExercise(exercise)
+    }
+
+    /// Writes back an edited exercise, by id: the card's binding, a superset change, an undo. By
+    /// id, not index, because a binding by index can be read while the exercise it held is being
+    /// removed, and would then point at another exercise or past the end.
+    func replaceExercise(_ updated: WorkoutExerciseModel) {
+        guard let index = workoutSession.exercises.firstIndex(where: { $0.id == updated.id }) else { return }
+        var exercises = workoutSession.exercises
+        exercises[index] = updated
+        workoutSession.updateExercises(exercises)
     }
 
     func presentAddExercise() {

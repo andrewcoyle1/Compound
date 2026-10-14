@@ -48,15 +48,19 @@ class WorkoutSessionDetailPresenter {
     /// The last page of the workout tracker rather than a screen browsed to: leaving it closes the
     /// tracker's cover, not just this page.
     private let isWorkoutSummary: Bool
+    /// Where the Strava offer's answer is kept (`StravaOffer.answeredKey`).
+    private let defaults: UserDefaults
 
     init(
         interactor: WorkoutSessionDetailInteractor,
         router: WorkoutSessionDetailRouter,
-        isWorkoutSummary: Bool = false
+        isWorkoutSummary: Bool = false,
+        defaults: UserDefaults = .standard
     ) {
         self.interactor = interactor
         self.router = router
         self.isWorkoutSummary = isWorkoutSummary
+        self.defaults = defaults
     }
 
     /// Read at display time, so a workout saved without its image is shown with it and left as it was.
@@ -515,6 +519,9 @@ extension WorkoutSessionDetailPresenter {
         case copyLink(sessionId: String)
         case viewOnStrava(sessionId: String)
         case stravaUpdateFail(error: Error)
+        case stravaOfferShown
+        case stravaOfferAccepted
+        case stravaOfferDeclined
 
         var eventName: String {
             switch self {
@@ -533,6 +540,10 @@ extension WorkoutSessionDetailPresenter {
             case .copyLink: return "WorkoutSessionDetailView_CopyLink"
             case .viewOnStrava: return "WorkoutSessionDetailView_ViewOnStrava"
             case .stravaUpdateFail: return "WorkoutSessionDetailView_StravaUpdate_Fail"
+            // Named as they were before the offer moved here, so its funnel reads on.
+            case .stravaOfferShown: return "strava_offer_shown"
+            case .stravaOfferAccepted: return "strava_offer_accepted"
+            case .stravaOfferDeclined: return "strava_offer_declined"
             }
         }
 
@@ -569,5 +580,69 @@ extension WorkoutSessionDetailPresenter {
     func onAskCoachPressed(session: WorkoutSessionModel) {
         guard canAskCoach(session: session) else { return }
         router.showCoach(context: CoachContext(kind: .session, id: session.id, title: session.name))
+    }
+}
+
+// MARK: - Strava offer
+
+extension WorkoutSessionDetailPresenter {
+
+    /// The summary's one-time Strava offer (`StravaOffer`). Waits for the finished workout's save,
+    /// which lands after this screen appears, for at most ten seconds; that also lets the screen
+    /// finish appearing before a dialog goes over it. Run from the view's task, so leaving the
+    /// summary cancels it.
+    func onSummaryTask(session: WorkoutSessionModel) async {
+        guard isWorkoutSummary, let userId = interactor.currentUser?.userId else { return }
+        for _ in 0..<20 {
+            do { try await Task.sleep(for: .milliseconds(500)) } catch { return }
+            if interactor.workoutSessions.contains(where: { $0.id == session.id }) { break }
+        }
+        let key = StravaOffer.answeredKey(userId: userId)
+        guard StravaOffer.shouldOffer(
+            finished: session,
+            savedSessions: interactor.workoutSessions,
+            isStravaConnected: interactor.stravaIsConnected,
+            hasAnswered: defaults.bool(forKey: key)
+        ) else { return }
+
+        interactor.trackEvent(event: Event.stravaOfferShown)
+        router.showConfirmationDialog(
+            title: String(localized: "Upload Workouts to Strava?"),
+            subtitle: String(localized: "Connect Strava and each workout you finish is added to it.")
+        ) {
+            AnyView(VStack {
+                Button("Connect Strava") { self.onStravaOfferAnswered(connect: true, key: key) }
+                Button("Not Now", role: .cancel) { self.onStravaOfferAnswered(connect: false, key: key) }
+            })
+        }
+    }
+
+    private func onStravaOfferAnswered(connect: Bool, key: String) {
+        defaults.set(true, forKey: key)
+        interactor.trackEvent(event: connect ? Event.stravaOfferAccepted : Event.stravaOfferDeclined)
+        guard connect else { return }
+        Task { await connectStrava() }
+    }
+
+    /// The same sign-in Profile › Integrations runs, with the same answers. The workout that
+    /// prompted the offer finished before the connection existed, so it is queued now.
+    private func connectStrava() async {
+        do {
+            try await interactor.stravaAuthenticate()
+            _ = interactor.stravaQueueBackfill()
+            await interactor.stravaSyncPendingUploads()
+        } catch where SignInCancellation.isCancellation(error) {
+            // Closing Strava's sign-in page is a choice, not a failed connection.
+        } catch StravaError.missingUploadPermission {
+            router.showSimpleAlert(
+                title: String(localized: "Unable to Connect Strava"),
+                subtitle: StravaError.missingUploadPermission.localizedDescription
+            )
+        } catch {
+            router.showSimpleAlert(
+                title: String(localized: "Unable to Connect Strava"),
+                subtitle: String(localized: "Check your internet connection and try again.")
+            )
+        }
     }
 }

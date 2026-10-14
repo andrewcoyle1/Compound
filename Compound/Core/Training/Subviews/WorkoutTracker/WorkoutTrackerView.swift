@@ -173,17 +173,14 @@ extension CoreRouter {
     static let workoutTrackerScreenId = "workout-tracker"
 
     /// Pushed on the tracker's own stack when the workout is finished, so the cover ends on what
-    /// was done rather than closing and opening a second modal. The one-time Strava offer goes
-    /// from the summary's router so the dialog lands over it.
+    /// was done rather than closing and opening a second modal. The summary makes the one-time
+    /// Strava offer itself, so the dialog lands over it.
     func showWorkoutSummary(session: WorkoutSessionModel) {
         router.showScreen(.push) { router in
             builder.workoutSessionDetailView(
                 router: router,
                 delegate: WorkoutSessionDetailDelegate(workoutSession: session, isWorkoutSummary: true)
             )
-            .task {
-                await CoreRouter(router: router, builder: builder).offerStravaIfFirstWorkout(session)
-            }
         }
     }
 

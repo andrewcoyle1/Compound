@@ -9,10 +9,6 @@ class SetTrackerRowPresenter {
     
     var restPickerMinutesSelection: Int = 0
     var restPickerSecondsSelection: Int = 0
-    var restBeforeSetIdToSec: [String: Int] = [:]
-    /// See `SetTrackerRowDelegate.onLogSet`.
-    var onLogSet: (@MainActor (String, Int?) -> Void)?
-    var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
 
     /// The weight and reps keyboards for this row.
     let keyboard = SetKeyboardPresenter()
@@ -129,11 +125,17 @@ class SetTrackerRowPresenter {
         return ActiveWorkout.dropWeightKg(from: parent.weightKg, step: step, unit: unit)
     }
     
-    /// On the live tracker the set is logged by the tracker, which rests and re-suggests after
-    /// it. Elsewhere (a finished workout's editor, the warm-up sheet) the row ticks it itself.
-    func onSetComplete(_ exercise: WorkoutExerciseModel, _ set: Binding<WorkoutSetModel>) {
+    /// On the live tracker the set is logged by the tracker (`onLogSet`, from the row's delegate),
+    /// which rests and re-suggests after it. Elsewhere (a finished workout's editor) the row ticks
+    /// it itself. `customRestSeconds` is a rest set by hand on this set.
+    func onSetComplete(
+        _ exercise: WorkoutExerciseModel,
+        _ set: Binding<WorkoutSetModel>,
+        onLogSet: (@MainActor (String, Int?) -> Void)? = nil,
+        customRestSeconds: Int? = nil
+    ) {
         if set.wrappedValue.completedAt == nil, let onLogSet {
-            onLogSet(set.wrappedValue.id, restBeforeSetIdToSec[set.wrappedValue.id])
+            onLogSet(set.wrappedValue.id, customRestSeconds)
         } else if set.wrappedValue.completedAt == nil {
             guard validateSetData(trackingMode: exercise.trackingMode, set: set.wrappedValue, isAssisted: isAssisted(exercise)) else {
                 interactor.playHaptic(option: .error)
@@ -143,7 +145,7 @@ class SetTrackerRowPresenter {
             set.wrappedValue.completedAt = Date()
             interactor.playHaptic(option: .success)
             let useRestTimers = interactor.workoutSettings.useRestTimers
-            let duration = restAfterCompleting(set.wrappedValue, in: exercise)
+            let duration = restAfterCompleting(set.wrappedValue, in: exercise, customRestSeconds: customRestSeconds)
             interactor.trackEvent(event: Event.setCompleted(
                 setId: set.wrappedValue.id,
                 exerciseId: exercise.id,
@@ -159,13 +161,13 @@ class SetTrackerRowPresenter {
     ///
     /// The rules themselves are in `RestDurationRules`, shared with the Live Activity intent
     /// handler so a set logged from the widget rests for exactly as long as one logged here.
-    func restAfterCompleting(_ set: WorkoutSetModel, in exercise: WorkoutExerciseModel) -> Int? {
+    func restAfterCompleting(_ set: WorkoutSetModel, in exercise: WorkoutExerciseModel, customRestSeconds: Int? = nil) -> Int? {
         RestDurationRules.restAfterCompleting(
             set,
             in: exercise,
             settings: interactor.workoutSettings,
             context: restContext(for: exercise),
-            customRestSeconds: restBeforeSetIdToSec[set.id]
+            customRestSeconds: customRestSeconds
         )
     }
 
@@ -178,13 +180,18 @@ class SetTrackerRowPresenter {
         )
     }
 
-    func onRestPickerRequested(exercise: WorkoutExerciseModel, setId: String) {
-        // Open on the rest that would actually run for this set, scaling included. A rest already
-        // set by hand is keyed by id alone, so it is honoured whether or not the set is among the
-        // ones passed in. Where the settings say no rest runs here, offer the unscaled base
-        // instead — the user opening the picker plainly wants a rest, and there is nothing else to
-        // show them.
-        let existing = restBeforeSetIdToSec[setId]
+    /// The leading swipe's rest picker. `customRestSeconds` is a rest already set by hand on the
+    /// set, which the tracker keeps; Save hands the new one to `onChange`.
+    func onRestPickerRequested(
+        exercise: WorkoutExerciseModel,
+        setId: String,
+        customRestSeconds: Int? = nil,
+        onChange: (@MainActor (String, Int?) -> Void)? = nil
+    ) {
+        // Open on the rest that would actually run for this set, scaling included. Where the
+        // settings say no rest runs here, offer the unscaled base instead — the user opening the
+        // picker plainly wants a rest, and there is nothing else to show them.
+        let existing = customRestSeconds
             ?? exercise.sets.first(where: { $0.id == setId })
                 .flatMap { restAfterCompleting($0, in: exercise) }
             ?? RestDurationRules.baseRestDuration(settings: interactor.workoutSettings, context: restContext(for: exercise))
@@ -196,7 +203,7 @@ class SetTrackerRowPresenter {
                 guard let self else { return }
                 let total = (self.restPickerMinutesSelection * 60) + self.restPickerSecondsSelection
                 let seconds = total > 0 ? total : nil
-                self.updateRestBefore(setId: setId, seconds: seconds)
+                self.updateRestBefore(setId: setId, seconds: seconds, onChange: onChange)
             },
             // The sheet closes itself; there is nothing to undo, as the pickers write to this
             // presenter's selection and only Save applies it.
@@ -212,13 +219,9 @@ class SetTrackerRowPresenter {
         )
     }
 
-    func updateRestBefore(setId: String, seconds: Int?) {
-        if let seconds {
-            restBeforeSetIdToSec[setId] = seconds
-        } else {
-            restBeforeSetIdToSec.removeValue(forKey: setId)
-        }
-        onCustomRestChanged?(setId, seconds)
+    /// A rest chosen by hand for `setId`, or `nil` to clear it.
+    func updateRestBefore(setId: String, seconds: Int?, onChange: (@MainActor (String, Int?) -> Void)?) {
+        onChange?(setId, seconds)
         interactor.trackEvent(event: Event.restChanged(seconds: seconds))
     }
 
@@ -307,7 +310,7 @@ extension SetTrackerRowPresenter {
             interactor.playHaptic(option: .error)
             return false
         case .ready:
-            onSetComplete(exercise, delegate.set)
+            onSetComplete(exercise, delegate.set, onLogSet: delegate.onLogSet, customRestSeconds: delegate.customRestSeconds)
             return true
         }
     }

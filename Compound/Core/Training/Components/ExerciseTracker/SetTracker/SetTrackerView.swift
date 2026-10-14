@@ -190,6 +190,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                     ?? ActiveWorkout.rowState(of: set, in: exercise),
                 onLogSet: delegate.card?.exerciseCard.onLogSet,
                 onCustomRestChanged: delegate.card?.exerciseCard.onCustomRestChanged,
+                customRestSeconds: delegate.card?.exerciseCard.customRestSeconds[set.id],
                 badgeLabel: badge
             )
         )

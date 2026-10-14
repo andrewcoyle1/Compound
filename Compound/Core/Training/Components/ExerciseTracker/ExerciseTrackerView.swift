@@ -40,6 +40,8 @@ struct ExerciseCard {
     /// See `SetTrackerRowDelegate.onLogSet` and `onCustomRestChanged`.
     var onLogSet: (@MainActor (String, Int?) -> Void)?
     var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
+    /// Rests set by hand, by set id.
+    var customRestSeconds: [String: Int] = [:]
     /// One piece of the table rather than all of it, for a superset's card to place among its
     /// partners' rows. `nil` draws the whole table.
     var piece: SetTrackerPiece?

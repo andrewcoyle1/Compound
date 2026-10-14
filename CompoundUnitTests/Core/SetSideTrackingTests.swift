@@ -331,10 +331,9 @@ struct SetSideTrackingTests {
     func testAHandSetRestBeatsTheSideScaling() {
         let (presenter, interactor) = makeRowPresenter()
         interactor.workoutSettings.restBetweenSideSets = true
-        presenter.updateRestBefore(setId: "s1", seconds: 30)
         let left = set(id: "s1", index: 1, side: .left)
 
-        let rest = presenter.restAfterCompleting(left, in: exercise(sets: [left, set(id: "s2", index: 2, side: .right)]))
+        let rest = presenter.restAfterCompleting(left, in: exercise(sets: [left, set(id: "s2", index: 2, side: .right)]), customRestSeconds: 30)
 
         #expect(rest == 30)
     }

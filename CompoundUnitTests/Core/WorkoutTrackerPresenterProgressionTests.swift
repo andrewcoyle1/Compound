@@ -194,7 +194,7 @@ struct WorkoutTrackerPresenterProgressionTests {
             sessionId: "session-0",
             acknowledgedNoteTemplateIds: ["template-exercise-1"],
             customRestSeconds: ["set-1": 200]
-        ).save(to: screen.interactor.activeWorkoutScreenStateStore)
+        ).save(to: screen.interactor.screenStateStore)
 
         let reopened = try WorkoutTrackerPresenter(interactor: screen.interactor, router: WorkoutTrackerRouterDouble())
 

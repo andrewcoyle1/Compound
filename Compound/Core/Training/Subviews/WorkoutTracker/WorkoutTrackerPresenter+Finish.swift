@@ -85,7 +85,7 @@ extension WorkoutTrackerPresenter {
         // finished session, with its last edit, for Training to resume.
         flushSave()
         isDone = true
-        UIApplication.shared.isIdleTimerDisabled = false
+        interactor.setScreenKeptAwake(false)
 
         let sessionSnapshot = workoutSession
         // The session detail is the summary, pushed as the tracker's last page; its Done closes

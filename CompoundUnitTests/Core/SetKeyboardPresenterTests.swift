@@ -604,9 +604,10 @@ struct SetTrackerRowKeyboardTests {
     /// 13 Oct 2026), and closes.
     @Test func doneLogsAReadySet() {
         let row = makeRow()
-        let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
+        let (presenter, router, exercise) = (row.presenter, row.router, row.exercise)
+        var delegate = row.delegate
         var logged: [String] = []
-        presenter.onLogSet = { setId, _ in logged.append(setId) }
+        delegate.onLogSet = { setId, _ in logged.append(setId) }
         presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
         "80".forEach { presenter.keyboard.type($0) }
         presenter.keyboard.next()

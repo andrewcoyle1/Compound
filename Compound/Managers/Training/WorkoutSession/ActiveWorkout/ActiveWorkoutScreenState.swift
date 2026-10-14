@@ -25,6 +25,9 @@ struct ActiveWorkoutScreenState: Codable, Equatable {
     /// The exercise the user is on, written by the tracker when its card moves and by the Live
     /// Activity's handler when a set is logged there, so both carry on from the same exercise.
     var focusExerciseId: String?
+    /// Up to when the tracker has seen the session's logged sets, so a rebuilt tracker still owns
+    /// up to sets logged in between (`WorkoutTrackerPresenter+Persistence`).
+    var lastSeenSetCompletion: Date?
 
     static let storageKey = "workout.tracker.screenState"
 

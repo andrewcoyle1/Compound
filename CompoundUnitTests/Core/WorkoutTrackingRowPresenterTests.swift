@@ -87,9 +87,9 @@ struct SetTrackerRowPresenterTests {
 
         /// Ticks the set as the row does, and returns the rest that follows it. The row works it
         /// out for its rest picker; the live tracker logs the set and runs the rest itself.
-        @MainActor func complete(_ exercise: WorkoutExerciseModel, _ set: Binding<WorkoutSetModel>) -> [Int] {
-            presenter.onSetComplete(exercise, set)
-            return presenter.restAfterCompleting(set.wrappedValue, in: exercise).map { [$0] } ?? []
+        @MainActor func complete(_ exercise: WorkoutExerciseModel, _ set: Binding<WorkoutSetModel>, customRest: Int? = nil) -> [Int] {
+            presenter.onSetComplete(exercise, set, customRestSeconds: customRest)
+            return presenter.restAfterCompleting(set.wrappedValue, in: exercise, customRestSeconds: customRest).map { [$0] } ?? []
         }
     }
 
@@ -255,11 +255,10 @@ struct SetTrackerRowPresenterTests {
         let screen = makeScreen()
         screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .compoundLower)]
         screen.interactor.workoutSettings.restDurationsByExerciseType = [ExerciseType.compoundLower.rawValue: 240]
-        screen.presenter.updateRestBefore(setId: "set-1", seconds: 45)
         var started: [Int] = []
         let box = Box(set())
 
-        started += screen.complete(exercise(), box.binding)
+        started += screen.complete(exercise(), box.binding, customRest: 45)
 
         #expect(started == [45])
     }
@@ -328,10 +327,9 @@ struct SetTrackerRowPresenterTests {
     func testACustomRestBeatsThePerExerciseOverride() {
         let screen = makeScreen()
         screen.interactor.restOverrides = ["template-1": 150]
-        screen.presenter.updateRestBefore(setId: "set-1", seconds: 45)
         var started: [Int] = []
 
-        started += screen.complete(exercise(), Box(set()).binding)
+        started += screen.complete(exercise(), Box(set()).binding, customRest: 45)
 
         #expect(started == [45])
     }
@@ -456,11 +454,10 @@ struct SetTrackerRowPresenterTests {
     func testAHandSetRestIsNotScaled() {
         let screen = makeScreen()
         let warmup = set(id: "w1", index: 1, isWarmup: true)
-        screen.presenter.updateRestBefore(setId: "w1", seconds: 45)
         let box = Box(warmup)
         var started: [Int] = []
 
-        started += screen.complete(exercise(sets: [warmup, set(id: "s1", index: 2)]), box.binding)
+        started += screen.complete(exercise(sets: [warmup, set(id: "s1", index: 2)]), box.binding, customRest: 45)
 
         #expect(started == [45])
     }
@@ -502,9 +499,7 @@ struct SetTrackerRowPresenterTests {
     @Test("Test The Picker Opens On A Rest Already Set By Hand")
     func testThePickerOpensOnARestAlreadySetByHand() {
         let screen = makeScreen()
-        screen.presenter.updateRestBefore(setId: "set-1", seconds: 135)
-
-        screen.presenter.onRestPickerRequested(exercise: exercise(), setId: "set-1")
+        screen.presenter.onRestPickerRequested(exercise: exercise(), setId: "set-1", customRestSeconds: 135)
 
         #expect(screen.presenter.restPickerMinutesSelection == 2)
         #expect(screen.presenter.restPickerSecondsSelection == 15)
@@ -515,16 +510,17 @@ struct SetTrackerRowPresenterTests {
     @Test("Test Saving The Picker Stores The Chosen Rest")
     func testSavingThePickerStoresTheChosenRest() {
         let screen = makeScreen()
-        screen.presenter.onRestPickerRequested(exercise: exercise(), setId: "set-1")
+        var chosen: [String: Int?] = [:]
+        screen.presenter.onRestPickerRequested(exercise: exercise(), setId: "set-1") { chosen[$0] = $1 }
         screen.router.restMinutes?.wrappedValue = 2
         screen.router.restSeconds?.wrappedValue = 15
         screen.router.restPrimaryAction?()
 
         var started: [Int] = []
         let box = Box(set())
-        started += screen.complete(exercise(), box.binding)
+        started += screen.complete(exercise(), box.binding, customRest: chosen["set-1"] ?? nil)
 
-        #expect(screen.presenter.restBeforeSetIdToSec["set-1"] == 135)
+        #expect(chosen["set-1"] == 135)
         #expect(started == [135])
     }
 
@@ -533,13 +529,14 @@ struct SetTrackerRowPresenterTests {
     @Test("Test Saving Zero Clears The Custom Rest")
     func testSavingZeroClearsTheCustomRest() {
         let screen = makeScreen()
-        screen.presenter.updateRestBefore(setId: "set-1", seconds: 45)
-        screen.presenter.onRestPickerRequested(exercise: exercise(), setId: "set-1")
+        var chosen: [String: Int?] = [:]
+        screen.presenter.onRestPickerRequested(exercise: exercise(), setId: "set-1", customRestSeconds: 45) { chosen[$0] = $1 }
         screen.router.restMinutes?.wrappedValue = 0
         screen.router.restSeconds?.wrappedValue = 0
         screen.router.restPrimaryAction?()
 
-        #expect(screen.presenter.restBeforeSetIdToSec["set-1"] == nil)
+        #expect(chosen.keys.contains("set-1"))
+        #expect(chosen["set-1"] == .some(nil))
     }
 
     // MARK: - Deleting

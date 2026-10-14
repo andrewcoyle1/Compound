@@ -171,4 +171,9 @@ extension WorkoutTrackerPresenter {
         // The rest-over alert, the Live Activity's or the notification, is scheduled by the rest
         // timer's owner, so the +15s, skip, finish and discard that follow can move or withdraw it.
     }
+
+    /// A rest set by hand on a row, or cleared: the log button and the Live Activity rest as long.
+    func onCustomRestChanged(setId: String, seconds: Int?) {
+        customRestSeconds[setId] = seconds
+    }
 }

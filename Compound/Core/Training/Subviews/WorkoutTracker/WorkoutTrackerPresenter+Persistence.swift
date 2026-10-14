@@ -50,7 +50,7 @@ extension WorkoutTrackerPresenter {
         interactor.trackEvent(event: Event.minimized)
         flushSave()
         // Kept on only while the tracker is up: minimised, the phone may sleep (system.md §5).
-        UIApplication.shared.isIdleTimerDisabled = false
+        interactor.setScreenKeptAwake(false)
         router.dismissScreen()
     }
 
@@ -149,7 +149,7 @@ extension WorkoutTrackerPresenter {
             isDone = true
             savePath.scheduledSave?.cancel()
             savePath.scheduledSave = nil
-            UIApplication.shared.isIdleTimerDisabled = false
+            interactor.setScreenKeptAwake(false)
             if let finished = interactor.lastFinishedSession, finished.id == workoutSession.id {
                 router.showWorkoutSummary(session: finished)
             } else {
@@ -188,15 +188,10 @@ extension WorkoutTrackerPresenter {
         setLastSeenSetCompletion(Date())
     }
 
-    private static let lastSeenKey = "workout.tracker.lastSeenSetCompletion"
-
     private func setLastSeenSetCompletion(_ date: Date?) {
         lastSeenSetCompletion = date
-        guard let date else { return }
-        interactor.activeWorkoutScreenStateStore.set(
-            ["sessionId": workoutSession.id, "at": date.timeIntervalSince1970],
-            forKey: Self.lastSeenKey
-        )
+        guard date != nil else { return }
+        saveScreenState()
     }
 
     /// What the last screen on this workout had seen, so a tracker rebuilt after a minimise or a
@@ -204,9 +199,7 @@ extension WorkoutTrackerPresenter {
     /// missed nothing.
     private func loadLastSeenSetCompletion() {
         guard lastSeenSetCompletion == nil else { return }
-        let stored = interactor.activeWorkoutScreenStateStore.dictionary(forKey: Self.lastSeenKey)
-        let timestamp = (stored?["sessionId"] as? String) == workoutSession.id ? stored?["at"] as? TimeInterval : nil
-        setLastSeenSetCompletion(timestamp.map { Date(timeIntervalSince1970: $0) } ?? Date())
+        setLastSeenSetCompletion(interactor.loadScreenState(sessionId: workoutSession.id).lastSeenSetCompletion ?? Date())
     }
 
     // MARK: - Still training?

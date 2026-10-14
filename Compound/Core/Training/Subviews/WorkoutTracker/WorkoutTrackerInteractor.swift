@@ -5,8 +5,8 @@
 //  Created by Andrew Coyle on 09/12/2025.
 //
 
-import Foundation
 import HealthKit
+import UIKit
 
 /// Parameters for updating a workout live activity's status and metrics.
 struct LiveActivityUpdateParams {
@@ -41,8 +41,19 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     var mesocycles: [Mesocycle] { get }
     func saveMesocycle(mesocycle: Mesocycle) async throws
 
-    /// Where the tracker keeps `ActiveWorkoutScreenState`.
-    var activeWorkoutScreenStateStore: UserDefaults { get }
+    /// The tracker's own state for `sessionId` (`ActiveWorkoutScreenState`), which a rebuilt
+    /// tracker and the Live Activity's handler read too.
+    func loadScreenState(sessionId: String) -> ActiveWorkoutScreenState
+    func saveScreenState(_ state: ActiveWorkoutScreenState)
+
+    /// The session whose Apple Health workout this device has started, so a rebuilt tracker does
+    /// not start a second.
+    var healthWorkoutSessionId: String? { get }
+    func markHealthWorkoutStarted(sessionId: String)
+    func clearHealthWorkoutSessionId()
+
+    /// Keeps the screen from sleeping while the tracker is up (Workout Settings › Keep Alive).
+    func setScreenKeptAwake(_ awake: Bool)
     
     /// The current rest end time for the active session, if any.
     var restEndTime: Date? { get }
@@ -118,13 +129,9 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     func cancelRest()
 #endif
     
-    /// Create a new workout session and store it locally.
-    func saveWorkoutSession(_ session: WorkoutSessionModel) async throws
     func updateActiveSession(_ session: WorkoutSessionModel) throws
-    
-    func getWorkoutSession(id: String) async throws -> WorkoutSessionModel
-    /// End a remote (possibly HealthKit) workout session asynchronously at provided date.
 
+    /// End a remote (possibly HealthKit) workout session asynchronously at provided date.
     func endWorkoutSession(_ session: WorkoutSessionModel) async throws
     func deleteActiveSession() throws 
 
@@ -138,23 +145,6 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     var currentWeightKilograms: Double? { get }
     
     // MARK: - Workout History
-
-    /// Lookup the last completed session for a given template and author, if present.
-    /// `inMesocycleId` narrows the search to that one mesocycle; `nil` searches every session.
-    func getLastCompletedSessionForTemplate(
-        templateId: String,
-        authorId: String,
-        inMesocycleId: String?
-    ) async throws -> WorkoutSessionModel?
-
-    /// The same lookup, several sessions deep and most recent first — what smart progression
-    /// reasons from.
-    func getLastCompletedSessionsForTemplate(
-        templateId: String,
-        authorId: String,
-        inMesocycleId: String?,
-        limit: Int
-    ) async throws -> [WorkoutSessionModel]
 
     /// What smart progression suggests for each exercise of a session already under way, keyed
     /// by `ActiveWorkout.historyKey`.
@@ -191,8 +181,26 @@ extension WorkoutTrackerInteractor {
 
 extension CoreInteractor: WorkoutTrackerInteractor {
 
-    var activeWorkoutScreenStateStore: UserDefaults {
-        ActiveWorkoutScreenState.appGroupStore
+    func loadScreenState(sessionId: String) -> ActiveWorkoutScreenState {
+        ActiveWorkoutScreenState.load(sessionId: sessionId, from: ActiveWorkoutScreenState.appGroupStore)
+    }
+
+    func saveScreenState(_ state: ActiveWorkoutScreenState) {
+        state.save(to: ActiveWorkoutScreenState.appGroupStore)
+    }
+
+    var healthWorkoutSessionId: String? { SharedWorkoutStorage.hkStartedSessionId }
+
+    func markHealthWorkoutStarted(sessionId: String) {
+        SharedWorkoutStorage.hkStartedSessionId = sessionId
+    }
+
+    func clearHealthWorkoutSessionId() {
+        SharedWorkoutStorage.clearHKStartedSessionId()
+    }
+
+    func setScreenKeptAwake(_ awake: Bool) {
+        UIApplication.shared.isIdleTimerDisabled = awake
     }
 
     func finishWorkout(_ session: WorkoutSessionModel) async -> WorkoutSaveOutcome {

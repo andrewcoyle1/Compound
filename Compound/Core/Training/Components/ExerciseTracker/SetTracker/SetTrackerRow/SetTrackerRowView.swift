@@ -16,6 +16,8 @@ struct SetTrackerRowDelegate {
     var onLogSet: (@MainActor (_ setId: String, _ customRestSeconds: Int?) -> Void)?
     /// Hands a rest set by hand to the tracker, so its log button rests as long.
     var onCustomRestChanged: (@MainActor (_ setId: String, _ seconds: Int?) -> Void)?
+    /// The rest set by hand on this set, as the tracker keeps it.
+    var customRestSeconds: Int?
     /// What the set's circle shows in place of its number, in the superset tint: "A1", "B2" on
     /// a superset's card. `nil` shows the number.
     var badgeLabel: String?
@@ -78,7 +80,7 @@ struct SetTrackerRowView: View {
         // The rest timer's only way in. Rests run only on the live tracker, not in a finished
         // workout's editor. VoiceOver lists it among the row's actions.
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
-            if presenter.onLogSet != nil {
+            if delegate.onLogSet != nil {
                 restTimerButton
             }
         }
@@ -163,7 +165,9 @@ struct SetTrackerRowView: View {
         Button {
             presenter.onRestPickerRequested(
                 exercise: delegate.exercise.wrappedValue,
-                setId: delegate.set.wrappedValue.id
+                setId: delegate.set.wrappedValue.id,
+                customRestSeconds: delegate.customRestSeconds,
+                onChange: delegate.onCustomRestChanged
             )
         } label: {
             Label("Rest Timer…", systemImage: Symbol.rest)
@@ -412,7 +416,7 @@ struct SetTrackerRowView: View {
     func completeButton(exercise: WorkoutExerciseModel, set: Binding<WorkoutSetModel>) -> some View {
         let state = presenter.completionState(trackingMode: exercise.trackingMode, set: set.wrappedValue, isAssisted: presenter.isAssisted(exercise))
         return Button {
-            presenter.onSetComplete(exercise, set)
+            presenter.onSetComplete(exercise, set, onLogSet: delegate.onLogSet, customRestSeconds: delegate.customRestSeconds)
         } label: {
             Image(systemName: state.systemImage)
                 .font(.title3)
@@ -629,8 +633,6 @@ extension CoreBuilder {
             interactor: interactor,
             router: CoreRouter(router: router, builder: self)
         )
-        presenter.onLogSet = delegate.onLogSet
-        presenter.onCustomRestChanged = delegate.onCustomRestChanged
         return SetTrackerRowView(presenter: presenter, delegate: delegate)
     }
 

@@ -137,7 +137,7 @@ class WorkoutTrackerPresenter {
         // A tracker rebuilt after a minimise carries on from the last one. Its baseline is the
         // one captured when the workout first opened: captured again now, a set edited before the
         // minimise would read as filled in, and live progression could overwrite it.
-        let screenState = ActiveWorkoutScreenState.load(sessionId: session.id, from: interactor.activeWorkoutScreenStateStore)
+        let screenState = interactor.loadScreenState(sessionId: session.id)
         self.customRestSeconds = screenState.customRestSeconds
         self.acknowledgedProgressionNotes = screenState.acknowledgedNoteTemplateIds
         self.progressionBaseline = screenState.progressionBaseline
@@ -183,12 +183,13 @@ class WorkoutTrackerPresenter {
     }
 
     func saveScreenState() {
-        ActiveWorkoutScreenState(
+        interactor.saveScreenState(ActiveWorkoutScreenState(
             sessionId: workoutSession.id,
             acknowledgedNoteTemplateIds: acknowledgedProgressionNotes,
             progressionBaseline: progressionBaseline,
-            customRestSeconds: customRestSeconds
-        ).save(to: interactor.activeWorkoutScreenStateStore)
+            customRestSeconds: customRestSeconds,
+            lastSeenSetCompletion: lastSeenSetCompletion
+        ))
     }
     
     // MARK: - Computed Properties
@@ -221,11 +222,11 @@ class WorkoutTrackerPresenter {
         loadPreviousWorkoutSession()
         await loadWorkoutGymProfile()
         loadProgressionSuggestions()
-        UIApplication.shared.isIdleTimerDisabled = interactor.workoutSettings.keepAlive
+        interactor.setScreenKeptAwake(interactor.workoutSettings.keepAlive)
 
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         // Return early if the HK session is already started — nothing more to do.
-        guard SharedWorkoutStorage.hkStartedSessionId != workoutSession.id else { return }
+        guard interactor.healthWorkoutSessionId != workoutSession.id else { return }
 
         // Ask every time we're about to start a new HK session: HealthKit shows its sheet only for
         // types not yet asked about, so this also reaches users who granted workouts before the
@@ -242,7 +243,7 @@ class WorkoutTrackerPresenter {
 
         interactor.setWorkoutConfiguration(activityType: .traditionalStrengthTraining, location: .indoor)
         interactor.startWorkout(workout: workoutSession)
-        SharedWorkoutStorage.hkStartedSessionId = workoutSession.id
+        interactor.markHealthWorkoutStarted(sessionId: workoutSession.id)
         #endif
     }
 
@@ -274,8 +275,8 @@ class WorkoutTrackerPresenter {
         } catch {
             interactor.trackEvent(event: Event.discardWorkoutFail(error: error))
         }
-        UIApplication.shared.isIdleTimerDisabled = false
-        SharedWorkoutStorage.clearHKStartedSessionId()
+        interactor.setScreenKeptAwake(false)
+        interactor.clearHealthWorkoutSessionId()
         router.dismissScreen()
 
         let sessionSnapshot = workoutSession

@@ -37,10 +37,10 @@ extension WorkoutTrackerPresenter {
     /// reads it and a rebuilt tracker picks it up.
     func persistFocus(_ exerciseId: String?) {
         guard let exerciseId else { return }
-        var state = ActiveWorkoutScreenState.load(sessionId: workoutSession.id, from: interactor.activeWorkoutScreenStateStore)
+        var state = interactor.loadScreenState(sessionId: workoutSession.id)
         guard state.focusExerciseId != exerciseId else { return }
         state.focusExerciseId = exerciseId
-        state.save(to: interactor.activeWorkoutScreenStateStore)
+        interactor.saveScreenState(state)
     }
 
     /// A tracker rebuilt after a minimise or a relaunch opens on the exercise the last one, or the

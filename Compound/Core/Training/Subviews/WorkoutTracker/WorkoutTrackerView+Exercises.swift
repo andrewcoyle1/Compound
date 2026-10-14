@@ -110,8 +110,9 @@ extension WorkoutTrackerView {
                     presenter.logSet(setId, in: exerciseId, customRestSeconds: customRest, source: "row")
                 },
                 onCustomRestChanged: { setId, seconds in
-                    presenter.customRestSeconds[setId] = seconds
+                    presenter.onCustomRestChanged(setId: setId, seconds: seconds)
                 },
+                customRestSeconds: presenter.customRestSeconds,
                 bodyweight: presenter.bodyweightContribution(for: current),
                 showsImage: dynamicTypeSize.isAccessibilitySize
             )

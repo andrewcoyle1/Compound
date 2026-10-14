@@ -181,10 +181,10 @@ struct WorkoutTrackerResumeTests {
     @Test("Test Minimising Lets The Phone Sleep Again")
     func testMinimiseClearsIdleTimer() throws {
         let screen = try makeScreen()
-        UIApplication.shared.isIdleTimerDisabled = true
+        screen.interactor.setScreenKeptAwake(true)
 
         screen.presenter.minimizeSession()
 
-        #expect(UIApplication.shared.isIdleTimerDisabled == false)
+        #expect(!screen.interactor.isScreenKeptAwake)
     }
 }

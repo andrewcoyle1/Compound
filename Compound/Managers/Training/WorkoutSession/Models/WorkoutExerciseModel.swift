@@ -287,6 +287,19 @@ extension WorkoutExerciseModel {
     /// exercise: a stored image returns before it is ever evaluated.
     func imageName(in library: @autoclosure () -> [ExerciseModel]) -> String? {
         if let imageName, !imageName.isEmpty { return imageName }
-        return library().first { $0.id == templateId }.flatMap { Constants.exerciseImageName(for: $0) }
+        return libraryModel(in: library()).flatMap { Constants.exerciseImageName(for: $0) }
+    }
+
+    /// `preference` (the template's units) with this exercise's own weight unit in place, when it
+    /// has one: an exercise switched to pounds mid-workout keeps pounds.
+    func units(_ preference: ExerciseUnitPreference) -> ExerciseUnitPreference {
+        var units = preference
+        units.weightUnit = weightUnit ?? preference.weightUnit
+        return units
+    }
+
+    /// The library exercise this one was made from, by `templateId`.
+    func libraryModel(in library: [ExerciseModel]) -> ExerciseModel? {
+        library.first { $0.id == templateId }
     }
 }

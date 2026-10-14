@@ -138,6 +138,7 @@ extension WorkoutTrackerPresenter {
     func observeRestCompletions() async {
         for await _ in NotificationCenter.default.notifications(named: Constants.workoutRestDidComplete) {
             announceRestCompletion()
+            announceRestOver()
             onRestEnded()
         }
     }

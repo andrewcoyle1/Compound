@@ -110,12 +110,6 @@ extension WorkoutTrackerPresenter {
     /// Every rest that runs out while the screen is up is announced, whatever the sound and
     /// vibration settings: with both off it was the one change that said nothing at all. A
     /// skipped rest posts nothing here; the person skipping it knows.
-    func observeRestOverAnnouncements() async {
-        for await _ in NotificationCenter.default.notifications(named: Constants.workoutRestDidComplete) {
-            announceRestOver()
-        }
-    }
-
     func announceRestOver() {
         announce(TrackerAnnouncement(text: String(localized: "Rest over"), priority: .high))
     }

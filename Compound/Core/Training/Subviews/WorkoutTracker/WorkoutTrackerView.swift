@@ -139,9 +139,6 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
             await presenter.observeRestCompletions()
         }
         .task {
-            await presenter.observeRestOverAnnouncements()
-        }
-        .task {
             await presenter.onAppear()
         }
         .onAppear { presenter.onViewAppear() }

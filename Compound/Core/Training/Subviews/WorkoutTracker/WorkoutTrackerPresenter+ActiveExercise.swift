@@ -122,9 +122,7 @@ extension WorkoutTrackerPresenter {
 
     /// The exercise's units, its weight unit as this session enters it (`WorkoutExerciseModel.weightUnit`).
     func units(for exercise: WorkoutExerciseModel) -> ExerciseUnitPreference {
-        var preference = interactor.getPreference(templateId: exercise.templateId)
-        preference.weightUnit = exercise.weightUnit ?? preference.weightUnit
-        return preference
+        exercise.units(interactor.getPreference(templateId: exercise.templateId))
     }
 
     /// The bodyweight `exercise` lifts, for its badge and "BW" labels: `nil` with the setting off or
@@ -319,7 +317,7 @@ extension WorkoutTrackerPresenter {
     func restContext(for exercise: WorkoutExerciseModel) -> RestDurationRules.ExerciseContext {
         RestDurationRules.ExerciseContext(
             restOverrideSeconds: interactor.exerciseRestOverride(for: exercise.templateId),
-            exerciseTypeRawValue: interactor.allExercises.first { $0.id == exercise.templateId }?.type?.rawValue,
+            exerciseTypeRawValue: exercise.libraryModel(in: interactor.allExercises)?.type?.rawValue,
             planRestSeconds: exercise.restSeconds
         )
     }

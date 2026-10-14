@@ -330,10 +330,7 @@ struct SetTrackerRowView: View {
         // A logged set stays editable, so a typo is corrected in place rather than by un-logging,
         // which would restart the rest timer. The edit is not copied to other sets.
         .task {
-            // `STARTSCREEN_SET_KEYBOARD`: the first open weight field opens its keyboard.
-            guard field == .weight, set.wrappedValue.completedAt == nil, SetKeyboardLaunch.isPending else { return }
-            SetKeyboardLaunch.isPending = false
-            presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
+            presenter.onFieldAppeared(field, delegate: delegate)
         }
     }
 

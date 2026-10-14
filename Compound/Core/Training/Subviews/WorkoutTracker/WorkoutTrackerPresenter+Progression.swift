@@ -152,7 +152,7 @@ extension WorkoutTrackerPresenter {
     private func progressionContext(for exercise: WorkoutExerciseModel) -> ProgressionPlanner.ExerciseContext {
         ProgressionPlanner.ExerciseContext(
             sessionExercise: exercise,
-            exercise: interactor.allExercises.first(where: { $0.id == exercise.templateId }),
+            exercise: exercise.libraryModel(in: interactor.allExercises),
             preferredWeightUnit: exercise.weightUnit ?? interactor.getPreference(templateId: exercise.templateId).weightUnit
         )
     }

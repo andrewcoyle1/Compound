@@ -103,12 +103,6 @@ extension WorkoutTrackerPresenter {
         }
     }
 
-    /// Calls off a save that is still waiting to be retried.
-    func cancelPendingSave() {
-        pendingFinishTask?.cancel()
-        pendingFinishTask = nil
-    }
-
     private func completeFinish(_ session: WorkoutSessionModel) async {
         interactor.trackEvent(event: Event.finishWorkoutDebug(session: session))
         // The finish itself is shared with the Live Activity's Finish button; only the retry and

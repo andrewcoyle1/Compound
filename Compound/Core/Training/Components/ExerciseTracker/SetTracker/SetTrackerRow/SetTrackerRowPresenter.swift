@@ -175,7 +175,7 @@ class SetTrackerRowPresenter {
     private func restContext(for exercise: WorkoutExerciseModel) -> RestDurationRules.ExerciseContext {
         RestDurationRules.ExerciseContext(
             restOverrideSeconds: interactor.exerciseRestOverride(for: exercise.templateId),
-            exerciseTypeRawValue: interactor.allExercises.first(where: { $0.id == exercise.templateId })?.type?.rawValue,
+            exerciseTypeRawValue: exercise.libraryModel(in: interactor.allExercises)?.type?.rawValue,
             planRestSeconds: exercise.restSeconds
         )
     }
@@ -229,8 +229,8 @@ class SetTrackerRowPresenter {
     /// copy, and a row's copy outlived a switch to pounds: the header said lb while the keypad
     /// still converted from kg, so a typed 50 lb was stored as 50 kg.
     func getUnitPreference(for exercise: WorkoutExerciseModel) -> (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) {
-        let preference = interactor.getPreference(templateId: exercise.templateId)
-        return (weightUnit: exercise.weightUnit ?? preference.weightUnit, distanceUnit: preference.distanceUnit)
+        let units = exercise.units(interactor.getPreference(templateId: exercise.templateId))
+        return (weightUnit: units.weightUnit, distanceUnit: units.distanceUnit)
     }
 
     func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel, isAssisted: Bool = false) -> Bool {
@@ -245,7 +245,7 @@ class SetTrackerRowPresenter {
 
     /// Whether `exercise`'s weight is assistance, stored negative (`ExerciseModel.isAssisted`).
     func isAssisted(_ exercise: WorkoutExerciseModel) -> Bool {
-        interactor.allExercises.first { $0.id == exercise.templateId }?.isAssisted ?? false
+        exercise.libraryModel(in: interactor.allExercises)?.isAssisted ?? false
     }
 
     /// What the Done column shows. Each state has its own symbol and spoken value, so none of them
@@ -296,6 +296,13 @@ extension SetTrackerRowPresenter {
     func onKeyboardFieldBegan(_ field: SetKeyboardField, delegate: SetTrackerRowDelegate) {
         keyboardDelegate = delegate
         keyboard.open(field, set: delegate.set, context: keyboardContext(delegate: delegate))
+    }
+
+    /// `STARTSCREEN_SET_KEYBOARD` (UI tests): the first open weight field opens its keyboard.
+    func onFieldAppeared(_ field: SetKeyboardField, delegate: SetTrackerRowDelegate) {
+        guard field == .weight, delegate.set.wrappedValue.completedAt == nil, SetKeyboardLaunch.isPending else { return }
+        SetKeyboardLaunch.isPending = false
+        onKeyboardFieldBegan(.weight, delegate: delegate)
     }
 
     /// The keypad's ✓ on the row's last field logs the set as its Done column does. A logged set
@@ -365,7 +372,7 @@ extension SetTrackerRowPresenter {
         let lastSet = exercise.sets.firstIndex { $0.id == set.id }.flatMap { $0 > 0 ? exercise.sets[$0 - 1] : nil }
         let target = set.isWarmup ? nil : exercise.setTargets.first { $0.setNumber == exercise.workingSetNumber(for: set) }
         // An assisted machine steps below zero, and never above it when the exercise cannot be loaded.
-        let library = interactor.allExercises.first { $0.id == exercise.templateId }
+        let library = exercise.libraryModel(in: interactor.allExercises)
         let gym = gym ?? interactor.workoutGymProfile
         let step = WeightStepper.steps(for: exercise, profile: gym, unit: unit)
         return SetKeyboardContext(

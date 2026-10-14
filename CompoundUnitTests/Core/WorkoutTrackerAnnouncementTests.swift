@@ -89,7 +89,7 @@ struct WorkoutTrackerAnnouncementTests {
     @Test func theRestOverListenerAnnouncesTheOwnersNotification() async throws {
         let (presenter, _) = try makeScreen()
         let spy = TrackerAnnouncementSpy()
-        let listener = spy.listen { Task { await presenter.observeRestOverAnnouncements() } }
+        let listener = spy.listen { Task { await presenter.observeRestCompletions() } }
         defer { listener.cancel() }
         for _ in 0..<10 { await Task.yield() }
 

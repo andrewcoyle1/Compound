@@ -56,15 +56,6 @@ class WorkoutExerciseEquipmentSheetPresenter {
         isLoading = true
         loadError = nil
 
-        // For old sessions with no stored variations, wait for allExercises to load
-        if exercise.equipmentVariations.isEmpty {
-            var attempts = 0
-            while interactor.allExercises.isEmpty && attempts < 6 {
-                try? await Task.sleep(for: .milliseconds(500))
-                attempts += 1
-            }
-        }
-
         do {
             try performLoadVariations(exercise: exercise)
             interactor.trackEvent(event: Event.loadVariationsSuccess)
@@ -81,7 +72,7 @@ class WorkoutExerciseEquipmentSheetPresenter {
 
         // Fall back to allExercises lookup for old sessions (stale templateId)
         if variations.isEmpty {
-            let template = interactor.allExercises.first(where: { $0.id == exercise.templateId })
+            let template = exercise.libraryModel(in: interactor.allExercises)
                 ?? interactor.allExercises.first(where: { $0.name.localizedCaseInsensitiveCompare(exercise.name) == .orderedSame })
             variations = template?.equipmentVariations ?? []
         }

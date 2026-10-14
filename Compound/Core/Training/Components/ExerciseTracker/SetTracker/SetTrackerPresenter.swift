@@ -32,7 +32,7 @@ class SetTrackerPresenter {
             var updated = exercise.wrappedValue
             updated.chosenVariationId = variationId
             updated.refitLoad(
-                library: self.interactor.allExercises.first { $0.id == updated.templateId },
+                library: updated.libraryModel(in: self.interactor.allExercises),
                 gym: gym,
                 preference: self.interactor.getPreference(templateId: updated.templateId)
             )
@@ -48,7 +48,7 @@ class SetTrackerPresenter {
     }
     
     func onExerciseSettingsPressed(exercise: WorkoutExerciseModel) {
-        guard let exerciseModel = interactor.allExercises.first(where: { $0.id == exercise.templateId }) else { return }
+        guard let exerciseModel = exercise.libraryModel(in: interactor.allExercises) else { return }
         interactor.trackEvent(event: Event.exerciseSettingsOpened)
         router.showExerciseSettingsView(delegate: ExerciseSettingsDelegate(exercise: exerciseModel))
     }
@@ -64,7 +64,7 @@ class SetTrackerPresenter {
     }
 
     func onTargetsPressed(_ exercise: Binding<WorkoutExerciseModel>) {
-        guard let model = interactor.allExercises.first(where: { $0.id == exercise.wrappedValue.templateId }) else { return }
+        guard let model = exercise.wrappedValue.libraryModel(in: interactor.allExercises) else { return }
         interactor.trackEvent(event: Event.targetsOpened)
         let adapted = Binding<WorkoutTemplateExercise>(
             get: { WorkoutTemplateExercise(exercise: model, setTargets: exercise.wrappedValue.setTargets, setRestTimers: false) },
@@ -186,15 +186,15 @@ class SetTrackerPresenter {
     /// copy, and a row's copy outlived a switch to pounds: the header said lb while the keypad
     /// still converted from kg, so a typed 50 lb was stored as 50 kg.
     func getUnitPreference(for exercise: WorkoutExerciseModel) -> (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) {
-        let preference = interactor.getPreference(templateId: exercise.templateId)
-        return (weightUnit: exercise.weightUnit ?? preference.weightUnit, distanceUnit: preference.distanceUnit)
+        let units = exercise.units(interactor.getPreference(templateId: exercise.templateId))
+        return (weightUnit: units.weightUnit, distanceUnit: units.distanceUnit)
     }
 
     /// Whether the exercise logs the weight of each side, as a dumbbell in each hand is
     /// (`TrackableExerciseMetric.weightPerSide` and its variants): its weight column reads "Kg/side".
     func tracksWeightPerSide(_ exercise: WorkoutExerciseModel) -> Bool {
         let perSide: [TrackableExerciseMetric] = [.weightPerSide, .weightPerSidePersistent, .weightPerSideAssistance]
-        let metrics = interactor.allExercises.first { $0.id == exercise.templateId }?.trackableMetrics ?? []
+        let metrics = exercise.libraryModel(in: interactor.allExercises)?.trackableMetrics ?? []
         return exercise.loadsPerSet == 2 || perSide.contains(where: metrics.contains)
     }
 
@@ -274,7 +274,7 @@ class SetTrackerPresenter {
         // assisted exercise, so −30 kg of help stays help rather than snapping to a pin.
         var updated = exercise.wrappedValue
         let rule = WeightRoundingRule(
-            exercise: interactor.allExercises.first { $0.id == updated.templateId },
+            exercise: updated.libraryModel(in: interactor.allExercises),
             gymProfile: interactor.workoutGymProfile,
             preferredWeightUnit: newUnit,
             resistanceEquipment: updated.activeVariation?.resistanceEquipment

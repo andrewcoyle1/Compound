@@ -1,0 +1,98 @@
+import 'package:app_ui/app_ui.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import '../../helpers/helpers.dart';
+
+void main() {
+  group('AppCtaButton', () {
+    testWidgets('primary is a full-width filled button', (tester) async {
+      var taps = 0;
+      await tester.pumpApp(
+        AppCtaButton(label: 'Continue', onPressed: () => taps++),
+      );
+      await tester.tap(find.byType(FilledButton));
+      expect(taps, 1);
+      expect(tester.getSize(find.byType(FilledButton)).width, 800);
+      expect(
+        tester.getSize(find.byType(FilledButton)).height,
+        greaterThanOrEqualTo(AppControlSize.row),
+      );
+    });
+
+    testWidgets('secondary is tonal and plain is text', (tester) async {
+      await tester.pumpApp(
+        Column(
+          children: [
+            AppCtaButton(
+              label: 'Later',
+              onPressed: () {},
+              variant: AppCtaVariant.secondary,
+            ),
+            AppCtaButton(
+              label: 'Skip for now',
+              onPressed: () {},
+              variant: AppCtaVariant.plain,
+            ),
+          ],
+        ),
+      );
+      expect(find.byType(FilledButton), findsOneWidget);
+      expect(find.byType(TextButton), findsOneWidget);
+    });
+
+    for (final variant in AppCtaVariant.values) {
+      testWidgets('loading ${variant.name} spins, disables and says so', (
+        tester,
+      ) async {
+        await tester.pumpApp(
+          AppCtaButton(
+            label: 'Continue',
+            onPressed: () {},
+            variant: variant,
+            isLoading: true,
+            loadingLabel: 'Loading',
+          ),
+        );
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(
+          tester
+              .widget<ButtonStyleButton>(
+                find.byWidgetPredicate((widget) => widget is ButtonStyleButton),
+              )
+              .onPressed,
+          isNull,
+        );
+        expect(
+          tester.getSemantics(find.byType(AppCtaButton)),
+          isSemantics(label: 'Continue', value: 'Loading'),
+        );
+      });
+    }
+  });
+
+  group('AppBottomCta', () {
+    testWidgets('stacks its buttons', (tester) async {
+      await tester.pumpApp(
+        AppBottomCta(
+          children: [
+            AppCtaButton(label: 'Continue', onPressed: () {}),
+            AppCtaButton(
+              label: 'Skip',
+              onPressed: () {},
+              variant: AppCtaVariant.plain,
+            ),
+          ],
+        ),
+      );
+      expect(
+        tester.getTopLeft(find.text('Skip')).dy,
+        greaterThan(tester.getBottomLeft(find.text('Continue')).dy),
+      );
+    });
+
+    testWidgets('takes no room without buttons', (tester) async {
+      await tester.pumpApp(const AppBottomCta(children: []));
+      expect(tester.getSize(find.byType(AppBottomCta)), Size.zero);
+    });
+  });
+}

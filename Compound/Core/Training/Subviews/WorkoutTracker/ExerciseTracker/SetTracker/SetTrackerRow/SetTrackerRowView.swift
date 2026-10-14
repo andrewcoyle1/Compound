@@ -19,9 +19,6 @@ struct SetTrackerRowDelegate {
     /// What the set's circle shows in place of its number, in the superset tint: "A1", "B2" on
     /// a superset's card. `nil` shows the number.
     var badgeLabel: String?
-    var eventParameters: [String: Any]? {
-        nil
-    }
 }
 
 struct SetTrackerRowView: View {
@@ -661,14 +658,4 @@ extension CoreBuilder {
         return SetTrackerRowView(presenter: presenter, delegate: delegate)
     }
 
-}
-
-extension CoreRouter {
-    
-    func showSetTrackerRowView(delegate: SetTrackerRowDelegate) {
-        router.showScreen(.push) { router in
-            builder.setTrackerRowView(router: router, delegate: delegate)
-        }
-    }
-    
 }

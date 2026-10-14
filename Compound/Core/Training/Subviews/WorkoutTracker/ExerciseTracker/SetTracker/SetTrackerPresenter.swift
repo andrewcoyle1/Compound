@@ -14,21 +14,12 @@ class SetTrackerPresenter {
     private let router: SetTrackerRouter
 
     /// Last session by default; Auto shows smart progression's suggestion for each set instead.
-    /// Kept on the device, so the column a user switched to is the one they get next time. The
-    /// redesign changed the default from Auto: users who never switched now get Last too, since
-    /// the Auto figures are already in the rows.
+    /// Kept on the device, so the column a user switched to is the one they get next time.
     var showAutoRanges: Bool {
         didSet { defaults.set(showAutoRanges, forKey: Self.showAutoRangesKey) }
     }
     private let defaults: UserDefaults
     static let showAutoRangesKey = "SetTracker.showsSuggestions"
-    
-    /// What the user last did for each exercise, keyed by the exercise's `templateId`.
-    var previousExercises: [String: WorkoutExerciseModel] = [:]
-
-    var userId: String? {
-        interactor.userId
-    }
     
     init(interactor: SetTrackerInteractor, router: SetTrackerRouter, defaults: UserDefaults = .standard) {
         self.interactor = interactor
@@ -224,14 +215,6 @@ class SetTrackerPresenter {
             : String(localized: "Weight unit, \(unit.displayName)")
     }
 
-    /// Deleting half of a left/right pair would leave the other half standing alone, numbering and
-    /// resting as a set in its own right, so the pair goes together, with its drops and mini-sets.
-    func deleteSet(setId: String, exercise: Binding<WorkoutExerciseModel>) {
-        let removing = Set(ActiveWorkout.idsRemovedByDeleting(setId, in: exercise.wrappedValue.sets))
-        guard !removing.isEmpty else { return }
-        exercise.wrappedValue.sets.removeAll(where: { removing.contains($0.id) })
-    }
-
     /// Logs each side as its own row, or both sides as one again. Joining keeps the left side's
     /// figures; the chip that calls this only shows for an exercise worked a side at a time.
     func onSplitSidesPressed(_ exercise: Binding<WorkoutExerciseModel>) {
@@ -274,11 +257,6 @@ class SetTrackerPresenter {
             )
             nextIndex += 1
         }
-    }
-
-    func onWarmupSetHelpPressed() {
-        // A system alert now, which dismisses itself.
-        router.showWarmupSetInfoModal { }
     }
 
     func updateWeightUnit(_ unit: ExerciseWeightUnit, for exercise: Binding<WorkoutExerciseModel>) {

@@ -536,7 +536,6 @@ struct SetTrackerRowKeyboardTests {
     private final class Router: SetTrackerRowRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alerts: [String] = []
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
         func showRestModal(
             primaryButtonAction: @escaping () -> Void,
             secondaryButtonAction: @escaping () -> Void,

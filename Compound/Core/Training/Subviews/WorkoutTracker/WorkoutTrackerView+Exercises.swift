@@ -79,11 +79,6 @@ extension WorkoutTrackerView {
         }
     }
 
-    /// "Superset A", "Circuit B": the superset's letter, one per superset in the workout.
-    func supersetLabel(for exercise: WorkoutExerciseModel) -> String? {
-        ActiveWorkout.supersetLabel(for: exercise, in: presenter.workoutSession.exercises)
-    }
-
     func delegate(for exercise: Binding<WorkoutExerciseModel>) -> ExerciseTrackerDelegate {
         let current = exercise.wrappedValue
         let exerciseId = current.id
@@ -98,9 +93,7 @@ extension WorkoutTrackerView {
         return ExerciseTrackerDelegate(
             exercise: exercise,
             lastExercise: presenter.previousExercise(for: current),
-            isExpanded: .constant(true),
             allWorkoutExercises: presenter.workoutSession.exercises,
-            supersetLabel: supersetLabel(for: current),
             progressionSuggestion: presenter.progressionSuggestion(for: current),
             previousNote: presenter.previousNote(for: current),
             onSetSupersetGroup: { exerciseId, groupId in

@@ -64,19 +64,6 @@ struct SetTrackerPresenterTests {
             shown.append("equipment")
         }
 
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) {
-            shown.append("warmupInfo")
-        }
-
-        func showRestModal(
-            primaryButtonAction: @escaping () -> Void,
-            secondaryButtonAction: @escaping () -> Void,
-            minutesSelection: Binding<Int>,
-            secondsSelection: Binding<Int>
-        ) {
-            shown.append("rest")
-        }
-
         func showWarmupSetsView(delegate: WarmupSetsDelegate) {
             shown.append("warmupSets")
         }
@@ -218,18 +205,6 @@ struct SetTrackerPresenterTests {
         #expect(box.value.sets.last?.isWarmup == false)
     }
 
-    @Test("Test Deleting A Set Removes Only That One")
-    func testDeletingASetRemovesOnlyThatOne() {
-        let screen = makeScreen()
-        let box = MutableExercise(exercise(sets: [
-            set(id: "s1", index: 1), set(id: "s2", index: 2), set(id: "s3", index: 3)
-        ]))
-
-        screen.presenter.deleteSet(setId: "s2", exercise: box.binding)
-
-        #expect(box.value.sets.map(\.id) == ["s1", "s3"])
-    }
-
     /// The one that used to break. Deleting a set does not renumber the rest, so the count stops
     /// reaching the highest index — and the new set was handed an index another set already held.
     /// Duplicate indices are what last session's figures are matched on, and they crashed the
@@ -241,7 +216,7 @@ struct SetTrackerPresenterTests {
             set(id: "s1", index: 1), set(id: "s2", index: 2), set(id: "s3", index: 3)
         ]))
 
-        screen.presenter.deleteSet(setId: "s2", exercise: box.binding)
+        box.binding.wrappedValue.sets.removeAll { $0.id == "s2" }
         screen.presenter.addSet(exercise: box.binding)
 
         let indices = box.value.sets.map(\.index)

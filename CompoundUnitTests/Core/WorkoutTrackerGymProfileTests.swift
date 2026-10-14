@@ -112,7 +112,6 @@ struct WorkoutTrackerGymProfileTests {
 
     private final class RowRouter: SetTrackerRowRouter {
         let router: AnyRouter = TestRouting.anyRouter
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
         func showRestModal(
             primaryButtonAction: @escaping () -> Void,
             secondaryButtonAction: @escaping () -> Void,

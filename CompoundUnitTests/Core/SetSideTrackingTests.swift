@@ -60,13 +60,6 @@ struct SetSideTrackingTests {
         let router: AnyRouter = TestRouting.anyRouter
 
         func showWorkoutExerciseEquipmentSheetView(delegate: WorkoutExerciseEquipmentSheetDelegate) { }
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
-        func showRestModal(
-            primaryButtonAction: @escaping () -> Void,
-            secondaryButtonAction: @escaping () -> Void,
-            minutesSelection: Binding<Int>,
-            secondsSelection: Binding<Int>
-        ) { }
         func showWarmupSetsView(delegate: WarmupSetsDelegate) { }
         func showExerciseSettingsView(delegate: ExerciseSettingsDelegate) { }
         func showSetTargetView(delegate: SetTargetDelegate) { }
@@ -76,7 +69,6 @@ struct SetSideTrackingTests {
     private final class RowRouter: SetTrackerRowRouter {
         let router: AnyRouter = TestRouting.anyRouter
 
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
         func showRestModal(
             primaryButtonAction: @escaping () -> Void,
             secondaryButtonAction: @escaping () -> Void,
@@ -190,7 +182,7 @@ struct SetSideTrackingTests {
         let (presenter, _) = makeListPresenter()
         let box = MutableExercise(exercise(sets: onePair))
 
-        presenter.deleteSet(setId: "s1", exercise: box.binding)
+        makeRowPresenter().0.deleteSet(setId: "s1", exercise: box.binding)
         presenter.addSet(exercise: box.binding)
         presenter.addSet(exercise: box.binding)
 
@@ -246,7 +238,6 @@ struct SetSideTrackingTests {
     /// and claim the user had done work on one arm they never did on the other.
     @Test("Test Deleting Either Half Removes The Whole Set")
     func testDeletingEitherHalfRemovesTheWholeSet() {
-        let (listPresenter, _) = makeListPresenter()
         let (rowPresenter, _) = makeRowPresenter()
         let fromList = MutableExercise(exercise(sets: onePair + [
             set(id: "s3", index: 3, side: .left), set(id: "s4", index: 4, side: .right)
@@ -255,7 +246,7 @@ struct SetSideTrackingTests {
             set(id: "s3", index: 3, side: .left), set(id: "s4", index: 4, side: .right)
         ]))
 
-        listPresenter.deleteSet(setId: "s1", exercise: fromList.binding)
+        rowPresenter.deleteSet(setId: "s1", exercise: fromList.binding)
         rowPresenter.deleteSet(setId: "s4", exercise: fromRow.binding)
 
         #expect(fromList.value.sets.map(\.id) == ["s3", "s4"])
@@ -265,7 +256,7 @@ struct SetSideTrackingTests {
     /// Warm-ups stay single-sided, so deleting one takes only that row with it.
     @Test("Test Deleting A Warm-Up Takes Nothing Else")
     func testDeletingAWarmUpTakesNothingElse() {
-        let (presenter, _) = makeListPresenter()
+        let (presenter, _) = makeRowPresenter()
         let box = MutableExercise(exercise(sets: [
             set(id: "w1", index: 1, isWarmup: true)
         ] + onePair))

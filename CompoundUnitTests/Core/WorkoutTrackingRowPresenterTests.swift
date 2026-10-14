@@ -48,10 +48,6 @@ struct SetTrackerRowPresenterTests {
         private(set) var restMinutes: Binding<Int>?
         private(set) var restSeconds: Binding<Int>?
 
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) {
-            shown.append("warmupInfo")
-        }
-
         func showRestModal(
             primaryButtonAction: @escaping () -> Void,
             secondaryButtonAction: @escaping () -> Void,
@@ -544,15 +540,6 @@ struct SetTrackerRowPresenterTests {
         screen.router.restPrimaryAction?()
 
         #expect(screen.presenter.restBeforeSetIdToSec["set-1"] == nil)
-    }
-
-    @Test("Test The Warmup Explanation Opens")
-    func testTheWarmupExplanationOpens() {
-        let screen = makeScreen()
-
-        screen.presenter.onWarmupSetHelpPressed()
-
-        #expect(screen.router.shown == ["warmupInfo"])
     }
 
     // MARK: - Deleting

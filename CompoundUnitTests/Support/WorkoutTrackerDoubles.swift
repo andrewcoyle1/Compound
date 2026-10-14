@@ -419,7 +419,6 @@ final class SetTrackerRowRouterDouble: SetTrackerRowRouter {
 
     func showPlateCalculatorView(delegate: PlateCalculatorDelegate) { plateCalculators.append(delegate) }
 
-    func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
     func showRestModal(
         primaryButtonAction: @escaping () -> Void,
         secondaryButtonAction: @escaping () -> Void,

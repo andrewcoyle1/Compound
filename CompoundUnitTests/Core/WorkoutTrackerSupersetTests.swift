@@ -271,13 +271,11 @@ struct WorkoutTrackerSupersetTests {
         #expect(screen.presenter.expandedExerciseId == "e1")
     }
 
-    // MARK: - Labels and the block card
+    // MARK: - The block card
 
-    /// Two supersets in one workout read "Superset A" and "Superset B": the letter is the
-    /// superset's, not the member's, which used to make both read A/B. Inside a card the rows
-    /// letter the member and number the set.
-    @Test("Test Two Supersets Are Lettered Apart And Their Rows Badged")
-    func testTwoSupersetsAreLetteredApartAndTheirRowsBadged() throws {
+    /// Inside a card the rows letter the member and number the set, whichever superset it is.
+    @Test("Test A Superset's Rows Are Badged By Member")
+    func testASupersetsRowsAreBadgedByMember() throws {
         let screen = try makeScreen(exercises: [
             exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
             exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
@@ -286,9 +284,6 @@ struct WorkoutTrackerSupersetTests {
             exercise(id: "e5", index: 5, sets: [set(1)], supersetGroupId: "group-2")
         ])
         let exercises = screen.presenter.workoutSession.exercises
-
-        let labels = exercises.map { ActiveWorkout.supersetLabel(for: $0, in: exercises) }
-        #expect(labels == ["Superset A", "Superset A", nil, "Superset B", "Superset B"])
 
         let members = try #require(ActiveWorkout.supersetBlock(containing: screen.presenter.currentExercise?.id, in: exercises))
         let badges = ActiveWorkout.blockRows(members).compactMap { row -> String? in

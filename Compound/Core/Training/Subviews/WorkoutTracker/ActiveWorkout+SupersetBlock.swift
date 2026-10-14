@@ -50,16 +50,6 @@ extension ActiveWorkout {
         return String(Character(scalar))
     }
 
-    /// "Superset A", "Circuit B": the superset's letter among the workout's supersets, in the
-    /// order they come, so two supersets never share one. `nil` outside a superset of two or more.
-    static func supersetLabel(for exercise: WorkoutExerciseModel, in exercises: [WorkoutExerciseModel]) -> String? {
-        guard let block = supersetBlock(containing: exercise.id, in: exercises) else { return nil }
-        let supersets = blocks(exercises).filter { $0.count > 1 }
-        guard let index = supersets.firstIndex(where: { $0.contains(exercise.id) }), let letter = letter(index) else { return nil }
-        let prefix = block.count > 2 ? String(localized: "Circuit") : String(localized: "Superset")
-        return "\(prefix) \(letter)"
-    }
-
     // MARK: - Rows
 
     /// The superset card's table, top to bottom. First each member's warm-ups, grouped by member

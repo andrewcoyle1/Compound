@@ -7959,16 +7959,6 @@
         }
       }
     },
-    "Circuit" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Circuito"
-          }
-        }
-      }
-    },
     "Clear" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8314,16 +8304,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Completar entrenamiento"
-          }
-        }
-      }
-    },
-    "Complete set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Completar serie"
           }
         }
       }
@@ -24305,16 +24285,6 @@
         }
       }
     },
-    "Set completed" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serie completada"
-          }
-        }
-      }
-    },
     "Set goal" : {
       "localizations" : {
         "es" : {
@@ -31164,16 +31134,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serie de calentamiento"
-          }
-        }
-      }
-    },
-    "Warmup sets are lighter weight sets performed before your working sets to prepare your muscles and joints. They don't count toward your total volume or personal records." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Las series de calentamiento son series más ligeras que se hacen antes de las series efectivas para preparar músculos y articulaciones. No cuentan para tu volumen total ni para tus récords personales."
           }
         }
       }

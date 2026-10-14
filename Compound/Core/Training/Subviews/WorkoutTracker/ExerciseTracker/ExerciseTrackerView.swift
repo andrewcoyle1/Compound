@@ -12,7 +12,6 @@ struct ExerciseTrackerDelegate {
     let lastExercise: WorkoutExerciseModel?
     var isExpanded: Binding<Bool> = .constant(false)
     var allWorkoutExercises: [WorkoutExerciseModel] = []
-    var supersetLabel: String?
     /// The one line smart progression has to say about this exercise, if anything.
     /// What the engine suggests for this exercise's working sets, shown by the Auto column.
     var progressionSuggestion: ProgressionSuggestion?
@@ -161,20 +160,11 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                             menu
                         }
                     }
-                    underTitle(card: card)
                 }
 
             }
         }
         .padding(.vertical, Spacing.s)
-    }
-
-    /// Under the name: the superset's label, unless the card is a member's.
-    @ViewBuilder
-    private func underTitle(card: ExerciseCard) -> some View {
-        if card.memberLetter == nil, let label = delegate.supersetLabel {
-            Chip(label, systemImage: Symbol.superset, tint: .superset)
-        }
     }
 
     /// Whether any note is written, so an exercise without one gets no empty row under its sets.
@@ -271,16 +261,10 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: Spacing.xxs) {
-                HStack(spacing: Spacing.s) {
-                    Text(exercise.name)
-                        .font(.sectionTitle)
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.leading)
-
-                    if let label = delegate.supersetLabel {
-                        Chip(label, systemImage: Symbol.superset, tint: .superset)
-                    }
-                }
+                Text(exercise.name)
+                    .font(.sectionTitle)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
 
                 setProgress(exercise)
 

@@ -7,7 +7,6 @@ class SetTrackerRowPresenter {
     private let interactor: SetTrackerRowInteractor
     private let router: SetTrackerRowRouter
     
-    var restPickerTargetSetId: String?
     var restPickerMinutesSelection: Int = 0
     var restPickerSecondsSelection: Int = 0
     var restBeforeSetIdToSec: [String: Int] = [:]
@@ -19,9 +18,6 @@ class SetTrackerRowPresenter {
     let keyboard = SetKeyboardPresenter()
     /// The set the keyboard was last opened on, so the plate calculator knows what it is for.
     @ObservationIgnored private var keyboardDelegate: SetTrackerRowDelegate?
-    var defaultRestDurationSeconds: Int {
-        interactor.workoutSettings.defaultRestDurationSeconds
-    }
 
     init(interactor: SetTrackerRowInteractor, router: SetTrackerRowRouter) {
         self.interactor = interactor
@@ -129,7 +125,6 @@ class SetTrackerRowPresenter {
     }
 
     func onRestPickerRequested(exercise: WorkoutExerciseModel, setId: String) {
-        restPickerTargetSetId = setId
         // Open on the rest that would actually run for this set, scaling included. A rest already
         // set by hand is keyed by id alone, so it is honoured whether or not the set is among the
         // ones passed in. Where the settings say no rest runs here, offer the unscaled base
@@ -172,11 +167,6 @@ class SetTrackerRowPresenter {
         onCustomRestChanged?(setId, seconds)
     }
 
-    func onWarmupSetHelpPressed() {
-        // A system alert now, which dismisses itself.
-        router.showWarmupSetInfoModal { }
-    }
-
     /// Read from `ExerciseUnitPreferenceManager` every time. Each presenter used to keep its own
     /// copy, and a row's copy outlived a switch to pounds: the header said lb while the keypad
     /// still converted from kg, so a typed 50 lb was stored as 50 kg.
@@ -189,11 +179,6 @@ class SetTrackerRowPresenter {
         guard let problem = SetValidation.problem(with: set, trackingMode: trackingMode, isAssisted: isAssisted) else { return true }
         router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: problem)
         return false
-    }
-
-    /// See `SetValidation.problem(with:trackingMode:isAssisted:)`.
-    static func problem(with set: WorkoutSetModel, trackingMode: TrackingMode, isAssisted: Bool = false) -> String? {
-        SetValidation.problem(with: set, trackingMode: trackingMode, isAssisted: isAssisted)
     }
 
     func canComplete(trackingMode: TrackingMode, set: WorkoutSetModel, isAssisted: Bool = false) -> Bool {
@@ -234,10 +219,6 @@ enum SetCompletionState: Equatable {
         case .ready: return .secondary
         case .notReady: return .secondary.opacity(0.5)
         }
-    }
-
-    var accessibilityLabel: String {
-        self == .completed ? String(localized: "Set completed") : String(localized: "Complete set")
     }
 
     var accessibilityValue: String {

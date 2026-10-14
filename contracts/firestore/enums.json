@@ -1,0 +1,40 @@
+{
+  "ActivityLevel": [
+    "sedentary",
+    "light",
+    "moderate",
+    "active",
+    "very_active"
+  ],
+  "CardioFitnessLevel": [
+    "beginner",
+    "novice",
+    "intermediate",
+    "advanced",
+    "elite"
+  ],
+  "DistanceUnitPreference": [
+    "kilometers",
+    "miles"
+  ],
+  "ExerciseFrequency": [
+    "never",
+    "1-2",
+    "3-4",
+    "5-6",
+    "daily"
+  ],
+  "Gender": [
+    "male",
+    "female",
+    "prefer_not_to_say"
+  ],
+  "LengthUnitPreference": [
+    "centimeters",
+    "inches"
+  ],
+  "WeightUnitPreference": [
+    "kilograms",
+    "pounds"
+  ]
+}

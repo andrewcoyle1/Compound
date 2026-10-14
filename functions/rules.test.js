@@ -64,6 +64,24 @@ t("users/private: owner only", async () => {
     await assertFails(getDoc(doc(db(BOB), `users/${ALICE}/private/settings`)));
 });
 
+// ---------------- FIRESTORE CONTRACT ----------------
+// Each model's `full` fixture in ../contracts/firestore (docs/specs/flutter/firestore-contract.md)
+// is a document both apps may write, so its owner must be able to create it where it lives.
+const contractFixture = (model) => JSON.parse(
+    readFileSync(new URL(`../contracts/firestore/${model}/full.json`, import.meta.url), "utf8"),
+    (_, value) => (value && typeof value === "object" && !Array.isArray(value)
+        && Object.keys(value).length === 1 && typeof value.$timestamp === "string")
+        ? Timestamp.fromDate(new Date(value.$timestamp)) : value,
+);
+
+t("contract: the owner creates the full UserModel and PrivateUserSettings at their paths", async () => {
+    const user = contractFixture("user_model");
+    const uid = user.user_id;
+    await seed(`usernames/${user.username}`, { user_id: uid });
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}`), user));
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/private/settings`), contractFixture("private_user_settings")));
+});
+
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.
 for (const [sub, key] of [
     ["body_measurements", "author_id"], ["steps", "author_id"], ["goals", "user_id"],

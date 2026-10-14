@@ -343,7 +343,8 @@ the selection.**
   - Gives two scroll views with two edge effects (HIG-sanctioned per pane). `onMove` works in
     the left column, and the keyboard stays robust in the right one.
 - **C14. Pages per *block*** (a single exercise, or a superset as one page). A modifier on
-  B1/B4; strongly recommended if you page.
+  B1/B4; strongly recommended if you page. *Built as one card per block: see the superset
+  section of `edges.md`.*
 
 ### D. Hybrids that borrow MacroFactor's navigator without the pager
 

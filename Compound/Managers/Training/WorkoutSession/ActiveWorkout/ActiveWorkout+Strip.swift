@@ -35,15 +35,11 @@ extension ActiveWorkout {
     /// `currentExerciseId` marked current.
     static func stripProgress(for exercises: [WorkoutExerciseModel], currentExerciseId: String?) -> [StripItem] {
         let byId = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        var supersetCount = 0
+        let letters = supersetLetters(exercises)
         return blocks(exercises).compactMap { block in
             let members = block.compactMap { byId[$0] }
             guard let first = members.first else { return nil }
-            var blockLetter: String?
-            if members.count > 1 {
-                blockLetter = letter(supersetCount)
-                supersetCount += 1
-            }
+            let blockLetter = members.count > 1 ? first.supersetGroupId.flatMap { letters[$0] } : nil
             let working = members.map { $0.sets.filter { !$0.isWarmup } }
             return StripItem(
                 id: first.id,

@@ -45,14 +45,12 @@ struct ExerciseCard {
     /// One piece of the table rather than all of it, for a superset's card to place among its
     /// partners' rows. `nil` draws the whole table.
     var piece: SetTrackerPiece?
-    /// The member's letter on a superset's card ("A", "B"), which its header shows in place of the
+    /// The member's label on a superset's card ("B1", "B2"), which its header shows in place of the
     /// superset's own label: the member header.
     var memberLetter: String?
     /// The bodyweight the movement lifts, while the setting is on: the header's badge and the rows'
     /// "BW" labels. `nil` leaves the card as it was.
     var bodyweight: BodyweightContribution?
-    /// Off while the exercise strip shows thumbnails: the strip already pictures the exercise.
-    var showsImage = true
 }
 
 struct ExerciseTrackerView<SetTracker: View>: View {
@@ -117,44 +115,35 @@ struct ExerciseTrackerView<SetTracker: View>: View {
 
     /// The card's title row. Kept short: the sets are the point, and the notes follow them.
     private func cardHeader(_ exercise: WorkoutExerciseModel, card: ExerciseCard, menu: AnyView) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.s) {
-            HStack(alignment: .top, spacing: Spacing.m) {
-                if card.showsImage {
-                    ExerciseImageView(name: exercise.name, imageName: presenter.imageName(for: exercise))
-                        .frame(width: thumbnailSide, height: thumbnailSide)
-                        .accessibilityHidden(true)
-                }
-
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    if let bodyweight = card.bodyweight, bodyweight.contributionKg != nil {
-                        // The badge sits before the menu, and goes under the name when the line
-                        // cannot hold both, as at accessibility sizes.
-                        ViewThatFits(in: .horizontal) {
-                            HStack(alignment: .center, spacing: Spacing.s) {
-                                cardTitle(exercise, card: card)
-                                Spacer(minLength: 0)
-                                BodyweightContributionBadge(contribution: bodyweight)
-                                menu
-                            }
-                            VStack(alignment: .leading, spacing: Spacing.xs) {
-                                HStack(alignment: .center, spacing: Spacing.s) {
-                                    cardTitle(exercise, card: card)
-                                    Spacer(minLength: 0)
-                                    menu
-                                }
-                                BodyweightContributionBadge(contribution: bodyweight)
-                            }
-                        }
-                    } else {
-                        // The menu sits on the name's line, so it reads as the exercise's own.
+        // A superset member's actions are a submenu of the superset's one menu.
+        let menu = card.memberLetter == nil ? menu : AnyView(EmptyView())
+        return VStack(alignment: .leading, spacing: Spacing.xxs) {
+            if let bodyweight = card.bodyweight, bodyweight.contributionKg != nil {
+                // The badge sits before the menu, and goes under the name when the line
+                // cannot hold both, as at accessibility sizes.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .center, spacing: Spacing.s) {
+                        cardTitle(exercise, card: card)
+                        Spacer(minLength: 0)
+                        BodyweightContributionBadge(contribution: bodyweight)
+                        menu
+                    }
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
                         HStack(alignment: .center, spacing: Spacing.s) {
                             cardTitle(exercise, card: card)
                             Spacer(minLength: 0)
                             menu
                         }
+                        BodyweightContributionBadge(contribution: bodyweight)
                     }
                 }
-
+            } else {
+                // The menu sits on the name's line, so it reads as the exercise's own.
+                HStack(alignment: .center, spacing: Spacing.s) {
+                    cardTitle(exercise, card: card)
+                    Spacer(minLength: 0)
+                    menu
+                }
             }
         }
         .padding(.vertical, Spacing.s)
@@ -240,8 +229,9 @@ struct ExerciseTrackerView<SetTracker: View>: View {
             Chip(letter, systemImage: Symbol.superset, tint: .superset)
                 .accessibilityLabel(String(localized: "Superset member \(letter)"))
         }
+        // Under the superset's own title a member's name is a row's, not a section's.
         Text(exercise.name)
-            .font(.sectionTitle)
+            .font(card.memberLetter == nil ? .sectionTitle : .rowTitle)
             .accessibilityAddTraits(.isHeader)
     }
 
@@ -355,17 +345,61 @@ private struct ClampedNote: View {
     }
 }
 
-#Preview {
-    @Previewable @State var exercise: WorkoutExerciseModel = WorkoutExerciseModel.mock
-    @Previewable @State var session: WorkoutSessionModel = WorkoutSessionModel.mock
-    let lastExercise: WorkoutExerciseModel = .mock
-    let container = DevPreview.shared.container()
-    let interactor = CoreInteractor(container: container)
-    let builder = CoreBuilder(interactor: interactor)
-    let delegate = ExerciseTrackerDelegate(exercise: $exercise, lastExercise: lastExercise)
+// MARK: - Previews
+
+/// Last session's sets as today's plan, the first logged a minute ago.
+@MainActor
+private func previewExercise() -> WorkoutExerciseModel {
+    var exercise = WorkoutExerciseModel.mock
+    for index in exercise.sets.indices {
+        exercise.sets[index].completedAt = index == 0 ? .now.addingTimeInterval(-60) : nil
+    }
+    return exercise
+}
+
+/// The live tracker's card (`ExerciseCard`): the title row with its menu, the progression note,
+/// the rest running under the set just logged, and logging through the card.
+#Preview("Live tracker card") {
+    @Previewable @State var exercise = previewExercise()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container()))
 
     RouterView { router in
-        builder.exerciseTrackerView(router: router, delegate: delegate)
+        List {
+            builder.exerciseTrackerView(router: router, delegate: ExerciseTrackerDelegate(
+                exercise: $exercise,
+                lastExercise: .mock,
+                card: ExerciseCard(
+                    progressionNote: "+2.5 kg today. You hit 10 reps on every working set last time.",
+                    restTimer: exercise.sets.first.map {
+                        InlineRestTimer(anchor: .below(setId: $0.id), startedAt: .now.addingTimeInterval(-60), endsAt: .now.addingTimeInterval(30))
+                    },
+                    onLogSet: { setId, _ in
+                        guard let index = exercise.sets.firstIndex(where: { $0.id == setId }) else { return }
+                        exercise.sets[index].completedAt = .now
+                    }
+                )
+            ))
+        }
+    }
+}
+
+/// The finished workout's editor (`WorkoutSessionDetailView`): no card, the exercise as a row that
+/// opens onto its sets, which stay editable.
+#Preview("Finished workout editor") {
+    @Previewable @State var exercise = WorkoutExerciseModel.mock
+    @Previewable @State var isExpanded = true
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container()))
+
+    RouterView { router in
+        List {
+            Section {
+                builder.exerciseTrackerView(router: router, delegate: ExerciseTrackerDelegate(
+                    exercise: $exercise,
+                    lastExercise: nil,
+                    isExpanded: $isExpanded
+                ))
+            }
+        }
     }
 }
 

@@ -85,6 +85,7 @@ extension WorkoutTrackerPresenter {
         case exerciseDeleted
         case exerciseSwapped(keptLoggedSets: Bool)
         case supersetChanged(joined: Bool)
+        case roundAdded
         case workoutSettingsOpened
         case gymSettingsOpened
 
@@ -130,6 +131,7 @@ extension WorkoutTrackerPresenter {
             case .exerciseDeleted:          return "WorkoutTracker_Exercise_Deleted"
             case .exerciseSwapped:          return "WorkoutTracker_Exercise_Swapped"
             case .supersetChanged:          return "WorkoutTracker_Superset_Changed"
+            case .roundAdded:               return "WorkoutTracker_Round_Added"
             case .workoutSettingsOpened:    return "WorkoutTracker_WorkoutSettings_Opened"
             case .gymSettingsOpened:        return "WorkoutTracker_GymSettings_Opened"
             }
@@ -195,7 +197,7 @@ extension WorkoutTrackerPresenter {
                 return ["joined": joined]
             case .restSkipped, .workoutPaused, .workoutResumed, .exerciseSelected, .progressionNoteAcknowledged,
                  .correctionUndo, .minimized, .finishPressed, .discardPressed, .workoutNotesSaved, .exerciseNotesSaved,
-                 .mesocycleNoteSaved, .exerciseDeleted, .workoutSettingsOpened, .gymSettingsOpened:
+                 .mesocycleNoteSaved, .exerciseDeleted, .roundAdded, .workoutSettingsOpened, .gymSettingsOpened:
                 return nil
             }
         }

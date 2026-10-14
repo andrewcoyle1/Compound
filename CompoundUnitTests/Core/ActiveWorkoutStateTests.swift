@@ -7,7 +7,7 @@ import Testing
 import Foundation
 @testable import Compound
 
-/// The active-workout screen's rules: which row is current, the progress header, the
+/// The active-workout screen's rules: which row is current, the
 /// progression reason, where the rest timer sits, the log button, and loads rounded to plates.
 @MainActor
 struct ActiveWorkoutStateTests {
@@ -75,18 +75,6 @@ struct ActiveWorkoutStateTests {
         #expect(ActiveWorkout.rowState(of: squat.sets[0], in: squat) == .current)
         #expect(ActiveWorkout.rowState(of: squat.sets[1], in: squat) == .done)
         #expect(ActiveWorkout.rowState(of: squat.sets[2], in: squat) == .upcoming)
-    }
-
-    @Test("Test The Header Counts Working Sets Only, A Pair Once")
-    func testProgress() {
-        let exercises = [
-            exercise("e1", sets: [set("w", isWarmup: true, doneAt: 0), set("s1", doneAt: 1), set("s2")]),
-            exercise("e2", sets: [set("l", side: .left, doneAt: 2), set("r", side: .right)])
-        ]
-
-        let progress = ActiveWorkout.progress(of: exercises, currentIndex: 1)
-
-        #expect(progress == .init(doneWorkingSets: 1, totalWorkingSets: 3, exerciseNumber: 2, exerciseCount: 2))
     }
 
     // MARK: - Progression reason

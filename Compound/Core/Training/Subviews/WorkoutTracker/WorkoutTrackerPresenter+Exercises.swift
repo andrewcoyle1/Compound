@@ -118,6 +118,29 @@ extension WorkoutTrackerPresenter {
         interactor.trackEvent(event: Event.supersetChanged(joined: groupId != nil))
     }
 
+    /// A set more for every member of a superset (`WorkoutExerciseModel.addingSet`), as one round.
+    func onAddRoundPressed(_ memberIds: [String]) {
+        guard let userId = interactor.currentUser?.userId else { return }
+        let ids = Set(memberIds)
+        workoutSession.updateExercises(workoutSession.exercises.map {
+            ids.contains($0.id) ? $0.addingSet(authorId: userId) : $0
+        })
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.roundAdded)
+    }
+
+    /// Splits a superset, or a circuit, back into exercises on their own, all at once.
+    func removeSuperset(_ memberIds: [String]) {
+        let ids = Set(memberIds)
+        workoutSession.updateExercises(workoutSession.exercises.map { exercise in
+            var exercise = exercise
+            if ids.contains(exercise.id) { exercise.supersetGroupId = nil }
+            return exercise
+        })
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.supersetChanged(joined: false))
+    }
+
     /// Writes back an edited exercise, by id: the card's binding, a superset change, an undo. By
     /// id, not index, because a binding by index can be read while the exercise it held is being
     /// removed, and would then point at another exercise or past the end.
@@ -128,7 +151,7 @@ extension WorkoutTrackerPresenter {
         workoutSession.updateExercises(exercises)
     }
 
-    func presentAddExercise() {
+    func onAddExercisePressed() {
         router.showExercisesPickerView(
             delegate: ExercisesPickerDelegate(
                 addedExercises: Binding(

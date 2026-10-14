@@ -36,25 +36,13 @@ extension WorkoutTrackerView {
     /// One card for a superset, built from each member's own card in pieces
     /// (`WorkoutTrackerPresenter.supersetCard`).
     private func supersetCard(_ members: [WorkoutExerciseModel], current: WorkoutExerciseModel) -> some View {
-        SupersetBlockView(card: presenter.supersetCard(members, current: current.id)) { exerciseId, piece in
+        let card = presenter.supersetCard(members, current: current.id)
+        return SupersetBlockView(card: card) { exerciseId, piece in
             let index = members.firstIndex { $0.id == exerciseId } ?? 0
             var delegate = delegate(for: binding(for: members[index]))
             delegate.card?.piece = piece
-            delegate.card?.memberLetter = ActiveWorkout.letter(index)
+            delegate.card?.memberLetter = ActiveWorkout.memberLabel(letter: card.letter, index: index)
             return exerciseTrackerView(delegate)
-        }
-    }
-
-    var addExerciseSection: some View {
-        Section {
-            Button {
-                presenter.presentAddExercise()
-            } label: {
-                Label("Add Exercise", systemImage: Symbol.add)
-                    // A text style of its own: the audit credits Dynamic Type only to the text's
-                    // own font, and with the strip on this row is on screen for every audit pass.
-                    .font(.body)
-            }
         }
     }
 
@@ -100,8 +88,7 @@ extension WorkoutTrackerView {
                     presenter.onCustomRestChanged(setId: setId, seconds: seconds)
                 },
                 customRestSeconds: presenter.customRestSeconds,
-                bodyweight: presenter.bodyweightContribution(for: current),
-                showsImage: dynamicTypeSize.isAccessibilitySize
+                bodyweight: presenter.bodyweightContribution(for: current)
             )
         )
     }

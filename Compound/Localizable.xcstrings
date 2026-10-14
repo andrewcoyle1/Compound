@@ -998,6 +998,16 @@
         }
       }
     },
+    "%@ warm-up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ calentamiento"
+          }
+        }
+      }
+    },
     "%@ will be removed from this gym." : {
       "localizations" : {
         "es" : {
@@ -1290,6 +1300,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@, por encima del objetivo"
+          }
+        }
+      }
+    },
+    "%@, set %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, serie %2$@"
           }
         }
       }
@@ -2301,66 +2321,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld de %lld esta semana"
-          }
-        }
-      }
-    },
-    "%lld of %lld working sets" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld of %#@total@"
-          },
-          "substitutions" : {
-            "total" : {
-              "argNum" : 2,
-              "formatSpecifier" : "lld",
-              "variations" : {
-                "plural" : {
-                  "one" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg working set"
-                    }
-                  },
-                  "other" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg working sets"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld de %#@total@"
-          },
-          "substitutions" : {
-            "total" : {
-              "argNum" : 2,
-              "formatSpecifier" : "lld",
-              "variations" : {
-                "plural" : {
-                  "one" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg serie efectiva"
-                    }
-                  },
-                  "other" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg series efectivas"
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }
@@ -4420,6 +4380,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir rango"
+          }
+        }
+      }
+    },
+    "Add Round" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir ronda"
           }
         }
       }
@@ -12199,16 +12169,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ejercicio"
-          }
-        }
-      }
-    },
-    "Exercise %lld of %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ejercicio %lld de %lld"
           }
         }
       }
@@ -22774,6 +22734,7 @@
       }
     },
     "Rest: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -26054,16 +26015,6 @@
         }
       }
     },
-    "Superset %lld of %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Superserie %lld de %lld"
-          }
-        }
-      }
-    },
     "Superset Auto-Scroll" : {
       "localizations" : {
         "es" : {
@@ -26080,6 +26031,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Miembro %@ de la superserie"
+          }
+        }
+      }
+    },
+    "Superset options" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de la superserie"
           }
         }
       }

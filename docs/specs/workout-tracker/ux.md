@@ -288,6 +288,20 @@ trade-off.
   more glance.
 
 **3. Make supersets superset-aware.**
+
+> **Built (14 Oct 2026).** A superset is one card (`SupersetBlockView`). Its header reads
+> "Superset B", lettered in workout order as the strip and the templates letter it
+> (`ActiveWorkout.supersetLetters`), and names the members B1, B2. One menu holds Do Later and
+> Remove Superset once, then a submenu per member. Rows interleave in rounds (B1·1, B2·1, B1·2…,
+> `ActiveWorkout.blockRows`), with a separator between rounds and one Add Round at the foot.
+> Members whose columns differ each get their own row of headings. The log button walks the
+> rounds (`nextSet(inBlock:)`); `RestDurationRules` rests between partners only with
+> `supersetTransitionRestSeconds` set (default none), the base rest after the round, and the
+> between-exercises rest after the block. The Live Activity follows the rounds through the same
+> `ActiveWorkout.log` focus rule (`LiveActivityIntentHandlerTests`, "A1 From The Lock Screen
+> Moves Focus To B"), and deleting a partner clears the other's `supersetGroupId`
+> (`WorkoutTrackerPresenter.deleteExercise`).
+
 - *Problem.* A full rest runs after A before B (`RestDurationRules.swift` has no superset rule). The
   card swaps wholesale, so the lifter loses sight of the partner. Up Next shows no grouping.
 - *Change.*

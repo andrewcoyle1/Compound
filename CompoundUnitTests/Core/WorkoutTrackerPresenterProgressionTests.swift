@@ -162,7 +162,7 @@ struct WorkoutTrackerPresenterProgressionTests {
     func testMinimiseKeepsEditedSetOutOfReSuggestion() throws {
         let screen = try makeScreen(sets: [set(1), set(2), set(3)])
         screen.presenter.workoutSession.exercises[0].sets[1].weightKg = 55
-        screen.presenter.minimizeSession()
+        screen.presenter.onMinimizePressed()
 
         let reopened = try WorkoutTrackerPresenter(interactor: screen.interactor, router: WorkoutTrackerRouterDouble())
         #expect(reopened.workoutSession.exercises[0].sets[1].weightKg == 55)
@@ -178,7 +178,7 @@ struct WorkoutTrackerPresenterProgressionTests {
         let screen = try makeScreen(sets: [set(1), set(2), set(3)])
         screen.presenter.onProgressionNoteAcknowledged()
         screen.presenter.customRestSeconds["set-2"] = 200
-        screen.presenter.minimizeSession()
+        screen.presenter.onMinimizePressed()
 
         let reopened = try WorkoutTrackerPresenter(interactor: screen.interactor, router: WorkoutTrackerRouterDouble())
 

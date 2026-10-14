@@ -36,7 +36,7 @@ extension WorkoutTrackerView {
         // cover cannot be swiped away, so this is the visible way out.
         ToolbarItem(placement: .cancellationAction) {
             Button {
-                presenter.minimizeSession()
+                presenter.onMinimizePressed()
             } label: {
                 Image(systemName: Symbol.minimize)
             }
@@ -119,7 +119,7 @@ extension WorkoutTrackerView {
 
     private var notesButton: some View {
         Button {
-            presenter.presentWorkoutNotes()
+            presenter.onWorkoutNotesPressed()
         } label: {
             Label("Workout Notes…", systemImage: Symbol.note)
         }

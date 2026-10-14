@@ -79,7 +79,7 @@ extension ActiveWorkout {
             let minis = pieces.count(where: { $0.subSetKind == .mini && $0.kind == .standard })
             if minis > 0 {
                 let count = String(localized: "\(minis) mini-sets")
-                return String(localized: "Set \(number) is \(set.kind.displayName) from your plan: \(first), then \(count), a short breath between.")
+                return String(localized: "Set \(number) is \(set.kind == .myo ? String(localized: "Myo-reps") : set.kind.displayName) from your plan: \(first), then \(count), a short breath between.")
             }
             return nil
         }

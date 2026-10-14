@@ -2,7 +2,7 @@
 //  WorkoutTrackerPresenter+ActiveExercise.swift
 //  Compound
 //
-//  The screen around one exercise at a time: the progress header, the current exercise's card,
+//  The screen around one exercise at a time: the strip, the current exercise's card,
 //  the inline rest timer and the log button at the foot. The rules are in
 //  `ActiveWorkout`; this reads them against the live session.
 //
@@ -107,12 +107,7 @@ extension WorkoutTrackerPresenter {
         }
     }
 
-    // MARK: - Header
-
-    var progress: ActiveWorkout.Progress {
-        let index = currentExercise.flatMap { current in workoutSession.exercises.firstIndex { $0.id == current.id } }
-        return ActiveWorkout.progress(of: workoutSession.exercises, currentIndex: index ?? currentExerciseIndex)
-    }
+    // MARK: - Title
 
     var workoutDateText: String {
         workoutSession.dateCreated.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
@@ -179,12 +174,23 @@ extension WorkoutTrackerPresenter {
     /// A superset's card for `members`, with `current` the member the log button is on.
     func supersetCard(_ members: [WorkoutExerciseModel], current: String) -> SupersetCard {
         let timers = members.compactMap { restTimer(for: $0) }
+        let letter = members.first?.supersetGroupId
+            .flatMap { ActiveWorkout.supersetLetters(workoutSession.exercises)[$0] } ?? "A"
+        let memberIds = members.map(\.id)
+        var onDoLater: (@MainActor () -> Void)?
+        if let first = members.first, canDoLater(first) {
+            onDoLater = { [weak self] in self?.onDoLaterPressed(first.id) }
+        }
         return SupersetCard(
+            letter: letter,
             members: members,
-            rows: ActiveWorkout.blockRows(members),
+            rows: ActiveWorkout.blockRows(members, letter: letter),
             nextSetId: ActiveWorkout.nextSetId(inBlock: members, current: current),
             showsColumnHeadings: ActiveWorkout.blockSharesColumns(members, units: units(for:)),
-            restBefore: timers.contains { $0.anchor != .top } ? nil : timers.first
+            restBefore: timers.contains { $0.anchor != .top } ? nil : timers.first,
+            onAddRound: { [weak self] in self?.onAddRoundPressed(memberIds) },
+            onDoLater: onDoLater,
+            onRemoveSuperset: { [weak self] in self?.removeSuperset(memberIds) }
         )
     }
 
@@ -209,8 +215,10 @@ extension WorkoutTrackerPresenter {
         guard endsAt != nil || startedAt != nil,
               let anchor = ActiveWorkout.restAnchor(in: exercise, restedSet: rested, restStartedAt: startedAt)
         else { return nil }
-        // A rest kept by an older build has no start: it began when its set was logged.
-        return InlineRestTimer(anchor: anchor, startedAt: startedAt ?? rested?.completedAt, endsAt: endsAt)
+        // A rest kept by an older build has no start: it began when its set was logged. With no
+        // start at all, or one after the end, there is nothing to measure the bar against.
+        guard let start = startedAt ?? rested?.completedAt, endsAt.map({ start < $0 }) ?? true else { return nil }
+        return InlineRestTimer(anchor: anchor, startedAt: start, endsAt: endsAt)
     }
 
     /// Undoing the set a rest follows calls the rest off: there is nothing to rest from.
@@ -326,8 +334,7 @@ extension WorkoutTrackerPresenter {
 /// What the inline rest row draws.
 struct InlineRestTimer: Equatable {
     let anchor: RestAnchor
-    /// `nil` only when nothing has been logged, and then there is no progress bar.
-    let startedAt: Date?
+    let startedAt: Date
     /// `nil` once the rest has run out.
     let endsAt: Date?
 }

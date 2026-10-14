@@ -99,6 +99,21 @@ repsOnly lifts by default.
 
 ## 3. Supersets and circuits
 
+> **Built (14 Oct 2026).** A superset is one card (`SupersetBlockView`). Its header reads
+> "Superset B", lettered in workout order as the strip and the templates letter it
+> (`ActiveWorkout.supersetLetters`), and names the members B1, B2. One menu holds Do Later and
+> Remove Superset once, then a submenu per member. Rows interleave in rounds (B1·1, B2·1, B1·2…,
+> `ActiveWorkout.blockRows`), with a separator between rounds and one Add Round at the foot.
+> Members whose columns differ each get their own row of headings. The log button walks the
+> rounds (`nextSet(inBlock:)`); `RestDurationRules` rests between partners only with
+> `supersetTransitionRestSeconds` set (default none), the base rest after the round, and the
+> between-exercises rest after the block. The Live Activity follows the rounds through the same
+> `ActiveWorkout.log` focus rule (`LiveActivityIntentHandlerTests`, "A1 From The Lock Screen
+> Moves Focus To B"), and deleting a partner clears the other's `supersetGroupId`
+> (`WorkoutTrackerPresenter.deleteExercise`).
+
+The review below is as of 6 Oct 2026.
+
 | Aspect | Code | Today | Problem | Should | Type |
 |---|---|---|---|---|---|
 | Card shows one exercise | WTV:171-189 | Card A; after a set the card flips to the partner (`supersetAutoScroll`, WTP+SS:23-35) | Partner's numbers are invisible until the flip; B appears only as an Up Next row | Two stacked mini-tables on one card for a group (A1/B1 rows interleaved), or at least a "Next in superset: B · 40 kg × 10" line | Design |

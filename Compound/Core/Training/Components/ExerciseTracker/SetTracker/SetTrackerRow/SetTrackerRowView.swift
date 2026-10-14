@@ -18,8 +18,8 @@ struct SetTrackerRowDelegate {
     var onCustomRestChanged: (@MainActor (_ setId: String, _ seconds: Int?) -> Void)?
     /// The rest set by hand on this set, as the tracker keeps it.
     var customRestSeconds: Int?
-    /// What the set's circle shows in place of its number, in the superset tint: "A1", "B2" on
-    /// a superset's card. `nil` shows the number.
+    /// What the set's circle shows in place of its number, in the superset tint: "B1·1", "B2·1"
+    /// on a superset's card. `nil` shows the number.
     var badgeLabel: String?
 }
 
@@ -32,18 +32,18 @@ struct SetTrackerRowView: View {
     @State private var keyboardHost = SetKeyboardInputHost()
 
     /// The row's cell height at the default text size. Scaled so a larger size never clips a value.
-    @ScaledMetric(relativeTo: .body) private var cellHeight: CGFloat = 35
+    @ScaledMetric(relativeTo: .body) var cellHeight: CGFloat = 35
 
     /// The set number's circle, scaled with its text so "12L" never clips at a larger size.
     @ScaledMetric(relativeTo: .caption) private var setCircleSide: CGFloat = ControlSize.thumbnail - Spacing.xs
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @Environment(\.showsBodyweightLoad) private var showsBodyweightLoad
+    @Environment(\.showsBodyweightLoad) var showsBodyweightLoad
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     /// At accessibility sizes five fixed columns truncated every value to "4…", so the row stacks
     /// into two lines and the text keeps growing. Below them the table is as it always was.
-    private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
+    var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
 
     /// A logged working set is greyed; logged warm-ups are hidden altogether.
     private var isDone: Bool { delegate.rowState == .done }
@@ -94,14 +94,18 @@ struct SetTrackerRowView: View {
     /// "Set 2", "Set A1", "Warm-up set": what VoiceOver calls this row, and the start of each of
     /// its controls' names, so Voice Control can tell "Set 2 weight" from "Set 3 weight" (S5).
     /// A drop or mini-set is named after its set: "Set 2, drop set 1".
-    private var rowName: String {
+    var rowName: String {
         let set = delegate.set.wrappedValue
         guard !set.isWarmup else { return String(localized: "Warm-up set") }
         let sets = delegate.exercise.wrappedValue.sets
-        if let parent = sets.first(where: { $0.id == set.parentSetId }), let subSetName = ActiveWorkout.subSetName(of: set, in: sets) {
-            return "\(String(localized: "Set \(setLabel(for: parent))")), \(subSetName)"
+        // On a superset's card the badge names the set: "B1, set 2".
+        let setName = { (set: WorkoutSetModel) in
+            delegate.badgeLabel.map(ActiveWorkout.spokenBadge) ?? String(localized: "Set \(setLabel(for: set))")
         }
-        return String(localized: "Set \(setLabel(for: set))")
+        if let parent = sets.first(where: { $0.id == set.parentSetId }), let subSetName = ActiveWorkout.subSetName(of: set, in: sets) {
+            return "\(setName(parent)), \(subSetName)"
+        }
+        return setName(set)
     }
 
     private var rowAccessibilityLabel: String {
@@ -334,80 +338,6 @@ struct SetTrackerRowView: View {
         }
     }
 
-    // MARK: - Previous and Auto
-
-    func previousValues(exercise: Binding<WorkoutExerciseModel>, set: Binding<WorkoutSetModel>) -> some View {
-        let unitPreference = presenter.getUnitPreference(for: exercise.wrappedValue)
-        return Group {
-            if delegate.showAutoRanges {
-                autoTargetContent(exercise: exercise.wrappedValue, set: set.wrappedValue)
-            } else if let prev = delegate.lastSet {
-                previousValueContent(trackingMode: exercise.wrappedValue.trackingMode, prev: prev, unitPreference: unitPreference)
-            } else {
-                emptyTargetLabel
-            }
-        }
-        .setColumn(width: SetTrackerRowView.previousColumnWidth, stretches: isStacked, alignment: .leading)
-    }
-
-    @ViewBuilder
-    private func autoTargetContent(exercise: WorkoutExerciseModel, set: WorkoutSetModel) -> some View {
-        // A drop or mini-set has no target of its own; its set's would read as the drop's.
-        if set.isWarmup || set.isSubSet {
-            emptyTargetLabel
-        } else {
-            // The same number the row is labelled with, so a pair shares one target: a target
-            // describes a set, and a left and a right are the one set.
-            let workingIndex = exercise.workingSetNumber(for: set)
-            let target = exercise.setTargets.first { $0.setNumber == workingIndex }
-            let unitPreference = presenter.getUnitPreference(for: exercise)
-            let suggestion = delegate.progressionSuggestion
-            let label = suggestion?.label(
-                trackingMode: exercise.trackingMode,
-                weightUnit: unitPreference.weightUnit,
-                distanceUnit: unitPreference.distanceUnit
-            )
-
-            if let suggestion, let label {
-                columnText(label)
-                    .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
-                    .contentShape(.rect)
-                    .anyButton {
-                        presenter.onFillFromSuggestion(suggestion, set: delegate.set)
-                    }
-                    .accessibilityHint("Fills this set")
-                    .disabled(delegate.set.wrappedValue.completedAt != nil)
-            } else if let target {
-                autoRangeLabel(target: target)
-            } else {
-                emptyTargetLabel
-            }
-        }
-    }
-
-    private var emptyTargetLabel: some View {
-        columnText(Format.placeholder)
-    }
-
-    /// One value in the Prev or Auto column.
-    private func columnText(_ text: String, font: Font = .label) -> some View {
-        Text(text)
-            .font(font)
-            .foregroundStyle(.secondary)
-            .frame(minHeight: cellHeight)
-    }
-
-    private func autoRangeLabel(target: SetTarget) -> some View {
-        let label: String = {
-            switch (target.minReps, target.maxReps) {
-            case (let min?, let max?): return Format.repRange(min, max)
-            case (let min?, nil):      return "\(min)+"
-            default:                   return Format.placeholder
-            }
-        }()
-        return columnText(label)
-    }
-
     // MARK: - Done
 
     func completeButton(exercise: WorkoutExerciseModel, set: Binding<WorkoutSetModel>) -> some View {
@@ -431,163 +361,6 @@ struct SetTrackerRowView: View {
         .disabled(state == .notReady)
     }
 
-    @ViewBuilder
-    func previousValueContent(
-        trackingMode: TrackingMode,
-        prev: WorkoutSetModel,
-        unitPreference: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)
-    ) -> some View {
-        switch trackingMode {
-        case .weightReps:
-            // A set with no weight, as on a bodyweight lift, reads "8 reps" rather than nothing, or
-            // "BW × 8" while the bodyweight contribution is shown.
-            if prev.reps != nil,
-               let figures = ActiveWorkout.figures(
-                   of: prev,
-                   trackingMode: .weightReps,
-                   unit: unitPreference.weightUnit,
-                   distanceUnit: unitPreference.distanceUnit,
-                   showsBodyweight: showsBodyweightLoad
-               ) {
-                fillFromPrevious(withEffort(columnText(figures), rpe: prev.rpe), prev: prev, trackingMode: trackingMode)
-            } else {
-                emptyTargetLabel
-            }
-        case .repsOnly:
-            if let reps = prev.reps {
-                fillFromPrevious(withEffort(columnText(String(reps)), rpe: prev.rpe), prev: prev, trackingMode: trackingMode)
-            } else {
-                emptyTargetLabel
-            }
-        case .timeOnly:
-            if let duration = prev.durationSec {
-                fillFromPrevious(columnText(Format.duration(TimeInterval(duration))), prev: prev, trackingMode: trackingMode)
-            } else {
-                emptyTargetLabel
-            }
-        case .distanceTime:
-            if let distance = prev.distanceMeters, let duration = prev.durationSec {
-                let displayDistance = Format.distance(meters: distance, exerciseUnit: unitPreference.distanceUnit)
-                fillFromPrevious(
-                    columnText("\(displayDistance) \(Format.duration(TimeInterval(duration)))", font: .caption2)
-                        .lineLimit(2),
-                    prev: prev,
-                    trackingMode: trackingMode
-                )
-            } else {
-                emptyTargetLabel
-            }
-        }
-    }
-
-    /// Last time's figures with the reps left in reserve under them, when they were logged.
-    private func withEffort(_ figures: some View, rpe: Double?) -> some View {
-        VStack(spacing: 0) {
-            figures
-            if let rpe {
-                Text("RIR \(WeightStepper.format(EffortScale.rir(fromRPE: rpe)))")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    /// A Prev value that fills this set when tapped, for every tracking mode. Not on a logged set,
-    /// where a stray tap would overwrite what was recorded.
-    private func fillFromPrevious(_ label: some View, prev: WorkoutSetModel, trackingMode: TrackingMode) -> some View {
-        label
-            .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
-            .contentShape(.rect)
-            .anyButton {
-                presenter.onFillFromPrevious(prev, trackingMode: trackingMode, set: delegate.set)
-            }
-            .accessibilityHint("Fills this set")
-            .disabled(delegate.set.wrappedValue.completedAt != nil)
-    }
-
-}
-
-// MARK: - Set kinds
-
-extension SetTrackerRowView {
-
-    /// The set's circle, with its kind's chip under it: "Failure", or "Drop", "Mini", "Partials",
-    /// "Stretch" or "Hold" on a sub-row.
-    /// Under rather than beside, so the columns keep the headers' widths.
-    func setBadge(set: Binding<WorkoutSetModel>) -> some View {
-        VStack(spacing: Spacing.xxs) {
-            setNumber(set: set)
-            kindChip(for: set.wrappedValue)
-        }
-    }
-
-    /// The chip's text in the primary colour on its tint, as the circle's is: orange on its own
-    /// 15 % fill is about 2:1 in light mode (S4). Hidden from VoiceOver, which hears the kind in
-    /// the row's name.
-    @ViewBuilder
-    private func kindChip(for set: WorkoutSetModel) -> some View {
-        if let chip = Self.chip(for: set) {
-            Text(chip.text)
-                .foregroundStyle(Color.primary)
-                .lineLimit(1)
-                .fixedSize()
-                .chipStyle(tint: chip.tint, filled: false)
-                .accessibilityHidden(true)
-        }
-    }
-
-    private static func chip(for set: WorkoutSetModel) -> (text: String, tint: Color)? {
-        switch (set.subSetKind, set.kind) {
-        case (.drop, _): (String(localized: "Drop"), .warmup)
-        case let (.mini, kind): (kind.pieceName ?? String(localized: "Mini"), .warmup)
-        case (nil, .amrap) where !set.isWarmup: (set.targetReps.map { String(localized: "Failure \($0)+") } ?? String(localized: "Failure"), .secondary)
-        default: nil
-        }
-    }
-
-    /// "AMRAP 8+" for an AMRAP set the plan gave a target, else the kind's name.
-    static func kindName(of set: WorkoutSetModel) -> String {
-        guard set.kind == .amrap, let target = set.targetReps else { return set.kind.displayName }
-        return String(localized: "Failure \(target)+")
-    }
-
-    /// An AMRAP set's reps, while they are open, hint at the plan's target, greyed as any
-    /// placeholder is: "8+".
-    static func targetPlaceholder(for field: SetKeyboardField, set: WorkoutSetModel) -> String? {
-        guard field == .reps, set.kind == .amrap, !set.isSubSet, !set.isWarmup, set.reps == nil,
-              let target = set.targetReps else { return nil }
-        return "\(target)+"
-    }
-
-    /// The types, the set's own ticked, then another drop or mini-set where the set takes one.
-    @ViewBuilder
-    private func setTypeItems(set: Binding<WorkoutSetModel>) -> some View {
-        Picker("Set Type", selection: Binding(
-            get: { set.wrappedValue.typeChoice },
-            set: { presenter.onSetTypeSelected($0, setId: set.wrappedValue.id, setName: rowName, exercise: delegate.exercise) }
-        )) {
-            ForEach(ActiveWorkout.setTypeOptions(for: set.wrappedValue), id: \.self) { choice in
-                Text(choice.displayName).tag(choice)
-            }
-        }
-        .pickerStyle(.inline)
-        if ActiveWorkout.offersDrop(set.wrappedValue) {
-            Button {
-                presenter.addSubSet(.drop, to: set.wrappedValue.id, exercise: delegate.exercise)
-            } label: {
-                Label("Add Another Drop", systemImage: Symbol.add)
-            }
-            .accessibilityLabel(String(localized: "Add another drop to \(rowName)"))
-        }
-        if ActiveWorkout.offersMiniSet(set.wrappedValue) {
-            Button {
-                presenter.addSubSet(.mini, to: set.wrappedValue.id, exercise: delegate.exercise)
-            } label: {
-                Label("Add Another Mini-Set", systemImage: Symbol.add)
-            }
-            .accessibilityLabel(String(localized: "Add another mini-set to \(rowName)"))
-        }
-    }
 }
 
 #Preview {
@@ -603,19 +376,6 @@ extension SetTrackerRowView {
     return RouterView { router in
         List {
             builder.setTrackerRowView(router: router, delegate: delegate)
-        }
-    }
-}
-
-extension View {
-    /// A column of the set table: its fixed width, or on the stacked row at accessibility sizes a
-    /// share of the line that grows with the text. The headers use the same widths.
-    @ViewBuilder
-    func setColumn(width: CGFloat, height: CGFloat? = nil, stretches: Bool, alignment: Alignment = .center) -> some View {
-        if stretches {
-            frame(maxWidth: .infinity, minHeight: height, alignment: alignment)
-        } else {
-            frame(width: width, height: height, alignment: .center)
         }
     }
 }

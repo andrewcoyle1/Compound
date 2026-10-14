@@ -220,40 +220,10 @@ class SetTrackerPresenter {
         interactor.trackEvent(event: Event.sidesSplit(splitting))
     }
 
-    /// Adds one more set — which is two rows for an exercise whose sides are split, so the user
-    /// is never handed a left with no right to follow it.
+    /// Adds one more set (`WorkoutExerciseModel.addingSet`).
     func addSet(exercise: Binding<WorkoutExerciseModel>) {
         guard let userId = interactor.userId else { return }
-        let existingSets = exercise.wrappedValue.sets
-        // One past the highest index, not one past the count. Deleting a set does not renumber the
-        // rest, so after deleting any set but the last, the count no longer reaches the top index
-        // and this handed the new set an index another set already held. Warmup sets share the
-        // same numbering, which makes it easier still to hit.
-        var nextIndex = (existingSets.map(\.index).max() ?? 0) + 1
-        for side in exercise.wrappedValue.sidesPerSet {
-            // Carry forward the figures of the last set on the same side, so a left set copies the
-            // left arm's weight rather than the right one's. Not a drop's: it is lighter than the set.
-            let ownSets = existingSets.filter { !$0.isSubSet }
-            let lastSet = ownSets.last(where: { side == nil || $0.side == side }) ?? ownSets.last
-            exercise.wrappedValue.sets.append(
-                WorkoutSetModel(
-                    id: UUID().uuidString,
-                    authorId: userId,
-                    index: nextIndex,
-                    reps: lastSet?.reps,
-                    weightKg: lastSet?.weightKg,
-                    durationSec: lastSet?.durationSec,
-                    distanceMeters: lastSet?.distanceMeters,
-                    rpe: lastSet?.rpe,
-                    side: side,
-                    bands: lastSet?.bands,
-                    isWarmup: false,
-                    completedAt: nil,
-                    dateCreated: Date()
-                )
-            )
-            nextIndex += 1
-        }
+        exercise.wrappedValue = exercise.wrappedValue.addingSet(authorId: userId)
         interactor.playHaptic(option: .selection)
         interactor.trackEvent(event: Event.setAdded)
     }

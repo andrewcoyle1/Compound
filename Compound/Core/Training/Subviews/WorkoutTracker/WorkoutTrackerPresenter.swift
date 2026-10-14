@@ -354,7 +354,7 @@ class WorkoutTrackerPresenter {
         syncCurrentExerciseIndexToFirstIncomplete(in: updated)
     }
         
-    func presentWorkoutNotes() {
+    func onWorkoutNotesPressed() {
         // Seeded from the session each time, so a resumed workout's note is not wiped by a save
         // and a cancelled edit does not linger as the draft.
         workoutNotes = workoutSession.notes ?? ""

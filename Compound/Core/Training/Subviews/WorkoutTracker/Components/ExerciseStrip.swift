@@ -21,7 +21,7 @@ struct ExerciseStrip: View {
     /// A block dropped on another's place, or moved a step by its menu or an accessibility action:
     /// its id and its new index among the other blocks.
     var onMove: (String, Int) -> Void = { _, _ in }
-    /// The strip's last item: Add Exercise (a row in the list at accessibility sizes).
+    /// The strip's last item: Add Exercise.
     var onAddExercise: () -> Void = {}
 
     @ScaledMetric(relativeTo: .body) private var side = ControlSize.thumbnail
@@ -211,6 +211,8 @@ struct ExerciseStrip: View {
     private func image(name: String, imageName: String?) -> some View {
         if let imageName, !imageName.isEmpty {
             ExerciseImageView(name: name, imageName: imageName, resizingMode: .fit)
+                .background(Color.surface)
+
         } else {
             Image(systemName: Symbol.exercise)
                 .iconSize(.medium)
@@ -244,6 +246,8 @@ private extension UTType {
 }
 
 #Preview {
+    @Previewable @State var currentExerciseId = "e0"
+    
     let start = Date()
     let exercises = ["Bench Press", "Barbell Row", "Squat"].enumerated().map { index, name in
         WorkoutExerciseModel(
@@ -258,5 +262,14 @@ private extension UTType {
             supersetGroupId: index < 2 ? "g" : nil
         )
     }
-    ExerciseStrip(items: ActiveWorkout.stripProgress(for: exercises, currentExerciseId: "e0"), onSelect: { _ in })
+    ExerciseStrip(
+        items: ActiveWorkout
+            .stripProgress(
+                for: exercises,
+                currentExerciseId: currentExerciseId
+            ),
+        onSelect: { id in
+            currentExerciseId = id
+        }
+    )
 }

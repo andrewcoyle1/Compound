@@ -196,23 +196,6 @@ struct ActiveWorkoutFocusTests {
         #expect(ActiveWorkout.focusWhenRestEnds(current: "b", exercises: exercises, settings: settings) == nil)
     }
 
-    // MARK: - Header
-
-    /// A superset counts once, and the header says it is one.
-    @Test("Test The Header Counts A Superset Once")
-    func testProgressCountsBlocks() {
-        let exercises = [exercise("a"), exercise("b", group: "g"), exercise("c", group: "g"), exercise("d")]
-
-        let onSuperset = ActiveWorkout.progress(of: exercises, currentIndex: 2)
-        #expect(onSuperset.exerciseNumber == 2)
-        #expect(onSuperset.exerciseCount == 3)
-        #expect(onSuperset.isSuperset)
-
-        let onSingle = ActiveWorkout.progress(of: exercises, currentIndex: 3)
-        #expect(onSingle.exerciseNumber == 3)
-        #expect(!onSingle.isSuperset)
-    }
-
     /// Warm-ups come before the first round, and a round's set number counts a pair once.
     @Test("Test Warm-Ups Come Before The First Round")
     func testWarmupsBeforeRounds() {

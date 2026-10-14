@@ -46,6 +46,11 @@ struct SupersetBlockLayoutTests {
         )
     }
 
+    /// The rows of the workout's first superset, "A".
+    private func blockRows(_ members: [WorkoutExerciseModel]) -> [SupersetBlockRow] {
+        ActiveWorkout.blockRows(members, letter: "A")
+    }
+
     private func layout(_ rows: [SupersetBlockRow]) -> [String] {
         rows.map { row in
             switch row.kind {
@@ -73,43 +78,43 @@ struct SupersetBlockLayoutTests {
 
     @Test("Test The Rows Run In Rounds")
     func testTheRowsRunInRounds() {
-        let rows = ActiveWorkout.blockRows([exercise("a"), exercise("b")])
+        let rows = blockRows([exercise("a"), exercise("b")])
 
-        #expect(layout(rows) == ["A1:a-1", "B1:b-1", "A2:a-2", "B2:b-2"])
+        #expect(layout(rows) == ["A1·1:a-1", "A2·1:b-1", "A1·2:a-2", "A2·2:b-2"])
     }
 
     /// A member with more sets carries on alone once its partner has run out, and a circuit
-    /// letters its third member C.
+    /// numbers its third member A3.
     @Test("Test Uneven Members And A Circuit")
     func testUnevenMembersAndACircuit() {
-        let rows = ActiveWorkout.blockRows([exercise("a", working: 3), exercise("b", working: 1), exercise("c", working: 2)])
+        let rows = blockRows([exercise("a", working: 3), exercise("b", working: 1), exercise("c", working: 2)])
 
-        #expect(layout(rows) == ["A1:a-1", "B1:b-1", "C1:c-1", "A2:a-2", "C2:c-2", "A3:a-3"])
+        #expect(layout(rows) == ["A1·1:a-1", "A2·1:b-1", "A3·1:c-1", "A1·2:a-2", "A3·2:c-2", "A1·3:a-3"])
     }
 
     /// Warm-ups are round 0: each member's together, before the first round. Logged ones fold
     /// into one line per member, as on a single exercise's card.
     @Test("Test Warm-ups Stay Grouped Above The First Round")
     func testWarmupsStayGroupedAboveTheFirstRound() {
-        let rows = ActiveWorkout.blockRows([
+        let rows = blockRows([
             exercise("a", working: 1, warmups: 2, loggedWarmups: 1),
             exercise("b", working: 1, warmups: 1)
         ])
 
-        #expect(layout(rows) == ["warmups:a", "AW:a-w2", "BW:b-w1", "A1:a-1", "B1:b-1"])
+        #expect(layout(rows) == ["warmups:a", "A1W:a-w2", "A2W:b-w1", "A1·1:a-1", "A2·1:b-1"])
     }
 
     /// Both halves of a left/right pair are one set, so they sit together in their round.
     @Test("Test A Left And Right Pair Is One Entry In Its Round")
     func testALeftAndRightPairIsOneEntryInItsRound() {
-        let rows = ActiveWorkout.blockRows([exercise("a", split: true), exercise("b")])
+        let rows = blockRows([exercise("a", split: true), exercise("b")])
 
-        #expect(layout(rows) == ["A1L:a-1L", "A1R:a-1R", "B1:b-1", "A2L:a-2L", "A2R:a-2R", "B2:b-2"])
+        #expect(layout(rows) == ["A1·1L:a-1L", "A1·1R:a-1R", "A2·1:b-1", "A1·2L:a-2L", "A1·2R:a-2R", "A2·2:b-2"])
     }
 
     @Test("Test Each Row Has Its Own Id")
     func testEachRowHasItsOwnId() {
-        let rows = ActiveWorkout.blockRows([exercise("a", warmups: 1, loggedWarmups: 1), exercise("b", warmups: 1, loggedWarmups: 1)])
+        let rows = blockRows([exercise("a", warmups: 1, loggedWarmups: 1), exercise("b", warmups: 1, loggedWarmups: 1)])
 
         #expect(Set(rows.map(\.id)).count == rows.count)
     }
@@ -159,9 +164,33 @@ struct SupersetBlockLayoutTests {
     /// Mixed modes still interleave in rounds: the table is ordered by set, not by column.
     @Test("Test Mixed Modes Still Run In Rounds")
     func testMixedModesStillRunInRounds() {
-        let rows = ActiveWorkout.blockRows([exercise("a", mode: .timeOnly), exercise("b", mode: .repsOnly)])
+        let rows = blockRows([exercise("a", mode: .timeOnly), exercise("b", mode: .repsOnly)])
 
-        #expect(layout(rows) == ["A1:a-1", "B1:b-1", "A2:a-2", "B2:b-2"])
+        #expect(layout(rows) == ["A1·1:a-1", "A2·1:b-1", "A1·2:a-2", "A2·2:b-2"])
+    }
+
+    /// The last row of each round carries the separator, warm-ups being round 0, and VoiceOver
+    /// reads each badge as words.
+    @Test("Test Each Round Ends On Its Last Row")
+    func testEachRoundEndsOnItsLastRow() {
+        let rows = blockRows([exercise("a", working: 2, warmups: 1), exercise("b", working: 1)])
+
+        #expect(rows.map(\.endsRound) == [true, false, true, true])
+        #expect(["A1W", "A1·1", "A2·2L", "A1"].map(ActiveWorkout.spokenBadge) == ["A1 warm-up", "A1, set 1", "A2, set 2L", "A1"])
+    }
+
+    /// Supersets are lettered in workout order, as the strip and the templates letter them.
+    @Test("Test Supersets Are Lettered In Workout Order")
+    func testSupersetsAreLetteredInWorkoutOrder() {
+        let exercises = [
+            exercise("a", group: "g1"), exercise("b", group: "g1"),
+            exercise("c", group: nil),
+            exercise("d", group: "g2"), exercise("e", group: "g2"),
+            exercise("f", group: "lone")
+        ]
+
+        #expect(ActiveWorkout.supersetLetters(exercises) == ["g1": "A", "g2": "B"])
+        #expect(ActiveWorkout.blockRows([exercises[3], exercises[4]], letter: "B").first?.kind == .set(id: "d-1", badge: "B1·1"))
     }
 
     // MARK: WP-Q
@@ -174,7 +203,7 @@ struct SupersetBlockLayoutTests {
         first.sets = ActiveWorkout.addingSubSet(.drop, to: "a-1", in: first.sets, id: "a-1d", weightKg: 64)
         first.sets = ActiveWorkout.addingSubSet(.drop, to: "a-2", in: first.sets, id: "a-2d", weightKg: 64)
 
-        #expect(layout(ActiveWorkout.blockRows([first, exercise("b")])) == ["A1:a-1", "A1:a-1d", "B1:b-1", "A2:a-2", "A2:a-2d", "B2:b-2"])
+        #expect(layout(blockRows([first, exercise("b")])) == ["A1·1:a-1", "A1·1:a-1d", "A2·1:b-1", "A1·2:a-2", "A1·2:a-2d", "A2·2:b-2"])
 
         first.sets[0].completedAt = start
         #expect(ActiveWorkout.nextSetId(inBlock: [first, exercise("b")], current: "a") == "a-1d")
@@ -188,7 +217,7 @@ struct SupersetBlockLayoutTests {
         var first = exercise("a", working: 1, split: true)
         first.sets = ActiveWorkout.addingSubSet(.drop, to: "a-1L", in: first.sets, id: "a-1Ld", weightKg: 16)
 
-        #expect(layout(ActiveWorkout.blockRows([first, exercise("b", working: 1)])) == ["A1L:a-1L", "A1R:a-1R", "A1L:a-1Ld", "B1:b-1"])
+        #expect(layout(blockRows([first, exercise("b", working: 1)])) == ["A1·1L:a-1L", "A1·1R:a-1R", "A1·1L:a-1Ld", "A2·1:b-1"])
     }
 
     // MARK: - End WP-Q

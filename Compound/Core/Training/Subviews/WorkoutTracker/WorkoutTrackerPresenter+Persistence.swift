@@ -46,7 +46,7 @@ extension WorkoutTrackerPresenter {
         }
     }
 
-    func minimizeSession() {
+    func onMinimizePressed() {
         interactor.trackEvent(event: Event.minimized)
         flushSave()
         // Kept on only while the tracker is up: minimised, the phone may sleep (system.md §5).

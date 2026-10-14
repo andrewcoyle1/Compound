@@ -232,7 +232,7 @@ struct WorkoutFinishNoteTests {
         let router = WorkoutTrackerRouterDouble()
         let presenter = try WorkoutTrackerPresenter(interactor: interactor, router: router)
 
-        presenter.presentWorkoutNotes()
+        presenter.onWorkoutNotesPressed()
         let delegate = try #require(router.notesDelegates.first)
         #expect(delegate.notes.wrappedValue == "Deload week")
 

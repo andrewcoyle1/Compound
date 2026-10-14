@@ -8,50 +8,6 @@
 
 import SwiftUI
 
-struct SetTrackerDelegate {
-    let exercise: Binding<WorkoutExerciseModel>
-    let lastExercise: WorkoutExerciseModel?
-    /// What smart progression suggests for this exercise, one entry per working set.
-    var progressionSuggestion: ProgressionSuggestion?
-    var allWorkoutExercises: [WorkoutExerciseModel] = []
-    var onSetSupersetGroup: @MainActor (String, String?) -> Void = { _, _ in }
-    var onDeleteExercise: @MainActor () -> Void = { }
-    /// The live tracker makes a swap itself, keeping the logged sets on the old exercise. `nil`
-    /// swaps in place, as a finished workout's editor does. See `SetTrackerPresenter.onSwapPressed`.
-    var onSwap: (@MainActor (ExerciseModel) -> Void)?
-    /// The live tracker's card: the exercise's actions in an overflow menu that `header` places,
-    /// the rest timer among the rows, and logging through the tracker.
-    var card: SetTrackerCard?
-}
-
-/// What the live tracker adds to the set table: the tracker's `ExerciseCard`, and what the
-/// exercise card builds around it.
-struct SetTrackerCard {
-    /// The card's title row, handed the actions menu to place in it.
-    var header: (AnyView) -> AnyView
-    /// The exercise's notes, under the sets; the actions menu opens their sheet.
-    var notes: AnyView?
-    var onNotePressed: @MainActor () -> Void = { }
-    /// Opens the plan's video link; `nil` when there is none to open.
-    var onWatch: (@MainActor () -> Void)?
-    var exerciseCard: ExerciseCard
-}
-
-/// A piece of one exercise's set table. See `SupersetBlockView`.
-enum SetTrackerPiece: Equatable {
-    /// The title row with the exercise's actions menu, for the section header.
-    case header
-    /// Smart progression's note, over the rows.
-    case progressionNote
-    case columnHeadings
-    /// The logged warm-ups, folded into one line.
-    case loggedWarmups
-    /// A set's row with `badge` in its circle, and the rest under it when it follows that set. Only the row the log button logs next (`isNext`) is current.
-    case row(setId: String, badge: String, isNext: Bool)
-    /// The add-set button, then the exercise's notes.
-    case addSet
-}
-
 struct SetTrackerView<SetTrackerRow: View>: View {
 
     @State var presenter: SetTrackerPresenter
@@ -113,12 +69,13 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 if delegate.card == nil {
                     equipmentButton
                 }
-                columnHeaders
+                columnHeaders(setLabel: nil)
             }
+            loggedWarmupsGroup
+            // Under the folded warm-ups, so a rest after the last warm-up follows it.
             if let timer = delegate.card?.exerciseCard.restTimer, timer.anchor == .top {
                 InlineRestTimerRow(timer: timer)
             }
-            loggedWarmupsGroup
             ForEach(delegate.exercise.wrappedValue.sets.filter { !$0.isWarmup || $0.completedAt == nil }) { set in
                 row(for: set)
                 restRow(below: set)
@@ -174,7 +131,12 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         }
     }
 
-    private func row(for set: WorkoutSetModel, badge: String? = nil, isNext: Bool? = nil) -> some View {
+    private func row(
+        for set: WorkoutSetModel,
+        badge: String? = nil,
+        isNext: Bool? = nil,
+        separators: (top: Visibility, bottom: Visibility) = (.visible, .visible)
+    ) -> some View {
         let exercise = delegate.exercise.wrappedValue
         // Matched on the side as well as the number: a left set inheriting the right arm's last
         // weight sends the user chasing the other arm's numbers. A drop is matched on its kind,
@@ -194,7 +156,8 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 badgeLabel: badge
             )
         )
-        .listRowSeparator(.visible)
+        .listRowSeparator(separators.top, edges: .top)
+        .listRowSeparator(separators.bottom, edges: .bottom)
     }
 
     /// The set by id, not by position, as `WorkoutTrackerView.currentExerciseSection` binds the
@@ -222,158 +185,22 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         }
     }
 
-    // MARK: - Actions
-
-    /// The chips over the table where the exercise has no card header, as when a finished
-    /// workout is being corrected.
-    private var equipmentButton: some View {
-        ScrollView(.horizontal) {
-            HStack {
-                Group {
-                    actionButtons
-                    Menu {
-                        moreButtons
-                    } label: {
-                        Label("More", systemImage: Symbol.more)
-                            .tapTarget()
-                    }
-                }
-                .font(.label)
-                .buttonStyle(.bordered)
-                .toggleStyle(.button)
-                .tint(.secondary)
-                .buttonBorderShape(.capsule)
-            }
-            // Room for each chip's 44 pt hit area, which the scroll view would otherwise clip.
-            .frame(minHeight: ControlSize.row)
-        }
-    }
-
-    /// The same actions as one overflow menu, for the card's title row.
-    private var actionsMenu: some View {
-        Menu {
-            if let card = delegate.card {
-                Button {
-                    card.onNotePressed()
-                } label: {
-                    Label("Notes", systemImage: Symbol.note)
-                }
-                if let onDoLater = card.exerciseCard.onDoLater {
-                    Button {
-                        onDoLater()
-                    } label: {
-                        Label("Do Later", systemImage: Symbol.doLater)
-                    }
-                }
-                if let onWatch = card.onWatch {
-                    Button {
-                        onWatch()
-                    } label: {
-                        Label("Watch", systemImage: Symbol.video)
-                    }
-                }
-                Divider()
-            }
-            actionButtons
-            Divider()
-            moreButtons
-        } label: {
-            // A real 44 pt frame: the accessibility audit measures the frame, not the hit area
-            // `tapTarget()` pads out behind it.
-            Image(systemName: Symbol.more)
-                .imageScale(.large)
-                .frame(width: ControlSize.row, height: ControlSize.row)
-                .contentShape(.rect)
-        }
-        .buttonStyle(.borderless)
-        .accessibilityLabel("Exercise options")
-    }
-
-    @ViewBuilder
-    private var actionButtons: some View {
-        if !delegate.exercise.wrappedValue.equipmentVariations.isEmpty {
-            Button {
-                presenter.onExerciseEquipmentPressed(delegate.exercise)
-            } label: {
-                Label("Equipment…", systemImage: Symbol.equipment)
-                    .tapTarget()
-            }
-        }
-
-        if delegate.exercise.wrappedValue.isPerSide {
-            // A toggle, so the menu draws a checkmark beside it while the sides are split; a tint
-            // is not drawn inside a menu.
-            let exercise = delegate.exercise
-            Toggle(isOn: Binding(
-                get: { exercise.wrappedValue.isSplit },
-                set: { _ in presenter.onSplitSidesPressed(exercise) }
-            )) {
-                Label("Split L/R", systemImage: Symbol.splitSides)
-                    .tapTarget()
-            }
-            .accessibilityLabel("Split left and right")
-            .accessibilityHint("Logs each side as its own set")
-        }
-
-        Button {
-            presenter.onTargetsPressed(delegate.exercise)
-        } label: {
-            Label("Targets…", systemImage: Symbol.goal)
-                .tapTarget()
-        }
-
-        Button {
-            presenter.onSwapPressed(delegate.exercise, onSwap: delegate.onSwap)
-        } label: {
-            Label("Swap…", systemImage: Symbol.swap)
-                .tapTarget()
-        }
-
-        Button {
-            presenter.onSupersetPressed(
-                exercise: delegate.exercise,
-                allWorkoutExercises: delegate.allWorkoutExercises,
-                onSetSupersetGroup: delegate.onSetSupersetGroup
-            )
-        } label: {
-            let groupLabel: String = {
-                guard let groupId = delegate.exercise.wrappedValue.supersetGroupId else { return String(localized: "Superset…") }
-                let count = delegate.allWorkoutExercises.filter { $0.supersetGroupId == groupId }.count
-                return count > 2 ? String(localized: "Remove Circuit") : String(localized: "Remove Superset")
-            }()
-            Label(groupLabel, systemImage: Symbol.superset)
-                .tapTarget()
-        }
-    }
-
-    @ViewBuilder
-    private var moreButtons: some View {
-        Button {
-            presenter.onExerciseSettingsPressed(exercise: delegate.exercise.wrappedValue)
-        } label: {
-            Label("Exercise Settings", systemImage: Symbol.settings)
-        }
-
-        Button(role: .destructive) {
-            presenter.deleteExercise(delegate.exercise, onDelete: delegate.onDeleteExercise)
-        } label: {
-            Label("Delete", systemImage: Symbol.delete)
-        }
-    }
-
-    private var columnHeaders: some View {
+    private func columnHeaders(setLabel: String?) -> some View {
         let unitPreference = presenter.getUnitPreference(for: delegate.exercise.wrappedValue)
         return Group {
             if isStacked {
                 // Over the stacked rows: the Prev/Auto switch for line one, the input headers over
                 // the inputs of line two. The set and Done controls need no heading.
                 VStack(alignment: .leading, spacing: Spacing.xs) {
+                    if let setLabel {
+                        Text(setLabel)
+                    }
                     prevAutoHeader(exercise: delegate.exercise)
                     inputHeaders(unitPreference: unitPreference)
                 }
             } else {
                 HStack(alignment: .firstTextBaseline) {
-                    Text("Set")
+                    Text(setLabel ?? String(localized: "Set"))
                         .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)
                     Spacer()
                     prevAutoHeader(exercise: delegate.exercise)
@@ -542,28 +369,30 @@ extension SetTrackerView {
             if let card = delegate.card {
                 sectionHeader(card)
             }
+        case .actions:
+            memberActionsMenu
         case .progressionNote:
             progressionNoteRow
-        case .columnHeadings:
-            tableRows { columnHeaders }
+        case let .columnHeadings(label):
+            tableRows { columnHeaders(setLabel: label) }
         case .loggedWarmups:
             tableRows { loggedWarmupsGroup }
-        case let .row(setId, badge, isNext):
+        case let .row(setId, badge, isNext, startsRound, endsRound):
             if let set = delegate.exercise.wrappedValue.sets.first(where: { $0.id == setId }) {
                 tableRows {
                     // One VoiceOver container per row, named for its set and exercise, so the
-                    // Containers rotor steps through the rounds: "A1, Bench Press", and a drop
-                    // under it "A1 drop set 1, Bench Press".
-                    let name = [badge, ActiveWorkout.subSetName(of: set, in: delegate.exercise.wrappedValue.sets)]
+                    // Containers rotor steps through the rounds: "B1, set 1, Bench Press", and a
+                    // drop under it "B1, set 1 drop set 1, Bench Press".
+                    let name = [ActiveWorkout.spokenBadge(badge), ActiveWorkout.subSetName(of: set, in: delegate.exercise.wrappedValue.sets)]
                         .compactMap { $0 }.joined(separator: " ")
-                    row(for: set, badge: badge, isNext: isNext)
+                    // Within a round the rows run together; a separator divides the rounds.
+                    row(for: set, badge: badge, isNext: isNext, separators: (startsRound ? .visible : .hidden, endsRound ? .visible : .hidden))
                         .accessibilityElement(children: .contain)
                         .accessibilityLabel([name, delegate.exercise.wrappedValue.name].joined(separator: ", "))
                     restRow(below: set)
                 }
             }
-        case .addSet:
-            tableRows { addSetButton }
+        case .notes:
             noteCards
         }
     }

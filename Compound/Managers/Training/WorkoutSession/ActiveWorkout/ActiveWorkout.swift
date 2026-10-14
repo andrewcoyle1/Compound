@@ -21,8 +21,9 @@ enum SetRowState: Equatable {
 enum RestAnchor: Equatable {
     /// Under the working set the rest follows.
     case below(setId: String)
-    /// Above the first row: the rest followed a warm-up, which is hidden once logged, or another
-    /// exercise's set, as it does after a superset partner or the last set of the exercise before.
+    /// Under the folded logged warm-ups, above the rest of the table: the rest followed a warm-up,
+    /// or another exercise's set, as it does after a superset partner or the last set of the
+    /// exercise before.
     case top
 }
 
@@ -47,39 +48,6 @@ enum ActiveWorkout {
     static func rowState(of set: WorkoutSetModel, in exercise: WorkoutExerciseModel) -> SetRowState {
         if set.completedAt != nil { return .done }
         return currentSet(in: exercise)?.id == set.id ? .current : .upcoming
-    }
-
-    // MARK: - Header
-
-    struct Progress: Equatable {
-        let doneWorkingSets: Int
-        let totalWorkingSets: Int
-        /// Which block of how many: a superset counts once (`blocks(_:)`), so the count holds
-        /// still while its members alternate.
-        let exerciseNumber: Int
-        let exerciseCount: Int
-        /// The current block is a superset: the header reads "Superset 2 of 5".
-        var isSuperset = false
-
-        var fraction: Double {
-            totalWorkingSets == 0 ? 0 : Double(doneWorkingSets) / Double(totalWorkingSets)
-        }
-    }
-
-    /// Working sets only: warm-ups are preparation, and counting them made a workout with smart
-    /// warm-ups look a third done before the first real set. A pair counts once, when both sides are.
-    static func progress(of exercises: [WorkoutExerciseModel], currentIndex: Int) -> Progress {
-        let working = exercises.map { $0.sets.filter { !$0.isWarmup } }
-        let blocks = blocks(exercises)
-        let current = exercises.isEmpty ? nil : exercises[min(max(currentIndex, 0), exercises.count - 1)].id
-        let blockIndex = blocks.firstIndex { $0.contains(current ?? "") }
-        return Progress(
-            doneWorkingSets: working.reduce(0) { $0 + $1.fullyCompletedPairedSetCount },
-            totalWorkingSets: working.reduce(0) { $0 + $1.pairedSetCount },
-            exerciseNumber: blockIndex.map { $0 + 1 } ?? 0,
-            exerciseCount: blocks.count,
-            isSuperset: blockIndex.map { blocks[$0].count > 1 } ?? false
-        )
     }
 
     // MARK: - Exercise card

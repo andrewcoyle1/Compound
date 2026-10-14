@@ -273,9 +273,10 @@ struct WorkoutTrackerSupersetTests {
 
     // MARK: - The block card
 
-    /// Inside a card the rows letter the member and number the set, whichever superset it is.
-    @Test("Test A Superset's Rows Are Badged By Member")
-    func testASupersetsRowsAreBadgedByMember() throws {
+    /// Inside a card the rows name the superset and member, and number the set: the second
+    /// superset's are B1·1, B2·1…, as the strip letters it B.
+    @Test("Test A Superset's Rows Are Badged By Superset And Member")
+    func testASupersetsRowsAreBadgedBySupersetAndMember() throws {
         let screen = try makeScreen(exercises: [
             exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
             exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
@@ -285,12 +286,37 @@ struct WorkoutTrackerSupersetTests {
         ])
         let exercises = screen.presenter.workoutSession.exercises
 
-        let members = try #require(ActiveWorkout.supersetBlock(containing: screen.presenter.currentExercise?.id, in: exercises))
-        let badges = ActiveWorkout.blockRows(members).compactMap { row -> String? in
-            if case let .set(_, badge) = row.kind { return badge }
-            return nil
+        func badges(_ card: SupersetCard) -> [String] {
+            card.rows.compactMap { row -> String? in
+                if case let .set(_, badge) = row.kind { return badge }
+                return nil
+            }
         }
-        #expect(badges == ["A1", "B1", "A2"])
+        let first = try #require(ActiveWorkout.supersetBlock(containing: "e1", in: exercises))
+        let second = try #require(ActiveWorkout.supersetBlock(containing: "e4", in: exercises))
+        let firstCard = screen.presenter.supersetCard(first, current: "e1")
+        let secondCard = screen.presenter.supersetCard(second, current: "e4")
+
+        #expect(firstCard.letter == "A")
+        #expect(badges(firstCard) == ["A1·1", "A2·1", "A1·2"])
+        #expect(secondCard.letter == "B")
+        #expect(badges(secondCard) == ["B1·1", "B2·1"])
+    }
+
+    /// Add Round gives every member one more set, in one write; Remove Superset splits them all.
+    @Test("Test Add Round And Remove Superset Act On Every Member")
+    func testAddRoundAndRemoveSupersetActOnEveryMember() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e3", index: 3, sets: [set(1)])
+        ])
+
+        screen.presenter.onAddRoundPressed(["e1", "e2"])
+        #expect(screen.presenter.workoutSession.exercises.map(\.sets.count) == [3, 2, 1])
+
+        screen.presenter.removeSuperset(["e1", "e2"])
+        #expect(screen.presenter.workoutSession.exercises.allSatisfy { $0.supersetGroupId == nil })
     }
 
     /// The card holds both members of a superset, and only a superset: an exercise on its own,

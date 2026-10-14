@@ -42,11 +42,6 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                         // The strip is the map: only the selected block is on the card.
                         currentExerciseSection
                     }
-                    // The strip's last item adds an exercise; at accessibility sizes the strip is
-                    // a count and a menu, and the row stays.
-                    if dynamicTypeSize.isAccessibilitySize {
-                        addExerciseSection
-                    }
                 }
                 // The next set's row, brought up from under the button or the keypad after a log. A
                 // nil anchor scrolls only as far as needed, so a row already on screen stays put.
@@ -88,17 +83,15 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
             toolbarContent
         }
         .safeAreaBar(edge: .top) {
-            WorkoutProgressHeader(
-                progress: presenter.progress,
-                isActive: presenter.isActive,
-                stripItems: presenter.stripItems,
-                currentBlockId: presenter.currentBlockId,
+            ExerciseStrip(
+                items: presenter.stripItems,
                 onSelect: presenter.onStripItemSelected,
                 onDoNext: presenter.onDoNextPressed,
                 onDoLater: presenter.onDoLaterPressed,
                 onMove: presenter.onStripItemMoved,
-                onAddExercise: presenter.presentAddExercise
+                onAddExercise: presenter.onAddExercisePressed
             )
+            .padding(.bottom, Spacing.xs)
         }
         // The set just logged, to correct while its rest runs; over the button, off the card.
         .safeAreaBar(edge: .bottom) {
@@ -116,7 +109,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
             presenter.onPrimarySlotPressed()
         }
         .accessibilityAction(.escape) {
-            presenter.minimizeSession()
+            presenter.onMinimizePressed()
         }
         .onChange(of: presenter.primarySlot) { _, action in
             presenter.onPrimarySlotChanged(action)

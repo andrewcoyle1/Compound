@@ -27,6 +27,16 @@ why, and what would change it. Review these with the `feature/flutter` → `deve
 | 14 Oct 2026 | Maths (#85) | `compound_maths` ports `functions/coach-maths.js` and is checked against `coach-parity.json` with the Swift and JS tolerance (1e-6) | Three copies of the maths, one fixture | — |
 | 14 Oct 2026 | Maths (#85) | Dates are `YYYY-MM-DD` day keys, as in the JS; age is passed in by the caller (default 30) | No clock inside the maths | — |
 | 14 Oct 2026 | Maths (#85) | `median([])` returns null, as in Swift (the JS returns NaN) | A straight port would crash on a log with no weigh-ins | — |
+| 14 Oct 2026 | M1 auth (#86) | `production` flavor throws `UnsupportedError` at launch | The prod Firebase project is out of bounds until the owner decides | M4/M6 |
+| 14 Oct 2026 | M1 auth (#86) | Staging starts signed in as `mock_user_123` (alice@example.com, "Alice Cooper"); sign out and sign in work in memory | Staging is the mock build (owner's requirement) | — |
+| 14 Oct 2026 | M1 auth (#86) | Linking: signing in from an anonymous account links the provider; if the credential belongs to another account, sign in to that one instead | Same behaviour as SwiftfulAuthenticating | — |
+| 14 Oct 2026 | M1 auth (#86) | `userChanges()` rather than `authStateChanges()` | Linking must update the AppBloc | — |
+| 14 Oct 2026 | M1 auth (#86) | iOS: an in-repo build phase copies the flavor's gitignored `GoogleService-Info.plist` and adds its `REVERSED_CLIENT_ID` URL scheme; Sign in with Apple entitlement on development only | Nothing secret committed; no flutterfire CLI needed at build time | — |
+| 14 Oct 2026 | M1 auth (#86) | Android: google-services plugin 4.4.4 with `missingGoogleServicesStrategy = WARN`; Kotlin 2.2.20 | Staging and production have no `google-services.json`; Flutter 3.47 rejects Kotlin 2.2.10 | — |
+| 14 Oct 2026 | M1 check | Registered App Check debug token `Flutter dev - iPhone 17 simulator (12E2A36D)` on the Flutter iOS dev app | Firestore and Auth aren't enforced in dev, but callables enforce App Check in code (M3 and later) | — |
+| 14 Oct 2026 | M2-1 (#87) | A set's `side`, `kind` and `weight_unit` stay as the stored strings, with typed getters | A value a newer build writes survives a Dart round trip | — |
+| 14 Oct 2026 | M2-1 (#87) | Int fields accept whole-number doubles, as Swift's decoder does | Parity with Swift | — |
+| 14 Oct 2026 | M2-1 (#87) | The repository returns `compound_models` types directly; documents that fail to decode are skipped and reported | Same as Swift; no separate domain model needed yet | Domain logic diverges from storage |
 
 To regenerate the gitignored dev config, run this from `app/`:
 

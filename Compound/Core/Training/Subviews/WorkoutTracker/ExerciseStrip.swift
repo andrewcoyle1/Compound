@@ -3,8 +3,8 @@
 //  Compound
 //
 //  The workout as a row of thumbnails over the card, one per block, each underlined with its
-//  progress. A tap opens that block on the card. Behind `WorkoutSettings.showsExerciseStrip`,
-//  which also slides the card in from the side of the strip it was picked from.
+//  progress. A tap opens that block on the card, which slides in from the side of the strip it
+//  was picked from.
 //
 
 import SwiftUI
@@ -12,22 +12,15 @@ import UniformTypeIdentifiers
 
 extension WorkoutTrackerPresenter {
 
-    var showsExerciseStrip: Bool { interactor.workoutSettings.showsExerciseStrip }
-
     var stripItems: [ActiveWorkout.StripItem] {
         ActiveWorkout.stripProgress(for: workoutSession.exercises, currentExerciseId: currentExercise?.id)
     }
 
-    /// The card's block, by its first exercise.
+    /// The card's block, by its first exercise. Also keys the list, so a new block brings a new
+    /// list in from the side of the strip it lies on (`CardSwapEdge`).
     var currentBlockId: String? {
         guard let current = currentExercise?.id else { return nil }
         return ActiveWorkout.blocks(workoutSession.exercises).first { $0.contains(current) }?.first
-    }
-
-    /// Keys the list with the strip on, so a new block brings a new list in from the side it lies
-    /// on (`CardSwapEdge`). `nil` with the strip off: the list keeps one identity.
-    var cardListId: String? {
-        showsExerciseStrip ? currentBlockId : nil
     }
 
     var blockOrder: [[String]] { ActiveWorkout.blocks(workoutSession.exercises) }
@@ -45,13 +38,13 @@ struct ExerciseStrip: View {
 
     let items: [ActiveWorkout.StripItem]
     let onSelect: (String) -> Void
-    /// Up Next's reordering, on the strip's items while the strip stands in for that list.
+    /// Moving a block earlier or later, from its thumbnail's menu.
     var onDoNext: (String) -> Void = { _ in }
     var onDoLater: (String) -> Void = { _ in }
     /// A block dropped on another's place, or moved a step by its menu or an accessibility action:
     /// its id and its new index among the other blocks.
     var onMove: (String, Int) -> Void = { _, _ in }
-    /// The strip's last item: Add Exercise, standing in for the list's row while the strip is up.
+    /// The strip's last item: Add Exercise (a row in the list at accessibility sizes).
     var onAddExercise: () -> Void = {}
 
     @ScaledMetric(relativeTo: .body) private var side = ControlSize.thumbnail

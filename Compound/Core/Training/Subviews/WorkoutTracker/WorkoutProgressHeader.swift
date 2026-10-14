@@ -9,8 +9,8 @@
 import SwiftUI
 
 /// Working sets done, and which exercise of how many, over a thin bar. Warm-ups are left out.
-/// With the exercise strip on, the strip takes the bar's place; at accessibility sizes, where
-/// thumbnails cannot carry text, the bar stays and "Exercise 3 of 8" becomes a menu of the blocks.
+/// The exercise strip takes the bar's place; at accessibility sizes, where thumbnails cannot carry
+/// text, the bar stays and "Exercise 3 of 8" becomes a menu of the blocks.
 struct WorkoutProgressHeader: View {
 
     let presenter: WorkoutTrackerPresenter
@@ -18,10 +18,8 @@ struct WorkoutProgressHeader: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        let showsStrip = presenter.showsExerciseStrip
-        let showsThumbnails = showsStrip && !dynamicTypeSize.isAccessibilitySize
-        return VStack(spacing: Spacing.xs) {
-            if showsThumbnails {
+        VStack(spacing: Spacing.xs) {
+            if !dynamicTypeSize.isAccessibilitySize {
                 ExerciseStrip(
                     items: presenter.stripItems,
                     onSelect: presenter.onStripItemSelected,
@@ -31,18 +29,17 @@ struct WorkoutProgressHeader: View {
                     onAddExercise: presenter.presentAddExercise
                 )
             }
-            summary(showsBar: !showsThumbnails, blockMenu: showsStrip && !showsThumbnails)
+            summary
         }
         .padding(.bottom, Spacing.xs)
-        // Solid behind the counts: the scroll edge alone let a highlighted row show through. With
-        // the strip on, the automatic scroll edge effect does that job instead.
-        .background(showsStrip ? Color.clear : Color.canvas)
     }
 
-    private func summary(showsBar: Bool, blockMenu: Bool) -> some View {
+    /// The counts; at accessibility sizes, over the bar, with the block count as a menu.
+    private var summary: some View {
         let progress = presenter.progress
+        let isCompact = dynamicTypeSize.isAccessibilitySize
         return VStack(spacing: Spacing.xs) {
-            if showsBar {
+            if isCompact {
                 ProgressView(value: progress.fraction)
                     // Greyed while paused, with Paused in the title: the workout is not moving on.
                     .tint(presenter.isActive ? nil : Color.secondary)
@@ -52,10 +49,10 @@ struct WorkoutProgressHeader: View {
             countsLayout {
                 Text("\(progress.doneWorkingSets) of \(progress.totalWorkingSets) working sets")
                     .font(.label)
-                if !dynamicTypeSize.isAccessibilitySize {
+                if !isCompact {
                     Spacer()
                 }
-                if blockMenu {
+                if isCompact {
                     Menu {
                         blockMenuItems
                     } label: {
@@ -71,10 +68,10 @@ struct WorkoutProgressHeader: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal)
-        .accessibilityElement(children: blockMenu ? .contain : .combine)
+        .accessibilityElement(children: isCompact ? .contain : .combine)
         // A label, not a control: without the bar it is a 14 pt line, which the audit otherwise
         // reads as a hit area too small to tap.
-        .accessibilityRespondsToUserInteraction(blockMenu)
+        .accessibilityRespondsToUserInteraction(isCompact)
     }
 
     /// The two counts on one line, or one under the other at accessibility sizes, where side by

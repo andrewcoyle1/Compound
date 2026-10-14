@@ -3,8 +3,8 @@
 //  Compound
 //
 //  Split out of WorkoutTrackerView.swift to keep it under the file-length limits, so later work
-//  adds its views in their own files. The list's sections: the open exercise's card, Up Next,
-//  Completed and Add Exercise, and the card's delegate.
+//  adds its views in their own files. The list's sections: the open exercise's card and Add
+//  Exercise, and the card's delegate.
 //
 
 import SwiftUI
@@ -68,114 +68,6 @@ extension WorkoutTrackerView {
                 })
             }
         )
-    }
-
-    @ViewBuilder
-    var upNextSection: some View {
-        let upNext = presenter.upNextExercises
-        if !upNext.isEmpty {
-            Section {
-                ForEach(upNext) { exercise in
-                    exerciseRow(exercise, isDone: false)
-                        .accessibilityActions { upNextActions(for: exercise) }
-                }
-                .onMove { source, destination in
-                    presenter.moveUpNext(from: source, to: destination)
-                }
-                // Drag handles on demand: a long press on a row is its Do Next / Do Later menu.
-                if upNext.count > 1 {
-                    Button {
-                        presenter.onReorderPressed()
-                    } label: {
-                        Label(
-                            presenter.editMode.isEditing ? "Done Reordering" : "Reorder",
-                            systemImage: presenter.editMode.isEditing ? Symbol.success : Symbol.reorder
-                        )
-                        .font(.rowTitle)
-                    }
-                    .accessibilityIdentifier("WorkoutTracker.reorderButton")
-                }
-            } header: {
-                Text("Up Next")
-                    .font(.label.weight(.semibold))
-                    // `Color.primary`, not `.primary`, which in a header resolves to the header's own
-                    // grey: under 4.5:1 at caption size on the grouped background (S4).
-                    .foregroundStyle(Color.primary)
-                    .accessibilityAddTraits(.isHeader)
-            }
-        }
-    }
-
-    @ViewBuilder
-    var completedSection: some View {
-        let completed = presenter.completedExercises
-        if !completed.isEmpty {
-            Section {
-                ForEach(completed) { exercise in
-                    exerciseRow(exercise, isDone: true)
-                }
-            } header: {
-                Text("Completed")
-                    .font(.label.weight(.semibold))
-                    .foregroundStyle(Color.primary)
-                    .accessibilityAddTraits(.isHeader)
-            }
-        }
-    }
-
-    /// One line per exercise not on the card. A tap opens it on the card.
-    func exerciseRow(_ exercise: WorkoutExerciseModel, isDone: Bool) -> some View {
-        Button {
-            presenter.onExerciseSelected(exercise.id)
-            // The row leaves the list as its exercise goes onto the card; VoiceOver goes on to
-            // the button that logs its first set rather than to wherever the row was.
-            returnFocusToPrimaryCTA()
-        } label: {
-            ListRow(
-                title: exercise.name,
-                subtitle: presenter.upNextSummary(for: exercise),
-                imageName: exercise.imageName,
-                resizingMode: .fit,
-                initialsWhenMissing: true,
-                // No chevron: a tap opens the exercise on the card in place rather than pushing.
-                accessory: isDone
-                    ? .custom(AnyView(Image(systemName: Symbol.success).foregroundStyle(.success).accessibilityLabel("Done")))
-                    : supersetLabel(for: exercise).map { ListRow.Accessory.custom(AnyView(Chip($0, systemImage: Symbol.superset, tint: .superset))) } ?? .none
-            )
-        }
-        .buttonStyle(.plain)
-        .accessibilityHint("Opens this exercise")
-        // Waiting on a machine: bring an exercise forward, or put it off, without dragging.
-        .contextMenu {
-            if !isDone {
-                Button {
-                    presenter.onDoNextPressed(exercise.id)
-                } label: {
-                    Label("Do Next", systemImage: Symbol.doNext)
-                }
-                Button {
-                    presenter.onDoLaterPressed(exercise.id)
-                } label: {
-                    Label("Do Later", systemImage: Symbol.doLater)
-                }
-            }
-        }
-    }
-
-    /// The long-press menu and the drag handles, as named actions: VoiceOver's Actions rotor,
-    /// Switch Control's menu and Voice Control's "show actions" reach them without a gesture.
-    @ViewBuilder
-    private func upNextActions(for exercise: WorkoutExerciseModel) -> some View {
-        Button("Do Next") { presenter.onDoNextPressed(exercise.id) }
-        if presenter.canDoLater(exercise) {
-            Button("Do Later") { presenter.onDoLaterPressed(exercise.id) }
-        }
-        if presenter.upNextMoveDestination(of: exercise.id, by: -1) != nil {
-            Button("Move Up") { presenter.onUpNextMovePressed(exercise.id, by: -1) }
-        }
-        if presenter.upNextMoveDestination(of: exercise.id, by: 1) != nil {
-            Button("Move Down") { presenter.onUpNextMovePressed(exercise.id, by: 1) }
-        }
     }
 
     var addExerciseSection: some View {
@@ -244,7 +136,7 @@ extension WorkoutTrackerView {
                 },
                 onUndoManager: { presenter.onUndoManagerChanged($0) },
                 bodyweight: presenter.bodyweightContribution(for: current),
-                showsImage: !presenter.showsExerciseStrip || dynamicTypeSize.isAccessibilitySize
+                showsImage: dynamicTypeSize.isAccessibilitySize
             )
         )
     }

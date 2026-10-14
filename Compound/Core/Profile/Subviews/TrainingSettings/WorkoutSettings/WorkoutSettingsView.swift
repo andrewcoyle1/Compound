@@ -131,12 +131,6 @@ struct WorkoutSettingsView: View {
                 isOn: $presenter.showOnLockScreen
             )
             ListRowToggle(
-                title: String(localized: "Exercise Strip"),
-                subtitle: String(localized: "Show the workout's exercises as thumbnails above the current one"),
-                systemImage: "rectangle.split.3x1",
-                isOn: $presenter.showExerciseStrip
-            )
-            ListRowToggle(
                 title: String(localized: "Set Plan"),
                 subtitle: String(localized: "Plan drops, mini-sets and failure targets in your workouts"),
                 systemImage: "list.number",

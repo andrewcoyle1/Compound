@@ -313,8 +313,6 @@ struct WorkoutTrackerSupersetTests {
         #expect(ActiveWorkout.supersetBlock(containing: "e1", in: exercises)?.map(\.id) == ["e1", "e2"])
         #expect(ActiveWorkout.supersetBlock(containing: "e3", in: exercises) == nil)
         #expect(ActiveWorkout.supersetBlock(containing: "e4", in: exercises) == nil)
-        // The partner on the card is not listed again under Up Next.
-        #expect(screen.presenter.upNextExercises.map(\.id) == ["e3", "e4"])
     }
 
     // MARK: - Deleting a member

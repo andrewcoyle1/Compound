@@ -10974,16 +10974,6 @@
         }
       }
     },
-    "Done Reordering" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terminar de reordenar"
-          }
-        }
-      }
-    },
     "Draft Meal" : {
       "localizations" : {
         "es" : {
@@ -12321,16 +12311,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajustes del ejercicio"
-          }
-        }
-      }
-    },
-    "Exercise Strip" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tira de ejercicios"
           }
         }
       }
@@ -15418,16 +15398,6 @@
         }
       }
     },
-    "Last %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Última %@"
-          }
-        }
-      }
-    },
     "Last %lld Days" : {
       "localizations" : {
         "en" : {
@@ -17696,16 +17666,6 @@
         }
       }
     },
-    "Move Down" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bajar"
-          }
-        }
-      }
-    },
     "Move Earlier" : {
       "localizations" : {
         "es" : {
@@ -17722,16 +17682,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mover después"
-          }
-        }
-      }
-    },
-    "Move Up" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Subir"
           }
         }
       }
@@ -22227,16 +22177,6 @@
         }
       }
     },
-    "Reorder" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reordenar"
-          }
-        }
-      }
-    },
     "Repeat Macrocycle" : {
       "localizations" : {
         "es" : {
@@ -24816,16 +24756,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muestra el anillo de proteína en el banner del registro"
-          }
-        }
-      }
-    },
-    "Show the workout's exercises as thumbnails above the current one" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muestra los ejercicios del entrenamiento como miniaturas sobre el actual"
           }
         }
       }
@@ -28148,16 +28078,6 @@
         }
       }
     },
-    "Top %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mejor %@"
-          }
-        }
-      }
-    },
     "Top Contributors" : {
       "localizations" : {
         "es" : {
@@ -30254,16 +30174,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Perfil de gimnasio sin título"
-          }
-        }
-      }
-    },
-    "Up Next" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A continuación"
           }
         }
       }

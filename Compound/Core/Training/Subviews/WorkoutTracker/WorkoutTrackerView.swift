@@ -38,16 +38,12 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                         }
                         .removeListRowFormatting()
                     } else {
+                        // The strip is the map: only the selected block is on the card.
                         currentExerciseSection
-                        // With the strip on, it is the map: only the selected block is on the card.
-                        if !presenter.showsExerciseStrip {
-                            upNextSection
-                            completedSection
-                        }
                     }
                     // The strip's last item adds an exercise; at accessibility sizes the strip is
                     // a count and a menu, and the row stays.
-                    if !presenter.showsExerciseStrip || dynamicTypeSize.isAccessibilitySize {
+                    if dynamicTypeSize.isAccessibilitySize {
                         addExerciseSection
                     }
                 }
@@ -59,22 +55,22 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                         proxy.scrollTo(setId, anchor: nil)
                     }
                 }
-                // With the exercise strip on, a new block is a new list, pushed in from the side of
-                // the strip it lies on (a fade under Reduce Motion). Off, the list keeps one identity.
-                .id(presenter.cardListId)
+                // A new block is a new list, pushed in from the side of the strip it lies on (a
+                // fade under Reduce Motion).
+                .id(presenter.currentBlockId)
                 .transition(cardTransition)
             }
             // The list's own colour behind the swap: while one list slides out and the next in,
             // the gap between them showed the window's white.
             .background(Color.canvas.ignoresSafeArea())
-            .reducedMotionAnimation(.standard, value: presenter.cardListId)
+            .reducedMotionAnimation(.standard, value: presenter.currentBlockId)
             // Keeps the swap's edge in step with the block and the order shown; it reads them
             // first itself when a swap runs, so these only catch up afterwards.
-            .onChange(of: presenter.cardListId, initial: true) { _, blockId in
+            .onChange(of: presenter.currentBlockId, initial: true) { _, blockId in
                 cardSwapEdge.edge(to: blockId, order: presenter.blockOrder)
             }
             .onChange(of: presenter.blockOrder) { _, order in
-                cardSwapEdge.edge(to: presenter.cardListId, order: order)
+                cardSwapEdge.edge(to: presenter.currentBlockId, order: order)
             }
         }
         .navigationTitle(presenter.workoutSession.name)
@@ -83,7 +79,6 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         // The rest timer and the column headings are a line of text each, not a 44 pt row. Every
         // control in the table carries its own 44 pt hit area.
         .environment(\.defaultMinListRowHeight, Spacing.xl)
-        .environment(\.editMode, $presenter.editMode)
         .onChange(of: presenter.pendingSelectedTemplates) { _, newValue in
             guard !newValue.isEmpty else { return }
             presenter.addSelectedExercises()
@@ -94,9 +89,6 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         .safeAreaBar(edge: .top) {
             WorkoutProgressHeader(presenter: presenter)
         }
-        // Hard, so a scrolled set table never shows through the progress text at large sizes.
-        // The strip's bar has no solid fill and takes the automatic effect instead.
-        .scrollEdgeEffectStyle(presenter.showsExerciseStrip ? .automatic : .hard, for: .top)
         // The set just logged, to correct while its rest runs; over the button, off the card.
         .safeAreaBar(edge: .bottom) {
             WorkoutCorrectionBar(presenter: presenter)
@@ -149,11 +141,10 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
     }
 
     private var cardTransition: AnyTransition {
-        guard presenter.showsExerciseStrip else { return .identity }
         guard !reduceMotion else { return .opacity }
         let swapEdge = cardSwapEdge
         return AnyTransition(CardPush { [presenter] in
-            swapEdge.edge(to: presenter.cardListId, order: presenter.blockOrder)
+            swapEdge.edge(to: presenter.currentBlockId, order: presenter.blockOrder)
         })
     }
 }

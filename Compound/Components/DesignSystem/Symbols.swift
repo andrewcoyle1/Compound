@@ -64,7 +64,6 @@ enum Symbol {
     /// A step along the strip, layout-direction aware.
     static let moveEarlier = "arrow.backward"
     static let moveLater = "arrow.forward"
-    static let reorder = "arrow.up.arrow.down"
     static let swap = "arrow.left.arrow.right"
     static let smartProgression = "wand.and.stars"
 

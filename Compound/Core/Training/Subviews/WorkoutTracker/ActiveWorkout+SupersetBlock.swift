@@ -42,13 +42,6 @@ extension ActiveWorkout {
         return block.compactMap { id in exercises.first { $0.id == id } }
     }
 
-    /// The exercises on the card with `current`: its whole superset, or it alone. Up Next and
-    /// Completed leave these out.
-    static func cardExerciseIds(current: String?, in exercises: [WorkoutExerciseModel]) -> Set<String> {
-        if let block = supersetBlock(containing: current, in: exercises) { return Set(block.map(\.id)) }
-        return current.map { [$0] } ?? []
-    }
-
     // MARK: - Letters
 
     /// "A" for 0, "B" for 1…, `nil` past "Z".

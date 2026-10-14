@@ -105,25 +105,9 @@ extension WorkoutTrackerPresenter {
         router.showWorkoutSettingsView(delegate: WorkoutSettingsDelegate())
     }
 
-    func moveExercises(from source: IndexSet, to destination: Int) {
-        var updated = workoutSession.exercises
-        updated.move(fromOffsets: source, toOffset: destination)
-        applyReorderedExercises(updated, movedFrom: source.first, movedTo: destination)
-
-        refreshLiveActivity()
-    }
-
     func setSupersetGroupId(_ groupId: String?, forExerciseId exerciseId: String) {
         guard let idx = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
         workoutSession.exercises[idx].supersetGroupId = groupId
-    }
-
-    func reorderExercises(from sourceIndex: Int, to targetIndex: Int) {
-        guard sourceIndex != targetIndex else { return }
-        var updated = workoutSession.exercises
-        let element = updated.remove(at: sourceIndex)
-        updated.insert(element, at: targetIndex)
-        applyReorderedExercises(updated, movedFrom: sourceIndex, movedTo: targetIndex)
     }
 
     func presentAddExercise() {

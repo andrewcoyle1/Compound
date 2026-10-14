@@ -35,8 +35,6 @@ class WorkoutTrackerPresenter {
 
     var pendingSelectedTemplates: [WorkoutTemplateExercise] = []
 
-    var editMode: EditMode = .inactive
-    
     var startTime: Date {
         self.workoutSession.dateCreated
     }

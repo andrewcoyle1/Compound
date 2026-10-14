@@ -3,7 +3,7 @@
 //  Compound
 //
 //  The exercise strip's rules: one item per block with its working-set progress, and the edge a
-//  new block's card comes in from. Behind `WorkoutSettings.showsExerciseStrip`.
+//  new block's card comes in from.
 //
 
 import SwiftUI

@@ -67,8 +67,6 @@ struct SupersetBlockLayoutTests {
         // A group of one is not a superset.
         #expect(ActiveWorkout.supersetBlock(containing: "c", in: exercises) == nil)
         #expect(ActiveWorkout.supersetBlock(containing: nil, in: exercises) == nil)
-        #expect(ActiveWorkout.cardExerciseIds(current: "d", in: exercises) == ["b", "d"])
-        #expect(ActiveWorkout.cardExerciseIds(current: "a", in: exercises) == ["a"])
     }
 
     // MARK: - Rows

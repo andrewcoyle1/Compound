@@ -3,7 +3,7 @@
 //  Compound
 //
 //  The screen around one exercise at a time: the progress header, the current exercise's card,
-//  the inline rest timer, the Up Next list and the log button at the foot. The rules are in
+//  the inline rest timer and the log button at the foot. The rules are in
 //  `ActiveWorkout`; this reads them against the live session.
 //
 
@@ -18,19 +18,6 @@ extension WorkoutTrackerPresenter {
         let exercises = workoutSession.exercises
         if let id = expandedExerciseId, let open = exercises.first(where: { $0.id == id }) { return open }
         return exercises.indices.contains(currentExerciseIndex) ? exercises[currentExerciseIndex] : exercises.last
-    }
-
-    /// Everything off the card with sets still to log, in workout order. A superset's partners
-    /// are on the card with it.
-    var upNextExercises: [WorkoutExerciseModel] {
-        let onCard = ActiveWorkout.cardExerciseIds(current: currentExercise?.id, in: workoutSession.exercises)
-        return workoutSession.exercises.filter { !onCard.contains($0.id) && !isComplete($0) }
-    }
-
-    /// Exercises already finished, kept reachable so a logged set can still be corrected.
-    var completedExercises: [WorkoutExerciseModel] {
-        let onCard = ActiveWorkout.cardExerciseIds(current: currentExercise?.id, in: workoutSession.exercises)
-        return workoutSession.exercises.filter { !onCard.contains($0.id) && isComplete($0) }
     }
 
     func onExerciseSelected(_ exerciseId: String) {
@@ -120,21 +107,6 @@ extension WorkoutTrackerPresenter {
         }
     }
 
-    /// Shows Up Next's drag handles, or hides them again.
-    func onReorderPressed() {
-        editMode = editMode.isEditing ? .inactive : .active
-        interactor.playHaptic(option: .selection)
-    }
-
-    /// Up Next shows only some of the exercises, so its positions are mapped back onto the
-    /// workout's before moving.
-    func moveUpNext(from source: IndexSet, to destination: Int) {
-        let shown = upNextExercises.compactMap { exercise in workoutSession.exercises.firstIndex { $0.id == exercise.id } }
-        let sourceIndices = IndexSet(source.compactMap { shown.indices.contains($0) ? shown[$0] : nil })
-        let target = destination < shown.count ? shown[destination] : (shown.last.map { $0 + 1 } ?? workoutSession.exercises.count)
-        moveExercises(from: sourceIndices, to: target)
-    }
-
     // MARK: - Header
 
     var progress: ActiveWorkout.Progress {
@@ -206,22 +178,6 @@ extension WorkoutTrackerPresenter {
         guard let exercise = currentExercise else { return }
         acknowledgedProgressionNotes.insert(exercise.templateId)
         interactor.trackEvent(event: Event.progressionNoteAcknowledged)
-    }
-
-    /// Today's top set for a finished exercise; the plan and last time's for one still to come.
-    func upNextSummary(for exercise: WorkoutExerciseModel) -> String {
-        let units = units(for: exercise)
-        let showsBodyweight = bodyweightContribution(for: exercise) != nil
-        if isComplete(exercise) {
-            return ActiveWorkout.completedSummary(for: exercise, unit: units.weightUnit, distanceUnit: units.distanceUnit, showsBodyweight: showsBodyweight)
-        }
-        return ActiveWorkout.upNextSummary(
-            for: exercise,
-            last: previousExercise(for: exercise),
-            unit: units.weightUnit,
-            distanceUnit: units.distanceUnit,
-            showsBodyweight: showsBodyweight
-        )
     }
 
     // MARK: - Rest

@@ -161,7 +161,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         try audit(app, "AX5")
 
         // Resting, scrolled a third of the screen at a time through the rest line, the folded
-        // warm-up, the current row, Add Set and Up Next.
+        // warm-up, the next set's row, Add Set and Add Exercise.
         logUntilResting(app)
         app.waitFor(app.button("WorkoutTracker.skipRestButton"))
         // The log scrolls the next set into view; first back up to the rest line above it.
@@ -230,7 +230,7 @@ final class WorkoutTrackerUITests: XCTestCase {
             // and rows scrolled under the top bars, the button's glass bar or the keypad's
             // window, measured against those rather than their own background.
             return "text on or under glass, or under the keypad"
-        case .dynamicType where ["Add Set", "Up Next", "Add Exercise"].contains(label),
+        case .dynamicType where ["Add Set", "Add Exercise"].contains(label),
              .textClipped where ["Add Set", "Add 15 seconds", "Add Exercise"].contains(label) || label.hasSuffix(" warm-up") || label.hasSuffix(" warm-ups"):
             // Reported at the default size as "may be clipped" or "partially unsupported", and
             // drawn in full, unclipped, by the AX5 passes ("15-light-ax5-resting").
@@ -286,23 +286,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         XCTAssertEqual(openSets.count, openBefore - 1)
     }
 
-    /// Up Next's Reorder shows the drag handles, and Done puts them away. Up Next is on screen
-    /// only with the exercise strip off; on, the strip is the map.
-    func testUpNextCanBeReordered() {
-        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER", arguments: ["UI_TEST_STRIP_OFF"])
-        app.waitFor(app.button("WorkoutTracker.logButton"))
-        acknowledgeNoteIfShown(app)
-        let reorder = app.button("WorkoutTracker.reorderButton")
-        for _ in 0..<4 where !reorder.isHittable { app.swipeUp() }
-        reorder.tap()
-        let handle = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Reorder '")).firstMatch
-        XCTAssertTrue(handle.waitForExistence(timeout: UITestApp.timeout))
-        attach(app, "8-reordering")
-        reorder.tap()
-        XCTAssertFalse(handle.exists)
-    }
-
-    /// T6: a superset is one card. The log button logs A1, then B1 with no rest between them, and
+    /// A superset is one card. The log button logs A1, then B1 with no rest between them, and
     /// the card holding both stays where it is.
     func testASupersetRoundLogsBothPartnersOnOneCard() {
         let app = XCUIApplication()

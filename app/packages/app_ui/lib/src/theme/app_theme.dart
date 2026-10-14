@@ -84,6 +84,24 @@ abstract final class AppTheme {
           color: scheme.onSurface,
         ),
       ),
+      // The tab bar: the selected tab is marked by the accent alone, as on
+      // iOS, with no Material indicator pill.
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: colors.surface,
+        surfaceTintColor: const Color(0x00000000),
+        indicatorColor: const Color(0x00000000),
+        elevation: 0,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            color: _tabColor(scheme, states),
+            size: AppIconSize.medium.points,
+          ),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) =>
+              AppTextStyles.label.copyWith(color: _tabColor(scheme, states)),
+        ),
+      ),
       cardTheme: CardThemeData(
         color: colors.surface,
         elevation: 0,
@@ -166,6 +184,11 @@ abstract final class AppTheme {
       ),
     );
   }
+
+  static Color _tabColor(ColorScheme scheme, Set<WidgetState> states) =>
+      states.contains(WidgetState.selected)
+      ? scheme.primary
+      : scheme.onSurfaceVariant;
 
   static ShapeBorder _continuous(double radius) => RoundedSuperellipseBorder(
     borderRadius: BorderRadius.all(Radius.circular(radius)),

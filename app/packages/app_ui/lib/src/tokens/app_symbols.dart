@@ -175,6 +175,9 @@ abstract final class AppSymbols {
 
   // App and profile
 
+  /// The Today tab: the day at a glance.
+  static const IconData today = Icons.home_rounded;
+
   /// Settings.
   static const IconData settings = Icons.settings_rounded;
 

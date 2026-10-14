@@ -13,6 +13,7 @@ dependencies:
   auth_repository:
     path: packages/auth_repository
   bloc: ^9.2.1
+  cloud_firestore: ^6.10.0
   compound_models:
     path: packages/compound_models
   equatable: ^3.0.0
@@ -28,6 +29,8 @@ dependencies:
   google_sign_in: ^7.2.0
   intl: ^0.20.2
   material_ui: ^1.1.1
+  user_repository:
+    path: packages/user_repository
 
 dev_dependencies:
   bloc_lint: ^0.4.2

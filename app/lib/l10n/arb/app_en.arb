@@ -20,34 +20,130 @@
     "@signInFailure": {
         "description": "Snack bar shown when signing in fails"
     },
-    "homeTitle": "Compound",
-    "@homeTitle": {
-        "description": "Title of the placeholder home screen"
-    },
-    "homeUserId": "User ID: {uid}",
-    "@homeUserId": {
-        "description": "The signed-in account's Firebase user id",
-        "placeholders": {
-            "uid": {
-                "type": "String"
-            }
-        }
-    },
-    "homeEmail": "Email: {email}",
-    "@homeEmail": {
-        "description": "The signed-in account's email address",
-        "placeholders": {
-            "email": {
-                "type": "String"
-            }
-        }
-    },
-    "homeAnonymous": "Signed in without an account",
-    "@homeAnonymous": {
-        "description": "Shown instead of an email for an anonymous account"
-    },
     "signOutButton": "Sign Out",
     "@signOutButton": {
         "description": "Button that signs out"
+    },
+    "tabToday": "Today",
+    "@tabToday": {
+        "description": "Tab bar: the Today tab"
+    },
+    "tabTraining": "Training",
+    "@tabTraining": {
+        "description": "Tab bar: the Training tab"
+    },
+    "tabNutrition": "Nutrition",
+    "@tabNutrition": {
+        "description": "Tab bar: the Nutrition tab"
+    },
+    "tabProgress": "Progress",
+    "@tabProgress": {
+        "description": "Tab bar: the Progress tab"
+    },
+    "tabSocial": "Social",
+    "@tabSocial": {
+        "description": "Tab bar: the Social tab"
+    },
+    "tabComingSoonTitle": "Coming Soon",
+    "@tabComingSoonTitle": {
+        "description": "Title of the empty state on a tab whose screen has not been built yet"
+    },
+    "tabComingSoonMessage": "This part of Compound is still being built.",
+    "@tabComingSoonMessage": {
+        "description": "Message under \"Coming Soon\" on a tab whose screen has not been built yet"
+    },
+    "profileTitle": "Profile",
+    "@profileTitle": {
+        "description": "Title of the user's own profile screen, and the label of the button that opens it"
+    },
+    "profileNoName": "No Name",
+    "@profileNoName": {
+        "description": "Shown in place of the name on a profile with no name"
+    },
+    "profileUsernameHandle": "@{username}",
+    "@profileUsernameHandle": {
+        "description": "The user's username under their name",
+        "placeholders": {
+            "username": {
+                "type": "String"
+            }
+        }
+    },
+    "profileUnavailable": "Your profile couldn't be loaded.",
+    "@profileUnavailable": {
+        "description": "Shown on the profile screen when the profile document is missing or can't be read"
+    },
+    "profileAccountHeader": "Account",
+    "@profileAccountHeader": {
+        "description": "Profile section header: account details"
+    },
+    "profileEmail": "Email",
+    "@profileEmail": {
+        "description": "Profile row: the email address"
+    },
+    "profileUsername": "Username",
+    "@profileUsername": {
+        "description": "Profile row: the username"
+    },
+    "profileMemberSince": "Member Since",
+    "@profileMemberSince": {
+        "description": "Profile row: the month the account was created"
+    },
+    "profilePreferencesHeader": "Preferences",
+    "@profilePreferencesHeader": {
+        "description": "Profile section header: weekly goal and units"
+    },
+    "profileWeeklyGoal": "Weekly Goal",
+    "@profileWeeklyGoal": {
+        "description": "Profile row: the weekly session goal"
+    },
+    "profileSessionsAWeek": "{count, plural, =1{1 session a week} other{{count} sessions a week}}",
+    "@profileSessionsAWeek": {
+        "description": "The weekly session goal",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "profileWeightUnits": "Weight Units",
+    "@profileWeightUnits": {
+        "description": "Profile row: the unit for weights"
+    },
+    "profileHeightUnits": "Height Units",
+    "@profileHeightUnits": {
+        "description": "Profile row: the unit for height and body measurements"
+    },
+    "profileDistanceUnits": "Distance Units",
+    "@profileDistanceUnits": {
+        "description": "Profile row: the unit for distances"
+    },
+    "profileNotSet": "Not Set",
+    "@profileNotSet": {
+        "description": "Shown for a profile value the user has not set"
+    },
+    "unitKilograms": "Kilograms",
+    "@unitKilograms": {
+        "description": "Weight unit name"
+    },
+    "unitPounds": "Pounds",
+    "@unitPounds": {
+        "description": "Weight unit name"
+    },
+    "unitCentimeters": "Centimeters",
+    "@unitCentimeters": {
+        "description": "Length unit name"
+    },
+    "unitInches": "Inches",
+    "@unitInches": {
+        "description": "Length unit name"
+    },
+    "unitKilometers": "Kilometers",
+    "@unitKilometers": {
+        "description": "Distance unit name"
+    },
+    "unitMiles": "Miles",
+    "@unitMiles": {
+        "description": "Distance unit name"
     }
 }

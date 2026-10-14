@@ -67,6 +67,19 @@ void main() {
         expect(switches.thumbColor?.resolve({}), colors.surface);
       });
 
+      test('the tab bar marks the selected tab with the accent only', () {
+        final on = {WidgetState.selected};
+        final tabs = theme.navigationBarTheme;
+        expect(tabs.indicatorColor, const Color(0x00000000));
+        expect(tabs.iconTheme?.resolve(on)?.color, scheme.primary);
+        expect(tabs.iconTheme?.resolve({})?.color, scheme.onSurfaceVariant);
+        expect(tabs.labelTextStyle?.resolve(on)?.color, scheme.primary);
+        expect(
+          tabs.labelTextStyle?.resolve({})?.color,
+          scheme.onSurfaceVariant,
+        );
+      });
+
       test('cards have continuous corners', () {
         expect(theme.cardTheme.shape, isA<RoundedSuperellipseBorder>());
         expect(theme.dialogTheme.shape, isA<RoundedSuperellipseBorder>());

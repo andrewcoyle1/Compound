@@ -5,7 +5,7 @@
 //  A superset as one card (T6): a header line per member, then one table holding every member's
 //  sets in the order they are done (A1, B1, A2, B2…, `ActiveWorkout.blockRows`), and an Add Set
 //  per member. The log button walks the same rounds, so the card stays put while the block has
-//  sets left and only the highlighted row moves.
+//  sets left and only the next row to log changes.
 //
 //  Each piece is one member's own set table drawing just that piece (`SetTrackerPiece`), so a
 //  row keeps its exercise's binding, menus, last-time figures and rest line.
@@ -38,9 +38,9 @@ struct SupersetBlockView<Piece: View>: View {
     @State private var visibleRows = 0
 
     var body: some View {
-        Group {
+        Section {
             ForEach(members) { member in
-                piece(member.id, .header, showAutoRanges)
+                piece(member.id, .progressionNote, showAutoRanges)
             }
             if showsColumnHeadings, let first = members.first {
                 piece(first.id, .columnHeadings, showAutoRanges)
@@ -62,7 +62,15 @@ struct SupersetBlockView<Piece: View>: View {
             ForEach(members) { member in
                 piece(member.id, .addSet, showAutoRanges)
             }
+        } header: {
+            // A title line per member, each with its own actions menu.
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                ForEach(members) { member in
+                    piece(member.id, .header, showAutoRanges)
+                }
+            }
         }
+        .listSectionMargins(.top, Spacing.s)
         .onAppear {
             visibleRows += 1
             onUndoManager(undoManager)

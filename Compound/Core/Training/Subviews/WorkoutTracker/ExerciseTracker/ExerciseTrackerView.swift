@@ -53,6 +53,8 @@ struct ExerciseCard {
     /// The bodyweight the movement lifts, while the setting is on: the header's badge and the rows'
     /// "BW" labels. `nil` leaves the card as it was.
     var bodyweight: BodyweightContribution?
+    /// Off while the exercise strip shows thumbnails: the strip already pictures the exercise.
+    var showsImage = true
 }
 
 struct ExerciseTrackerView<SetTracker: View>: View {
@@ -128,9 +130,11 @@ struct ExerciseTrackerView<SetTracker: View>: View {
     private func cardHeader(_ exercise: WorkoutExerciseModel, card: ExerciseCard, menu: AnyView) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             HStack(alignment: .top, spacing: Spacing.m) {
-                ExerciseImageView(name: exercise.name, imageName: presenter.imageName(for: exercise))
-                    .frame(width: thumbnailSide, height: thumbnailSide)
-                    .accessibilityHidden(true)
+                if card.showsImage {
+                    ExerciseImageView(name: exercise.name, imageName: presenter.imageName(for: exercise))
+                        .frame(width: thumbnailSide, height: thumbnailSide)
+                        .accessibilityHidden(true)
+                }
 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     if let bodyweight = card.bodyweight, bodyweight.contributionKg != nil {

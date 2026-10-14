@@ -51,7 +51,8 @@ struct SetTrackerRowView: View {
     /// into two lines and the text keeps growing. Below them the table is as it always was.
     private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
 
-    private var isCurrent: Bool { delegate.rowState == .current }
+    /// A logged working set is greyed; logged warm-ups are hidden altogether.
+    private var isDone: Bool { delegate.rowState == .done }
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -76,22 +77,8 @@ struct SetTrackerRowView: View {
         // 8 reps", so the Containers rotor moves set by set (a11y.md M4).
         .accessibilityElement(children: .contain)
         .accessibilityLabel(rowAccessibilityLabel)
-        // The outlines and muted text follow the highlight in step with it.
-        .reducedMotionAnimation(.standard, value: isCurrent)
-        // Always the same view with the tint faded in or out, so the highlight moves between sets
-        // rather than jumping: a nil background cannot be animated to.
-        .listRowBackground(
-            Color.tintedSurface(.accentColor)
-                // The 15 % tint alone is well under 3:1 against the surface; the outline in the
-                // accent is what marks the row (S4), heavier with Increase Contrast on.
-                .overlay {
-                    Rectangle()
-                        .strokeBorder(.tint, lineWidth: colorSchemeContrast == .increased ? 2.5 : 1.5)
-                }
-                .opacity(isCurrent ? 1 : 0)
-                .reducedMotionAnimation(.standard, value: isCurrent)
-                .background(Color.surface)
-        )
+        .reducedMotionAnimation(.standard, value: isDone)
+        .listRowBackground(Color.surface)
         // No full swipe: a set, logged or not, went with one long swipe and no undo.
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             deleteSetButton
@@ -236,7 +223,7 @@ struct SetTrackerRowView: View {
                 }
             }
                 .font(set.wrappedValue.isWarmup ? .caption.weight(.semibold) : .caption)
-                .foregroundStyle(.primary)
+                .foregroundStyle(isDone ? .secondary : .primary)
                 // On the text, not the menu: the menu's inner button takes its accessibility from
                 // its label view, and left unlabeled it reads as text no element owns.
                 // Where the set stands is the row's to say, on the way into it.
@@ -340,7 +327,7 @@ struct SetTrackerRowView: View {
             isActive: isActive,
             // "Set 2, Weight, kilograms": the set first, so each row's fields have names of their own.
             accessibilityLabel: "\(rowName), \(label)",
-            isMuted: delegate.rowState == .upcoming,
+            isMuted: isDone,
             placeholder: Self.targetPlaceholder(for: field, set: set.wrappedValue)
                 ?? keyboard.placeholder(for: field, previous: delegate.lastSet, unit: units.weightUnit, distanceUnit: units.distanceUnit),
             presenter: keyboard,
@@ -349,9 +336,10 @@ struct SetTrackerRowView: View {
         )
         .background(isActive ? AnyShapeStyle(Color.tintedSurface(.accentColor)) : AnyShapeStyle(.clear), in: .rect(cornerRadius: Radius.s, style: .continuous))
         .overlay {
-            // The row being logged is outlined, so its fields read as the ones to fill in.
-            RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
-                .strokeBorder(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.separator), lineWidth: isActive ? 2 : (isCurrent ? 1 : 0))
+            if isActive {
+                RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
+                    .strokeBorder(.tint, lineWidth: 2)
+            }
         }
         // A logged set stays editable, so a typo is corrected in place rather than by un-logging,
         // which would restart the rest timer. The edit is not copied to other sets.
@@ -422,8 +410,7 @@ struct SetTrackerRowView: View {
     private func columnText(_ text: String, font: Font = .caption) -> some View {
         Text(text)
             .font(font)
-            // On the current row's tint secondary grey was about 2.4:1 (S4); elsewhere it is muted.
-            .foregroundStyle(isCurrent ? AnyShapeStyle(Color.primary) : AnyShapeStyle(.secondary))
+            .foregroundStyle(.secondary)
             .frame(minHeight: cellHeight)
     }
 
@@ -530,7 +517,7 @@ struct SetTrackerRowView: View {
             if let rpe {
                 Text("RIR \(WeightStepper.format(EffortScale.rir(fromRPE: rpe)))")
                     .font(.caption2)
-                    .foregroundStyle(isCurrent ? AnyShapeStyle(Color.primary) : AnyShapeStyle(.secondary))
+                    .foregroundStyle(.secondary)
             }
         }
     }

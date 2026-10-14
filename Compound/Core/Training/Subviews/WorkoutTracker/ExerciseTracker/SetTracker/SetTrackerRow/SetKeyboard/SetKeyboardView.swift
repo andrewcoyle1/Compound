@@ -43,16 +43,10 @@ struct SetKeyboardView: View {
     @ViewBuilder
     private var weightAccessories: some View {
         // A weight the bar cannot carry keeps the strip up, as it holds the nearest that can.
-        // The value chips ride at the end of the plates band, so a plate-loaded weight takes one
-        // row over the keypad. The step is not shown: − and + say it by what they do.
+        // The step is not shown: − and + say it by what they do.
         if presenter.showsLoadingBar, showsPlates || presenter.plateLoading == nil {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
-                HStack(spacing: SystemKeypad.keySpacing) {
-                    loadingBar
-                    valueChips(presenter.weightChips) { presenter.applyWeight(displayValue: $0) }
-                        .fixedSize()
-                }
-                // The sum under both, across the whole row.
+                loadingBar
                 if let loading = presenter.plateLoading {
                     Text(loading.equation)
                         .font(.rowDetail.monospacedDigit())
@@ -62,8 +56,6 @@ struct SetKeyboardView: View {
                         .padding(.horizontal, Spacing.s)
                 }
             }
-        } else {
-            chipRow(presenter.weightChips) { presenter.applyWeight(displayValue: $0) }
         }
         if !presenter.context.step.bands.isEmpty {
             bandRow
@@ -187,23 +179,19 @@ struct SetKeyboardView: View {
     private func chipRow(_ chips: [SetKeyboardChip], apply: @escaping (Double) -> Void) -> some View {
         if !chips.isEmpty {
             ScrollView(.horizontal) {
-                valueChips(chips, apply: apply)
+                HStack(spacing: SystemKeypad.keySpacing) {
+                    ForEach(chips) { chip in
+                        Button {
+                            apply(chip.value)
+                            announceValue()
+                        } label: {
+                            keyChip(chip.title)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
             .scrollIndicators(.hidden)
-        }
-    }
-
-    private func valueChips(_ chips: [SetKeyboardChip], apply: @escaping (Double) -> Void) -> some View {
-        HStack(spacing: SystemKeypad.keySpacing) {
-            ForEach(chips) { chip in
-                Button {
-                    apply(chip.value)
-                    announceValue()
-                } label: {
-                    keyChip(chip.title)
-                }
-                .buttonStyle(.plain)
-            }
         }
     }
 
@@ -395,7 +383,7 @@ struct SetKeyboardView: View {
 
 #Preview {
     let presenter = SetKeyboardPresenter()
-    presenter.open(.weight, set: .constant(.mock), context: SetKeyboardContext(lastSetWeightKg: 60, previousSessionWeightKg: 57.5))
+    presenter.open(.weight, set: .constant(.mock), context: SetKeyboardContext())
     // The canvas never shows an input view, so this stands in for the system keyboard's glass
     // panel that `SetKeyboardInputHost` sits on in the app.
     return List {

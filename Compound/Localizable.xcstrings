@@ -15581,16 +15581,6 @@
         }
       }
     },
-    "Last time" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La última vez"
-          }
-        }
-      }
-    },
     "Last time: %@" : {
       "localizations" : {
         "es" : {

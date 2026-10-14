@@ -16,17 +16,15 @@ extension WorkoutTrackerView {
     /// The card: the exercise on it, or the whole superset it belongs to.
     @ViewBuilder
     var currentExerciseSection: some View {
+        // Each draws its own section, headed by the exercise's title row.
         if let current = presenter.currentExercise {
-            Section {
-                if let members = ActiveWorkout.supersetBlock(containing: current.id, in: presenter.workoutSession.exercises) {
-                    supersetCard(members, current: current)
-                } else {
-                    exerciseTrackerView(delegate(for: binding(for: current)), { duration in
-                        presenter.startRestTimer(durationSeconds: duration)
-                    })
-                }
+            if let members = ActiveWorkout.supersetBlock(containing: current.id, in: presenter.workoutSession.exercises) {
+                supersetCard(members, current: current)
+            } else {
+                exerciseTrackerView(delegate(for: binding(for: current)), { duration in
+                    presenter.startRestTimer(durationSeconds: duration)
+                })
             }
-            .listSectionMargins(.top, Spacing.s)
         }
     }
 
@@ -245,7 +243,8 @@ extension WorkoutTrackerView {
                     presenter.customRestSeconds[setId] = seconds
                 },
                 onUndoManager: { presenter.onUndoManagerChanged($0) },
-                bodyweight: presenter.bodyweightContribution(for: current)
+                bodyweight: presenter.bodyweightContribution(for: current),
+                showsImage: !presenter.showsExerciseStrip || dynamicTypeSize.isAccessibilitySize
             )
         )
     }

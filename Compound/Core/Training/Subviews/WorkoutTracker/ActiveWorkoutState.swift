@@ -12,7 +12,7 @@ import Foundation
 /// How a set row is drawn.
 enum SetRowState: Equatable {
     case done
-    /// The next set to log in its exercise: highlighted, its fields outlined.
+    /// The next set to log in its exercise, which VoiceOver names "next to log".
     case current
     case upcoming
 }

@@ -55,8 +55,10 @@ struct SetTrackerCard {
 
 /// A piece of one exercise's set table. See `SupersetBlockView`.
 enum SetTrackerPiece: Equatable {
-    /// The title row with the exercise's actions menu, and smart progression's note under it.
+    /// The title row with the exercise's actions menu, for the section header.
     case header
+    /// Smart progression's note, over the rows.
+    case progressionNote
     case columnHeadings
     /// The logged warm-ups, folded into one line.
     case loggedWarmups
@@ -75,6 +77,9 @@ struct SetTrackerView<SetTrackerRow: View>: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.undoManager) private var undoManager
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+    /// The sets' circle (`SetTrackerRowView.setCircleSide`).
+    @ScaledMetric(relativeTo: .caption) private var addSetCircleSide: CGFloat = ControlSize.thumbnail - Spacing.xs
 
     /// The card's rows on screen. The undo manager is let go only when none is: a single row
     /// scrolling away is not the card going.
@@ -94,14 +99,31 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         }
     }
 
+    /// On the live tracker the card is its own section, headed by the title and actions menu.
     @ViewBuilder
     private var table: some View {
-        // The title row keeps the list's insets; the table runs to the card's edge.
         if let card = delegate.card {
-            card.header(AnyView(actionsMenu))
-                .listRowSeparator(.hidden)
-                .listRowInsets(.bottom, 0)
+            Section {
+                tableBody
+            } header: {
+                sectionHeader(card)
+            }
+            .listSectionMargins(.top, Spacing.s)
+        } else {
+            tableBody
         }
+    }
+
+    /// The title row over the card, in the primary colour a header would otherwise grey.
+    private func sectionHeader(_ card: SetTrackerCard) -> some View {
+        card.header(AnyView(actionsMenu))
+            .foregroundStyle(.primary)
+            .textCase(nil)
+    }
+
+    @ViewBuilder
+    private var tableBody: some View {
+        // The table runs to the card's edge.
         if let card = delegate.card, let note = card.progressionNote {
             ProgressionNote(text: note, onAcknowledge: card.onProgressionNoteAcknowledged)
                 .listRowSeparator(.hidden)
@@ -463,18 +485,26 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         Button {
             presenter.addSet(exercise: delegate.exercise)
         } label: {
-            // On a superset's card each member has its own, so each says whose it is.
-            Label(
-                delegate.card?.piece == nil ? String(localized: "Add Set") : String(localized: "Add Set to \(delegate.exercise.wrappedValue.name)"),
-                systemImage: Symbol.add
-            )
-                .font(.rowTitle)
-                .frame(maxWidth: .infinity, minHeight: ControlSize.row)
+            // A circle in the Set column, as the sets' own are.
+            Image(systemName: Symbol.add)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.primary)
+                .frame(width: addSetCircleSide, height: addSetCircleSide)
+                .background(Color.tintedSurface(.secondary), in: .circle)
+                .overlay {
+                    if colorSchemeContrast == .increased {
+                        Circle().strokeBorder(.secondary, lineWidth: 1)
+                    }
+                }
+                .frame(minWidth: SetTrackerRowView.setColumnWidth, minHeight: ControlSize.row)
+                .contentShape(.circle)
         }
-        .buttonStyle(.bordered)
-        .tint(.secondary)
-        // The table runs to the card's edge; the button keeps the card's margins on both sides.
-        .listRowInsets(EdgeInsets(top: Spacing.s, leading: Spacing.l, bottom: Spacing.l, trailing: Spacing.l))
+        .buttonStyle(.plain)
+        // On a superset's card each member has its own, so each says whose it is.
+        .accessibilityLabel(delegate.card?.piece == nil ? String(localized: "Add Set") : String(localized: "Add Set to \(delegate.exercise.wrappedValue.name)"))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, Spacing.xs)
+        .listRowInsets(.bottom, Spacing.s)
     }
 
     @ViewBuilder
@@ -537,13 +567,12 @@ extension SetTrackerView {
         switch piece {
         case .header:
             if let card = delegate.card {
-                card.header(AnyView(actionsMenu))
+                sectionHeader(card)
+            }
+        case .progressionNote:
+            if let card = delegate.card, let note = card.progressionNote {
+                ProgressionNote(text: note, onAcknowledge: card.onProgressionNoteAcknowledged)
                     .listRowSeparator(.hidden)
-                    .listRowInsets(.bottom, 0)
-                if let note = card.progressionNote {
-                    ProgressionNote(text: note, onAcknowledge: card.onProgressionNoteAcknowledged)
-                        .listRowSeparator(.hidden)
-                }
             }
         case .columnHeadings:
             tableRows { columnHeaders }

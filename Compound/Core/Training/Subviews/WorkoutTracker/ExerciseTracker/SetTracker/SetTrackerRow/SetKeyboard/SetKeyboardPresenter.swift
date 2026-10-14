@@ -49,10 +49,7 @@ struct SetKeyboardContext {
     /// The reps in reserve the set's target aims for (`SetTarget.rirTarget`), which the set
     /// starts with; with one, the reps keypad always offers reps in reserve.
     var targetRIR: Int?
-    var lastSetWeightKg: Double?
     var lastSetReps: Int?
-    var previousSessionWeightKg: Double?
-    var targetWeightKg: Double?
     var targetMinReps: Int?
     var targetMaxReps: Int?
 }
@@ -303,29 +300,13 @@ final class SetKeyboardPresenter {
         context.showsEffort || context.targetRIR != nil
     }
 
-    /// Each chip applies a total and reads as the load, like the field.
-    var weightChips: [SetKeyboardChip] {
-        chips([
-            (String(localized: "Last set"), context.lastSetWeightKg),
-            (String(localized: "Last time"), context.previousSessionWeightKg),
-            (String(localized: "Target"), context.targetWeightKg)
-        ], shownLess: baseInUnit) { UnitConversion.convertWeight($0, to: context.unit) }
-    }
-
     var repsChips: [SetKeyboardChip] {
-        chips([
-            (String(localized: "Last set"), context.lastSetReps.map(Double.init)),
-            (String(localized: "Min"), context.targetMinReps.map(Double.init)),
-            (String(localized: "Max"), context.targetMaxReps.map(Double.init))
-        ]) { $0 }
-    }
-
-    private func chips(_ values: [(String, Double?)], shownLess offset: Double = 0, convert: (Double) -> Double) -> [SetKeyboardChip] {
-        values.compactMap { title, value in
-            guard let value else { return nil }
-            let display = (convert(value) * 100).rounded() / 100
-            let shown = ((display - offset) * 100).rounded() / 100
-            return SetKeyboardChip(title: "\(title) \(WeightStepper.format(shown))", value: display)
+        [
+            (String(localized: "Last set"), context.lastSetReps),
+            (String(localized: "Min"), context.targetMinReps),
+            (String(localized: "Max"), context.targetMaxReps)
+        ].compactMap { title, reps in
+            reps.map { SetKeyboardChip(title: "\(title) \($0)", value: Double($0)) }
         }
     }
 

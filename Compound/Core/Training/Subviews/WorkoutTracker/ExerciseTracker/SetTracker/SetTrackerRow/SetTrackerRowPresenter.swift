@@ -346,10 +346,7 @@ extension SetTrackerRowPresenter {
             fields: SetKeyboardField.fields(for: set, trackingMode: exercise.trackingMode),
             showsEffort: interactor.workoutSettings.rirTracking,
             targetRIR: target?.effectiveRIRTarget,
-            lastSetWeightKg: lastSet?.weightKg,
             lastSetReps: lastSet?.reps,
-            previousSessionWeightKg: delegate.lastSet?.weightKg,
-            targetWeightKg: delegate.progressionSuggestion?.weightKg,
             targetMinReps: target?.minReps,
             targetMaxReps: target?.maxReps
         )

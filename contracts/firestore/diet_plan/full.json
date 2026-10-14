@@ -1,0 +1,57 @@
+{
+  "calorieDistribution": "varied",
+  "calorieFloor": "standard",
+  "createdAt": {
+    "$timestamp": "2026-09-28T09:15:00.500Z"
+  },
+  "days": [
+    {
+      "calories": 2450.5,
+      "carbGrams": 280.75,
+      "fatGrams": 70.5,
+      "proteinGrams": 160.25
+    },
+    {
+      "calories": 1800.5,
+      "carbGrams": 180.25,
+      "fatGrams": 60.75,
+      "proteinGrams": 140.5
+    },
+    {
+      "calories": 2450.5,
+      "carbGrams": 280.75,
+      "fatGrams": 70.5,
+      "proteinGrams": 160.25
+    },
+    {
+      "calories": 1800.5,
+      "carbGrams": 180.25,
+      "fatGrams": 60.75,
+      "proteinGrams": 140.5
+    },
+    {
+      "calories": 2450.5,
+      "carbGrams": 280.75,
+      "fatGrams": 70.5,
+      "proteinGrams": 160.25
+    },
+    {
+      "calories": 1800.5,
+      "carbGrams": 180.25,
+      "fatGrams": 60.75,
+      "proteinGrams": 140.5
+    },
+    {
+      "calories": 1800.5,
+      "carbGrams": 180.25,
+      "fatGrams": 60.75,
+      "proteinGrams": 140.5
+    }
+  ],
+  "planId": "user_contract_full",
+  "preferredDiet": "balanced",
+  "proteinIntake": "high",
+  "tdeeEstimate": 2650.5,
+  "trainingType": "moderate",
+  "userId": "user_contract_full"
+}

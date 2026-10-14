@@ -1,0 +1,40 @@
+{
+  "author_id": "user_contract_full",
+  "auto_set_current_time": true,
+  "end_hour": 21,
+  "favourite_food_ids": [
+    "food_contract"
+  ],
+  "favourite_measurements": [
+    "g",
+    "tbsp"
+  ],
+  "favourite_recipe_ids": [
+    "recipe_contract"
+  ],
+  "hide_empty_hours": true,
+  "hide_food_details": true,
+  "id": "food_log_settings",
+  "premove": true,
+  "quick_add_enabled": true,
+  "show_add_foods_button": false,
+  "show_branded_foods": false,
+  "show_calendar_week_banner": false,
+  "show_calories_in_logger": false,
+  "show_calories_in_timeline": false,
+  "show_calories_ring": false,
+  "show_carbs_ring": false,
+  "show_fat_ring": false,
+  "show_food_image_in_logger": false,
+  "show_food_image_in_timeline": false,
+  "show_hourly_macro_totals": false,
+  "show_macros_in_logger": false,
+  "show_macros_in_timeline": false,
+  "show_open_food_facts_foods": false,
+  "show_overages": true,
+  "show_portion_in_logger": false,
+  "show_protein_ring": false,
+  "shows_food_timestamps": false,
+  "start_hour": 5,
+  "timestamp_side": "right"
+}

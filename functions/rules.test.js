@@ -88,6 +88,18 @@ t("contract: the author creates the full WorkoutSessionModel at its path", async
     await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/workout_sessions/${session.id}`), session));
 });
 
+t("contract: the owner creates the full meal, diet plan and food log settings at their paths", async () => {
+    const meal = contractFixture("meal_log");
+    const uid = meal.author_id;
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/meal_logs/${meal.meal_id}`), meal));
+    const plan = contractFixture("diet_plan");
+    await assertSucceeds(setDoc(doc(db(plan.userId), `diet_plans/${plan.userId}`), plan));
+    const settings = contractFixture("food_log_settings");
+    await assertSucceeds(setDoc(
+        doc(db(settings.author_id), `users/${settings.author_id}/food_log_settings/${settings.id}`), settings,
+    ));
+});
+
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.
 for (const [sub, key] of [
     ["body_measurements", "author_id"], ["steps", "author_id"], ["goals", "user_id"],

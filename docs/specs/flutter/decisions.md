@@ -13,6 +13,11 @@ why, and what would change it. Review these with the `feature/flutter` → `deve
 | 14 Oct 2026 | M1 CI | App coverage `min_coverage: 0` (reported); packages are held to 100% in their own tests | As planned: the app's screens churn in the early milestones | M5 |
 | 14 Oct 2026 | M1 Firebase | Firebase config files are gitignored, with a placeholder `.example` for CI | **The repo is public.** This matches the Swift app's gitignored plists | — |
 | 14 Oct 2026 | M1 Firebase | Registered in `compound-development` only: iOS `1:672259004423:ios:3d911896a395a5599332a2`, Android `1:672259004423:android:a28ac39f010d67f09332a2`, and the standard debug keystore's SHA-1/256 (keystore created on this Mac) | Agreed with the owner: dev project only | — |
+| 14 Oct 2026 | M1 contract (#83) | Timestamps in fixtures have millisecond precision, with exactly 3 digits | Swift `Date` is a Double, so sub-microsecond noise can't round-trip | A model needs finer precision |
+| 14 Oct 2026 | M1 contract (#83) | Legacy cases come in pairs with `.expected.json` (what Swift writes back after reading them) | Swift and Dart then check exactly the same thing | — |
+| 14 Oct 2026 | M1 contract (#83) | Dart decoding is as strict as Swift: an unknown enum value, a missing required field or a wrong type throws (Doubles accept ints) | Swift silently drops documents it can't decode, so Dart must not be more lenient | — |
+| 14 Oct 2026 | M1 contract (#83) | Field-name constants go in `…Keys` classes; the Dart models are generated from one field table | The constructor, decoding, encoding and keys can't drift apart | — |
+| 14 Oct 2026 | M1 contract (#83) | A `compound_models` CI job at 100% coverage, pinned to Dart 3.13.5 | The app job runs at 0% and wouldn't enforce the package | — |
 
 To regenerate the gitignored dev config, run this from `app/`:
 

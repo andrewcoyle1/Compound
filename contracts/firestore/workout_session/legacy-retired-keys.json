@@ -1,0 +1,20 @@
+{
+  "author_id": "user_legacy",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2025-06-01T07:05:30.500Z"
+  },
+  "day_plan_id": "day_old",
+  "exercises": [],
+  "id": "session_legacy",
+  "is_rest_day": false,
+  "liked_by_user_ids": [],
+  "name": "Legs",
+  "program_id": "program_old",
+  "scheduled_workout_id": "scheduled_old",
+  "streak_count": 9,
+  "training_plan_id": "plan_old",
+  "training_program_id": "program_old"
+}

@@ -17,12 +17,29 @@
     "kilometers",
     "miles"
   ],
+  "EquipmentKind": [
+    "freeWeight",
+    "loadableBar",
+    "fixedWeightBar",
+    "bands",
+    "bodyWeight",
+    "supportEquipment",
+    "accessoryEquipment",
+    "loadableAccessoryEquipment",
+    "cableMachine",
+    "plateLoadedMachine",
+    "pinLoadedMachine"
+  ],
   "ExerciseFrequency": [
     "never",
     "1-2",
     "3-4",
     "5-6",
     "daily"
+  ],
+  "ExerciseWeightUnit": [
+    "kilograms",
+    "pounds"
   ],
   "Gender": [
     "male",
@@ -32,6 +49,40 @@
   "LengthUnitPreference": [
     "centimeters",
     "inches"
+  ],
+  "SetKind": [
+    "standard",
+    "drop",
+    "amrap",
+    "myo",
+    "restPause",
+    "cluster",
+    "partials",
+    "stretch",
+    "hold"
+  ],
+  "SetSide": [
+    "left",
+    "right",
+    "both"
+  ],
+  "SetTargetSetType": [
+    "standard",
+    "drop",
+    "myo",
+    "failure",
+    "amrap",
+    "restPause",
+    "cluster",
+    "partials",
+    "stretch",
+    "hold"
+  ],
+  "TrackingMode": [
+    "weightReps",
+    "repsOnly",
+    "timeOnly",
+    "distanceTime"
   ],
   "WeightUnitPreference": [
     "kilograms",

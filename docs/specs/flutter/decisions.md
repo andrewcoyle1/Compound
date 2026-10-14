@@ -37,6 +37,32 @@ why, and what would change it. Review these with the `feature/flutter` → `deve
 | 14 Oct 2026 | M2-1 (#87) | A set's `side`, `kind` and `weight_unit` stay as the stored strings, with typed getters | A value a newer build writes survives a Dart round trip | — |
 | 14 Oct 2026 | M2-1 (#87) | Int fields accept whole-number doubles, as Swift's decoder does | Parity with Swift | — |
 | 14 Oct 2026 | M2-1 (#87) | The repository returns `compound_models` types directly; documents that fail to decode are skipped and reported | Same as Swift; no separate domain model needed yet | Domain logic diverges from storage |
+| 14 Oct 2026 | Nutrition engine (#89) | Nutrition rules join `compound_maths`, checked against `nutrition-parity.json`: 741 cases run through the real Swift, including `NutritionManager.computeDietPlan`, with 1e-6 tolerance | One fixture, recorded from Swift | — |
+| 14 Oct 2026 | Nutrition engine (#89) | Goals come in as numbers (signed rate, target weight); the caller filters by goal status. `ProteinIntake`, `PreferredDiet` and `CalorieDistribution` live in compound_maths | No dependency from the maths on the models | — |
+| 14 Oct 2026 | Nutrition engine (#89) | `TargetProposal.Reason` dropped (it had one case); `CalorieFloor` became `calorieFloor(gender)` | Simpler API, same behaviour | A second reason appears |
+| 14 Oct 2026 | M1 shell (#90) | Five tabs (Today, Training, Nutrition, Progress, Social), each with its own navigation stack; paths `/today`…`/social` match the Swift `compound://tab/<name>` deep links | Parity with the Swift tab bar and deep links | — |
+| 14 Oct 2026 | M1 shell (#90) | Profile is a full-screen route from a button in every tab's app bar; unset values show "Not Set" | Matches the Swift full-screen cover | — |
+| 14 Oct 2026 | M1 shell (#90) | The 8-line Timestamp converter is copied per repository rather than shared | Too small to justify a package yet | A third repository needs it (extract then) |
+| 14 Oct 2026 | M1 shell (#90) | `--dart-define=INITIAL_LOCATION` sets the start screen, for screenshots | The simulator can't be tapped from automation | — |
+| 14 Oct 2026 | M2-3 (#91) | One `nutrition_repository`; `watchMeals` applies the Apple Health de-duplication itself | No screen can count food twice | — |
+| 14 Oct 2026 | M2-3 (#91) | Missing or undecodable food-log settings come back as Swift's defaults; a missing diet plan comes back as null | Parity with Swift | — |
+| 14 Oct 2026 | M2-3 (#91) | Fixture tag `{"$double": "NaN"}` (input only) for NaN/inf cases | JSON can't hold NaN | — |
+| 14 Oct 2026 | Training rules (#92) | `training_rules` is pure Dart with local value types (not `compound_models`) for now; a later slice maps the models onto them | The training models were landing in parallel | The tracker UI slice |
+| 14 Oct 2026 | Training rules (#92) | Rules that return words (log titles, spoken labels, badges) are ported as decisions (`ProgressionReason`, `NextPiece`, `SetProblem`); the words go in ARB | Translations live in the app | — |
+| 14 Oct 2026 | Training rules (#92) | Progression is checked against `progression-parity.json`: 830 deterministic cases recorded from Swift | The riskiest logic gets the broadest fixture | — |
+| 15 Oct 2026 | M2-2 (#93) | History is reached from a minimal Training home (Library › Workout History, `/training/history`); detail at `/training/history/:sessionId` | Mirrors the Swift Training home's library entry | — |
+| 15 Oct 2026 | M2-2 (#93) | Row volume uses the unit most sets were logged in (tonnes from 1,000 kg), as Swift's row does; the detail total uses the profile's weight unit | Parity with Swift | — |
+| 15 Oct 2026 | M2-2 (#93) | Unlike Swift, the detail lists warm-up sets and set-kind chips; only RPE shows, since RIR isn't stored on sets | More complete read-only view | The owner prefers Swift's layout |
+| 15 Oct 2026 | M2-2 (#93) | Follow-up: bodyweight sets show "@ 0 kg"; Swift's treatment should be matched | Found in the screenshot review | — |
+| 15 Oct 2026 | M2-5 (#94) | One `body_repository` holding body measurements, steps, analytics settings and the current goal; deleted entries are left out, lists come oldest first | One read-only source for the body screens | — |
+| 15 Oct 2026 | M2-5 (#94) | An empty `currentGoalId` falls back to the uid (Swift would crash on an empty document id); the staging goal is stored under the uid | Safer than Swift, same behaviour otherwise | — |
+| 15 Oct 2026 | M2-5 (#94) | Step goal default 8,000 as in Swift; the age-adjusted goal belongs to the Today slice | Matches Swift's split | — |
+| 15 Oct 2026 | M2-4 (#95) | The calendar is a swipeable week strip rather than Swift's year-long scroller; marks are keyed by `day_key` | Simpler, and correct across time zones | The owner wants the long scroller |
+| 15 Oct 2026 | M2-4 (#95) | The macro header changes page on tap or swipe rather than a `PageView` (which breaks at large text sizes); F/P/C letters become icons | Accessibility at large text sizes | — |
+| 15 Oct 2026 | Analytics (#96) | Event names and `uauth_*` keys match Swift; parameters are cleaned like the Swift service (String/num only, bool → 1/0, dates ISO 8601, lists as sorted text, 40/100/25 limits) | Analytics stay continuous across the two apps | — |
+| 15 Oct 2026 | Analytics (#96) | No names or emails go to Firebase Analytics or Crashlytics; Mixpanel gets them on identify only | Google Analytics' terms forbid personal data (Swift sends them; see findings) | — |
+| 15 Oct 2026 | Analytics (#96) | The Mixpanel token comes from the gitignored `app/dart_defines.json` (`MIXPANEL_TOKEN`); empty means Mixpanel is off | Public repo | — |
+| 15 Oct 2026 | Analytics (#96) | A failing analytics service is logged and swallowed | Analytics must never break the app | — |
 
 To regenerate the gitignored dev config, run this from `app/`:
 

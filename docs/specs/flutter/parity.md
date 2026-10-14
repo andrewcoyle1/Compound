@@ -37,14 +37,14 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | todo | |
 | Analytics | WeighInConsistency | `Subviews/WeighInConsistency` | M4 | todo | |
 | Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | todo | |
-| AppView | App | `Compound/Core/AppView` | M1 | todo | |
+| AppView | App | `Compound/Core/AppView` | M1 | partial | sign-in redirect, shell (#86, #90) |
 | Challenges | ChallengeDetail | `ChallengeDetail` | M5 | todo | |
 | Challenges | CreateChallenge | `CreateChallenge` | M5 | todo | |
 | Coach | Coach | `Compound/Core/Coach` | M5 | todo | |
 | DevSettings | DevSettings | `Compound/Core/DevSettings` | M5 | todo | |
 | Notifications | Notifications | `Compound/Core/Notifications` | M5 | todo | |
 | Notifications | NotificationSettings | `NotificationSettings` | M5 | todo | |
-| Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | todo | |
+| Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | partial | read-only day view (#95) |
 | Nutrition | CheckIn | `CheckIn` | M3 | todo | |
 | Nutrition | IngredientListBuilder | `Components/IngredientListBuilder` | M3 | todo | |
 | Nutrition | MealAccessory | `Components/MealAccessory` | M3 | todo | |
@@ -153,7 +153,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Social | FollowersList | `SocialProfile/FollowersList` | M5 | todo | |
 | Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | todo | |
 | Social | Comments | `WorkoutSessionRow/Comments` | M5 | todo | |
-| TabBar | TabBar | `Compound/Core/TabBar` | M1 | todo | |
+| TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | five tabs, per-tab stacks, deep-link paths (#90) |
 | Today | Today | `Compound/Core/Today` | M2 | todo | |
 | Today | WeeklyReview | `WeeklyReview` | M2 | todo | |
 | Training | Training | `Compound/Core/Training` | M3 | todo | |
@@ -193,9 +193,9 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | SetKeyboard | `Session/ExerciseTracker/SetTrackerRow/SetKeyboard` | M3 | todo | |
 | Training | SwapExercisePicker | `Session/ExerciseTracker/SwapExercisePicker` | M3 | todo | |
 | Training | WorkoutExerciseEquipmentSheet | `Session/ExerciseTracker/WorkoutExerciseEquipmentSheet` | M3 | todo | |
-| Training | WorkoutHistory | `Session/WorkoutHistory` | M3 | todo | |
+| Training | WorkoutHistory | `Session/WorkoutHistory` | M3 | partial | read-only (#93) |
 | Training | WorkoutNotes | `Session/WorkoutNotes` | M3 | todo | |
-| Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | todo | |
+| Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | read-only (#93) |
 | Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | todo | |
 | Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | todo | |
 | Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | todo | |
@@ -213,9 +213,9 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 
 | Feature | Swift | Milestone | Status | Flutter |
 |---|---|---|---|---|
-| Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | todo | |
-| Offline data and sync | Sync engines | M1–M3 | todo | Firestore's offline cache |
-| Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | todo | |
+| Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | done | `auth_repository` (#86) |
+| Offline data and sync | Sync engines | M1–M3 | partial | read-only repositories on Firestore's cache |
+| Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |
 | Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | todo | |
 | Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | todo | |
 | A/B tests (Remote Config) | `ABTestManager` | M5 | todo | |
@@ -229,7 +229,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Image upload and progress photos | `ImageUploadManager` | M5 | todo | |
 | Reporting and moderation | `ReportManager` | M5 | todo | |
 | Haptics and sound effects | `HapticManager`, `SoundEffectManager` | M3 | todo | |
-| Spanish localisation, 100% | `Localizable.xcstrings` | M1 | todo | `scripts/arb-spanish.py` |
+| Spanish localisation, 100% | `Localizable.xcstrings` | M1 | done | `scripts/arb-spanish.py`, CI check |
 | iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | todo | |
 | Mac (Catalyst) | Catalyst | M6 | todo | Decided at M6 |
 | Methods & Sources (citations) | `Components/Science` | M4 | todo | |

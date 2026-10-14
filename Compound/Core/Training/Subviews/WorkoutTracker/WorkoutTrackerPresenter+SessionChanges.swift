@@ -2,9 +2,8 @@
 //  WorkoutTrackerPresenter+SessionChanges.swift
 //  Compound
 //
-//  Split out of WorkoutTrackerPresenter.swift to keep it under the type-body and file-length
-//  limits, so later work adds its logic here rather than in the main file. Reacting to an edited
-//  or logged set: committing edits to sibling sets and moving focus once an exercise is done.
+//  Reacting to an edited or logged set: committing edits to sibling sets and moving focus once an
+//  exercise is done.
 //
 
 import SwiftUI

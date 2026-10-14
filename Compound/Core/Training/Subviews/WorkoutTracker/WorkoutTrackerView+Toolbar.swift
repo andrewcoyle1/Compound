@@ -2,8 +2,7 @@
 //  WorkoutTrackerView+Toolbar.swift
 //  Compound
 //
-//  Split out of WorkoutTrackerView.swift to keep it under the file-length limits, so later work
-//  adds its views in their own files. The navigation bar: the way out, the title and clock, and
+//  The navigation bar: the way out, the title and clock, and
 //  the workout's menu.
 //
 

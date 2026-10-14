@@ -1,11 +1,9 @@
 //
-//  WorkoutPrimaryCTA.swift
+//  WorkoutTrackerView+PrimaryCTA.swift
 //  Compound
 //
-//  Split out of WorkoutTrackerView.swift to keep it under the file-length limits, so later work
-//  on the log button changes this file rather than the screen's body. The content of the
-//  tracker's `.bottomCTA`: one button that logs, skips the rest, moves on, finishes or resumes,
-//  with +15s beside it while resting.
+//  The content of the tracker's `.bottomCTA`: one button that logs, skips the rest, moves on,
+//  finishes or resumes, with +15s beside it while resting.
 //
 
 import SwiftUI

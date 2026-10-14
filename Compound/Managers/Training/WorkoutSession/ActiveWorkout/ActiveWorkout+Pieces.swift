@@ -125,18 +125,3 @@ extension ActiveWorkout {
         UnitConversion.convertWeight(kilograms, to: unit).formatted(.number.precision(.fractionLength(0...1)))
     }
 }
-
-// MARK: - On the screen
-
-extension WorkoutTrackerPresenter {
-
-    /// The log button's second line: the drop or mini-set that follows the set it logs. `nil`
-    /// with the set plan off, and whenever the button does anything but log a set.
-    var primarySlotNextPiece: ActiveWorkout.PieceHint? {
-        let settings = interactor.workoutSettings
-        guard settings.plansSets, case let .log(exerciseId, setId)? = primarySlot,
-              let exercise = workoutSession.exercises.first(where: { $0.id == exerciseId }) else { return nil }
-        let units = units(for: exercise)
-        return ActiveWorkout.nextPiece(after: setId, in: exercise, settings: settings, unit: units.weightUnit, distanceUnit: units.distanceUnit)
-    }
-}

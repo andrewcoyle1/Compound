@@ -1,22 +1,14 @@
+//
+//  SetRestSheet.swift
+//  Compound
+//
+//  The rest picker: minutes and seconds wheels in a compact sheet. Opened by a set row's Rest
+//  Timer swipe and by Exercise Settings' rest override.
+//
+
 import SwiftUI
 
-@MainActor
-protocol SetTrackerRowRouter: GlobalRouter {
-    func showRestModal(
-        primaryButtonAction: @escaping () -> Void,
-        secondaryButtonAction: @escaping () -> Void,
-        minutesSelection: Binding<Int>,
-        secondsSelection: Binding<Int>
-    )
-    func showPlateCalculatorView(delegate: PlateCalculatorDelegate)
-}
-
-extension SetTrackerRowRouter {
-    /// For a conformer that presents nothing (test doubles).
-    func showPlateCalculatorView(delegate: PlateCalculatorDelegate) { }
-}
-
-extension CoreRouter: SetTrackerRowRouter {
+extension CoreRouter {
     /// A compact sheet with the contract's close and confirm, rather than the custom overlay it
     /// was. The sheet dismisses itself after either action, so callers only apply or discard.
     func showRestModal(

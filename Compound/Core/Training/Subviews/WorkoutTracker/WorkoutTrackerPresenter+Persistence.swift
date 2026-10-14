@@ -2,11 +2,9 @@
 //  WorkoutTrackerPresenter+Persistence.swift
 //  Compound
 //
-//  Split out of WorkoutTrackerPresenter.swift to keep it under the type-body and file-length
-//  limits, so later work adds its logic here rather than in the main file. Saving the session,
-//  adopting saves made elsewhere (the Live Activity), the scene phase, and minimizing; and on
-//  return, owning up to what changed meanwhile (system.md §2): the receipt for sets logged
-//  elsewhere, "Still training?", and the summary of a workout finished elsewhere.
+//  Saving the session, adopting saves made elsewhere (the Live Activity), the scene phase, and
+//  minimizing; and on return, owning up to what changed meanwhile (system.md §2): the receipt
+//  for sets logged elsewhere, "Still training?", and the summary of a workout finished elsewhere.
 //
 
 import SwiftUI

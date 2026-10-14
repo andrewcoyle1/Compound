@@ -2,8 +2,8 @@
 //  WorkoutTrackerPresenter+Exercises.swift
 //  Compound
 //
-//  Split out of WorkoutTrackerPresenter.swift, which exceeded the 750-line file and
-//  500-line type-body limits.
+//  The workout's exercises: adding from the picker, deleting, supersets, and the workout's
+//  settings.
 //
 
 import SwiftUI

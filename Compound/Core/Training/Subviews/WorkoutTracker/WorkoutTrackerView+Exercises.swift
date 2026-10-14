@@ -2,8 +2,7 @@
 //  WorkoutTrackerView+Exercises.swift
 //  Compound
 //
-//  Split out of WorkoutTrackerView.swift to keep it under the file-length limits, so later work
-//  adds its views in their own files. The list's sections: the open exercise's card and Add
+//  The list's sections: the open exercise's card and Add
 //  Exercise, and the card's delegate.
 //
 

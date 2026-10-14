@@ -1,5 +1,5 @@
 //
-//  ActiveWorkoutState.swift
+//  ActiveWorkout.swift
 //  Compound
 //
 //  What the active-workout screen works out from the session: which set is next, how far through

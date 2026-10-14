@@ -2,7 +2,6 @@
 //  WorkoutTrackerPresenter+Finish.swift
 //  Compound
 //
-//  Split out of WorkoutTrackerPresenter.swift, which exceeded the 500-line type-body limit.
 //  Everything that happens after the user says they are done: the save and its retries, the side
 //  effects of having finished, and what the user is told about any of it.
 //

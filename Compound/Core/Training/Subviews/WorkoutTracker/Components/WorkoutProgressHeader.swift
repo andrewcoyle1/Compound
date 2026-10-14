@@ -2,8 +2,7 @@
 //  WorkoutProgressHeader.swift
 //  Compound
 //
-//  Split out of WorkoutTrackerView.swift to keep it under the file-length limits, so later work
-//  on the header changes this file rather than the screen's body.
+//  The header under the navigation bar: the exercise strip and the workout's progress.
 //
 
 import SwiftUI

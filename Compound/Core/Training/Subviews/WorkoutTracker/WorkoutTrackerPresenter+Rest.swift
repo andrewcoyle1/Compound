@@ -2,7 +2,6 @@
 //  WorkoutTrackerPresenter+Rest.swift
 //  Compound
 //
-//  Split out of WorkoutTrackerPresenter.swift, which exceeded the 500-line type-body limit.
 //  Everything the screen does about resting between sets, and the previous-values lookup the
 //  rest of the screen reads alongside it.
 //

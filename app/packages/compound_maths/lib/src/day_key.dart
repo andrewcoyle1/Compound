@@ -16,6 +16,9 @@ String _key(DateTime date) => date.toIso8601String().substring(0, 10);
 String addDays(String dayKey, int days) =>
     _key(_utc(dayKey).add(Duration(days: days)));
 
+/// The ISO weekday of [dayKey]: 1 for Monday to 7 for Sunday.
+int isoWeekday(String dayKey) => _utc(dayKey).weekday;
+
 /// Whole days from [from] to [to], negative when [to] is earlier.
 int daysBetween(String from, String to) =>
     _utc(to).difference(_utc(from)).inDays;

@@ -32,3 +32,10 @@ double energyDensityKcalPerKg(double? weightKg, double? bodyFatPercent) {
   return fatShare * EnergyDensity.fatKcalPerKg +
       (1 - fatShare) * EnergyDensity.leanKcalPerKg;
 }
+
+/// The daily energy difference that moves weight by [weeklyChangeKg] a week
+/// (`EnergyDensity.dailyKcal(forWeeklyChangeKg:kcalPerKg:)`).
+double dailyKcalForWeeklyChange(
+  double weeklyChangeKg, {
+  double kcalPerKg = EnergyDensity.conventionalKcalPerKg,
+}) => weeklyChangeKg * kcalPerKg / 7;

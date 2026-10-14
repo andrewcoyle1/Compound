@@ -265,7 +265,7 @@ enum SetCompletionState: Equatable {
 
     var systemImage: String {
         switch self {
-        case .completed: return "checkmark.circle.fill"
+        case .completed: return Symbol.success
         case .ready: return "circle"
         case .notReady: return "circle.dashed"
         }
@@ -353,7 +353,9 @@ extension SetTrackerRowPresenter {
         Task {
             do {
                 try await interactor.saveWorkoutGymProfile(gym)
+                interactor.playHaptic(option: .success)
             } catch {
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Save Gym"), subtitle: error.localizedDescription)
             }
         }

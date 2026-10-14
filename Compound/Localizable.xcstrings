@@ -30935,7 +30935,7 @@
       }
     },
     "W" : {
-      "extractionState" : "stale",
+      "comment" : "A warm-up set's circle, in place of its number",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -31107,6 +31107,16 @@
         }
       }
     },
+    "Warm-up set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie de calentamiento"
+          }
+        }
+      }
+    },
     "Warm-up sets" : {
       "localizations" : {
         "es" : {
@@ -31154,16 +31164,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Calentamiento %1$lld de %2$lld"
-          }
-        }
-      }
-    },
-    "Warmup set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serie de calentamiento"
           }
         }
       }

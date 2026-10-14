@@ -91,12 +91,12 @@ struct SetTrackerRowView: View {
         .moveDisabled(true)
     }
 
-    /// "Set 2", "Set A1", "Warmup set": what VoiceOver calls this row, and the start of each of
+    /// "Set 2", "Set A1", "Warm-up set": what VoiceOver calls this row, and the start of each of
     /// its controls' names, so Voice Control can tell "Set 2 weight" from "Set 3 weight" (S5).
     /// A drop or mini-set is named after its set: "Set 2, drop set 1".
     private var rowName: String {
         let set = delegate.set.wrappedValue
-        guard !set.isWarmup else { return String(localized: "Warmup set") }
+        guard !set.isWarmup else { return String(localized: "Warm-up set") }
         let sets = delegate.exercise.wrappedValue.sets
         if let parent = sets.first(where: { $0.id == set.parentSetId }), let subSetName = ActiveWorkout.subSetName(of: set, in: sets) {
             return "\(String(localized: "Set \(setLabel(for: parent))")), \(subSetName)"
@@ -213,7 +213,7 @@ struct SetTrackerRowView: View {
                 Text(setLabel(for: set))
             }
         }
-        .font(set.isWarmup ? .caption.weight(.semibold) : .caption)
+        .font(set.isWarmup ? .label.weight(.semibold) : .label)
         .foregroundStyle(isDone ? .secondary : .primary)
         // On the text, not the menu: the menu's inner button takes its accessibility from its
         // label view, and left unlabeled it reads as text no element owns. Where the set stands is
@@ -236,7 +236,7 @@ struct SetTrackerRowView: View {
     /// user doing three sets a side that they were on their fourth.
     private func setLabel(for set: WorkoutSetModel) -> String {
         if let badge = delegate.badgeLabel { return badge }
-        guard !set.isWarmup else { return "W" }
+        guard !set.isWarmup else { return String(localized: "W", comment: "A warm-up set's circle, in place of its number") }
         let number = delegate.exercise.wrappedValue.workingSetNumber(for: set)
         return "\(number)\(set.side?.initial ?? "")"
     }
@@ -390,7 +390,7 @@ struct SetTrackerRowView: View {
     }
 
     /// One value in the Prev or Auto column.
-    private func columnText(_ text: String, font: Font = .caption) -> some View {
+    private func columnText(_ text: String, font: Font = .label) -> some View {
         Text(text)
             .font(font)
             .foregroundStyle(.secondary)

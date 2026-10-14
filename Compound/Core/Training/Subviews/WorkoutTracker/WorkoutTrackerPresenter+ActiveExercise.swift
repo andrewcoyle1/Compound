@@ -100,7 +100,7 @@ extension WorkoutTrackerPresenter {
     /// Applies a new order and puts the card back on the exercise it showed.
     private func reorder(to updated: [WorkoutExerciseModel]) {
         let card = currentExercise?.id
-        applyReorderedExercises(updated, movedFrom: nil, movedTo: 0)
+        applyReorderedExercises(updated)
         if let card, let cardIndex = updated.firstIndex(where: { $0.id == card }) {
             cardExerciseId = card
             currentExerciseIndex = cardIndex

@@ -39,9 +39,9 @@ extension ActiveWorkout {
         return blocks(exercises).compactMap { block in
             let members = block.compactMap { byId[$0] }
             guard let first = members.first else { return nil }
-            var letter: String?
+            var blockLetter: String?
             if members.count > 1 {
-                letter = supersetLetter(supersetCount)
+                blockLetter = letter(supersetCount)
                 supersetCount += 1
             }
             let working = members.map { $0.sets.filter { !$0.isWarmup } }
@@ -49,17 +49,12 @@ extension ActiveWorkout {
                 id: first.id,
                 names: members.map(\.name),
                 imageNames: members.map(\.imageName),
-                supersetLetter: letter,
+                supersetLetter: blockLetter,
                 doneWorkingSets: working.reduce(0) { $0 + $1.fullyCompletedPairedSetCount },
                 totalWorkingSets: working.reduce(0) { $0 + $1.pairedSetCount },
                 isCurrent: block.contains(currentExerciseId ?? "")
             )
         }
-    }
-
-    private static func supersetLetter(_ index: Int) -> String? {
-        let letters = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        return letters.indices.contains(index) ? String(letters[index]) : nil
     }
 
     /// The edge the card comes in from when it moves from exercise `from` to exercise `to`:

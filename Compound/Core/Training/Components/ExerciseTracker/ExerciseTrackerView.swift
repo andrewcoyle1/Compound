@@ -263,7 +263,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
 
                 if let note = presenter.note(for: exercise) {
                     Text(note)
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.leading)
                         .lineLimit(2)
@@ -271,7 +271,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
 
                 if let sessionNote = exercise.notes {
                     Label(sessionNote, systemImage: Symbol.note)
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.primary)
                         .lineLimit(2)
                 }
@@ -296,7 +296,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
             }
             Text("Set \(min(exercise.loggedSetCount + 1, exercise.workingSetCount))/\(exercise.workingSetCount)")
         }
-        .font(.caption)
+        .font(.label)
         .foregroundStyle(isDone ? AnyShapeStyle(.success) : AnyShapeStyle(.secondary))
         .accessibilityElement(children: .combine)
         .accessibilityValue(isDone ? String(localized: "All sets done") : "")
@@ -311,7 +311,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 onSave: delegate.onUpdateNote
             )
         } label: {
-            Image(systemName: exercise.notes == nil ? Symbol.note + ".badge.plus" : Symbol.note)
+            Image(systemName: exercise.notes == nil ? Symbol.addNote : Symbol.note)
                 .tapTarget()
         }
         .buttonStyle(.borderless)

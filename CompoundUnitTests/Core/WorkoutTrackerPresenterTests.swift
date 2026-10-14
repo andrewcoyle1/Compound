@@ -394,7 +394,7 @@ struct WorkoutTrackerPresenterTests {
         ])
         let reversed = Array(screen.presenter.workoutSession.exercises.reversed())
 
-        screen.presenter.applyReorderedExercises(reversed, movedFrom: 1, movedTo: 0)
+        screen.presenter.applyReorderedExercises(reversed)
 
         #expect(screen.presenter.workoutSession.exercises.map(\.id) == ["e2", "e1"])
         #expect(screen.presenter.workoutSession.exercises.map(\.index) == [1, 2])
@@ -412,7 +412,7 @@ struct WorkoutTrackerPresenterTests {
         ])
         let reversed = Array(screen.presenter.workoutSession.exercises.reversed())
 
-        screen.presenter.applyReorderedExercises(reversed, movedFrom: 1, movedTo: 0)
+        screen.presenter.applyReorderedExercises(reversed)
 
         #expect(screen.presenter.workoutSession.exercises.last?.sets.map(\.index) == [1, 2])
     }

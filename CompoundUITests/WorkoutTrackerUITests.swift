@@ -100,7 +100,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         _ = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
-        XCTAssertTrue(app.buttons["Warmup set"].firstMatch.exists, "No warm-up row to audit")
+        XCTAssertTrue(app.buttons["Warm-up set"].firstMatch.exists, "No warm-up row to audit")
         try audit(app, "opening, warm-up row")
 
         logUntilResting(app)
@@ -128,7 +128,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
-        app.waitFor(app.buttons["Warmup set"].firstMatch).tap()
+        app.waitFor(app.buttons["Warm-up set"].firstMatch).tap()
         app.waitFor(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Rest Timer'")).firstMatch).tap()
         let wheels = app.pickerWheels
         app.waitFor(wheels.element(boundBy: 1))

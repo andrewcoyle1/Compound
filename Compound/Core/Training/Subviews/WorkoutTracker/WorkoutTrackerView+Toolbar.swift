@@ -38,7 +38,7 @@ extension WorkoutTrackerView {
             Button {
                 presenter.minimizeSession()
             } label: {
-                Image(systemName: "chevron.down")
+                Image(systemName: Symbol.minimize)
             }
             .accessibilityLabel("Minimize workout")
         }
@@ -100,7 +100,7 @@ extension WorkoutTrackerView {
             presenter.onPauseResumePressed()
         } label: {
             if presenter.isActive {
-                Label("Pause Workout", systemImage: "pause")
+                Label("Pause Workout", systemImage: Symbol.pause)
             } else {
                 Label("Resume Workout", systemImage: Symbol.start)
             }

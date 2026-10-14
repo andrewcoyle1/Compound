@@ -342,7 +342,7 @@ class WorkoutTrackerPresenter {
         }
     }
     
-    func applyReorderedExercises(_ updated: [WorkoutExerciseModel], movedFrom: Int?, movedTo: Int) {
+    func applyReorderedExercises(_ updated: [WorkoutExerciseModel]) {
         var updated = updated
         // Reindex exercises only (do not touch set indices)
         for idx in updated.indices {

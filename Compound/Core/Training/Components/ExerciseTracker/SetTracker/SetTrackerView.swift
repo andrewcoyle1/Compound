@@ -238,7 +238,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                             .tapTarget()
                     }
                 }
-                .font(.caption)
+                .font(.label)
                 .buttonStyle(.bordered)
                 .toggleStyle(.button)
                 .tint(.secondary)
@@ -461,7 +461,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         } label: {
             // A circle in the Set column, as the sets' own are.
             Image(systemName: Symbol.add)
-                .font(.caption.weight(.semibold))
+                .font(.label.weight(.semibold))
                 .foregroundStyle(.primary)
                 .frame(width: addSetCircleSide, height: addSetCircleSide)
                 .background(Color.tintedSurface(.secondary), in: .circle)

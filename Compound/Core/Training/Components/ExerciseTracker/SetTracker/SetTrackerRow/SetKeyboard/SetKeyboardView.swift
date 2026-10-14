@@ -62,7 +62,7 @@ struct SetKeyboardView: View {
         }
         if let stackSummary = presenter.stackSummary {
             Text(stackSummary)
-                .font(.subheadline.monospacedDigit())
+                .font(.rowDetail.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, minHeight: plateStripHeight)
         }
@@ -244,7 +244,7 @@ struct SetKeyboardView: View {
                     blankKey
                 }
                 digit("0")
-                keyButton(systemImage: "delete.left", label: String(localized: "Delete"), isKey: true, isPlain: true) { presenter.backspace() }
+                keyButton(systemImage: Symbol.deleteBackward, label: String(localized: "Delete"), isKey: true, isPlain: true) { presenter.backspace() }
                 Group {
                     if let next = presenter.nextField {
                         keyButton(systemImage: Symbol.nextField, label: String(localized: "Next, \(Self.name(of: next))"), prominent: true) { presenter.next() }
@@ -269,7 +269,7 @@ struct SetKeyboardView: View {
             }
             Text(title)
         }
-        .font(.subheadline.weight(isSelected ? .semibold : .regular).monospacedDigit())
+        .font(.rowDetail.weight(isSelected ? .semibold : .regular).monospacedDigit())
         .lineLimit(1)
         .padding(.horizontal, Spacing.m)
         .frame(minHeight: ControlSize.row)

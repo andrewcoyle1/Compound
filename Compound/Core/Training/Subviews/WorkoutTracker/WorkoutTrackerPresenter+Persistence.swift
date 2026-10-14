@@ -102,6 +102,7 @@ extension WorkoutTrackerPresenter {
             try interactor.updateActiveSession(workoutSession)
         } catch {
             interactor.trackEvent(event: Event.saveProgressFail(error: error))
+            interactor.playHaptic(option: .error)
             router.showSimpleAlert(title: String(localized: "Unable to Save Progress"), subtitle: String(localized: "We were unable to save your workout. Please try again."))
         }
     }

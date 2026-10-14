@@ -76,7 +76,7 @@ struct InlineRestTimerRow: View {
                 if correction.correctsReps {
                     // Not in `Symbol`, which this package does not own; the keypad's stepper uses
                     // the same symbol.
-                    repsButton(systemImage: "minus", label: String(localized: "Remove a rep"), delta: -1)
+                    repsButton(systemImage: Symbol.decrease, label: String(localized: "Remove a rep"), delta: -1)
                         .disabled(!correction.canRemoveRep)
                     repsButton(systemImage: Symbol.add, label: String(localized: "Add a rep"), delta: 1)
                 }

@@ -1,13 +1,16 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/progress/progress.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/training/training.dart';
+import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,6 +24,7 @@ class const App({
   required final UserRepository userRepository,
   required final WorkoutSessionRepository workoutSessionRepository,
   required final NutritionRepository nutritionRepository,
+  required final BodyRepository bodyRepository,
   final AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
   super.key,
 }) extends StatelessWidget {
@@ -32,6 +36,7 @@ class const App({
         RepositoryProvider.value(value: userRepository),
         RepositoryProvider.value(value: workoutSessionRepository),
         RepositoryProvider.value(value: nutritionRepository),
+        RepositoryProvider.value(value: bodyRepository),
         RepositoryProvider.value(value: analyticsRepository),
       ],
       child: BlocProvider(
@@ -96,6 +101,29 @@ class _AppViewState extends State<AppView> {
                     path: tab.path,
                     name: tab.name,
                     builder: (_, _) => const NutritionPage(),
+                  ),
+                  AppTab.progress => GoRoute(
+                    path: tab.path,
+                    name: tab.name,
+                    builder: (_, _) => const ProgressPage(),
+                    routes: [
+                      for (final metric in WeightMetric.values)
+                        GoRoute(
+                          path: metric.path,
+                          name: metric.name,
+                          builder: (_, _) => WeightMetricPage(metric: metric),
+                          routes: [
+                            GoRoute(
+                              path: 'data',
+                              name: metric.dataRouteName,
+                              builder: (_, _) => WeightMetricPage(
+                                metric: metric,
+                                allData: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
                   _ => GoRoute(
                     path: tab.path,

@@ -1,5 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,6 +20,8 @@ class MockWorkoutSessionRepository extends Mock
     implements WorkoutSessionRepository;
 class MockNutritionRepository extends Mock implements NutritionRepository;
 
+class MockBodyRepository extends Mock implements BodyRepository;
+
 extension PumpApp on WidgetTester {
   Future<void> pumpApp(
     Widget widget, {
@@ -26,6 +29,7 @@ extension PumpApp on WidgetTester {
     UserRepository? userRepository,
     WorkoutSessionRepository? workoutSessionRepository,
     NutritionRepository? nutritionRepository,
+    BodyRepository? bodyRepository,
     AppBloc? appBloc,
     double textScale = 1,
   }) {
@@ -43,6 +47,9 @@ extension PumpApp on WidgetTester {
           ),
           RepositoryProvider.value(
             value: nutritionRepository ?? MockNutritionRepository(),
+          ),
+          RepositoryProvider.value(
+            value: bodyRepository ?? MockBodyRepository(),
           ),
         ],
         child: BlocProvider.value(

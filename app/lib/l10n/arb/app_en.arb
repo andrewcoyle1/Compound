@@ -466,5 +466,187 @@
     "nutritionCalendarNextWeek": "Next week",
     "@nutritionCalendarNextWeek": {
         "description": "Calendar strip: accessibility action showing the week after"
+    },
+    "progressBodyHeader": "Body",
+    "@progressBodyHeader": {
+        "description": "Progress tab: heading over the body metrics (scale weight, weight trend)"
+    },
+    "scaleWeightTitle": "Scale Weight",
+    "@scaleWeightTitle": {
+        "description": "Title of the Scale Weight screen and its row on Progress; also the chart series of weigh-ins"
+    },
+    "weightTrendTitle": "Weight Trend",
+    "@weightTrendTitle": {
+        "description": "Title of the Weight Trend screen and its row on Progress"
+    },
+    "weightTrendSeries": "Trend Weight",
+    "@weightTrendSeries": {
+        "description": "Chart legend: the smoothed trend line on Weight Trend"
+    },
+    "weightNoEntries": "No weight entries",
+    "@weightNoEntries": {
+        "description": "Weight screens: empty state when nothing has been weighed"
+    },
+    "weightLoadFailure": "Your weigh-ins couldn't be loaded.",
+    "@weightLoadFailure": {
+        "description": "Weight screens: error when the weigh-ins could not be read"
+    },
+    "metricShowAllData": "Show All Data",
+    "@metricShowAllData": {
+        "description": "Metric screen: row opening every recorded entry"
+    },
+    "metricAllRecordedData": "All Recorded Data",
+    "@metricAllRecordedData": {
+        "description": "Title of the screen listing every entry of a metric"
+    },
+    "metricLatest": "Latest: {date}",
+    "@metricLatest": {
+        "description": "Metric screen: row with the most recent day's reading; date is Today, Yesterday or a date",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "metricHighest": "Highest: {date}",
+    "@metricHighest": {
+        "description": "Metric screen: row with the highest day's reading",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "metricLowest": "Lowest: {date}",
+    "@metricLowest": {
+        "description": "Metric screen: row with the lowest day's reading",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "metricAverage": "Average",
+    "@metricAverage": {
+        "description": "Metric screen: the average across days; also the chart header's figure"
+    },
+    "metricToday": "Today",
+    "@metricToday": {
+        "description": "Metric screen: a reading's day when it is today"
+    },
+    "metricYesterday": "Yesterday",
+    "@metricYesterday": {
+        "description": "Metric screen: a reading's day when it was yesterday"
+    },
+    "chartRangeWeek": "W",
+    "@chartRangeWeek": {
+        "description": "Chart range picker: one week (short)"
+    },
+    "chartRangeMonth": "M",
+    "@chartRangeMonth": {
+        "description": "Chart range picker: one month (short)"
+    },
+    "chartRangeSixMonths": "6M",
+    "@chartRangeSixMonths": {
+        "description": "Chart range picker: six months (short)"
+    },
+    "chartRangeYear": "Y",
+    "@chartRangeYear": {
+        "description": "Chart range picker: one year (short)"
+    },
+    "chartRangeWeekName": "Week",
+    "@chartRangeWeekName": {
+        "description": "Chart range picker: accessibility name for W"
+    },
+    "chartRangeMonthName": "Month",
+    "@chartRangeMonthName": {
+        "description": "Chart range picker: accessibility name for M"
+    },
+    "chartRangeSixMonthsName": "6 Months",
+    "@chartRangeSixMonthsName": {
+        "description": "Chart range picker: accessibility name for 6M"
+    },
+    "chartRangeYearName": "Year",
+    "@chartRangeYearName": {
+        "description": "Chart range picker: accessibility name for Y"
+    },
+    "chartNoDataInRange": "No data in this range",
+    "@chartNoDataInRange": {
+        "description": "Chart: shown when the selected range has no readings"
+    },
+    "chartSemanticSummary": "{title} chart, {from} to {to}. {series}",
+    "@chartSemanticSummary": {
+        "description": "Chart: accessibility summary; series lists each series' average",
+        "placeholders": {
+            "title": {
+                "type": "String"
+            },
+            "from": {
+                "type": "String"
+            },
+            "to": {
+                "type": "String"
+            },
+            "series": {
+                "type": "String"
+            }
+        }
+    },
+    "chartSemanticSeries": "{name}, average {value}.",
+    "@chartSemanticSeries": {
+        "description": "Chart: accessibility description of one series",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "methodInfoButtonLabel": "How {title} is calculated",
+    "@methodInfoButtonLabel": {
+        "description": "Info button beside a calculated figure: accessibility label",
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "methodInfoButtonHint": "Shows the method and its sources",
+    "@methodInfoButtonHint": {
+        "description": "Info button beside a calculated figure: accessibility hint"
+    },
+    "methodInfoFormula": "Formula",
+    "@methodInfoFormula": {
+        "description": "Method sheet: section heading"
+    },
+    "methodInfoLimitations": "Limitations",
+    "@methodInfoLimitations": {
+        "description": "Method sheet: section heading"
+    },
+    "methodInfoOwnChoices": "Compound's own choices",
+    "@methodInfoOwnChoices": {
+        "description": "Method sheet: section heading"
+    },
+    "methodInfoSources": "Sources",
+    "@methodInfoSources": {
+        "description": "Method sheet: section heading"
+    },
+    "methodInfoNotPeerReviewed": "Not peer reviewed",
+    "@methodInfoNotPeerReviewed": {
+        "description": "Method sheet: marks a source that is not peer reviewed"
+    },
+    "weightTrendMethodSummary": "Your trend weight is what your weight is doing once day-to-day water and food swings are filtered out. Compound runs a Kalman filter over your weigh-ins that tracks a level and a rate of change, and uses the real number of days between readings, so weighing daily or weekly gives the same kind of line. Each weigh-in is assumed to carry about half a percent of your body weight in noise. A reading that disagrees with the trend counts for less the further off it is, and one more than 3 kg (or 4%) away is set aside unless your next weigh-in agrees with it. Only your first weigh-in of a day counts. On the chart, each past point is also smoothed using the readings that came after it.",
+    "@weightTrendMethodSummary": {
+        "description": "Weight Trend method sheet: summary"
+    },
+    "weightTrendMethodLimitations": "Body weight also follows a weekly rhythm (higher after weekends) and, for some people, the menstrual cycle; the filter does not model either, so the trend can drift a little with them. The 0.5% noise figure comes from a long series of daily weighings in one person, so your own scale and routine may be noisier or quieter.",
+    "@weightTrendMethodLimitations": {
+        "description": "Weight Trend method sheet: limitations"
+    },
+    "weightTrendMethodOwnChoices": "The 0.3 kg noise floor, the 0.05 kg/day level noise, the 0.004 kg/day slope noise, the 2.5 robust threshold, the max(3 kg, 4%) hold rule, the median-of-three start and using the first weigh-in of the day are Compound's own choices, to be tuned on real histories.",
+    "@weightTrendMethodOwnChoices": {
+        "description": "Weight Trend method sheet: Compound's own choices"
     }
 }

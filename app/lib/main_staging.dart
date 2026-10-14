@@ -1,5 +1,6 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -27,6 +28,11 @@ Future<void> main() async {
       nutritionRepository: InMemoryNutritionRepository(
         meals: sampleMealLogs(uid: sampleUserId, now: now),
         dietPlan: sampleDietPlan(uid: sampleUserId, now: now),
+      ),
+      bodyRepository: InMemoryBodyRepository(
+        measurements: sampleBodyMeasurements(uid: sampleUserId, now: now),
+        steps: sampleSteps(uid: sampleUserId, now: now),
+        goals: [sampleWeightGoal(uid: sampleUserId, now: now)],
       ),
       analyticsRepository: const AnalyticsRepository(
         services: [ConsoleService()],

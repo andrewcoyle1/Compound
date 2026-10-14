@@ -23,3 +23,13 @@ jobs:
       # Packages under app/packages are held at 100%; the app itself is reported, not gated
       # (docs/specs/flutter/plan.md, Coverage).
       min_coverage: 0
+
+  compound_models:
+    name: compound_models
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/compound_models
+      dart_sdk: "3.13.5"
+      # The contract test reads ../../../contracts/firestore, so the whole repository is checked
+      # out (the workflow's default). Packages are held at 100%.
+      min_coverage: 100

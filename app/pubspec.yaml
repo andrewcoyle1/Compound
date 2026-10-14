@@ -31,6 +31,8 @@ dependencies:
   material_ui: ^1.1.1
   user_repository:
     path: packages/user_repository
+  workout_session_repository:
+    path: packages/workout_session_repository
 
 dev_dependencies:
   bloc_lint: ^0.4.2

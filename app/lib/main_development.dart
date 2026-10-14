@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:user_repository/user_repository.dart';
+import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// The development flavor: the `compound-development` Firebase project.
 Future<void> main() async {
@@ -28,6 +29,9 @@ Future<void> main() async {
         googleClientId: options.iosClientId,
       ),
       userRepository: FirestoreUserRepository(
+        firestore: FirebaseFirestore.instance,
+      ),
+      workoutSessionRepository: FirestoreWorkoutSessionRepository(
         firestore: FirebaseFirestore.instance,
       ),
     );

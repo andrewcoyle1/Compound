@@ -20,3 +20,4 @@ export 'src/user_model.dart';
 export 'src/workout_exercise_model.dart';
 export 'src/workout_session_model.dart';
 export 'src/workout_set_model.dart';
+export 'src/workout_stats.dart';

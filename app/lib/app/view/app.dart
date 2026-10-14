@@ -5,13 +5,18 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:compound/training/training.dart';
+import 'package:compound/workout_history/workout_history.dart';
+import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:user_repository/user_repository.dart';
+import 'package:workout_session_repository/workout_session_repository.dart';
 
 class const App({
   required final AuthRepository authRepository,
   required final UserRepository userRepository,
+  required final WorkoutSessionRepository workoutSessionRepository,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -20,6 +25,7 @@ class const App({
       providers: [
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: userRepository),
+        RepositoryProvider.value(value: workoutSessionRepository),
       ],
       child: BlocProvider(
         create: (_) =>
@@ -54,11 +60,36 @@ class _AppViewState extends State<AppView> {
           for (final tab in AppTab.values)
             StatefulShellBranch(
               routes: [
-                GoRoute(
-                  path: tab.path,
-                  name: tab.name,
-                  builder: (_, _) => TabPlaceholderPage(tab: tab),
-                ),
+                switch (tab) {
+                  AppTab.training => GoRoute(
+                    path: tab.path,
+                    name: tab.name,
+                    builder: (_, _) => const TrainingPage(),
+                    routes: [
+                      GoRoute(
+                        path: WorkoutHistoryPage.path,
+                        name: WorkoutHistoryPage.name,
+                        builder: (_, _) => const WorkoutHistoryPage(),
+                        routes: [
+                          GoRoute(
+                            path: WorkoutSessionDetailPage.path,
+                            name: WorkoutSessionDetailPage.name,
+                            builder: (_, state) => WorkoutSessionDetailPage(
+                              sessionId:
+                                  state.pathParameters[WorkoutSessionDetailPage
+                                      .sessionIdParameter]!,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  _ => GoRoute(
+                    path: tab.path,
+                    name: tab.name,
+                    builder: (_, _) => TabPlaceholderPage(tab: tab),
+                  ),
+                },
               ],
             ),
         ],

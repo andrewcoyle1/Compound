@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:user_repository/user_repository.dart';
+import 'package:workout_session_repository/workout_session_repository.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository;
 
@@ -13,12 +14,17 @@ class MockAppBloc extends Mock implements AppBloc;
 
 class MockUserRepository extends Mock implements UserRepository;
 
+class MockWorkoutSessionRepository extends Mock
+    implements WorkoutSessionRepository;
+
 extension PumpApp on WidgetTester {
   Future<void> pumpApp(
     Widget widget, {
     AuthRepository? authRepository,
     UserRepository? userRepository,
+    WorkoutSessionRepository? workoutSessionRepository,
     AppBloc? appBloc,
+    double textScale = 1,
   }) {
     return pumpWidget(
       MultiRepositoryProvider(
@@ -29,6 +35,9 @@ extension PumpApp on WidgetTester {
           RepositoryProvider.value(
             value: userRepository ?? MockUserRepository(),
           ),
+          RepositoryProvider.value(
+            value: workoutSessionRepository ?? MockWorkoutSessionRepository(),
+          ),
         ],
         child: BlocProvider.value(
           value: appBloc ?? MockAppBloc(),
@@ -36,7 +45,11 @@ extension PumpApp on WidgetTester {
             theme: AppTheme.light,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: widget,
+            home: MediaQuery.withClampedTextScaling(
+              minScaleFactor: textScale,
+              maxScaleFactor: textScale,
+              child: widget,
+            ),
           ),
         ),
       ),

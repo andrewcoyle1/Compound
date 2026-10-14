@@ -9,6 +9,7 @@ on:
       - "contracts/**"
       # compound_maths' parity test reads the Swift/JS fixture.
       - "CompoundUnitTests/Fixtures/coach-parity.json"
+      - "CompoundUnitTests/Fixtures/nutrition-parity.json"
       - ".github/workflows/flutter.yml"
 
 concurrency:

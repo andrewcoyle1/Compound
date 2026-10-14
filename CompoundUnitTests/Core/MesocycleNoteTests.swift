@@ -91,18 +91,9 @@ struct MesocycleNoteTests {
 @MainActor
 struct ExerciseNoteTabsTests {
 
-    private final class Interactor: SpyGlobalInteractor, ExerciseTrackerInteractor {
-        var allExercises: [ExerciseModel] = []
-        private(set) var savedNotes: [String?] = []
-        func exerciseNote(for exerciseId: String) -> String? { "Bench at 30°" }
-        func setExerciseNote(_ note: String?, for exerciseId: String) async throws { savedNotes.append(note) }
-    }
+    private typealias Interactor = ExerciseTrackerInteractorDouble
 
-    private final class Router: ExerciseTrackerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        private(set) var delegates: [WorkoutNotesDelegate] = []
-        func showWorkoutNotesView(delegate: WorkoutNotesDelegate) { delegates.append(delegate) }
-    }
+    private typealias Router = ExerciseTrackerRouterDouble
 
     private let exercise = WorkoutExerciseModel(
         id: "e1", authorId: "author-1", templateId: "bench", name: "Bench Press", trackingMode: .weightReps, index: 1,
@@ -112,6 +103,7 @@ struct ExerciseNoteTabsTests {
     /// Each tab opens on the note already written, and Save writes only the ones that changed.
     @Test func saveWritesOnlyTheNotesThatChanged() async throws {
         let interactor = Interactor(), router = Router()
+        interactor.notes["bench"] = "Bench at 30°"
         let presenter = ExerciseTrackerPresenter(interactor: interactor, router: router)
         var session: [String] = [], mesocycle: [String] = []
 

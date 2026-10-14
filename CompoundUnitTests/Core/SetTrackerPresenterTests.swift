@@ -21,88 +21,9 @@ struct SetTrackerPresenterTests {
 
     // MARK: - Doubles
 
-    private final class Interactor: SpyGlobalInteractor, SetTrackerInteractor {
-        var userId: String? = "user-1"
-        var currentUser: UserModel? = UserModel(userId: "user-1")
-        var systemExercises: [ExerciseModel] = []
-        var userExercises: [ExerciseModel] = []
-        var allExercises: [ExerciseModel] = []
-        var favouriteGymProfile: GymProfileModel?
-        var workoutGymProfile: GymProfileModel?
-        var workoutSettings: WorkoutSettings = WorkoutSettings(authorId: "user-1")
+    private typealias Interactor = ExerciseTrackerInteractorDouble
 
-        var preferences: [String: ExerciseUnitPreference] = [:]
-        private(set) var savedWeightUnits: [(String, ExerciseWeightUnit)] = []
-        private(set) var savedDistanceUnits: [(String, ExerciseDistanceUnit)] = []
-
-        func getPreference(templateId: String) -> ExerciseUnitPreference {
-            preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
-        }
-
-        /// Stores the unit as the manager does, as well as recording the call.
-        func setWeightUnit(_ unit: ExerciseWeightUnit, for templateId: String) {
-            savedWeightUnits.append((templateId, unit))
-            preferences[templateId, default: ExerciseUnitPreference(exerciseModelId: templateId)].weightUnit = unit
-        }
-
-        func setDistanceUnit(_ unit: ExerciseDistanceUnit, for templateId: String) {
-            savedDistanceUnits.append((templateId, unit))
-            preferences[templateId, default: ExerciseUnitPreference(exerciseModelId: templateId)].distanceUnit = unit
-        }
-    }
-
-    /// The alerts this screen raises — delete, superset, unit change — all go through
-    /// `showAlert(title:subtitle:buttons:)` and `showSimpleAlert`, which are `GlobalRouter`
-    /// extensions rather than requirements of `SetTrackerRouter`. They dispatch statically and
-    /// never reach this double, so the tests assert the state that is reachable instead.
-    private final class Router: SetTrackerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        private(set) var shown: [String] = []
-        var swapSelection: ExerciseModel?
-
-        func showWorkoutExerciseEquipmentSheetView(delegate: WorkoutExerciseEquipmentSheetDelegate) {
-            shown.append("equipment")
-        }
-
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) {
-            shown.append("warmupInfo")
-        }
-
-        func showRestModal(
-            primaryButtonAction: @escaping () -> Void,
-            secondaryButtonAction: @escaping () -> Void,
-            minutesSelection: Binding<Int>,
-            secondsSelection: Binding<Int>
-        ) {
-            shown.append("rest")
-        }
-
-        func showWarmupSetsView(delegate: WarmupSetsDelegate) {
-            shown.append("warmupSets")
-        }
-
-        func showExerciseSettingsView(delegate: ExerciseSettingsDelegate) {
-            shown.append("exerciseSettings")
-        }
-
-        func showSetTargetView(delegate: SetTargetDelegate) {
-            shown.append("setTarget")
-        }
-
-        /// Hands back `swapSelection` when one is set, standing in for the user picking.
-        func showSwapExercisePickerView(alternativeIds: [String], onSelect: @escaping (ExerciseModel) -> Void) {
-            shown.append("swapPicker")
-            if let swapSelection {
-                onSelect(swapSelection)
-            }
-        }
-
-        /// A requirement of `GlobalRouter`, so unlike the alerts it does reach this double.
-        private(set) var confirmations: [String] = []
-        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
-            confirmations.append(title)
-        }
-    }
+    private typealias Router = ExerciseTrackerRouterDouble
 
     /// Holds the exercise being edited, so the presenter's `Binding`-taking methods can be driven
     /// without a view and the result read back.
@@ -125,7 +46,7 @@ struct SetTrackerPresenterTests {
     }
 
     private struct Screen {
-        let presenter: SetTrackerPresenter
+        let presenter: ExerciseTrackerPresenter
         let interactor: Interactor
         let router: Router
     }
@@ -134,7 +55,7 @@ struct SetTrackerPresenterTests {
         let interactor = Interactor()
         let router = Router()
         return Screen(
-            presenter: SetTrackerPresenter(interactor: interactor, router: router),
+            presenter: ExerciseTrackerPresenter(interactor: interactor, router: router),
             interactor: interactor,
             router: router
         )
@@ -218,18 +139,6 @@ struct SetTrackerPresenterTests {
         #expect(box.value.sets.last?.isWarmup == false)
     }
 
-    @Test("Test Deleting A Set Removes Only That One")
-    func testDeletingASetRemovesOnlyThatOne() {
-        let screen = makeScreen()
-        let box = MutableExercise(exercise(sets: [
-            set(id: "s1", index: 1), set(id: "s2", index: 2), set(id: "s3", index: 3)
-        ]))
-
-        screen.presenter.deleteSet(setId: "s2", exercise: box.binding)
-
-        #expect(box.value.sets.map(\.id) == ["s1", "s3"])
-    }
-
     /// The one that used to break. Deleting a set does not renumber the rest, so the count stops
     /// reaching the highest index — and the new set was handed an index another set already held.
     /// Duplicate indices are what last session's figures are matched on, and they crashed the
@@ -241,7 +150,7 @@ struct SetTrackerPresenterTests {
             set(id: "s1", index: 1), set(id: "s2", index: 2), set(id: "s3", index: 3)
         ]))
 
-        screen.presenter.deleteSet(setId: "s2", exercise: box.binding)
+        box.binding.wrappedValue.sets.removeAll { $0.id == "s2" }
         screen.presenter.addSet(exercise: box.binding)
 
         let indices = box.value.sets.map(\.index)
@@ -595,16 +504,6 @@ struct SetTrackerPresenterTests {
         screen.presenter.onExerciseSettingsPressed(exercise: exercise(templateId: "missing", sets: []))
 
         #expect(screen.router.shown.isEmpty)
-    }
-
-    @Test("Test The Warmup Sets Screen Opens")
-    func testTheWarmupSetsScreenOpens() {
-        let screen = makeScreen()
-        let box = MutableExercise(exercise(sets: []))
-
-        screen.presenter.onWarmupSetsPressed(box.binding)
-
-        #expect(screen.router.shown == ["warmupSets"])
     }
 
     @Test("Test The Equipment Sheet Opens")

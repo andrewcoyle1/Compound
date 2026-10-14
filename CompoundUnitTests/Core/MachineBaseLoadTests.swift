@@ -63,12 +63,11 @@ struct MachineBaseLoadTests {
         let box = GymEquipmentBox(set("s", weightKg: nil))
         box.value.machineBaseKg = 7
         let keyboard = SetKeyboardPresenter()
-        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(lastSetWeightKg: 17))
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
         keyboard.type("1")
         keyboard.type("0")
         #expect(box.value.weightKg == 17)
         #expect(keyboard.text == "10")
-        #expect(keyboard.weightChips.first?.title == "Last set 10")
         keyboard.close()
         #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "10")
     }

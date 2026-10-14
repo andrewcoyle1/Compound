@@ -1,0 +1,118 @@
+//
+//  WorkoutTrackerPresenter+Focus.swift
+//  Compound
+//
+//  The exercise on the card: choosing it, and moving it on its own after a set is logged and
+//  when a rest ends. The rules are `ActiveWorkout+Focus`; `setFocus` is the one place they take
+//  effect. Also the strip's items, as the strip is how the user moves it.
+//
+
+import SwiftUI
+
+extension WorkoutTrackerPresenter {
+
+    /// The exercise on the card: the one opened, else the one the workout is up to.
+    var currentExercise: WorkoutExerciseModel? {
+        let exercises = workoutSession.exercises
+        if let id = cardExerciseId, let open = exercises.first(where: { $0.id == id }) { return open }
+        return exercises.indices.contains(currentExerciseIndex) ? exercises[currentExerciseIndex] : exercises.last
+    }
+
+    func onExerciseSelected(_ exerciseId: String) {
+        guard let index = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
+        cardExerciseId = exerciseId
+        currentExerciseIndex = index
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.exerciseSelected)
+        refreshLiveActivity()
+    }
+
+    enum FocusReason: String {
+        /// On to the partner next in a superset's round.
+        case supersetRound = "superset_round"
+        /// A finished exercise, with no rest to wait out, hands on to the next.
+        case exerciseFinished = "exercise_finished"
+        /// The rest after a finished exercise ran out or was skipped.
+        case restEnded = "rest_ended"
+        /// A tap on the exercise strip.
+        case strip
+    }
+
+    /// Opens `exerciseId` on the card and tells the Live Activity. Nothing happens when the card
+    /// is already there.
+    func setFocus(_ exerciseId: String, reason: FocusReason) {
+        guard let index = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }),
+              cardExerciseId != exerciseId || currentExerciseIndex != index else { return }
+        cardExerciseId = exerciseId
+        currentExerciseIndex = index
+        persistFocus(exerciseId)
+        interactor.trackEvent(event: Event.focusMoved(reason: reason))
+        refreshLiveActivity()
+    }
+
+    /// Records the exercise the user is on in the screen state, where the Live Activity's handler
+    /// reads it and a rebuilt tracker picks it up.
+    func persistFocus(_ exerciseId: String?) {
+        guard let exerciseId else { return }
+        var state = interactor.loadScreenState(sessionId: workoutSession.id)
+        guard state.focusExerciseId != exerciseId else { return }
+        state.focusExerciseId = exerciseId
+        interactor.saveScreenState(state)
+    }
+
+    /// A tracker rebuilt after a minimise or a relaunch opens on the exercise the last one, or the
+    /// Live Activity, was on, while it still has a set to log.
+    func restoreFocus(from state: ActiveWorkoutScreenState) {
+        guard let id = state.focusExerciseId,
+              let index = workoutSession.exercises.firstIndex(where: { $0.id == id }),
+              ActiveWorkout.currentSet(in: workoutSession.exercises[index]) != nil else { return }
+        cardExerciseId = id
+        currentExerciseIndex = index
+    }
+
+    /// Where the card goes once `setId` is logged, here or from the Live Activity: to a superset
+    /// partner, on from a finished exercise when no rest follows, or nowhere while a rest runs
+    /// after one (`onRestEnded` moves it then).
+    func moveFocus(afterLogging setId: String) {
+        let exercises = workoutSession.exercises
+        guard let exercise = exercises.first(where: { $0.sets.contains { $0.id == setId } }),
+              let set = exercise.sets.first(where: { $0.id == setId }) else { return }
+        let settings = interactor.workoutSettings
+        let restFollows = settings.useRestTimers && restAfterLogging(set, in: exercise) != nil
+        guard let target = ActiveWorkout.focus(afterLogging: setId, in: exercises, settings: settings, restFollows: restFollows) else { return }
+        let sameBlock = ActiveWorkout.blocks(exercises).contains { $0.contains(exercise.id) && $0.contains(target) }
+        setFocus(target, reason: sameBlock ? .supersetRound : .exerciseFinished)
+    }
+
+    /// A rest ran out or was skipped. A card left on a finished exercise for the rest moves on.
+    func onRestEnded() {
+        guard let target = ActiveWorkout.focusWhenRestEnds(
+            current: currentExercise?.id,
+            exercises: workoutSession.exercises,
+            settings: interactor.workoutSettings
+        ) else { return }
+        setFocus(target, reason: .restEnded)
+    }
+
+    // MARK: - The strip
+
+    var stripItems: [ActiveWorkout.StripItem] {
+        ActiveWorkout.stripProgress(for: workoutSession.exercises, currentExerciseId: currentExercise?.id)
+    }
+
+    /// The card's block, by its first exercise. Also keys the list, so a new block brings a new
+    /// list in from the side of the strip it lies on (`CardSwapEdge`).
+    var currentBlockId: String? {
+        guard let current = currentExercise?.id else { return nil }
+        return ActiveWorkout.blocks(workoutSession.exercises).first { $0.contains(current) }?.first
+    }
+
+    var blockOrder: [[String]] { ActiveWorkout.blocks(workoutSession.exercises) }
+
+    /// Opens the tapped block on the card; the block already there stays as it is.
+    func onStripItemSelected(_ itemId: String) {
+        guard itemId != currentBlockId else { return }
+        interactor.playHaptic(option: .selection)
+        setFocus(itemId, reason: .strip)
+    }
+}

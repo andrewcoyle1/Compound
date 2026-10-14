@@ -66,8 +66,8 @@ Same as `docs/specs/workout-tracker/plan.md` § Working rules, in short:
   suites, ending with the attribution lines.
 
 Path prefixes: `M/` = `Compound/Managers/Training/`, `AT/` =
-`Compound/Core/Training/Subviews/AddTraining/`, `WT/` =
-`Compound/Core/Training/Subviews/WorkoutTracker/`, `UT/` = `CompoundUnitTests/`.
+`Compound/Core/Training/Workouts/`, `WT/` =
+`Compound/Core/Training/Session/WorkoutTracker/`, `UT/` = `CompoundUnitTests/`.
 
 ---
 
@@ -216,10 +216,10 @@ first; plan fields kept), `WorkoutTrackerSupersetTests` (template group → one 
 
 ### WP-P5 · The mesocycle start passes the week · S
 
-**Owns:** `Compound/Core/Training/Subviews/ActiveMesocycle/*`, `WorkoutTemplateDetail/*`
+**Owns:** `Compound/Core/Training/Programs/ActiveMesocycle/*`, `WorkoutTemplateDetail/*`
 (delegate, interactor, presenter, view: a "Week N" plan summary), `TrainingInteractor.swift`,
 `Compound/Managers/AppIntents/AppIntentsInteractor.swift`, `Compound/Root/RIBs/Core/CoreInteractor.swift`
-(`startWorkout(for:in:microcycleIndex:)`), `Compound/Core/Training/Components/TodaysWorkoutCard/MesocycleSchedule.swift`
+(`startWorkout(for:in:microcycleIndex:)`), `Compound/Managers/Training/Macrocycle/MesocycleSchedule.swift`
 (`todayItem` carries `cycleIndex`), `MesocycleLibrary/PrebuiltMesocycleDetail` (shows variations),
 tests.
 
@@ -236,7 +236,7 @@ the interactor. **Depends:** P1.
 
 **Owns:** new `M/ProgramImport/` (`ProgramSheet.swift` the parsed intermediate, `ProgramSheetParser.swift`,
 `XLSXReader.swift`, `CSVReader.swift`, `ProgramImporter.swift` → `Macrocycle` + `[Mesocycle]`,
-`ExerciseNameMatcher.swift`), new `Compound/Core/Training/Subviews/ImportProgram/` module
+`ExerciseNameMatcher.swift`), new `Compound/Core/Training/Programs/ImportProgram/` module
 (file picker → parse → review unmatched names → save), the Training library entry point
 ("Import Program…" in the add menu), `docs/specs/programs/import-format.md`, fixtures under
 `UT/Fixtures/programs/` (synthetic, made-up exercise names: one `.xlsx` written with openpyxl

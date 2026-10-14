@@ -5,7 +5,7 @@ Read only, nothing run. The millisecond figures are rough estimates for an A15 (
 8 exercises x 5 sets. Measure them before acting on them. Each finding says whether this branch
 introduced it ("new") or it was already in `HEAD` ("pre-existing").
 
-Path prefix used below: `WT/` = `Compound/Core/Training/Subviews/WorkoutTracker/`.
+Path prefix used below: `WT/` = `Compound/Core/Training/Session/WorkoutTracker/`.
 
 ## How a keystroke flows
 

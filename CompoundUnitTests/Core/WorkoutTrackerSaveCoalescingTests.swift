@@ -82,7 +82,7 @@ struct WorkoutTrackerSaveCoalescingTests {
         let screen = try WorkoutTrackerTypingScreen(weights: [100, 100])
 
         screen.type(1, 10, 105, into: 1)
-        screen.presenter.minimizeSession()
+        screen.presenter.onMinimizePressed()
 
         #expect(screen.savedWeights == [105, 105])
         #expect(screen.router.shown == ["dismiss"])

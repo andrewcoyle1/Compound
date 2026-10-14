@@ -41,7 +41,7 @@ Key files:
 | Handler impl | `DialedIn/Managers/LiveActivities/LiveActivityIntentHandler+App.swift` |
 | Intents | `DialedIn/Managers/Training/WorkoutRestTimerIntents.swift` |
 | Rest timer | `DialedIn/Managers/HKWorkout/HKWorkoutManager.swift` |
-| Tracker | `DialedIn/Core/Training/Subviews/WorkoutTracker/WorkoutTrackerPresenter*.swift`, `WorkoutTrackerInteractor.swift` |
+| Tracker | `DialedIn/Core/Training/Session/WorkoutTracker/WorkoutTrackerPresenter*.swift`, `WorkoutTrackerInteractor.swift` |
 | Registration | `DialedIn/Root/AppDelegate.swift` |
 | Tests | `DialedInUnitTests/Managers/LiveActivity*Tests.swift`, `AdjustLastSetRepsIntentTests.swift`, `HKWorkoutManagerRestTests.swift`, `DialedInUnitTests/Services/Training/LiveActivityManagerTests.swift`, `DialedInUnitTests/Core/WorkoutTrackerPresenterTests.swift`, doubles in `DialedInUnitTests/Support/` |
 | Spec | `docs/specs/live-activity.md` |

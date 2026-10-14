@@ -100,7 +100,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         _ = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
-        XCTAssertTrue(app.buttons["Warmup set"].firstMatch.exists, "No warm-up row to audit")
+        XCTAssertTrue(app.buttons["Warm-up set"].firstMatch.exists, "No warm-up row to audit")
         try audit(app, "opening, warm-up row")
 
         logUntilResting(app)
@@ -123,12 +123,13 @@ final class WorkoutTrackerUITests: XCTestCase {
     }
 
     /// A rest run out: the rest line reads Ready. The set is given a three-second rest from its
-    /// menu so the test need not wait out the default.
+    /// leading swipe so the test need not wait out the default.
     func testTheTrackerPassesTheAccessibilityAuditWithARestOver() throws {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
-        app.waitFor(app.buttons["Warmup set"].firstMatch).tap()
+        // The row, not its set circle: the circle is a menu and takes the swipe as a press.
+        app.waitFor(app.cells.containing(NSPredicate(format: "label == %@", "Warm-up set")).firstMatch).swipeRight()
         app.waitFor(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Rest Timer'")).firstMatch).tap()
         let wheels = app.pickerWheels
         app.waitFor(wheels.element(boundBy: 1))
@@ -161,7 +162,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         try audit(app, "AX5")
 
         // Resting, scrolled a third of the screen at a time through the rest line, the folded
-        // warm-up, the current row, Add Set and Up Next.
+        // warm-up, the next set's row, Add Set and Add Exercise.
         logUntilResting(app)
         app.waitFor(app.button("WorkoutTracker.skipRestButton"))
         // The log scrolls the next set into view; first back up to the rest line above it.
@@ -191,9 +192,9 @@ final class WorkoutTrackerUITests: XCTestCase {
         let bottomBarTop = ["WorkoutTracker.logButton", "WorkoutTracker.skipRestButton"]
             .map { app.button($0) }.filter(\.exists).map(\.frame.minY).min() ?? .infinity
         let bottomBar = bottomBarTop.isFinite ? CGRect(x: 0, y: bottomBarTop, width: 10_000, height: 10_000) : .null
-        // From the top of the screen to the foot of the progress header: the bars the list
-        // scrolls under at the top.
-        let headerBottom = app.staticTexts.matching(NSPredicate(format: "label ENDSWITH 'working sets'")).firstMatch.frame.maxY
+        // From the top of the screen to the foot of the exercise strip: the bars the list scrolls
+        // under at the top.
+        let headerBottom = app.scrollViews["WorkoutTracker.exerciseStrip"].frame.maxY
         let topBars = CGRect(x: 0, y: 0, width: 10_000, height: headerBottom)
         let covered = keypadFrame.union(bottomBar).union(topBars)
         // Every issue reported, not only the first.
@@ -230,7 +231,7 @@ final class WorkoutTrackerUITests: XCTestCase {
             // and rows scrolled under the top bars, the button's glass bar or the keypad's
             // window, measured against those rather than their own background.
             return "text on or under glass, or under the keypad"
-        case .dynamicType where ["Add Set", "Up Next", "Add Exercise"].contains(label),
+        case .dynamicType where ["Add Set", "Add Exercise"].contains(label),
              .textClipped where ["Add Set", "Add 15 seconds", "Add Exercise"].contains(label) || label.hasSuffix(" warm-up") || label.hasSuffix(" warm-ups"):
             // Reported at the default size as "may be clipped" or "partially unsupported", and
             // drawn in full, unclipped, by the AX5 passes ("15-light-ax5-resting").
@@ -286,23 +287,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         XCTAssertEqual(openSets.count, openBefore - 1)
     }
 
-    /// Up Next's Reorder shows the drag handles, and Done puts them away. Up Next is on screen
-    /// only with the exercise strip off; on, the strip is the map.
-    func testUpNextCanBeReordered() {
-        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER", arguments: ["UI_TEST_STRIP_OFF"])
-        app.waitFor(app.button("WorkoutTracker.logButton"))
-        acknowledgeNoteIfShown(app)
-        let reorder = app.button("WorkoutTracker.reorderButton")
-        for _ in 0..<4 where !reorder.isHittable { app.swipeUp() }
-        reorder.tap()
-        let handle = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Reorder '")).firstMatch
-        XCTAssertTrue(handle.waitForExistence(timeout: UITestApp.timeout))
-        attach(app, "8-reordering")
-        reorder.tap()
-        XCTAssertFalse(handle.exists)
-    }
-
-    /// T6: a superset is one card. The log button logs A1, then B1 with no rest between them, and
+    /// A superset is one card. The log button logs A1, then B1 with no rest between them, and
     /// the card holding both stays where it is.
     func testASupersetRoundLogsBothPartnersOnOneCard() {
         let app = XCUIApplication()
@@ -313,8 +298,8 @@ final class WorkoutTrackerUITests: XCTestCase {
         acknowledgeNoteIfShown(app)
 
         // Both members' first sets on the one card, badged by member.
-        let setA1 = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Set A1'")).firstMatch
-        let setB1 = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Set B1'")).firstMatch
+        let setA1 = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'A1, set 1'")).firstMatch
+        let setB1 = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'A2, set 1'")).firstMatch
         XCTAssertTrue(setA1.waitForExistence(timeout: UITestApp.timeout))
         XCTAssertTrue(setB1.exists)
         let logged = app.buttons.matching(NSPredicate(format: "label ENDSWITH ' completed'"))
@@ -336,16 +321,53 @@ final class WorkoutTrackerUITests: XCTestCase {
         attach(app, "12-superset-round-logged")
     }
 
-    /// WP-Q: a drop set added from the set-number menu sits under its set, and once its reps are
-    /// in, the log button logs the set and then the drop, with no rest between them.
-    func testADropSetAddedFromTheMenuIsLogged() {
+    /// The superset's one menu reaches each member's own actions, and Add Round gives every
+    /// member a set.
+    func testTheSupersetMenuReachesEachMembersActions() {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING", "SIGNED_IN", "STARTSCREEN_WORKOUT_TRACKER", "UI_TEST_SUPERSET"]
+        app.launch()
+        app.waitFor(app.button("WorkoutTracker.logButton"))
+        acknowledgeNoteIfShown(app)
+        func sets(_ member: String) -> XCUIElementQuery {
+            app.buttons.matching(NSPredicate(format: "label MATCHES %@", "\(member), set [0-9]+"))
+        }
+        func openMemberMenu(_ member: String) {
+            app.waitFor(app.buttons["Superset options"]).tap()
+            app.waitFor(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "\(member) ")).firstMatch).tap()
+        }
+        app.waitFor(sets("A1").firstMatch)
+        let first = sets("A1").count
+        let second = sets("A2").count
+
+        // A member's own Add Set, from its submenu.
+        openMemberMenu("A1")
+        app.waitFor(app.buttons["Add Set"]).tap()
+        XCTAssertEqual(sets("A1").count, first + 1)
+        XCTAssertEqual(sets("A2").count, second)
+
+        // Add Round: a set for each.
+        app.waitFor(app.buttons["Add Round"]).tap()
+        XCTAssertEqual(sets("A1").count, first + 2)
+        XCTAssertEqual(sets("A2").count, second + 1)
+        attach(app, "14-superset-round-added")
+
+        // A routed sheet opens from inside the submenu.
+        openMemberMenu("A2")
+        app.waitFor(app.buttons["Swap…"]).tap()
+        XCTAssertTrue(app.navigationBars["Swap Exercise"].waitForExistence(timeout: UITestApp.timeout))
+    }
+
+    /// The set number opens the set-type menu. Drop Set adds the set's first drop under it, and
+    /// once its reps are in, the log button logs the set and then the drop, with no rest between.
+    func testADropSetChosenFromTheMenuIsLogged() {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
         reachFirstWorkingSet(app)
 
         app.waitFor(app.buttons.matching(NSPredicate(format: "label == 'Set 1'")).firstMatch).tap()
-        app.waitFor(app.buttons["Add drop set to Set 1"]).tap()
+        app.waitFor(app.buttons["Drop Set"].firstMatch).tap()
         let dropReps = app.waitFor(app.textFields["Set 1, drop set 1, Reps"])
         attach(app, "13-drop-set-added")
 

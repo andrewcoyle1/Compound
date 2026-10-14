@@ -97,7 +97,7 @@ struct WorkoutTrackerResumeTests {
     func testReceiptSurvivesARebuild() throws {
         let screen = try makeScreen()
         screen.presenter.startObservingActiveSession()
-        screen.presenter.minimizeSession()
+        screen.presenter.onMinimizePressed()
 
         try logElsewhere(3, at: Date().addingTimeInterval(1), on: screen)
         let reopened = try WorkoutTrackerPresenter(interactor: screen.interactor, router: screen.router, saveRetryBackoff: .testImmediate)
@@ -181,10 +181,10 @@ struct WorkoutTrackerResumeTests {
     @Test("Test Minimising Lets The Phone Sleep Again")
     func testMinimiseClearsIdleTimer() throws {
         let screen = try makeScreen()
-        UIApplication.shared.isIdleTimerDisabled = true
+        screen.interactor.setScreenKeptAwake(true)
 
-        screen.presenter.minimizeSession()
+        screen.presenter.onMinimizePressed()
 
-        #expect(UIApplication.shared.isIdleTimerDisabled == false)
+        #expect(!screen.interactor.isScreenKeptAwake)
     }
 }

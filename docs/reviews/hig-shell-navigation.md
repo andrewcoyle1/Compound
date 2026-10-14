@@ -66,7 +66,7 @@ Paths are relative to `DialedIn/`. Findings are most serious first.
 Severity: hurts usability
 Where: `Root/RIBs/GlobalRouter.swift:85-94`; 12 call sites, including
 `Core/Onboarding/2 - AuthView/AuthPresenter.swift:43`, `:85`, `:128`,
-`Core/Training/Subviews/WorkoutSessionDetailView/WorkoutSessionDetailPresenter.swift:211`,
+`Core/Training/Session/WorkoutSessionDetail/WorkoutSessionDetailPresenter.swift:211`,
 `Core/Notifications/NotificationsPresenter.swift:216`
 Guideline: "Keep progress indicators moving so people know something is continuing to happen…
 If a process stalls for some reason, provide feedback that helps people understand the problem"
@@ -108,7 +108,7 @@ Decision needed: no
 Severity: hurts usability
 Where: `Core/Notifications/NotificationsPresenter.swift:216` (every notification tap),
 `Core/Dashboard/WorkoutSessionRow/WorkoutSessionRowPresenter.swift:179`,
-`Core/Training/Subviews/WorkoutSessionDetailView/WorkoutSessionDetailPresenter.swift:471`
+`Core/Training/Session/WorkoutSessionDetail/WorkoutSessionDetailPresenter.swift:471`
 Guideline: "Show something as soon as possible… consider showing placeholder text, graphics, or
 animations as content loads" and "Let people do other things in your app or game while they wait
 for content to load." — https://developer.apple.com/design/human-interface-guidelines/loading
@@ -144,7 +144,7 @@ Decision needed: yes — system prompt, App Store link, or both
 ### 4. `CustomModalView` is a hand-built alert that misses what the system alert gives for free
 Severity: hurts usability
 Where: `Components/Modals/CustomModalView.swift:22-66`; callers `Root/RIBs/Core/CoreRouter.swift:16-32`,
-`Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetTrackerRowRouter.swift:21-55`,
+`Core/Training/Session/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetTrackerRowRouter.swift:21-55`,
 `Core/Onboarding/5 - HealthDisclaimer/HealthDisclaimerRouter.swift:20-40`, and the notifications
 modal already reported in the onboarding review
 Guideline: "Always give people an obvious way to dismiss a modal view. In general, it works well
@@ -179,9 +179,9 @@ Decision needed: no
 Severity: hurts usability
 Where: `Core/Nutrition/Foods/CreateFood/CreateFoodPresenter.swift:71` (sheet, `CreateFoodView.swift:211`),
 `Core/Challenges/CreateChallenge/CreateChallengePresenter.swift:102` (sheet),
-`Core/Training/Subviews/AddTraining/CreateExercise/CreateExercisePresenter.swift:92` (cover),
+`Core/Training/Exercises/CreateExercise/CreateExercisePresenter.swift:92` (cover),
 `Core/Nutrition/Recipes/CreateRecipe/CreateRecipePresenter.swift:49` (cover),
-`Core/Training/Subviews/WorkoutSessionDetailView/WorkoutSessionDetailPresenter.swift:126-141`
+`Core/Training/Session/WorkoutSessionDetail/WorkoutSessionDetailPresenter.swift:126-141`
 (sheet, `WorkoutSessionDetailView.swift:241`)
 Guideline: "When necessary, help people avoid data loss by getting confirmation before closing a
 modal view. Regardless of whether people use a dismiss gesture or a button" —
@@ -231,7 +231,7 @@ Decision needed: yes — Analytics details as pushes is a visible navigation cha
 
 ### 7. The workout tracker has no visible way out
 Severity: hurts usability
-Where: `Core/Training/Subviews/WorkoutTracker/WorkoutTrackerView.swift:196-236`, presented at `:260`
+Where: `Core/Training/Session/WorkoutTracker/WorkoutTrackerView.swift:196-236`, presented at `:260`
 Guideline: "Always give people an obvious way to dismiss a modal view… in iOS, iPadOS, and
 watchOS apps, people typically expect to find a button in the top toolbar or swipe down" —
 https://developer.apple.com/design/human-interface-guidelines/modality
@@ -254,12 +254,12 @@ Decision needed: no
 ### 8. Alerts are used as pickers and as forms
 Severity: hurts usability
 Where: pickers — `Core/Training/TrainingPresenter.swift:175` (one button per session),
-`Core/Training/Subviews/ExerciseSettings/ExerciseSettingsPresenter.swift:81`,
+`Core/Training/Session/ExerciseTracker/ExerciseSettings/ExerciseSettingsPresenter.swift:81`,
 `Core/Profile/Subviews/NutritionSettings/FoodLogSettings/FoodLogSettingsPresenter.swift:134`,
-`Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerPresenter.swift:243`, `:267`,
+`Core/Training/Session/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerPresenter.swift:243`, `:267`,
 `Root/RIBs/GlobalRouter.swift:60`,
-`Core/Training/Subviews/WorkoutTemplateDetail/WorkoutTemplateDetailPresenter.swift:98`,
-`Core/Training/Subviews/ActiveTrainingProgram/ActiveTrainingProgramPresenter.swift:214`,
+`Core/Training/Workouts/WorkoutTemplateDetail/WorkoutTemplateDetailPresenter.swift:98`,
+`Core/Training/Session/ActiveTrainingProgram/ActiveTrainingProgramPresenter.swift:214`,
 `Core/Search/SearchPresenter.swift:306`, `Core/Dashboard/DashboardPresenter.swift:368`.
 Forms — `Root/RIBs/ReportFlow.swift:60`, `:117`, `Core/Search/SearchView.swift:63`.
 `showConfirmationDialog` exists and has one caller; `showAlert` with buttons has 47.
@@ -346,7 +346,7 @@ Decision needed: no
 ### 12. Two screens replace the system back button with a drawn chevron
 Severity: polish
 Where: `Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/GymProfileView.swift:94`, `:323-330`;
-`Core/Training/Subviews/AddTraining/CreateProgram/ProgramDesign/ProgramDesignView.swift:55`, `:203-211`
+`Core/Training/Workouts/CreateProgram/ProgramDesign/ProgramDesignView.swift:55`, `:203-211`
 Guideline: "Use the standard Back and Close buttons… If you create a custom version of either,
 make sure it still looks the same, behaves as people expect" —
 https://developer.apple.com/design/human-interface-guidelines/toolbars. "it's especially
@@ -364,7 +364,7 @@ Decision needed: no
 ### 13. The tab bar accessory ignores its inline placement and has two lines in a fixed height
 Severity: polish
 Where: `Core/TabBar/TabBarView.swift:75-100`,
-`Core/Training/Components/TrainingAccessory/TrainingAccessoryView.swift:21-41`, `:76`,
+`Core/Training/Session/TrainingAccessory/TrainingAccessoryView.swift:21-41`, `:76`,
 `Core/Nutrition/Components/MealAccessory/MealAccessoryView.swift:20-41`, `:58-62`, `:80`
 Guideline: "you can choose to minimize the tab bar and move the accessory inline with it when a
 person scrolls down" — https://developer.apple.com/design/human-interface-guidelines/tab-bars

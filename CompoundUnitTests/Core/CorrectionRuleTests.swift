@@ -58,12 +58,12 @@ struct CorrectionRuleTests {
 
     // MARK: - Reps in reserve
 
-    @Test(arguments: [(0, 10.0), (1, 9), (2, 8), (3, 7), (4, 6), (7, 6), (-1, 10)])
+    @Test(arguments: [(0, 10.0), (1, 9), (2, 8), (3, 7), (4, 6), (5, 5), (6, 4), (7, 4), (-1, 10)])
     func chipsMapToRPE(rir: Int, rpe: Double) {
         #expect(ActiveWorkout.rirChip(rir) == rpe)
     }
 
-    @Test(arguments: [(10.0 as Double?, 0 as Int?), (8, 2), (6, 4), (5, 4), (8.5, nil), (nil, nil)])
+    @Test(arguments: [(10.0 as Double?, 0 as Int?), (8, 2), (6, 4), (5, 5), (4, 6), (3, 6), (8.5, nil), (nil, nil)])
     func rpeShowsAsAChip(rpe: Double?, chip: Int?) {
         #expect(ActiveWorkout.rirChip(forRPE: rpe) == chip)
     }

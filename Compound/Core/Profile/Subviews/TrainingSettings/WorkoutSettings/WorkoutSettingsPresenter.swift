@@ -107,11 +107,6 @@ class WorkoutSettingsPresenter {
         set { settings.showOnLockScreen = newValue; save() }
     }
 
-    var showExerciseStrip: Bool {
-        get { settings.showsExerciseStrip }
-        set { settings.showExerciseStrip = newValue; save() }
-    }
-
     /// Workout Settings › Set Plan: templates plan each set's kind, drops, mini-sets and AMRAP
     /// target, and sessions are made from them.
     var setPlanning: Bool {

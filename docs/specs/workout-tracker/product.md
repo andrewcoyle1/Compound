@@ -167,6 +167,20 @@ and the **at-a-glance spatial map**. Neither handles supersets as a first-class 
 Each has: the capability it builds on, the user problem, the interaction, and the risk.
 
 ### 1. Superset cards that alternate
+
+> **Built (14 Oct 2026).** A superset is one card (`SupersetBlockView`). Its header reads
+> "Superset B", lettered in workout order as the strip and the templates letter it
+> (`ActiveWorkout.supersetLetters`), and names the members B1, B2. One menu holds Do Later and
+> Remove Superset once, then a submenu per member. Rows interleave in rounds (B1·1, B2·1, B1·2…,
+> `ActiveWorkout.blockRows`), with a separator between rounds and one Add Round at the foot.
+> Members whose columns differ each get their own row of headings. The log button walks the
+> rounds (`nextSet(inBlock:)`); `RestDurationRules` rests between partners only with
+> `supersetTransitionRestSeconds` set (default none), the base rest after the round, and the
+> between-exercises rest after the block. The Live Activity follows the rounds through the same
+> `ActiveWorkout.log` focus rule (`LiveActivityIntentHandlerTests`, "A1 From The Lock Screen
+> Moves Focus To B"), and deleting a partner clears the other's `supersetGroupId`
+> (`WorkoutTrackerPresenter.deleteExercise`).
+
 - **Capability:** `supersetGroupId`, `movingGroup` (already moves pairs as one),
   `RestAnchor.top` after a partner, `RestDurationRules`.
 - **Problem:** in a superset the lifter does A1, B1, rest, A2. Today the CTA keeps offering A's next
@@ -204,7 +218,7 @@ Each has: the capability it builds on, the user problem, the interaction, and th
   only as good as its effort data.
 - **Interaction:** the reps cell reads "8 @2" (a quiet suffix, labelled "2 in reserve" for
   VoiceOver) when the program or mesocycle week sets an effort target. After Log, the CTA briefly
-  becomes a **one-row RIR picker** (0, 1, 2, 3, 4+) preselected to the target, which commits on
+  becomes a **one-row RIR picker** (0–5, 6+) preselected to the target, which commits on
   the next tap or after 3 s. It's a setting, off for users who don't track effort.
 - **Risk:** a tap per set is real friction, which is why Juggernaut-style per-set questionnaires
   feel slow. Mitigate with the default plus auto-commit, and measure the opt-out rate. Check that

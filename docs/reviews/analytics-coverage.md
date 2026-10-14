@@ -231,22 +231,22 @@ before adding logging to them.
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`EditDayOrderPresenter`](../../Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDayOrder/EditDayOrderPresenter.swift) | missing | missing |
-| [`EditDeloadPresenter`](../../Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDeload/EditDeloadPresenter.swift) | missing | missing |
-| [`EditMesocycleColourIconPresenter`](../../Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditMesocycleColourIcon/EditMesocycleColourIconPresenter.swift) | missing | missing |
-| [`RenameWorkoutTemplateModelPresenter`](../../Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/RenameDayPlan/RenameDayPlanPresenter.swift) | missing | missing |
-| [`ExercisesPickerPresenter`](../../Compound/Core/Training/Subviews/AddTraining/CreateWorkout/ExercisesPicker/ExercisesPickerPresenter.swift) | missing | missing |
-| [`NameWorkoutPresenter`](../../Compound/Core/Training/Subviews/AddTraining/CreateWorkout/NameWorkout/NameWorkoutPresenter.swift) | missing | missing |
-| [`ExerciseModelDetailPresenter`](../../Compound/Core/Training/Subviews/Exercises/ExerciseTemplateDetail/ExerciseTemplateDetailPresenter.swift) | no event | missing |
-| [`ExercisesPresenter`](../../Compound/Core/Training/Subviews/Exercises/ExercisesPresenter.swift) | missing | missing |
-| [`MacrocycleDetailPresenter`](../../Compound/Core/Training/Subviews/Macrocycles/MacrocycleDetail/MacrocycleDetailPresenter.swift) | ok | missing |
-| [`MacrocyclesPresenter`](../../Compound/Core/Training/Subviews/Macrocycles/MacrocyclesPresenter.swift) | ok | missing |
-| [`PrebuiltMesocycleDetailPresenter`](../../Compound/Core/Training/Subviews/MesocycleLibrary/PrebuiltMesocycleDetail/PrebuiltMesocycleDetailPresenter.swift) | ok | missing |
-| [`WorkoutSessionDetailPresenter`](../../Compound/Core/Training/Subviews/WorkoutSessionDetailView/WorkoutSessionDetailPresenter.swift) | missing | missing |
-| [`WorkoutTemplateDetailPresenter`](../../Compound/Core/Training/Subviews/WorkoutTemplateDetail/WorkoutTemplateDetailPresenter.swift) | missing | missing |
-| [`WorkoutNotesPresenter`](../../Compound/Core/Training/Subviews/WorkoutTracker/WorkoutNotes/WorkoutNotesPresenter.swift) | missing | missing |
-| [`WorkoutTrackerPresenter`](../../Compound/Core/Training/Subviews/WorkoutTracker/WorkoutTrackerPresenter.swift) | missing | missing |
-| [`WorkoutsPresenter`](../../Compound/Core/Training/Subviews/Workouts/WorkoutsPresenter.swift) | missing | missing |
+| [`EditDayOrderPresenter`](../../Compound/Core/Training/Programs/CreateMesocycle/EditDayOrder/EditDayOrderPresenter.swift) | missing | missing |
+| [`EditDeloadPresenter`](../../Compound/Core/Training/Programs/CreateMesocycle/EditDeload/EditDeloadPresenter.swift) | missing | missing |
+| [`EditMesocycleColourIconPresenter`](../../Compound/Core/Training/Programs/CreateMesocycle/EditMesocycleColourIcon/EditMesocycleColourIconPresenter.swift) | missing | missing |
+| [`RenameWorkoutTemplateModelPresenter`](../../Compound/Core/Training/Programs/CreateMesocycle/RenameWorkoutTemplateModel/RenameWorkoutTemplateModelPresenter.swift) | missing | missing |
+| [`ExercisesPickerPresenter`](../../Compound/Core/Training/Workouts/CreateWorkout/ExercisesPicker/ExercisesPickerPresenter.swift) | missing | missing |
+| [`NameWorkoutPresenter`](../../Compound/Core/Training/Workouts/CreateWorkout/NameWorkout/NameWorkoutPresenter.swift) | missing | missing |
+| [`ExerciseModelDetailPresenter`](../../Compound/Core/Training/Exercises/ExerciseModelDetail/ExerciseTemplateDetailPresenter.swift) | no event | missing |
+| [`ExercisesPresenter`](../../Compound/Core/Training/Exercises/Exercises/ExercisesPresenter.swift) | missing | missing |
+| [`MacrocycleDetailPresenter`](../../Compound/Core/Training/Programs/Macrocycles/MacrocycleDetail/MacrocycleDetailPresenter.swift) | ok | missing |
+| [`MacrocyclesPresenter`](../../Compound/Core/Training/Programs/Macrocycles/MacrocyclesPresenter.swift) | ok | missing |
+| [`PrebuiltMesocycleDetailPresenter`](../../Compound/Core/Training/Programs/MesocycleLibrary/PrebuiltMesocycleDetail/PrebuiltMesocycleDetailPresenter.swift) | ok | missing |
+| [`WorkoutSessionDetailPresenter`](../../Compound/Core/Training/Session/WorkoutSessionDetail/WorkoutSessionDetailPresenter.swift) | missing | missing |
+| [`WorkoutTemplateDetailPresenter`](../../Compound/Core/Training/Workouts/WorkoutTemplateDetail/WorkoutTemplateDetailPresenter.swift) | missing | missing |
+| [`WorkoutNotesPresenter`](../../Compound/Core/Training/Session/WorkoutTracker/WorkoutNotes/WorkoutNotesPresenter.swift) | missing | missing |
+| [`WorkoutTrackerPresenter`](../../Compound/Core/Training/Session/WorkoutTracker/WorkoutTrackerPresenter.swift) | missing | missing |
+| [`WorkoutsPresenter`](../../Compound/Core/Training/Workouts/Workouts/WorkoutsPresenter.swift) | missing | missing |
 | [`TrainingPresenter`](../../Compound/Core/Training/TrainingPresenter.swift) | not called | not called |
 
 ## Embedded components that log screen events

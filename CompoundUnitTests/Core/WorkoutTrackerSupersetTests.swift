@@ -104,7 +104,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e2")
+        #expect(screen.presenter.cardExerciseId == "e2")
         #expect(screen.presenter.currentExerciseIndex == 1)
     }
 
@@ -124,7 +124,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
         #expect(screen.presenter.currentExerciseIndex == 0)
     }
 
@@ -141,7 +141,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     /// A member of a different group is a different superset, and is not where this round goes.
@@ -156,7 +156,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     /// A partner with every set logged has nothing left to do, so the round skips past it to the
@@ -173,7 +173,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e3")
+        #expect(screen.presenter.cardExerciseId == "e3")
     }
 
     /// The search wraps, so the last member of a group hands back to the first rather than
@@ -189,7 +189,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e2")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     /// A member finished while its partner still has this round's set is not the superset
@@ -209,12 +209,12 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e2")
+        #expect(screen.presenter.cardExerciseId == "e2")
     }
 
     // MARK: - The log button through a superset
 
-    /// T6: the log button alternates A, B, A, B; nothing rests between partners, and the round's
+    /// The log button alternates A, B, A, B; nothing rests between partners, and the round's
     /// rest comes after B. The last round ends the workout, so it rests not at all.
     @Test("Test The Log Button Alternates And Rests After The Round")
     func testTheLogButtonAlternatesAndRestsAfterTheRound() throws {
@@ -268,16 +268,15 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
-    // MARK: - Labels and the block card
+    // MARK: - The block card
 
-    /// Two supersets in one workout read "Superset A" and "Superset B": the letter is the
-    /// superset's, not the member's, which used to make both read A/B. Inside a card the rows
-    /// letter the member and number the set.
-    @Test("Test Two Supersets Are Lettered Apart And Their Rows Badged")
-    func testTwoSupersetsAreLetteredApartAndTheirRowsBadged() throws {
+    /// Inside a card the rows name the superset and member, and number the set: the second
+    /// superset's are B1·1, B2·1…, as the strip letters it B.
+    @Test("Test A Superset's Rows Are Badged By Superset And Member")
+    func testASupersetsRowsAreBadgedBySupersetAndMember() throws {
         let screen = try makeScreen(exercises: [
             exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
             exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
@@ -287,15 +286,37 @@ struct WorkoutTrackerSupersetTests {
         ])
         let exercises = screen.presenter.workoutSession.exercises
 
-        let labels = exercises.map { ActiveWorkout.supersetLabel(for: $0, in: exercises) }
-        #expect(labels == ["Superset A", "Superset A", nil, "Superset B", "Superset B"])
-
-        let members = try #require(ActiveWorkout.supersetBlock(containing: screen.presenter.currentExercise?.id, in: exercises))
-        let badges = ActiveWorkout.blockRows(members).compactMap { row -> String? in
-            if case let .set(_, badge) = row.kind { return badge }
-            return nil
+        func badges(_ card: SupersetCard) -> [String] {
+            card.rows.compactMap { row -> String? in
+                if case let .set(_, badge) = row.kind { return badge }
+                return nil
+            }
         }
-        #expect(badges == ["A1", "B1", "A2"])
+        let first = try #require(ActiveWorkout.supersetBlock(containing: "e1", in: exercises))
+        let second = try #require(ActiveWorkout.supersetBlock(containing: "e4", in: exercises))
+        let firstCard = screen.presenter.supersetCard(first, current: "e1")
+        let secondCard = screen.presenter.supersetCard(second, current: "e4")
+
+        #expect(firstCard.letter == "A")
+        #expect(badges(firstCard) == ["A1·1", "A2·1", "A1·2"])
+        #expect(secondCard.letter == "B")
+        #expect(badges(secondCard) == ["B1·1", "B2·1"])
+    }
+
+    /// Add Round gives every member one more set, in one write; Remove Superset splits them all.
+    @Test("Test Add Round And Remove Superset Act On Every Member")
+    func testAddRoundAndRemoveSupersetActOnEveryMember() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e3", index: 3, sets: [set(1)])
+        ])
+
+        screen.presenter.onAddRoundPressed(["e1", "e2"])
+        #expect(screen.presenter.workoutSession.exercises.map(\.sets.count) == [3, 2, 1])
+
+        screen.presenter.removeSuperset(["e1", "e2"])
+        #expect(screen.presenter.workoutSession.exercises.allSatisfy { $0.supersetGroupId == nil })
     }
 
     /// The card holds both members of a superset, and only a superset: an exercise on its own,
@@ -313,8 +334,6 @@ struct WorkoutTrackerSupersetTests {
         #expect(ActiveWorkout.supersetBlock(containing: "e1", in: exercises)?.map(\.id) == ["e1", "e2"])
         #expect(ActiveWorkout.supersetBlock(containing: "e3", in: exercises) == nil)
         #expect(ActiveWorkout.supersetBlock(containing: "e4", in: exercises) == nil)
-        // The partner on the card is not listed again under Up Next.
-        #expect(screen.presenter.upNextExercises.map(\.id) == ["e3", "e4"])
     }
 
     // MARK: - Deleting a member

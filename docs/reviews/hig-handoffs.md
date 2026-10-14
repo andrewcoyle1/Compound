@@ -27,8 +27,8 @@ Each presenter exposes `hasUnsavedChanges`. Its view adds
 - `Core/Nutrition/Foods/CreateFood/CreateFoodPresenter.swift:71` (+ `CreateFoodView.swift:211`)
 - `Core/Nutrition/Recipes/CreateRecipe/CreateRecipePresenter.swift:49`
 - `Core/Challenges/CreateChallenge/CreateChallengePresenter.swift:102`
-- `Core/Training/Subviews/AddTraining/CreateExercise/CreateExercisePresenter.swift:92`
-- `Core/Training/Subviews/WorkoutSessionDetailView/WorkoutSessionDetailPresenter.swift:126-141` (+ `WorkoutSessionDetailView.swift:241`)
+- `Core/Training/Exercises/CreateExercise/CreateExercisePresenter.swift:92`
+- `Core/Training/Session/WorkoutSessionDetail/WorkoutSessionDetailPresenter.swift:126-141` (+ `WorkoutSessionDetailView.swift:241`)
 
 ## Core/Training
 

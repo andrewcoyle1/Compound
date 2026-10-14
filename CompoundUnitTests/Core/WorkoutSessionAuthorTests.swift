@@ -19,6 +19,14 @@ import SwiftUI
 struct WorkoutSessionAuthorTests {
 
     private final class Interactor: SpyGlobalInteractor, WorkoutSessionDetailInteractor {
+
+        var workoutSessions: [WorkoutSessionModel] = []
+
+        func stravaAuthenticate() async throws { }
+
+        func stravaQueueBackfill() -> Int { 0 }
+
+        func stravaSyncPendingUploads() async { }
         var allExercises: [ExerciseModel] = []
         var workoutSettings = WorkoutSettings(authorId: "author-1")
         var currentWeightKilograms: Double?

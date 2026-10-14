@@ -154,33 +154,6 @@ struct WorkoutTrackerFinishTests {
         #expect(haptics(screen) == ["success", "error"])
     }
 
-    /// A retry loop still running an hour later is a bug of its own, so it has to be stoppable. The
-    /// schedule here is deliberately long: the loop parks on a sleep it will never wake from, which
-    /// is the only way to observe a cancel rather than race it.
-    @Test("Test Cancelling Stops The Retries")
-    func testCancellingStopsTheRetries() async throws {
-        let screen = try makeScreen(
-            backoff: RetryBackoff(baseDelay: .seconds(30), multiplier: 1, maxAttempts: 4, maxTotalDelay: .seconds(300))
-        )
-        screen.interactor.endWorkoutSessionError = URLError(.notConnectedToInternet)
-
-        screen.presenter.finishWorkout()
-        #expect(await TestManagers.eventually { screen.interactor.shownToasts.contains { $0.style == .progress } })
-
-        // Captured before cancelling: `cancelPendingSave` nils the presenter's own reference out,
-        // so this is the only handle left to wait on.
-        let task = screen.presenter.pendingFinishTask
-        screen.presenter.cancelPendingSave()
-        // Cancelling makes the loop's own sleep throw, so the task itself is the signal that it
-        // has stopped — nothing here has to guess how long that takes.
-        await task?.value
-
-        #expect(screen.interactor.endWorkoutSessionAttempts == 1)
-        // Cancelling is not a failure, so the user is not told that it failed.
-        #expect(screen.interactor.shownToasts.allSatisfy { $0.style == .progress })
-        #expect(haptics(screen) == ["success"])
-    }
-
     /// Retrying after sign-out would write this workout into whoever signed in next.
     @Test("Test Signing Out Stops The Retries")
     func testSigningOutStopsTheRetries() async throws {

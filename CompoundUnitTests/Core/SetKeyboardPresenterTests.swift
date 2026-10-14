@@ -350,23 +350,11 @@ struct SetKeyboardPresenterTests {
         #expect(keyboard.placeholder(for: .weight, previous: previous, unit: .kilograms) == "Red")
     }
 
-    @Test func chipsShowInTheDisplayUnit() {
+    @Test func repsChips() {
         let box = set()
         let keyboard = SetKeyboardPresenter()
-        let context = SetKeyboardContext(
-            unit: .pounds,
-            lastSetWeightKg: UnitConversion.convertWeightToKg(135, from: ExerciseWeightUnit.pounds),
-            lastSetReps: 8,
-            targetWeightKg: UnitConversion.convertWeightToKg(145, from: ExerciseWeightUnit.pounds),
-            targetMinReps: 6,
-            targetMaxReps: 10
-        )
-        keyboard.open(.weight, set: box.binding, context: context)
-        #expect(keyboard.weightChips.map(\.title) == ["Last set 135", "Target 145"])
+        keyboard.open(.reps, set: box.binding, context: SetKeyboardContext(lastSetReps: 8, targetMinReps: 6, targetMaxReps: 10))
         #expect(keyboard.repsChips.map(\.title) == ["Last set 8", "Min 6", "Max 10"])
-
-        keyboard.applyWeight(displayValue: keyboard.weightChips[1].value)
-        #expect(keyboard.text == "145")
     }
 
     @Test func platesForTheCurrentWeight() {
@@ -548,7 +536,6 @@ struct SetTrackerRowKeyboardTests {
     private final class Router: SetTrackerRowRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alerts: [String] = []
-        func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
         func showRestModal(
             primaryButtonAction: @escaping () -> Void,
             secondaryButtonAction: @escaping () -> Void,
@@ -602,7 +589,6 @@ struct SetTrackerRowKeyboardTests {
         #expect(context.step.isPlateLoaded)
         #expect(context.step.chip?.hasPrefix("Bar ") == true)
         #expect(context.showsEffort)
-        #expect(context.lastSetWeightKg == 60)
         #expect(context.lastSetReps == 10)
         #expect(context.targetMinReps == 6)
         #expect(context.targetMaxReps == 8)
@@ -618,9 +604,10 @@ struct SetTrackerRowKeyboardTests {
     /// 13 Oct 2026), and closes.
     @Test func doneLogsAReadySet() {
         let row = makeRow()
-        let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
+        let (presenter, router, exercise) = (row.presenter, row.router, row.exercise)
+        var delegate = row.delegate
         var logged: [String] = []
-        presenter.onLogSet = { setId, _ in logged.append(setId) }
+        delegate.onLogSet = { setId, _ in logged.append(setId) }
         presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
         "80".forEach { presenter.keyboard.type($0) }
         presenter.keyboard.next()

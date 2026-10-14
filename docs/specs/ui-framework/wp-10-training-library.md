@@ -5,7 +5,7 @@
 **Owns:**
 - `Core/Training/**` except the WP-09 folders
 - `Components/Views/Training/**` except `SetDetailRow.swift`. These move to
-  `Core/Training/Components/`: `ExerciseListBuilder`, `WorkoutListBuilder`, `TrainingProgram`,
+  `Core/Training/Session/`: `ExerciseListBuilder`, `WorkoutListBuilder`, `TrainingProgram`,
   `WorkoutTemplate`, `TrainingAccessory`, `TodaysWorkoutCard`, `WorkoutStreakCard`.
 - `Components/Views/CalendarHeader/**`, which stays in `Components` because it is generic
   (token-ise only)
@@ -26,7 +26,7 @@
   WP-09's merged code if it is available; otherwise use `Chip` buttons.
 - **Duplicated code.** `DefineWorkoutView` and `WorkoutTemplateDetailView` contain ~100 lines of
   copy-paste drift: `targetMusclesSection`, `setTarget` and the muscle chips.
-  - Extract the shared section into one view in `Core/Training/Components/`, and keep the
+  - Extract the shared section into one view in `Core/Training/Session/`, and keep the
     accessible version, which marks primary vs secondary by weight plus a label, not just by fill.
   - Muscle chips become `Chip`.
 - **Cards.** `TodaysWorkoutCardLabel` has a fixed `height: 200`, `.cornerRadius(24)` ×3 and

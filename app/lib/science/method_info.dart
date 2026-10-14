@@ -61,6 +61,60 @@ class const Citation({
         'of linear dynamic systems. AIAA J 3(8):1445–1450.',
     doi: '10.2514/3.3166',
   );
+
+  /// R72.
+  static const cfr21 = Citation(
+    reference:
+        'US Code of Federal Regulations, Title 21, §101.9(g)(4)–(5) '
+        '(nutrition labelling compliance).',
+    url: 'https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-A/section-101.9',
+  );
+
+  /// R102.
+  static const currier2026 = Citation(
+    reference:
+        'Currier BS, et al. (2026). American College of Sports Medicine '
+        'position stand. Resistance training prescription for muscle '
+        'function, hypertrophy, and physical performance in healthy adults: '
+        'an overview of reviews. Med Sci Sports Exerc 58(4):851–872.',
+    doi: '10.1249/MSS.0000000000003897',
+  );
+
+  /// R107.
+  static const bull2020 = Citation(
+    reference:
+        'Bull FC, et al. (2020). World Health Organization 2020 guidelines on '
+        'physical activity and sedentary behaviour. Br J Sports Med '
+        '54(24):1451–1462.',
+    doi: '10.1136/bjsports-2020-102955',
+  );
+
+  /// R108.
+  static const lally2010 = Citation(
+    reference:
+        'Lally P, van Jaarsveld CHM, Potts HWW, Wardle J (2010). How are '
+        'habits formed: modelling habit formation in the real world. Eur J '
+        'Soc Psychol 40(6):998–1009.',
+    doi: '10.1002/ejsp.674',
+  );
+
+  /// R111.
+  static const paluch2022 = Citation(
+    reference:
+        'Paluch AE, et al. (2022). Daily steps and all-cause mortality: a '
+        'meta-analysis of 15 international cohorts. Lancet Public Health '
+        '7(3):e219–e228.',
+    doi: '10.1016/S2468-2667(21)00302-9',
+  );
+
+  /// R112.
+  static const ding2025 = Citation(
+    reference:
+        'Ding D, et al. (2025). Daily steps and health outcomes in adults: a '
+        'systematic review and dose-response meta-analysis. Lancet Public '
+        'Health 10(8):e668–e681.',
+    doi: '10.1016/S2468-2667(25)00164-1',
+  );
 }
 
 /// What one calculation does and what it rests on, for the info button
@@ -100,6 +154,52 @@ class const MethodInfo({
       Citation.walker,
       Citation.rauch1965,
     ],
+  );
+
+  /// The weekly session goal and the streak (Swift
+  /// `MethodInfo.weeklySessionGoal`), computed by `compound_maths`'
+  /// `WeeklyStreak`.
+  factory weeklySessionGoal(AppLocalizations l10n) => MethodInfo(
+    title: l10n.weeklyGoalMethodTitle,
+    summary: l10n.weeklyGoalMethodSummary,
+    formula:
+        'week met = sessions in the week ≥ goal\n'
+        'streak = consecutive met weeks, this week included once met\n'
+        'default goal 3; range 1–7',
+    limitations: l10n.weeklyGoalMethodLimitations,
+    ownChoices: l10n.weeklyGoalMethodOwnChoices,
+    citations: const [
+      Citation.bull2020,
+      Citation.currier2026,
+      Citation.lally2010,
+    ],
+  );
+
+  /// The default daily step goal (Swift `MethodInfo.dailyStepGoal`),
+  /// computed by `ageAdjustedStepGoal`.
+  factory dailyStepGoal(AppLocalizations l10n) => MethodInfo(
+    title: l10n.stepGoalMethodTitle,
+    summary: l10n.stepGoalMethodSummary,
+    formula:
+        'goal = your chosen goal, else\n'
+        '       8,000 steps/day under 60\n'
+        '       7,000 steps/day from 60',
+    limitations: l10n.stepGoalMethodLimitations,
+    ownChoices: l10n.stepGoalMethodOwnChoices,
+    citations: const [Citation.paluch2022, Citation.ding2025],
+  );
+
+  /// When a day's eating counts as on target (Swift
+  /// `MethodInfo.calorieAdherenceBand`), judged by `NutritionItem.isDone`.
+  factory calorieAdherenceBand(AppLocalizations l10n) => MethodInfo(
+    title: l10n.adherenceBandMethodTitle,
+    summary: l10n.adherenceBandMethodSummary,
+    formula:
+        'calories on target: |eaten − target| ≤ 10% × target\n'
+        'protein on target: eaten ≥ target',
+    limitations: l10n.adherenceBandMethodLimitations,
+    ownChoices: l10n.adherenceBandMethodOwnChoices,
+    citations: const [Citation.cfr21],
   );
 
   static const _weightTrendFormula = '''

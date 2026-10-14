@@ -648,5 +648,267 @@
     "weightTrendMethodOwnChoices": "The 0.3 kg noise floor, the 0.05 kg/day level noise, the 0.004 kg/day slope noise, the 2.5 robust threshold, the max(3 kg, 4%) hold rule, the median-of-three start and using the first weigh-in of the day are Compound's own choices, to be tuned on real histories.",
     "@weightTrendMethodOwnChoices": {
         "description": "Weight Trend method sheet: Compound's own choices"
+    },
+    "todayLoadFailure": "Today couldn't be loaded.",
+    "@todayLoadFailure": {
+        "description": "Shown on the Today tab when the workouts, meals or weigh-ins can't be read"
+    },
+    "todayYourDay": "Your Day",
+    "@todayYourDay": {
+        "description": "Today checklist: section heading"
+    },
+    "todayDoneCount": "{done} of {total} done",
+    "@todayDoneCount": {
+        "description": "Today checklist: how many items are done",
+        "placeholders": {
+            "done": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "todayDayComplete": "Day Complete",
+    "@todayDayComplete": {
+        "description": "Today checklist: badge shown when every item is done"
+    },
+    "todayCalorieBandFooter": "Calories count as on target within 10% either side.",
+    "@todayCalorieBandFooter": {
+        "description": "Today checklist footer: how the nutrition item is judged"
+    },
+    "todayStepGoalFooter": "Step goal: {goal} a day.",
+    "@todayStepGoalFooter": {
+        "description": "Today checklist footer: the daily step goal, e.g. 'Step goal: 8,000 a day.'",
+        "placeholders": {
+            "goal": {
+                "type": "String"
+            }
+        }
+    },
+    "todayTrain": "Train",
+    "@todayTrain": {
+        "description": "Today checklist item: training"
+    },
+    "todayEatToTarget": "Eat to Target",
+    "@todayEatToTarget": {
+        "description": "Today checklist item: eating to the day's targets"
+    },
+    "todayWeighIn": "Weigh In",
+    "@todayWeighIn": {
+        "description": "Today checklist item: weighing in"
+    },
+    "todaySteps": "Steps",
+    "@todaySteps": {
+        "description": "Today checklist item: steps"
+    },
+    "todayItemDone": "Done",
+    "@todayItemDone": {
+        "description": "Accessibility value of a checklist item that is done"
+    },
+    "todayItemNotDone": "Not done",
+    "@todayItemNotDone": {
+        "description": "Accessibility value of a checklist item that is not done"
+    },
+    "todayKcalLogged": "{calories} kcal logged",
+    "@todayKcalLogged": {
+        "description": "Today checklist: calories logged without a diet plan, e.g. '600 kcal logged'",
+        "placeholders": {
+            "calories": {
+                "type": "String"
+            }
+        }
+    },
+    "todayNothingLogged": "Nothing logged yet",
+    "@todayNothingLogged": {
+        "description": "Today checklist: no food logged today"
+    },
+    "todayCaloriesOfTarget": "{calories} / {target}",
+    "@todayCaloriesOfTarget": {
+        "description": "Today checklist: calories eaten of the target, e.g. '1,450 / 2,000 kcal'",
+        "placeholders": {
+            "calories": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "todayProteinOfTarget": "{eaten} / {target} protein",
+    "@todayProteinOfTarget": {
+        "description": "Today checklist: protein eaten of the target, e.g. '110 g / 150 g protein'",
+        "placeholders": {
+            "eaten": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "todayNoWeighIns": "No weigh-ins yet",
+    "@todayNoWeighIns": {
+        "description": "Today checklist: the user has never weighed in"
+    },
+    "todayWeekChange": "{change} this week",
+    "@todayWeekChange": {
+        "description": "Today checklist: weight change over the last week, e.g. '−0.4 kg this week'",
+        "placeholders": {
+            "change": {
+                "type": "String"
+            }
+        }
+    },
+    "todayGoalPace": "goal {change}/wk",
+    "@todayGoalPace": {
+        "description": "Today checklist: the goal's weekly pace, e.g. 'goal −0.5 kg/wk'",
+        "placeholders": {
+            "change": {
+                "type": "String"
+            }
+        }
+    },
+    "todayStepsOfGoal": "{today} / {goal} steps",
+    "@todayStepsOfGoal": {
+        "description": "Today checklist: steps today of the goal, e.g. '6,000 / 8,000 steps'",
+        "placeholders": {
+            "today": {
+                "type": "String"
+            },
+            "goal": {
+                "type": "String"
+            }
+        }
+    },
+    "todayGetStarted": "Get Started · {done} of {total}",
+    "@todayGetStarted": {
+        "description": "Getting-started card heading, e.g. 'Get Started · 1 of 3'",
+        "placeholders": {
+            "done": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "todayFirstWorkout": "Finish your first workout",
+    "@todayFirstWorkout": {
+        "description": "Getting-started step"
+    },
+    "todayFirstMeal": "Log your first meal",
+    "@todayFirstMeal": {
+        "description": "Getting-started step"
+    },
+    "todayFirstWeighIn": "Log your weight",
+    "@todayFirstWeighIn": {
+        "description": "Getting-started step"
+    },
+    "todayProteinGap": "{grams} protein to go today",
+    "@todayProteinGap": {
+        "description": "Evening reminder: protein still to eat today, e.g. '45 g protein to go today'",
+        "placeholders": {
+            "grams": {
+                "type": "String"
+            }
+        }
+    },
+    "streakTitle": "Weekly Streak",
+    "@streakTitle": {
+        "description": "Streak card heading"
+    },
+    "streakWeeks": "{weeks, plural, =1{1 week} other{{weeks} weeks}}",
+    "@streakWeeks": {
+        "description": "Streak card: a number of weeks",
+        "placeholders": {
+            "weeks": {
+                "type": "int"
+            }
+        }
+    },
+    "streakThisWeek": "{sessions} of {goal} this week",
+    "@streakThisWeek": {
+        "description": "Streak card: sessions done of the weekly goal",
+        "placeholders": {
+            "sessions": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "streakAtRisk": "At Risk",
+    "@streakAtRisk": {
+        "description": "Streak card badge: the streak will be lost unless every remaining day is trained"
+    },
+    "streakGoalMet": "Goal Met",
+    "@streakGoalMet": {
+        "description": "Streak card badge: this week's goal is met"
+    },
+    "streakBest": "Best streak",
+    "@streakBest": {
+        "description": "Streak card stat label"
+    },
+    "streakTotalWorkouts": "Total workouts",
+    "@streakTotalWorkouts": {
+        "description": "Streak card stat label"
+    },
+    "streakWorkoutLogged": "Workout logged",
+    "@streakWorkoutLogged": {
+        "description": "Accessibility value of a day with a workout on the streak card"
+    },
+    "streakNoWorkout": "No workout",
+    "@streakNoWorkout": {
+        "description": "Accessibility value of a day without a workout on the streak card"
+    },
+    "weeklyGoalMethodTitle": "Weekly Goal and Streak",
+    "@weeklyGoalMethodTitle": {
+        "description": "Method sheet title"
+    },
+    "weeklyGoalMethodSummary": "Your streak is the number of weeks in a row you met your weekly session goal. The week still under way never breaks it. The goal starts at 3 sessions a week and can be set from 1 to 7. The WHO and ACSM guidelines recommend muscle-strengthening work on at least 2 days a week. In habit research, missing a single opportunity did not materially set back forming the habit, and the habit kept strengthening for about two months.",
+    "@weeklyGoalMethodSummary": {
+        "description": "Weekly goal method sheet: summary"
+    },
+    "weeklyGoalMethodLimitations": "Habit studies follow groups over weeks to months; how long a habit takes varies widely between people. A streak measures consistency, not progress.",
+    "@weeklyGoalMethodLimitations": {
+        "description": "Weekly goal method sheet: limitations"
+    },
+    "weeklyGoalMethodOwnChoices": "The default of 3 sessions a week and the 1–7 range are Compound's own choices. Only the floor of 2 days a week comes from the guidelines.",
+    "@weeklyGoalMethodOwnChoices": {
+        "description": "Weekly goal method sheet: Compound's own choices"
+    },
+    "stepGoalMethodTitle": "Daily Step Goal",
+    "@stepGoalMethodTitle": {
+        "description": "Method sheet title"
+    },
+    "stepGoalMethodSummary": "Unless you choose your own goal, it is 8,000 steps a day, or 7,000 from age 60. In pooled cohort studies, the risk of dying early stopped falling at about 8,000–10,000 steps a day under 60, and at about 6,000–8,000 from 60. A later meta-analysis found most of the benefit by about 7,000 steps compared with 2,000.",
+    "@stepGoalMethodSummary": {
+        "description": "Step goal method sheet: summary"
+    },
+    "stepGoalMethodLimitations": "These are observational studies: people who walk more differ in other ways too, so the figures show association, not cause. Phones and watches count steps differently.",
+    "@stepGoalMethodLimitations": {
+        "description": "Step goal method sheet: limitations"
+    },
+    "stepGoalMethodOwnChoices": "The exact defaults of 8,000 and 7,000 are Compound's own picks within the ranges the studies found.",
+    "@stepGoalMethodOwnChoices": {
+        "description": "Step goal method sheet: Compound's own choices"
+    },
+    "adherenceBandMethodTitle": "On-Target Band",
+    "@adherenceBandMethodTitle": {
+        "description": "Method sheet title"
+    },
+    "adherenceBandMethodSummary": "A day's calories count as on target when they land within 10% either side of that day's target. Protein counts once you reach its target. US food labels may understate calories by up to 20% before a product counts as misbranded, so a tighter band would mostly measure label error rather than your eating.",
+    "@adherenceBandMethodSummary": {
+        "description": "On-target band method sheet: summary"
+    },
+    "adherenceBandMethodLimitations": "No study validates a particular band width. Logging errors and label errors both feed into the figure.",
+    "@adherenceBandMethodLimitations": {
+        "description": "On-target band method sheet: limitations"
+    },
+    "adherenceBandMethodOwnChoices": "The 10% band is Compound's own choice, sized to sit inside typical food-label error.",
+    "@adherenceBandMethodOwnChoices": {
+        "description": "On-target band method sheet: Compound's own choices"
     }
 }

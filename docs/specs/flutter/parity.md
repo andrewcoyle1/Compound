@@ -208,3 +208,28 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | Workouts | `Workouts/Workouts` | M3 | todo | |
 
 198 modules.
+
+## Platform features (not screen modules)
+
+| Feature | Swift | Milestone | Status | Flutter |
+|---|---|---|---|---|
+| Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | todo | |
+| Offline data and sync | Sync engines | M1–M3 | todo | Firestore's offline cache |
+| Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | todo | |
+| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | todo | |
+| Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | todo | |
+| A/B tests (Remote Config) | `ABTestManager` | M5 | todo | |
+| HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | todo | |
+| Live Activity and Dynamic Island (iOS); ongoing notification (Android) | `LiveActivityManager`, `WorkoutSessionActivity/` | M3 (Android), M6 (iOS) | todo | |
+| Home screen widgets | `WorkoutSessionActivity/HomeWidgets.swift` | M6 | todo | |
+| Siri and Shortcuts (App Intents) | `Managers/AppIntents` | M6 | todo | |
+| Strava upload and import | `StravaManager` | M5 | todo | |
+| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | todo | |
+| AI coach (streaming) | `CoachManager` | M5 | todo | |
+| Image upload and progress photos | `ImageUploadManager` | M5 | todo | |
+| Reporting and moderation | `ReportManager` | M5 | todo | |
+| Haptics and sound effects | `HapticManager`, `SoundEffectManager` | M3 | todo | |
+| Spanish localisation, 100% | `Localizable.xcstrings` | M1 | todo | `scripts/arb-spanish.py` |
+| iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | todo | |
+| Mac (Catalyst) | Catalyst | M6 | todo | Decided at M6 |
+| Methods & Sources (citations) | `Components/Science` | M4 | todo | |

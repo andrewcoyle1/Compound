@@ -74,21 +74,28 @@ class AppOnboardingStepScaffold extends StatelessWidget {
     final subtitle = this.subtitle;
     final secondaryLabel = this.secondaryLabel;
     return Scaffold(
-      bottomNavigationBar: AppBottomCta(
-        children: [
-          AppCtaButton(
-            label: primaryLabel,
-            onPressed: onPrimaryPressed,
-            isLoading: isPrimaryLoading,
-            loadingLabel: loadingLabel,
-          ),
-          if (secondaryLabel != null)
+      // Above the keyboard, as SwiftUI's safe-area inset is: a Scaffold
+      // leaves its bottom bar under it.
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: AppBottomCta(
+          children: [
             AppCtaButton(
-              label: secondaryLabel,
-              onPressed: onSecondaryPressed,
-              variant: AppCtaVariant.plain,
+              label: primaryLabel,
+              onPressed: onPrimaryPressed,
+              isLoading: isPrimaryLoading,
+              loadingLabel: loadingLabel,
             ),
-        ],
+            if (secondaryLabel != null)
+              AppCtaButton(
+                label: secondaryLabel,
+                onPressed: onSecondaryPressed,
+                variant: AppCtaVariant.plain,
+              ),
+          ],
+        ),
       ),
       body: CustomScrollView(
         slivers: [

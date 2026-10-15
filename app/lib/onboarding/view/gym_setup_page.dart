@@ -80,6 +80,7 @@ class GymSetupView extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: l10n.onboardingGymName,
                     border: InputBorder.none,
+                    filled: false,
                   ),
                   onChanged: cubit.nameChanged,
                   onSubmitted: (_) => cubit.save(),

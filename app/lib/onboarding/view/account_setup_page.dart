@@ -295,6 +295,7 @@ class _NameFields extends StatelessWidget {
             decoration: InputDecoration(
               labelText: l10n.onboardingFirstName,
               border: InputBorder.none,
+              filled: false,
             ),
             onChanged: cubit.firstNameChanged,
           ),
@@ -309,6 +310,7 @@ class _NameFields extends StatelessWidget {
             decoration: InputDecoration(
               labelText: l10n.onboardingLastName,
               border: InputBorder.none,
+              filled: false,
             ),
             onChanged: cubit.lastNameChanged,
             onFieldSubmitted: (_) => cubit.saveName(),

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseException;
 import 'package:compound_models/compound_models.dart';
 import 'package:training_library_repository/src/training_library_repository.dart';
 
@@ -96,6 +97,31 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
         listener.onCancel = () => unawaited(subscription.cancel());
       });
 
+  /// Fails with `not-found` when there are no settings, as Firestore's
+  /// `update` does.
+  @override
+  Future<void> clearExerciseRestOverride(String uid, String exerciseId) async {
+    final index = _exerciseSettings.indexWhere(
+      (stored) => stored.authorId == uid && stored.id == exerciseId,
+    );
+    if (index < 0) {
+      throw FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'not-found',
+        message:
+            'No document to update: users/$uid/exercise_settings/'
+            '$exerciseId',
+      );
+    }
+    final stored = _exerciseSettings[index];
+    _exerciseSettings[index] = ExerciseSettingsModel(
+      id: stored.id,
+      authorId: stored.authorId,
+      note: stored.note,
+    );
+    _settingsChanges.add(null);
+  }
+
   /// Merges as Firestore does: a field left empty keeps what was stored.
   @override
   Future<void> saveExerciseSettings(
@@ -136,27 +162,13 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
         listener.onCancel = () => unawaited(subscription.cancel());
       });
 
-  /// Merges as Firestore does: a field left null keeps what was stored, and
-  /// the rest-by-kind map merges key by key.
+  /// Replaces the stored settings, as the Firestore save writes every
+  /// field the model knows.
   @override
   Future<void> saveWorkoutSettings(WorkoutSettings settings) async {
-    final index = _workoutSettings.indexWhere(
-      (stored) => stored.authorId == settings.authorId,
-    );
-    if (index < 0) {
-      _workoutSettings.add(settings);
-    } else {
-      final stored = _workoutSettings[index];
-      _workoutSettings[index] = WorkoutSettings.fromFirestore({
-        ...stored.toFirestore(),
-        ...settings.toFirestore(),
-        // A map merges key by key in Firestore.
-        WorkoutSettingsKeys.restDurationsByExerciseType: {
-          ...stored.restDurationsByExerciseType,
-          ...settings.restDurationsByExerciseType,
-        },
-      });
-    }
+    _workoutSettings
+      ..removeWhere((stored) => stored.authorId == settings.authorId)
+      ..add(settings);
     _workoutSettingsChanges.add(null);
   }
 }

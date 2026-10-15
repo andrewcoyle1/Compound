@@ -61,35 +61,46 @@ void main() {
       );
     });
 
-    test('merges: a field this app does not know survives, an optional left '
-        'null keeps what was stored, and the rest-by-kind map merges key by '
-        'key, as in Swift', () async {
-      final full = WorkoutSettings.fromFirestore(
-        modelFixture('workout_settings', 'full'),
-      );
-      await document(full.authorId).set({
-        ...storedFixture('workout_settings', 'full'),
-        'field_from_a_newer_build': 1,
-      });
-
-      final change = WorkoutSettings(
-        authorId: full.authorId,
-        rirTracking: true,
-      );
-      await subject.saveWorkoutSettings(change);
-
-      expect(
-        await stored(full.authorId),
-        strictlyEquals({
-          ...taggedFixture('workout_settings', 'full'),
-          ...change.toFirestore(),
-          WorkoutSettingsKeys.restDurationsByExerciseType: taggedFixture(
-            'workout_settings',
-            'full',
-          )[WorkoutSettingsKeys.restDurationsByExerciseType],
+    test(
+      'writes every known field as given: an unknown field survives, a '
+      'null optional is deleted and the rest-by-kind map is replaced',
+      () async {
+        final full = WorkoutSettings.fromFirestore(
+          modelFixture('workout_settings', 'full'),
+        );
+        await document(full.authorId).set({
+          ...storedFixture('workout_settings', 'full'),
           'field_from_a_newer_build': 1,
-        }),
-      );
+        });
+
+        // Swift's "Off" for the superset rest and "Reset Default Timers".
+        final change = WorkoutSettings(
+          authorId: full.authorId,
+          restDurationsByExerciseType: const {'core': 45},
+        );
+        await subject.saveWorkoutSettings(change);
+
+        final written = await stored(full.authorId);
+        expect(
+          written,
+          strictlyEquals({
+            ...change.toFirestore(),
+            'field_from_a_newer_build': 1,
+          }),
+        );
+        expect(
+          written.containsKey(
+            WorkoutSettingsKeys.supersetTransitionRestSeconds,
+          ),
+          isFalse,
+        );
+      },
+    );
+
+    test('creates the document when there is none', () async {
+      const settings = WorkoutSettings(authorId: 'new');
+      await subject.saveWorkoutSettings(settings);
+      expect(await stored('new'), strictlyEquals(settings.toFirestore()));
     });
   });
 
@@ -110,7 +121,7 @@ void main() {
       await expectation;
     });
 
-    test('merges over stored settings field by field', () async {
+    test('replaces the stored settings, leaving other users alone', () async {
       final subject = InMemoryTrainingLibraryRepository(
         workoutSettings: const [
           WorkoutSettings(
@@ -123,20 +134,13 @@ void main() {
       );
 
       await subject.saveWorkoutSettings(
-        const WorkoutSettings(
-          authorId: uid,
-          keepAlive: false,
-          restDurationsByExerciseType: {'isolationUpper': 60},
-        ),
+        const WorkoutSettings(authorId: uid, keepAlive: false),
       );
 
       final mine = await subject.watchWorkoutSettings(uid).first;
       expect(mine.keepAlive, isFalse);
-      expect(mine.restDurationsByExerciseType, {
-        'compoundUpper': 180,
-        'isolationUpper': 60,
-      });
-      expect(mine.setPlanning, isTrue);
+      expect(mine.setPlanning, isNull);
+      expect(mine.restDurationsByExerciseType, isEmpty);
       expect(
         (await subject.watchWorkoutSettings('you').first).rirTracking,
         isTrue,

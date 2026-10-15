@@ -33,6 +33,9 @@ final class const NutritionDayState({
 
   /// Whether reading the meals failed.
   final bool failed = false,
+
+  /// How many deletes have failed, so the screen says so each time.
+  final int deleteFailures = 0,
 }) extends Equatable {
   /// Where the data has got to.
   NutritionDayStatus get status => failed
@@ -73,6 +76,7 @@ final class const NutritionDayState({
     DietPlan? Function()? dietPlan,
     FoodLogSettings? settings,
     bool? failed,
+    int? deleteFailures,
   }) => NutritionDayState(
     selectedDay: selectedDay ?? this.selectedDay,
     today: today,
@@ -80,6 +84,7 @@ final class const NutritionDayState({
     dietPlan: dietPlan == null ? this.dietPlan : dietPlan(),
     settings: settings ?? this.settings,
     failed: failed ?? this.failed,
+    deleteFailures: deleteFailures ?? this.deleteFailures,
   );
 
   @override
@@ -90,5 +95,6 @@ final class const NutritionDayState({
     dietPlan,
     settings,
     failed,
+    deleteFailures,
   ];
 }

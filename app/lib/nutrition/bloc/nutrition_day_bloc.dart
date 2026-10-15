@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
+import 'package:compound/nutrition/logic/meal_logging.dart' show withItems;
 import 'package:compound_maths/compound_maths.dart';
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -18,6 +19,7 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
   }) : super(_initialState(startOfDay(now()))) {
     on<NutritionDaySubscriptionRequested>(_onSubscriptionRequested);
     on<NutritionDayDateSelected>(_onDateSelected);
+    on<NutritionDayItemDeleted>(_onItemDeleted);
   }
 
   static NutritionDayState _initialState(DateTime today) =>
@@ -54,4 +56,26 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
     NutritionDayDateSelected event,
     Emitter<NutritionDayState> emit,
   ) => emit(state.copyWith(selectedDay: startOfDay(event.day)));
+
+  /// Deletes one logged food (`NutritionPresenter.deleteMealItem`): the
+  /// meal is saved without it, or deleted when it was the last.
+  Future<void> _onItemDeleted(
+    NutritionDayItemDeleted event,
+    Emitter<NutritionDayState> emit,
+  ) async {
+    final meal = event.meal;
+    final items = [
+      for (final item in meal.items)
+        if (item.itemId != event.itemId) item,
+    ];
+    try {
+      if (items.isEmpty) {
+        await _nutritionRepository.deleteMeal(_uid, meal.mealId);
+      } else {
+        await _nutritionRepository.saveMeal(withItems(meal, items));
+      }
+    } on Object catch (_) {
+      emit(state.copyWith(deleteFailures: state.deleteFailures + 1));
+    }
+  }
 }

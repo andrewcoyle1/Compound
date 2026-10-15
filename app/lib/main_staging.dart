@@ -5,6 +5,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/logic/staging_onboarding.dart';
+import 'package:food_repository/food_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -73,6 +74,10 @@ Future<void> main() async {
       analyticsRepository: const AnalyticsRepository(
         services: [ConsoleService()],
       ),
+      foodRepository: InMemoryFoodRepository(
+        foods: sampleFoods(uid: sampleUserId, now: now),
+      ),
+      openFoodFacts: FakeOpenFoodFacts(),
     ),
   );
 }

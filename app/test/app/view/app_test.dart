@@ -346,6 +346,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Workout History'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Workout History'));
       await tester.pumpAndSettle();
       expect(find.byType(WorkoutHistoryView), findsOneWidget);

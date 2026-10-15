@@ -11,11 +11,16 @@ enum _ActiveChoice { resume, replace }
 /// Starts [template]'s workout, or an empty one, and opens the tracker. With
 /// a workout already under way it asks first: resume it, or discard it and
 /// start this one (`showActiveWorkoutAlert`). [eventPrefix] names the
-/// screen's start events, as Swift's.
+/// screen's start events, as Swift's. A program's day passes its
+/// [mesocycleId], its [microcycleIndex] (from 1) and whether it is a
+/// deload week.
 Future<void> startWorkout(
   BuildContext context, {
   required String eventPrefix,
   WorkoutTemplateModel? template,
+  String? mesocycleId,
+  int? microcycleIndex,
+  bool isDeload = false,
 }) async {
   final l10n = context.l10n;
   final cubit = context.read<ActiveWorkoutCubit>();
@@ -56,7 +61,13 @@ Future<void> startWorkout(
     }
   }
   final before = cubit.state.effectId;
-  await cubit.start(template: template, eventPrefix: eventPrefix);
+  await cubit.start(
+    template: template,
+    eventPrefix: eventPrefix,
+    mesocycleId: mesocycleId,
+    microcycleIndex: microcycleIndex,
+    isDeload: isDeload,
+  );
   if (!context.mounted) return;
   if (cubit.state.effectId != before &&
       cubit.state.effect is StartFailedEffect) {

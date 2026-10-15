@@ -10,13 +10,13 @@ import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/programs/programs.dart';
 import 'package:compound/today/bloc/today_bloc.dart';
 import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound/today/view/day_checklist_card.dart';
 import 'package:compound/today/view/streak_card.dart';
 import 'package:compound/today/view/today_text.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
-import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -25,9 +25,9 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// The Today tab (Swift `TodayView`): getting started, the day's
 /// checklist, the weekly check-in's card, the evening protein reminder,
-/// last week's review and the weekly streak. Weigh-ins can be logged from
-/// it. Logging meals and workouts, today's planned workout and friends who
-/// trained come with the milestones that build them.
+/// today's workout from the active mesocycle, last week's review and the
+/// weekly streak. Weigh-ins can be logged from it. Logging meals and
+/// friends who trained come with the milestones that build them.
 class TodayPage extends StatelessWidget {
   const new({super.key});
 
@@ -143,6 +143,9 @@ class _Day extends StatelessWidget {
                   context.read<TodayBloc>().add(const TodayCheckInSkipped()),
             ),
           ],
+          // Swift's order: the workout before the evening protein.
+          const SizedBox(height: AppSpacing.xl),
+          const TodaysWorkoutCard(),
           if (gap != null) ...[
             const SizedBox(height: AppSpacing.xl),
             AppSection(
@@ -155,26 +158,6 @@ class _Day extends StatelessWidget {
               ],
             ),
           ],
-          const SizedBox(height: AppSpacing.xl),
-          AppSection(
-            children: [
-              AppListRowButton(
-                title: l10n.startEmptyWorkout,
-                icon: AppSymbols.start,
-                onPressed: () {
-                  context.read<ActiveWorkoutCubit>().pressed(
-                    'TodayView_StartEmptyWorkout_Press',
-                  );
-                  unawaited(
-                    startWorkout(
-                      context,
-                      eventPrefix: 'TodayView_StartBlankWorkout',
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
           if (state.showsWeeklyReviewCard) ...[
             const SizedBox(height: AppSpacing.xl),
             AppSection(

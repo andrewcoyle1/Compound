@@ -8,8 +8,8 @@ void main() {
 
   test("staging's profile names the sample program and gym", () {
     final user = sampleUser(now: now);
-    final mesocycle = sampleMesocycles(now: now).single;
-    final macrocycle = sampleMacrocycles(now: now).single;
+    final mesocycle = sampleMesocycles(now: now).first;
+    final macrocycle = runningMacrocycle(sampleMacrocycles(now: now))!;
 
     expect(user.submittedActiveMesocycleId, sampleMesocycleId);
     expect(mesocycle.id, sampleMesocycleId);
@@ -17,14 +17,14 @@ void main() {
     expect(macrocycle.authorId, user.userId);
     expect(macrocycle.mesocycleIds, [sampleMesocycleId]);
     expect(macrocycle.name, mesocycle.name);
-    expect(runningMacrocycle([macrocycle]), same(macrocycle));
+    expect(macrocycle.id, 'sample-macrocycle');
     expect(user.submittedFavouriteGymProfileId, sampleGymProfiles.single.id);
     expect(sampleGymProfiles.single.authorId, user.userId);
   });
 
   test('the sample program is the one recommended to its user', () {
     final user = sampleUser(now: now);
-    final mesocycle = sampleMesocycles(now: now).single;
+    final mesocycle = sampleMesocycles(now: now).first;
     final recommended = PrebuiltCatalogue.instance.mesocycles.firstWhere(
       (m) => m.id == recommendedProgramId(user.submittedExerciseFrequency),
     );
@@ -42,8 +42,22 @@ void main() {
     };
     expect(ids.every((id) => id.startsWith(sampleMesocycleId)), isTrue);
     expect(
-      sampleMesocycles(now: now).single.workoutTemplates.first.workoutId,
+      sampleMesocycles(now: now).first.workoutTemplates.first.workoutId,
       mesocycle.workoutTemplates.first.workoutId,
     );
+  });
+  test('two more mesocycles are saved, one in a macrocycle never started', () {
+    final mesocycles = sampleMesocycles(now: now);
+    expect([
+      for (final m in mesocycles.skip(1)) m.id,
+    ], sampleInactiveMesocycleIds);
+    final statuses = {
+      for (final m in sampleMacrocycles(now: now)) m.id: m.status,
+    };
+    expect(statuses, {
+      'sample-macrocycle': MacrocycleStatus.active,
+      'sample-macrocycle-winter': MacrocycleStatus.notStarted,
+      'sample-macrocycle-summer': MacrocycleStatus.ended,
+    });
   });
 }

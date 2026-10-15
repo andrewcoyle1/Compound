@@ -101,6 +101,17 @@ void main() {
       });
     });
 
+    test('deleteSession removes the document', () async {
+      final model = WorkoutSessionModel.fromFirestore(
+        modelFixture('workout_session', 'full'),
+      );
+      await subject.saveSession(model.authorId, model);
+
+      await subject.deleteSession(model.authorId, model.id);
+
+      expect((await document(model.authorId, model.id).get()).exists, false);
+    });
+
     group('updateWeekStreakCount', () {
       test('sets week_streak_count alone, as an int', () async {
         final model = WorkoutSessionModel.fromFirestore(
@@ -223,6 +234,15 @@ void main() {
       expect(read.name, minimal.name);
       expect(read.notes, model.notes);
       expect(read.exercises, isEmpty);
+    });
+
+    test('deletes a session, and a missing one quietly', () async {
+      await subject.saveSession(uid, model);
+
+      await subject.deleteSession(uid, model.id);
+      await subject.deleteSession(uid, model.id);
+
+      expect(await subject.session(uid, model.id), isNull);
     });
 
     test('sets the week streak on a stored session', () async {

@@ -5,6 +5,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/programs/programs.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
@@ -13,9 +14,10 @@ import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-/// The Training tab's root: a search over exercises and workouts, and the
-/// Library. The schedule and the macrocycle and mesocycle libraries come
-/// with programs (M5).
+/// The Training tab's root (Swift `TrainingView`): a search over exercises
+/// and workouts, the active mesocycle's schedule (or a way to choose one),
+/// and the Library. The calendar header and the + menu's New items wait
+/// for their slices.
 class TrainingPage extends StatelessWidget {
   const new({super.key});
 
@@ -87,8 +89,31 @@ class _Library extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final programs = context.watch<ProgramsCubit>().state;
+    final active = programs.activeMesocycle;
     return LibrarySections(
       children: [
+        if (active != null)
+          ActiveMesocycleSection(mesocycle: active)
+        else if (programs.status == ProgramsStatus.loaded)
+          AppSection(
+            children: [
+              LibraryEmptyState(
+                icon: AppSymbols.mesocycle,
+                title: l10n.programNoActiveMesocycle,
+                message: l10n.programAddMesocycleMessage,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.l),
+                child: Center(
+                  child: FilledButton(
+                    onPressed: () => context.goNamed(MesocycleLibraryPage.name),
+                    child: Text(l10n.programChooseMesocycle),
+                  ),
+                ),
+              ),
+            ],
+          ),
         AppSection(
           children: [
             AppListRowButton(
@@ -103,6 +128,16 @@ class _Library extends StatelessWidget {
         AppSection(
           header: l10n.trainingLibraryHeader,
           children: [
+            AppListRowButton(
+              title: l10n.programMacrocyclesTitle,
+              icon: AppSymbols.macrocycle,
+              onPressed: () => context.goNamed(MacrocyclesPage.name),
+            ),
+            AppListRowButton(
+              title: l10n.programMesocyclesTitle,
+              icon: AppSymbols.library,
+              onPressed: () => context.goNamed(MesocycleLibraryPage.name),
+            ),
             AppListRowButton(
               title: l10n.trainingWorkoutsRow,
               icon: AppSymbols.workout,

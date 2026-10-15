@@ -31,6 +31,15 @@ manager or model by name.
     "saved on this device"; a later refusal by the server goes to `onWriteError`, not the
     caller. So a bloc can await a save offline, and its failure state covers only an error
     raised while starting the write. Never await a raw cloud_firestore write future.
+- **Widget tests fail after 30 seconds** (`app/test/flutter_test_config.dart`); never raise it.
+  A timeout means the test hangs. The usual causes:
+  - awaiting, in a `testWidgets` body, something only a pump completes, such as a fake
+    stream's `.first` or a cubit future (pump first, or use `tester.runAsync`);
+  - `addTearDown(bloc.close)` on a bloc its `BlocProvider` already closes.
+- **The very_good MCP `test` server is shared by every agent and runs one request at a time.**
+  Run your new test files first and fix any hang; run the whole suite only once they pass.
+- **Swift work happens in your own worktree,** never in `/Users/andrewcoyle/Compound`, which is
+  the owner's checkout.
 - **The `staging` flavor is the mock build.** It has no Firebase, and the app must be fully usable
   in it.
   - Every repository has an in-memory implementation alongside its Firebase one.

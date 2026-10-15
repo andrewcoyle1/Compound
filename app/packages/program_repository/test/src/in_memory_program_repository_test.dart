@@ -17,11 +17,15 @@ void main() {
 
       expect(
         [for (final m in await subject.watchMesocycles(sampleUid).first) m.id],
-        [sampleMesocycleId],
+        [sampleMesocycleId, ...sampleInactiveMesocycleIds],
       );
       expect(
         [for (final m in await subject.watchMacrocycles(sampleUid).first) m.id],
-        ['sample-macrocycle'],
+        [
+          'sample-macrocycle',
+          'sample-macrocycle-winter',
+          'sample-macrocycle-summer',
+        ],
       );
       expect(await subject.watchMesocycles('other').first, isEmpty);
       expect(await subject.watchMacrocycles('other').first, isEmpty);
@@ -79,6 +83,35 @@ void main() {
           'name': 'Renamed',
         }),
       );
+    });
+
+    test('a null join point clears the stored one; deletes remove', () async {
+      final subject = InMemoryProgramRepository();
+      final mesocycle = Mesocycle.fromFirestore(
+        modelFixture('mesocycle', 'full'),
+      );
+      final macrocycle = Macrocycle.fromFirestore(
+        modelFixture('macrocycle', 'full'),
+      );
+      final uid = macrocycle.authorId;
+      await subject.saveMesocycle(mesocycle);
+      await subject.saveMacrocycle(macrocycle);
+      await subject.saveMacrocycle(
+        Macrocycle.fromFirestore({
+          ...macrocycle.toFirestore(),
+          MacrocycleKeys.startMicrocycleIndex: null,
+        }),
+      );
+      expect(
+        (await subject.watchMacrocycles(uid).first).single.startMicrocycleIndex,
+        isNull,
+      );
+
+      await subject.deleteMesocycle(mesocycle.authorId, mesocycle.id);
+      await subject.deleteMacrocycle(uid, macrocycle.id);
+
+      expect(await subject.watchMesocycles(mesocycle.authorId).first, isEmpty);
+      expect(await subject.watchMacrocycles(uid).first, isEmpty);
     });
   });
 }

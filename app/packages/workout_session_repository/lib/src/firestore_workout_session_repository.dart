@@ -68,6 +68,12 @@ class FirestoreWorkoutSessionRepository implements WorkoutSessionRepository {
     );
   }
 
+  @override
+  Future<void> deleteSession(String uid, String id) {
+    final document = _sessions(uid).doc(id);
+    return writeLocally(document.path, document.delete, _onWriteError);
+  }
+
   /// An `update`: the server refuses a missing session with `not-found`,
   /// which reaches `onWriteError`. After [saveSession] the session is in the
   /// local cache, and Firestore sends writes in order, so it never is.

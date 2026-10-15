@@ -446,5 +446,20 @@ void main() {
       expect(working.single.weightKg, 100);
       expect(working.single.reps, 10);
     });
+
+    test('a deload keeps half the working sets, lighter', () {
+      final planned = plan(workoutGym: _barbellGym, microcycle: 2);
+      final deload = deloadedSession(
+        planned,
+        library: [_bench],
+        gym: _barbellGym,
+        now: start,
+      );
+      expect(deload.isDeload, true);
+      final working = deload.exercises.single.sets.where((s) => !s.isWarmup);
+      expect(working, hasLength(1));
+      expect(working.single.weightKg, lessThan(100));
+      expect(planned.isDeload, isNull);
+    });
   });
 }

@@ -45,10 +45,15 @@ dependencies:
   mobile_scanner: ^7.4.2
   nutrition_repository:
     path: packages/nutrition_repository
+  path_provider: ^2.1.5
   program_repository:
     path: packages/program_repository
   training_library_repository:
     path: packages/training_library_repository
+  training_rules:
+    path: packages/training_rules
+  training_session:
+    path: packages/training_session
   user_repository:
     path: packages/user_repository
   workout_session_repository:

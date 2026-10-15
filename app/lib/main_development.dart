@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -19,8 +20,10 @@ import 'package:food_repository/food_repository.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -73,7 +76,12 @@ Future<void> main() async {
       );
     }
 
+    // The workout under way, kept on the device between launches.
+    final support = await getApplicationSupportDirectory();
     return App(
+      activeSessionStore: FileActiveSessionStore(
+        File('${support.path}/active_workout_session.json'),
+      ),
       analyticsRepository: analyticsRepository,
       authRepository: FirebaseAuthRepository(
         firebaseAuth: FirebaseAuth.instance,

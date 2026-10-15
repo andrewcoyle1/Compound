@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -20,12 +22,15 @@ import 'package:compound/training_library/training_library.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
+import 'package:compound/workout_tracker/workout_tracker.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -41,6 +46,11 @@ class const App({
   // Empty and offline when left out, for tests that never log food.
   final FoodRepository? foodRepository,
   final OpenFoodFacts? openFoodFacts,
+
+  /// Where the workout under way is kept between launches; in memory when
+  /// left out.
+  final ActiveSessionStore? activeSessionStore,
+  final TrackerClock trackerClock = const TrackerClock(),
   super.key,
 }) extends StatelessWidget {
   @override
@@ -61,6 +71,7 @@ class const App({
         RepositoryProvider<OpenFoodFacts>(
           create: (_) => openFoodFacts ?? FakeOpenFoodFacts(),
         ),
+        RepositoryProvider.value(value: trackerClock),
         RepositoryProvider(
           create: (_) => TrainingSetupService(
             programs: programRepository,
@@ -79,6 +90,16 @@ class const App({
             )..add(const AppUserSubscriptionRequested()),
           ),
           BlocProvider(create: (_) => MealDraftCubit()),
+          BlocProvider(
+            create: (_) => ActiveWorkoutCubit(
+              sessions: workoutSessionRepository,
+              users: userRepository,
+              library: trainingLibraryRepository,
+              analytics: analyticsRepository,
+              store: activeSessionStore ?? InMemoryActiveSessionStore(),
+              clock: trackerClock.now,
+            ),
+          ),
         ],
         child: const AppView(),
       ),
@@ -260,6 +281,39 @@ class _AppViewState extends State<AppView> {
           ),
         ),
       ),
+      // Over the tabs, as the Swift app's full-screen cover; minimised, the
+      // workout carries on under the tabs' bar.
+      GoRoute(
+        path: WorkoutTrackerPage.path,
+        name: WorkoutTrackerPage.name,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: WorkoutTrackerPage(
+            opensKeypad:
+                state.uri.queryParameters[WorkoutTrackerPage.keypadParameter] ==
+                '1',
+          ),
+        ),
+      ),
+      // The tracker's last page: the workout just finished.
+      GoRoute(
+        path: WorkoutSessionDetailPage.summaryPath,
+        name: WorkoutSessionDetailPage.summaryName,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: WorkoutSessionDetailPage(
+            sessionId: state
+                .pathParameters[WorkoutSessionDetailPage.sessionIdParameter]!,
+            session: switch (state.extra) {
+              final WorkoutSessionModel session => session,
+              _ => null,
+            },
+            isWorkoutSummary: true,
+          ),
+        ),
+      ),
       GoRoute(
         path: SignInPage.path,
         name: SignInPage.name,
@@ -289,6 +343,19 @@ class _AppViewState extends State<AppView> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    _followUser(context.read<AppBloc>().state);
+  }
+
+  /// The workout under way follows the signed-in user.
+  void _followUser(AppState state) => unawaited(
+    context.read<ActiveWorkoutCubit>().userChanged(
+      state is AppAuthenticated ? state.user.uid : null,
+    ),
+  );
+
+  @override
   void dispose() {
     _router.dispose();
     super.dispose();
@@ -297,15 +364,49 @@ class _AppViewState extends State<AppView> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AppBloc, AppState>(
-      listener: (_, _) => _router.refresh(),
+      listener: (_, state) {
+        _router.refresh();
+        _followUser(state);
+      },
       child: MaterialApp.router(
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: _router,
+        // How the finished workout's save is going, wherever the user is.
+        builder: (context, child) =>
+            BlocListener<ActiveWorkoutCubit, ActiveWorkoutState>(
+              listenWhen: (previous, current) =>
+                  current.saveNoticeId != previous.saveNoticeId,
+              listener: _showSaveNotice,
+              child: child,
+            ),
       ),
     );
+  }
+
+  static void _showSaveNotice(BuildContext context, ActiveWorkoutState state) {
+    final l10n = context.l10n;
+    final notice = state.saveNotice;
+    if (notice == null) return;
+    if (notice == SaveProgress.failed) {
+      unawaited(HapticFeedback.errorNotification());
+    } else if (notice == SaveProgress.saved) {
+      unawaited(HapticFeedback.successNotification());
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(switch (notice) {
+            SaveProgress.retrying => l10n.saveRetrying,
+            SaveProgress.saved => l10n.saveSaved,
+            SaveProgress.failed => l10n.saveFailed,
+          }),
+          duration: Duration(seconds: notice == SaveProgress.failed ? 8 : 6),
+        ),
+      );
   }
 }
 

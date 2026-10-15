@@ -15,6 +15,7 @@ class WorkoutSessionDetailBloc
     required this._userRepository,
     required this._uid,
     required this._sessionId,
+    this._session,
   }) : super(const WorkoutSessionDetailLoading()) {
     on<WorkoutSessionDetailRequested>(_onRequested);
   }
@@ -24,6 +25,10 @@ class WorkoutSessionDetailBloc
   final String _uid;
   final String _sessionId;
 
+  /// The workout, when the caller has it: a summary shows the workout just
+  /// finished without waiting for its save.
+  final WorkoutSessionModel? _session;
+
   Future<void> _onRequested(
     WorkoutSessionDetailRequested event,
     Emitter<WorkoutSessionDetailState> emit,
@@ -31,7 +36,7 @@ class WorkoutSessionDetailBloc
     emit(const WorkoutSessionDetailLoading());
     final WorkoutSessionModel? session;
     try {
-      session = await _sessionRepository.session(_uid, _sessionId);
+      session = _session ?? await _sessionRepository.session(_uid, _sessionId);
     } on Object {
       emit(const WorkoutSessionDetailFailure());
       return;

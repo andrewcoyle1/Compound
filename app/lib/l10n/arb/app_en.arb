@@ -3022,5 +3022,442 @@
     "nutritionDeleteFailed": "Unable to Remove Food",
     "@nutritionDeleteFailed": {
         "description": "A failed delete"
+    },
+    "trackerMinimize": "Minimize workout",
+    "@trackerMinimize": {
+        "description": "Tracker: the chevron that hides the tracker while the workout runs"
+    },
+    "trackerOptions": "Workout options",
+    "@trackerOptions": {
+        "description": "Tracker: the menu button"
+    },
+    "trackerPause": "Pause Workout",
+    "@trackerPause": {
+        "description": "Tracker menu: pause the clock"
+    },
+    "trackerResume": "Resume Workout",
+    "@trackerResume": {
+        "description": "Tracker menu and bottom button: resume a paused workout"
+    },
+    "trackerFinishMenu": "Finish Workout…",
+    "@trackerFinishMenu": {
+        "description": "Tracker menu: open the finish sheet"
+    },
+    "trackerNotesMenu": "Workout Notes…",
+    "@trackerNotesMenu": {
+        "description": "Tracker menu: open the workout notes sheet"
+    },
+    "trackerDiscard": "Discard Workout",
+    "@trackerDiscard": {
+        "description": "Tracker menu and dialogs: throw the workout away"
+    },
+    "trackerDiscardTitle": "Discard Workout?",
+    "@trackerDiscardTitle": {
+        "description": "Tracker: discard confirmation title"
+    },
+    "trackerDiscardMessage": "The sets you logged will not be saved.",
+    "@trackerDiscardMessage": {
+        "description": "Tracker: discard confirmation message"
+    },
+    "trackerCancel": "Cancel",
+    "@trackerCancel": {
+        "description": "Tracker dialogs: cancel"
+    },
+    "trackerDiscardConfirm": "Discard",
+    "@trackerDiscardConfirm": {
+        "description": "Tracker: confirm discarding the workout"
+    },
+    "trackerNoSetsTitle": "No Sets Logged",
+    "@trackerNoSetsTitle": {
+        "description": "Tracker: finishing with nothing logged"
+    },
+    "trackerSaveAnyway": "Save Anyway",
+    "@trackerSaveAnyway": {
+        "description": "Tracker: finish with nothing logged"
+    },
+    "trackerActiveTitle": "Active Workout",
+    "@trackerActiveTitle": {
+        "description": "Starting a workout while one is under way: title"
+    },
+    "trackerActiveMessage": "You already have an active workout.",
+    "@trackerActiveMessage": {
+        "description": "Starting a workout while one is under way: message"
+    },
+    "trackerResumeButton": "Resume",
+    "@trackerResumeButton": {
+        "description": "Starting a workout while one is under way: open the one under way"
+    },
+    "trackerReplaceButton": "Discard & Start New",
+    "@trackerReplaceButton": {
+        "description": "Starting a workout while one is under way: replace it"
+    },
+    "trackerLogRefusedTitle": "Unable to Log Set",
+    "@trackerLogRefusedTitle": {
+        "description": "Tracker: a set that cannot be logged yet"
+    },
+    "trackerProblemNoReps": "Enter at least one rep.",
+    "@trackerProblemNoReps": {
+        "description": "Tracker: why a set cannot be logged"
+    },
+    "trackerProblemNoTime": "Enter a time for this set.",
+    "@trackerProblemNoTime": {
+        "description": "Tracker: why a set cannot be logged"
+    },
+    "trackerProblemNegativeWeight": "Enter a weight of zero or more.",
+    "@trackerProblemNegativeWeight": {
+        "description": "Tracker: why a set cannot be logged"
+    },
+    "trackerProblemNoDistance": "Enter a distance for this set.",
+    "@trackerProblemNoDistance": {
+        "description": "Tracker: why a set cannot be logged"
+    },
+    "trackerRemoveRep": "Remove a rep",
+    "@trackerRemoveRep": {
+        "description": "Correction bar: one rep off the set just logged"
+    },
+    "trackerAddRep": "Add a rep",
+    "@trackerAddRep": {
+        "description": "Correction bar: one rep on the set just logged"
+    },
+    "trackerUndo": "Undo",
+    "@trackerUndo": {
+        "description": "Correction bar and snack bar: undo"
+    },
+    "trackerRirTitle": "Reps in reserve",
+    "@trackerRirTitle": {
+        "description": "Correction bar and keypad: the reps-in-reserve row"
+    },
+    "trackerRirChip": "{value} reps in reserve",
+    "@trackerRirChip": {
+        "description": "A reps-in-reserve chip, spoken, e.g. 2 reps in reserve",
+        "placeholders": {
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerRirShort": "RIR",
+    "@trackerRirShort": {
+        "description": "Keypad: the reps-in-reserve row heading"
+    },
+    "trackerNoExercisesTitle": "No Exercises",
+    "@trackerNoExercisesTitle": {
+        "description": "Tracker: an empty workout"
+    },
+    "trackerNoExercisesMessage": "Please add some exercises to get started.",
+    "@trackerNoExercisesMessage": {
+        "description": "Tracker: an empty workout"
+    },
+    "trackerNoWorkoutTitle": "No Workout in Progress",
+    "@trackerNoWorkoutTitle": {
+        "description": "Tracker opened with no workout under way"
+    },
+    "trackerNoWorkoutMessage": "Start a workout from Training.",
+    "@trackerNoWorkoutMessage": {
+        "description": "Tracker opened with no workout under way"
+    },
+    "trackerAddExercise": "Add Exercise",
+    "@trackerAddExercise": {
+        "description": "Tracker: add exercises from the picker"
+    },
+    "trackerAddSet": "Add Set",
+    "@trackerAddSet": {
+        "description": "Tracker: one more set on the exercise"
+    },
+    "trackerDeleteExercise": "Delete Exercise",
+    "@trackerDeleteExercise": {
+        "description": "Tracker: exercise menu"
+    },
+    "trackerDeleteExerciseTitle": "Delete Exercise?",
+    "@trackerDeleteExerciseTitle": {
+        "description": "Tracker: delete exercise confirmation"
+    },
+    "trackerDeleteSet": "Delete Set",
+    "@trackerDeleteSet": {
+        "description": "Tracker: set menu"
+    },
+    "trackerSetDeleted": "Set deleted",
+    "@trackerSetDeleted": {
+        "description": "Tracker: snack bar after deleting a set"
+    },
+    "trackerNotes": "Notes",
+    "@trackerNotes": {
+        "description": "Tracker: exercise menu, open its notes"
+    },
+    "trackerExerciseOptions": "Exercise options",
+    "@trackerExerciseOptions": {
+        "description": "Tracker: an exercise card menu button"
+    },
+    "trackerSessionNote": "Session Note",
+    "@trackerSessionNote": {
+        "description": "Notes sheet: the note on this workout"
+    },
+    "trackerSessionNoteFooter": "Saved with this workout in your history.",
+    "@trackerSessionNoteFooter": {
+        "description": "Notes sheet: under the session note"
+    },
+    "trackerExerciseNote": "Exercise Note",
+    "@trackerExerciseNote": {
+        "description": "Notes sheet: the note shown every time"
+    },
+    "trackerExerciseNoteFooter": "Shown every time you do this exercise.",
+    "@trackerExerciseNoteFooter": {
+        "description": "Notes sheet: under the exercise note"
+    },
+    "trackerWorkoutNotesTitle": "Workout Notes",
+    "@trackerWorkoutNotesTitle": {
+        "description": "Workout notes sheet title"
+    },
+    "trackerSave": "Save",
+    "@trackerSave": {
+        "description": "Notes sheet: save"
+    },
+    "trackerFinish": "Finish",
+    "@trackerFinish": {
+        "description": "Finish sheet: confirm finishing"
+    },
+    "trackerFinishTitle": "Finish Workout",
+    "@trackerFinishTitle": {
+        "description": "Finish sheet title and the bottom button once every set is logged"
+    },
+    "trackerAllComplete": "All sets complete. Finish Workout is available.",
+    "@trackerAllComplete": {
+        "description": "Announced when the last set is logged"
+    },
+    "trackerWarmupBadge": "W",
+    "@trackerWarmupBadge": {
+        "description": "Tracker: a warm-up set's badge"
+    },
+    "trackerLogSet": "Log set {number}",
+    "@trackerLogSet": {
+        "description": "Bottom button: log a set, e.g. Log set 2",
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerLogWarmup": "Log warm-up",
+    "@trackerLogWarmup": {
+        "description": "Bottom button: log a warm-up set"
+    },
+    "trackerLogDrop": "Log drop set",
+    "@trackerLogDrop": {
+        "description": "Bottom button: log a drop"
+    },
+    "trackerLogFailure": "Log failure set",
+    "@trackerLogFailure": {
+        "description": "Bottom button: log an AMRAP set"
+    },
+    "trackerNext": "Next: {name}",
+    "@trackerNext": {
+        "description": "Bottom button: open the next exercise",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerSkipRest": "Skip Rest",
+    "@trackerSkipRest": {
+        "description": "Bottom button while resting"
+    },
+    "trackerAddRestShort": "+15s",
+    "@trackerAddRestShort": {
+        "description": "Bottom button beside Skip Rest: 15 seconds more rest"
+    },
+    "trackerAddRestSpoken": "Add 15 seconds",
+    "@trackerAddRestSpoken": {
+        "description": "Spoken label of the +15s button"
+    },
+    "trackerRestDone": "Rest done · {title}",
+    "@trackerRestDone": {
+        "description": "Bottom button for a second after the rest ends",
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerRestRunning": "Rest: {time}",
+    "@trackerRestRunning": {
+        "description": "Inline rest timer, e.g. Rest: 1:27",
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerRestReady": "Ready",
+    "@trackerRestReady": {
+        "description": "Inline rest timer once the rest is over"
+    },
+    "trackerPaused": "Paused",
+    "@trackerPaused": {
+        "description": "Tracker clock while paused"
+    },
+    "trackerSetLogged": "Set {number} logged, {figures}",
+    "@trackerSetLogged": {
+        "description": "Announced when a set is logged",
+        "placeholders": {
+            "number": {
+                "type": "String"
+            },
+            "figures": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerColumnSet": "Set",
+    "@trackerColumnSet": {
+        "description": "Set table heading"
+    },
+    "trackerColumnLast": "Last",
+    "@trackerColumnLast": {
+        "description": "Set table heading: last time"
+    },
+    "trackerColumnReps": "Reps",
+    "@trackerColumnReps": {
+        "description": "Set table heading"
+    },
+    "trackerColumnTime": "Time",
+    "@trackerColumnTime": {
+        "description": "Set table heading"
+    },
+    "trackerInProgress": "Workout In Progress",
+    "@trackerInProgress": {
+        "description": "Bar over the tabs while a workout runs"
+    },
+    "trackerLoggedValue": "Logged",
+    "@trackerLoggedValue": {
+        "description": "A logged set row, spoken"
+    },
+    "keypadHide": "Hide Keyboard",
+    "@keypadHide": {
+        "description": "Keypad key"
+    },
+    "keypadDecrease": "Decrease weight",
+    "@keypadDecrease": {
+        "description": "Keypad key"
+    },
+    "keypadIncrease": "Increase weight",
+    "@keypadIncrease": {
+        "description": "Keypad key"
+    },
+    "keypadDelete": "Delete",
+    "@keypadDelete": {
+        "description": "Keypad key: backspace"
+    },
+    "keypadDecimal": "Decimal point",
+    "@keypadDecimal": {
+        "description": "Keypad key"
+    },
+    "keypadLogSet": "Log Set",
+    "@keypadLogSet": {
+        "description": "Keypad key: log the set"
+    },
+    "keypadDone": "Done",
+    "@keypadDone": {
+        "description": "Keypad key: close, on a logged set"
+    },
+    "keypadNext": "Next, {field}",
+    "@keypadNext": {
+        "description": "Keypad key: the next field, e.g. Next, reps",
+        "placeholders": {
+            "field": {
+                "type": "String"
+            }
+        }
+    },
+    "keypadFieldWeight": "weight",
+    "@keypadFieldWeight": {
+        "description": "Keypad: a field's name in Next, weight"
+    },
+    "keypadFieldReps": "reps",
+    "@keypadFieldReps": {
+        "description": "Keypad: a field's name in Next, reps"
+    },
+    "keypadFieldDistance": "distance",
+    "@keypadFieldDistance": {
+        "description": "Keypad: a field's name in Next, distance"
+    },
+    "keypadFieldTime": "time",
+    "@keypadFieldTime": {
+        "description": "Keypad: a field's name in Next, time (a duration)"
+    },
+    "keypadLastSetChip": "Last set {reps}",
+    "@keypadLastSetChip": {
+        "description": "Keypad chip: the last set's reps",
+        "placeholders": {
+            "reps": {
+                "type": "String"
+            }
+        }
+    },
+    "keypadMinChip": "Min {reps}",
+    "@keypadMinChip": {
+        "description": "Keypad chip: the target's fewest reps",
+        "placeholders": {
+            "reps": {
+                "type": "String"
+            }
+        }
+    },
+    "keypadMaxChip": "Max {reps}",
+    "@keypadMaxChip": {
+        "description": "Keypad chip: the target's most reps",
+        "placeholders": {
+            "reps": {
+                "type": "String"
+            }
+        }
+    },
+    "saveRetrying": "Couldn't save your workout. Retrying…",
+    "@saveRetrying": {
+        "description": "Snack bar while a finished workout's save is retried"
+    },
+    "saveSaved": "Workout saved.",
+    "@saveSaved": {
+        "description": "Snack bar once a retried save works"
+    },
+    "saveFailed": "Couldn't save your workout. It's still on this device — resume it from Training.",
+    "@saveFailed": {
+        "description": "Snack bar when the save fails"
+    },
+    "startEmptyWorkout": "Start Empty Workout",
+    "@startEmptyWorkout": {
+        "description": "Today and Training: start a workout with no exercises"
+    },
+    "startWorkout": "Start Workout",
+    "@startWorkout": {
+        "description": "Workout template: start it"
+    },
+    "startFailedTitle": "Could Not Start Workout",
+    "@startFailedTitle": {
+        "description": "A workout could not be started"
+    },
+    "startFailedMessage": "Please try again.",
+    "@startFailedMessage": {
+        "description": "A workout could not be started"
+    },
+    "summaryDone": "Done",
+    "@summaryDone": {
+        "description": "Workout summary: close it"
+    },
+    "trackerAddRound": "Add Round",
+    "@trackerAddRound": {
+        "description": "Superset card: one more set for every member"
+    },
+    "trackerStripProgress": "{done} of {total} sets",
+    "@trackerStripProgress": {
+        "description": "Exercise strip, spoken: working sets logged of planned",
+        "placeholders": {
+            "done": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
     }
 }

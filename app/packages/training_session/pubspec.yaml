@@ -1,0 +1,29 @@
+name: training_session
+description: "The workout tracker's engine, without UI: compound_models mapped onto training_rules, a session built from a template and prefilled, the active session as a controller kept on the device, and finishing it."
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  cloud_firestore: ^6.10.0
+  compound_maths:
+    path: ../compound_maths
+  compound_models:
+    path: ../compound_models
+  flutter:
+    sdk: flutter
+  training_rules:
+    path: ../training_rules
+  user_repository:
+    path: ../user_repository
+  workout_session_repository:
+    path: ../workout_session_repository
+
+dev_dependencies:
+  fake_async: ^1.3.3
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^11.0.0

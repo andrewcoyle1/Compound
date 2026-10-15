@@ -1,8 +1,8 @@
 /// Reads the signed-in user's training library (exercises, workout
 /// templates, gym profiles, exercise and workout settings) from Firestore,
 /// or from memory in the staging flavor, beside the Swift app's bundled
-/// system exercises and workouts. Gym profiles are the one thing it writes
-/// (docs/specs/flutter/firestore-contract.md).
+/// system exercises and workouts. It writes gym profiles and exercise
+/// settings (docs/specs/flutter/firestore-contract.md).
 library;
 
 export 'package:compound_models/compound_models.dart'

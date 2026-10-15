@@ -48,6 +48,18 @@ class FirestoreWorkoutSessionRepository implements WorkoutSessionRepository {
     return data == null ? null : _decode(document.reference.path, data);
   }
 
+  @override
+  Future<void> saveSession(String uid, WorkoutSessionModel session) =>
+      _sessions(uid)
+          .doc(session.id)
+          .set(_toFirestore(session.toFirestore()), SetOptions(merge: true));
+
+  @override
+  Future<void> updateWeekStreakCount(String uid, String sessionId, int weeks) =>
+      _sessions(uid)
+          .doc(sessionId)
+          .update({WorkoutSessionModelKeys.weekStreakCount: weeks});
+
   WorkoutSessionModel? _decode(String path, Map<String, Object?> data) {
     try {
       return WorkoutSessionModel.fromFirestore(_fromFirestore(data));
@@ -75,5 +87,15 @@ Object? _value(Object? value) => switch (value) {
   final Timestamp timestamp => timestamp.toDate().toUtc(),
   final Map<String, Object?> map => _fromFirestore(map),
   final List<Object?> list => list.map(_value).toList(),
+  _ => value,
+};
+
+Map<String, Object?> _toFirestore(Map<String, Object?> data) =>
+    data.map((key, value) => MapEntry(key, _stored(value)));
+
+Object? _stored(Object? value) => switch (value) {
+  final DateTime date => Timestamp.fromDate(date),
+  final Map<String, Object?> map => _toFirestore(map),
+  final List<Object?> list => list.map(_stored).toList(),
   _ => value,
 };

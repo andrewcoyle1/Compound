@@ -18,8 +18,8 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
     List<GymProfileModel> gymProfiles = const [],
     List<ExerciseSettingsModel> exerciseSettings = const [],
     List<WorkoutSettings> workoutSettings = const [],
-  }) : _exercises = List.unmodifiable(exercises),
-       _workoutTemplates = List.unmodifiable(workoutTemplates),
+  }) : _exercises = List.of(exercises),
+       _workoutTemplates = List.of(workoutTemplates),
        _gymProfiles = List.of(gymProfiles),
        _exerciseSettings = List.of(exerciseSettings),
        _workoutSettings = List.of(workoutSettings);
@@ -31,18 +31,62 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
   final List<WorkoutSettings> _workoutSettings;
   final _gymProfileChanges = StreamController<void>.broadcast(sync: true);
 
+  final _libraryChanges = StreamController<void>.broadcast(sync: true);
+
+  /// [read] now and after every saved exercise or workout.
+  Stream<T> _watchLibrary<T>(T Function() read) => Stream.multi((listener) {
+    listener.add(read());
+    final subscription = _libraryChanges.stream.listen(
+      (_) => listener.add(read()),
+    );
+    // Not `subscription.cancel` itself: `first` would wait on the Future
+    // that returns, which never completes under a widget test's fake clock.
+    listener.onCancel = () => unawaited(subscription.cancel());
+  });
+
   @override
-  Stream<List<ExerciseModel>> watchUserExercises(String uid) => Stream.value(
-    _exercises.where((exercise) => exercise.authorId == uid).toList()
-      ..sort((a, b) => a.name.compareTo(b.name)),
+  Stream<List<ExerciseModel>> watchUserExercises(String uid) => _watchLibrary(
+    () =>
+        _exercises.where((exercise) => exercise.authorId == uid).toList()
+          ..sort((a, b) => a.name.compareTo(b.name)),
   );
 
   @override
   Stream<List<WorkoutTemplateModel>> watchUserWorkoutTemplates(String uid) =>
-      Stream.value([
-        for (final template in _workoutTemplates)
-          if (template.authorId == uid) template,
-      ]);
+      _watchLibrary(
+        () => [
+          for (final template in _workoutTemplates)
+            if (template.authorId == uid) template,
+        ],
+      );
+
+  /// Replaces a stored exercise with the same id, else adds it.
+  @override
+  Future<void> saveUserExercise(ExerciseModel exercise) async {
+    final index = _exercises.indexWhere((stored) => stored.id == exercise.id);
+    if (index < 0) {
+      _exercises.add(exercise);
+    } else {
+      _exercises[index] = exercise;
+    }
+    _libraryChanges.add(null);
+  }
+
+  /// Replaces the author's stored workout with the same id, else adds it.
+  @override
+  Future<void> saveWorkoutTemplate(WorkoutTemplateModel template) async {
+    final index = _workoutTemplates.indexWhere(
+      (stored) =>
+          stored.authorId == template.authorId &&
+          stored.workoutId == template.workoutId,
+    );
+    if (index < 0) {
+      _workoutTemplates.add(template);
+    } else {
+      _workoutTemplates[index] = template;
+    }
+    _libraryChanges.add(null);
+  }
 
   @override
   Stream<List<GymProfileModel>> watchGymProfiles(String uid) =>

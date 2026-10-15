@@ -5,6 +5,7 @@ import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/logic/microcycle_view.dart';
+import 'package:compound/programs/view/mesocycle_design_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
@@ -19,7 +20,8 @@ import 'package:program_repository/program_repository.dart';
 /// The Training tab's active mesocycle (Swift `ActiveMesocycleView`): its
 /// header, a picker for the microcycle shown, and that microcycle's days.
 /// A day opens its workout, a finished one its session, a rest day ticks;
-/// an open workout can be skipped, and the mesocycle deleted.
+/// an open workout can be skipped, and the mesocycle opened (Info) or
+/// deleted.
 class const ActiveMesocycleSection({
   required final Mesocycle mesocycle,
   super.key,
@@ -100,7 +102,13 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
               trailing: PopupMenuButton<void>(
                 icon: Icon(AppSymbols.more),
                 tooltip: l10n.programMesocycleOptions,
-                itemBuilder: (context) => [
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    onTap: () => unawaited(
+                      MesocycleDesignPage.edit(context, mesocycle.id),
+                    ),
+                    child: Text(l10n.programInfo),
+                  ),
                   PopupMenuItem(
                     onTap: () => unawaited(_delete(context)),
                     child: Text(

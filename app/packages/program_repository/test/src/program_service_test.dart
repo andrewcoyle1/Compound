@@ -320,6 +320,95 @@ void main() {
     });
   });
 
+  group('activateMesocycle', () {
+    test('saves it and follows it as a macrocycle of one', () async {
+      build(macrocycles: [_macrocycle('old')], active: null);
+
+      await subject.activateMesocycle(_uid, _mesocycle('m2'));
+
+      expect((await programs.watchMesocycles(_uid).first).single.id, 'm2');
+      expect((await stored('old')).status, MacrocycleStatus.ended);
+      final started = await stored('id-1');
+      expect(started.mesocycleIds, ['m2']);
+      expect(started.name, 'Block m2');
+      expect(started.status, MacrocycleStatus.active);
+      expect(started.mesocycleStartedAt, now);
+      expect(await following(), 'm2');
+      expect(events, ['MacrocycleMan_Start']);
+    });
+
+    test('keeps the progress of the mesocycle under way', () async {
+      build(macrocycles: [_macrocycle('p')], active: null);
+
+      await subject.activateMesocycle(_uid, _mesocycle('m1'));
+
+      expect((await macrocycles()).single.id, 'p');
+      expect(await following(), 'm1');
+      expect(events, isEmpty);
+    });
+  });
+
+  group('migrateIfNeeded', () {
+    test('gives a legacy account one dated where its schedule was', () async {
+      final history = [_session('a', _start.subtract(const Duration(days: 3)))];
+      build(mesocycles: [_mesocycle('m1', cycles: 2)], history: history);
+
+      await subject.migrateIfNeeded(_uid);
+
+      final created = (await macrocycles()).single;
+      expect(
+        created.mesocycleStartedAt,
+        MesocycleSchedule.legacyRun(
+          _mesocycle('m1', cycles: 2),
+          history,
+        ).startedAt,
+      );
+      expect(created.mesocycleIds, ['m1']);
+      expect(created.status, MacrocycleStatus.active);
+    });
+
+    test('leaves an account that already has one', () async {
+      build(
+        mesocycles: [_mesocycle('m1', cycles: 2)],
+        macrocycles: [_macrocycle('p')],
+      );
+
+      await subject.migrateIfNeeded(_uid);
+
+      expect((await macrocycles()).single.id, 'p');
+      expect(events, isEmpty);
+    });
+
+    test('moves a finished mesocycle on', () async {
+      build(
+        mesocycles: [_mesocycle('m1'), _mesocycle('m2')],
+        macrocycles: [
+          _macrocycle('p', mesocycleIds: ['m1', 'm2']),
+        ],
+        history: [
+          _session('a', _start.add(const Duration(hours: 1))),
+          _session('b', _start.add(const Duration(hours: 2))),
+        ],
+      );
+
+      await subject.migrateIfNeeded(_uid);
+
+      expect((await stored('p')).mesocycleIndex, 1);
+      expect(await following(), 'm2');
+    });
+
+    test('swallows failures, as Swift does', () async {
+      build(active: null);
+      subject = ProgramService(
+        programs: _BrokenPrograms(),
+        users: users,
+        sessions: sessions,
+      );
+
+      await subject.migrateIfNeeded(_uid);
+    });
+  });
+
   group('advanceIfMesocycleComplete', () {
     test('leaves an unfinished, finished or missing one', () async {
       build(
@@ -500,4 +589,10 @@ void main() {
       },
     );
   });
+}
+
+class _BrokenPrograms extends InMemoryProgramRepository {
+  @override
+  Stream<List<Macrocycle>> watchMacrocycles(String uid) =>
+      Stream.error(StateError('offline'));
 }

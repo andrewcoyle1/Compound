@@ -2,7 +2,8 @@ import 'package:compound_models/compound_models.dart';
 
 /// The signed-in user's training library, beside the bundled system
 /// exercises and workouts (`PrebuiltCatalogue`). Read-only but for gym
-/// profiles and the training settings.
+/// profiles, the training settings, and the exercises and workouts a
+/// program import or a saved copy adds.
 abstract interface class TrainingLibraryRepository {
   /// The exercises at `exercise_templates` whose author is [uid], by name,
   /// as `ExerciseModelManager`'s listener reads them. Re-emitted on every
@@ -12,6 +13,15 @@ abstract interface class TrainingLibraryRepository {
   /// The templates at `users/{uid}/workout_templates`, in Firestore's
   /// order, as `WorkoutTemplateManager` reads them.
   Stream<List<WorkoutTemplateModel>> watchUserWorkoutTemplates(String uid);
+
+  /// Saves [exercise] to `exercise_templates/{exercise.id}`, merged, as
+  /// `ExerciseModelManager.saveExerciseModel` does without a picture.
+  Future<void> saveUserExercise(ExerciseModel exercise);
+
+  /// Saves [template] to `users/{template.authorId}/workout_templates/
+  /// {template.workoutId}`, merged, as `WorkoutTemplateManager
+  /// .saveWorkoutTemplate` does without a picture.
+  Future<void> saveWorkoutTemplate(WorkoutTemplateModel template);
 
   /// The profiles at `users/{uid}/gym_profiles`, each list completed from
   /// the catalogue ([GymProfileModel.fromFirestore]).

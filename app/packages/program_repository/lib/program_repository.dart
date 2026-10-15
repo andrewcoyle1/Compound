@@ -8,8 +8,10 @@ export 'package:compound_models/compound_models.dart'
 
 export 'src/firestore_program_repository.dart';
 export 'src/gym_defaults.dart';
+export 'src/import/import.dart';
 export 'src/in_memory_program_repository.dart';
 export 'src/macrocycle_rules.dart';
+export 'src/mesocycle_design.dart';
 export 'src/mesocycle_schedule.dart';
 export 'src/program_repository.dart';
 export 'src/program_rules.dart';

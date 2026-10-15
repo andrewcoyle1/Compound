@@ -181,6 +181,162 @@ void main() {
   group('$TrainingSetupService in memory', () {
     final user = UserModel.fromFirestore(modelFixture('user_model', 'full'));
 
+    group('saveWorkoutCopy', () {
+      final day = pushPullLegs.workoutTemplates.firstWhere(
+        (day) => day.exercises.isNotEmpty,
+      );
+      late InMemoryTrainingLibraryRepository library;
+      late TrainingSetupService subject;
+
+      setUp(() {
+        library = InMemoryTrainingLibraryRepository();
+        subject = TrainingSetupService(
+          programs: InMemoryProgramRepository(),
+          library: library,
+          users: InMemoryUserRepository(),
+          now: () => now,
+          newId: newId,
+        );
+      });
+
+      test('saves the day as the user own workout, with a new id', () async {
+        final copy = await subject.saveWorkoutCopy(
+          uid,
+          day,
+          library: const [],
+          copyName: (name) => '$name (copy)',
+        );
+
+        expect(copy.workoutId, 'id-1');
+        expect(copy.authorId, uid);
+        expect(copy.name, day.name);
+        expect(copy.dateCreated, now);
+        expect(copy.exercises, day.exercises);
+        final saved = await library.watchUserWorkoutTemplates(uid).first;
+        expect(saved.single.workoutId, 'id-1');
+      });
+
+      test('names it apart from a workout with its name', () async {
+        final copy = await subject.saveWorkoutCopy(
+          uid,
+          day,
+          library: [day],
+          copyName: (name) => '$name (copy)',
+        );
+
+        expect(copy.name, '${day.name} (copy)');
+        expect(
+          workoutCopyName(day.name.toUpperCase(), [day], (n) => '$n (copy)'),
+          '${day.name.toUpperCase()} (copy)',
+        );
+      });
+    });
+
+    group('imports', () {
+      test('a new exercise is weight and reps, one-sided per side', () {
+        final subject = TrainingSetupService(
+          programs: InMemoryProgramRepository(),
+          library: InMemoryTrainingLibraryRepository(),
+          users: InMemoryUserRepository(),
+          now: () => now,
+          newId: newId,
+        );
+
+        final created = subject.newImportedExercise(
+          'user-1',
+          'Step Up',
+          perSide: true,
+        );
+
+        expect(created.id, 'id-1');
+        expect(created.authorId, 'user-1');
+        expect(created.trackableMetrics, [
+          TrackableExerciseMetric.weight,
+          TrackableExerciseMetric.reps,
+        ]);
+        expect(created.muscleGroups, isEmpty);
+        expect(created.laterality, Laterality.unilateral);
+        expect(
+          subject
+              .newImportedExercise('user-1', 'Press', perSide: false)
+              .laterality,
+          Laterality.bilateral,
+        );
+      });
+
+      test('saves exercises, then mesocycles, then the macrocycle', () async {
+        final programs = InMemoryProgramRepository();
+        final library = InMemoryTrainingLibraryRepository();
+        final subject = TrainingSetupService(
+          programs: programs,
+          library: library,
+          users: InMemoryUserRepository(),
+          now: () => now,
+          newId: newId,
+        );
+        final copied = subject.newImportedExercise(uid, 'Calf', perSide: false);
+        final created = subject.newImportedExercise(uid, 'Row', perSide: false);
+        final result = buildProgramFromMesocycles(
+          [pushPullLegs],
+          title: 'Plan',
+          style: const ProgramImportStyle(
+            authorId: uid,
+            icon: 'flag',
+            colour: '#000000',
+          ),
+          library: const [],
+          now: now,
+          newId: newId,
+        );
+
+        await subject.saveImportedProgram(
+          ProgramImportResult(
+            macrocycle: result.macrocycle,
+            mesocycles: result.mesocycles,
+            newExercises: [copied],
+          ),
+          created: [created],
+        );
+
+        expect(
+          [for (final e in await library.watchUserExercises(uid).first) e.name],
+          ['Calf', 'Row'],
+        );
+        expect(
+          (await programs.watchMesocycles(uid).first).single.id,
+          result.mesocycles.single.id,
+        );
+        final macrocycle = (await programs.watchMacrocycles(uid).first).single;
+        expect(macrocycle.status, MacrocycleStatus.notStarted);
+      });
+
+      test('a failed mesocycle save leaves the macrocycle unsaved', () async {
+        final programs = _FailingPrograms();
+        final subject = TrainingSetupService(
+          programs: programs,
+          library: InMemoryTrainingLibraryRepository(),
+          users: InMemoryUserRepository(),
+        );
+        final result = buildProgramFromMesocycles(
+          [pushPullLegs],
+          title: 'Plan',
+          style: const ProgramImportStyle(
+            authorId: uid,
+            icon: 'flag',
+            colour: '#000000',
+          ),
+          library: const [],
+          now: now,
+        );
+
+        await expectLater(
+          subject.saveImportedProgram(result),
+          throwsStateError,
+        );
+        expect(await programs.watchMacrocycles(uid).first, isEmpty);
+      });
+    });
+
     test('a failed mesocycle save writes nothing else', () async {
       final users = InMemoryUserRepository(users: {uid: user});
       final programs = _FailingPrograms();

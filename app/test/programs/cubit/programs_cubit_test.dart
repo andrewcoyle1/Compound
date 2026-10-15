@@ -229,5 +229,62 @@ void main() {
       expect(await cubit.succeeded((c) => c.repeatMacrocycle()), isFalse);
       expect(world.analytics.names, ['TodayView_RepeatPlan_Press']);
     });
+
+    group('on sign-in', () {
+      test('a legacy account gets a macrocycle once', () async {
+        final world = ProgramWorld.seeded(
+          mesocycles: [m1],
+          history: [programSession('upper', programNow)],
+          active: 'm1',
+        );
+        final cubit = await follow(world);
+        await pumpEventQueue();
+
+        final macrocycles = cubit.state.macrocycles;
+        expect(macrocycles, hasLength(1));
+        expect(macrocycles.single.mesocycleIds, ['m1']);
+        expect(
+          macrocycles.single.mesocycleStartedAt,
+          MesocycleSchedule.legacyRun(m1, cubit.state.sessions).startedAt,
+        );
+
+        // Later emissions do not run it again.
+        await world.programs.saveMesocycle(m2);
+        await pumpEventQueue();
+        expect(cubit.state.macrocycles, hasLength(1));
+      });
+
+      test('an account with a macrocycle is left alone', () async {
+        final world = ProgramWorld.seeded(
+          mesocycles: [m1],
+          macrocycles: [
+            programMacrocycle('p', ['m1']),
+          ],
+          active: 'm1',
+        );
+        final cubit = await follow(world);
+        await pumpEventQueue();
+        expect(cubit.state.macrocycles.single.id, 'p');
+      });
+    });
+
+    test('saves a day as a workout of the user own', () async {
+      final world = ProgramWorld.seeded(mesocycles: [m1], active: 'm1');
+      final cubit = await follow(world);
+      expect(
+        await cubit.succeeded(
+          (c) => c.saveWorkoutCopy(
+            programDays.first,
+            library: const [],
+            copyName: (name) => '$name (copy)',
+          ),
+        ),
+        isTrue,
+      );
+      expect(world.analytics.names, [
+        'WorkoutTemplateDetailView_SaveCopy_Start',
+        'WorkoutTemplateDetailView_SaveCopy_Success',
+      ]);
+    });
   });
 }

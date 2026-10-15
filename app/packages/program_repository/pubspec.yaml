@@ -8,6 +8,7 @@ environment:
   flutter: ^3.47.0
 
 dependencies:
+  archive: ^4.0.9
   cloud_firestore: ^6.10.0
   compound_models:
     path: ../compound_models
@@ -19,6 +20,7 @@ dependencies:
     path: ../user_repository
   workout_session_repository:
     path: ../workout_session_repository
+  xml: ^7.1.0
 
 dev_dependencies:
   fake_cloud_firestore: ^4.3.0

@@ -1,5 +1,6 @@
 import 'package:compound_models/compound_models.dart';
 import 'package:program_repository/src/gym_defaults.dart';
+import 'package:program_repository/src/import/program_importer.dart';
 import 'package:program_repository/src/program_repository.dart';
 import 'package:program_repository/src/program_rules.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -79,6 +80,82 @@ class TrainingSetupService {
     return copy;
   }
 
+  /// Saves a library workout of [uid]'s own from the mesocycle day
+  /// [template], with a new id, that no longer follows the mesocycle
+  /// (`WorkoutTemplateDetailPresenter.onSaveCopyPressed`). When a workout
+  /// in [library] has its name, ignoring case, it is named [copyName] of
+  /// it. Returns what was saved.
+  Future<WorkoutTemplateModel> saveWorkoutCopy(
+    String uid,
+    WorkoutTemplateModel template, {
+    required Iterable<WorkoutTemplateModel> library,
+    required String Function(String name) copyName,
+  }) async {
+    final now = _now();
+    final copy = WorkoutTemplateModel(
+      workoutId: _newId(),
+      authorId: uid,
+      name: workoutCopyName(template.name, library, copyName),
+      description: template.description,
+      gymProfileId: template.gymProfileId,
+      dateCreated: now,
+      dateModified: now,
+      exercises: template.exercises,
+    );
+    await _library.saveWorkoutTemplate(copy);
+    return copy;
+  }
+
+  /// Saves an imported program in Swift's order
+  /// (`ImportProgramPresenter.save`): the exercises it brings
+  /// ([ProgramImportResult.newExercises], then [created]), the
+  /// mesocycles, then the macrocycle, not started. A failure stops there.
+  Future<void> saveImportedProgram(
+    ProgramImportResult result, {
+    List<ExerciseModel> created = const [],
+  }) async {
+    for (final exercise in [...result.newExercises, ...created]) {
+      await _library.saveUserExercise(exercise);
+    }
+    for (final mesocycle in result.mesocycles) {
+      await _programs.saveMesocycle(mesocycle);
+    }
+    await _programs.saveMacrocycle(result.macrocycle);
+  }
+
+  /// A new exercise of [uid]'s named [name], for a name an import could
+  /// not match: weight and reps, no muscle groups yet, one-sided when the
+  /// sheet counts its reps per side (`ImportProgramPresenter.newExercise`).
+  ExerciseModel newImportedExercise(
+    String uid,
+    String name, {
+    required bool perSide,
+  }) {
+    final now = _now();
+    return ExerciseModel(
+      id: _newId(),
+      authorId: uid,
+      name: name,
+      trackableMetrics: const [
+        TrackableExerciseMetric.weight,
+        TrackableExerciseMetric.reps,
+      ],
+      laterality: perSide ? Laterality.unilateral : Laterality.bilateral,
+      muscleGroups: const {},
+      isBodyweight: false,
+      rangeOfMotion: 0,
+      stability: 0,
+      bodyWeightContribution: 0,
+      alternateNames: const [],
+      isSystemExercise: false,
+      dateCreated: now,
+      dateModified: now,
+      clickCount: 0,
+      bookmarkCount: 0,
+      favouriteCount: 0,
+    );
+  }
+
   /// Saves [draft] as `GymProfilePresenter` does on Continue
   /// ([gymProfileToSave]: a blank name becomes [untitledName], stamped
   /// modified now), and returns what was saved. Start a new gym with
@@ -103,4 +180,17 @@ class TrainingSetupService {
       _users.updateUserFields(uid, [
         UserField.submittedFavouriteGymProfileId(gymProfileId),
       ]);
+}
+
+/// What a copy of the workout [name] is called: [copyName] of it when a
+/// workout in [library] already has the name, ignoring case, else [name].
+String workoutCopyName(
+  String name,
+  Iterable<WorkoutTemplateModel> library,
+  String Function(String name) copyName,
+) {
+  final lower = name.toLowerCase();
+  return library.any((other) => other.name.toLowerCase() == lower)
+      ? copyName(name)
+      : name;
 }

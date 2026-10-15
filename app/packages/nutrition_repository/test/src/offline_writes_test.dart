@@ -52,5 +52,15 @@ void main() {
         ]);
       },
     );
+
+    test('deleteMeal completes offline; a refusal is reported', () async {
+      await subject.deleteMeal('u', 'm');
+      expect(firestore.writes, ['users/u/meal_logs/m']);
+
+      firestore.refuse('permission-denied');
+      await pumpEventQueue();
+
+      expect(refused, [('users/u/meal_logs/m', 'permission-denied')]);
+    });
   });
 }

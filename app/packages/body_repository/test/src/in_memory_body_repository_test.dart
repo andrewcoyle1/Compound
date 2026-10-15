@@ -166,6 +166,81 @@ void main() {
       });
     });
 
+    group('saveSteps', () {
+      test('adds a count, and watchers see it', () async {
+        final expectation = expectLater(
+          subject.watchSteps('me').map((l) => [for (final e in l) e.id]),
+          emitsInOrder([
+            ['a', 'b'],
+            ['a', 'c', 'b'],
+          ]),
+        );
+
+        await subject.saveSteps(steps('c', 'me', 11));
+
+        await expectation;
+      });
+
+      test('merges over the stored count, as Firestore', () async {
+        await subject.saveSteps(
+          StepsModel(
+            id: 'a',
+            authorId: 'me',
+            number: 12000,
+            date: DateTime.utc(2026, 10, 10),
+            source: StepsSource.healthkit,
+            dateCreated: DateTime.utc(2026, 10, 10),
+            dateModified: DateTime.utc(2026, 10, 14),
+            healthKitId: 'hk',
+          ),
+        );
+
+        final a = (await subject.watchSteps('me').first).first;
+        expect((a.id, a.number, a.healthKitId), ('a', 12000, 'hk'));
+      });
+    });
+
+    group('clearMeasurementFields', () {
+      test('removes the fields, and watchers see it', () async {
+        await subject.saveMeasurement(
+          BodyMeasurementEntry(
+            id: 'a',
+            authorId: 'me',
+            date: DateTime.utc(2026, 10, 10),
+            source: WeightSource.manual,
+            dateCreated: DateTime.utc(2026, 10, 10),
+            bodyFatPercentage: 18.5,
+          ),
+        );
+        final expectation = expectLater(
+          subject
+              .watchMeasurements('me')
+              .map((l) => (l.first.weightKg, l.first.bodyFatPercentage)),
+          emitsInOrder([(80, 18.5), (null, 18.5)]),
+        );
+
+        await subject.clearMeasurementFields('me', 'a', {'weight_kg'});
+
+        await expectation;
+      });
+
+      test('fails with not-found for a missing entry', () {
+        expect(
+          subject.clearMeasurementFields('you', 'a', {'weight_kg'}),
+          throwsA(
+            isA<FirebaseException>().having((e) => e.code, 'code', 'not-found'),
+          ),
+        );
+      });
+
+      test('refuses a field the entry needs', () {
+        expect(
+          subject.clearMeasurementFields('me', 'a', {'author_id'}),
+          throwsArgumentError,
+        );
+      });
+    });
+
     group('goals', () {
       test('saveGoal adds a goal, and watchers see it', () async {
         final expectation = expectLater(

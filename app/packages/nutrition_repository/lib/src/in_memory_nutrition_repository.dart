@@ -28,12 +28,18 @@ class InMemoryNutritionRepository implements NutritionRepository {
   final _changes = StreamController<void>.broadcast(sync: true);
 
   @override
-  Stream<List<MealLogModel>> watchMeals(String uid) => _watch(
-    () => withoutDuplicateHealthImports([
+  Stream<List<MealLogModel>> watchMeals(
+    String uid, {
+    bool includeHiddenHealthImports = false,
+  }) => _watch(() {
+    final meals = [
       for (final meal in _meals)
         if (meal.authorId == uid) meal,
-    ]),
-  );
+    ];
+    return includeHiddenHealthImports
+        ? meals
+        : withoutDuplicateHealthImports(meals);
+  });
 
   @override
   Stream<DietPlan?> watchDietPlan(String uid) => _watch(() => _dietPlans[uid]);
@@ -59,6 +65,12 @@ class InMemoryNutritionRepository implements NutritionRepository {
         ...meal.toFirestore(),
       });
     }
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> deleteMeal(String uid, String mealId) async {
+    _meals.removeWhere((meal) => meal.authorId == uid && meal.mealId == mealId);
     _changes.add(null);
   }
 

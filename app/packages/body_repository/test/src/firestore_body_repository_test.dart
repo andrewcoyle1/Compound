@@ -322,6 +322,71 @@ void main() {
       });
     });
 
+    group('saveSteps', () {
+      for (final name in ['full', 'minimal']) {
+        test('stores the $name fixture as the model encodes it', () async {
+          final steps = StepsModel.fromFirestore(modelFixture('steps', name));
+
+          await subject.saveSteps(steps);
+
+          final written = await stored(
+            'users/${steps.authorId}/steps/${steps.id}',
+          );
+          expect(
+            written,
+            strictlyEquals(firestoreToTaggedJson(steps.toFirestore())),
+          );
+          expect(written, strictlyEquals(taggedFixture('steps', name)));
+        });
+      }
+    });
+
+    group('clearMeasurementFields', () {
+      test('deletes the fields and keeps the rest', () async {
+        final full = BodyMeasurementEntry.fromFirestore(
+          modelFixture('body_measurement', 'full'),
+        );
+        final path = 'users/${full.authorId}/body_measurements/${full.id}';
+        await firestore
+            .doc(path)
+            .set(storedFixture('body_measurement', 'full'));
+
+        await subject.clearMeasurementFields(full.authorId, full.id, {
+          BodyMeasurementEntryKeys.weightKg,
+          BodyMeasurementEntryKeys.healthKitUuid,
+        });
+
+        expect(
+          await stored(path),
+          strictlyEquals(
+            taggedFixture('body_measurement', 'full')
+              ..remove('weight_kg')
+              ..remove('healthkit_uuid'),
+          ),
+        );
+      });
+
+      test('refuses a field the entry needs, or one it does not have', () {
+        for (final field in [BodyMeasurementEntryKeys.date, 'not_a_field']) {
+          expect(
+            () => subject.clearMeasurementFields(uid, 'e', {field}),
+            throwsArgumentError,
+          );
+        }
+        expect(
+          clearableMeasurementFields,
+          containsAll(['weight_kg', 'body_fat_percentage', 'healthkit_uuid']),
+        );
+      });
+
+      test('fails when there is no such entry, as Firestore does', () async {
+        await expectLater(
+          subject.clearMeasurementFields(uid, 'missing', {'weight_kg'}),
+          throwsA(isA<FirebaseException>()),
+        );
+      });
+    });
+
     group('saveGoal', () {
       for (final name in ['full', 'minimal']) {
         test('stores the $name fixture as the model encodes it', () async {

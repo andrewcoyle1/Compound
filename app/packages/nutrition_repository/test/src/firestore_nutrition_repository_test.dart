@@ -98,6 +98,25 @@ void main() {
         expect(read.map((meal) => meal.mealId), ['meal_log_contract_full']);
       });
 
+      test('keeps every import when asked, for the Health import', () async {
+        await meals(uid).doc('logged').set(_fixture('meal_log', 'full'));
+        await meals(uid)
+            .doc('import')
+            .set(
+              _fixture('meal_log', 'full')
+                ..['meal_id'] = MealLogModel.healthKitMealId('2026-10-12'),
+            );
+
+        final read = await subject
+            .watchMeals(uid, includeHiddenHealthImports: true)
+            .first;
+
+        expect(read.map((meal) => meal.mealId), [
+          'meal_log_contract_full',
+          'healthkit-nutrition-2026-10-12',
+        ]);
+      });
+
       test('skips and reports a meal that does not decode', () async {
         await meals(uid).doc('good').set(_fixture('meal_log', 'full'));
         await meals(uid)
@@ -245,6 +264,16 @@ void main() {
           );
         },
       );
+    });
+
+    group('deleteMeal', () {
+      test('deletes the document', () async {
+        await meals(uid).doc('m').set(_fixture('meal_log', 'full'));
+
+        await subject.deleteMeal(uid, 'm');
+
+        expect((await meals(uid).doc('m').get()).exists, isFalse);
+      });
     });
 
     group('saveDietPlan', () {

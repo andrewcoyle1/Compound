@@ -18,3 +18,13 @@ final class const NutritionDayDateSelected(final DateTime day)
   @override
   List<Object> get props => [day];
 }
+
+/// The logged food [itemId] was deleted from [meal]; the meal goes with its
+/// last food.
+final class const NutritionDayItemDeleted(
+  final MealLogModel meal,
+  final String itemId,
+) extends NutritionDayEvent {
+  @override
+  List<Object> get props => [meal.mealId, itemId];
+}

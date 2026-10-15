@@ -18,6 +18,7 @@ dependencies:
   body_repository:
     path: packages/body_repository
   cloud_firestore: ^6.10.0
+  cloud_functions: ^6.5.0
   compound_maths:
     path: packages/compound_maths
   compound_models:
@@ -34,10 +35,14 @@ dependencies:
   flutter_bloc: ^9.1.1
   flutter_localizations:
     sdk: flutter
+  food_repository:
+    path: packages/food_repository
   go_router: ^18.1.0
   google_sign_in: ^7.2.0
+  http: ^1.6.0
   intl: ^0.20.2
   material_ui: ^1.1.1
+  mobile_scanner: ^7.4.2
   nutrition_repository:
     path: packages/nutrition_repository
   program_repository:

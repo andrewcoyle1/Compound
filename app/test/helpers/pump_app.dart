@@ -4,8 +4,10 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -37,6 +39,9 @@ extension PumpApp on WidgetTester {
     TrainingLibraryRepository? trainingLibraryRepository,
     ProgramRepository? programRepository,
     AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
+    FoodRepository? foodRepository,
+    OpenFoodFacts? openFoodFacts,
+    MealDraftCubit? mealDraftCubit,
     AppBloc? appBloc,
     double textScale = 1,
     GoRouter? router,
@@ -68,9 +73,18 @@ extension PumpApp on WidgetTester {
             value: programRepository ?? InMemoryProgramRepository(),
           ),
           RepositoryProvider.value(value: analyticsRepository),
+          RepositoryProvider<FoodRepository>.value(
+            value: foodRepository ?? InMemoryFoodRepository(),
+          ),
+          RepositoryProvider<OpenFoodFacts>.value(
+            value: openFoodFacts ?? FakeOpenFoodFacts(),
+          ),
         ],
-        child: BlocProvider.value(
-          value: appBloc ?? MockAppBloc(),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: appBloc ?? MockAppBloc()),
+            BlocProvider.value(value: mealDraftCubit ?? MealDraftCubit()),
+          ],
           // With a [router], [widget] is left out: the router's routes are
           // the app.
           child: router != null

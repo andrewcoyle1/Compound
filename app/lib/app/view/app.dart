@@ -6,6 +6,8 @@ import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/launch/launch.dart';
 import 'package:compound/log_weight/log_weight.dart';
+import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
+import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/profile/profile.dart';
@@ -19,6 +21,7 @@ import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
@@ -35,6 +38,9 @@ class const App({
   required final ProgramRepository programRepository,
   required final TrainingLibraryRepository trainingLibraryRepository,
   final AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
+  // Empty and offline when left out, for tests that never log food.
+  final FoodRepository? foodRepository,
+  final OpenFoodFacts? openFoodFacts,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -49,6 +55,12 @@ class const App({
         RepositoryProvider.value(value: programRepository),
         RepositoryProvider.value(value: trainingLibraryRepository),
         RepositoryProvider.value(value: analyticsRepository),
+        RepositoryProvider<FoodRepository>(
+          create: (_) => foodRepository ?? InMemoryFoodRepository(),
+        ),
+        RepositoryProvider<OpenFoodFacts>(
+          create: (_) => openFoodFacts ?? FakeOpenFoodFacts(),
+        ),
         RepositoryProvider(
           create: (_) => TrainingSetupService(
             programs: programRepository,
@@ -57,12 +69,17 @@ class const App({
           ),
         ),
       ],
-      child: BlocProvider(
-        create: (_) => AppBloc(
-          authRepository: authRepository,
-          userRepository: userRepository,
-          analyticsRepository: analyticsRepository,
-        )..add(const AppUserSubscriptionRequested()),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => AppBloc(
+              authRepository: authRepository,
+              userRepository: userRepository,
+              analyticsRepository: analyticsRepository,
+            )..add(const AppUserSubscriptionRequested()),
+          ),
+          BlocProvider(create: (_) => MealDraftCubit()),
+        ],
         child: const AppView(),
       ),
     );
@@ -209,6 +226,22 @@ class _AppViewState extends State<AppView> {
           key: state.pageKey,
           fullscreenDialog: true,
           child: const LogWeightPage(),
+        ),
+      ),
+      // Over the tabs, as the Swift app's full-screen cover; the meal to
+      // build is the route's extra.
+      GoRoute(
+        path: AddMealPage.path,
+        name: AddMealPage.name,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: AddMealPage(
+            meal: switch (state.extra) {
+              final MealLogModel meal => meal,
+              _ => null,
+            },
+          ),
         ),
       ),
       // Over the tabs, as the Swift app's sheet. Pops with the exercises

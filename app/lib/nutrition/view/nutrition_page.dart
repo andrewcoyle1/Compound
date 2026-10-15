@@ -1,7 +1,11 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/bloc/nutrition_day_bloc.dart';
+import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
+import 'package:compound/nutrition/logic/meal_day.dart';
+import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/view/widgets/calendar_strip.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
@@ -10,9 +14,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
 
-/// The Nutrition tab: one day's meal log (Swift `NutritionView`), read
-/// only. A week strip to pick the day, the day's macros against its target,
-/// and the meals hour by hour.
+/// The Nutrition tab: one day's meal log (Swift `NutritionView`). A week
+/// strip to pick the day, the day's macros against its target, and the
+/// meals hour by hour, with + in the toolbar and on each hour to log a meal
+/// and a swipe to delete a food.
 class NutritionPage extends StatelessWidget {
   const new({super.key});
 
@@ -38,20 +43,65 @@ class NutritionView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<NutritionDayBloc>().state;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.tabNutrition),
-        actions: const [ProfileButton()],
+    final draft = context.watch<MealDraftCubit>().state;
+    return BlocListener<NutritionDayBloc, NutritionDayState>(
+      listenWhen: (previous, current) =>
+          current.deleteFailures > previous.deleteFailures,
+      listener: (context, _) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.nutritionDeleteFailed)),
       ),
-      body: switch (state.status) {
-        NutritionDayStatus.loading => const Center(
-          child: CircularProgressIndicator.adaptive(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.tabNutrition),
+          actions: [
+            IconButton(
+              icon: const Icon(AppSymbols.add),
+              tooltip: l10n.nutritionLogMeal,
+              onPressed: () => openMealLogger(
+                context,
+                date: toolbarMealDate(
+                  selectedDay: state.selectedDay,
+                  now: DateTime.now(),
+                ),
+              ),
+            ),
+            const ProfileButton(),
+          ],
         ),
-        NutritionDayStatus.failure => _Message(
-          title: l10n.nutritionDayLoadFailed,
-        ),
-        NutritionDayStatus.loaded => _Day(state: state),
-      },
+        // The unlogged meal, one tap from being reopened
+        // (`MealAccessoryView`).
+        bottomNavigationBar: draft == null
+            ? null
+            : SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.s),
+                  child: AppCard(
+                    style: AppCardStyle.tile,
+                    child: ListTile(
+                      leading: const Icon(AppSymbols.meal),
+                      title: Text(
+                        l10n.nutritionDraftMeal(
+                          draft.items.length,
+                          AppFormat.kcal(draft.macros.calories.round()),
+                        ),
+                      ),
+                      trailing: const Icon(AppSymbols.disclosure),
+                      onTap: () => AddMealPage.show(context, draft),
+                    ),
+                  ),
+                ),
+              ),
+        body: switch (state.status) {
+          NutritionDayStatus.loading => const Center(
+            child: CircularProgressIndicator.adaptive(),
+          ),
+          NutritionDayStatus.failure => _Message(
+            title: l10n.nutritionDayLoadFailed,
+          ),
+          NutritionDayStatus.loaded => _Day(state: state),
+        },
+      ),
     );
   }
 }
@@ -110,6 +160,18 @@ class _Day extends StatelessWidget {
               ? _Message(
                   title: l10n.nutritionNothingLoggedTitle,
                   message: l10n.nutritionNothingLoggedMessage,
+                  // With Hide Empty Hours on there are no hour buttons;
+                  // this keeps the day's one job reachable.
+                  action: FilledButton(
+                    onPressed: () => openMealLogger(
+                      context,
+                      date: toolbarMealDate(
+                        selectedDay: state.selectedDay,
+                        now: DateTime.now(),
+                      ),
+                    ),
+                    child: Text(l10n.nutritionLogMeal),
+                  ),
                 )
               : ListView(
                   padding: const EdgeInsets.all(AppSpacing.l),
@@ -123,12 +185,30 @@ class _Day extends StatelessWidget {
                           hour: hour.hour,
                           meals: hour.meals,
                           showTotals: settings.showHourlyMacroTotals,
+                          onAdd: settings.showAddFoodsButton
+                              ? () => openMealLogger(
+                                  context,
+                                  date: hourMealDate(
+                                    hour: hour.hour,
+                                    now: DateTime.now(),
+                                    autoSetCurrentTime:
+                                        settings.autoSetCurrentTime,
+                                  ),
+                                )
+                              : null,
                         ),
                       ),
                       for (final meal in hour.meals)
                         Padding(
                           padding: const EdgeInsets.only(bottom: AppSpacing.s),
-                          child: MealCard(meal: meal, settings: settings),
+                          child: MealCard(
+                            meal: meal,
+                            settings: settings,
+                            onDeleteItem: (item) =>
+                                context.read<NutritionDayBloc>().add(
+                                  NutritionDayItemDeleted(meal, item.itemId),
+                                ),
+                          ),
                         ),
                     ],
                   ],
@@ -141,10 +221,11 @@ class _Day extends StatelessWidget {
 
 /// An empty or failed state: the meal glyph, a title and an optional line.
 class _Message extends StatelessWidget {
-  const new({required this.title, this.message});
+  const new({required this.title, this.message, this.action});
 
   final String title;
   final String? message;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -173,6 +254,7 @@ class _Message extends StatelessWidget {
                 style: AppTextStyles.rowDetail.copyWith(color: secondary),
                 textAlign: TextAlign.center,
               ),
+            ?action,
           ],
         ),
       ),

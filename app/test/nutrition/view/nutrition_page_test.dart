@@ -1,6 +1,8 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
+import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/nutrition/view/widgets/calendar_strip.dart';
@@ -8,6 +10,7 @@ import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
@@ -22,6 +25,8 @@ void main() {
   final samplePlan = sampleDietPlan(uid: uid, now: now);
 
   late AppBloc appBloc;
+
+  setUpAll(() => registerFallbackValue(sampleMeals.first));
 
   setUp(() {
     appBloc = MockAppBloc();
@@ -340,6 +345,149 @@ void main() {
       await tester.tap(find.byType(MacroHeader));
       await tester.pump();
       expect(find.text('-700 left'), findsOneWidget);
+    });
+  });
+
+  group('logging from the day', () {
+    /// The view under a router whose logger route records the meal it was
+    /// opened with.
+    Future<List<MealLogModel>> pumpRouted(
+      WidgetTester tester, {
+      FoodLogSettings? settings,
+      MealDraftCubit? drafts,
+      NutritionRepository? repository,
+    }) async {
+      final opened = <MealLogModel>[];
+      final nutritionRepository =
+          repository ??
+          InMemoryNutritionRepository(
+            meals: sampleMeals,
+            dietPlan: samplePlan,
+            foodLogSettings: settings,
+          );
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => BlocProvider(
+              create: (_) => NutritionDayBloc(
+                nutritionRepository: nutritionRepository,
+                uid: uid,
+                now: () => now,
+              )..add(const NutritionDaySubscriptionRequested()),
+              child: const NutritionView(),
+            ),
+          ),
+          GoRoute(
+            path: AddMealPage.path,
+            name: AddMealPage.name,
+            builder: (_, state) {
+              opened.add(state.extra! as MealLogModel);
+              return const Text('logger');
+            },
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpApp(
+        const SizedBox.shrink(),
+        router: router,
+        appBloc: appBloc,
+        mealDraftCubit: drafts,
+      );
+      await tester.pump();
+      return opened;
+    }
+
+    testWidgets("the toolbar's + logs a meal for the user", (tester) async {
+      final opened = await pumpRouted(tester);
+      await tester.tap(find.byTooltip('Log Meal'));
+      await tester.pumpAndSettle();
+      expect(find.text('logger'), findsOneWidget);
+      expect(opened.single.authorId, uid);
+      expect(opened.single.items, isEmpty);
+    });
+
+    testWidgets("an hour's + logs a meal at that hour", (tester) async {
+      final opened = await pumpRouted(
+        tester,
+        settings: const FoodLogSettings(authorId: uid, startHour: 6),
+      );
+      final add = find.byWidgetPredicate(
+        (widget) =>
+            widget is IconButton &&
+            (widget.tooltip ?? '').startsWith('Log a meal at'),
+      );
+      await tester.tap(add.first);
+      await tester.pumpAndSettle();
+      expect(opened.single.date.hour, 6);
+    });
+
+    testWidgets('the hour buttons follow the setting', (tester) async {
+      await pumpRouted(
+        tester,
+        settings: const FoodLogSettings(
+          authorId: uid,
+          showAddFoodsButton: false,
+        ),
+      );
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is IconButton &&
+              (widget.tooltip ?? '').startsWith('Log a meal at'),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('an empty day offers Log Meal', (tester) async {
+      final opened = await pumpRouted(
+        tester,
+        repository: InMemoryNutritionRepository(
+          foodLogSettings: const FoodLogSettings(
+            authorId: uid,
+            hideEmptyHours: true,
+          ),
+        ),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Log Meal'));
+      await tester.pumpAndSettle();
+      expect(opened, hasLength(1));
+    });
+
+    testWidgets('an unlogged meal is one tap from being reopened', (
+      tester,
+    ) async {
+      final drafts = MealDraftCubit()..keep(sampleMeals.first);
+      final opened = await pumpRouted(tester, drafts: drafts);
+      expect(find.textContaining('Unlogged meal'), findsOneWidget);
+      await tester.tap(find.textContaining('Unlogged meal'));
+      await tester.pumpAndSettle();
+      expect(opened.single.mealId, sampleMeals.first.mealId);
+    });
+
+    testWidgets('a food swipes away, and a failure says so', (tester) async {
+      final repository = MockNutritionRepository();
+      when(() => repository.watchMeals(uid))
+          .thenAnswer((_) => Stream.value(sampleMeals));
+      when(() => repository.watchDietPlan(uid))
+          .thenAnswer((_) => Stream.value(samplePlan));
+      when(
+        () => repository.watchFoodLogSettings(uid),
+      ).thenAnswer((_) => Stream.value(const FoodLogSettings(authorId: uid)));
+      when(() => repository.saveMeal(any()))
+          .thenAnswer((_) async => throw Exception('refused'));
+      when(() => repository.deleteMeal(any(), any()))
+          .thenAnswer((_) async => throw Exception('refused'));
+      await pumpRouted(tester, repository: repository);
+      final first = find.descendant(
+        of: find.byType(MealCard),
+        matching: find.byType(Dismissible),
+      );
+      await tester.drag(first.first, const Offset(-600, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('Unable to Remove Food'), findsOneWidget);
     });
   });
 

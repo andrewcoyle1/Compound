@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:compound/nutrition/logic/meal_logging.dart' show withItems;
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -94,6 +95,63 @@ void main() {
       expect: () => [
         NutritionDayState(selectedDay: DateTime(2026, 9, 19), today: today),
       ],
+    );
+  });
+
+  group('deleting a logged food', () {
+    MealItemModel food(String id) => MealItemModel(
+      itemId: id,
+      sourceType: MealItemSourceType.quickAdd,
+      sourceId: 'q',
+      displayName: id,
+      amount: 1,
+      unit: 'serving',
+    );
+    final meal = MealLogModel(
+      mealId: 'M',
+      authorId: uid,
+      dayKey: '2026-09-21',
+      date: DateTime(2026, 9, 21, 8),
+      items: [food('a'), food('b')],
+    );
+
+    setUpAll(() => registerFallbackValue(meal));
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'saves the meal without it',
+      setUp: () =>
+          when(() => repository.saveMeal(any())).thenAnswer((_) async {}),
+      build: build,
+      act: (bloc) => bloc.add(NutritionDayItemDeleted(meal, 'a')),
+      verify: (_) {
+        final saved =
+            verify(() => repository.saveMeal(captureAny())).captured.single
+                as MealLogModel;
+        expect(saved.toFirestore(), {
+          ...meal.toFirestore(),
+          'items': [food('b').toFirestore()],
+        });
+      },
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'deletes the meal with its last food',
+      setUp: () =>
+          when(() => repository.deleteMeal(uid, 'M')).thenAnswer((_) async {}),
+      build: build,
+      act: (bloc) =>
+          bloc.add(NutritionDayItemDeleted(withItems(meal, [food('b')]), 'b')),
+      verify: (_) => verify(() => repository.deleteMeal(uid, 'M')).called(1),
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'a failure is counted, so the screen says so',
+      setUp: () =>
+          when(() => repository.saveMeal(any()))
+              .thenAnswer((_) async => throw Exception('refused')),
+      build: build,
+      act: (bloc) => bloc.add(NutritionDayItemDeleted(meal, 'a')),
+      expect: () => [initial.copyWith(deleteFailures: 1)],
     );
   });
 

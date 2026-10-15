@@ -2737,5 +2737,290 @@
     "equipmentKindPinLoadedMachine": "Pin Loaded Machines",
     "@equipmentKindPinLoadedMachine": {
         "description": "A kind of gym equipment"
+    },
+    "addMealTitle": "Log Meal",
+    "@addMealTitle": {
+        "description": "The meal logger's title"
+    },
+    "addMealLog": "Log",
+    "@addMealLog": {
+        "description": "Logs the plate as a meal"
+    },
+    "addMealAddToPlate": "Add to Plate",
+    "@addMealAddToPlate": {
+        "description": "Adds a food to the plate without logging"
+    },
+    "addMealSaveAmount": "Save",
+    "@addMealSaveAmount": {
+        "description": "Saves a corrected amount"
+    },
+    "addMealEstimatedMacros": "Estimated Macros",
+    "@addMealEstimatedMacros": {
+        "description": "Heading over the macros of the amount entered"
+    },
+    "addMealAmount": "Amount",
+    "@addMealAmount": {
+        "description": "The amount field's label"
+    },
+    "addMealPickerTitle": "Add Item",
+    "@addMealPickerTitle": {
+        "description": "The food picker's title"
+    },
+    "addMealOnPlate": "{count, plural, =1{1 on plate} other{{count} on plate}}",
+    "@addMealOnPlate": {
+        "description": "How many items are on the plate",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "addMealModeBarcode": "Barcode",
+    "@addMealModeBarcode": {
+        "description": "Picker tab: scan a barcode"
+    },
+    "addMealModeSearch": "Search",
+    "@addMealModeSearch": {
+        "description": "Picker tab: search foods"
+    },
+    "addMealModeQuickAdd": "Quick Add",
+    "@addMealModeQuickAdd": {
+        "description": "Picker tab: type energy and macros"
+    },
+    "addMealModeLibrary": "Library",
+    "@addMealModeLibrary": {
+        "description": "Picker tab: the user's foods"
+    },
+    "addMealQuickAddFood": "Quick add {name}",
+    "@addMealQuickAddFood": {
+        "description": "A food row's + button",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "addMealSearchPrompt": "Search foods",
+    "@addMealSearchPrompt": {
+        "description": "The search field's placeholder"
+    },
+    "addMealSearchEmptyTitle": "Search Foods",
+    "@addMealSearchEmptyTitle": {
+        "description": "Shown before a search"
+    },
+    "addMealSearchEmptyMessage": "Find foods you've saved and packaged foods from Open Food Facts.",
+    "@addMealSearchEmptyMessage": {
+        "description": "Shown before a search"
+    },
+    "addMealRecent": "Recent",
+    "@addMealRecent": {
+        "description": "Header over recently eaten foods"
+    },
+    "addMealMyFoods": "My Foods",
+    "@addMealMyFoods": {
+        "description": "Header over the user's own foods"
+    },
+    "addMealOpenFoodFacts": "Open Food Facts",
+    "@addMealOpenFoodFacts": {
+        "description": "Header over Open Food Facts results; a proper name"
+    },
+    "addMealSearching": "Searching…",
+    "@addMealSearching": {
+        "description": "Shown while a search runs"
+    },
+    "addMealSearchFailed": "Couldn't search right now",
+    "@addMealSearchFailed": {
+        "description": "Shown when the online search fails"
+    },
+    "addMealErrorLabel": "Error",
+    "@addMealErrorLabel": {
+        "description": "Read by screen readers before an error message"
+    },
+    "addMealNoResults": "No Results for “{query}”",
+    "@addMealNoResults": {
+        "description": "Shown when nothing matches a search",
+        "placeholders": {
+            "query": {
+                "type": "String"
+            }
+        }
+    },
+    "addMealFilterFoods": "Filter Foods",
+    "@addMealFilterFoods": {
+        "description": "The library's filter placeholder"
+    },
+    "addMealLibraryEmptyTitle": "No Foods",
+    "@addMealLibraryEmptyTitle": {
+        "description": "Shown when the library is empty"
+    },
+    "addMealLibraryEmptyMessage": "Foods you log or save appear here.",
+    "@addMealLibraryEmptyMessage": {
+        "description": "Shown when the library is empty"
+    },
+    "addMealFavorites": "Favorites",
+    "@addMealFavorites": {
+        "description": "Header over favourite foods"
+    },
+    "addMealFoods": "Foods",
+    "@addMealFoods": {
+        "description": "Header over every food"
+    },
+    "addMealUnit": "Unit",
+    "@addMealUnit": {
+        "description": "Names a unit menu for screen readers"
+    },
+    "addMealQuickAddName": "Name",
+    "@addMealQuickAddName": {
+        "description": "Quick add's name field"
+    },
+    "addMealQuickAddMacroEnergy": "Macros add up to {amount} {unit}",
+    "@addMealQuickAddMacroEnergy": {
+        "description": "Under quick add's energy field",
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "addMealQuickAddEnergy": "Energy",
+    "@addMealQuickAddEnergy": {
+        "description": "Quick add's energy field"
+    },
+    "addMealQuickAddMacros": "Macros",
+    "@addMealQuickAddMacros": {
+        "description": "Quick add's macros section"
+    },
+    "addMealQuickAddAlcohol": "Alcohol",
+    "@addMealQuickAddAlcohol": {
+        "description": "Quick add's alcohol field"
+    },
+    "addMealBarcodeHint": "Point the camera at a barcode.",
+    "@addMealBarcodeHint": {
+        "description": "Shown while scanning"
+    },
+    "addMealBarcodeLookingUp": "Looking up {code}…",
+    "@addMealBarcodeLookingUp": {
+        "description": "Shown while a barcode is looked up",
+        "placeholders": {
+            "code": {
+                "type": "String"
+            }
+        }
+    },
+    "addMealBarcodeNotFound": "Couldn't find this product. Scan again, or enter the barcode manually.",
+    "@addMealBarcodeNotFound": {
+        "description": "A barcode not found"
+    },
+    "addMealBarcodeUnavailable": "Couldn't reach Open Food Facts. Try again in a moment.",
+    "@addMealBarcodeUnavailable": {
+        "description": "A barcode lookup failed"
+    },
+    "addMealBarcodeEnter": "Enter Barcode",
+    "@addMealBarcodeEnter": {
+        "description": "Opens the field to type a barcode"
+    },
+    "addMealBarcodeField": "Barcode",
+    "@addMealBarcodeField": {
+        "description": "The barcode field's placeholder"
+    },
+    "addMealBarcodeLookUp": "Look Up",
+    "@addMealBarcodeLookUp": {
+        "description": "Looks up a typed barcode"
+    },
+    "addMealBarcodeScanAgain": "Scan Again",
+    "@addMealBarcodeScanAgain": {
+        "description": "Starts a new scan"
+    },
+    "addMealCameraDenied": "Compound can't use the camera. Allow it in Settings, or enter the barcode below.",
+    "@addMealCameraDenied": {
+        "description": "Camera permission denied"
+    },
+    "addMealCameraUnavailable": "The camera isn't available. Enter the barcode below.",
+    "@addMealCameraUnavailable": {
+        "description": "No camera"
+    },
+    "addMealDraftTitle": "You have an unlogged meal",
+    "@addMealDraftTitle": {
+        "description": "Asks what to do with an unlogged meal"
+    },
+    "addMealDraftContinue": "Continue Meal",
+    "@addMealDraftContinue": {
+        "description": "Reopens the unlogged meal"
+    },
+    "addMealDraftDiscard": "Discard and Start New",
+    "@addMealDraftDiscard": {
+        "description": "Discards the unlogged meal"
+    },
+    "addMealSaveFailedTitle": "Unable to Save Meal",
+    "@addMealSaveFailedTitle": {
+        "description": "A failed save's title"
+    },
+    "addMealSaveFailedMessage": "Please check your internet connection and try again.",
+    "@addMealSaveFailedMessage": {
+        "description": "A failed save's message"
+    },
+    "addMealTimeTitle": "Meal Time",
+    "@addMealTimeTitle": {
+        "description": "The time picker's title"
+    },
+    "addMealScopePlate": "Plate",
+    "@addMealScopePlate": {
+        "description": "Totals for the plate alone"
+    },
+    "addMealScopeDay": "Day",
+    "@addMealScopeDay": {
+        "description": "Totals for the day with the plate"
+    },
+    "addMealPlate": "Plate",
+    "@addMealPlate": {
+        "description": "Header over the plate's items"
+    },
+    "addMealPlateEmpty": "Nothing on the plate yet",
+    "@addMealPlateEmpty": {
+        "description": "An empty plate"
+    },
+    "addMealAddFood": "Add Food",
+    "@addMealAddFood": {
+        "description": "Opens the food picker"
+    },
+    "addMealRemoveItem": "Remove",
+    "@addMealRemoveItem": {
+        "description": "Removes an item from the plate"
+    },
+    "nutritionLogMeal": "Log Meal",
+    "@nutritionLogMeal": {
+        "description": "Opens the meal logger"
+    },
+    "nutritionLogMealAt": "Log a meal at {time}",
+    "@nutritionLogMealAt": {
+        "description": "An hour header's + button",
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionDraftMeal": "{count, plural, =1{Unlogged meal · 1 item · {calories}} other{Unlogged meal · {count} items · {calories}}}",
+    "@nutritionDraftMeal": {
+        "description": "The bar that reopens an unlogged meal",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "calories": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionDeleteItem": "Delete",
+    "@nutritionDeleteItem": {
+        "description": "Deletes a logged food"
+    },
+    "nutritionDeleteFailed": "Unable to Remove Food",
+    "@nutritionDeleteFailed": {
+        "description": "A failed delete"
     }
 }

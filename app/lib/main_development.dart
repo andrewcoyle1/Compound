@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/firebase_options_development.dart';
@@ -14,7 +15,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:food_repository/food_repository.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -98,6 +101,15 @@ Future<void> main() async {
       ),
       trainingLibraryRepository: FirestoreTrainingLibraryRepository(
         firestore: FirebaseFirestore.instance,
+      ),
+      foodRepository: FirestoreFoodRepository(
+        firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
+      ),
+      // foodSearch is a us-central1 callable that enforces App Check.
+      openFoodFacts: RemoteOpenFoodFacts(
+        functions: FirebaseFunctions.instanceFor(region: 'us-central1'),
+        client: http.Client(),
       ),
     );
   });

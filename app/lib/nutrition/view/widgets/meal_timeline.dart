@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
+import 'package:flutter/semantics.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// [time] as the device prints a time of day: `1:00 PM`, or `13:00` with
@@ -45,6 +46,7 @@ class MealHourHeader extends StatelessWidget {
     required this.hour,
     required this.meals,
     required this.showTotals,
+    this.onAdd,
     super.key,
   });
 
@@ -57,6 +59,10 @@ class MealHourHeader extends StatelessWidget {
   /// Whether to show the hour's totals.
   final bool showTotals;
 
+  /// The hour's +, which logs a meal at it; none when null (the Show Add
+  /// Foods Button setting is off).
+  final VoidCallback? onAdd;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -67,6 +73,7 @@ class MealHourHeader extends StatelessWidget {
       color: scheme.onSurfaceVariant,
     );
     final totals = totalsOf(meals);
+    final onAdd = this.onAdd;
     return Row(
       spacing: AppSpacing.l,
       children: [
@@ -105,6 +112,14 @@ class MealHourHeader extends StatelessWidget {
                 ],
               ),
             ),
+          )
+        else
+          const Spacer(),
+        if (onAdd != null)
+          IconButton(
+            icon: const Icon(AppSymbols.add),
+            tooltip: l10n.nutritionLogMealAt(_formatTime(context, hour)),
+            onPressed: onAdd,
           ),
       ],
     );
@@ -112,16 +127,25 @@ class MealHourHeader extends StatelessWidget {
 }
 
 /// One meal's foods on a card, with the meal's time in the gutter beside
-/// the first of them (Swift `MealItemRowView` and `MealItemLabel`). Read
-/// only: no edit button, swipe actions or context menu yet.
+/// the first of them (Swift `MealItemRowView` and `MealItemLabel`). A food
+/// swipes away to delete it when [onDeleteItem] is set; no edit button or
+/// context menu yet.
 class MealCard extends StatelessWidget {
-  const new({required this.meal, required this.settings, super.key});
+  const new({
+    required this.meal,
+    required this.settings,
+    this.onDeleteItem,
+    super.key,
+  });
 
   /// The meal.
   final MealLogModel meal;
 
   /// How the rows are drawn.
   final FoodLogSettings settings;
+
+  /// Deletes a food.
+  final ValueChanged<MealItemModel>? onDeleteItem;
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +178,11 @@ class MealCard extends StatelessWidget {
               children: [
                 for (final (index, item) in meal.items.indexed) ...[
                   if (index > 0) const Divider(indent: AppSpacing.l),
-                  _MealItemLabel(item: item, settings: settings),
+                  _deletable(
+                    context,
+                    item,
+                    _MealItemLabel(item: item, settings: settings),
+                  ),
                 ],
               ],
             ),
@@ -162,6 +190,40 @@ class MealCard extends StatelessWidget {
         ),
         if (!left) ?gutter,
       ],
+    );
+  }
+
+  Widget _deletable(BuildContext context, MealItemModel item, Widget child) {
+    final onDelete = onDeleteItem;
+    if (onDelete == null) return child;
+    final scheme = Theme.of(context).colorScheme;
+    final label = context.l10n.nutritionDeleteItem;
+    return Dismissible(
+      key: ValueKey(item.itemId),
+      direction: DismissDirection.endToStart,
+      background: ColoredBox(
+        color: scheme.error,
+        child: Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: Icon(AppSymbols.delete, color: scheme.onError),
+          ),
+        ),
+      ),
+      // The row leaves when the meal log says it has gone; if the delete
+      // fails it slides back.
+      confirmDismiss: (_) async {
+        onDelete(item);
+        return false;
+      },
+      // The same action for anyone who cannot swipe.
+      child: Semantics(
+        customSemanticsActions: {
+          CustomSemanticsAction(label: label): () => onDelete(item),
+        },
+        child: child,
+      ),
     );
   }
 }

@@ -8,6 +8,7 @@ import 'package:compound/onboarding/logic/staging_onboarding.dart';
 import 'package:compound_models/compound_models.dart'
     show ExerciseWeightUnit, WorkoutSessionModel, WorkoutSessionModelKeys;
 import 'package:food_repository/food_repository.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -60,6 +61,11 @@ Future<void> main() async {
   await bootstrap(
     () => App(
       activeSessionStore: activeSessionStore,
+      // Nothing reaches the platform: reminders and the rest timer's
+      // notification are only recorded.
+      notificationsRepository: FakeNotificationsRepository(
+        permissionState: PushPermission.authorized,
+      ),
       authRepository: InMemoryAuthRepository(
         user: step == null ? InMemoryAuthRepository.sampleUser : anonymous,
       ),

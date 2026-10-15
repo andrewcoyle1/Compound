@@ -47,8 +47,9 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
            onMessageOpenedApp ?? FirebaseMessaging.onMessageOpenedApp,
        _localTimezone = localTimezone ?? _deviceTimezone;
 
-  /// The Android small icon. Owner TODO: a monochrome notification icon.
-  static const androidIcon = '@mipmap/ic_launcher';
+  /// The Android small icon: the app's monochrome `ic_notification`
+  /// drawable (kept from resource shrinking by `res/raw/keep.xml`).
+  static const androidIcon = '@drawable/ic_notification';
 
   final FirebaseMessaging _messaging;
   final FlutterLocalNotificationsPlugin _local;
@@ -88,6 +89,25 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
       onDidReceiveNotificationResponse: (response) =>
           deepLinks.store(_payloadLink(response.payload)),
     );
+    // Made up front, so a push that arrives in the background (which the
+    // system shows on `social`, the manifest's default) finds its channel.
+    final android = _local
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android != null) {
+      for (final channel in NotificationChannel.values) {
+        await _guard(
+          () => android.createNotificationChannel(
+            AndroidNotificationChannel(
+              channel.name,
+              _copy.channelName(channel),
+              importance: _importance(channel),
+            ),
+          ),
+        );
+      }
+    }
     final launch = await _local.getNotificationAppLaunchDetails();
     if (launch?.didNotificationLaunchApp ?? false) {
       deepLinks.store(_payloadLink(launch!.notificationResponse?.payload));
@@ -275,9 +295,7 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
         channel.name,
         _copy.channelName(channel),
         icon: androidIcon,
-        importance: channel == NotificationChannel.workout
-            ? Importance.high
-            : Importance.defaultImportance,
+        importance: _importance(channel),
         priority: channel == NotificationChannel.workout
             ? Priority.high
             : Priority.defaultPriority,
@@ -294,9 +312,57 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
     );
   }
 
+  /// The workout channel is heads-up: its notifications are about now.
+  static Importance _importance(NotificationChannel channel) =>
+      channel == NotificationChannel.workout
+      ? Importance.high
+      : Importance.defaultImportance;
+
   @override
   Future<void> cancel(LocalReminderKind kind) =>
       _guard(() => _local.cancel(id: kind.id));
+
+  @override
+  bool get showsOngoingWorkout =>
+      defaultTargetPlatform == TargetPlatform.android;
+
+  /// Posted silently, so each update (a set logged, a rest started) changes
+  /// it without a sound; with [OngoingWorkout.alert], heads-up with sound.
+  /// The clock is Android's own chronometer, so nothing ticks here.
+  @override
+  Future<void> showOngoingWorkout(OngoingWorkout workout) async {
+    if (!showsOngoingWorkout) return;
+    const channel = NotificationChannel.workout;
+    await _guard(
+      () => _local.show(
+        id: NotificationsRepository.ongoingWorkoutId,
+        title: workout.title,
+        body: workout.body,
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            channel.name,
+            _copy.channelName(channel),
+            icon: androidIcon,
+            importance: _importance(channel),
+            priority: workout.alert ? Priority.high : Priority.low,
+            ongoing: true,
+            autoCancel: false,
+            silent: !workout.alert,
+            category: AndroidNotificationCategory.workout,
+            showWhen: workout.clock != null,
+            when: workout.clock?.millisecondsSinceEpoch,
+            usesChronometer: workout.clock != null,
+            chronometerCountDown: workout.countsDown,
+          ),
+        ),
+        payload: jsonEncode(const {'deep_link': 'compound://workout'}),
+      ),
+    );
+  }
+
+  @override
+  Future<void> clearOngoingWorkout() =>
+      _guard(() => _local.cancel(id: NotificationsRepository.ongoingWorkoutId));
 
   /// A notification that fails to schedule is dropped, as in Swift: the rest
   /// runs out whether or not anything announces it.

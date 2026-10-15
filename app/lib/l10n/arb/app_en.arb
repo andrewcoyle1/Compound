@@ -3459,5 +3459,115 @@
                 "type": "int"
             }
         }
+    },
+    "notifComeBack1Title": "Keep the Momentum",
+    "@notifComeBack1Title": {
+        "description": "Local notification a day after the app was last opened: title"
+    },
+    "notifComeBack1Body": "Your training plan is ready for your next session.",
+    "@notifComeBack1Body": {
+        "description": "Local notification a day after the app was last opened: body"
+    },
+    "notifComeBack3Title": "Stay Consistent",
+    "@notifComeBack3Title": {
+        "description": "Local notification three days after the app was last opened: title"
+    },
+    "notifComeBack3Body": "It's been a few days since you opened Compound. Your plan is ready when you are.",
+    "@notifComeBack3Body": {
+        "description": "Local notification three days after the app was last opened: body"
+    },
+    "notifComeBack5Title": "Your Progress Is Waiting",
+    "@notifComeBack5Title": {
+        "description": "Local notification five days after the app was last opened: title"
+    },
+    "notifComeBack5Body": "Your workouts and history are right where you left them.",
+    "@notifComeBack5Body": {
+        "description": "Local notification five days after the app was last opened: body"
+    },
+    "notifBreakfastTitle": "Breakfast",
+    "@notifBreakfastTitle": {
+        "description": "Daily meal reminder: title"
+    },
+    "notifBreakfastBody": "A reminder to log your breakfast.",
+    "@notifBreakfastBody": {
+        "description": "Daily meal reminder: body"
+    },
+    "notifLunchTitle": "Lunch",
+    "@notifLunchTitle": {
+        "description": "Daily meal reminder: title"
+    },
+    "notifLunchBody": "A reminder to log your lunch.",
+    "@notifLunchBody": {
+        "description": "Daily meal reminder: body"
+    },
+    "notifDinnerTitle": "Dinner",
+    "@notifDinnerTitle": {
+        "description": "Daily meal reminder: title"
+    },
+    "notifDinnerBody": "A reminder to log your dinner.",
+    "@notifDinnerBody": {
+        "description": "Daily meal reminder: body"
+    },
+    "notifRestOverTitle": "Rest Complete",
+    "@notifRestOverTitle": {
+        "description": "Notification when a rest timer runs out: title"
+    },
+    "notifRestOverFallback": "Rest complete",
+    "@notifRestOverFallback": {
+        "description": "Ongoing workout notification when a rest runs out and nothing is left to do"
+    },
+    "notifRestOverNext": "Next: {name}",
+    "@notifRestOverNext": {
+        "description": "Rest-over notification body: the next exercise",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "notifRestOverNextTarget": "Next: {name}, {target}",
+    "@notifRestOverNextTarget": {
+        "description": "Rest-over notification body: the next exercise and its set, e.g. Next: Bench Press, 60 kg × 8",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "notifIdleTitle": "Still training?",
+    "@notifIdleTitle": {
+        "description": "Notification and alert an hour after the last logged set: title"
+    },
+    "notifIdleBody": "No set logged in the last hour.",
+    "@notifIdleBody": {
+        "description": "Notification and alert an hour after the last logged set: body"
+    },
+    "notifChannelWorkout": "Workout",
+    "@notifChannelWorkout": {
+        "description": "Android notification channel: rest timer, workout under way"
+    },
+    "notifChannelReminders": "Reminders",
+    "@notifChannelReminders": {
+        "description": "Android notification channel: come-back and meal reminders"
+    },
+    "notifChannelSocial": "Social",
+    "@notifChannelSocial": {
+        "description": "Android notification channel: likes, comments, follows"
+    },
+    "trackerFinishAt": "Finish at {time}",
+    "@trackerFinishAt": {
+        "description": "Still training? alert: finish the workout as of the last set, e.g. Finish at 6:42 PM",
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerKeepGoing": "Keep Going",
+    "@trackerKeepGoing": {
+        "description": "Still training? alert: carry on with the workout"
     }
 }

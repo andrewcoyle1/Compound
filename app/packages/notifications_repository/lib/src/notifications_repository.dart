@@ -40,6 +40,27 @@ class const PushMessage({
   List<Object?> get props => [type, title, body, link];
 }
 
+/// {@template ongoing_workout}
+/// The workout under way as Android shows it, in an ongoing notification:
+/// the Live Activity's stand-in. [title] is the workout's name and [body]
+/// what is next. The clock counts up from [clock] (the workout's start, less
+/// any pause), or down to it while resting ([countsDown]); none while
+/// paused. [alert] posts it with sound, once, as the rest-over alert.
+/// {@endtemplate}
+class const OngoingWorkout({
+  required final String title,
+  final String? body,
+  final DateTime? clock,
+  final bool countsDown = false,
+  final bool alert = false,
+}) extends Equatable {
+  /// {@macro ongoing_workout}
+  this;
+
+  @override
+  List<Object?> get props => [title, body, clock, countsDown, alert];
+}
+
 /// The words of a local notification and a channel's name, from the app's
 /// strings (translations live in the app, not in packages).
 abstract interface class NotificationCopy {
@@ -137,6 +158,22 @@ abstract class NotificationsRepository {
 
   /// Withdraws a pending [kind] (and a delivered one, where it can).
   Future<void> cancel(LocalReminderKind kind);
+
+  /// The notification id of the ongoing workout; permanent, as the
+  /// reminders' are.
+  static const ongoingWorkoutId = 9;
+
+  /// Whether the workout under way shows as an ongoing notification
+  /// (Android). When it does, it is the rest-over channel and the rest-over
+  /// notification only stands in (`RestOverAlert`).
+  bool get showsOngoingWorkout;
+
+  /// Shows, or updates, the ongoing workout notification; nothing where
+  /// [showsOngoingWorkout] is false. A tap opens the tracker.
+  Future<void> showOngoingWorkout(OngoingWorkout workout);
+
+  /// Withdraws the ongoing workout notification.
+  Future<void> clearOngoingWorkout();
 
   /// Brings the come-back and meal reminders into line with [settings]:
   /// withdrawn, then scheduled again when on and allowed. Call once signed

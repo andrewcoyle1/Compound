@@ -20,6 +20,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:training_rules/training_rules.dart' as r;
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// The workout under way (Swift `WorkoutTrackerView`), over the tabs: the
 /// exercise strip, the card of the block it is on, and one button at the
@@ -63,20 +64,32 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
   @override
   void initState() {
     super.initState();
-    _cubit.appeared();
-    // A change waiting to be kept is kept as the app leaves the screen.
+    _cubit
+      ..appeared()
+      ..checkStillTraining();
+    // Kept awake only while the tracker is up, as the settings ask: once it
+    // is minimised, finished or discarded, the phone may sleep.
+    _keepAwake(enable: _cubit.state.settings?.keepAlive ?? true);
+    // A change waiting to be kept is kept as the app leaves the screen; on
+    // return, a workout left an hour asks whether it is still going.
     _lifecycle = AppLifecycleListener(
       onHide: _cubit.flush,
       onPause: _cubit.flush,
+      onResume: _cubit.checkStillTraining,
     );
   }
 
   @override
   void dispose() {
     _lifecycle.dispose();
+    _keepAwake(enable: false);
     _cubit.disappeared();
     super.dispose();
   }
+
+  /// A screen that cannot be kept awake simply sleeps.
+  static void _keepAwake({required bool enable}) =>
+      unawaited(WakelockPlus.toggle(enable: enable).catchError((Object _) {}));
 
   void _maybeOpenKeypad(ActiveWorkoutState state) {
     if (!widget.opensKeypad || _openedKeypad) return;
@@ -186,9 +199,48 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
         unawaited(HapticFeedback.selectionClick());
       case SavedEffect():
         unawaited(HapticFeedback.successNotification());
+      case RestOverEffect():
+        // The rest-complete haptic, apart from a logged set's. Flutter has
+        // no mobile alert sound, so the in-app sound waits for an audio
+        // slice.
+        if (state.settings?.restTimerVibrate ?? true) {
+          unawaited(HapticFeedback.warningNotification());
+        }
+      case StillTrainingEffect(:final lastSet):
+        unawaited(_askStillTraining(context, lastSet));
       case StartFailedEffect() || null:
         break;
     }
+  }
+
+  /// "Still training?": Finish as of the last set, so the forgotten hour is
+  /// not counted, or Keep Going.
+  Future<void> _askStillTraining(BuildContext context, DateTime lastSet) async {
+    final l10n = context.l10n;
+    final time = TimeOfDay.fromDateTime(lastSet).format(context);
+    final finish = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.notifIdleTitle),
+        content: Text(l10n.notifIdleBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.trackerKeepGoing),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.trackerFinishAt(time)),
+          ),
+        ],
+      ),
+    );
+    if (finish != true || !context.mounted) return;
+    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    await _cubit.finish(
+      firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
+      at: lastSet,
+    );
   }
 }
 

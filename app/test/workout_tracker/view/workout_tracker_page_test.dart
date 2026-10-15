@@ -11,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
@@ -60,6 +61,7 @@ void main() {
       ),
       analytics: const AnalyticsRepository(),
       store: InMemoryActiveSessionStore(),
+      notifications: FakeNotificationsRepository(),
       clock: clock.call,
       wait: (_) async {},
     );
@@ -312,6 +314,33 @@ void main() {
       await tester.tap(find.text('Done'));
       await tester.pumpAndSettle();
       expect(find.text('Today'), findsOneWidget);
+      await cubit.close();
+    });
+
+    testWidgets('an hour after the last set asks "Still training?"; Finish '
+        'ends the workout as of that set', (tester) async {
+      await start(tester);
+      await pump(tester);
+      await tester.tap(find.byKey(ValueKey('done-${nextSetId()}')));
+      await tester.pumpAndSettle();
+      final lastSet = clock.now;
+
+      clock.now = lastSet.add(const Duration(minutes: 61));
+      cubit.checkStillTraining();
+      await tester.pumpAndSettle();
+      expect(find.text('Still training?'), findsOneWidget);
+      await tester.tap(find.text('Keep Going'));
+      await tester.pumpAndSettle();
+      expect(find.byType(WorkoutTrackerView), findsOneWidget);
+
+      clock.now = clock.now.add(const Duration(minutes: 61));
+      cubit.checkStillTraining();
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('Finish at'));
+      await tester.pumpAndSettle();
+      expect(find.byType(WorkoutTrackerView), findsNothing);
+      final saved = await sessions.watchSessions(uid).first;
+      expect(saved.single.endedAt, lastSet);
       await cubit.close();
     });
 

@@ -64,3 +64,11 @@ List<T>? lossyList<T>(Object? value, T Function(Object? element) decode) {
 
 /// A nested map, as Firestore returns one.
 Map<String, Object?> readMap(Object? value) => value! as Map<String, Object?>;
+
+/// A `Bool` field Swift reads with `try?`: anything but a bool reads as
+/// null, a number included.
+bool? lenientBool(Object? value) => value is bool ? value : null;
+
+/// A `Date` field Swift reads with `try?`: anything but a timestamp reads as
+/// null.
+DateTime? lenientDate(Object? value) => value is DateTime ? value : null;

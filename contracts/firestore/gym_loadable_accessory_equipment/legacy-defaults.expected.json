@@ -1,0 +1,8 @@
+{
+  "id": "old_landmine",
+  "typeId": "old_landmine",
+  "name": "Legacy old_landmine",
+  "isActive": false,
+  "baseWeight": 0.0,
+  "unit": "kilograms"
+}

@@ -93,6 +93,79 @@ final _models =
         roundTrip: (data) => WeightGoal.fromFirestore(data).toFirestore(),
         keys: WeightGoalKeys.all,
       ),
+      'exercise_model': (
+        roundTrip: (data) => ExerciseModel.fromFirestore(data).toFirestore(),
+        keys: ExerciseModelKeys.all,
+      ),
+      'exercise_settings': (
+        roundTrip: (data) =>
+            ExerciseSettingsModel.fromFirestore(data).toFirestore(),
+        keys: ExerciseSettingsModelKeys.all,
+      ),
+      'workout_template': (
+        roundTrip: (data) =>
+            WorkoutTemplateModel.fromFirestore(data).toFirestore(),
+        keys: WorkoutTemplateModelKeys.all,
+      ),
+      'workout_template_exercise': (
+        roundTrip: (data) =>
+            WorkoutTemplateExercise.fromFirestore(data).toFirestore(),
+        keys: WorkoutTemplateExerciseKeys.all,
+      ),
+      'workout_settings': (
+        roundTrip: (data) => WorkoutSettings.fromFirestore(data).toFirestore(),
+        keys: WorkoutSettingsKeys.all,
+      ),
+      'gym_profile': (
+        roundTrip: (data) => GymProfileModel.fromFirestore(data).toFirestore(),
+        keys: GymProfileModelKeys.all,
+      ),
+      'gym_free_weights': (
+        roundTrip: (data) => FreeWeights.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.freeWeightsFields,
+      ),
+      'gym_body_weights': (
+        roundTrip: (data) => BodyWeights.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.rangedFields,
+      ),
+      'gym_bands': (
+        roundTrip: (data) => Bands.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.rangedFields,
+      ),
+      'gym_loadable_bars': (
+        roundTrip: (data) => LoadableBars.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.loadableBarsFields,
+      ),
+      'gym_fixed_weight_bars': (
+        roundTrip: (data) => FixedWeightBars.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.fixedWeightBarsFields,
+      ),
+      'gym_support_equipment': (
+        roundTrip: (data) => PlainEquipment.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.plainFields,
+      ),
+      'gym_accessory_equipment': (
+        roundTrip: (data) => PlainEquipment.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.plainFields,
+      ),
+      'gym_loadable_accessory_equipment': (
+        roundTrip: (data) =>
+            LoadableAccessoryEquipment.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.loadableAccessoryFields,
+      ),
+      'gym_cable_machine': (
+        roundTrip: (data) => StackMachine.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.stackMachineFields,
+      ),
+      'gym_pin_loaded_machine': (
+        roundTrip: (data) => StackMachine.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.stackMachineFields,
+      ),
+      'gym_plate_loaded_machine': (
+        roundTrip: (data) =>
+            PlateLoadedMachine.fromFirestore(data).toFirestore(),
+        keys: GymEquipmentKeys.plateLoadedMachineFields,
+      ),
     };
 
 final _root = Directory('../../../contracts/firestore');
@@ -204,6 +277,16 @@ void main() {
         'StepsSource': raw(StepsSource.values),
         'GoalStatus': raw(GoalStatus.values),
         'OverarchingObjective': raw(OverarchingObjective.values),
+        'Muscles': raw(Muscles.values),
+        'MuscleTargetType': raw(MuscleTargetType.values),
+        'TrackableExerciseMetric': raw(TrackableExerciseMetric.values),
+        'ExerciseType': raw(ExerciseType.values),
+        'Laterality': raw(Laterality.values),
+        'PreviousWorkoutReferenceOption': raw(
+          PreviousWorkoutReferenceOption.values,
+        ),
+        'InitialLogFillOption': raw(InitialLogFillOption.values),
+        'ProgressionAdjustmentMode': raw(ProgressionAdjustmentMode.values),
       }),
     );
   });

@@ -1,0 +1,9 @@
+{
+  "id": "weight_plates",
+  "typeId": "weight_plates",
+  "name": "Legacy weight_plates",
+  "isActive": false,
+  "needsColour": false,
+  "isPlates": true,
+  "range": []
+}

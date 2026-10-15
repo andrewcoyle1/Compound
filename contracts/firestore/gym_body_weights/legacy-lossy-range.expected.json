@@ -1,0 +1,14 @@
+{
+  "id": "old_vest",
+  "typeId": "old_vest",
+  "name": "Legacy old_vest",
+  "isActive": false,
+  "range": [
+    {
+      "id": "w1",
+      "availableWeights": 2.5,
+      "unit": "kilograms",
+      "isActive": false
+    }
+  ]
+}

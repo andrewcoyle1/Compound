@@ -1,0 +1,39 @@
+{
+  "exercise": {
+    "alternate_names": [
+
+    ],
+    "author_id": "user_contract_minimal",
+    "body_weight_contribution": 100,
+    "date_created": {
+      "$timestamp": "2026-09-02T10:00:00.000Z"
+    },
+    "date_modified": {
+      "$timestamp": "2026-09-02T10:00:00.000Z"
+    },
+    "equipment_variations": [
+
+    ],
+    "id": "exercise_model_contract_minimal",
+    "is_bodyweight": true,
+    "is_system_exercise": false,
+    "muscle_groups": {
+
+    },
+    "name": "Plank",
+    "range_of_motion": 1,
+    "stability": 2,
+    "trackable_metrics": [
+
+    ]
+  },
+  "id": "template_exercise_contract_minimal",
+  "set_rest_timers": false,
+  "set_targets": [
+    {
+      "id": "set_target_contract_minimal",
+      "set_number": 1,
+      "set_type": "standard"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "old_machine",
+  "name": "Legacy old_machine",
+  "defaultRangeId": "s1",
+  "ranges": [
+    {
+      "id": "s1",
+      "name": "Range 1",
+      "minWeight": 5,
+      "maxWeight": 100,
+      "increment": 5,
+      "addOns": "none",
+      "weights": [
+        5,
+        "x"
+      ]
+    },
+    {
+      "id": "s2",
+      "name": "No increment",
+      "minWeight": 1,
+      "maxWeight": 2
+    },
+    {
+      "id": "s3",
+      "name": "Range 1",
+      "minWeight": 5,
+      "maxWeight": 100,
+      "increment": 5,
+      "addOns": [
+        2.5,
+        5
+      ],
+      "weights": [
+        5,
+        10.5
+      ],
+      "unit": "pounds",
+      "isActive": true
+    }
+  ]
+}

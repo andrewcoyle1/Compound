@@ -1,0 +1,18 @@
+{
+  "description": "In the kit bag",
+  "id": "bands_contract_full",
+  "imageName": "bands_icon",
+  "isActive": true,
+  "name": "Travel Bands",
+  "range": [
+    {
+      "availableResistance": 4.5,
+      "bandColour": "#FF9500",
+      "id": "bands_contract_full_1",
+      "isActive": true,
+      "name": "Light",
+      "unit": "kilograms"
+    }
+  ],
+  "typeId": "long_elastic_bands"
+}

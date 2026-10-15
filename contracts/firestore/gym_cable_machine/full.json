@@ -1,0 +1,41 @@
+{
+  "defaultRangeId": "stack_contract_minimal",
+  "description": "Nearest the door",
+  "id": "cable_machine_contract_full",
+  "imageName": "cable_crossover_icon",
+  "isActive": true,
+  "name": "Left Crossover",
+  "ranges": [
+    {
+      "addOns": [
+        1.25,
+        2.5
+      ],
+      "id": "stack_contract_full",
+      "increment": 2.5,
+      "isActive": true,
+      "maxWeight": 92.5,
+      "minWeight": 2.5,
+      "name": "Main Stack",
+      "unit": "kilograms",
+      "weights": [
+        2.5,
+        5.5,
+        8.5
+      ]
+    },
+    {
+      "addOns": [
+
+      ],
+      "id": "stack_contract_minimal",
+      "increment": 4.5,
+      "isActive": false,
+      "maxWeight": 148.5,
+      "minWeight": 4.5,
+      "name": "Range 1",
+      "unit": "pounds"
+    }
+  ],
+  "typeId": "cable_crossover"
+}

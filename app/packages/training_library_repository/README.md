@@ -2,8 +2,10 @@
 
 Reads the signed-in user's training library from Firestore, or from memory in the staging flavor:
 their exercises (top-level `exercise_templates`, by `author_id`), workout templates, gym profiles,
-exercise settings and workout settings. Read-only until these contracts have been exercised by
-writes ([`docs/specs/flutter/firestore-contract.md`](../../../docs/specs/flutter/firestore-contract.md)).
+exercise settings and workout settings, held to the Firestore contract
+([`docs/specs/flutter/firestore-contract.md`](../../../docs/specs/flutter/firestore-contract.md)).
+It writes gym profiles (`saveGymProfile`) and exercise settings (`saveExerciseSettings`, a note
+or a rest override), each merged as Swift's managers save them.
 
 `PrebuiltCatalogue` holds the system exercises and workouts the Swift app bundles and seeds locally
 at sign-in. Their JSON is embedded byte for byte; when the Swift app's files change, the test says

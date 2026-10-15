@@ -6,8 +6,8 @@ import 'package:training_library_repository/src/training_library_repository.dart
 /// [TrainingLibraryRepository] in memory, for the staging flavor and tests.
 /// Seed it from `sample_training_library.dart`.
 ///
-/// A saved gym profile merges over the stored one field by field, as a
-/// Firestore merge does, and every gym profile watcher sees the change.
+/// A saved gym profile or exercise settings merge over the stored ones field
+/// by field, as a Firestore merge does, and every watcher sees the change.
 class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
   /// Creates an [InMemoryTrainingLibraryRepository] holding everyone's
   /// documents; each read keeps the ones its user owns.
@@ -20,7 +20,7 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
   }) : _exercises = List.unmodifiable(exercises),
        _workoutTemplates = List.unmodifiable(workoutTemplates),
        _gymProfiles = List.of(gymProfiles),
-       _exerciseSettings = List.unmodifiable(exerciseSettings),
+       _exerciseSettings = List.of(exerciseSettings),
        _workoutSettings = List.unmodifiable(workoutSettings);
 
   final List<ExerciseModel> _exercises;
@@ -77,12 +77,44 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
     _gymProfileChanges.add(null);
   }
 
+  final _settingsChanges = StreamController<void>.broadcast(sync: true);
+
   @override
   Stream<List<ExerciseSettingsModel>> watchExerciseSettings(String uid) =>
-      Stream.value([
-        for (final settings in _exerciseSettings)
-          if (settings.authorId == uid) settings,
-      ]);
+      Stream.multi((listener) {
+        List<ExerciseSettingsModel> read() => [
+          for (final settings in _exerciseSettings)
+            if (settings.authorId == uid) settings,
+        ];
+        listener.add(read());
+        final subscription = _settingsChanges.stream.listen(
+          (_) => listener.add(read()),
+        );
+        // Not `subscription.cancel` itself: `first` would wait on the Future
+        // that returns, which never completes under a widget test's fake
+        // clock.
+        listener.onCancel = () => unawaited(subscription.cancel());
+      });
+
+  /// Merges as Firestore does: a field left empty keeps what was stored.
+  @override
+  Future<void> saveExerciseSettings(
+    String uid,
+    ExerciseSettingsModel settings,
+  ) async {
+    final index = _exerciseSettings.indexWhere(
+      (stored) => stored.authorId == uid && stored.id == settings.id,
+    );
+    if (index < 0) {
+      _exerciseSettings.add(settings);
+    } else {
+      _exerciseSettings[index] = ExerciseSettingsModel.fromFirestore({
+        ..._exerciseSettings[index].toFirestore(),
+        ...settings.toFirestore(),
+      });
+    }
+    _settingsChanges.add(null);
+  }
 
   @override
   Stream<WorkoutSettings> watchWorkoutSettings(String uid) => Stream.value(

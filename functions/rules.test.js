@@ -307,6 +307,43 @@ t("flutter: saveFood merges a food, and never one without author_id", async () =
     await assertSucceeds(merge(offRef, { ...food, ingredient_id: "off-5010029000061" }));
 });
 
+t("flutter: saveSession merges a workout session, updateWeekStreakCount sets the streak", async () => {
+    const session = contractFixture("workout_session");
+    const uid = session.author_id;
+    const ref = (as) => doc(db(as), `users/${uid}/workout_sessions/${session.id}`);
+    // A finished session is new: the first save creates it, as the app encodes it.
+    await assertFails(merge(ref(BOB), session));
+    await assertSucceeds(merge(ref(uid), session));
+    // Saved again as the app holds it, exercises replaced whole.
+    await assertSucceeds(merge(ref(uid), { ...session, exercises: [] }));
+    await assertFails(merge(ref(BOB), { ...session, exercises: [] }));
+    await assertSucceeds(updateDoc(ref(uid), { week_streak_count: 9 }));
+    await assertFails(updateDoc(ref(BOB), { week_streak_count: 9 }));
+    // Moderation's flag is not the author's to set.
+    await assertFails(merge(ref(uid), { ...session, hidden: true }));
+});
+
+t("flutter: finishing copies the streak to the private settings", async () => {
+    const uid = contractFixture("workout_session").author_id;
+    const ref = (as) => doc(db(as), `users/${uid}/private/settings`);
+    const streak = {
+        week_streak: 3, week_sessions: 2, week_goal: 3,
+        week_ends_at: Timestamp.fromDate(new Date("2026-10-19T00:00:00Z")), last_trained_at: now(),
+    };
+    await assertSucceeds(merge(ref(uid), streak));
+    await assertFails(merge(ref(BOB), streak));
+});
+
+t("flutter: saveExerciseSettings merges a note and a rest override", async () => {
+    const settings = contractFixture("exercise_settings");
+    const uid = settings.author_id;
+    const ref = (as) => doc(db(as), `users/${uid}/exercise_settings/${settings.id}`);
+    await assertFails(merge(ref(BOB), settings));
+    await assertSucceeds(merge(ref(uid), settings));
+    await assertSucceeds(merge(ref(uid), { id: settings.id, author_id: uid, rest_duration_override: 90 }));
+    await assertFails(merge(ref(BOB), { id: settings.id, author_id: uid, note: "x" }));
+});
+
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.
 for (const [sub, key] of [
     ["body_measurements", "author_id"], ["steps", "author_id"], ["goals", "user_id"],

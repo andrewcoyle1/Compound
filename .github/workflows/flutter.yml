@@ -11,6 +11,8 @@ on:
       - "CompoundUnitTests/Fixtures/coach-parity.json"
       - "CompoundUnitTests/Fixtures/nutrition-parity.json"
       - "CompoundUnitTests/Fixtures/progression-parity.json"
+      # training_session's parity test reads the Swift-recorded tracker cases.
+      - "CompoundUnitTests/Fixtures/tracker-parity.json"
       # training_library_repository embeds the bundled exercises and workouts.
       - "Compound/SupportingFiles/Resources/PrebuiltExercises.json"
       - "Compound/SupportingFiles/Resources/PrebuiltWorkouts.json"
@@ -166,4 +168,16 @@ jobs:
       # Its Firestore test reads ../../../contracts/firestore. Packages are held at 100%.
       min_coverage: 100
       # No blocs in a repository.
+      run_bloc_lint: false
+
+  training_session:
+    name: training_session
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/training_session
+      flutter_version: "3.47.7"
+      # Its tests read ../../../contracts/firestore and the Swift-recorded
+      # CompoundUnitTests/Fixtures/tracker-parity.json. Packages are held at 100%.
+      min_coverage: 100
+      # A controller, not a bloc.
       run_bloc_lint: false

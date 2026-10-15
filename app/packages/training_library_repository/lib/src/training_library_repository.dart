@@ -32,4 +32,10 @@ abstract interface class TrainingLibraryRepository {
   /// Swift's defaults when there is no document or it cannot be read, as
   /// `WorkoutSettingsManager` falls back.
   Stream<WorkoutSettings> watchWorkoutSettings(String uid);
+
+  /// Saves [settings] at `users/{uid}/exercise_settings/{id}`, merged over
+  /// what is stored (`ExerciseSettingsManager.setNote` and
+  /// `setRestOverride`; the sync engine's `saveDocument` merges). As in
+  /// Swift, a field left empty is left as it was stored, not cleared.
+  Future<void> saveExerciseSettings(String uid, ExerciseSettingsModel settings);
 }

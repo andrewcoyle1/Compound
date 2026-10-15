@@ -82,6 +82,15 @@ class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
             WorkoutSettings(authorId: uid);
       });
 
+  @override
+  Future<void> saveExerciseSettings(
+    String uid,
+    ExerciseSettingsModel settings,
+  ) => _user(
+    uid,
+    'exercise_settings',
+  ).doc(settings.id).set(settings.toFirestore(), SetOptions(merge: true));
+
   List<T> _decodeAll<T>(
     QuerySnapshot<Map<String, dynamic>> snapshot,
     T Function(Map<String, Object?>) decode,

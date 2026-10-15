@@ -1,6 +1,7 @@
-/// Reads the signed-in user's workout sessions from Firestore, or from
-/// memory in the staging flavor. Read-only until the session contract has
-/// been exercised by writes (docs/specs/flutter/firestore-contract.md).
+/// Reads and writes the signed-in user's workout sessions in Firestore, or
+/// in memory in the staging flavor. Writes are whole sessions merged and the
+/// `week_streak_count` field, held to the Firestore contract
+/// (docs/specs/flutter/firestore-contract.md).
 library;
 
 export 'package:compound_models/compound_models.dart'

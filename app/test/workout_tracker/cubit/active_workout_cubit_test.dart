@@ -1,8 +1,12 @@
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:compound/l10n/l10n.dart';
+import 'package:compound/notifications/notifications.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
@@ -33,6 +37,7 @@ void main() {
   late InMemoryTrainingLibraryRepository library;
   late InMemoryActiveSessionStore store;
   late _MockAnalytics analytics;
+  late FakeNotificationsRepository notifications;
   late ActiveWorkoutCubit cubit;
   var ids = 0;
 
@@ -44,6 +49,8 @@ void main() {
     library: library,
     analytics: analytics,
     store: store,
+    notifications: notifications,
+    copy: AppNotificationCopy(() => lookupAppLocalizations(const Locale('en'))),
     clock: clock.call,
     newId: () => 'ID-${++ids}',
     wait: (_) async {},
@@ -74,6 +81,7 @@ void main() {
     );
     store = InMemoryActiveSessionStore();
     analytics = _MockAnalytics();
+    notifications = FakeNotificationsRepository();
     cubit = build();
   });
 
@@ -391,6 +399,7 @@ void main() {
         library: library,
         analytics: analytics,
         store: store,
+        notifications: notifications,
         clock: clock.call,
         wait: (_) async {},
       );
@@ -471,6 +480,188 @@ void main() {
 
       await tester.pump(const Duration(seconds: 1));
       expect(cubit.state.graceEnd, isNull);
+    });
+  });
+
+  group('$ActiveWorkoutCubit notifications', () {
+    LocalReminder? pending(LocalReminderKind kind) =>
+        notifications.scheduled[kind];
+
+    DateTime? due(LocalReminderKind kind) => switch (pending(kind)?.schedule) {
+      ReminderAt(:final at) => at,
+      _ => null,
+    };
+
+    Future<void> logFirst() async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      cubit.pressPrimary();
+      await cubit.notificationsSettled;
+    }
+
+    test('a rest schedules "Rest Complete" with what is next; skipping '
+        'withdraws it', () async {
+      await logFirst();
+      final restOver = pending(LocalReminderKind.restOver)!;
+      expect(due(LocalReminderKind.restOver), cubit.state.restEnd);
+      expect(restOver.body, startsWith('Next: '));
+      expect(restOver.level, ReminderLevel.timeSensitive);
+      // The first rest asks for permission.
+      expect(notifications.permissionState, PushPermission.authorized);
+
+      cubit.addRestTime();
+      await cubit.notificationsSettled;
+      expect(due(LocalReminderKind.restOver), cubit.state.restEnd);
+
+      cubit.skipRest();
+      await cubit.notificationsSettled;
+      expect(pending(LocalReminderKind.restOver), isNull);
+    });
+
+    test('"Play Sound" off schedules it silent', () async {
+      library = InMemoryTrainingLibraryRepository(
+        workoutSettings: const [
+          WorkoutSettings(
+            authorId: uid,
+            addSmartWarmUps: false,
+            restTimerPlaySound: false,
+          ),
+        ],
+      );
+      await cubit.close();
+      cubit = build();
+      await cubit.userChanged(uid);
+      await settle();
+      await logFirst();
+      expect(pending(LocalReminderKind.restOver)!.sound, isFalse);
+    });
+
+    test('"Still training?" follows the last set; finishing withdraws '
+        'everything', () async {
+      await logFirst();
+      final logged = clock.now;
+      expect(
+        due(LocalReminderKind.idleWorkout),
+        logged.add(IdleWorkout.threshold),
+      );
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await cubit.notificationsSettled;
+      expect(notifications.scheduled, isEmpty);
+    });
+
+    test('discarding withdraws everything', () async {
+      await logFirst();
+      await cubit.discard();
+      await cubit.notificationsSettled;
+      expect(notifications.scheduled, isEmpty);
+    });
+
+    test('asks "Still training?" an hour after the last set, once, and '
+        'can finish as of that set', () async {
+      await logFirst();
+      final lastSet = clock.now;
+      cubit.skipRest();
+
+      clock.advance(const Duration(minutes: 30));
+      cubit.checkStillTraining();
+      expect(cubit.state.effect, isNot(isA<StillTrainingEffect>()));
+
+      clock.advance(const Duration(minutes: 31));
+      cubit.checkStillTraining();
+      expect(cubit.state.effect, StillTrainingEffect(lastSet));
+      final asked = cubit.state.effectId;
+      cubit.checkStillTraining();
+      expect(cubit.state.effectId, asked);
+
+      await cubit.finish(firstWeekday: DateTime.monday, at: lastSet);
+      expect(cubit.state.finishedSession!.endedAt, lastSet);
+    });
+
+    group('with the ongoing notification (Android)', () {
+      setUp(() async {
+        await cubit.close();
+        notifications = FakeNotificationsRepository(showsOngoingWorkout: true);
+        cubit = build();
+      });
+
+      test('shows the workout counting up, then the rest counting down, '
+          'and the stand-in two seconds late', () async {
+        await cubit.userChanged(uid);
+        await cubit.start(template: template, eventPrefix: 'x');
+        await cubit.notificationsSettled;
+        final session = cubit.state.session!;
+        expect(
+          notifications.ongoingWorkout,
+          OngoingWorkout(
+            title: session.name,
+            body: notifications.ongoingWorkout!.body,
+            clock: session.dateCreated,
+          ),
+        );
+        expect(notifications.ongoingWorkout!.body, startsWith('Next: '));
+
+        clock.advance(const Duration(minutes: 1));
+        fillNext();
+        cubit.pressPrimary();
+        await cubit.notificationsSettled;
+        final end = cubit.state.restEnd!;
+        expect(notifications.ongoingWorkout!.clock, end);
+        expect(notifications.ongoingWorkout!.countsDown, isTrue);
+        expect(
+          due(LocalReminderKind.restOver),
+          end.add(RestOverAlert.standInDelay),
+        );
+      });
+
+      testWidgets('on time, the app withdraws the stand-in and the ongoing '
+          'notification alerts', (tester) async {
+        await logFirst();
+        final end = cubit.state.restEnd!;
+        final loggedAt = clock.now;
+        clock.now = end;
+        await tester.pump(end.difference(loggedAt));
+        await cubit.notificationsSettled;
+        expect(cubit.state.effect, isA<RestOverEffect>());
+        expect(pending(LocalReminderKind.restOver), isNull);
+        expect(notifications.ongoingWorkout!.alert, isTrue);
+        expect(notifications.ongoingWorkout!.countsDown, isFalse);
+        await tester.pump(const Duration(seconds: 1));
+      });
+
+      testWidgets('late, the notification has already said it', (tester) async {
+        await logFirst();
+        final end = cubit.state.restEnd!;
+        final loggedAt = clock.now;
+        clock.now = end.add(const Duration(seconds: 5));
+        await tester.pump(end.difference(loggedAt));
+        await cubit.notificationsSettled;
+        expect(pending(LocalReminderKind.restOver), isNotNull);
+        expect(notifications.ongoingWorkout!.alert, isFalse);
+        await tester.pump(const Duration(seconds: 1));
+      });
+
+      test('is withdrawn when the workout ends, and with "Show on Lock '
+          'Screen" off', () async {
+        await logFirst();
+        await cubit.discard();
+        await cubit.notificationsSettled;
+        expect(notifications.ongoingWorkout, isNull);
+
+        library = InMemoryTrainingLibraryRepository(
+          workoutSettings: const [
+            WorkoutSettings(authorId: uid, showOnLockScreen: false),
+          ],
+        );
+        cubit = build();
+        await cubit.userChanged(uid);
+        await settle();
+        await cubit.start(template: template, eventPrefix: 'x');
+        await cubit.notificationsSettled;
+        expect(notifications.ongoingWorkout, isNull);
+      });
     });
   });
 }

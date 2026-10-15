@@ -14,8 +14,10 @@ import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -223,6 +225,45 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(ProfilePage), findsNothing);
       expect(find.byType(AppShell), findsOneWidget);
+    });
+
+    testWidgets('routes a tapped notification and a compound:// link', (
+      tester,
+    ) async {
+      final notifications = FakeNotificationsRepository();
+      await tester.pumpWidget(
+        App(
+          programRepository: InMemoryProgramRepository(),
+          trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
+          authRepository: InMemoryAuthRepository(
+            user: InMemoryAuthRepository.sampleUser,
+          ),
+          userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
+          notificationsRepository: notifications,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(notifications.tokenUserId, sampleUserId);
+
+      notifications.tap(const {'tab': 'nutrition'});
+      await tester.pumpAndSettle();
+      expect(find.byType(NutritionView), findsOneWidget);
+
+      // As the engine sends a URL the app was opened with: whole.
+      await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+        'flutter/navigation',
+        const JSONMethodCodec().encodeMethodCall(
+          const MethodCall('pushRouteInformation', {
+            'location': 'compound://tab/progress',
+          }),
+        ),
+        (_) {},
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(ProgressPage), findsOneWidget);
     });
 
     testWidgets('switches between the five tabs', (tester) async {

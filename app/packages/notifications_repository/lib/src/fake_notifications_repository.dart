@@ -12,7 +12,16 @@ import 'package:notifications_repository/src/notifications_repository.dart';
 /// {@endtemplate}
 class FakeNotificationsRepository extends NotificationsRepository {
   /// {@macro fake_notifications_repository}
-  new({this.permissionState = PushPermission.notDetermined});
+  new({
+    this.permissionState = PushPermission.notDetermined,
+    this.showsOngoingWorkout = false,
+  });
+
+  @override
+  bool showsOngoingWorkout;
+
+  /// The ongoing workout notification showing, or `null`.
+  OngoingWorkout? ongoingWorkout;
 
   /// What [permission] answers.
   PushPermission permissionState;
@@ -56,6 +65,14 @@ class FakeNotificationsRepository extends NotificationsRepository {
 
   @override
   Future<void> cancel(LocalReminderKind kind) async => scheduled.remove(kind);
+
+  @override
+  Future<void> showOngoingWorkout(OngoingWorkout workout) async {
+    if (showsOngoingWorkout) ongoingWorkout = workout;
+  }
+
+  @override
+  Future<void> clearOngoingWorkout() async => ongoingWorkout = null;
 
   /// A push arriving while the app is in front.
   void receive(PushMessage message) => _messages.add(message);

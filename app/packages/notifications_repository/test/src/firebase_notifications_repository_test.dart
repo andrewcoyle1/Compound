@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +17,9 @@ class _MockMessaging extends Mock implements FirebaseMessaging;
 class _MockLocal extends Mock implements FlutterLocalNotificationsPlugin;
 
 class _MockSettings extends Mock implements NotificationSettings;
+
+class _MockAndroid extends Mock
+    implements AndroidFlutterLocalNotificationsPlugin;
 
 class _MockUserRepository extends Mock implements UserRepository;
 
@@ -39,6 +43,7 @@ void main() {
     registerFallbackValue(DateTimeComponents.time);
     registerFallbackValue(const InitializationSettings());
     registerFallbackValue(const PrivateUserSettings());
+    registerFallbackValue(const AndroidNotificationChannel('id', 'name'));
   });
 
   group(FirebaseNotificationsRepository, () {
@@ -186,6 +191,27 @@ void main() {
         await defaults.initialize();
         expect(tz.local.name, 'Europe/Paris');
         await defaults.dispose();
+      });
+
+      test('makes the Android channels up front', () async {
+        final android = _MockAndroid();
+        when(() => android.createNotificationChannel(any()))
+            .thenAnswer((_) async {});
+        when(
+          () => local
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(android);
+        await repository.initialize();
+        final channels = verify(
+          () => android.createNotificationChannel(captureAny()),
+        ).captured.cast<AndroidNotificationChannel>();
+        expect(channels.map((c) => (c.id, c.name, c.importance)), [
+          ('workout', 'channel workout', Importance.high),
+          ('reminders', 'channel reminders', Importance.defaultImportance),
+          ('social', 'channel social', Importance.defaultImportance),
+        ]);
       });
 
       test('a tapped local notification is held for routing', () async {
@@ -571,6 +597,98 @@ void main() {
       test('settings schedule the come-back reminders', () async {
         await repository.applyReminderSettings(const PrivateUserSettings());
         expect(scheduled().whereType<int>().take(3), [1, 2, 3]);
+      });
+    });
+
+    group('ongoing workout', () {
+      const workout = OngoingWorkout(title: 'Push Day', body: 'Next: Bench');
+
+      tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+      test('shows on Android only', () {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        expect(repository.showsOngoingWorkout, isFalse);
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        expect(repository.showsOngoingWorkout, isTrue);
+      });
+
+      test('is not posted where it does not show', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        await repository.showOngoingWorkout(workout);
+        verifyNever(
+          () => local.show(
+            id: any(named: 'id'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            notificationDetails: any(named: 'notificationDetails'),
+            payload: any(named: 'payload'),
+          ),
+        );
+      });
+
+      NotificationDetails shown() =>
+          verify(
+                () => local.show(
+                  id: 9,
+                  title: 'Push Day',
+                  body: 'Next: Bench',
+                  notificationDetails: captureAny(named: 'notificationDetails'),
+                  payload: '{"deep_link":"compound://workout"}',
+                ),
+              ).captured.single
+              as NotificationDetails;
+
+      test('counts down a rest, silently, and opens the tracker', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        final end = DateTime.utc(2026, 10, 15, 9, 2);
+        await repository.showOngoingWorkout(
+          OngoingWorkout(
+            title: 'Push Day',
+            body: 'Next: Bench',
+            clock: end,
+            countsDown: true,
+          ),
+        );
+        final android = shown().android!;
+        expect(android.channelId, 'workout');
+        expect(android.ongoing, isTrue);
+        expect(android.autoCancel, isFalse);
+        expect(android.silent, isTrue);
+        expect(android.priority, Priority.low);
+        expect(android.usesChronometer, isTrue);
+        expect(android.chronometerCountDown, isTrue);
+        expect(android.when, end.millisecondsSinceEpoch);
+        expect(android.showWhen, isTrue);
+      });
+
+      test('alerts once at the end of a rest; no clock while paused', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        await repository.showOngoingWorkout(
+          const OngoingWorkout(
+            title: 'Push Day',
+            body: 'Next: Bench',
+            alert: true,
+          ),
+        );
+        final android = shown().android!;
+        expect(android.silent, isFalse);
+        expect(android.priority, Priority.high);
+        expect(android.usesChronometer, isFalse);
+        expect(android.showWhen, isFalse);
+      });
+
+      test('is cleared by id', () async {
+        await repository.clearOngoingWorkout();
+        verify(() => local.cancel(id: 9)).called(1);
+      });
+
+      test('compares by value', () {
+        expect(
+          // Not const, so equality goes through props.
+          // ignore: prefer_const_constructors
+          OngoingWorkout(title: 'Push Day', body: 'Next: Bench'),
+          workout,
+        );
       });
     });
 

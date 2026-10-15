@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
+import 'package:compound/notifications/notification_copy.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
+import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart'
     show PrebuiltCatalogue, TrainingLibraryRepository;
 import 'package:training_rules/training_rules.dart' as r;
@@ -20,7 +23,10 @@ part 'active_workout_state.dart';
 /// tracker, and finished or discarded (`WorkoutTrackerPresenter`). The rules
 /// and the device copy are `training_session`'s [ActiveSessionController];
 /// this wraps it, reads what it needs from the repositories, and reports
-/// what the user did with the Swift app's event names.
+/// what the user did with the Swift app's event names. It also keeps the
+/// workout's notifications in step: the rest-over notification
+/// (`RestOverNotifying`), "Still training?" (`IdleWorkoutReminder`) and, on
+/// Android, the ongoing notification that stands in for the Live Activity.
 class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   new({
     required this._sessions,
@@ -28,17 +34,22 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required this._library,
     required this._analytics,
     required this._store,
+    required this._notifications,
+    AppNotificationCopy? copy,
     this._clock = DateTime.now,
     this._newId = newUuid,
     this._backoff = RetryBackoff.workoutSave,
     this._wait = _delay,
-  }) : super(const ActiveWorkoutState());
+  }) : _strings = copy ?? AppNotificationCopy(),
+       super(const ActiveWorkoutState());
 
   final WorkoutSessionRepository _sessions;
   final UserRepository _users;
   final TrainingLibraryRepository _library;
   final AnalyticsRepository _analytics;
   final ActiveSessionStore _store;
+  final NotificationsRepository _notifications;
+  final AppNotificationCopy _strings;
   final DateTime Function() _clock;
   final IdGenerator _newId;
   final RetryBackoff _backoff;
@@ -74,6 +85,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _uid = uid;
     _cancelTimers();
     _controller?.flush();
+    if (_controller != null) _endNotifications();
     _controller = null;
     for (final subscription in _subscriptions) {
       unawaited(subscription.cancel());
@@ -132,6 +144,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     if (isClosed || _uid != uid) return;
     // A workout someone else left on this device is not theirs to carry on.
     if (controller == null || controller.session.authorId != uid) {
+      // An ongoing notification a killed process left behind.
+      _notify(_notifications.clearOngoingWorkout);
       return emit(const ActiveWorkoutState());
     }
     _controller = controller..environment = _environment(controller.session);
@@ -218,6 +232,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
               newId: _newId,
             );
       _cancelTimers();
+      if (_controller != null) _endNotifications();
       await _controller?.discard();
       final initial = ActiveSessionState(session: session);
       await _store.save(initial);
@@ -428,19 +443,21 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _restTimer?.cancel();
     _restTimer = null;
     final end = _controller?.restEnd;
+    _restOverChanged(end);
     if (end == null) return;
     final left = end.difference(_clock());
     _restTimer = Timer(left.isNegative ? Duration.zero : left, () {
       final controller = _controller;
       if (controller == null || controller.restEnd != end) return;
       controller.restEnded();
+      _restRanOut(end);
       _graceEnd = end.add(r.ActiveWorkout.restDoneGrace);
       _graceTimer?.cancel();
       _graceTimer = Timer(r.ActiveWorkout.restDoneGrace, () {
         _graceEnd = null;
         if (_controller != null && !isClosed) _emitTracker();
       });
-      _emitTracker();
+      _emitTracker(effect: const RestOverEffect());
     });
   }
 
@@ -694,13 +711,14 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   /// opens at once, while the save, its retries and the streak run here,
   /// where they outlive the tracker. A save that fails leaves the workout
   /// on the device to resume. Weeks start on [firstWeekday] (ISO).
-  Future<void> finish({required int firstWeekday}) async {
+  Future<void> finish({required int firstWeekday, DateTime? at}) async {
     final controller = _controller;
     final uid = _uid;
     if (controller == null || uid == null) return;
     _controller = null;
     _cancelTimers();
-    final session = await controller.finish();
+    _endNotifications();
+    final session = await controller.finish(at: at);
     if (isClosed) return;
     emit(ActiveWorkoutState(finishedSession: session));
     _track(
@@ -783,6 +801,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _track('WorkoutTrackerView_DiscardWorkout_Start');
     _controller = null;
     _cancelTimers();
+    _endNotifications();
     try {
       await controller.discard();
       _track('WorkoutTrackerView_DiscardWorkout_Success');
@@ -915,6 +934,182 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       _lastSlot = slot;
     }
     emit(next);
+    _workoutNotificationsChanged(next);
+  }
+
+  // MARK: - Notifications
+
+  /// The notification calls, one at a time in order, as Swift's
+  /// `enqueueRestAlert`: a rest scheduled and skipped at once must end
+  /// withdrawn, whichever platform call is slower.
+  /// Started by the first call, so it runs in the zone the work does.
+  Future<void>? _notificationQueue;
+
+  void _notify(Future<void> Function() work) =>
+      _notificationQueue = _notificationQueue?.then((_) => work()) ?? work();
+
+  /// Completes once every notification call so far has; for tests.
+  Future<void> get notificationsSettled =>
+      _notificationQueue ?? Future<void>.value();
+
+  DateTime? _scheduledRestEnd;
+  DateTime? _idleAnchor;
+  OngoingWorkout? _ongoing;
+  bool _alertOngoing = false;
+  DateTime? _lastSeenActivity;
+
+  /// Every rest started or moved (a set logged, +15s) schedules the
+  /// rest-over notification under its one id, replacing the last; every rest
+  /// called off (skip, un-log) withdraws it. With the ongoing notification
+  /// showing, it is due [RestOverAlert.standInDelay] late, standing in for an
+  /// app that was not running when the rest ran out.
+  void _restOverChanged(DateTime? end) {
+    if (end == _scheduledRestEnd) return;
+    _scheduledRestEnd = end;
+    if (end == null) {
+      return _notify(() => _notifications.cancel(LocalReminderKind.restOver));
+    }
+    final reminder = LocalReminders.restOver(
+      at: RestOverAlert.notificationDate(
+        restEnd: end,
+        showingLiveActivity: _ongoing != null,
+      ),
+      body: _nextLine(),
+      sound: _workoutSettings.restTimerPlaySound,
+    );
+    _notify(() => _notifications.schedule(reminder));
+  }
+
+  /// The app's timer saw the rest run out (`HKWorkoutManager.endRest`): on
+  /// time with the ongoing notification showing, that alerts and the
+  /// stand-in is withdrawn; late, the notification has already said it.
+  void _restRanOut(DateTime end) {
+    _scheduledRestEnd = null;
+    final sound = _workoutSettings.restTimerPlaySound;
+    final channel = RestOverAlert.channel(
+      showingLiveActivity: _ongoing != null,
+      lateBy: _clock().difference(end),
+      sound: sound,
+    );
+    if (channel == RestOverAlert.notification) return;
+    _notify(() => _notifications.cancel(LocalReminderKind.restOver));
+    _alertOngoing = channel == RestOverAlert.liveActivity;
+  }
+
+  /// "Next: Bench Press, 60 kg × 8": the first open set from the current
+  /// exercise on, wrapping (`exerciseIndexWithWorkLeft`); null when nothing
+  /// is left.
+  String? _nextLine() {
+    final controller = _controller;
+    if (controller == null) return null;
+    final exercises = controller.session.exercises;
+    final start = exercises.indexWhere(
+      (e) => e.id == controller.currentExercise?.id,
+    );
+    final from = start < 0 ? 0 : start;
+    for (final exercise in [...exercises.skip(from), ...exercises.take(from)]) {
+      final set = exercise.sets.where((s) => s.completedAt == null).firstOrNull;
+      if (set == null || exercise.name.isEmpty) continue;
+      final l10n = _strings.l10n;
+      final figures = TrackerText.figures(
+        l10n,
+        set,
+        exercise.trackingMode,
+        _unit(exercise),
+        locale: l10n.localeName,
+      );
+      return figures == null
+          ? l10n.notifRestOverNext(exercise.name)
+          : l10n.notifRestOverNextTarget(exercise.name, figures);
+    }
+    return null;
+  }
+
+  static DateTime? _lastLog(WorkoutSessionModel session) => session.exercises
+      .expand((exercise) => exercise.sets)
+      .map((set) => set.completedAt)
+      .nonNulls
+      .fold<DateTime?>(
+        null,
+        (latest, at) => latest == null || at.isAfter(latest) ? at : latest,
+      );
+
+  /// "Still training?" follows the last logged set
+  /// (`WorkoutSessionManager.rescheduleIdleReminder`), and the ongoing
+  /// notification follows the tracker: the workout's name, what is next,
+  /// and a clock counting down the rest or up from the start.
+  void _workoutNotificationsChanged(ActiveWorkoutState state) {
+    final session = state.session!;
+    final lastLog = _lastLog(session);
+    if (lastLog != null && lastLog != _idleAnchor) {
+      _idleAnchor = lastLog;
+      final reminder = LocalReminders.idleWorkout(
+        lastLog: lastLog,
+        now: _clock(),
+      );
+      if (reminder != null) _notify(() => _notifications.schedule(reminder));
+    }
+    if (!_notifications.showsOngoingWorkout ||
+        !(_workoutSettings.showOnLockScreen ?? true)) {
+      return _clearOngoing();
+    }
+    final restEnd = state.restEnd;
+    final alert = _alertOngoing;
+    _alertOngoing = false;
+    final next = _nextLine();
+    final ongoing = OngoingWorkout(
+      title: session.name,
+      body: alert ? next ?? _strings.l10n.notifRestOverFallback : next,
+      clock:
+          restEnd ??
+          (state.pausedAt == null
+              ? session.dateCreated.add(
+                  Duration(microseconds: (state.pausedSeconds * 1e6).round()),
+                )
+              : null),
+      countsDown: restEnd != null,
+      alert: alert,
+    );
+    if (ongoing == _ongoing) return;
+    _ongoing = ongoing;
+    _notify(() => _notifications.showOngoingWorkout(ongoing));
+  }
+
+  void _clearOngoing() {
+    if (_ongoing == null) return;
+    _ongoing = null;
+    _notify(_notifications.clearOngoingWorkout);
+  }
+
+  /// The workout is over (finished, discarded, replaced or signed out of):
+  /// nothing about it is left to announce.
+  void _endNotifications() {
+    _scheduledRestEnd = null;
+    _idleAnchor = null;
+    _alertOngoing = false;
+    _lastSeenActivity = null;
+    _notify(() async {
+      await _notifications.cancel(LocalReminderKind.restOver);
+      await _notifications.cancel(LocalReminderKind.idleWorkout);
+    });
+    _clearOngoing();
+  }
+
+  /// On the tracker's appearing and each return to the app: an hour since
+  /// the last set (or since last asked) asks whether the workout is still
+  /// going (`askIfStillTraining`). Asked once per return; Keep Going waits
+  /// another hour.
+  void checkStillTraining() {
+    final controller = _controller;
+    if (controller == null) return;
+    final lastSet = _lastLog(controller.session);
+    if (lastSet == null) return;
+    final now = _clock();
+    final seen = _lastSeenActivity;
+    final lastActivity = seen != null && seen.isAfter(lastSet) ? seen : lastSet;
+    if (!IdleWorkout.isIdle(lastActivity: lastActivity, now: now)) return;
+    _lastSeenActivity = now;
+    _emitTracker(effect: StillTrainingEffect(lastSet));
   }
 
   void _onSaveError(Object error, StackTrace _) => _track(

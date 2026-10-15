@@ -2,6 +2,7 @@
 // Needs the Firestore emulator: run `npm run test:rules`, which starts it under the demo project.
 // Plain `npm test` also picks this file up; without FIRESTORE_EMULATOR_HOST it skips itself.
 import { test, before, beforeEach, after } from "node:test";
+import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
     initializeTestEnvironment, assertSucceeds, assertFails,
@@ -10,6 +11,10 @@ import {
     doc, getDoc, setDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove,
     collectionGroup, query, where, getDocs, Timestamp, deleteField, writeBatch,
 } from "firebase/firestore";
+import {
+    SOCIAL_PUSH_PREFERENCE_KEYS, buildFollowAcceptedNotification, buildFollowNotification, buildInviteFollowRequest,
+    planChallengeProgress,
+} from "./lib.js";
 
 const skip = !process.env.FIRESTORE_EMULATOR_HOST && "FIRESTORE_EMULATOR_HOST not set; run npm run test:rules";
 
@@ -67,8 +72,8 @@ t("users/private: owner only", async () => {
 // ---------------- FIRESTORE CONTRACT ----------------
 // Each model's `full` fixture in ../contracts/firestore (docs/specs/flutter/firestore-contract.md)
 // is a document both apps may write, so its owner must be able to create it where it lives.
-const contractFixture = (model) => JSON.parse(
-    readFileSync(new URL(`../contracts/firestore/${model}/full.json`, import.meta.url), "utf8"),
+const contractFixture = (model, name = "full") => JSON.parse(
+    readFileSync(new URL(`../contracts/firestore/${model}/${name}.json`, import.meta.url), "utf8"),
     (_, value) => (value && typeof value === "object" && !Array.isArray(value)
         && Object.keys(value).length === 1 && typeof value.$timestamp === "string")
         ? Timestamp.fromDate(new Date(value.$timestamp)) : value,
@@ -182,6 +187,181 @@ t("contract: the owner creates the full check-in documents and shortcut settings
     for (const path of ["check_in_record/check_in_record", "logging_break/logging_break", "nutrition_day_annotations/2026-10-01"]) {
         await assertFails(setDoc(doc(db(BOB), `users/${BOB}/${path}`), { ...annotation, author_id: ALICE }));
     }
+});
+
+// ---------------- FIRESTORE CONTRACT: SOCIAL ----------------
+// The social fixtures name two parties: ACTOR writes (requests, comments, sends, reports) and
+// FRIEND is on the other end. Each document is created by its real writer, and the cross-user
+// rules hold for the fixture itself.
+const ACTOR = "user_contract_full", FRIEND = "user_contract_friend";
+const friendBlocksActor = () => seed(`users/${FRIEND}`, { id: FRIEND, blocked_user_ids: [ACTOR] });
+
+t("contract: a follow request is created by its requester and answered by its target with status alone", async () => {
+    const request = contractFixture("follow_request");
+    const path = `users/${FRIEND}/follow_requests/${request.requester_id}`;
+    await assertFails(setDoc(doc(db(BOB), path), request));
+    await assertSucceeds(setDoc(doc(db(ACTOR), path), request));
+    await assertSucceeds(setDoc(doc(db(ACTOR), path), contractFixture("follow_request", "minimal")));
+    await assertFails(updateDoc(doc(db(ACTOR), path), { status: "accepted" }));
+    await assertFails(updateDoc(doc(db(FRIEND), path), { status: "accepted", requester_name: "Someone else" }));
+    await assertSucceeds(updateDoc(doc(db(FRIEND), path), { status: "accepted" }));
+    await friendBlocksActor();
+    await assertFails(setDoc(doc(db(ACTOR), path), request));
+});
+
+t("contract: the actor writes a notification to its recipient, who alone reads it; not once blocked", async () => {
+    const path = (id) => `users/${FRIEND}/notifications/${id}`;
+    await assertSucceeds(setDoc(doc(db(ACTOR), path("full")), contractFixture("activity_notification")));
+    await assertSucceeds(setDoc(doc(db(ACTOR), path("minimal")), contractFixture("activity_notification", "minimal")));
+    await assertFails(setDoc(doc(db(BOB), path("forged")), contractFixture("activity_notification")));
+    await assertFails(getDoc(doc(db(ACTOR), path("full"))));
+    await assertSucceeds(getDoc(doc(db(FRIEND), path("full"))));
+    await assertSucceeds(updateDoc(doc(db(FRIEND), path("full")), { is_read: true }));
+    await friendBlocksActor();
+    await assertFails(setDoc(doc(db(ACTOR), path("again")), contractFixture("activity_notification")));
+});
+
+t("contract: a comment is created by its author, soft-deleted by them and liked one id at a time", async () => {
+    const created = contractFixture("session_comment", "minimal");
+    const ref = (as) => doc(db(as), `workout_session_comments/${created.id}`);
+    await assertFails(setDoc(ref(BOB), created));
+    await assertSucceeds(setDoc(ref(ACTOR), created));
+    const full = contractFixture("session_comment");
+    await assertSucceeds(setDoc(doc(db(ACTOR), `workout_session_comments/${full.id}`), full));
+    await assertSucceeds(updateDoc(ref(FRIEND), { liked_by_user_ids: arrayUnion(FRIEND) }));
+    await assertFails(updateDoc(ref(FRIEND), { deleted_at: now() }));
+    await assertSucceeds(updateDoc(ref(ACTOR), { deleted_at: now() }));
+    await friendBlocksActor();
+    await assertFails(setDoc(doc(db(ACTOR), "workout_session_comments/again"), { ...created, id: "again" }));
+});
+
+t("contract: a challenge is created by its owner and read by its members only", async () => {
+    for (const name of ["full", "minimal"]) {
+        const challenge = contractFixture("challenge", name);
+        await assertFails(setDoc(doc(db(BOB), `challenges/${challenge.id}`), challenge));
+        await assertSucceeds(setDoc(doc(db(challenge.owner_id), `challenges/${challenge.id}`), challenge));
+    }
+    const full = contractFixture("challenge");
+    await assertSucceeds(getDoc(doc(db(FRIEND), `challenges/${full.id}`)));
+    await assertFails(getDoc(doc(db(BOB), `challenges/${full.id}`)));
+    await assertSucceeds(updateDoc(doc(db(FRIEND), `challenges/${full.id}`), { member_ids: arrayRemove(FRIEND) }));
+});
+
+t("contract: challenge progress is read by members and written by no client", async () => {
+    const challenge = contractFixture("challenge");
+    const path = `challenges/${challenge.id}/progress/${FRIEND}`;
+    await seed(`challenges/${challenge.id}`, challenge);
+    await seed(path, contractFixture("challenge_progress"));
+    await assertSucceeds(getDoc(doc(db(FRIEND), path)));
+    await assertFails(getDoc(doc(db(BOB), path)));
+    await assertFails(setDoc(doc(db(FRIEND), path), contractFixture("challenge_progress")));
+});
+
+t("contract: an invite is created by its inviter under its code, read by anyone, edited by nobody", async () => {
+    for (const name of ["full", "minimal"]) {
+        const invite = contractFixture("invite", name);
+        await assertFails(setDoc(doc(db(BOB), `invites/${invite.code}`), invite));
+        await assertSucceeds(setDoc(doc(db(invite.inviter_id), `invites/${invite.code}`), invite));
+    }
+    const invite = contractFixture("invite");
+    await assertSucceeds(getDoc(doc(db(FRIEND), `invites/${invite.code}`)));
+    await assertFails(updateDoc(doc(db(ACTOR), `invites/${invite.code}`), { uses: 1 }));
+});
+
+t("contract: a share is sent pending and answered by its recipient with status alone", async () => {
+    for (const name of ["full", "minimal"]) {
+        const share = contractFixture("share", name);
+        await assertSucceeds(setDoc(doc(db(ACTOR), `shares/${share.id}`), share));
+    }
+    const share = contractFixture("share");
+    const ref = (as) => doc(db(as), `shares/${share.id}`);
+    await assertFails(getDoc(ref(BOB)));
+    await assertSucceeds(getDoc(ref(FRIEND)));
+    await assertFails(updateDoc(ref(ACTOR), { status: "accepted" }));
+    await assertFails(updateDoc(ref(FRIEND), { status: "accepted", payload: {} }));
+    await assertSucceeds(updateDoc(ref(FRIEND), { status: "accepted" }));
+    await friendBlocksActor();
+    await assertFails(setDoc(doc(db(ACTOR), "shares/again"), { ...share, id: "again" }));
+});
+
+t("contract: a report is filed by its reporter with only the allowed keys, nulls included", async () => {
+    for (const name of ["full", "minimal"]) {
+        const report = contractFixture("report", name);
+        await assertFails(setDoc(doc(db(BOB), `reports/${report.id}`), report));
+        await assertSucceeds(setDoc(doc(db(report.reporter_id), `reports/${report.id}`), report));
+    }
+    const report = contractFixture("report");
+    await assertFails(getDoc(doc(db(ACTOR), `reports/${report.id}`)));
+    await assertFails(setDoc(doc(db(ACTOR), "reports/extra"), { ...report, id: "extra", extra: true }));
+});
+
+t("contract: a username is reserved by its holder and cannot be taken over", async () => {
+    const reservation = contractFixture("username_reservation");
+    await assertFails(setDoc(doc(db(BOB), "usernames/ada"), reservation));
+    await assertSucceeds(setDoc(doc(db(ACTOR), "usernames/ada"), reservation));
+    await assertFails(setDoc(doc(db(BOB), "usernames/ada"), { user_id: BOB }));
+    await assertSucceeds(getDoc(doc(db(BOB), "usernames/ada")));
+});
+
+// ---------------- CONTRACT: WHAT THE FUNCTIONS READ AND WRITE ----------------
+// No emulator needed. Every field functions/index.js and lib.js read from these documents is a key
+// of the model's full fixture, and every document they write has the fixture's shape, so a Swift
+// or Flutter change that renames a field fails here rather than silently breaking a trigger.
+const keysOf = (model, name = "full") => Object.keys(contractFixture(model, name));
+const assertKeysIn = (fields, model) => {
+    const keys = new Set(keysOf(model));
+    const missing = fields.filter((field) => !keys.has(field));
+    assert.deepEqual(missing, [], `${model}/full.json lacks ${missing.join(", ")}`);
+};
+const assertNotificationShape = (written) => {
+    assertKeysIn(Object.keys(written), "activity_notification");
+    for (const key of keysOf("activity_notification", "minimal")) assert.ok(key in written, `notification lacks ${key}`);
+    assert.ok(enumsFixture.ActivityType.includes(written.type), `unknown notification type ${written.type}`);
+};
+const enumsFixture = JSON.parse(readFileSync(new URL("../contracts/firestore/enums.json", import.meta.url), "utf8"));
+
+test("functions read only fields the social fixtures have", () => {
+    // onActivityNotificationCreated, buildActivityPush, activityAlert, nudgeOnCooldown, unreadBadgeCount.
+    assertKeysIn(["type", "actor_id", "actor_name", "comment_text", "is_reply", "session_id", "session_author_id",
+        "date_created", "is_read"], "activity_notification");
+    // onFollowRequestCreated/Updated, planFollowAccepted, buildFollowRequestPush, planAutoAccept.
+    assertKeysIn(["status", "requester_id", "requester_name"], "follow_request");
+    // onReportCreated, planReportModeration; it then sets `hidden` on the comment or session.
+    assertKeysIn(["id", "reporter_id", "target_type", "target_id", "target_author_id", "reason", "status"], "report");
+    assertKeysIn(["hidden"], "session_comment");
+    assertKeysIn(["hidden", "ended_at", "is_rest_day", "deleted_at"], "workout_session");
+    // onWorkoutSessionEndedForChallenges, activeChallengesFor, planChallengeProgress.
+    assertKeysIn(["id", "starts_at", "ends_at", "member_ids", "target_sessions", "title"], "challenge");
+    assertKeysIn(["sessions"], "challenge_progress");
+    // acceptInvite, planInviteAcceptance.
+    assertKeysIn(["inviter_id", "uses", "max_uses"], "invite");
+    // onUsernameChanged, shouldReleaseReservation.
+    assertKeysIn(["user_id"], "username_reservation");
+    // The user document other people's triggers read: userDisplayName, the actor's picture,
+    // blocking, follows, privacy, usernames, and pushRecipientSettings' legacy fallback.
+    assertKeysIn(["submitted_first_name", "first_name", "submitted_last_name", "last_name", "submitted_profile_image",
+        "photo_url", "blocked_user_ids", "following_ids", "is_private", "username", "fcm_token", "social_push_likes",
+        "social_push_comments", "social_push_follows", "social_push_nudges", "social_push_mentions"], "user_model");
+    assertKeysIn(["fcm_token", ...Object.values(SOCIAL_PUSH_PREFERENCE_KEYS)], "private_user_settings");
+});
+
+test("functions write notifications, follow requests and progress in the fixtures' shapes", () => {
+    const user = contractFixture("user_model");
+    const plain = { first_name: "Grace" };
+    for (const target of [user, plain]) {
+        assertNotificationShape(buildFollowAcceptedNotification(target, { targetId: FRIEND, requesterId: ACTOR }));
+        assertNotificationShape(buildFollowNotification(target, { followerId: ACTOR, followedId: FRIEND }));
+        const request = buildInviteFollowRequest(target, ACTOR);
+        assert.deepEqual(Object.keys(request).sort(), keysOf("follow_request").sort());
+    }
+    // Without a picture the request carries a null image, which legacy-null-image.json covers.
+    assert.equal(buildInviteFollowRequest(plain, ACTOR).requester_image_url, null);
+    assert.ok(keysOf("follow_request", "legacy-null-image").includes("requester_image_url"));
+
+    const challenge = { ...contractFixture("challenge"), target_sessions: 1 };
+    const plan = planChallengeProgress(challenge, FRIEND, "session_1", undefined, user);
+    assertNotificationShape(plan.notification);
+    assert.deepEqual(Object.keys(plan.progress).sort(), keysOf("challenge_progress", "legacy-server-session-ids").sort());
 });
 
 // ---------------- FLUTTER WRITES (M3) ----------------

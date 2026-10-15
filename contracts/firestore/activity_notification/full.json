@@ -1,0 +1,16 @@
+{
+  "actor_id": "user_contract_full",
+  "actor_image_url": "https://example.com/ada.jpg",
+  "actor_name": "Ada Lovelace",
+  "challenge_id": "challenge_contract_full",
+  "comment_text": "Strong top set",
+  "date_created": {
+    "$timestamp": "2026-10-14T10:00:00.250Z"
+  },
+  "is_read": false,
+  "is_reply": true,
+  "session_author_id": "user_contract_friend",
+  "session_id": "session_contract_full",
+  "share_id": "share_contract_full",
+  "type": "comment"
+}

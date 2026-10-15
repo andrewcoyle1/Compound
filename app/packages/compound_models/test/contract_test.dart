@@ -200,6 +200,47 @@ final _models =
         roundTrip: (data) => ShortcutSettings.fromFirestore(data).toFirestore(),
         keys: ShortcutSettingsKeys.all,
       ),
+      'follow_request': (
+        roundTrip: (data) =>
+            FollowRequestModel.fromFirestore(data).toFirestore(),
+        keys: FollowRequestModelKeys.all,
+      ),
+      'activity_notification': (
+        roundTrip: (data) =>
+            ActivityNotificationModel.fromFirestore('n', data).toFirestore(),
+        keys: ActivityNotificationModelKeys.all,
+      ),
+      'session_comment': (
+        roundTrip: (data) =>
+            WorkoutSessionComment.fromFirestore(data).toFirestore(),
+        keys: WorkoutSessionCommentKeys.all,
+      ),
+      'report': (
+        roundTrip: (data) => ReportModel.fromFirestore(data).toFirestore(),
+        keys: ReportModelKeys.all,
+      ),
+      'username_reservation': (
+        roundTrip: (data) =>
+            UsernameReservation.fromFirestore(data).toFirestore(),
+        keys: UsernameReservationKeys.all,
+      ),
+      'challenge': (
+        roundTrip: (data) => ChallengeModel.fromFirestore(data).toFirestore(),
+        keys: ChallengeModelKeys.all,
+      ),
+      'challenge_progress': (
+        roundTrip: (data) =>
+            ChallengeProgressModel.fromFirestore(data).toFirestore(),
+        keys: ChallengeProgressModelKeys.all,
+      ),
+      'invite': (
+        roundTrip: (data) => InviteModel.fromFirestore(data).toFirestore(),
+        keys: InviteModelKeys.all,
+      ),
+      'share': (
+        roundTrip: (data) => ShareModel.fromFirestore(data).toFirestore(),
+        keys: ShareModelKeys.all,
+      ),
     };
 
 final _root = Directory('../../../contracts/firestore');
@@ -328,6 +369,11 @@ void main() {
         'BMREquation': raw(BmrEquation.values),
         'ExpenditureCalculationMode': raw(ExpenditureCalculationMode.values),
         'ExpenditureAlgorithmVersion': raw(ExpenditureAlgorithmVersion.values),
+        'FollowRequestStatus': raw(FollowRequestStatus.values),
+        'ShareStatus': raw(ShareStatus.values),
+        'ActivityType': raw(ActivityType.values),
+        'ReportContentType': raw(ReportContentType.values),
+        'ReportReason': raw(ReportReason.values),
       }),
     );
   });

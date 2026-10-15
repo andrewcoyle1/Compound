@@ -1,0 +1,23 @@
+{
+  "author_id": "user_contract_full",
+  "author_image_url": "https://example.com/ada.jpg",
+  "author_name": "Ada Lovelace",
+  "date_created": {
+    "$timestamp": "2026-10-14T10:00:00.250Z"
+  },
+  "deleted_at": {
+    "$timestamp": "2026-10-14T11:30:00.500Z"
+  },
+  "hidden": true,
+  "id": "comment_contract_full",
+  "liked_by_user_ids": [
+    "user_contract_friend"
+  ],
+  "mentioned_user_ids": [
+    "user_contract_friend"
+  ],
+  "parent_id": "comment_contract_parent",
+  "session_author_id": "user_contract_friend",
+  "session_id": "session_contract_full",
+  "text": "Strong top set, @Grace"
+}

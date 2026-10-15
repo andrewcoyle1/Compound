@@ -1,7 +1,8 @@
 import 'package:compound_models/compound_models.dart';
 
-/// The signed-in user's training library, read-only, beside the bundled
-/// system exercises and workouts (`PrebuiltCatalogue`).
+/// The signed-in user's training library, beside the bundled system
+/// exercises and workouts (`PrebuiltCatalogue`). Read-only but for gym
+/// profiles.
 abstract interface class TrainingLibraryRepository {
   /// The exercises at `exercise_templates` whose author is [uid], by name,
   /// as `ExerciseModelManager`'s listener reads them. Re-emitted on every
@@ -15,6 +16,13 @@ abstract interface class TrainingLibraryRepository {
   /// The profiles at `users/{uid}/gym_profiles`, each list completed from
   /// the catalogue ([GymProfileModel.fromFirestore]).
   Stream<List<GymProfileModel>> watchGymProfiles(String uid);
+
+  /// Saves [profile] to `users/{profile.authorId}/gym_profiles/{profile.id}`,
+  /// merged over anything there, as `GymProfileManager.saveGymProfile` does
+  /// (`GymProfileManager.swift:40`; `saveDocument` is `setData(merge:
+  /// true)`). Every equipment list is written whole. The picture upload
+  /// Swift can do first is not ported (M5).
+  Future<void> saveGymProfile(GymProfileModel profile);
 
   /// The per-exercise settings at `users/{uid}/exercise_settings`, one per
   /// exercise id.

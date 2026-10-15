@@ -14,7 +14,10 @@ typedef LibraryDecodeErrorHandler = void Function(
 /// [TrainingLibraryRepository] on Cloud Firestore.
 ///
 /// A document that does not decode is skipped and reported to
-/// `onDecodeError`, as the Swift app's sync engine skips it.
+/// `onDecodeError`, as the Swift app's sync engine skips it. Writes go
+/// through the models' `toFirestore`, with dates stored as Timestamps, and
+/// whole documents are merged (`docs/specs/flutter/firestore-contract.md`,
+/// Policy).
 class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
   /// Creates a [FirestoreTrainingLibraryRepository] reading `firestore`.
   /// Decode failures go to [onDecodeError], or to `dart:developer`'s log
@@ -50,6 +53,12 @@ class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
       _user(uid, 'gym_profiles').snapshots().map(
         (snapshot) => _decodeAll(snapshot, GymProfileModel.fromFirestore),
       );
+
+  @override
+  Future<void> saveGymProfile(GymProfileModel profile) =>
+      _user(profile.authorId, 'gym_profiles')
+          .doc(profile.id)
+          .set(_toFirestore(profile.toFirestore()), SetOptions(merge: true));
 
   @override
   Stream<List<ExerciseSettingsModel>> watchExerciseSettings(String uid) =>
@@ -116,5 +125,17 @@ Object? _value(Object? value) => switch (value) {
   final Timestamp timestamp => timestamp.toDate().toUtc(),
   final Map<String, Object?> map => _fromFirestore(map),
   final List<Object?> list => list.map(_value).toList(),
+  _ => value,
+};
+
+/// The models' values to Firestore's at any depth: a [DateTime] becomes a
+/// [Timestamp], as Swift's encoder stores a `Date`.
+Map<String, Object?> _toFirestore(Map<String, Object?> data) =>
+    data.map((key, value) => MapEntry(key, _stored(value)));
+
+Object? _stored(Object? value) => switch (value) {
+  final DateTime date => Timestamp.fromDate(date),
+  final Map<String, Object?> map => _toFirestore(map),
+  final List<Object?> list => list.map(_stored).toList(),
   _ => value,
 };

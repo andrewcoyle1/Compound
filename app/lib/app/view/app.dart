@@ -14,6 +14,7 @@ import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/today/today.dart';
 import 'package:compound/training/training.dart';
+import 'package:compound/training_library/training_library.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
@@ -103,6 +104,38 @@ class _AppViewState extends State<AppView> {
                     builder: (_, _) => const TrainingPage(),
                     routes: [
                       GoRoute(
+                        path: WorkoutsPage.path,
+                        name: WorkoutsPage.name,
+                        builder: (_, _) => const WorkoutsPage(),
+                        routes: [
+                          GoRoute(
+                            path: WorkoutTemplateDetailPage.path,
+                            name: WorkoutTemplateDetailPage.name,
+                            builder: (_, state) => WorkoutTemplateDetailPage(
+                              workoutId:
+                                  state.pathParameters[WorkoutTemplateDetailPage
+                                      .idParameter]!,
+                            ),
+                          ),
+                        ],
+                      ),
+                      GoRoute(
+                        path: ExercisesPage.path,
+                        name: ExercisesPage.name,
+                        builder: (_, _) => const ExercisesPage(),
+                        routes: [
+                          GoRoute(
+                            path: ExerciseDetailPage.path,
+                            name: ExerciseDetailPage.name,
+                            builder: (_, state) => ExerciseDetailPage(
+                              exerciseId:
+                                  state.pathParameters[ExerciseDetailPage
+                                      .idParameter]!,
+                            ),
+                          ),
+                        ],
+                      ),
+                      GoRoute(
                         path: WorkoutHistoryPage.path,
                         name: WorkoutHistoryPage.name,
                         builder: (_, _) => const WorkoutHistoryPage(),
@@ -176,6 +209,22 @@ class _AppViewState extends State<AppView> {
           key: state.pageKey,
           fullscreenDialog: true,
           child: const LogWeightPage(),
+        ),
+      ),
+      // Over the tabs, as the Swift app's sheet. Pops with the exercises
+      // picked (`ExercisePickerPage.show`).
+      GoRoute(
+        path: ExercisePickerPage.path,
+        name: ExercisePickerPage.name,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: ExercisePickerPage(
+            request: switch (state.extra) {
+              final ExercisePickerRequest request => request,
+              _ => const ExercisePickerRequest(),
+            },
+          ),
         ),
       ),
       GoRoute(

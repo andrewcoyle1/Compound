@@ -186,3 +186,40 @@ enum SetTargetSetType implements FirestoreEnum {
   @override
   final String value;
 }
+
+/// Where a mesocycle's lighter microcycle falls (Swift `DeloadType`).
+enum DeloadType implements FirestoreEnum {
+  /// `none`: no deload microcycle.
+  none('none'),
+
+  /// `start`: the first microcycle is the deload.
+  start('start'),
+
+  /// `end`: the last microcycle is the deload.
+  end('end');
+
+  new(this.value);
+
+  @override
+  final String value;
+}
+
+/// Where a macrocycle stands (Swift `Macrocycle.Status`).
+enum MacrocycleStatus implements FirestoreEnum {
+  /// `notStarted`: saved but never followed.
+  notStarted('notStarted'),
+
+  /// `active`: being followed.
+  active('active'),
+
+  /// `completed`: every mesocycle is done; a repeat is offered.
+  completed('completed'),
+
+  /// `ended`: replaced by another macrocycle.
+  ended('ended');
+
+  new(this.value);
+
+  @override
+  final String value;
+}

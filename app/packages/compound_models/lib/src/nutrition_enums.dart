@@ -37,3 +37,18 @@ enum TimestampSide implements FirestoreEnum {
   @override
   final String value;
 }
+
+/// Whether a food is recorded by mass or by volume (Swift
+/// `MeasurementMethod`).
+enum MeasurementMethod implements FirestoreEnum {
+  /// `weight`: amounts in grams.
+  weight('weight'),
+
+  /// `volume`: amounts in millilitres.
+  volume('volume');
+
+  new(this.value);
+
+  @override
+  final String value;
+}

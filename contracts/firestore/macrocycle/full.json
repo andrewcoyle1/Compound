@@ -1,0 +1,42 @@
+{
+  "author_id": "user_contract_full",
+  "date_created": {
+    "$timestamp": "2026-08-05T09:00:00.250Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-10-05T11:00:00.500Z"
+  },
+  "id": "macrocycle_contract_full",
+  "iteration": 2,
+  "mesocycle_ids": [
+    "mesocycle_contract_full",
+    "mesocycle_contract_minimal"
+  ],
+  "mesocycle_index": 1,
+  "mesocycle_started_at": {
+    "$timestamp": "2026-09-14T06:00:00.125Z"
+  },
+  "name": "Autumn",
+  "skips": [
+    {
+      "cycle_index": 3,
+      "date": {
+        "$timestamp": "2026-09-02T18:00:00.750Z"
+      },
+      "mesocycle_index": 0,
+      "position": 1,
+      "template_id": "template_contract_full"
+    },
+    {
+      "cycle_index": 0,
+      "date": {
+        "$timestamp": "2026-09-15T07:30:00.500Z"
+      },
+      "mesocycle_index": 1,
+      "position": 0,
+      "template_id": "template_contract_minimal"
+    }
+  ],
+  "start_microcycle_index": 2,
+  "status": "completed"
+}

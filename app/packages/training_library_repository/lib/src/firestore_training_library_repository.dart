@@ -54,6 +54,18 @@ class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
       );
 
   @override
+  Future<void> saveUserExercise(ExerciseModel exercise) => _merge(
+    _firestore.collection('exercise_templates').doc(exercise.id),
+    exercise.toFirestore(),
+  );
+
+  @override
+  Future<void> saveWorkoutTemplate(WorkoutTemplateModel template) => _merge(
+    _user(template.authorId, 'workout_templates').doc(template.workoutId),
+    template.toFirestore(),
+  );
+
+  @override
   Stream<List<GymProfileModel>> watchGymProfiles(String uid) =>
       _user(uid, 'gym_profiles').snapshots().map(
         (snapshot) => _decodeAll(snapshot, GymProfileModel.fromFirestore),

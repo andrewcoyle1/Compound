@@ -2,7 +2,11 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/programs/cubit/programs_cubit.dart';
+import 'package:compound/programs/view/mesocycle_design_page.dart';
+import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
@@ -14,16 +18,20 @@ import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/workout_tracker/view/start_workout.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:program_repository/program_repository.dart'
+    show workoutCopyName;
 import 'package:training_session/training_session.dart' show weekOf;
 
 /// One workout template (Swift `WorkoutTemplateDetailView`): the muscles it
 /// plans sets for and each exercise's plan, and Start Workout. Opened from
 /// a program's day it shows, and starts on, that microcycle's targets, cut
 /// to a deload's in a deload week; a later microcycle's day is a preview
-/// with no Start. Editing, saving a copy, sharing and deleting come with
-/// Programs part 2 and sharing.
+/// with no Start. A day of the user's own mesocycle offers Edit Mesocycle
+/// and Save a Copy to Workouts; editing a library workout, sharing and
+/// deleting come with the workout editor and sharing.
 class WorkoutTemplateDetailPage extends StatelessWidget {
   const new({
     required this.workoutId,
@@ -136,8 +144,36 @@ class WorkoutTemplateDetailView extends StatelessWidget {
     };
     final template = found?.$1;
     final description = template?.description;
+    final app = context.read<AppBloc>().state;
+    // A day of the user's own mesocycle lives there, not in the library: it
+    // is changed there, and kept apart only as a copy the user asks for.
+    final owning = switch (found?.$2) {
+      final mesocycle?
+          when app is AppAuthenticated && mesocycle.authorId == app.user.uid =>
+        mesocycle,
+      _ => null,
+    };
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          if (owning != null && template != null)
+            PopupMenuButton<VoidCallback>(
+              icon: Icon(AppSymbols.more),
+              tooltip: l10n.programMesocycleOptions,
+              onSelected: (action) => action(),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: () =>
+                      unawaited(MesocycleDesignPage.edit(context, owning.id)),
+                  child: Text(l10n.programEditMesocycle),
+                ),
+                PopupMenuItem(
+                  value: () => unawaited(_saveCopy(context, template)),
+                  child: Text(l10n.programSaveCopy),
+                ),
+              ],
+            ),
+        ],
         title: template == null
             ? null
             : Column(
@@ -200,6 +236,49 @@ class WorkoutTemplateDetailView extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Saves [day] as a library workout of the user's own, and says so.
+Future<void> _saveCopy(BuildContext context, WorkoutTemplateModel day) async {
+  final l10n = context.l10n;
+  final library = switch (context.read<TrainingLibraryBloc>().state) {
+    TrainingLibraryLoaded(:final library) => [
+      ...library.systemWorkoutTemplates,
+      ...library.userWorkoutTemplates,
+    ],
+    _ => const <WorkoutTemplateModel>[],
+  };
+  final ok = await context.read<ProgramsCubit>().succeeded(
+    (cubit) => cubit.saveWorkoutCopy(
+      day,
+      library: library,
+      copyName: l10n.programCopyName,
+    ),
+  );
+  if (!ok) {
+    unawaited(HapticFeedback.errorNotification());
+    if (context.mounted) {
+      await showFailureAlert(
+        context,
+        l10n.programCopyFailed,
+        l10n.programTryAgain,
+      );
+    }
+    return;
+  }
+  unawaited(HapticFeedback.successNotification());
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n.programCopySaved(
+            workoutCopyName(day.name, library, l10n.programCopyName),
+          ),
+        ),
+      ),
+    );
 }
 
 class _Plan extends StatelessWidget {

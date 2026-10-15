@@ -156,7 +156,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | five tabs, per-tab stacks, deep-link paths (#90) |
 | Today | Today | `Compound/Core/Today` | M2 | partial | checklist, streak, protein gap (#101); today's workout and macrocycle repeat (M5 Programs 1) |
 | Today | WeeklyReview | `WeeklyReview` | M2 | partial | #133; share card, Strava line and Ask Coach deferred |
-| Training | Training | `Compound/Core/Training` | M3 | partial | search, active mesocycle, library rows (M5 Programs 1); calendar header and + menu to come |
+| Training | Training | `Compound/Core/Training` | M3 | partial | search, active mesocycle, library rows (M5 Programs 1); + menu with Start Empty Workout, New Macrocycle, New Mesocycle (M5 Programs 2); calendar header, New Workout and New Exercise to come |
 | Training | TodaysWorkoutCard | `Components/TodaysWorkoutCard` | M3 | done | M5 Programs 1 |
 | Training | TrainingAccessory | `Components/TrainingAccessory` | M3 | todo | |
 | Training | WorkoutStreak | `Components/WorkoutStreakCard` | M3 | todo | |
@@ -169,22 +169,22 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | ExerciseListBuilder | `Exercises/ExerciseListBuilder` | M3 | todo | |
 | Training | ExerciseModelDetail | `Exercises/ExerciseModelDetail` | M3 | partial | read-only library (#120) |
 | Training | Exercises | `Exercises/Exercises` | M3 | partial | read-only library (#120) |
-| Training | ActiveMesocycle | `Programs/ActiveMesocycle` | M3 | partial | schedule, microcycle picker, skip, rest days, delete (M5 Programs 1); Edit and Ask Coach to come |
-| Training | CreateMesocycle | `Programs/CreateMesocycle` | M3 | todo | |
-| Training | EditDayOrder | `Programs/CreateMesocycle/EditDayOrder` | M3 | todo | |
-| Training | EditDeload | `Programs/CreateMesocycle/EditDeload` | M3 | todo | |
-| Training | EditMesocycleColourIcon | `Programs/CreateMesocycle/EditMesocycleColourIcon` | M3 | todo | |
-| Training | MesocycleDesign | `Programs/CreateMesocycle/MesocycleDesign` | M3 | todo | |
-| Training | MesocycleIcon | `Programs/CreateMesocycle/MesocycleIcon` | M3 | todo | |
-| Training | MesocycleSettings | `Programs/CreateMesocycle/MesocycleSettings` | M3 | todo | |
-| Training | NameMesocycle | `Programs/CreateMesocycle/NameMesocycle` | M3 | todo | |
-| Training | RenameWorkoutTemplateModel | `Programs/CreateMesocycle/RenameWorkoutTemplateModel` | M3 | todo | |
-| Training | ImportProgram | `Programs/ImportProgram` | M3 | todo | |
-| Training | Macrocycles | `Programs/Macrocycles` | M3 | partial | M5 Programs 1; Import Program in part 2 |
+| Training | ActiveMesocycle | `Programs/ActiveMesocycle` | M3 | partial | schedule, microcycle picker, skip, rest days, delete (M5 Programs 1); Info opens the editor (M5 Programs 2); Ask Coach to come |
+| Training | CreateMesocycle | `Programs/CreateMesocycle` | M3 | partial | onboarding's chooser is the program step (#116); from the library the flow opens on the name, as in Swift (M5 Programs 2); onboarding's Build My Own waits for the workout editor |
+| Training | EditDayOrder | `Programs/CreateMesocycle/EditDayOrder` | M3 | done | M5 Programs 2 |
+| Training | EditDeload | `Programs/CreateMesocycle/EditDeload` | M3 | done | M5 Programs 2 |
+| Training | EditMesocycleColourIcon | `Programs/CreateMesocycle/EditMesocycleColourIcon` | M3 | done | M5 Programs 2 |
+| Training | MesocycleDesign | `Programs/CreateMesocycle/MesocycleDesign` | M3 | partial | days, add, remove, rename, settings, activate, save, delete (M5 Programs 2); a day's exercises are read-only until `DefineWorkout`; Share to come |
+| Training | MesocycleIcon | `Programs/CreateMesocycle/MesocycleIcon` | M3 | done | M5 Programs 2 |
+| Training | MesocycleSettings | `Programs/CreateMesocycle/MesocycleSettings` | M3 | done | M5 Programs 2 |
+| Training | NameMesocycle | `Programs/CreateMesocycle/NameMesocycle` | M3 | done | M5 Programs 2 |
+| Training | RenameWorkoutTemplateModel | `Programs/CreateMesocycle/RenameWorkoutTemplateModel` | M3 | done | M5 Programs 2 |
+| Training | ImportProgram | `Programs/ImportProgram` | M3 | done | M5 Programs 2: xlsx, csv and the app's JSON |
+| Training | Macrocycles | `Programs/Macrocycles` | M3 | done | M5 Programs 1 and 2 |
 | Training | MacrocycleDetail | `Programs/Macrocycles/MacrocycleDetail` | M3 | done | M5 Programs 1 |
-| Training | MesocycleLibrary | `Programs/MesocycleLibrary` | M3 | partial | M5 Programs 1; Create and Import in part 2 |
+| Training | MesocycleLibrary | `Programs/MesocycleLibrary` | M3 | done | M5 Programs 1 and 2 |
 | Training | InactiveMesocycle | `Programs/MesocycleLibrary/InactiveMesocycle` | M3 | done | M5 Programs 1 |
-| Training | MesocycleDisclosureGroup | `Programs/MesocycleLibrary/MesocycleDisclosureGroup` | M3 | partial | M5 Programs 1; Edit (part 2) and Share with Friends to come |
+| Training | MesocycleDisclosureGroup | `Programs/MesocycleLibrary/MesocycleDisclosureGroup` | M3 | partial | M5 Programs 1; Edit in its menu (part 2); Share with Friends to come |
 | Training | PrebuiltMesocycleDetail | `Programs/MesocycleLibrary/PrebuiltMesocycleDetail` | M3 | done | M5 Programs 1 |
 | Training | ExerciseTracker | `Session/ExerciseTracker` | M3 | todo | |
 | Training | ExerciseSettings | `Session/ExerciseTracker/ExerciseSettings` | M3 | todo | |
@@ -204,7 +204,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | NameWorkout | `Workouts/CreateWorkout/NameWorkout` | M3 | todo | |
 | Training | SetTarget | `Workouts/CreateWorkout/SetTarget` | M3 | todo | |
 | Training | WeeklyTargets | `Workouts/CreateWorkout/SetTarget/WeeklyTargets` | M3 | todo | |
-| Training | WorkoutTemplateDetail | `Workouts/WorkoutTemplateDetail` | M3 | partial | read-only library (#120); Start, a program day's week and deload (M5 Programs 1); Edit, Save a Copy, Share and Delete to come |
+| Training | WorkoutTemplateDetail | `Workouts/WorkoutTemplateDetail` | M3 | partial | read-only library (#120); Start, a program day's week and deload (M5 Programs 1); a mesocycle day's Edit Mesocycle and Save a Copy (M5 Programs 2); a library workout's Edit and Delete, and Share, to come |
 | Training | Workouts | `Workouts/Workouts` | M3 | partial | read-only library (#120) |
 
 198 modules.

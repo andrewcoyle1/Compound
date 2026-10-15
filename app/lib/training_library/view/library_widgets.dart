@@ -83,17 +83,25 @@ class LibraryFailure extends StatelessWidget {
 
 /// A search field for a library list, with a clear button once it has text.
 class LibrarySearchField extends StatefulWidget {
-  const new({required this.hint, required this.onChanged, super.key});
+  const new({
+    required this.hint,
+    required this.onChanged,
+    this.initialValue = '',
+    super.key,
+  });
 
   final String hint;
   final ValueChanged<String> onChanged;
+
+  /// The search the field opens with.
+  final String initialValue;
 
   @override
   State<LibrarySearchField> createState() => _LibrarySearchFieldState();
 }
 
 class _LibrarySearchFieldState extends State<LibrarySearchField> {
-  final _controller = TextEditingController();
+  late final _controller = TextEditingController(text: widget.initialValue);
 
   @override
   void dispose() {

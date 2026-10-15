@@ -6890,6 +6890,315 @@
     },
     "programSkipMessage": "It will count as done for this microcycle, and the next workout moves up to today.",
     "@programSkipMessage": {},
+    "programCreateMesocycle": "Create Mesocycle",
+    "@programCreateMesocycle": {},
+    "programEditMesocycle": "Edit Mesocycle",
+    "@programEditMesocycle": {},
+    "programNewMesocycle": "New Mesocycle",
+    "@programNewMesocycle": {},
+    "programContinue": "Continue",
+    "@programContinue": {},
+    "programMesocycleNameHeader": "Mesocycle Name",
+    "@programMesocycleNameHeader": {},
+    "programMesocycleNameHint": "Enter mesocycle name",
+    "@programMesocycleNameHint": {},
+    "programMesocycleNameFooter": "What would you like to name this mesocycle?",
+    "@programMesocycleNameFooter": {},
+    "programChooseIcon": "Choose an icon for this mesocycle.",
+    "@programChooseIcon": {},
+    "programCreateFailed": "Unable to Create Mesocycle",
+    "@programCreateFailed": {},
+    "programColourDefault": "Default",
+    "@programColourDefault": {},
+    "programColourRed": "Red",
+    "@programColourRed": {},
+    "programColourOrange": "Orange",
+    "@programColourOrange": {},
+    "programColourYellow": "Yellow",
+    "@programColourYellow": {},
+    "programColourGreen": "Green",
+    "@programColourGreen": {},
+    "programColourBlue": "Blue",
+    "@programColourBlue": {},
+    "programColourPurple": "Purple",
+    "@programColourPurple": {},
+    "programIconFlag": "Checkered Flag",
+    "@programIconFlag": {},
+    "programIconJoystick": "Joystick",
+    "@programIconJoystick": {},
+    "programIconController": "Game Controller",
+    "@programIconController": {},
+    "programIconWalking": "Walking Figure",
+    "@programIconWalking": {},
+    "programIconAirplane": "Airplane",
+    "@programIconAirplane": {},
+    "programIconSailboat": "Sailboat",
+    "@programIconSailboat": {},
+    "programIconGauge": "Gauge",
+    "@programIconGauge": {},
+    "programWorkoutDayName": "Workout {letter}",
+    "@programWorkoutDayName": {
+        "placeholders": {
+            "letter": {
+                "type": "String"
+            }
+        }
+    },
+    "programAddDay": "Add Day",
+    "@programAddDay": {},
+    "programRemoveDay": "Remove",
+    "@programRemoveDay": {},
+    "programRenameDay": "Rename",
+    "@programRenameDay": {},
+    "programMesocycleSettingsLabel": "Mesocycle settings",
+    "@programMesocycleSettingsLabel": {},
+    "programActivateMesocycle": "Activate Mesocycle",
+    "@programActivateMesocycle": {},
+    "programSaveMesocycle": "Save Mesocycle",
+    "@programSaveMesocycle": {},
+    "programActivateFailed": "Unable to Activate Mesocycle",
+    "@programActivateFailed": {},
+    "programSaveMesocycleFailed": "Unable to Save Mesocycle",
+    "@programSaveMesocycleFailed": {},
+    "programDeleteQuotedMessage": "“{name}” will be deleted. This can't be undone.",
+    "@programDeleteQuotedMessage": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programMore": "More",
+    "@programMore": {},
+    "programDayExercisesHeader": "Exercises",
+    "@programDayExercisesHeader": {},
+    "programDayEditorLater": "Adding and changing a day's exercises comes with the workout editor in a later update.",
+    "@programDayEditorLater": {},
+    "programViewWorkout": "View Workout",
+    "@programViewWorkout": {},
+    "programMesocycleSettings": "Mesocycle Settings",
+    "@programMesocycleSettings": {},
+    "programName": "Name",
+    "@programName": {},
+    "programNumberOfCycles": "Number of Cycles",
+    "@programNumberOfCycles": {},
+    "programCycleCount": "{count, plural, =1{1 cycle} other{{count} cycles}}",
+    "@programCycleCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "programFewerCycles": "Fewer cycles",
+    "@programFewerCycles": {},
+    "programMoreCycles": "More cycles",
+    "@programMoreCycles": {},
+    "programColourAndIcon": "Color & Icon",
+    "@programColourAndIcon": {},
+    "programDayOrder": "Day Order",
+    "@programDayOrder": {},
+    "programWorkout": "Workout",
+    "@programWorkout": {},
+    "programPeriodizationSubtitle": "Organize your training into phases that vary intensity and volume to support continuous progress and effective recovery.",
+    "@programPeriodizationSubtitle": {},
+    "programRenameDayTitle": "Rename Day",
+    "@programRenameDayTitle": {},
+    "programDayNameHint": "Day name",
+    "@programDayNameHint": {},
+    "programDeloadFooter": "A deload week keeps about half of each exercise's working sets, at 90% of the planned weight.",
+    "@programDeloadFooter": {},
+    "programDeloadNoneDescription": "Train continuously without scheduled reductions in intensity or volume.",
+    "@programDeloadNoneDescription": {},
+    "programDeloadFirstDescription": "Start each mesocycle with a lower-intensity microcycle to ease into new workloads and reduce soreness.",
+    "@programDeloadFirstDescription": {},
+    "programDeloadLastDescription": "Finish each mesocycle with a lighter microcycle to promote recovery and readiness for the next phase.",
+    "@programDeloadLastDescription": {},
+    "programImportProgramEllipsis": "Import Program…",
+    "@programImportProgramEllipsis": {},
+    "programAddMesocycle": "Add mesocycle",
+    "@programAddMesocycle": {},
+    "programAddMacrocycle": "Add macrocycle",
+    "@programAddMacrocycle": {},
+    "trainingAddTraining": "Add training",
+    "@trainingAddTraining": {},
+    "programInfo": "Info",
+    "@programInfo": {},
+    "programSaveCopy": "Save a Copy to Workouts",
+    "@programSaveCopy": {},
+    "programCopyName": "{name} (copy)",
+    "@programCopyName": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programCopySaved": "Saved {name} to your workouts",
+    "@programCopySaved": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programCopyFailed": "Unable to Save Workout",
+    "@programCopyFailed": {},
+    "importTitle": "Import Program",
+    "@importTitle": {},
+    "importReading": "Reading file…",
+    "@importReading": {},
+    "importFormats": "Spreadsheet, CSV or JSON",
+    "@importFormats": {},
+    "importChooseFile": "Choose a file",
+    "@importChooseFile": {},
+    "importSave": "Save Program",
+    "@importSave": {},
+    "importUnmatchedHeader": "Unmatched exercises",
+    "@importUnmatchedHeader": {},
+    "importUnmatchedFooter": "Match each exercise to one in your library, or create it. A new exercise has no muscle groups until you add them.",
+    "@importUnmatchedFooter": {},
+    "importUseSuggestion": "Use \"{name}\"",
+    "@importUseSuggestion": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "importChooseFromLibrary": "Choose from library",
+    "@importChooseFromLibrary": {},
+    "importCreateExercise": "Create \"{name}\"",
+    "@importCreateExercise": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "importNewExercise": "New exercise",
+    "@importNewExercise": {},
+    "importNotMatched": "Not matched",
+    "@importNotMatched": {},
+    "importSuggested": "Suggested: {names}",
+    "@importSuggested": {
+        "placeholders": {
+            "names": {
+                "type": "String"
+            }
+        }
+    },
+    "importOr": "or",
+    "@importOr": {},
+    "importSummary": "Summary",
+    "@importSummary": {},
+    "importBlocks": "{count, plural, =1{1 block} other{{count} blocks}}",
+    "@importBlocks": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importDays": "{count, plural, =1{1 day} other{{count} days}}",
+    "@importDays": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importTechniques": "Techniques",
+    "@importTechniques": {},
+    "importWarmups": "Warm-ups",
+    "@importWarmups": {},
+    "importRest": "Rest",
+    "@importRest": {},
+    "importCountOf": "{count} of {total}",
+    "@importCountOf": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "importSummaryFooter": "Saved as a program that has not started. Start it from your mesocycles.",
+    "@importSummaryFooter": {},
+    "importFailed": "Unable to Import Program",
+    "@importFailed": {},
+    "importErrorUnreadable": "This file could not be read as a program.",
+    "@importErrorUnreadable": {},
+    "importErrorNoHeader": "No header row with an \"Exercise\" column was found.",
+    "@importErrorNoHeader": {},
+    "importErrorNoExercises": "The file has no exercises.",
+    "@importErrorNoExercises": {},
+    "importErrorWorkingSets": "Working sets is missing or not a number.",
+    "@importErrorWorkingSets": {},
+    "importErrorDaysDiffer": "{week} has different days from week 1.",
+    "@importErrorDaysDiffer": {
+        "placeholders": {
+            "week": {
+                "type": "String"
+            }
+        }
+    },
+    "importErrorExercisesDiffer": "{week}, {day}: the exercises differ from week 1.",
+    "@importErrorExercisesDiffer": {
+        "placeholders": {
+            "week": {
+                "type": "String"
+            },
+            "day": {
+                "type": "String"
+            }
+        }
+    },
+    "importErrorUnmatched": "Match these exercises first: {names}",
+    "@importErrorUnmatched": {
+        "placeholders": {
+            "names": {
+                "type": "String"
+            }
+        }
+    },
+    "importErrorRow": "Row {row}: {message}",
+    "@importErrorRow": {
+        "placeholders": {
+            "row": {
+                "type": "int"
+            },
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+    "importFirstWeek": "Week 1",
+    "@importFirstWeek": {},
+    "importFirstDay": "Day 1",
+    "@importFirstDay": {},
+    "importUntitled": "Imported Program",
+    "@importUntitled": {},
+    "setTypeDrop": "Drop Set",
+    "@setTypeDrop": {},
+    "setTypeMyo": "Myo Set",
+    "@setTypeMyo": {},
+    "setTypeFailure": "Failure Set",
+    "@setTypeFailure": {},
+    "setTypeRestPause": "Rest-pause",
+    "@setTypeRestPause": {},
+    "setTypeCluster": "Cluster",
+    "@setTypeCluster": {},
+    "setTypePartials": "Lengthened partials",
+    "@setTypePartials": {},
+    "setTypeStretch": "Loaded stretch",
+    "@setTypeStretch": {},
+    "setTypeHold": "Static hold",
+    "@setTypeHold": {},
+    "setTypeStandard": "Standard Set",
+    "@setTypeStandard": {},
     "deloadMethodSummary": "In a mesocycle's deload week, each exercise keeps about half its working sets (half, rounded up, so 4 becomes 2 and 3 becomes 2) at 90% of the planned weight, rounded down to your equipment, and a step lighter where 90% would round back to the planned weight. Reps stay as planned and warm-ups stay. The week after a deload carries on from the week before it. You keep training as often as usual. Lifters and coaches deload mostly by cutting volume and effort while keeping frequency. In a survey of strength and physique athletes, a typical deload lasted about a week every 5 to 6 weeks.",
     "@deloadMethodSummary": {},
     "deloadMethodLimitations": "Deloading is widely practised but little studied. The one trial found that a full week off mid-programme did not change muscle growth and slightly reduced strength gains, so the benefit is mainly recovery and practicality.",

@@ -105,6 +105,50 @@ class ProgramService {
     if (user?.submittedActiveMesocycleId != id) await _follow(uid, id);
   }
 
+  /// Saves [mesocycle] and follows it as a macrocycle of one
+  /// (`MesocycleDesignPresenter.activateMesocycle` and
+  /// `CoreInteractor.setActiveMesocycle`). The mesocycle already under way
+  /// in the followed macrocycle keeps its progress: only the profile is
+  /// pointed at it.
+  Future<void> activateMesocycle(String uid, Mesocycle mesocycle) async {
+    await _programs.saveMesocycle(mesocycle);
+    final current = runningMacrocycle(await _macrocycles(uid));
+    if (current != null &&
+        current.status == MacrocycleStatus.active &&
+        current.currentMesocycleId == mesocycle.id) {
+      await _follow(uid, mesocycle.id);
+      return;
+    }
+    final now = _now();
+    await startMacrocycle(
+      uid,
+      at: now,
+      Macrocycle(
+        id: _newId(),
+        authorId: uid,
+        name: mesocycle.name,
+        mesocycleIds: [mesocycle.id],
+        status: MacrocycleStatus.notStarted,
+        mesocycleStartedAt: now,
+        dateCreated: now,
+        dateModified: now,
+      ),
+    );
+  }
+
+  /// Run once per sign-in (`migrateActiveMesocycleToMacrocycleIfNeeded`):
+  /// an account from before macrocycles gets one of its active mesocycle,
+  /// starting where the old schedule had it, then a mesocycle finished
+  /// elsewhere moves on. Failures are ignored, as Swift's `try?` does.
+  Future<void> migrateIfNeeded(String uid) async {
+    try {
+      await _currentCreatingIfNeeded(uid);
+    } on Object catch (_) {}
+    try {
+      await advanceIfMesocycleComplete(uid);
+    } on Object catch (_) {}
+  }
+
   /// Deletes the macrocycle [id]; its mesocycles are kept.
   Future<void> deleteMacrocycle(String uid, String id) =>
       _programs.deleteMacrocycle(uid, id);

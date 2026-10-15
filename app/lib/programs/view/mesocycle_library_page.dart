@@ -4,6 +4,9 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
+import 'package:compound/programs/view/create_mesocycle_pages.dart';
+import 'package:compound/programs/view/import_program_page.dart';
+import 'package:compound/programs/view/mesocycle_design_page.dart';
 import 'package:compound/programs/view/prebuilt_mesocycle_detail_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
@@ -16,7 +19,7 @@ import 'package:training_library_repository/training_library_repository.dart'
 /// The user's mesocycles and the shipped templates (Swift
 /// `MesocycleLibraryView`): the active one, the saved ones (each opening
 /// to its days, with Delete in its menu) and the templates, each opening
-/// its detail to start. Creating and importing come with Programs part 2.
+/// its detail to start. + creates a mesocycle or imports a program.
 class MesocycleLibraryPage extends StatefulWidget {
   const new({super.key});
 
@@ -56,7 +59,26 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
     final inactive = state.inactiveMesocycles;
     final templates = PrebuiltCatalogue.instance.mesocycles;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.programMesocyclesTitle)),
+      appBar: AppBar(
+        title: Text(l10n.programMesocyclesTitle),
+        actions: [
+          PopupMenuButton<VoidCallback>(
+            icon: const Icon(AppSymbols.add),
+            tooltip: l10n.programAddMesocycle,
+            onSelected: (action) => action(),
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: () => unawaited(NameMesocyclePage.open(context)),
+                child: Text(l10n.programCreateMesocycle),
+              ),
+              PopupMenuItem(
+                value: () => unawaited(ImportProgramPage.open(context)),
+                child: Text(l10n.programImportProgramEllipsis),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: SafeArea(
         bottom: false,
         child: LibrarySections(
@@ -64,7 +86,7 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
             if (active != null)
               AppSection(
                 header: l10n.programActiveMesocycle,
-                children: [_Disclosure(mesocycle: active)],
+                children: [_Disclosure(mesocycle: active, onDelete: null)],
               ),
             if (inactive.isNotEmpty)
               AppSection(
@@ -79,10 +101,18 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
                 ],
               ),
             if (state.mesocycles.isEmpty && active == null)
-              LibraryEmptyState(
-                icon: AppSymbols.mesocycle,
-                title: l10n.programNoMesocycles,
-                message: l10n.programNoMesocyclesMessage,
+              Column(
+                children: [
+                  LibraryEmptyState(
+                    icon: AppSymbols.mesocycle,
+                    title: l10n.programNoMesocycles,
+                    message: l10n.programNoMesocyclesMessage,
+                  ),
+                  FilledButton(
+                    onPressed: () => unawaited(NameMesocyclePage.open(context)),
+                    child: Text(l10n.programCreateMesocycle),
+                  ),
+                ],
               ),
             if (templates.isNotEmpty)
               AppSection(
@@ -148,11 +178,12 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
   }
 }
 
-/// A mesocycle that opens to its days (Swift `MesocycleDisclosureGroup`).
-/// The days open nothing, so they carry no chevron.
+/// A mesocycle that opens to its days (Swift `MesocycleDisclosureGroup`),
+/// with Edit, and Delete when [onDelete] is given, in its menu. The days
+/// open nothing, so they carry no chevron.
 class const _Disclosure({
   required final Mesocycle mesocycle,
-  final VoidCallback? onDelete,
+  required final VoidCallback? onDelete,
 }) extends StatefulWidget {
   @override
   State<_Disclosure> createState() => _DisclosureState();
@@ -179,11 +210,20 @@ class _DisclosureState extends State<_Disclosure> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (onDelete != null)
-                    PopupMenuButton<void>(
-                      icon: Icon(AppSymbols.more),
-                      tooltip: l10n.programMesocycleOptions,
-                      itemBuilder: (context) => [
+                  PopupMenuButton<void>(
+                    icon: Icon(AppSymbols.more),
+                    tooltip: l10n.programMesocycleOptions,
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        onTap: () => unawaited(
+                          MesocycleDesignPage.edit(
+                            context,
+                            widget.mesocycle.id,
+                          ),
+                        ),
+                        child: Text(l10n.programEditMesocycle),
+                      ),
+                      if (onDelete != null)
                         PopupMenuItem(
                           onTap: onDelete,
                           child: Text(
@@ -191,8 +231,8 @@ class _DisclosureState extends State<_Disclosure> {
                             style: TextStyle(color: context.appColors.danger),
                           ),
                         ),
-                      ],
-                    ),
+                    ],
+                  ),
                   ExcludeSemantics(
                     child: AnimatedRotation(
                       turns: _expanded ? 0.25 : 0,

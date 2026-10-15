@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
+import 'package:compound/programs/view/import_program_page.dart';
 import 'package:compound/programs/view/macrocycle_detail_page.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,7 +11,7 @@ import 'package:program_repository/program_repository.dart';
 
 /// Every macrocycle the user has (Swift `MacrocyclesView`): the one
 /// followed first, then the rest, newest first. Each opens its detail; +
-/// makes a new one. Importing a program comes with Programs part 2.
+/// makes a new one or imports a program, whose detail then opens.
 class MacrocyclesPage extends StatefulWidget {
   const new({super.key});
 
@@ -61,10 +62,20 @@ class _MacrocyclesPageState extends State<MacrocyclesPage> {
       appBar: AppBar(
         title: Text(l10n.programMacrocyclesTitle),
         actions: [
-          IconButton(
+          PopupMenuButton<VoidCallback>(
             icon: const Icon(AppSymbols.add),
-            tooltip: l10n.programNewMacrocycle,
-            onPressed: () => open(MacrocycleDetailPage.newId),
+            tooltip: l10n.programAddMacrocycle,
+            onSelected: (action) => action(),
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: () => open(MacrocycleDetailPage.newId),
+                child: Text(l10n.programNewMacrocycle),
+              ),
+              PopupMenuItem(
+                value: () => unawaited(_import(context)),
+                child: Text(l10n.programImportProgramEllipsis),
+              ),
+            ],
           ),
         ],
       ),
@@ -84,6 +95,10 @@ class _MacrocyclesPageState extends State<MacrocyclesPage> {
                       FilledButton(
                         onPressed: () => open(MacrocycleDetailPage.newId),
                         child: Text(l10n.programNewMacrocycle),
+                      ),
+                      TextButton(
+                        onPressed: () => unawaited(_import(context)),
+                        child: Text(l10n.programImportProgramEllipsis),
                       ),
                     ],
                   ),
@@ -105,6 +120,26 @@ class _MacrocyclesPageState extends State<MacrocyclesPage> {
               ),
       ),
     );
+  }
+
+  /// A program file becomes a macrocycle; once saved, its detail opens so
+  /// it can be started from there.
+  Future<void> _import(BuildContext context) async {
+    _cubit.pressed('${MacrocyclesPage._screen}_ImportProgram_Pressed');
+    final macrocycle = await ImportProgramPage.open(context);
+    if (macrocycle == null) return;
+    // The detail reads the macrocycle from the cubit, which hears of it
+    // when the listener next emits (Swift waits 400 ms for the same).
+    bool saved(ProgramsState state) =>
+        state.macrocycles.any((m) => m.id == macrocycle.id);
+    if (!saved(_cubit.state)) {
+      await _cubit.stream
+          .firstWhere(saved)
+          .timeout(const Duration(seconds: 2), onTimeout: () => _cubit.state);
+    }
+    if (context.mounted) {
+      await MacrocycleDetailPage.open(context, macrocycle.id);
+    }
   }
 
   /// "3 mesocycles · Mesocycle 2 of 3".

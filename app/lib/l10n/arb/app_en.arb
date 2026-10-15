@@ -44,6 +44,596 @@
     "@tabSocial": {
         "description": "Tab bar: the Social tab"
     },
+    "socialSearchPrompt": "Name or @username",
+    "@socialSearchPrompt": {
+        "description": "Social's search field prompt"
+    },
+    "socialSearchHint": "Search by name or @username.",
+    "@socialSearchHint": {
+        "description": "Under the empty search field"
+    },
+    "socialPeople": "People",
+    "@socialPeople": {
+        "description": "Header over people search results"
+    },
+    "socialSearchFailed": "Couldn't search people. Check your connection.",
+    "@socialSearchFailed": {
+        "description": "People search failed"
+    },
+    "socialNoResults": "No Results for “{query}”",
+    "@socialNoResults": {
+        "description": "People search found nobody",
+        "placeholders": {
+            "query": {
+                "type": "String"
+            }
+        }
+    },
+    "socialWorkoutFeed": "Workout Feed",
+    "@socialWorkoutFeed": {
+        "description": "Header over the feed"
+    },
+    "socialFindPeople": "Find People",
+    "@socialFindPeople": {
+        "description": "Opens the people search"
+    },
+    "socialNoActivityTitle": "No Activity Yet",
+    "@socialNoActivityTitle": {
+        "description": "Empty feed title"
+    },
+    "socialNoActivityMessage": "Follow athletes you admire. Progress is more fun shared.",
+    "@socialNoActivityMessage": {
+        "description": "Empty feed message"
+    },
+    "socialPickUsername": "Pick a username so friends can find you",
+    "@socialPickUsername": {
+        "description": "Banner asking for a username"
+    },
+    "socialDismiss": "Dismiss",
+    "@socialDismiss": {
+        "description": "Closes a banner"
+    },
+    "socialWeeklySummary": "{circle, plural, =1{Last week: you {own}/{goal}, circle 1 session} other{Last week: you {own}/{goal}, circle {circle} sessions}}",
+    "@socialWeeklySummary": {
+        "description": "Monday's recap: the user's sessions against their goal, and the circle's total",
+        "placeholders": {
+            "circle": {
+                "type": "int"
+            },
+            "own": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "socialDismissSummary": "Dismiss last week's summary",
+    "@socialDismissSummary": {
+        "description": "Closes Monday's recap"
+    },
+    "socialThisWeek": "This Week",
+    "@socialThisWeek": {
+        "description": "The weekly leaderboard, and the profile section"
+    },
+    "socialYou": "You",
+    "@socialYou": {
+        "description": "The reader in the leaderboard"
+    },
+    "socialLeader": "Leader",
+    "@socialLeader": {
+        "description": "The leaderboard leader's crown"
+    },
+    "socialStandingLabel": "{rank}. {name}, {sessions} of {goal} sessions",
+    "@socialStandingLabel": {
+        "description": "Screen reader label for a leaderboard row",
+        "placeholders": {
+            "rank": {
+                "type": "int"
+            },
+            "name": {
+                "type": "String"
+            },
+            "sessions": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "socialOpensProfile": "Opens their profile",
+    "@socialOpensProfile": {
+        "description": "Hint on anything that opens a profile"
+    },
+    "socialToGo": "{count} to go",
+    "@socialToGo": {
+        "description": "Under the user's own face on the week's last day",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialNudge": "Nudge",
+    "@socialNudge": {
+        "description": "Asks someone to train today"
+    },
+    "socialNudgeLabel": "Nudge {name} to train",
+    "@socialNudgeLabel": {
+        "description": "Screen reader label for Nudge",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "socialSetGoal": "Set goal",
+    "@socialSetGoal": {
+        "description": "Under the user's own face without a weekly goal"
+    },
+    "socialSetGoalLabel": "Set your weekly session goal",
+    "@socialSetGoalLabel": {
+        "description": "Screen reader label for Set goal"
+    },
+    "socialMemberTrained": "{name}, trained today, {sessions} of {goal} sessions this week",
+    "@socialMemberTrained": {
+        "description": "Screen reader label for a face in the strip",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "sessions": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "socialMemberNotTrained": "{name}, not trained yet today, {sessions} of {goal} sessions this week",
+    "@socialMemberNotTrained": {
+        "description": "Screen reader label for a face in the strip",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "sessions": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "socialUnknown": "Unknown",
+    "@socialUnknown": {
+        "description": "A person with no name"
+    },
+    "socialFollow": "Follow",
+    "@socialFollow": {
+        "description": "Follow button"
+    },
+    "socialFollowing": "Following",
+    "@socialFollowing": {
+        "description": "Follow button once following; the following count"
+    },
+    "socialRequested": "Requested",
+    "@socialRequested": {
+        "description": "Follow button with a request pending"
+    },
+    "socialCancelRequestHint": "Cancels your follow request",
+    "@socialCancelRequestHint": {
+        "description": "Hint on Requested"
+    },
+    "socialFollowFailed": "Unable to follow user",
+    "@socialFollowFailed": {
+        "description": "Following failed"
+    },
+    "socialUnfollowFailed": "Unable to unfollow user",
+    "@socialUnfollowFailed": {
+        "description": "Unfollowing failed"
+    },
+    "socialCancelRequestFailed": "Unable to cancel request",
+    "@socialCancelRequestFailed": {
+        "description": "Cancelling a follow request failed"
+    },
+    "socialNudgeFailed": "Unable to nudge {name}",
+    "@socialNudgeFailed": {
+        "description": "A nudge failed",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "socialTryAgain": "Please try again.",
+    "@socialTryAgain": {
+        "description": "Under a failure"
+    },
+    "socialLike": "Like",
+    "@socialLike": {
+        "description": "Likes a workout"
+    },
+    "socialUnlike": "Unlike",
+    "@socialUnlike": {
+        "description": "Takes back a like"
+    },
+    "socialLikes": "{count, plural, =1{1 like} other{{count} likes}}",
+    "@socialLikes": {
+        "description": "How many likes",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialComments": "Comments",
+    "@socialComments": {
+        "description": "Opens the comments; their screen title"
+    },
+    "socialOpensWorkout": "Opens the workout",
+    "@socialOpensWorkout": {
+        "description": "Hint on a feed card"
+    },
+    "commentsLoadFailedTitle": "Unable to Load Comments",
+    "@commentsLoadFailedTitle": {
+        "description": "Comments failed to load"
+    },
+    "commentsLoadFailedMessage": "Check your connection and try again.",
+    "@commentsLoadFailedMessage": {
+        "description": "Under a load failure"
+    },
+    "commentsEmptyTitle": "No Comments Yet",
+    "@commentsEmptyTitle": {
+        "description": "No comments"
+    },
+    "commentsEmptyMessage": "Start the conversation.",
+    "@commentsEmptyMessage": {
+        "description": "No comments"
+    },
+    "commentsReply": "Reply",
+    "@commentsReply": {
+        "description": "Replies to a comment"
+    },
+    "commentsDelete": "Delete",
+    "@commentsDelete": {
+        "description": "Deletes the user's own comment"
+    },
+    "commentsReplyingTo": "Replying to {name}",
+    "@commentsReplyingTo": {
+        "description": "Over the input while replying",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "commentsCommentFallback": "comment",
+    "@commentsCommentFallback": {
+        "description": "Replying to a comment with no author name"
+    },
+    "commentsCancelReply": "Cancel reply",
+    "@commentsCancelReply": {
+        "description": "Stops replying"
+    },
+    "commentsAddComment": "Add a comment…",
+    "@commentsAddComment": {
+        "description": "Comment input prompt"
+    },
+    "commentsAddReply": "Add a reply…",
+    "@commentsAddReply": {
+        "description": "Reply input prompt"
+    },
+    "commentsSend": "Send comment",
+    "@commentsSend": {
+        "description": "Sends the comment"
+    },
+    "commentsMention": "Mention {name}",
+    "@commentsMention": {
+        "description": "Screen reader label for a mention suggestion",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "commentsLike": "Like comment",
+    "@commentsLike": {
+        "description": "Likes a comment"
+    },
+    "commentsUnlike": "Unlike comment",
+    "@commentsUnlike": {
+        "description": "Takes back a like on a comment"
+    },
+    "commentsDeleteTitle": "Delete Comment?",
+    "@commentsDeleteTitle": {
+        "description": "Confirms deleting a comment"
+    },
+    "commentsDeleteMessage": "Are you sure you want to delete your comment? This cannot be undone.",
+    "@commentsDeleteMessage": {
+        "description": "Confirms deleting a comment"
+    },
+    "commentsCancel": "Cancel",
+    "@commentsCancel": {
+        "description": "Cancel button"
+    },
+    "commentsPostFailed": "Unable to Post Comment",
+    "@commentsPostFailed": {
+        "description": "Posting a comment failed"
+    },
+    "commentsDeleteFailed": "Unable to Delete Comment",
+    "@commentsDeleteFailed": {
+        "description": "Deleting a comment failed"
+    },
+    "socialWorkoutCount": "{count, plural, =1{1 workout} other{{count} workouts}}",
+    "@socialWorkoutCount": {
+        "description": "Finished workouts on the user's own profile",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialFollowsYou": "Follows you",
+    "@socialFollowsYou": {
+        "description": "The profile follows the reader"
+    },
+    "socialSetWeeklyGoal": "Set a weekly goal",
+    "@socialSetWeeklyGoal": {
+        "description": "Own profile without a weekly goal"
+    },
+    "socialGoalText": "{count, plural, =1{Goal: 1 session a week} other{Goal: {count} sessions a week}}",
+    "@socialGoalText": {
+        "description": "The user's weekly goal on their profile",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialChangeGoalHint": "Changes your weekly session goal",
+    "@socialChangeGoalHint": {
+        "description": "Hint on the weekly goal"
+    },
+    "socialBlockedAccount": "You have blocked this account",
+    "@socialBlockedAccount": {
+        "description": "On a blocked profile"
+    },
+    "socialFollowers": "Followers",
+    "@socialFollowers": {
+        "description": "The followers count and list"
+    },
+    "socialPrivateLocked": "This account is private. Follow it to see its workouts.",
+    "@socialPrivateLocked": {
+        "description": "On a private profile the reader does not follow"
+    },
+    "socialPeopleYouBothFollow": "People you both follow",
+    "@socialPeopleYouBothFollow": {
+        "description": "Beside the mutual follows"
+    },
+    "socialPeopleYouBothFollowTitle": "People You Both Follow",
+    "@socialPeopleYouBothFollowTitle": {
+        "description": "Title of the mutual follows list"
+    },
+    "socialSeeAll": "See All",
+    "@socialSeeAll": {
+        "description": "Opens the mutual follows"
+    },
+    "socialActivities": "Activities",
+    "@socialActivities": {
+        "description": "Profile tab with the workouts"
+    },
+    "socialWorkouts": "Workouts",
+    "@socialWorkouts": {
+        "description": "Workouts this week"
+    },
+    "socialTime": "Time",
+    "@socialTime": {
+        "description": "Training time this week"
+    },
+    "socialConsistency": "Consistency",
+    "@socialConsistency": {
+        "description": "Training days over twelve weeks"
+    },
+    "socialTrainingDays": "{count, plural, =1{1 training day in the last 12 weeks} other{{count} training days in the last 12 weeks}}",
+    "@socialTrainingDays": {
+        "description": "Screen reader label for the consistency grid",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialRecentWorkouts": "Recent Workouts",
+    "@socialRecentWorkouts": {
+        "description": "Header over the profile workouts"
+    },
+    "socialSessionsLoadFailed": "Unable to Load Workouts",
+    "@socialSessionsLoadFailed": {
+        "description": "Profile workouts failed to load"
+    },
+    "socialNoWorkoutsTitle": "No Workouts Yet",
+    "@socialNoWorkoutsTitle": {
+        "description": "Profile with no workouts"
+    },
+    "socialNoWorkoutsMessage": "Finished workouts show up here.",
+    "@socialNoWorkoutsMessage": {
+        "description": "Profile with no workouts"
+    },
+    "socialMoreActions": "More actions",
+    "@socialMoreActions": {
+        "description": "Profile menu"
+    },
+    "socialBlockMenu": "Block {name}",
+    "@socialBlockMenu": {
+        "description": "Blocks someone",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "socialUnblock": "Unblock",
+    "@socialUnblock": {
+        "description": "Unblocks someone"
+    },
+    "socialBlockTitle": "Block {name}?",
+    "@socialBlockTitle": {
+        "description": "Confirms blocking",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "socialBlockMessage": "They will be hidden from your feed, comments, search and notifications, and you will stop following them.",
+    "@socialBlockMessage": {
+        "description": "Confirms blocking"
+    },
+    "socialBlock": "Block",
+    "@socialBlock": {
+        "description": "Confirms blocking"
+    },
+    "socialBlockFailed": "Unable to Block User",
+    "@socialBlockFailed": {
+        "description": "Blocking failed"
+    },
+    "socialUnblockFailed": "Unable to Unblock User",
+    "@socialUnblockFailed": {
+        "description": "Unblocking failed"
+    },
+    "socialFollowingLoadFailed": "Unable to Load Following",
+    "@socialFollowingLoadFailed": {
+        "description": "The following list failed to load"
+    },
+    "socialUser": "User",
+    "@socialUser": {
+        "description": "A profile with no name"
+    },
+    "socialClose": "Close",
+    "@socialClose": {
+        "description": "Closes the profile"
+    },
+    "socialNoFollowersTitle": "No Followers Yet",
+    "@socialNoFollowersTitle": {
+        "description": "Empty people list"
+    },
+    "socialNoFollowersMessage": "People will show up here once there are some.",
+    "@socialNoFollowersMessage": {
+        "description": "Empty people list"
+    },
+    "socialRemove": "Remove",
+    "@socialRemove": {
+        "description": "Removes a follower"
+    },
+    "socialRemoveFollowerTitle": "Remove Follower?",
+    "@socialRemoveFollowerTitle": {
+        "description": "Confirms removing a follower"
+    },
+    "socialRemoveFollowerMessage": "{name} won't be told they were removed.",
+    "@socialRemoveFollowerMessage": {
+        "description": "Confirms removing a follower",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "socialThisPerson": "this person",
+    "@socialThisPerson": {
+        "description": "A follower with no name"
+    },
+    "socialRemoveFollowerFailed": "Unable to remove follower",
+    "@socialRemoveFollowerFailed": {
+        "description": "Removing a follower failed"
+    },
+    "weeklyGoalTitle": "Weekly Goal",
+    "@weeklyGoalTitle": {
+        "description": "Weekly goal sheet title"
+    },
+    "weeklyGoalPrompt": "Set your weekly session goal",
+    "@weeklyGoalPrompt": {
+        "description": "Weekly goal sheet before a goal is set"
+    },
+    "weeklyGoalFooter": "Your circle sees your progress towards this as a ring round your face.",
+    "@weeklyGoalFooter": {
+        "description": "Under the weekly goal picker"
+    },
+    "weeklyGoalSaveFailed": "Unable to Save Goal",
+    "@weeklyGoalSaveFailed": {
+        "description": "Saving the weekly goal failed"
+    },
+    "usernameTitle": "Username",
+    "@usernameTitle": {
+        "description": "Username screen title"
+    },
+    "usernamePlaceholder": "username",
+    "@usernamePlaceholder": {
+        "description": "Username field prompt"
+    },
+    "usernameIdle": "3–20 characters: letters, numbers, underscores and dots. Friends can find you by it.",
+    "@usernameIdle": {
+        "description": "Under the empty username field"
+    },
+    "usernameCurrent": "This is your username.",
+    "@usernameCurrent": {
+        "description": "The handle typed is the current one"
+    },
+    "usernameChecking": "Checking…",
+    "@usernameChecking": {
+        "description": "Checking a handle"
+    },
+    "usernameAvailable": "Available",
+    "@usernameAvailable": {
+        "description": "The handle is free"
+    },
+    "usernameTaken": "Taken",
+    "@usernameTaken": {
+        "description": "The handle is taken"
+    },
+    "usernameFailed": "Couldn't check that username. Try again in a moment.",
+    "@usernameFailed": {
+        "description": "The availability check failed"
+    },
+    "usernameTooShort": "At least {count} characters",
+    "@usernameTooShort": {
+        "description": "Handle too short",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "usernameTooLong": "At most {count} characters",
+    "@usernameTooLong": {
+        "description": "Handle too long",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "usernameInvalidCharacters": "Letters, numbers, underscores and dots only",
+    "@usernameInvalidCharacters": {
+        "description": "Handle has other characters"
+    },
+    "usernameEdgeDot": "Can't start or end with a dot",
+    "@usernameEdgeDot": {
+        "description": "Handle starts or ends with a dot"
+    },
+    "usernameSaveFailedTitle": "Unable to save",
+    "@usernameSaveFailedTitle": {
+        "description": "Saving the handle failed"
+    },
+    "usernameSaveFailedMessage": "Please check your connection and try again.",
+    "@usernameSaveFailedMessage": {
+        "description": "Saving the handle failed"
+    },
+    "usernameSave": "Save",
+    "@usernameSave": {
+        "description": "Saves the handle"
+    },
     "tabComingSoonTitle": "Coming Soon",
     "@tabComingSoonTitle": {
         "description": "Title of the empty state on a tab whose screen has not been built yet"

@@ -12,6 +12,7 @@ import 'package:food_repository/food_repository.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_rules/training_rules.dart'
     show LogSetAction, NextExerciseAction;
@@ -66,6 +67,12 @@ Future<void> main() async {
   final finished = _workout.isEmpty
       ? null
       : await _seedWorkout(activeSessionStore, now: now);
+  // Followed people with workouts, likes and comments, a follow request,
+  // followers and every handle reserved, over an in-memory Firestore.
+  final socialRepository = await inMemorySocialRepository(
+    users: userRepository,
+    now: now,
+  );
   await bootstrap(
     () => App(
       activeSessionStore: activeSessionStore,
@@ -111,6 +118,7 @@ Future<void> main() async {
         foods: sampleFoods(uid: sampleUserId, now: now),
       ),
       openFoodFacts: FakeOpenFoodFacts(),
+      socialRepository: socialRepository,
       checkInRepository: InMemoryCheckInRepository(
         settings: [sampleStrategySettings(uid: sampleUserId)],
         annotations: sampleDayAnnotations(uid: sampleUserId, now: now),

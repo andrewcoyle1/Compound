@@ -27,6 +27,7 @@ import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
@@ -138,6 +139,15 @@ Future<void> main() async {
       openFoodFacts: RemoteOpenFoodFacts(
         functions: FirebaseFunctions.instanceFor(region: 'us-central1'),
         client: http.Client(),
+      ),
+      // The social callables are us-central1 and enforce App Check.
+      socialRepository: SocialRepository(
+        firestore: FirebaseFirestore.instance,
+        callFunction: callFirebaseFunction(
+          FirebaseFunctions.instanceFor(region: 'us-central1'),
+        ),
+        users: userRepository,
+        onWriteError: onWriteError,
       ),
       checkInRepository: FirestoreCheckInRepository(
         firestore: FirebaseFirestore.instance,

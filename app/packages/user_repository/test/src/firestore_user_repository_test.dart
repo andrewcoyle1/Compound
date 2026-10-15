@@ -1,30 +1,11 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:user_repository/user_repository.dart';
 
-Map<String, Object?> _json(String model, String name) => jsonDecode(
-  File('../../../contracts/firestore/$model/$name.json').readAsStringSync(),
-) as Map<String, Object?>;
-
-/// A contract fixture as Firestore holds it: each tagged timestamp a
-/// [Timestamp].
-Map<String, Object?> _fixture(String model, String name) =>
-    _toFirestore(taggedJsonToFirestore(_json(model, name)));
-
-Map<String, Object?> _toFirestore(Map<String, Object?> data) =>
-    data.map((key, value) => MapEntry(key, _value(value)));
-
-Object? _value(Object? value) => switch (value) {
-  final DateTime date => Timestamp.fromDate(date),
-  final Map<String, Object?> map => _toFirestore(map),
-  final List<Object?> list => list.map(_value).toList(),
-  _ => value,
-};
+import '../helpers/contract.dart';
+import '../helpers/user_fields.dart';
 
 void main() {
   group(FirestoreUserRepository, () {
@@ -37,6 +18,9 @@ void main() {
         firestore.doc('users/$uid');
     DocumentReference<Map<String, dynamic>> settings() =>
         firestore.doc('users/$uid/private/settings');
+    Future<Map<String, Object?>> stored(
+      DocumentReference<Map<String, dynamic>> document,
+    ) async => storedAsTagged((await document.get()).data()!);
 
     setUp(() {
       firestore = FakeFirebaseFirestore();
@@ -51,13 +35,13 @@ void main() {
       test(
         'reads the full fixture back exactly, timestamps included',
         () async {
-          await user().set(_fixture('user_model', 'full'));
+          await user().set(storedFixture('user_model', 'full'));
 
           final read = await subject.watchUser(uid).first;
 
           expect(
             firestoreToTaggedJson(read!.toFirestore()),
-            equals(_json('user_model', 'full')),
+            equals(taggedFixture('user_model', 'full')),
           );
           expect(read.creationDate, DateTime.utc(2025, 3, 4, 5, 6, 7, 123));
           expect(read.creationDate!.isUtc, isTrue);
@@ -71,7 +55,8 @@ void main() {
 
       test('is null, and reports, when the document does not decode', () async {
         await user().set(
-          _fixture('user_model', 'full')..remove('did_complete_onboarding'),
+          storedFixture('user_model', 'full')
+            ..remove('did_complete_onboarding'),
         );
 
         expect(await subject.watchUser(uid).first, isNull);
@@ -85,7 +70,7 @@ void main() {
           emitsInOrder([null, 'Ada Lovelace']),
         );
         await Future<void>.delayed(Duration.zero);
-        await user().set(_fixture('user_model', 'full'));
+        await user().set(storedFixture('user_model', 'full'));
         await expectation;
       });
 
@@ -99,13 +84,13 @@ void main() {
 
     group('watchPrivateSettings', () {
       test('reads the full fixture back exactly', () async {
-        await settings().set(_fixture('private_user_settings', 'full'));
+        await settings().set(storedFixture('private_user_settings', 'full'));
 
         final read = await subject.watchPrivateSettings(uid).first;
 
         expect(
           firestoreToTaggedJson(read!.toFirestore()),
-          equals(_json('private_user_settings', 'full')),
+          equals(taggedFixture('private_user_settings', 'full')),
         );
         expect(read.weekEndsAt!.isUtc, isTrue);
       });
@@ -121,5 +106,134 @@ void main() {
         expect(decodeErrors.single.$1, 'users/$uid/private/settings');
       });
     });
+
+    group('createUser', () {
+      for (final name in ['full', 'minimal']) {
+        test('stores the $name fixture as the model encodes it', () async {
+          final model = UserModel.fromFirestore(
+            modelFixture('user_model', name),
+          );
+
+          await subject.createUser(model);
+
+          final written = await stored(firestore.doc('users/${model.userId}'));
+          expect(
+            written,
+            strictlyEquals(firestoreToTaggedJson(model.toFirestore())),
+          );
+          expect(written, strictlyEquals(taggedFixture('user_model', name)));
+        });
+      }
+
+      test('merges, keeping a field this app does not know', () async {
+        await user().set({'field_from_a_newer_build': 1});
+
+        await subject.createUser(
+          UserModel.fromFirestore(modelFixture('user_model', 'full')),
+        );
+
+        expect(
+          await stored(user()),
+          strictlyEquals({
+            ...taggedFixture('user_model', 'full'),
+            'field_from_a_newer_build': 1,
+          }),
+        );
+      });
+    });
+
+    group('updateUserFields', () {
+      test(
+        'sets every allowed field, typed as Swift stores it, and nothing else',
+        () async {
+          await user().set(storedFixture('user_model', 'full'));
+
+          await subject.updateUserFields(uid, everyFieldUpdate);
+
+          final expected = {
+            ...taggedFixture('user_model', 'full'),
+            ...taggedUpdates,
+          };
+          expect(await stored(user()), strictlyEquals(expected));
+          final read = await subject.watchUser(uid).first;
+          expect(
+            firestoreToTaggedJson(read!.toFirestore()),
+            strictlyEquals(expected),
+          );
+        },
+      );
+
+      test('fails when there is no profile, as Firestore does', () async {
+        await expectLater(
+          subject.updateUserFields(uid, [UserField.weeklySessionGoal(3)]),
+          throwsA(isA<FirebaseException>()),
+        );
+        expect((await user().get()).exists, isFalse);
+      });
+    });
+
+    group('mergePrivateSettings', () {
+      test('stores the full fixture as the model encodes it', () async {
+        final model = PrivateUserSettings.fromFirestore(
+          modelFixture('private_user_settings', 'full'),
+        );
+
+        await subject.mergePrivateSettings(uid, model);
+
+        final written = await stored(settings());
+        expect(
+          written,
+          strictlyEquals(firestoreToTaggedJson(model.toFirestore())),
+        );
+        expect(
+          written,
+          strictlyEquals(taggedFixture('private_user_settings', 'full')),
+        );
+      });
+
+      test('withdraws coach consent by writing false over it', () async {
+        await settings().set(storedFixture('private_user_settings', 'full'));
+
+        await subject.mergePrivateSettings(
+          uid,
+          const PrivateUserSettings(coachConsent: false),
+        );
+
+        expect(
+          await stored(settings()),
+          strictlyEquals({
+            ...taggedFixture('private_user_settings', 'full'),
+            'coach_consent': false,
+          }),
+        );
+      });
+
+      test('leaves the fields it omits as they were', () async {
+        await settings().set({
+          ...storedFixture('private_user_settings', 'full'),
+          'field_from_a_newer_build': 'kept',
+        });
+
+        await subject.mergePrivateSettings(uid, const PrivateUserSettings());
+
+        expect(
+          await stored(settings()),
+          strictlyEquals({
+            ...taggedFixture('private_user_settings', 'full'),
+            'field_from_a_newer_build': 'kept',
+          }),
+        );
+      });
+    });
+  });
+
+  test('UserField names only model fields Swift updates by name', () {
+    expect([
+      for (final field in UserField.values) field.key,
+    ], unorderedEquals(taggedUpdates.keys));
+    expect(UserModelKeys.all, containsAll(taggedUpdates.keys));
+    expect([
+      for (final value in everyFieldUpdate) value.key,
+    ], unorderedEquals(taggedUpdates.keys));
   });
 }

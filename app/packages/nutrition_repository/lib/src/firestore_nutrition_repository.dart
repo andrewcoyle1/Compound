@@ -17,6 +17,10 @@ typedef NutritionDecodeErrorHandler = void Function(
 /// A document that does not decode is skipped and reported to
 /// `onDecodeError`, as the Swift app's sync engine skips it, so one bad
 /// meal never empties the day.
+///
+/// Writes go through the models' `toFirestore`, with dates stored as
+/// Timestamps, and whole documents are merged
+/// (`docs/specs/flutter/firestore-contract.md`, Policy).
 class FirestoreNutritionRepository implements NutritionRepository {
   /// Creates a [FirestoreNutritionRepository] reading `firestore`. Decode
   /// failures go to [onDecodeError], or to `dart:developer`'s log when it
@@ -66,6 +70,19 @@ class FirestoreNutritionRepository implements NutritionRepository {
                 FoodLogSettings(authorId: uid),
           );
 
+  @override
+  Future<void> saveMeal(MealLogModel meal) =>
+      _user(meal.authorId)
+          .collection('meal_logs')
+          .doc(meal.mealId)
+          .set(_toFirestore(meal.toFirestore()), SetOptions(merge: true));
+
+  @override
+  Future<void> saveDietPlan(DietPlan plan) => _firestore
+      .collection('diet_plans')
+      .doc(plan.planId)
+      .set(_toFirestore(plan.toFirestore()), SetOptions(merge: true));
+
   T? _decodeDocument<T>(
     DocumentSnapshot<Map<String, dynamic>> document,
     T Function(Map<String, Object?>) decode,
@@ -107,5 +124,17 @@ Object? _value(Object? value) => switch (value) {
   final Timestamp timestamp => timestamp.toDate().toUtc(),
   final Map<String, Object?> map => _fromFirestore(map),
   final List<Object?> list => list.map(_value).toList(),
+  _ => value,
+};
+
+/// The models' values to Firestore's at any depth: a [DateTime] becomes a
+/// [Timestamp], as Swift's encoder stores a `Date`.
+Map<String, Object?> _toFirestore(Map<String, Object?> data) =>
+    data.map((key, value) => MapEntry(key, _stored(value)));
+
+Object? _stored(Object? value) => switch (value) {
+  final DateTime date => Timestamp.fromDate(date),
+  final Map<String, Object?> map => _toFirestore(map),
+  final List<Object?> list => list.map(_stored).toList(),
   _ => value,
 };

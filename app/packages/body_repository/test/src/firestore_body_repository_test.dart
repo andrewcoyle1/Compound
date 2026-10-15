@@ -7,6 +7,8 @@ import 'package:compound_models/compound_models.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/contract.dart';
+
 Map<String, Object?> _tagged(String model, String name) => jsonDecode(
   File('../../../contracts/firestore/$model/$name.json').readAsStringSync(),
 ) as Map<String, Object?>;
@@ -259,6 +261,131 @@ void main() {
         final logging = FirestoreBodyRepository(firestore: firestore);
 
         expect(await logging.watchCurrentGoal(uid).first, isNull);
+      });
+    });
+
+    Future<Map<String, Object?>> stored(String path) async =>
+        storedAsTagged((await firestore.doc(path).get()).data()!);
+
+    group('saveMeasurement', () {
+      for (final name in ['full', 'minimal']) {
+        test('stores the $name fixture as the model encodes it', () async {
+          final entry = BodyMeasurementEntry.fromFirestore(
+            modelFixture('body_measurement', name),
+          );
+
+          await subject.saveMeasurement(entry);
+
+          final written = await stored(
+            'users/${entry.authorId}/body_measurements/${entry.id}',
+          );
+          expect(
+            written,
+            strictlyEquals(firestoreToTaggedJson(entry.toFirestore())),
+          );
+          expect(
+            written,
+            strictlyEquals(taggedFixture('body_measurement', name)),
+          );
+        });
+      }
+
+      test('merges: a field the entry omits is kept, as in Swift', () async {
+        final full = BodyMeasurementEntry.fromFirestore(
+          modelFixture('body_measurement', 'full'),
+        );
+        final path = 'users/$uid/body_measurements/${full.id}';
+        await firestore.doc(path).set({
+          ...storedFixture('body_measurement', 'full'),
+          'field_from_a_newer_build': true,
+        });
+
+        await subject.saveMeasurement(
+          BodyMeasurementEntry(
+            id: full.id,
+            authorId: full.authorId,
+            date: full.date,
+            source: full.source,
+            dateCreated: full.dateCreated,
+            weightKg: 70.5,
+          ),
+        );
+
+        expect(
+          await stored(path),
+          strictlyEquals({
+            ...taggedFixture('body_measurement', 'full'),
+            'weight_kg': 70.5,
+            'field_from_a_newer_build': true,
+          }),
+        );
+      });
+    });
+
+    group('saveGoal', () {
+      for (final name in ['full', 'minimal']) {
+        test('stores the $name fixture as the model encodes it', () async {
+          final goal = WeightGoal.fromFirestore(
+            modelFixture('weight_goal', name),
+          );
+
+          await subject.saveGoal(goal);
+
+          final written = await stored(
+            'users/${goal.userId}/goals/${goal.goalId}',
+          );
+          expect(
+            written,
+            strictlyEquals(firestoreToTaggedJson(goal.toFirestore())),
+          );
+          expect(written, strictlyEquals(taggedFixture('weight_goal', name)));
+          final read = await subject
+              .watchCurrentGoal(goal.userId, currentGoalId: goal.goalId)
+              .first;
+          expect(read!.toFirestore(), goal.toFirestore());
+        });
+      }
+    });
+
+    group('abandonGoal', () {
+      test('writes status and nothing else', () async {
+        const path = 'users/$uid/goals/goal_contract_full';
+        await firestore.doc(path).set(storedFixture('weight_goal', 'full'));
+
+        await subject.abandonGoal(uid, 'goal_contract_full');
+
+        expect(
+          await stored(path),
+          strictlyEquals({
+            ...taggedFixture('weight_goal', 'full'),
+            'status': 'abandoned',
+          }),
+        );
+      });
+
+      test('abandons a goal from before goal ids, under the user id', () async {
+        const legacy = 'user_legacy';
+        const path = 'users/$legacy/goals/$legacy';
+        await firestore
+            .doc(path)
+            .set(storedFixture('weight_goal', 'legacy-no-goal-id'));
+
+        await subject.abandonGoal(legacy, legacy);
+
+        expect(
+          await stored(path),
+          strictlyEquals({
+            ...taggedFixture('weight_goal', 'legacy-no-goal-id'),
+            'status': 'abandoned',
+          }),
+        );
+      });
+
+      test('fails when there is no such goal, as Firestore does', () async {
+        await expectLater(
+          subject.abandonGoal(uid, 'missing'),
+          throwsA(isA<FirebaseException>()),
+        );
       });
     });
   });

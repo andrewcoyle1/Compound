@@ -17,6 +17,10 @@ typedef BodyDecodeErrorHandler = void Function(
 /// A document that does not decode is skipped and reported to
 /// `onDecodeError`, as the Swift app's sync engine skips it, so one bad
 /// weigh-in never empties the chart.
+///
+/// Writes go through the models' `toFirestore`, with dates stored as
+/// Timestamps, and whole documents are merged
+/// (`docs/specs/flutter/firestore-contract.md`, Policy).
 class FirestoreBodyRepository implements BodyRepository {
   /// Creates a [FirestoreBodyRepository] reading `firestore`. Decode
   /// failures go to [onDecodeError], or to `dart:developer`'s log when it
@@ -74,13 +78,31 @@ class FirestoreBodyRepository implements BodyRepository {
 
   @override
   Stream<WeightGoal?> watchCurrentGoal(String uid, {String? currentGoalId}) =>
-      _user(uid)
-          .collection('goals')
-          .doc(currentGoalDocumentId(uid, currentGoalId))
-          .snapshots()
-          .map(
-            (document) => _decodeDocument(document, WeightGoal.fromFirestore),
-          );
+      _goal(uid, currentGoalDocumentId(uid, currentGoalId)).snapshots().map(
+        (document) => _decodeDocument(document, WeightGoal.fromFirestore),
+      );
+
+  @override
+  Future<void> saveMeasurement(BodyMeasurementEntry entry) =>
+      _user(entry.authorId)
+          .collection('body_measurements')
+          .doc(entry.id)
+          .set(_toFirestore(entry.toFirestore()), SetOptions(merge: true));
+
+  @override
+  Future<void> saveGoal(WeightGoal goal) => _goal(
+    goal.userId,
+    goal.goalId,
+  ).set(_toFirestore(goal.toFirestore()), SetOptions(merge: true));
+
+  @override
+  Future<void> abandonGoal(String uid, String goalId) => _goal(
+    uid,
+    goalId,
+  ).update({WeightGoalKeys.status: GoalStatus.abandoned.value});
+
+  DocumentReference<Map<String, dynamic>> _goal(String uid, String goalId) =>
+      _user(uid).collection('goals').doc(goalId);
 
   List<T> _decodeAll<T>(
     QuerySnapshot<Map<String, dynamic>> snapshot,
@@ -132,5 +154,17 @@ Object? _value(Object? value) => switch (value) {
   final Timestamp timestamp => timestamp.toDate().toUtc(),
   final Map<String, Object?> map => _fromFirestore(map),
   final List<Object?> list => list.map(_value).toList(),
+  _ => value,
+};
+
+/// The models' values to Firestore's at any depth: a [DateTime] becomes a
+/// [Timestamp], as Swift's encoder stores a `Date`.
+Map<String, Object?> _toFirestore(Map<String, Object?> data) =>
+    data.map((key, value) => MapEntry(key, _stored(value)));
+
+Object? _stored(Object? value) => switch (value) {
+  final DateTime date => Timestamp.fromDate(date),
+  final Map<String, Object?> map => _toFirestore(map),
+  final List<Object?> list => list.map(_stored).toList(),
   _ => value,
 };

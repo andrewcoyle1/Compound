@@ -1,6 +1,7 @@
 # nutrition_repository
 
-The signed-in user's meal logs, diet plan and food log settings, **read-only** (M2).
+The signed-in user's meal logs, diet plan and food log settings. It saves meals
+and the diet plan.
 
 - `FirestoreNutritionRepository` takes `FirebaseFirestore` through its constructor and watches:
   - `users/{uid}/meal_logs` where `author_id` is the user, as the Swift app's listener does;
@@ -12,10 +13,16 @@ The signed-in user's meal logs, diet plan and food log settings, **read-only** (
 - `withoutDuplicateHealthImports` is Swift's `MealLogManager.userMeals` rule: on a day with a meal
   logged in Compound, that day's Apple Health import is dropped. `watchMeals` applies it.
   `mealsByDay` groups meals by `day_key`.
-- `InMemoryNutritionRepository` serves fixed data for the staging flavor and tests; seed it with
+- Writes: `saveMeal` (`users/{authorId}/meal_logs/{mealId}`) and `saveDietPlan`
+  (`diet_plans/{planId}`, the plan id being the user's).
+- `InMemoryNutritionRepository` holds the data for the staging flavor and tests; seed it with
   `sampleMealLogs(uid:, now:)` and `sampleDietPlan(uid:, now:)`. With no settings given it serves
   the defaults.
 
 The models are `compound_models'`, held to the Firestore contract in
 [`docs/specs/flutter/firestore-contract.md`](../../../docs/specs/flutter/firestore-contract.md).
-There are no write methods.
+Writes (M3) go through each model's `toFirestore`, with `DateTime`s stored as Timestamps. Whole
+documents are merged (`SetOptions(merge: true)`), as Swift's `saveDocument` is, so a field this
+app does not know survives; a merge also never clears a field the model leaves out. The in-memory
+implementation merges the same way and re-emits to every watcher, so staging behaves like the
+real app.

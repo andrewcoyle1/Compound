@@ -1,5 +1,5 @@
 name: nutrition_repository
-description: Reads the signed-in user's meal logs, diet plan and food log settings from Firestore, or from memory in the staging flavor.
+description: Reads and writes the signed-in user's meal logs, diet plan and food log settings from Firestore, or from memory in the staging flavor.
 version: 0.1.0+1
 publish_to: none
 

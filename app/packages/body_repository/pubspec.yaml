@@ -1,5 +1,5 @@
 name: body_repository
-description: Reads the signed-in user's body measurements, steps, analytics settings and current weight goal from Firestore, or from memory in the staging flavor.
+description: Reads and writes the signed-in user's body measurements, steps, analytics settings and current weight goal from Firestore, or from memory in the staging flavor.
 version: 0.1.0+1
 publish_to: none
 

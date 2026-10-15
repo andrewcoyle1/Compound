@@ -7,6 +7,8 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
+import '../helpers/contract.dart';
+
 Map<String, Object?> _tagged(String model, String name) => jsonDecode(
   File('../../../contracts/firestore/$model/$name.json').readAsStringSync(),
 ) as Map<String, Object?>;
@@ -184,6 +186,101 @@ void main() {
         expect(
           decodeErrors.single.$1,
           'users/$uid/food_log_settings/food_log_settings',
+        );
+      });
+    });
+
+    Future<Map<String, Object?>> stored(String path) async =>
+        storedAsTagged((await firestore.doc(path).get()).data()!);
+
+    group('saveMeal', () {
+      for (final name in ['full', 'minimal']) {
+        test('stores the $name fixture as the model encodes it', () async {
+          final meal = MealLogModel.fromFirestore(
+            modelFixture('meal_log', name),
+          );
+
+          await subject.saveMeal(meal);
+
+          final written = await stored(
+            'users/${meal.authorId}/meal_logs/${meal.mealId}',
+          );
+          expect(
+            written,
+            strictlyEquals(firestoreToTaggedJson(meal.toFirestore())),
+          );
+          expect(written, strictlyEquals(taggedFixture('meal_log', name)));
+        });
+      }
+
+      test(
+        'merges, replacing items whole and keeping unknown fields',
+        () async {
+          final full = MealLogModel.fromFirestore(
+            modelFixture('meal_log', 'full'),
+          );
+          final path = 'users/${full.authorId}/meal_logs/${full.mealId}';
+          await firestore.doc(path).set({
+            ...storedFixture('meal_log', 'full'),
+            'field_from_a_newer_build': 'kept',
+          });
+
+          await subject.saveMeal(
+            MealLogModel(
+              mealId: full.mealId,
+              authorId: full.authorId,
+              dayKey: full.dayKey,
+              date: full.date,
+              items: const [],
+            ),
+          );
+
+          expect(
+            await stored(path),
+            strictlyEquals({
+              ...taggedFixture('meal_log', 'full'),
+              'items': <Object?>[],
+              'field_from_a_newer_build': 'kept',
+            }),
+          );
+        },
+      );
+    });
+
+    group('saveDietPlan', () {
+      for (final name in ['full', 'minimal']) {
+        test('stores the $name fixture as the model encodes it', () async {
+          final dietPlan = DietPlan.fromFirestore(
+            modelFixture('diet_plan', name),
+          );
+
+          await subject.saveDietPlan(dietPlan);
+
+          final written = await stored('diet_plans/${dietPlan.planId}');
+          expect(
+            written,
+            strictlyEquals(firestoreToTaggedJson(dietPlan.toFirestore())),
+          );
+          expect(written, strictlyEquals(taggedFixture('diet_plan', name)));
+          expect(
+            (await subject.watchDietPlan(dietPlan.planId).first)!.toFirestore(),
+            dietPlan.toFirestore(),
+          );
+        });
+      }
+
+      test('merges, keeping a field this app does not know', () async {
+        final full = DietPlan.fromFirestore(modelFixture('diet_plan', 'full'));
+        await plan(full.planId).set({'field_from_a_newer_build': 2});
+
+        await subject.saveDietPlan(full);
+
+        expect(
+          await stored('diet_plans/${full.planId}'),
+          strictlyEquals({
+            ...taggedFixture('diet_plan', 'full'),
+            'field_from_a_newer_build': 2,
+          }),
         );
       });
     });

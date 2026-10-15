@@ -1,6 +1,6 @@
 import 'package:compound_models/compound_models.dart';
 
-/// The signed-in user's body data, steps and weight goal, read-only.
+/// The signed-in user's body data, steps and weight goal.
 abstract interface class BodyRepository {
   /// The entries at `users/{uid}/body_measurements` whose author is [uid],
   /// as the Swift app's listener reads them, less deleted ones (screens
@@ -23,4 +23,32 @@ abstract interface class BodyRepository {
   /// saved before goal ids live under the user id. Null when there is none
   /// or it cannot be read. Whatever its status, as Swift's `currentGoal`.
   Stream<WeightGoal?> watchCurrentGoal(String uid, {String? currentGoalId});
+
+  /// Saves [entry] to `users/{entry.authorId}/body_measurements/{entry.id}`,
+  /// merged over anything there, as `BodyMeasurementsManager
+  /// .saveBodyMeasurement` does (`BodyMeasurementsManager.swift:56`;
+  /// `saveDocument` is `setData(merge: true)`). The Apple Health export
+  /// Swift does first is not ported yet (M5).
+  ///
+  /// A merge leaves a field the entry omits as it was, so this cannot clear
+  /// a value: Swift's `withCleared` has exactly that bug
+  /// (`swift-findings.md`). Clearing is not part of M3.
+  Future<void> saveMeasurement(BodyMeasurementEntry entry);
+
+  /// Saves a new [goal] to `users/{goal.userId}/goals/{goal.goalId}`,
+  /// merged, as `GoalManager.saveGoal` does (`GoalManager.swift:44-47`).
+  ///
+  /// Only for a goal with a new id. The rules freeze `goal_id`, `user_id`,
+  /// `starting_weight_kg` and `created_at` once written, so saving over an
+  /// existing goal with any of them changed is refused; a fresh start is a
+  /// new goal, after which the caller points `submitted_current_goal_id` at
+  /// it and abandons the old one with [abandonGoal].
+  Future<void> saveGoal(WeightGoal goal);
+
+  /// Marks the goal at `users/{uid}/goals/{goalId}` abandoned, writing
+  /// `status` and nothing else, as `GoalManager.saveGoal` does for the goal
+  /// a new one replaces (`GoalManager.swift:52-58`). Swift does this only
+  /// when the replaced goal is active, and ignores a failure. Fails, as
+  /// Firestore's `update` does, when there is no such goal.
+  Future<void> abandonGoal(String uid, String goalId);
 }

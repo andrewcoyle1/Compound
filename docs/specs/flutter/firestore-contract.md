@@ -95,6 +95,11 @@ data disappear from the iOS app without an error. The contract makes that a fail
    - Add any stored enum to `enumRawValuesMatch`.
    - Run the suite once with `TEST_RUNNER_RECORD_CONTRACTS=1`. It fails that once, because the
      folder didn't exist when the decode test listed it. Then run it again without the variable.
+   - A model the app writes and parses as a plain dictionary (notifications, comments, reports,
+     username reservations) cannot go through the coders. Use `dictionaryContract` with a test-side
+     mirror of the service's write and parse, copied line for line, and add the service file to
+     `serviceKeysMatchFixtures`, which fails when the service names a key the full fixture lacks
+     or the reverse (`FirestoreContractTests+Social.swift`).
 2. **Legacy shapes:** read the model's `init(from:)` and its git history (`git log -p` on the
    file, looking for removed or renamed `CodingKeys`). Hand-write a `legacy-<name>.json` for each
    shape it still accepts, with its `.expected.json`.
@@ -104,6 +109,8 @@ data disappear from the iOS app without an error. The contract makes that a fail
      new folder.
 4. **Rules:** add its `full` fixture to the contract test in `functions/rules.test.js`, at its
    real path.
+   If a Cloud Function reads or writes the document, list the fields it reads, and check the
+   shape it writes, in the no-emulator tests at the end of the social contract section there.
 5. **App data a decoder reads:** `GymProfileModel`'s decoder appends every catalogue item a stored
    list lacks, so the catalogue is part of the contract. The Swift test records it to
    `contracts/firestore/gym_equipment_catalogue.json` (each nested entry's random id made

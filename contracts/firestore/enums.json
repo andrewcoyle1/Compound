@@ -6,6 +6,16 @@
     "active",
     "very_active"
   ],
+  "ActivityType": [
+    "like",
+    "comment",
+    "follow",
+    "nudge",
+    "mention",
+    "followAccepted",
+    "share",
+    "challenge_complete"
+  ],
   "BMREquation": [
     "mifflinStJeor",
     "harrisBenedict",
@@ -68,6 +78,11 @@
   "ExpenditureEstimationMethod": [
     "standard",
     "bodyFatAware"
+  ],
+  "FollowRequestStatus": [
+    "pending",
+    "accepted",
+    "declined"
   ],
   "Gender": [
     "male",
@@ -213,6 +228,17 @@
     "weightFirst",
     "repsFirst"
   ],
+  "ReportContentType": [
+    "comment",
+    "session",
+    "user"
+  ],
+  "ReportReason": [
+    "spam",
+    "harassment",
+    "inappropriate",
+    "other"
+  ],
   "SetKind": [
     "standard",
     "drop",
@@ -240,6 +266,11 @@
     "partials",
     "stretch",
     "hold"
+  ],
+  "ShareStatus": [
+    "pending",
+    "accepted",
+    "dismissed"
   ],
   "StepsSource": [
     "manual",

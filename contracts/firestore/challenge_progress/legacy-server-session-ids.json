@@ -1,0 +1,13 @@
+{
+  "session_ids": [
+    "session_a",
+    "session_b",
+    "session_c",
+    "session_d",
+    "session_e"
+  ],
+  "sessions": 5,
+  "updated_at": {
+    "$timestamp": "2026-10-13T18:35:10.500Z"
+  }
+}

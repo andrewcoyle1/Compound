@@ -1,5 +1,7 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
+import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart' show DateFormat;
 
 /// Every entry of a metric, as given (newest first), like Health's "All
@@ -13,8 +15,15 @@ class MetricAllDataView extends StatelessWidget {
     required this.entries,
     this.format,
     this.valueText,
+    this.onDelete,
     super.key,
   });
+
+  /// Deletes the entry at an index, for a screen whose entries are stored
+  /// here (Swift `supportsDeletion`): a swipe, or a screen reader's action.
+  /// The row leaves when the data says it has gone, so a failed delete
+  /// leaves it in place.
+  final void Function(int index)? onDelete;
 
   /// How each value is written, when not as a number and [unit]; Energy
   /// Balance writes "350 deficit".
@@ -60,13 +69,48 @@ class MetricAllDataView extends StatelessWidget {
           header: title,
           children: [
             for (final (index, entry) in entries.indexed)
-              AppListRow(
-                title: text(index),
-                accessory: AppListRowValue(dates.format(entry.date)),
+              _deletable(
+                context,
+                index,
+                AppListRow(
+                  title: text(index),
+                  accessory: AppListRowValue(dates.format(entry.date)),
+                ),
               ),
           ],
         ),
       ],
+    );
+  }
+
+  Widget _deletable(BuildContext context, int index, Widget row) {
+    final onDelete = this.onDelete;
+    if (onDelete == null) return row;
+    final scheme = Theme.of(context).colorScheme;
+    return Dismissible(
+      key: ValueKey(entries[index]),
+      direction: DismissDirection.endToStart,
+      background: ColoredBox(
+        color: scheme.error,
+        child: Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: Icon(AppSymbols.delete, color: scheme.onError),
+          ),
+        ),
+      ),
+      confirmDismiss: (_) async {
+        onDelete(index);
+        return false;
+      },
+      child: Semantics(
+        customSemanticsActions: {
+          CustomSemanticsAction(label: context.l10n.metricDeleteEntry): () =>
+              onDelete(index),
+        },
+        child: row,
+      ),
     );
   }
 }

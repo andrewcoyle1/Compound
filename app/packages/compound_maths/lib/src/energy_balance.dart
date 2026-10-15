@@ -59,6 +59,25 @@ double Function(String day) expenditureOn(
       (last != null && day.compareTo(last.day) > 0 ? last.kcal : formulaKcal);
 }
 
+/// The mean intake and the mean comparison (an expenditure or a target)
+/// over the days something was logged, or null when nothing was logged or
+/// none of those days has a comparison: an unlogged day is not a day of
+/// eating nothing (`ProgressCarouselMetrics.averages`).
+({double intake, double comparison})? comparedAverages(
+  Iterable<({double intake, double? comparison})> days,
+) {
+  final logged = [
+    for (final day in days)
+      if (day.intake > 0) day,
+  ];
+  final compared = [for (final day in logged) ?day.comparison];
+  if (logged.isEmpty || compared.isEmpty) return null;
+  return (
+    intake: logged.map((d) => d.intake).reduce((a, b) => a + b) / logged.length,
+    comparison: compared.reduce((a, b) => a + b) / compared.length,
+  );
+}
+
 /// The mean of the logged days of [dailyCalories] (any calories at all) and
 /// how many there were, or null when none was
 /// (`EnergyBalanceSummary.loggedAverage`).

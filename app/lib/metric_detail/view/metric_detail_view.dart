@@ -20,8 +20,13 @@ class MetricDetailView extends StatelessWidget {
     required this.onRangeSelected,
     required this.onShowAllData,
     this.summary,
+    this.decimals,
     super.key,
   });
+
+  /// The decimal places each figure is shown to; by default none for a
+  /// total and one for a reading.
+  final int? decimals;
 
   /// A section shown above Show All Data, such as Expenditure's estimate
   /// for today (Swift `summarySection`).
@@ -53,9 +58,23 @@ class MetricDetailView extends StatelessWidget {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final total = series.first.isBar;
-    final readings = MetricReadings(series.first.points, total: total);
+    // Stacked bars (Macros) total every series a day, as Swift's readings
+    // do; a single series is just its own.
+    final readings = MetricReadings(
+      total
+          ? [
+              for (final s in series)
+                if (s.isBar) ...s.points,
+            ]
+          : series.first.points,
+      total: total,
+    );
     String value(double v) => [
-      AppFormat.number(v, maxFractionDigits: total ? 0 : 1, locale: locale),
+      AppFormat.number(
+        v,
+        maxFractionDigits: decimals ?? (total ? 0 : 1),
+        locale: locale,
+      ),
       if (unit.isNotEmpty) unit,
     ].join(' ');
     String day(DateTime date) => metricDayText(l10n, date, today, locale);

@@ -100,17 +100,25 @@ class _MetricChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Bars stand on zero, and several bar series stack: each bar starts
+    // where the one below it on that date ends.
+    final bars = series.any((s) => s.isBar);
+    final stacked = <DateTime, double>{};
+    for (final s in series.where((s) => s.isBar)) {
+      for (final p in s.points) {
+        stacked[p.date] = (stacked[p.date] ?? 0) + p.value;
+      }
+    }
     final values = [
+      ...stacked.values,
       for (final s in series)
-        for (final p in s.points) p.value,
+        if (!s.isBar)
+          for (final p in s.points) p.value,
     ];
     if (values.isEmpty) return;
-    // Bars stand on zero.
-    final bars = series.any((s) => s.isBar);
-    final (low, high) = niceBounds(
-      bars ? 0 : values.reduce(math.min),
-      values.reduce(math.max),
-    );
+    final (low, high) = bars
+        ? niceBounds(0, values.reduce(math.max))
+        : readingBounds(values.reduce(math.min), values.reduce(math.max));
 
     final labels = [
       for (final value in [high, (low + high) / 2, low])
@@ -155,18 +163,24 @@ class _MetricChartPainter extends CustomPainter {
     }
 
     final bucketWidth = plot.width * half * 2 / span;
+    final base = <DateTime, double>{};
     for (final s in series) {
       final points = s.points.map(at).toList();
       if (s.isBar) {
         final bar = Paint()..color = s.color;
         final width = math.max(bucketWidth * 0.6, 2);
-        for (final point in points) {
+        for (final (i, point) in points.indexed) {
+          final date = s.points[i].date;
+          final below = base[date] ?? 0;
+          base[date] = below + s.points[i].value;
+          final bottom = at((date: date, value: below)).dy;
+          final top = at((date: date, value: base[date]!)).dy;
           canvas.drawRRect(
             RRect.fromLTRBAndCorners(
               point.dx - width / 2,
-              point.dy,
+              top,
               point.dx + width / 2,
-              plot.bottom,
+              bottom,
               topLeft: const Radius.circular(2),
               topRight: const Radius.circular(2),
             ),
@@ -216,4 +230,12 @@ class _MetricChartPainter extends CustomPainter {
   }
   if ((top - bottom) % 2 != 0) top += 1;
   return (bottom, top);
+}
+
+/// [niceBounds] for readings, in tenths when every reading is between 0 and
+/// 2, such as a body ratio, which whole numbers would flatten.
+(double, double) readingBounds(double low, double high) {
+  if (low < 0 || high >= 2) return niceBounds(low, high);
+  final (bottom, top) = niceBounds(low * 10, high * 10);
+  return (bottom / 10, top / 10);
 }

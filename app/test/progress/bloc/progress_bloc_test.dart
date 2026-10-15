@@ -3,6 +3,7 @@ import 'package:app_ui/app_ui.dart' show AppWeightUnit;
 import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
+import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/progress/logic/progress_overview.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -336,6 +337,107 @@ void main() {
       verify: (_) => verify(
         () => bodyRepository.watchCurrentGoal(uid, currentGoalId: 'g2'),
       ).called(1),
+    );
+  });
+
+  group('the screens behind the tab', () {
+    late AnalyticsRecorder recorder;
+
+    setUp(() => recorder = AnalyticsRecorder());
+
+    ProgressBloc screen() => ProgressBloc(
+      workoutSessionRepository: workoutSessionRepository,
+      nutritionRepository: nutritionRepository,
+      bodyRepository: bodyRepository,
+      userRepository: userRepository,
+      analyticsRepository: recorder,
+      trainingLibraryRepository: trainingLibraryRepository,
+      checkInRepository: InMemoryCheckInRepository(),
+      uid: uid,
+      firstWeekday: DateTime.monday,
+      screen: 'BodyRatioView',
+      parameters: const {'ratio': 'waistToHip'},
+      now: () => now,
+    );
+
+    test('the weekly grid opens on today', () {
+      // Saturday, in a week from Monday.
+      expect(build().state.targetDay, 5);
+    });
+
+    blocTest<ProgressBloc, ProgressState>(
+      'tracks the screen it serves',
+      build: screen,
+      act: (bloc) => bloc.add(const ProgressSubscriptionRequested()),
+      verify: (_) {
+        expect(recorder.names.first, 'BodyRatioView_Appear');
+        expect(recorder.parameters('BodyRatioView_Appear'), {
+          'ratio': 'waistToHip',
+        });
+      },
+    );
+
+    blocTest<ProgressBloc, ProgressState>(
+      'changes the range',
+      build: screen,
+      act: (bloc) => bloc.add(const ProgressRangeSelected(MetricRange.year)),
+      verify: (bloc) => expect(bloc.state.range, MetricRange.year),
+    );
+
+    blocTest<ProgressBloc, ProgressState>(
+      'deleting a reading clears only its fields',
+      setUp: () =>
+          when(() => bodyRepository.clearMeasurementFields(uid, 'e', {'w'}))
+              .thenAnswer((_) async {}),
+      build: screen,
+      act: (bloc) => bloc.add(
+        const ProgressMeasurementCleared(entryId: 'e', fields: {'w'}),
+      ),
+      expect: () => const <ProgressState>[],
+      verify: (_) => expect(recorder.names, [
+        'BodyRatioView_DeleteEntry_Start',
+        'BodyRatioView_DeleteEntry_Success',
+      ]),
+    );
+
+    blocTest<ProgressBloc, ProgressState>(
+      'a failed delete is counted for the alert and reported',
+      setUp: () =>
+          when(() => bodyRepository.clearMeasurementFields(uid, 'e', {'w'}))
+              .thenThrow(Exception('offline')),
+      build: screen,
+      act: (bloc) => bloc.add(
+        const ProgressMeasurementCleared(entryId: 'e', fields: {'w'}),
+      ),
+      verify: (bloc) {
+        expect(bloc.state.deleteFailures, 1);
+        expect(recorder.parameters('BodyRatioView_DeleteEntry_Fail'), {
+          'ratio': 'waistToHip',
+          'error_description': 'Exception: offline',
+        });
+      },
+    );
+
+    blocTest<ProgressBloc, ProgressState>(
+      'pressing a day shows it, and pressing it again shows the week',
+      build: screen,
+      act: (bloc) => bloc
+        ..add(const ProgressTargetDayPressed(2))
+        ..add(const ProgressTargetDayPressed(2)),
+      verify: (bloc) {
+        expect(bloc.state.targetDay, isNull);
+        expect(
+          [
+            for (final event in recorder.events)
+              if (event.eventName == 'NutritionTargetChart_Day_Pressed')
+                event.parameters,
+          ],
+          [
+            {'is_week': false},
+            {'is_week': true},
+          ],
+        );
+      },
     );
   });
 }

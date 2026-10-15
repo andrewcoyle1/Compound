@@ -3,6 +3,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
+import 'package:compound_models/compound_models.dart'
+    show BodyMeasurementEntryKeys;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:user_repository/user_repository.dart';
@@ -40,10 +42,12 @@ void main() {
 
   late BodyRepository bodyRepository;
   late UserRepository userRepository;
+  late AnalyticsRecorder analytics;
 
   setUp(() {
     bodyRepository = MockBodyRepository();
     userRepository = MockUserRepository();
+    analytics = AnalyticsRecorder();
     when(() => bodyRepository.watchMeasurements(uid))
         .thenAnswer((_) => Stream.value(measurements));
     when(() => userRepository.watchUser(uid))
@@ -53,6 +57,7 @@ void main() {
   WeightMetricBloc build(WeightMetric metric) => WeightMetricBloc(
     bodyRepository: bodyRepository,
     userRepository: userRepository,
+    analyticsRepository: analytics,
     uid: uid,
     metric: metric,
     now: now,
@@ -179,5 +184,79 @@ void main() {
         ),
       ],
     );
+  });
+
+  // AnalyticsScaleWeightPresenterTests and WeightTrendPresenterTests: the
+  // delete cases, and the screen's analytics.
+  group('deleting a weigh-in', () {
+    blocTest<WeightMetricBloc, WeightMetricState>(
+      'clears only the weight, with a delete',
+      setUp: () => when(
+        () => bodyRepository.clearMeasurementFields(uid, 'e2', {
+          BodyMeasurementEntryKeys.weightKg,
+        }),
+      ).thenAnswer((_) async {}),
+      build: () => build(WeightMetric.scaleWeight),
+      act: (bloc) => bloc.add(const WeightMetricEntryDeleted('e2')),
+      expect: () => const <WeightMetricState>[],
+      verify: (_) {
+        verify(
+          () => bodyRepository.clearMeasurementFields(uid, 'e2', {
+            BodyMeasurementEntryKeys.weightKg,
+          }),
+        ).called(1);
+        expect(analytics.names, [
+          'ScaleWeightView_DeleteEntry_Start',
+          'ScaleWeightView_DeleteEntry_Success',
+          'ScaleWeightView_Disappear',
+        ]);
+      },
+    );
+
+    blocTest<WeightMetricBloc, WeightMetricState>(
+      'a failed delete keeps the row and reports the failure',
+      setUp: () => when(
+        () => bodyRepository.clearMeasurementFields(uid, 'e2', {
+          BodyMeasurementEntryKeys.weightKg,
+        }),
+      ).thenThrow(Exception('offline')),
+      build: () => build(WeightMetric.weightTrend),
+      act: (bloc) => bloc.add(const WeightMetricEntryDeleted('e2')),
+      expect: () => [
+        WeightMetricState(
+          metric: WeightMetric.weightTrend,
+          today: today,
+          deleteFailures: 1,
+        ),
+      ],
+      verify: (_) {
+        expect(analytics.names, contains('WeightTrendView_DeleteEntry_Fail'));
+        expect(analytics.parameters('WeightTrendView_DeleteEntry_Fail'), {
+          'error_description': 'Exception: offline',
+        });
+      },
+    );
+
+    blocTest<WeightMetricBloc, WeightMetricState>(
+      'tracks the screen appearing and leaving',
+      build: () => build(WeightMetric.weightTrend),
+      act: (bloc) => bloc.add(const WeightMetricSubscriptionRequested()),
+      verify: (bloc) async {
+        await bloc.close();
+        expect(analytics.names, [
+          'WeightTrendView_Appear',
+          'WeightTrendView_Disappear',
+        ]);
+      },
+    );
+  });
+
+  test('lists each row with the weigh-in it deletes, newest first', () {
+    final state = WeightMetricState(
+      metric: WeightMetric.weightTrend,
+      today: today,
+      weighIns: [measurements[0], measurements[2], measurements[3]],
+    );
+    expect(state.entryIds, ['e3', 'e2', 'e1']);
   });
 }

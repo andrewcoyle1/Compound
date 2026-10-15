@@ -297,6 +297,7 @@ class _AppViewState extends State<AppView> {
                           ],
                         ),
                       ...trainingAnalyticsRoutes,
+                      ...progressRoutes,
                       for (final metric in ExpenditureMetric.values)
                         GoRoute(
                           path: metric.path,
@@ -340,6 +341,7 @@ class _AppViewState extends State<AppView> {
       // Profiles, someone's workout and its comments, and the username:
       // over the tabs, from Social and from the profile cover alike.
       ...socialRoutes,
+      ...progressRootRoutes,
       // Over the tabs, as the Swift app's sheet.
       GoRoute(
         path: LogWeightPage.path,

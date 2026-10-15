@@ -26,6 +26,40 @@ class const Citation({
     doi: '10.1080/0886022X.2023.2273421',
   );
 
+  /// R68.
+  static const niddk2025 = Citation(
+    reference:
+        'National Institute for Health and Care Excellence (2025). Overweight '
+        'and obesity management (NICE guideline NG246).',
+    url: 'https://www.nice.org.uk/guidance/NG246',
+  );
+
+  /// R113.
+  static const who2011 = Citation(
+    reference:
+        'World Health Organization (2011). Waist circumference and waist–hip '
+        'ratio: report of a WHO expert consultation, Geneva, 8–11 December '
+        '2008. ISBN 9789241501491.',
+    url: 'https://iris.who.int/handle/10665/44583',
+  );
+
+  /// R93.
+  static const ebben2011 = Citation(
+    reference:
+        'Ebben WP, Wurm B, et al. (2011). Kinetic analysis of several '
+        'variations of push-ups. ISBS Conference Proceedings Archive,.',
+    doi: '10.1519/JSC.0b013e31820c8587',
+  );
+
+  /// R94.
+  static const suprak2011 = Citation(
+    reference:
+        'Suprak DN, Dawes J, Stephenson MD (2011). The effect of position on '
+        'the percentage of body mass supported during traditional and '
+        'modified push-up variants. J Strength Cond Res 25(2):497–503.',
+    doi: '10.1519/JSC.0b013e3181bde2cf',
+  );
+
   /// R95.
   static const pelland2026 = Citation(
     reference:
@@ -754,6 +788,58 @@ class const MethodInfo({
     ],
   );
 
+  /// Waist-to-height (Swift `MethodInfo.waistToHeightRatio`), computed by
+  /// `compound_maths`' `bodyRatio` and banded by `bodyRatioBand`.
+  factory waistToHeightRatio(AppLocalizations l10n) => MethodInfo(
+    title: l10n.waistToHeightMethodTitle,
+    summary: l10n.waistToHeightMethodSummary,
+    formula:
+        'ratio = waist (cm) ÷ height (cm)\n'
+        '< 0.50       under half your height (0.40–0.49 healthy)\n'
+        '0.50–0.59    increased risk\n'
+        '≥ 0.60       high risk',
+    limitations: l10n.waistToHeightMethodLimitations,
+    citations: const [Citation.niddk2025],
+  );
+
+  /// Waist-to-hip (Swift `MethodInfo.waistToHipRatio`), computed by
+  /// `compound_maths`' `bodyRatio` and banded by `bodyRatioBand`.
+  factory waistToHipRatio(AppLocalizations l10n) => MethodInfo(
+    title: l10n.waistToHipMethodTitle,
+    summary: l10n.waistToHipMethodSummary,
+    formula:
+        'ratio = waist (cm) ÷ hip (cm)\n'
+        'substantially increased risk: ≥ 0.90 (men), ≥ 0.85 (women)',
+    limitations: l10n.waistToHipMethodLimitations,
+    citations: const [Citation.who2011, Citation.niddk2025],
+  );
+
+  /// Goal progress (Swift `MethodInfo.goalProgress`), computed by
+  /// `goalFraction` over the trend weight.
+  factory goalProgress(AppLocalizations l10n) => MethodInfo(
+    title: l10n.progressGoalProgress,
+    summary: l10n.goalProgressMethodSummary,
+    formula:
+        'progress = clamp(|start − trend weight| ÷ |start − target|, 0, 1)',
+    limitations: l10n.goalProgressMethodLimitations,
+    citations: const [Citation.schneditz2023],
+  );
+
+  /// Volume, or tonnage (Swift `MethodInfo.tonnage`), computed by
+  /// `WorkoutSetStats.volumeKg`.
+  factory tonnage(AppLocalizations l10n) => MethodInfo(
+    title: l10n.tonnageMethodTitle,
+    summary: l10n.tonnageMethodSummary,
+    formula:
+        'volume = Σ (external load × weights held + bodyweight × share − '
+        'assistance) × reps × sides\n'
+        "bodyweight share = exercise's bodyweight contribution (setting on, "
+        'your own workouts)',
+    limitations: l10n.tonnageMethodLimitations,
+    ownChoices: l10n.tonnageMethodOwnChoices,
+    citations: const [Citation.ebben2011, Citation.suprak2011],
+  );
+
   /// Every method ported so far, keyed by its Swift `MethodInfo.id`, in
   /// Swift's order (`MethodInfo.all`: energy, nutrition, training, volume,
   /// habits), for Settings › Methods & Sources. Add each new method here.
@@ -772,6 +858,10 @@ class const MethodInfo({
     'habits.weeklyGoal': MethodInfo.weeklySessionGoal(l10n),
     'habits.stepGoal': MethodInfo.dailyStepGoal(l10n),
     'habits.adherenceBand': MethodInfo.calorieAdherenceBand(l10n),
+    'habits.waistToHeight': MethodInfo.waistToHeightRatio(l10n),
+    'habits.waistToHip': MethodInfo.waistToHipRatio(l10n),
+    'goal-progress': MethodInfo.goalProgress(l10n),
+    'training.tonnage': MethodInfo.tonnage(l10n),
   };
 
   static const _adaptiveExpenditureFormula = '''

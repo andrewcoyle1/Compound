@@ -455,6 +455,7 @@ void main() {
       cubit.pressPrimary();
       final end = cubit.state.restEnd!;
       final setId = cubit.state.correction!.setId;
+      final card = cubit.state.currentExerciseId;
 
       final loggedAt = clock.now;
       clock.now = end;
@@ -462,6 +463,11 @@ void main() {
       expect(cubit.state.restEnd, isNull);
       expect(cubit.state.restStartedAt, isNotNull);
       expect(cubit.state.isInGraceAt(end), isTrue);
+      // The exercise is done, so the card moves on, and the set logged
+      // last is no longer on it: no correction bar.
+      expect(cubit.state.currentExerciseId, isNot(card));
+      expect(cubit.state.correction, isNull);
+      cubit.selectExercise(card!);
       expect(cubit.state.correction?.setId, setId);
 
       await tester.pump(const Duration(seconds: 1));

@@ -31,7 +31,13 @@ class CorrectionBar extends StatelessWidget {
         l10n,
         set,
         exercise.trackingMode,
-        exercise.weightUnit ?? ExerciseWeightUnit.kilograms,
+        // The card's unit for the exercise, as its rows show it.
+        state.card
+                .where((member) => member.exercise.id == exercise.id)
+                .firstOrNull
+                ?.weightUnit ??
+            exercise.weightUnit ??
+            ExerciseWeightUnit.kilograms,
         locale: locale,
       ),
     ].join(' · ');

@@ -143,6 +143,10 @@ Future<WorkoutSessionModel?> _seedWorkout(
   );
   // The sample history has none of these exercises, so the sets start
   // empty; fill them as a lifter would.
+  // Two working sets each, so the card stays on an exercise between them.
+  for (final exercise in session.exercises) {
+    controller.addSet(exercise.id);
+  }
   for (final exercise in controller.session.exercises) {
     final pounds = exercise.weightUnit == ExerciseWeightUnit.pounds;
     for (final set in exercise.sets) {

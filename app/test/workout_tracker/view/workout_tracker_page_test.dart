@@ -175,6 +175,55 @@ void main() {
       await cubit.close();
     });
 
+    testWidgets('the correction bar follows the card: another exercise '
+        'hides it, coming back shows it again', (tester) async {
+      await start(tester);
+      await pump(tester);
+      final setId = nextSetId();
+      await tester.tap(find.byKey(ValueKey('done-$setId')));
+      await tester.pumpAndSettle();
+      expect(find.text('Set 1 · 60 kg × 8'), findsOneWidget);
+      expect(find.byTooltip('Add a rep'), findsOneWidget);
+
+      await tester.tap(
+        find.bySemanticsLabel('Cable Neutral Grip Lat Pulldown'),
+      );
+      await tester.pumpAndSettle();
+      expect(cubit.state.correction, isNull);
+      expect(find.text('Undo'), findsNothing);
+      expect(find.byTooltip('Add a rep'), findsNothing);
+      // The rest runs on: its line and Skip Rest stay.
+      expect(find.textContaining('Skip Rest'), findsOneWidget);
+      expect(find.textContaining('Rest: '), findsOneWidget);
+
+      await tester.tap(find.bySemanticsLabel('Barbell Bench Press'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.correction?.setId, setId);
+      expect(find.text('Set 1 · 60 kg × 8'), findsOneWidget);
+      expect(find.text('Undo'), findsOneWidget);
+      await cubit.close();
+    });
+
+    testWidgets("the correction bar shows the card's unit", (tester) async {
+      await start(tester);
+      await pump(tester);
+      // Lat pulldown is on a pin-loaded cable: pounds in the sample gym.
+      await tester.tap(
+        find.bySemanticsLabel('Cable Neutral Grip Lat Pulldown'),
+      );
+      await tester.pumpAndSettle();
+      final member = cubit.state.card.single;
+      final setId = nextSetId();
+      await tester.tap(find.byKey(ValueKey('done-$setId')));
+      await tester.pumpAndSettle();
+      final symbol = member.weightUnit == ExerciseWeightUnit.pounds
+          ? 'lb'
+          : 'kg';
+      expect(find.textContaining('Set 1 · '), findsOneWidget);
+      expect(find.textContaining(' $symbol × 8'), findsWidgets);
+      await cubit.close();
+    });
+
     testWidgets('+15s adds rest, and Skip Rest ends it', (tester) async {
       await start(tester);
       await pump(tester);

@@ -853,12 +853,6 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       for (final member in block)
         ?session.exercises.where((e) => e.id == member.id).firstOrNull,
     ];
-    final latest = r.ActiveWorkout.latestCompletedSet(exercises);
-    final latestExercise = latest == null
-        ? null
-        : session.exercises
-              .where((e) => e.sets.any((s) => s.id == latest.id))
-              .firstOrNull;
     var nextKeypad = _keypadClosed ? null : state.keypad;
     _keypadClosed = false;
     if (keypad != null) nextKeypad = keypad();
@@ -895,9 +889,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       graceEnd: _graceEnd,
       pausedAt: paused.pausedAt,
       pausedSeconds: paused.pausedSeconds,
-      correction: latestExercise == null
-          ? null
-          : controller.correction(latestExercise.id),
+      // Only under the set logged last when it is a working set on the card
+      // (`ActiveWorkout.correctionTarget`): another card has no bar.
+      correction: [
+        for (final member in members) ?controller.correction(member.id),
+      ].firstOrNull,
       undoName: controller.undoName,
       settings: _workoutSettings,
       keypad: nextKeypad,

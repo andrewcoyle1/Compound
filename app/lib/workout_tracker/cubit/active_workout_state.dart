@@ -113,7 +113,8 @@ final class const ActiveWorkoutState({
   final DateTime? pausedAt,
   final double pausedSeconds = 0,
 
-  /// The set logged last, to correct while its rest runs.
+  /// The set logged last, to correct while its rest runs, when it is a
+  /// working set on the card (`ActiveWorkout.correctionTarget`).
   final SetCorrection? correction,
   final UndoName? undoName,
   final WorkoutSettings? settings,

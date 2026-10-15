@@ -89,6 +89,14 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
   }
 
   @override
+  Future<void> deleteWorkoutTemplate(String uid, String workoutId) async {
+    _workoutTemplates.removeWhere(
+      (stored) => stored.authorId == uid && stored.workoutId == workoutId,
+    );
+    _libraryChanges.add(null);
+  }
+
+  @override
   Stream<List<GymProfileModel>> watchGymProfiles(String uid) =>
       Stream.multi((listener) {
         List<GymProfileModel> read() => [

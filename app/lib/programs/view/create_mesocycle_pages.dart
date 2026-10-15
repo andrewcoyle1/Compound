@@ -13,9 +13,24 @@ import 'package:program_repository/program_repository.dart';
 
 /// The first step of building a mesocycle (Swift `NameMesocycleView`): its
 /// name, today's date to begin with. Opened as the flow's first screen, so
-/// it has the close button.
+/// it has the close button; from onboarding's Build My Own it is pushed
+/// [inPlace], with a back button, and each step pushes the next itself, as
+/// onboarding allows no other route.
 class NameMesocyclePage extends StatefulWidget {
-  const new({super.key});
+  const new({this.inPlace = false, super.key});
+
+  /// Onboarding's Build My Own: the steps push one another in place.
+  final bool inPlace;
+
+  /// Opens the flow from onboarding's program step (Swift
+  /// `CreateMesocycleDelegate(onComplete:)`); activating its mesocycle
+  /// moves onboarding on.
+  static Future<void> openInPlace(BuildContext context) => Navigator.of(context)
+      .push(
+        MaterialPageRoute<void>(
+          builder: (_) => const NameMesocyclePage(inPlace: true),
+        ),
+      );
 
   /// The path under the Training tab.
   static const path = 'create-mesocycle';
@@ -57,6 +72,15 @@ class _NameMesocyclePageState extends State<NameMesocyclePage> {
 
   void _continue() {
     if (_trimmed.isEmpty) return;
+    if (widget.inPlace) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) =>
+              MesocycleIconPage(mesocycleName: _trimmed, inPlace: true),
+        ),
+      );
+      return;
+    }
     unawaited(
       context.pushNamed(
         MesocycleIconPage.name,
@@ -70,11 +94,13 @@ class _NameMesocyclePageState extends State<NameMesocyclePage> {
     final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(AppSymbols.close),
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: () => context.pop(),
-        ),
+        leading: widget.inPlace
+            ? null
+            : IconButton(
+                icon: const Icon(AppSymbols.close),
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                onPressed: () => context.pop(),
+              ),
         title: Text(l10n.programCreateMesocycle),
       ),
       body: SafeArea(
@@ -122,8 +148,13 @@ class _NameMesocyclePageState extends State<NameMesocyclePage> {
 
 /// The second step (Swift `MesocycleIconView`): its colour and icon, then
 /// the days.
-class const MesocycleIconPage({required final String mesocycleName, super.key})
-    extends StatefulWidget {
+class const MesocycleIconPage({
+  required final String mesocycleName,
+
+  /// Onboarding's Build My Own: the design step is pushed in place.
+  final bool inPlace = false,
+  super.key,
+}) extends StatefulWidget {
   /// The path under the name step.
   static const path = 'icon';
 
@@ -176,6 +207,14 @@ class _MesocycleIconPageState extends State<MesocycleIconPage> {
       colour: _colour,
       now: DateTime.now(),
     );
+    if (widget.inPlace) {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => MesocycleDesignPage(draft: mesocycle),
+        ),
+      );
+      return;
+    }
     await context.pushNamed(MesocycleDesignPage.createName, extra: mesocycle);
   }
 

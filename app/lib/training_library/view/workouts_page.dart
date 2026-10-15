@@ -12,13 +12,14 @@ import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/training_library/view/workout_template_detail_page.dart';
+import 'package:compound/workout_editor/view/workout_wizard_pages.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 /// The workout library, pushed from the Training tab's Library (Swift
 /// `WorkoutsView`): the user's templates, their mesocycles' days and the
-/// bundled templates. Creating a workout waits for M5.
+/// bundled templates, and + for a new workout.
 class WorkoutsPage extends StatelessWidget {
   const new({super.key});
 
@@ -58,6 +59,17 @@ class WorkoutsView extends StatelessWidget {
     };
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(
+            key: const Key('Workouts.add'),
+            icon: const Icon(AppSymbols.add),
+            tooltip: l10n.editorNewWorkout,
+            onPressed: () {
+              context.read<LibrarySearchCubit>().addWorkoutPressed();
+              unawaited(NameWorkoutPage.create(context));
+            },
+          ),
+        ],
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -183,6 +183,21 @@ void main() {
       ]);
     });
 
+    test("a day's exercises are set and the names follow", () {
+      final mesocycle = _mesocycle([
+        _day('Rest', id: '1'),
+        _day('Rest', id: '2'),
+      ]);
+      final set = settingDayExercises(mesocycle, '2', [
+        _exercise,
+      ], labels: _labels);
+      expect(_names(set), ['Día de descanso', 'Entreno A']);
+      expect(set.workoutTemplates.last.exercises.single.id, _exercise.id);
+      expect(set.workoutTemplates.first.exercises, isEmpty);
+      final cleared = settingDayExercises(set, '2', const [], labels: _labels);
+      expect(_names(cleared), ['Día de descanso', 'Día de descanso']);
+    });
+
     test('renaming changes only that day', () {
       final renamed = renamingDay(
         _mesocycle([_day('Push'), _day('Pull')]),

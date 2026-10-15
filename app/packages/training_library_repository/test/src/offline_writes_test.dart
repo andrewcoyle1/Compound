@@ -49,11 +49,20 @@ void main() {
       await subject.saveExerciseSettings('u', settings);
       await subject.saveWorkoutSettings(const WorkoutSettings(authorId: 'u'));
       await subject.clearExerciseRestOverride('u', settings.id);
+      final template = WorkoutTemplateModel.fromFirestore(
+        modelFixture('workout_template', 'full'),
+      );
+      await subject.saveWorkoutTemplate(template);
+      await subject.deleteWorkoutTemplate('u', 'w');
+      final templatePath =
+          'users/${template.authorId}/workout_templates/${template.workoutId}';
       expect(firestore.writes, [
         'users/${gym.authorId}/gym_profiles/${gym.id}',
         'users/u/exercise_settings/${settings.id}',
         'batch',
         'users/u/exercise_settings/${settings.id}',
+        templatePath,
+        'users/u/workout_templates/w',
       ]);
       expect(refused, isEmpty);
 
@@ -66,6 +75,8 @@ void main() {
           'users/u/exercise_settings/${settings.id}',
           'users/u/workout_settings/workout_settings',
           'users/u/exercise_settings/${settings.id}',
+          templatePath,
+          'users/u/workout_templates/w',
         ])
           (path, 'permission-denied'),
       ]);

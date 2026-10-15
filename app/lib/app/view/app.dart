@@ -32,6 +32,7 @@ import 'package:compound/training_analytics/training_analytics_routes.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
+import 'package:compound/workout_editor/workout_editor_routes.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
@@ -230,6 +231,7 @@ class _AppViewState extends State<AppView> {
                     builder: (_, _) => const TrainingPage(),
                     routes: [
                       ...programRoutes,
+                      ...workoutEditorRoutes,
                       GoRoute(
                         path: WorkoutsPage.path,
                         name: WorkoutsPage.name,
@@ -628,6 +630,8 @@ String? appRedirect(AppState state, Uri location) {
   final step = state.onboardingStep;
   if (step != null) {
     final target = onboardingRoute(step)!.path;
+    // Build My Own's day editor picks exercises over the program step.
+    if (path == ExercisePickerPage.path) return null;
     return path == target ? null : target;
   }
   if (onLaunch) {

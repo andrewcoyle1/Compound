@@ -44,8 +44,8 @@ final class const ProgramSetupState({
 /// `PrebuiltMesocycleDetailPresenter.onStartPressed`): the shipped programs,
 /// the one matched to how often the user exercises first and chosen, and
 /// Start, which copies it as the user's own and makes it active
-/// ([TrainingSetupService.startPrebuiltMesocycle]). Building one's own
-/// waits for M5.
+/// ([TrainingSetupService.startPrebuiltMesocycle]). Build My Own opens the
+/// create flow, whose Activate moves onboarding on.
 class ProgramSetupCubit extends Cubit<ProgramSetupState> {
   new({
     required this._trainingSetupService,
@@ -89,6 +89,10 @@ class ProgramSetupCubit extends Cubit<ProgramSetupState> {
     });
     emit(state.copyWith(selectedId: program.id));
   }
+
+  /// Build My Own: the name, icon and design steps follow.
+  void buildOwnPressed() =>
+      _analyticsRepository.analytic('CreateProgramView_BuildOwn_Pressed');
 
   /// Starts the chosen program. The AppBloc then moves on to the diet.
   Future<void> start() async {

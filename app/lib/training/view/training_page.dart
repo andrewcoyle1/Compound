@@ -9,6 +9,7 @@ import 'package:compound/programs/programs.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/workout_editor/view/workout_wizard_pages.dart';
 import 'package:compound/workout_history/view/workout_history_page.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,8 +83,8 @@ class TrainingView extends StatelessWidget {
   }
 }
 
-/// The + menu (Swift `TrainingView`'s toolbar). New Workout and New
-/// Exercise come with the workout and exercise editors.
+/// The + menu (Swift `TrainingView`'s toolbar). New Exercise comes with
+/// the exercise editor.
 class _AddMenu extends StatelessWidget {
   const new();
 
@@ -119,6 +120,13 @@ class _AddMenu extends StatelessWidget {
           child: ListTile(
             leading: const Icon(AppSymbols.mesocycle),
             title: Text(l10n.programNewMesocycle),
+          ),
+        ),
+        PopupMenuItem(
+          value: () => unawaited(NameWorkoutPage.create(context)),
+          child: ListTile(
+            leading: const Icon(AppSymbols.workout),
+            title: Text(l10n.editorNewWorkout),
           ),
         ),
       ],

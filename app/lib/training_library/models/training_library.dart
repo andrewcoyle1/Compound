@@ -131,6 +131,13 @@ final class const TrainingLibrary({
     return null;
   }
 
+  /// How many pieces of [gym]'s equipment are switched on
+  /// (`GymProfileModel.activeEquipmentCount`).
+  static int activeEquipmentCount(GymProfileModel gym) => [
+    for (final (_, item) in _equipment(gym))
+      if (item.isActive) item,
+  ].length;
+
   /// A profile decoded from nothing holds the whole catalogue.
   static final _catalogue = GymProfileModel.fromFirestore(const {
     GymProfileModelKeys.id: 'catalogue',

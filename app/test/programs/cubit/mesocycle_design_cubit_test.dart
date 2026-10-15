@@ -127,6 +127,17 @@ void main() {
       expect(cubit.state.mesocycle.workoutTemplates.single.name, 'Leg Day');
       expect(cubit.state.selectedDay.name, 'Leg Day');
     });
+
+    test("the day editor's exercises land on the selected day", () {
+      final cubit = build(_mesocycle([_push, _rest]))
+        ..selectDay(_rest.workoutId)
+        ..setSelectedDayExercises(_push.exercises);
+      expect(cubit.state.selectedDay.exercises, hasLength(1));
+      expect(names(cubit), ['Upper', 'Workout B']);
+      expect(cubit.state.canSave, isTrue);
+      cubit.setSelectedDayExercises(const []);
+      expect(names(cubit), ['Upper', 'Rest Day']);
+    });
   });
 
   group('settings', () {

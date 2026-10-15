@@ -34,6 +34,8 @@ export 'package:compound_models/compound_models.dart'
         PlateLoadedMachine,
         PreviousWorkoutReferenceOption,
         ProgressionAdjustmentMode,
+        SetTarget,
+        SetTargetSetType,
         StackMachine,
         TrackableExerciseMetric,
         WeightStack,
@@ -46,3 +48,4 @@ export 'src/in_memory_training_library_repository.dart';
 export 'src/prebuilt_catalogue.dart';
 export 'src/sample_training_library.dart';
 export 'src/training_library_repository.dart';
+export 'src/workout_editor_rules.dart';

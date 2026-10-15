@@ -15,6 +15,11 @@ class LibrarySearchCubit extends Cubit<String> {
 
   void queryChanged(String query) => emit(query);
 
+  /// The workouts list's + (`WorkoutsView_AddWorkoutPressed`).
+  void addWorkoutPressed() => _analytics.trackEvent(
+    const AnalyticsEvent('WorkoutsView_AddWorkoutPressed'),
+  );
+
   /// A workout picked from the list (`WorkoutsView_Workout_Selected`);
   /// [isMesocycleDay] when it is a day of one of the user's mesocycles.
   void workoutSelected(

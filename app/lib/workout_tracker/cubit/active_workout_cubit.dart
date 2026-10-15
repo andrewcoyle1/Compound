@@ -889,11 +889,17 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       graceEnd: _graceEnd,
       pausedAt: paused.pausedAt,
       pausedSeconds: paused.pausedSeconds,
-      // Only under the set logged last when it is a working set on the card
-      // (`ActiveWorkout.correctionTarget`): another card has no bar.
-      correction: [
-        for (final member in members) ?controller.correction(member.id),
-      ].firstOrNull,
+      // The set logged last anywhere, on its own exercise
+      // (`restCorrection`): the screen shows it while the rest runs,
+      // whichever card is open.
+      correction: switch (r.ActiveWorkout.latestCompletedSet(exercises)) {
+        final latest? =>
+          session.exercises
+              .where((e) => e.sets.any((s) => s.id == latest.id))
+              .map((e) => controller.correction(e.id))
+              .firstOrNull,
+        null => null,
+      },
       undoName: controller.undoName,
       settings: _workoutSettings,
       keypad: nextKeypad,

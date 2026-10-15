@@ -25,19 +25,17 @@ class CorrectionBar extends StatelessWidget {
     final set = state.set(correction.setId);
     if (exercise == null || set == null) return const SizedBox.shrink();
     final locale = Localizations.localeOf(context).toLanguageTag();
+    // "Bench Press · Set 2 · 100 kg × 8": the exercise is named, as the
+    // bar shows on whichever card is open (`restCorrection`).
     final title = [
+      exercise.name,
       l10n.setLabel(TrackerText.badge(l10n, set, exercise), ''),
       ?TrackerText.figures(
         l10n,
         set,
         exercise.trackingMode,
-        // The card's unit for the exercise, as its rows show it.
-        state.card
-                .where((member) => member.exercise.id == exercise.id)
-                .firstOrNull
-                ?.weightUnit ??
-            exercise.weightUnit ??
-            ExerciseWeightUnit.kilograms,
+        // The set's own exercise's unit, whichever card is open.
+        exercise.weightUnit ?? ExerciseWeightUnit.kilograms,
         locale: locale,
       ),
     ].join(' · ');
@@ -70,7 +68,9 @@ class CorrectionBar extends StatelessWidget {
       ],
     );
     final summary = Semantics(
-      label: TrackerText.logged(l10n, set, exercise, locale: locale),
+      label:
+          '${exercise.name}, '
+          '${TrackerText.logged(l10n, set, exercise, locale: locale)}',
       excludeSemantics: true,
       child: Row(
         spacing: AppSpacing.xs,

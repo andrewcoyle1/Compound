@@ -140,7 +140,10 @@ void main() {
       expect(cubit.state.set(setId)!.completedAt, clock.now);
       expect(find.textContaining('Skip Rest'), findsOneWidget);
       expect(find.text('+15s'), findsOneWidget);
-      expect(find.text('Set 1 · 60 kg × 8'), findsOneWidget);
+      expect(
+        find.text('Barbell Bench Press · Set 1 · 60 kg × 8'),
+        findsOneWidget,
+      );
       await cubit.close();
     });
 
@@ -175,52 +178,66 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('the correction bar follows the card: another exercise '
-        'hides it, coming back shows it again', (tester) async {
+    testWidgets('the correction bar stays with the set logged last on '
+        'another card while the rest runs, then goes', (tester) async {
       await start(tester);
       await pump(tester);
       final setId = nextSetId();
       await tester.tap(find.byKey(ValueKey('done-$setId')));
       await tester.pumpAndSettle();
-      expect(find.text('Set 1 · 60 kg × 8'), findsOneWidget);
-      expect(find.byTooltip('Add a rep'), findsOneWidget);
 
       await tester.tap(
         find.bySemanticsLabel('Cable Neutral Grip Lat Pulldown'),
       );
       await tester.pumpAndSettle();
-      expect(cubit.state.correction, isNull);
-      expect(find.text('Undo'), findsNothing);
-      expect(find.byTooltip('Add a rep'), findsNothing);
-      // The rest runs on: its line and Skip Rest stay.
-      expect(find.textContaining('Skip Rest'), findsOneWidget);
-      expect(find.textContaining('Rest: '), findsOneWidget);
-
-      await tester.tap(find.bySemanticsLabel('Barbell Bench Press'));
+      expect(
+        cubit.state.card.single.exercise.name,
+        'Cable Neutral Grip Lat Pulldown',
+      );
+      expect(
+        find.text('Barbell Bench Press · Set 1 · 60 kg × 8'),
+        findsOneWidget,
+      );
+      await tester.tap(find.byTooltip('Add a rep'));
       await tester.pumpAndSettle();
-      expect(cubit.state.correction?.setId, setId);
-      expect(find.text('Set 1 · 60 kg × 8'), findsOneWidget);
-      expect(find.text('Undo'), findsOneWidget);
+      expect(cubit.state.set(setId)!.reps, 9);
+      expect(
+        find.text('Barbell Bench Press · Set 1 · 60 kg × 9'),
+        findsOneWidget,
+      );
+
+      // Past the button's lockout, Skip Rest ends the rest and the bar.
+      clock.now = clock.now.add(const Duration(seconds: 1));
+      await tester.tap(find.textContaining('Skip Rest'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Barbell Bench Press · Set 1'), findsNothing);
+      expect(find.byTooltip('Add a rep'), findsNothing);
       await cubit.close();
     });
 
-    testWidgets("the correction bar shows the card's unit", (tester) async {
+    testWidgets("the correction bar shows the set's own exercise's unit", (
+      tester,
+    ) async {
       await start(tester);
       await pump(tester);
-      // Lat pulldown is on a pin-loaded cable: pounds in the sample gym.
       await tester.tap(
         find.bySemanticsLabel('Cable Neutral Grip Lat Pulldown'),
       );
       await tester.pumpAndSettle();
-      final member = cubit.state.card.single;
-      final setId = nextSetId();
-      await tester.tap(find.byKey(ValueKey('done-$setId')));
-      await tester.pumpAndSettle();
-      final symbol = member.weightUnit == ExerciseWeightUnit.pounds
+      final pulldown = cubit.state.card.single;
+      final symbol = pulldown.weightUnit == ExerciseWeightUnit.pounds
           ? 'lb'
           : 'kg';
-      expect(find.textContaining('Set 1 · '), findsOneWidget);
-      expect(find.textContaining(' $symbol × 8'), findsWidgets);
+      await tester.tap(find.byKey(ValueKey('done-${nextSetId()}')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.bySemanticsLabel('Barbell Bench Press'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Cable Neutral Grip Lat Pulldown · Set 1 · '),
+        findsOneWidget,
+      );
+      expect(find.textContaining(' $symbol × 8'), findsOneWidget);
       await cubit.close();
     });
 

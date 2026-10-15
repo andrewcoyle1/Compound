@@ -7,7 +7,8 @@ const sampleUserId = 'mock_user_123';
 
 /// The staging flavor's signed-in user, after the Swift app's
 /// `UserModel.mockExisting`: Alice Cooper, onboarded a month before [now],
-/// with metric units and a goal of three sessions a week.
+/// with metric units, a goal of three sessions a week, a program under way
+/// and a usual gym.
 UserModel sampleUser({required DateTime now}) => UserModel(
   userId: sampleUserId,
   email: 'alice@example.com',
@@ -30,6 +31,10 @@ UserModel sampleUser({required DateTime now}) => UserModel(
   submittedLengthUnitPreference: LengthUnitPreference.centimeters,
   submittedWeightUnitPreference: WeightUnitPreference.kilograms,
   submittedDistanceUnitPreference: DistanceUnitPreference.kilometers,
+  // program_repository's `sampleMesocycleId` and training_library_repository's
+  // `sampleGymProfiles`, as Swift's mock names its mock mesocycle and gym.
+  submittedActiveMesocycleId: 'sample-mesocycle',
+  submittedFavouriteGymProfileId: 'sample-gym',
   didCompleteOnboarding: true,
   followingIds: const ['user1', 'user3', 'user4', 'user5'],
   acceptedHealthDisclaimerVersion: '2025.10.05',

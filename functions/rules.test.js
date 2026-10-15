@@ -245,6 +245,52 @@ t("flutter: saveMeal and saveDietPlan merge", async () => {
     await assertSucceeds(merge(planRef(plan.userId), { ...plan, tdeeEstimate: 2400.5 }));
 });
 
+t("flutter: saveMesocycle and saveMacrocycle merge; starting a program ends the running macrocycle", async () => {
+    const mesocycle = contractFixture("mesocycle");
+    const uid = mesocycle.author_id;
+    await seed(`users/${uid}`, { user_id: uid });
+    const mesocycleRef = (as, id = mesocycle.id) => doc(db(as), `users/${uid}/mesocycles/${id}`);
+    await assertFails(merge(mesocycleRef(BOB), mesocycle));
+    await assertSucceeds(merge(mesocycleRef(uid), mesocycle));
+    await assertSucceeds(merge(mesocycleRef(uid), { ...mesocycle, name: "Renamed" }));
+    await assertFails(merge(mesocycleRef(BOB), { ...mesocycle, name: "Renamed" }));
+    // The copy of a prebuilt program: a new id, the user as author.
+    await assertSucceeds(merge(mesocycleRef(uid, "COPY-ID"), { ...mesocycle, id: "COPY-ID" }));
+    await assertFails(merge(mesocycleRef(uid, "FORGED"), { ...mesocycle, id: "FORGED", author_id: BOB }));
+
+    const running = { ...contractFixture("macrocycle"), status: "active" };
+    const macrocycleRef = (as, id) => doc(db(as), `users/${uid}/macrocycles/${id}`);
+    await assertSucceeds(merge(macrocycleRef(uid, running.id), running));
+    // Ending it: the whole document merged back with status and date_modified changed.
+    const ended = { ...running, status: "ended", date_modified: now() };
+    await assertFails(merge(macrocycleRef(BOB, running.id), ended));
+    await assertSucceeds(merge(macrocycleRef(uid, running.id), ended));
+    // The new macrocycle of the copy alone, active from its first microcycle.
+    const started = {
+        id: "NEW-MACRO", author_id: uid, name: mesocycle.name, mesocycle_ids: ["COPY-ID"], status: "active",
+        mesocycle_index: 0, mesocycle_started_at: now(), skips: [], iteration: 1,
+        date_created: now(), date_modified: now(),
+    };
+    await assertFails(merge(macrocycleRef(BOB, started.id), started));
+    await assertSucceeds(merge(macrocycleRef(uid, started.id), started));
+    // Then the profile points at the copy.
+    await assertFails(updateDoc(doc(db(BOB), `users/${uid}`), { submitted_active_mesocycle_id: "COPY-ID" }));
+    await assertSucceeds(updateDoc(doc(db(uid), `users/${uid}`), { submitted_active_mesocycle_id: "COPY-ID" }));
+});
+
+t("flutter: saveGymProfile merges a gym, then setFavouriteGymProfile names it", async () => {
+    const gym = contractFixture("gym_profile");
+    const uid = gym.author_id;
+    await seed(`users/${uid}`, { user_id: uid });
+    const ref = (as) => doc(db(as), `users/${uid}/gym_profiles/${gym.id}`);
+    await assertFails(merge(ref(BOB), gym));
+    await assertSucceeds(merge(ref(uid), gym));
+    await assertSucceeds(merge(ref(uid), { ...gym, name: "Untitled Gym Profile", date_modified: now() }));
+    await assertFails(merge(ref(BOB), { ...gym, name: "Taken" }));
+    await assertFails(updateDoc(doc(db(BOB), `users/${uid}`), { submitted_favourite_gym_profile_id: gym.id }));
+    await assertSucceeds(updateDoc(doc(db(uid), `users/${uid}`), { submitted_favourite_gym_profile_id: gym.id }));
+});
+
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.
 for (const [sub, key] of [
     ["body_measurements", "author_id"], ["steps", "author_id"], ["goals", "user_id"],

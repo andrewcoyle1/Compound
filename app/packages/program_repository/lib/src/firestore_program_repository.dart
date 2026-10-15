@@ -54,14 +54,33 @@ class FirestoreProgramRepository implements ProgramRepository {
   Future<void> saveMacrocycle(Macrocycle macrocycle) => _save(
     _user(macrocycle.authorId, 'macrocycles').doc(macrocycle.id),
     macrocycle.toFirestore(),
+    deleting: [
+      if (macrocycle.startMicrocycleIndex == null)
+        MacrocycleKeys.startMicrocycleIndex,
+    ],
   );
+
+  @override
+  Future<void> deleteMesocycle(String uid, String id) =>
+      _delete(_user(uid, 'mesocycles').doc(id));
+
+  @override
+  Future<void> deleteMacrocycle(String uid, String id) =>
+      _delete(_user(uid, 'macrocycles').doc(id));
+
+  Future<void> _delete(DocumentReference<Map<String, dynamic>> document) =>
+      writeLocally(document.path, document.delete, _onWriteError);
 
   Future<void> _save(
     DocumentReference<Map<String, dynamic>> document,
-    Map<String, Object?> data,
-  ) => writeLocally(
+    Map<String, Object?> data, {
+    List<String> deleting = const [],
+  }) => writeLocally(
     document.path,
-    () => document.set(_toFirestore(data), SetOptions(merge: true)),
+    () => document.set({
+      ..._toFirestore(data),
+      for (final key in deleting) key: FieldValue.delete(),
+    }, SetOptions(merge: true)),
     _onWriteError,
   );
 

@@ -150,5 +150,33 @@ void main() {
         }),
       );
     });
+
+    test('a null join point deletes the stored one', () async {
+      final full = Macrocycle.fromFirestore(modelFixture('macrocycle', 'full'));
+      await subject.saveMacrocycle(full);
+
+      await subject.saveMacrocycle(
+        Macrocycle.fromFirestore({
+          ...full.toFirestore(),
+          MacrocycleKeys.startMicrocycleIndex: null,
+        }),
+      );
+
+      final written = await stored('users/$uid/macrocycles/${full.id}');
+      expect(written.containsKey('start_microcycle_index'), isFalse);
+    });
+
+    test('deletes a mesocycle and a macrocycle', () async {
+      const mesocyclePath = 'users/$uid/mesocycles/m';
+      const macrocyclePath = 'users/$uid/macrocycles/p';
+      await document(mesocyclePath).set({'id': 'm'});
+      await document(macrocyclePath).set({'id': 'p'});
+
+      await subject.deleteMesocycle(uid, 'm');
+      await subject.deleteMacrocycle(uid, 'p');
+
+      expect((await document(mesocyclePath).get()).exists, isFalse);
+      expect((await document(macrocyclePath).get()).exists, isFalse);
+    });
   });
 }

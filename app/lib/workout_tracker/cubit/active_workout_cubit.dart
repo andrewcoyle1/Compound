@@ -8,6 +8,7 @@ import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:notifications_repository/notifications_repository.dart';
+import 'package:program_repository/program_repository.dart' show ProgramService;
 import 'package:training_library_repository/training_library_repository.dart'
     show PrebuiltCatalogue, TrainingLibraryRepository;
 import 'package:training_rules/training_rules.dart' as r;
@@ -40,6 +41,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     this._newId = newUuid,
     this._backoff = RetryBackoff.workoutSave,
     this._wait = _delay,
+    this._programs,
   }) : _strings = copy ?? AppNotificationCopy(),
        super(const ActiveWorkoutState());
 
@@ -54,6 +56,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final IdGenerator _newId;
   final RetryBackoff _backoff;
   final Future<void> Function(Duration) _wait;
+
+  /// What finishing a workout does to the program; nothing without one.
+  final ProgramService? _programs;
 
   static Future<void> _delay(Duration duration) =>
       Future<void>.delayed(duration);
@@ -206,12 +211,52 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   /// Records a press that leads to a start, by its Swift event name.
   void pressed(String eventName) => _track(eventName);
 
-  /// Starts [template]'s workout, prefilled (`plannedSession`), or an empty
-  /// one, in place of any under way. [eventPrefix] names the screen's
-  /// `_Start`, `_Success` and `_Fail` events.
+  /// The session [template] starts (`plannedSession`): prefilled as the
+  /// tracker prefills it, on [microcycleIndex]'s targets (from 1) of
+  /// [mesocycleId], and cut to a deload's when [isDeload]
+  /// (`startWorkout(for:in:microcycleIndex:isDeloadCycle:)`); null when
+  /// signed out.
+  WorkoutSessionModel? _plan(
+    WorkoutTemplateModel template, {
+    String? mesocycleId,
+    int? microcycleIndex,
+    bool isDeload = false,
+  }) {
+    final uid = _uid;
+    if (uid == null) return null;
+    final now = _clock();
+    final session = plannedSession(
+      authorId: uid,
+      template: template,
+      library: _allExercises,
+      history: SessionHistory(_history),
+      settings: _workoutSettings,
+      gyms: _activeGyms,
+      workoutGym: _favouriteGym,
+      now: now,
+      newId: _newId,
+      mesocycleId: mesocycleId,
+      microcycleIndex: microcycleIndex,
+    );
+    return isDeload
+        ? deloadedSession(
+            session,
+            library: _allExercises,
+            gym: _gym(session.gymProfileId) ?? _favouriteGym,
+            now: now,
+          )
+        : session;
+  }
+
+  /// Starts [template]'s workout, prefilled ([_plan]), or an empty one, in
+  /// place of any under way. [eventPrefix] names the screen's `_Start`,
+  /// `_Success` and `_Fail` events.
   Future<void> start({
     required String eventPrefix,
     WorkoutTemplateModel? template,
+    String? mesocycleId,
+    int? microcycleIndex,
+    bool isDeload = false,
   }) async {
     final uid = _uid;
     if (uid == null) return;
@@ -220,17 +265,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       final now = _clock();
       final session = template == null
           ? emptySession(authorId: uid, now: now, newId: _newId)
-          : plannedSession(
-              authorId: uid,
-              template: template,
-              library: _allExercises,
-              history: SessionHistory(_history),
-              settings: _workoutSettings,
-              gyms: _activeGyms,
-              workoutGym: _favouriteGym,
-              now: now,
-              newId: _newId,
-            );
+          : _plan(
+              template,
+              mesocycleId: mesocycleId,
+              microcycleIndex: microcycleIndex,
+              isDeload: isDeload,
+            )!;
       _cancelTimers();
       if (_controller != null) _endNotifications();
       await _controller?.discard();
@@ -755,6 +795,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             );
           },
         );
+    await _programFinished(uid, session, saved: result.saved);
     if (result.saved) {
       _track('Workout_Finished', parameters: _finishedParameters(session));
       _track('WorkoutTrackerView_FinishWorkout_Success');
@@ -772,6 +813,25 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
     // Still on the device: offered again to resume.
     if (!isClosed && _uid == uid && _controller == null) await _resume(uid);
+  }
+
+  /// The rest days after the workout, and moving the program on
+  /// (`preCompleteConsecutiveRestDays`, `advanceMacrocycle`). Best-effort,
+  /// as in Swift: the next finish or skip tries again.
+  Future<void> _programFinished(
+    String uid,
+    WorkoutSessionModel session, {
+    required bool saved,
+  }) async {
+    try {
+      await _programs?.workoutFinished(uid, session, saved: saved);
+    } on Object catch (error) {
+      _track(
+        'finish_workout_plan_advance_error',
+        parameters: {'error': '$error'},
+        type: LogType.warning,
+      );
+    }
   }
 
   static Map<String, Object?> _finishedParameters(

@@ -89,6 +89,7 @@ Future<void> main() async {
         sessions: [
           ...sampleEarlierWorkoutSessions(uid: sampleUserId, now: now),
           ...sampleWorkoutSessions(uid: sampleUserId, now: now),
+          ..._programSessions(now),
           ?finished,
         ],
       ),
@@ -213,4 +214,65 @@ Future<WorkoutSessionModel?> _seedWorkout(
   controller.flush();
   await controller.saved;
   return null;
+}
+
+/// The followed Push/Pull/Legs, a microcycle and two days in: every day of
+/// the first microcycle, its rest day, then Push 1 and Pull 1 again, so
+/// today is Legs 1 of microcycle 2.
+List<WorkoutSessionModel> _programSessions(DateTime now) {
+  final mesocycle = sampleMesocycles(now: now).first;
+  final days = mesocycle.workoutTemplates;
+  DateTime at(int daysAgo) {
+    final day = now.subtract(Duration(days: daysAgo));
+    return DateTime(day.year, day.month, day.day, 18);
+  }
+
+  WorkoutSessionModel done(int position, int daysAgo, int microcycle) {
+    final start = at(daysAgo);
+    final end = start.add(const Duration(minutes: 55));
+    final session = sessionFromTemplate(
+      authorId: sampleUserId,
+      template: days[position],
+      now: start,
+      id: 'sample-program-$daysAgo',
+      mesocycleId: mesocycle.id,
+      microcycleIndex: microcycle,
+    );
+    return session.copyWith(
+      endedAt: end,
+      exercises: [
+        for (final exercise in session.exercises)
+          exercise.copyWith(
+            sets: [
+              for (final set in exercise.sets)
+                set.copyWith(
+                  weightKg: set.weightKg ?? (set.isWarmup ? 30 : 60),
+                  reps: set.reps ?? 8,
+                  completedAt: end,
+                ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  final rest = days.last;
+  return [
+    for (var position = 0; position < 6; position++)
+      done(position, 13 - position, 1),
+    WorkoutSessionModel(
+      id: 'sample-program-rest',
+      authorId: sampleUserId,
+      name: rest.name,
+      workoutTemplateId: rest.workoutId,
+      mesocycleId: mesocycle.id,
+      dateCreated: at(7),
+      dateModified: at(7),
+      endedAt: at(7),
+      isRestDay: true,
+      exercises: const [],
+    ),
+    done(0, 6, 2),
+    done(1, 4, 2),
+  ];
 }

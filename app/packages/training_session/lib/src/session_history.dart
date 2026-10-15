@@ -356,3 +356,38 @@ m.WorkoutSessionModel plannedSession({
     plansSets: rulesSettings(settings).plansSets,
   );
 }
+
+/// [session] as a deload week's (`WorkoutSessionModel.applyDeload`): about
+/// half its working sets, each weight 10 % lighter on what its equipment in
+/// [gym] makes (`deloadRounding`), and marked a deload.
+m.WorkoutSessionModel deloadedSession(
+  m.WorkoutSessionModel session, {
+  required List<m.ExerciseModel> library,
+  required m.GymProfileModel? gym,
+  required DateTime now,
+  Map<String, UnitPreference> unitPreferences = const {},
+}) {
+  final byId = {
+    for (final exercise in session.exercises) exercise.id: exercise,
+  };
+  final rules = r.MesocycleDeload.apply(rulesSession(session), (exercise) {
+    final stored = byId[exercise.id]!;
+    return weightRoundingRule(
+      exercise: library
+          .where((candidate) => candidate.id == stored.templateId)
+          .firstOrNull,
+      gym: gym,
+      preferredUnit:
+          stored.weightUnit ?? unitPreferences[stored.templateId]?.weightUnit,
+      resistanceEquipment: stored.activeVariation?.resistanceEquipment,
+    ).round;
+  });
+  return session.copyWith(
+    isDeload: true,
+    exercises: modelExercises(
+      rules.exercises,
+      exercises: session.exercises,
+      now: now,
+    ),
+  );
+}

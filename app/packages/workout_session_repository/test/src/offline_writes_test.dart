@@ -55,6 +55,16 @@ void main() {
       ]);
     });
 
+    test('deleteSession completes offline; a refusal is reported', () async {
+      await subject.deleteSession('u', 's');
+      expect(refused, isEmpty);
+
+      firestore.refuse('permission-denied');
+      await pumpEventQueue();
+
+      expect(refused, [('users/u/workout_sessions/s', 'permission-denied')]);
+    });
+
     test(
       'updateWeekStreakCount completes offline; not-found is reported',
       () async {

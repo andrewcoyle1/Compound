@@ -53,9 +53,26 @@ class InMemoryProgramRepository implements ProgramRepository {
     macrocycle,
     (stored) =>
         stored.authorId == macrocycle.authorId && stored.id == macrocycle.id,
-    Macrocycle.fromFirestore,
+    (data) => Macrocycle.fromFirestore({
+      ...data,
+      // A null join point deletes the stored one.
+      if (macrocycle.startMicrocycleIndex == null)
+        MacrocycleKeys.startMicrocycleIndex: null,
+    }),
     (model) => model.toFirestore(),
   );
+
+  @override
+  Future<void> deleteMesocycle(String uid, String id) async {
+    _mesocycles.removeWhere((m) => m.authorId == uid && m.id == id);
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> deleteMacrocycle(String uid, String id) async {
+    _macrocycles.removeWhere((m) => m.authorId == uid && m.id == id);
+    _changes.add(null);
+  }
 
   /// Writes [model] into [documents] as a Firestore merge does: over the
   /// document [isSame] finds, field by field, or as a new one.

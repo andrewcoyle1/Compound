@@ -17,3 +17,8 @@ final class const _TodayGoalChanged(final WeightGoal? goal) extends TodayEvent {
   @override
   List<Object?> get props => [goal];
 }
+
+/// The user opened last week's review from its card.
+final class TodayWeeklyReviewOpened extends TodayEvent {
+  const new();
+}

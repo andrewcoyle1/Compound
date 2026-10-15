@@ -7,12 +7,16 @@ import 'package:compound/progress/progress.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 import '../../helpers/helpers.dart';
 
 class _MockAnalyticsRepository extends Mock implements AnalyticsRepository;
+
+class _MockTrainingLibraryRepository extends Mock
+    implements TrainingLibraryRepository;
 
 class _FakeEvent extends Fake implements LoggableEvent;
 
@@ -98,6 +102,7 @@ void main() {
   late BodyRepository bodyRepository;
   late UserRepository userRepository;
   late AnalyticsRepository analyticsRepository;
+  late TrainingLibraryRepository trainingLibraryRepository;
 
   setUpAll(() => registerFallbackValue(_FakeEvent()));
 
@@ -107,6 +112,18 @@ void main() {
     bodyRepository = MockBodyRepository();
     userRepository = MockUserRepository();
     analyticsRepository = _MockAnalyticsRepository();
+    trainingLibraryRepository = _MockTrainingLibraryRepository();
+    when(() => trainingLibraryRepository.watchUserExercises(uid)).thenAnswer(
+      (_) => Stream.value([
+        fixtureLibraryExercise(
+          'press',
+          muscles: const {
+            Muscles.sideDelts: MuscleTargetType.primary,
+            Muscles.triceps: MuscleTargetType.secondary,
+          },
+        ),
+      ]),
+    );
     when(() => workoutSessionRepository.watchSessions(uid))
         .thenAnswer((_) => Stream.value(sessions));
     when(() => nutritionRepository.watchMeals(uid))
@@ -159,6 +176,7 @@ void main() {
     bodyRepository: bodyRepository,
     userRepository: userRepository,
     analyticsRepository: analyticsRepository,
+    trainingLibraryRepository: trainingLibraryRepository,
     uid: uid,
     firstWeekday: DateTime.monday,
     now: () => now,
@@ -242,6 +260,8 @@ void main() {
             .thenAnswer((_) => Stream.error(Exception('settings')));
         when(() => userRepository.watchUser(uid))
             .thenAnswer((_) => Stream.error(Exception('user')));
+        when(() => trainingLibraryRepository.watchUserExercises(uid))
+            .thenAnswer((_) => Stream.error(Exception('exercises')));
         when(
           () => bodyRepository.watchCurrentGoal(
             uid,
@@ -261,6 +281,40 @@ void main() {
         expect(state.unit, AppWeightUnit.kilograms);
         expect(state.steps, isEmpty);
         expect(state.isVisible(ProgressSection.habits), isTrue);
+        expect(state.userExercises, isEmpty);
+      },
+    );
+
+    blocTest<ProgressBloc, ProgressState>(
+      'ranks the muscles and lifts of the training cards',
+      setUp: () =>
+          when(() => workoutSessionRepository.watchSessions(uid)).thenAnswer(
+            (_) => Stream.value([
+              fixtureSession(
+                'press-day',
+                day: 13,
+                author: uid,
+                exercises: [
+                  fixtureExercise(
+                    'press',
+                    sets: [fixtureSet(), fixtureSet(weightKg: 60)],
+                  ),
+                ],
+              ),
+            ]),
+          ),
+      build: build,
+      act: (bloc) => bloc.add(const ProgressSubscriptionRequested()),
+      verify: (bloc) {
+        final state = bloc.state;
+        final week = state.muscleLastSevenDays;
+        expect(week[Muscles.sideDelts], [0, 0, 0, 0, 0, 2, 0]);
+        expect(week[Muscles.triceps]![5], 1);
+        final top = state.topExercises;
+        expect(top, hasLength(2));
+        expect(top.first.id, 'press');
+        // 100 kg × 5: Epley 100 × (1 + 5/30).
+        expect(top.first.bestKg, closeTo(116.667, 1e-3));
       },
     );
 

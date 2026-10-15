@@ -6,12 +6,14 @@ import 'package:compound/app/app.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/progress/view/progress_card.dart';
+import 'package:compound/training_analytics/training_analytics.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -78,6 +80,7 @@ void main() {
             bodyRepository: body,
             userRepository: users,
             analyticsRepository: const AnalyticsRepository(),
+            trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
             uid: uid,
             firstWeekday: DateTime.monday,
             now: () => now,
@@ -102,6 +105,8 @@ void main() {
         'Habits',
         'Nutrition',
         'Body Metrics',
+        'Muscle Groups',
+        'Exercises',
         'General',
       ]) {
         expect(find.text(header), findsOneWidget);
@@ -120,17 +125,19 @@ void main() {
       }
       // One in Insights, one in Habits.
       expect(find.text('Workouts'), findsNWidgets(2));
-      expect(find.text('Last 7 Workouts'), findsOneWidget);
+      // The workouts card and two exercise cards.
+      expect(find.text('Last 7 Workouts'), findsNWidgets(3));
       expect(find.text('Last 30 Days'), findsNWidgets(2));
       expect(find.text('Toward Target'), findsOneWidget);
       expect(find.text('Today'), findsOneWidget);
-      // Not yet: they need M4 and M5.
+      // Not yet: it needs the expenditure engine.
       expect(find.text('Expenditure'), findsNothing);
-      expect(find.text('Muscle Groups'), findsNothing);
-      expect(find.byType(ProgressCard), findsNWidgets(10));
-      expect(find.byType(Sparkline), findsNWidgets(4));
+      expect(find.byType(MuscleSetsCard), findsNWidgets(2));
+      expect(find.byType(ExerciseOneRepMaxCard), findsNWidgets(2));
+      expect(find.byType(ProgressCard), findsNWidgets(14));
+      expect(find.byType(Sparkline), findsNWidgets(6));
       expect(find.byType(HabitGridChart), findsNWidgets(2));
-      expect(find.byType(StackedBars), findsNWidgets(2));
+      expect(find.byType(StackedBars), findsNWidgets(4));
       expect(find.byType(ProgressBarChart), findsNWidgets(2));
     });
 
@@ -141,8 +148,9 @@ void main() {
       expect(find.text('No Entries'), findsNWidgets(3));
       expect(find.text('No Goal Set'), findsOneWidget);
       expect(find.text('No Data'), findsNWidgets(3));
-      // Workouts, trend, goal, macros, protein, weight, body fat, steps.
-      expect(find.text(AppFormat.placeholder), findsNWidgets(8));
+      // Workouts, trend, goal, macros, protein, weight, body fat, steps and
+      // the two exercises; the muscles show 0 sets.
+      expect(find.text(AppFormat.placeholder), findsNWidgets(10));
     });
 
     testWidgets('leaves out hidden sections', (tester) async {
@@ -166,11 +174,31 @@ void main() {
       verifyNever(() => router.goNamed(any()));
     });
 
+    testWidgets('opens the training screens', (tester) async {
+      await pumpView(tester);
+      when(
+        () =>
+            router.goNamed(any(), pathParameters: any(named: 'pathParameters')),
+      ).thenReturn(null);
+
+      await tester.tap(find.text('Last 7 Workouts').first);
+      verify(() => router.goNamed(WorkoutMetricPage.name)).called(1);
+      await tester.tap(find.text('Last 30 Days').last);
+      verify(() => router.goNamed(WorkoutConsistencyPage.name)).called(1);
+      final seeAll = find.text('See All');
+      expect(seeAll, findsNWidgets(2));
+      await tester.ensureVisible(seeAll.first);
+      await tester.tap(seeAll.first);
+      await tester.tap(seeAll.last);
+      await tester.pump();
+    });
+
     testWidgets('summarises its charts for a screen reader', (tester) async {
       final handle = tester.ensureSemantics();
       await pumpView(tester);
 
-      expect(find.bySemanticsLabel(RegExp('Working sets')), findsOneWidget);
+      // The workouts card and two muscles.
+      expect(find.bySemanticsLabel(RegExp('Working sets')), findsNWidgets(3));
       expect(
         find.bySemanticsLabel(RegExp('Macros, last 7 days')),
         findsOneWidget,
@@ -191,7 +219,7 @@ void main() {
     testWidgets('goes to one column at large text sizes', (tester) async {
       await pumpView(tester, textScale: 2);
 
-      final workouts = tester.getTopLeft(find.text('Last 7 Workouts'));
+      final workouts = tester.getTopLeft(find.text('Last 7 Workouts').first);
       final trend = tester.getTopLeft(find.text('Weight Trend'));
       expect(trend.dx, workouts.dx);
       expect(trend.dy, greaterThan(workouts.dy));

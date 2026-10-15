@@ -79,6 +79,12 @@ abstract final class AppSymbols {
   /// A muscle group.
   static const IconData muscleGroup = Icons.accessibility_new_rounded;
 
+  /// Muscle Balance: every muscle's weekly sets as a grid.
+  static const IconData muscleBalance = Icons.grid_view_rounded;
+
+  /// A weekly review.
+  static const IconData weeklyReview = Icons.summarize_rounded;
+
   /// The user's own note on an exercise.
   static const IconData note = Icons.sticky_note_2_rounded;
 
@@ -277,6 +283,21 @@ abstract final class AppSymbols {
 
   /// Success.
   static const IconData success = Icons.check_circle_rounded;
+
+  /// The previous page, such as last week.
+  static const IconData previous = Icons.chevron_left_rounded;
+
+  /// The next page, such as next week.
+  static const IconData next = Icons.chevron_right_rounded;
+
+  /// Up: more than wanted, or a step up.
+  static const IconData increase = Icons.arrow_circle_up_rounded;
+
+  /// Down: less than wanted, or a step down.
+  static const IconData reduce = Icons.arrow_circle_down_rounded;
+
+  /// Holding steady.
+  static const IconData steady = Icons.remove_circle_rounded;
 
   /// The plain tick: a menu's chosen item.
   static const IconData selected = Icons.check_rounded;

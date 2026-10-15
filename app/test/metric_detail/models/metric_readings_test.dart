@@ -1,8 +1,8 @@
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Mirrors Swift `MetricChartReadingsTests` (line charts; bar totals are not
-/// ported), then the range windows QuickCharts' picker gives.
+/// Mirrors Swift `MetricChartReadingsTests` (line charts, and a single bar
+/// series' totals), then the range windows QuickCharts' picker gives.
 void main() {
   final today = DateTime(2026, 10, 15);
 
@@ -17,6 +17,25 @@ void main() {
     test('groups readings into days, oldest first', () {
       final readings = MetricReadings([at(2, 73), at(1, 72.6), at(0, 72.4)]);
       expect(readings.days.map((d) => d.value), [73.0, 72.6, 72.4]);
+    });
+
+    test("adds up a total chart's day", () {
+      final readings = MetricReadings([
+        at(1, 4),
+        at(0, 3, hour: 7),
+        at(0, 2),
+      ], total: true);
+      expect(readings.days.map((d) => d.value), [4.0, 5.0]);
+      expect(readings.average, 4.5);
+    });
+
+    test('a total range adds up its buckets', () {
+      final shown = MetricRange.sixMonths.visible(
+        [at(0, 3), at(0, 4)],
+        today,
+        total: true,
+      );
+      expect(shown.single.value, 7);
     });
 
     test('averages several readings in a day', () {

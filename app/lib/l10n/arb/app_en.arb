@@ -3139,5 +3139,149 @@
     "profileEditProfile": "Edit Profile",
     "@profileEditProfile": {
         "description": "Profile row: opens Edit Profile"
+    },
+    "unitsHeightFooter": "Also used for body measurements.",
+    "@unitsHeightFooter": {
+        "description": "Units: footer under the height units"
+    },
+    "unitsSaveFailed": "Unable to Save Settings",
+    "@unitsSaveFailed": {
+        "description": "Snack bar when a settings change could not be saved"
+    },
+    "customiseAnalyticsTitle": "Customize Analytics",
+    "@customiseAnalyticsTitle": {
+        "description": "Title of the screen that hides Progress sections"
+    },
+    "customiseAnalyticsSectionsHeader": "Sections",
+    "@customiseAnalyticsSectionsHeader": {
+        "description": "Customize Analytics: section header"
+    },
+    "customiseAnalyticsFooter": "Turn a section off to hide it from the Progress tab.",
+    "@customiseAnalyticsFooter": {
+        "description": "Customize Analytics: footer under the section switches"
+    },
+    "customiseAnalyticsShowAll": "Show All Sections",
+    "@customiseAnalyticsShowAll": {
+        "description": "Customize Analytics: button that shows every hidden section"
+    },
+    "customiseAnalyticsMuscleGroups": "Muscle Groups",
+    "@customiseAnalyticsMuscleGroups": {
+        "description": "Progress section: weekly sets per muscle"
+    },
+    "customiseAnalyticsExercises": "Exercises",
+    "@customiseAnalyticsExercises": {
+        "description": "Progress section: estimated one-rep maxes"
+    },
+    "notificationSettingsSocialHeader": "Social",
+    "@notificationSettingsSocialHeader": {
+        "description": "Notification Settings: section header"
+    },
+    "notificationSettingsLikes": "Likes",
+    "@notificationSettingsLikes": {
+        "description": "Notification switch: likes"
+    },
+    "notificationSettingsComments": "Comments",
+    "@notificationSettingsComments": {
+        "description": "Notification switch: comments"
+    },
+    "notificationSettingsMentions": "Mentions",
+    "@notificationSettingsMentions": {
+        "description": "Notification switch: mentions"
+    },
+    "notificationSettingsFollows": "New followers",
+    "@notificationSettingsFollows": {
+        "description": "Notification switch: new followers"
+    },
+    "notificationSettingsNudges": "Nudges",
+    "@notificationSettingsNudges": {
+        "description": "Notification switch: nudges"
+    },
+    "notificationSettingsShares": "Shares",
+    "@notificationSettingsShares": {
+        "description": "Notification switch: shares"
+    },
+    "notificationSettingsChallenges": "Challenges",
+    "@notificationSettingsChallenges": {
+        "description": "Notification switch: challenges"
+    },
+    "notificationSettingsSocialFooter": "Get a push when someone in your circle interacts with you, even when Compound is closed.",
+    "@notificationSettingsSocialFooter": {
+        "description": "Notification Settings: footer under the social switches"
+    },
+    "notificationSettingsRemindersHeader": "Reminders",
+    "@notificationSettingsRemindersHeader": {
+        "description": "Notification Settings: section header"
+    },
+    "notificationSettingsStreakReminder": "Streak reminder",
+    "@notificationSettingsStreakReminder": {
+        "description": "Notification switch: the streak reminder"
+    },
+    "notificationSettingsRemindAt": "Remind me at",
+    "@notificationSettingsRemindAt": {
+        "description": "Notification Settings: row choosing the streak reminder hour"
+    },
+    "notificationSettingsWeeklyDigest": "Weekly digest",
+    "@notificationSettingsWeeklyDigest": {
+        "description": "Notification switch: the Sunday digest"
+    },
+    "notificationSettingsWorkoutReminders": "Workout reminders",
+    "@notificationSettingsWorkoutReminders": {
+        "description": "Notification switch: come-back reminders"
+    },
+    "notificationSettingsMealReminders": "Meal reminders",
+    "@notificationSettingsMealReminders": {
+        "description": "Notification switch: meal reminders"
+    },
+    "notificationSettingsRemindersFooter": "The streak reminder comes only when this week's goal needs a session that day. The weekly digest arrives on Sunday evening. Workout reminders come one, three and five days after you last open Compound. Meal reminders come at breakfast, lunch and dinner.",
+    "@notificationSettingsRemindersFooter": {
+        "description": "Notification Settings: footer under the reminders"
+    },
+    "notificationSettingsSaveFailed": "Unable to Save Setting",
+    "@notificationSettingsSaveFailed": {
+        "description": "Snack bar when a notification setting could not be saved"
+    },
+    "methodsAndSourcesFooter": "Each figure Compound calculates for you has an ⓘ beside it that opens the same explanation.",
+    "@methodsAndSourcesFooter": {
+        "description": "Methods & Sources: footer under the list"
+    },
+    "legalAgreementsHeader": "Agreements",
+    "@legalAgreementsHeader": {
+        "description": "Legal: section header"
+    },
+    "legalTermsOfService": "Terms of Service",
+    "@legalTermsOfService": {
+        "description": "Legal document"
+    },
+    "legalPrivacyPolicy": "Privacy Policy",
+    "@legalPrivacyPolicy": {
+        "description": "Legal document"
+    },
+    "legalHealthDisclaimer": "Health Disclaimer",
+    "@legalHealthDisclaimer": {
+        "description": "Legal document"
+    },
+    "legalConsumerHealthPrivacy": "Consumer Health Privacy",
+    "@legalConsumerHealthPrivacy": {
+        "description": "Legal document"
+    },
+    "legalNotPublished": "The documents are not published yet.",
+    "@legalNotPublished": {
+        "description": "Legal: footer while the documents have no address"
+    },
+    "aboutTitle": "About Compound",
+    "@aboutTitle": {
+        "description": "Title of the About screen"
+    },
+    "aboutBody": "Compound is your training and nutrition platform. Every session builds on the last.",
+    "@aboutBody": {
+        "description": "About: what the app is"
+    },
+    "aboutViewLicences": "View Licenses",
+    "@aboutViewLicences": {
+        "description": "About: button that opens the open-source licenses"
+    },
+    "licencesIntro": "Compound is built on the open-source packages below. Thank you to everyone who maintains them.",
+    "@licencesIntro": {
+        "description": "Licenses: text above the list"
     }
 }

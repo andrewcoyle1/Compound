@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:notifications_repository/notifications_repository.dart';
+import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
@@ -16,6 +17,13 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 class _MockAnalytics extends Mock implements AnalyticsRepository;
 
 class _FakeEvent extends Fake implements LoggableEvent;
+
+/// Programs whose mesocycles cannot be read.
+class _UnreadablePrograms extends InMemoryProgramRepository {
+  @override
+  Stream<List<Mesocycle>> watchMesocycles(String uid) =>
+      Stream.error(StateError('unreadable'));
+}
 
 /// A clock the test moves by hand.
 class _Clock {
@@ -389,6 +397,95 @@ void main() {
 
       cubit.summaryShown();
       expect(cubit.state.finishedSession, isNull);
+    });
+
+    test("a program's day starts on its week, cut in a deload, and "
+        'finishing it pre-logs the rest after it', () async {
+      final programs = InMemoryProgramRepository(
+        mesocycles: sampleMesocycles(now: clock.now),
+        macrocycles: sampleMacrocycles(now: clock.now),
+      );
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        wait: (_) async {},
+        programs: ProgramService(
+          programs: programs,
+          users: users,
+          sessions: sessions,
+          now: clock.call,
+        ),
+      );
+      final mesocycle = sampleMesocycles(now: clock.now).first;
+      final legs = mesocycle.workoutTemplates[5];
+      await cubit.userChanged(uid);
+      await settle();
+
+      await cubit.start(
+        template: legs,
+        eventPrefix: 'x',
+        mesocycleId: mesocycle.id,
+        microcycleIndex: 8,
+        isDeload: true,
+      );
+      expect(cubit.state.session!.isDeload, isTrue);
+      expect(cubit.state.session!.mesocycleId, mesocycle.id);
+
+      await cubit.start(
+        template: legs,
+        eventPrefix: 'x',
+        mesocycleId: mesocycle.id,
+        microcycleIndex: 1,
+      );
+      logNext();
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      final rests = [
+        for (final s in await sessions.watchSessions(uid).first)
+          if (s.isRestDay) s,
+      ];
+      expect(
+        rests.single.workoutTemplateId,
+        mesocycle.workoutTemplates[6].workoutId,
+      );
+      expect(rests.single.dateCreated, DateTime(2026, 10, 16));
+    });
+
+    test('a program that cannot be read never fails the finish', () async {
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        wait: (_) async {},
+        programs: ProgramService(
+          programs: _UnreadablePrograms(),
+          users: users,
+          sessions: sessions,
+        ),
+      );
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      expect(
+        events(),
+        containsAllInOrder([
+          'finish_workout_plan_advance_error',
+          'WorkoutTrackerView_FinishWorkout_Success',
+        ]),
+      );
     });
 
     test('a failed save keeps the workout on the device to resume', () async {

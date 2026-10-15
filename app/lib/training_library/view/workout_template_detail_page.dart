@@ -16,12 +16,67 @@ import 'package:compound/workout_tracker/view/start_workout.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:training_session/training_session.dart' show weekOf;
 
 /// One workout template (Swift `WorkoutTemplateDetailView`): the muscles it
-/// plans sets for and each exercise's plan, and Start Workout. Editing,
-/// sharing and deleting wait for M5.
+/// plans sets for and each exercise's plan, and Start Workout. Opened from
+/// a program's day it shows, and starts on, that microcycle's targets, cut
+/// to a deload's in a deload week; a later microcycle's day is a preview
+/// with no Start. Editing, saving a copy, sharing and deleting come with
+/// Programs part 2 and sharing.
 class WorkoutTemplateDetailPage extends StatelessWidget {
-  const new({required this.workoutId, super.key});
+  const new({
+    required this.workoutId,
+    this.mesocycleId,
+    this.microcycleIndex,
+    this.isDeload = false,
+    this.allowsStart = true,
+    super.key,
+  });
+
+  /// Builds the page from [state]'s path and query.
+  factory fromRoute(GoRouterState state) {
+    final query = state.uri.queryParameters;
+    return WorkoutTemplateDetailPage(
+      workoutId: state.pathParameters[idParameter]!,
+      mesocycleId: query[mesocycleParameter],
+      microcycleIndex: int.tryParse(query[microcycleParameter] ?? ''),
+      isDeload: query[deloadParameter] == '1',
+      allowsStart: query[previewParameter] != '1',
+    );
+  }
+
+  /// The query parameter naming the mesocycle the day belongs to.
+  static const mesocycleParameter = 'mesocycle';
+
+  /// The query parameter holding the microcycle, from 1.
+  static const microcycleParameter = 'microcycle';
+
+  /// The query parameter set to `1` in a deload week.
+  static const deloadParameter = 'deload';
+
+  /// The query parameter set to `1` for a preview without Start.
+  static const previewParameter = 'preview';
+
+  /// Opens [workoutId], as a day of [mesocycleId]'s [microcycleIndex]
+  /// (from 1) when given.
+  static Future<void> open(
+    BuildContext context,
+    String workoutId, {
+    String? mesocycleId,
+    int? microcycleIndex,
+    bool isDeload = false,
+    bool allowsStart = true,
+  }) => context.pushNamed(
+    name,
+    pathParameters: {idParameter: workoutId},
+    queryParameters: {
+      mesocycleParameter: ?mesocycleId,
+      if (microcycleIndex != null) microcycleParameter: '$microcycleIndex',
+      if (isDeload) deloadParameter: '1',
+      if (!allowsStart) previewParameter: '1',
+    },
+  );
 
   /// The path under the workout library.
   static const path = ':$idParameter';
@@ -33,6 +88,10 @@ class WorkoutTemplateDetailPage extends StatelessWidget {
   static const idParameter = 'workoutId';
 
   final String workoutId;
+  final String? mesocycleId;
+  final int? microcycleIndex;
+  final bool isDeload;
+  final bool allowsStart;
 
   @override
   Widget build(BuildContext context) {
@@ -40,15 +99,32 @@ class WorkoutTemplateDetailPage extends StatelessWidget {
     if (state is! AppAuthenticated) return const SizedBox.shrink();
     return TrainingLibraryProvider(
       uid: state.user.uid,
-      child: WorkoutTemplateDetailView(workoutId: workoutId),
+      child: WorkoutTemplateDetailView(
+        workoutId: workoutId,
+        mesocycleId: mesocycleId,
+        microcycleIndex: microcycleIndex,
+        isDeload: isDeload,
+        allowsStart: allowsStart,
+      ),
     );
   }
 }
 
 class WorkoutTemplateDetailView extends StatelessWidget {
-  const new({required this.workoutId, super.key});
+  const new({
+    required this.workoutId,
+    this.mesocycleId,
+    this.microcycleIndex,
+    this.isDeload = false,
+    this.allowsStart = true,
+    super.key,
+  });
 
   final String workoutId;
+  final String? mesocycleId;
+  final int? microcycleIndex;
+  final bool isDeload;
+  final bool allowsStart;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +169,7 @@ class WorkoutTemplateDetailView extends StatelessWidget {
             ),
           ),
           TrainingLibraryLoaded(:final library) when template != null => _Plan(
-            template: template,
+            template: weekOf(template, microcycleIndex),
             library: library,
           ),
           TrainingLibraryLoaded() => Center(
@@ -106,7 +182,7 @@ class WorkoutTemplateDetailView extends StatelessWidget {
       ),
       bottomNavigationBar: AppBottomCta(
         children: [
-          if (template != null && template.exercises.isNotEmpty)
+          if (allowsStart && template != null && template.exercises.isNotEmpty)
             AppCtaButton(
               label: l10n.startWorkout,
               onPressed: () => unawaited(
@@ -114,6 +190,9 @@ class WorkoutTemplateDetailView extends StatelessWidget {
                   context,
                   template: template,
                   eventPrefix: 'WorkoutTemplateDetailView_StartWorkout',
+                  mesocycleId: mesocycleId,
+                  microcycleIndex: microcycleIndex,
+                  isDeload: isDeload,
                 ),
               ),
             ),
@@ -342,7 +421,10 @@ class _ExerciseRow extends StatelessWidget {
                         color: scheme.onSurface,
                       ),
                     ),
-                    Text(_targets(context), style: secondary),
+                    Text(
+                      templateTargetsText(context, exercise.setTargets),
+                      style: secondary,
+                    ),
                     if (supersetLetter != null)
                       AppChip(
                         label: l10n.supersetLabel(supersetLetter),
@@ -372,26 +454,6 @@ class _ExerciseRow extends StatelessWidget {
       ),
     );
   }
-
-  /// "3 sets · 8–12 · RIR 1", leaving out what the plan doesn't set.
-  String _targets(BuildContext context) {
-    final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final targets = TemplateSummary.targets(exercise.setTargets);
-    String range(int low, int high) => low == high
-        ? AppFormat.number(low, locale: locale)
-        : AppFormat.repRange(low, high, locale: locale);
-    return [
-      l10n.setCount(targets.sets),
-      switch ((targets.repsLow, targets.repsHigh)) {
-        (final low?, final high?) => range(low, high),
-        (final low?, null) => '${AppFormat.number(low, locale: locale)}+',
-        _ => null,
-      },
-      if ((targets.rirLow, targets.rirHigh) case (final low?, final high?))
-        l10n.rirRange(range(low, high)),
-    ].nonNulls.join(' · ');
-  }
 }
 
 class _Labelled extends StatelessWidget {
@@ -420,4 +482,25 @@ class _Labelled extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "3 sets · 8–12 · RIR 1" for [setTargets], leaving out what the plan
+/// doesn't set.
+String templateTargetsText(BuildContext context, List<SetTarget> setTargets) {
+  final l10n = context.l10n;
+  final locale = Localizations.localeOf(context).toLanguageTag();
+  final targets = TemplateSummary.targets(setTargets);
+  String range(int low, int high) => low == high
+      ? AppFormat.number(low, locale: locale)
+      : AppFormat.repRange(low, high, locale: locale);
+  return [
+    l10n.setCount(targets.sets),
+    switch ((targets.repsLow, targets.repsHigh)) {
+      (final low?, final high?) => range(low, high),
+      (final low?, null) => '${AppFormat.number(low, locale: locale)}+',
+      _ => null,
+    },
+    if ((targets.rirLow, targets.rirHigh) case (final low?, final high?))
+      l10n.rirRange(range(low, high)),
+  ].nonNulls.join(' · ');
 }

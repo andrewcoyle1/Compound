@@ -6160,5 +6160,370 @@
     "trackerKeepGoing": "Keep Going",
     "@trackerKeepGoing": {
         "description": "Still training? alert: carry on with the workout"
-    }
+    },
+    "programActiveMesocycle": "Active Mesocycle",
+    "@programActiveMesocycle": {},
+    "programNoActiveMesocycle": "No Active Mesocycle",
+    "@programNoActiveMesocycle": {},
+    "programAddMesocycleMessage": "Add a mesocycle to start compounding.",
+    "@programAddMesocycleMessage": {},
+    "programChooseMesocycle": "Choose Mesocycle",
+    "@programChooseMesocycle": {},
+    "programMacrocyclesTitle": "Macrocycles",
+    "@programMacrocyclesTitle": {},
+    "programMesocyclesTitle": "Mesocycles",
+    "@programMesocyclesTitle": {},
+    "programCurrentMicrocycle": "Current Microcycle",
+    "@programCurrentMicrocycle": {},
+    "programMicroHeader": "Micro {number}/{count}",
+    "@programMicroHeader": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "programMesoHeader": "Meso {number}/{count} · {micro}",
+    "@programMesoHeader": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "count": {
+                "type": "int"
+            },
+            "micro": {
+                "type": "String"
+            }
+        }
+    },
+    "programMicrocycleNumber": "Microcycle {number}",
+    "@programMicrocycleNumber": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "programMicrocycleCurrent": "Microcycle {number} (Current)",
+    "@programMicrocycleCurrent": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "programChooseMicrocycle": "Choose microcycle",
+    "@programChooseMicrocycle": {},
+    "programMesocycleOptions": "Workout options",
+    "@programMesocycleOptions": {
+        "description": "The active mesocycle's menu button; Swift's nearest label"
+    },
+    "programDeleteMesocycle": "Delete Mesocycle",
+    "@programDeleteMesocycle": {},
+    "programDelete": "Delete",
+    "@programDelete": {},
+    "programDeleteActiveMessage": "Are you sure you want to delete your active mesocycle? This cannot be undone.",
+    "@programDeleteActiveMessage": {},
+    "programDeleteActiveNamedMessage": "Are you sure you want to delete your active mesocycle '{name}'? This will remove all scheduled workouts and you'll need to create or select a new mesocycle.",
+    "@programDeleteActiveNamedMessage": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programDeleteNamedMessage": "Delete '{name}'? This can't be undone.",
+    "@programDeleteNamedMessage": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programDeleteFailed": "Unable to Delete Mesocycle",
+    "@programDeleteFailed": {},
+    "programTryAgain": "Please try again.",
+    "@programTryAgain": {},
+    "programSkipFailed": "Unable to Skip Workout",
+    "@programSkipFailed": {},
+    "programRestFailed": "Unable to Update Rest Day",
+    "@programRestFailed": {},
+    "programStartFailed": "Unable to Start Mesocycle",
+    "@programStartFailed": {},
+    "programRepeatFailed": "Unable to Repeat Macrocycle",
+    "@programRepeatFailed": {},
+    "programSaveFailed": "Error",
+    "@programSaveFailed": {},
+    "programDeloadWeek": "Deload Week",
+    "@programDeloadWeek": {},
+    "programPhaseHypertrophy": "Hypertrophy Phase",
+    "@programPhaseHypertrophy": {},
+    "programPhaseStrength": "Strength Phase",
+    "@programPhaseStrength": {},
+    "programPhasePower": "Power Phase",
+    "@programPhasePower": {},
+    "programDeloadFirst": "First Cycle",
+    "@programDeloadFirst": {},
+    "programDeloadLast": "Last Cycle",
+    "@programDeloadLast": {},
+    "programRest": "Rest",
+    "@programRest": {},
+    "programNotTracked": "Not tracked",
+    "@programNotTracked": {},
+    "programDayCompleted": "Completed",
+    "@programDayCompleted": {},
+    "programDaySkipped": "Skipped",
+    "@programDaySkipped": {},
+    "programDayUpcoming": "Upcoming",
+    "@programDayUpcoming": {},
+    "programDayNotStarted": "Not started",
+    "@programDayNotStarted": {},
+    "programRestTickHint": "Marks the rest day taken",
+    "@programRestTickHint": {},
+    "programRestUntickHint": "Marks the rest day not taken",
+    "@programRestUntickHint": {},
+    "programSkip": "Skip",
+    "@programSkip": {},
+    "programSavedMesocycles": "Saved Mesocycles",
+    "@programSavedMesocycles": {},
+    "programSavedMesocyclesFooter": "These are saved mesocycle designs. Start one from a template to generate a schedule.",
+    "@programSavedMesocyclesFooter": {},
+    "programTemplates": "Templates",
+    "@programTemplates": {},
+    "programTemplatesFooter": "Starting a template saves your own copy and makes it your active mesocycle.",
+    "@programTemplatesFooter": {},
+    "programNoMesocycles": "No Mesocycles",
+    "@programNoMesocycles": {},
+    "programNoMesocyclesMessage": "Create your first mesocycle to get started.",
+    "@programNoMesocyclesMessage": {},
+    "programDaysPerMicrocycle": "Days per microcycle",
+    "@programDaysPerMicrocycle": {},
+    "programWorkoutsPerMicrocycle": "Workouts per microcycle",
+    "@programWorkoutsPerMicrocycle": {},
+    "programMicrocycles": "Microcycles",
+    "@programMicrocycles": {},
+    "programDeload": "Deload",
+    "@programDeload": {},
+    "programPeriodization": "Periodization",
+    "@programPeriodization": {},
+    "programOn": "On",
+    "@programOn": {},
+    "programDays": "Days",
+    "@programDays": {},
+    "programDayNumber": "Day {number}",
+    "@programDayNumber": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "programStartMesocycle": "Start Mesocycle",
+    "@programStartMesocycle": {},
+    "programNewMacrocycle": "New Macrocycle",
+    "@programNewMacrocycle": {},
+    "programNoMacrocycles": "No Macrocycles",
+    "@programNoMacrocycles": {},
+    "programNoMacrocyclesMessage": "A macrocycle runs your mesocycles one after another.",
+    "@programNoMacrocyclesMessage": {},
+    "programFollowing": "Following",
+    "@programFollowing": {},
+    "programSaved": "Saved",
+    "@programSaved": {},
+    "programMesocycleOf": "Mesocycle {number} of {count}",
+    "@programMesocycleOf": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "programComplete": "Complete",
+    "@programComplete": {},
+    "programNotStarted": "Not started",
+    "@programNotStarted": {},
+    "programEnded": "Ended",
+    "@programEnded": {},
+    "programMesocycleCount": "{count, plural, =1{1 mesocycle} other{{count} mesocycles}}",
+    "@programMesocycleCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "programMacrocycleNameHint": "Macrocycle name",
+    "@programMacrocycleNameHint": {},
+    "programMesocyclesFooter": "After the last mesocycle you can repeat the macrocycle from the first one.",
+    "@programMesocyclesFooter": {},
+    "programAddMesocyclesHint": "Add mesocycles below. They run in this order.",
+    "@programAddMesocyclesHint": {},
+    "programMesocycleNumber": "Mesocycle {number}",
+    "@programMesocycleNumber": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "programStartAt": "Start At",
+    "@programStartAt": {},
+    "programStartAtFooter": "Joining part-way through? Pick where you are. The microcycles before it count as done.",
+    "@programStartAtFooter": {},
+    "programMesocycle": "Mesocycle",
+    "@programMesocycle": {},
+    "programMicrocycle": "Microcycle",
+    "@programMicrocycle": {},
+    "programNumberedName": "{number}. {name}",
+    "@programNumberedName": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programYourMesocycles": "Your Mesocycles",
+    "@programYourMesocycles": {},
+    "programLibraryEmptyHint": "Create or start a mesocycle first, then build a macrocycle from it.",
+    "@programLibraryEmptyHint": {},
+    "programAddMesocycleHint": "Adds this mesocycle next",
+    "@programAddMesocycleHint": {},
+    "programDeleteMacrocycle": "Delete Macrocycle",
+    "@programDeleteMacrocycle": {},
+    "programStartMacrocycle": "Start Macrocycle",
+    "@programStartMacrocycle": {},
+    "programRestartMacrocycle": "Restart Macrocycle",
+    "@programRestartMacrocycle": {},
+    "programRestartNamed": "Restart {name}?",
+    "@programRestartNamed": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programReplaceNamed": "Replace {name}?",
+    "@programReplaceNamed": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programReplaceMessage": "Progress in the macrocycle you're following stops counting. Your workout history is kept.",
+    "@programReplaceMessage": {},
+    "programDeleteNamed": "Delete {name}?",
+    "@programDeleteNamed": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programDeleteMacrocycleMessage": "The mesocycles in it are kept. This can't be undone.",
+    "@programDeleteMacrocycleMessage": {},
+    "programTodaysWorkout": "Today's Workout",
+    "@programTodaysWorkout": {},
+    "programNothingScheduled": "Nothing Scheduled",
+    "@programNothingScheduled": {},
+    "programEmptyWorkoutMessage": "Start an empty workout and add exercises as you go.",
+    "@programEmptyWorkoutMessage": {},
+    "programMacrocycleComplete": "{name} complete",
+    "@programMacrocycleComplete": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programMacrocycleCompleteMessage": "Every mesocycle is done. Run it again from the first one, or pick something new.",
+    "@programMacrocycleCompleteMessage": {},
+    "programRepeatMacrocycle": "Repeat Macrocycle",
+    "@programRepeatMacrocycle": {},
+    "programRestDay": "Rest Day",
+    "@programRestDay": {},
+    "programRestDayMessage": "Recovery is part of the process.",
+    "@programRestDayMessage": {},
+    "programStartInstead": "Start {name} Instead",
+    "@programStartInstead": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programStartInsteadHint": "Trains today and marks the rest day skipped",
+    "@programStartInsteadHint": {},
+    "programCompletedToday": "Completed today",
+    "@programCompletedToday": {},
+    "programOpensTodaysWorkout": "Opens today's workout",
+    "@programOpensTodaysWorkout": {},
+    "programPrCount": "{count, plural, =1{1 PR} other{{count} PRs}}",
+    "@programPrCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "programWeekDay": "Week {week} of {weeks} · Day {day}",
+    "@programWeekDay": {
+        "placeholders": {
+            "week": {
+                "type": "int"
+            },
+            "weeks": {
+                "type": "int"
+            },
+            "day": {
+                "type": "int"
+            }
+        }
+    },
+    "programMinutesEstimate": "~{minutes} min",
+    "@programMinutesEstimate": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "programTargets": "Targets: {targets}",
+    "@programTargets": {
+        "placeholders": {
+            "targets": {
+                "type": "String"
+            }
+        }
+    },
+    "programSkipHint": "Counts this workout as done and moves the next one up",
+    "@programSkipHint": {},
+    "programSkipWorkout": "Skip Workout",
+    "@programSkipWorkout": {},
+    "programSkipNamed": "Skip {name}?",
+    "@programSkipNamed": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "programSkipMessage": "It will count as done for this microcycle, and the next workout moves up to today.",
+    "@programSkipMessage": {},
+    "deloadMethodSummary": "In a mesocycle's deload week, each exercise keeps about half its working sets (half, rounded up, so 4 becomes 2 and 3 becomes 2) at 90% of the planned weight, rounded down to your equipment, and a step lighter where 90% would round back to the planned weight. Reps stay as planned and warm-ups stay. The week after a deload carries on from the week before it. You keep training as often as usual. Lifters and coaches deload mostly by cutting volume and effort while keeping frequency. In a survey of strength and physique athletes, a typical deload lasted about a week every 5 to 6 weeks.",
+    "@deloadMethodSummary": {},
+    "deloadMethodLimitations": "Deloading is widely practised but little studied. The one trial found that a full week off mid-programme did not change muscle growth and slightly reduced strength gains, so the benefit is mainly recovery and practicality.",
+    "@deloadMethodLimitations": {},
+    "deloadMethodOwnChoices": "Half the sets, 90% of the weight (the middle of 85–95%), and keeping warm-ups are Compound's own choices. When the deload falls is set by the mesocycle.",
+    "@deloadMethodOwnChoices": {}
 }

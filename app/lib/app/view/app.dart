@@ -18,7 +18,9 @@ import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/onboarding/onboarding.dart';
+import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/programs/programs.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/settings/settings.dart';
 import 'package:compound/shell/shell.dart';
@@ -123,6 +125,14 @@ class const App({
             users: userRepository,
           ),
         ),
+        RepositoryProvider(
+          create: (_) => ProgramService(
+            programs: programRepository,
+            users: userRepository,
+            sessions: workoutSessionRepository,
+            onEvent: analyticsRepository.analytic,
+          ),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -149,6 +159,17 @@ class const App({
               analytics: analyticsRepository,
               store: activeSessionStore ?? InMemoryActiveSessionStore(),
               clock: trackerClock.now,
+              programs: context.read(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => ProgramsCubit(
+              programs: programRepository,
+              users: userRepository,
+              sessions: workoutSessionRepository,
+              service: context.read<ProgramService>(),
+              setup: context.read<TrainingSetupService>(),
+              analytics: analyticsRepository,
             ),
           ),
           BlocProvider(
@@ -199,6 +220,7 @@ class _AppViewState extends State<AppView> {
                     name: tab.name,
                     builder: (_, _) => const TrainingPage(),
                     routes: [
+                      ...programRoutes,
                       GoRoute(
                         path: WorkoutsPage.path,
                         name: WorkoutsPage.name,
@@ -207,11 +229,8 @@ class _AppViewState extends State<AppView> {
                           GoRoute(
                             path: WorkoutTemplateDetailPage.path,
                             name: WorkoutTemplateDetailPage.name,
-                            builder: (_, state) => WorkoutTemplateDetailPage(
-                              workoutId:
-                                  state.pathParameters[WorkoutTemplateDetailPage
-                                      .idParameter]!,
-                            ),
+                            builder: (_, state) =>
+                                WorkoutTemplateDetailPage.fromRoute(state),
                           ),
                         ],
                       ),
@@ -477,6 +496,7 @@ class _AppViewState extends State<AppView> {
       CircleViewerChanged(state is AppAuthenticated ? state.profile : null),
     );
     unawaited(context.read<ActiveWorkoutCubit>().userChanged(uid));
+    context.read<ProgramsCubit>().userChanged(uid);
     unawaited(
       context.read<NotificationsCubit>().userChanged(
         uid,

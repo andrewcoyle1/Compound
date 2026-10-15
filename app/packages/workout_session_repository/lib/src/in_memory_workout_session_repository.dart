@@ -56,6 +56,13 @@ class InMemoryWorkoutSessionRepository implements WorkoutSessionRepository {
   }
 
   @override
+  Future<void> deleteSession(String uid, String id) async {
+    final index = _indexOf(uid, id);
+    if (index >= 0) _sessions.removeAt(index);
+    _changes.add(null);
+  }
+
+  @override
   Future<void> updateWeekStreakCount(
     String uid,
     String sessionId,

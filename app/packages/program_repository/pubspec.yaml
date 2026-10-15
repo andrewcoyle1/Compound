@@ -17,6 +17,8 @@ dependencies:
     path: ../training_library_repository
   user_repository:
     path: ../user_repository
+  workout_session_repository:
+    path: ../workout_session_repository
 
 dev_dependencies:
   fake_cloud_firestore: ^4.3.0

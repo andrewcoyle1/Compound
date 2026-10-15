@@ -154,10 +154,10 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | partial | likes and comments (M5 Social 1); share, Save as Template, Report to come |
 | Social | Comments | `WorkoutSessionRow/Comments` | M5 | partial | replies, likes, mentions, delete (M5 Social 1); Report to come |
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | five tabs, per-tab stacks, deep-link paths (#90) |
-| Today | Today | `Compound/Core/Today` | M2 | partial | checklist, streak, protein gap (#101) |
+| Today | Today | `Compound/Core/Today` | M2 | partial | checklist, streak, protein gap (#101); today's workout and macrocycle repeat (M5 Programs 1) |
 | Today | WeeklyReview | `WeeklyReview` | M2 | todo | |
-| Training | Training | `Compound/Core/Training` | M3 | todo | |
-| Training | TodaysWorkoutCard | `Components/TodaysWorkoutCard` | M3 | todo | |
+| Training | Training | `Compound/Core/Training` | M3 | partial | search, active mesocycle, library rows (M5 Programs 1); calendar header and + menu to come |
+| Training | TodaysWorkoutCard | `Components/TodaysWorkoutCard` | M3 | done | M5 Programs 1 |
 | Training | TrainingAccessory | `Components/TrainingAccessory` | M3 | todo | |
 | Training | WorkoutStreak | `Components/WorkoutStreakCard` | M3 | todo | |
 | Training | CreateExercise | `Exercises/CreateExercise` | M3 | todo | |
@@ -169,7 +169,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | ExerciseListBuilder | `Exercises/ExerciseListBuilder` | M3 | todo | |
 | Training | ExerciseModelDetail | `Exercises/ExerciseModelDetail` | M3 | partial | read-only library (#120) |
 | Training | Exercises | `Exercises/Exercises` | M3 | partial | read-only library (#120) |
-| Training | ActiveMesocycle | `Programs/ActiveMesocycle` | M3 | todo | |
+| Training | ActiveMesocycle | `Programs/ActiveMesocycle` | M3 | partial | schedule, microcycle picker, skip, rest days, delete (M5 Programs 1); Edit and Ask Coach to come |
 | Training | CreateMesocycle | `Programs/CreateMesocycle` | M3 | todo | |
 | Training | EditDayOrder | `Programs/CreateMesocycle/EditDayOrder` | M3 | todo | |
 | Training | EditDeload | `Programs/CreateMesocycle/EditDeload` | M3 | todo | |
@@ -180,12 +180,12 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | NameMesocycle | `Programs/CreateMesocycle/NameMesocycle` | M3 | todo | |
 | Training | RenameWorkoutTemplateModel | `Programs/CreateMesocycle/RenameWorkoutTemplateModel` | M3 | todo | |
 | Training | ImportProgram | `Programs/ImportProgram` | M3 | todo | |
-| Training | Macrocycles | `Programs/Macrocycles` | M3 | todo | |
-| Training | MacrocycleDetail | `Programs/Macrocycles/MacrocycleDetail` | M3 | todo | |
-| Training | MesocycleLibrary | `Programs/MesocycleLibrary` | M3 | todo | |
-| Training | InactiveMesocycle | `Programs/MesocycleLibrary/InactiveMesocycle` | M3 | todo | |
-| Training | MesocycleDisclosureGroup | `Programs/MesocycleLibrary/MesocycleDisclosureGroup` | M3 | todo | |
-| Training | PrebuiltMesocycleDetail | `Programs/MesocycleLibrary/PrebuiltMesocycleDetail` | M3 | todo | |
+| Training | Macrocycles | `Programs/Macrocycles` | M3 | partial | M5 Programs 1; Import Program in part 2 |
+| Training | MacrocycleDetail | `Programs/Macrocycles/MacrocycleDetail` | M3 | done | M5 Programs 1 |
+| Training | MesocycleLibrary | `Programs/MesocycleLibrary` | M3 | partial | M5 Programs 1; Create and Import in part 2 |
+| Training | InactiveMesocycle | `Programs/MesocycleLibrary/InactiveMesocycle` | M3 | done | M5 Programs 1 |
+| Training | MesocycleDisclosureGroup | `Programs/MesocycleLibrary/MesocycleDisclosureGroup` | M3 | partial | M5 Programs 1; Edit (part 2) and Share with Friends to come |
+| Training | PrebuiltMesocycleDetail | `Programs/MesocycleLibrary/PrebuiltMesocycleDetail` | M3 | done | M5 Programs 1 |
 | Training | ExerciseTracker | `Session/ExerciseTracker` | M3 | todo | |
 | Training | ExerciseSettings | `Session/ExerciseTracker/ExerciseSettings` | M3 | todo | |
 | Training | SetTrackerRow | `Session/ExerciseTracker/SetTrackerRow` | M3 | todo | |
@@ -204,7 +204,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | NameWorkout | `Workouts/CreateWorkout/NameWorkout` | M3 | todo | |
 | Training | SetTarget | `Workouts/CreateWorkout/SetTarget` | M3 | todo | |
 | Training | WeeklyTargets | `Workouts/CreateWorkout/SetTarget/WeeklyTargets` | M3 | todo | |
-| Training | WorkoutTemplateDetail | `Workouts/WorkoutTemplateDetail` | M3 | partial | read-only library (#120) |
+| Training | WorkoutTemplateDetail | `Workouts/WorkoutTemplateDetail` | M3 | partial | read-only library (#120); Start, a program day's week and deload (M5 Programs 1); Edit, Save a Copy, Share and Delete to come |
 | Training | Workouts | `Workouts/Workouts` | M3 | partial | read-only library (#120) |
 
 198 modules.

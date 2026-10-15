@@ -7,7 +7,9 @@ import 'package:compound/app/app.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
+import 'package:compound/programs/programs.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
+import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -52,6 +54,8 @@ extension PumpApp on WidgetTester {
     AppBloc? appBloc,
     SocialRepository? socialRepository,
     CircleBloc? circleBloc,
+    ProgramsCubit? programsCubit,
+    ActiveWorkoutCubit? activeWorkoutCubit,
     double textScale = 1,
     GoRouter? router,
   }) {
@@ -108,6 +112,29 @@ extension PumpApp on WidgetTester {
           providers: [
             BlocProvider.value(value: appBloc ?? MockAppBloc()),
             BlocProvider.value(value: mealDraftCubit ?? MealDraftCubit()),
+            if (activeWorkoutCubit != null)
+              BlocProvider.value(value: activeWorkoutCubit),
+            // Following nobody unless a test passes one that does.
+            BlocProvider<ProgramsCubit>(
+              create: (context) =>
+                  programsCubit ??
+                  ProgramsCubit(
+                    programs: context.read(),
+                    users: context.read(),
+                    sessions: context.read(),
+                    service: ProgramService(
+                      programs: context.read(),
+                      users: context.read(),
+                      sessions: context.read(),
+                    ),
+                    setup: TrainingSetupService(
+                      programs: context.read(),
+                      library: context.read(),
+                      users: context.read(),
+                    ),
+                    analytics: analyticsRepository,
+                  ),
+            ),
             BlocProvider<CircleBloc>(
               create: (context) =>
                   circleBloc ??

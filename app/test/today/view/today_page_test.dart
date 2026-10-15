@@ -123,7 +123,12 @@ void main() {
       expect(find.text('Steps'), findsOneWidget);
       expect(find.text('Train'), findsNothing);
       expect(find.text('Step goal: 8,000 a day.'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.textContaining('protein to go today'),
+        200,
+      );
       expect(find.textContaining('protein to go today'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Get Started · 2 of 3'), -200);
       // No meals logged: the starter card offers the first meal.
       expect(find.text('Get Started · 2 of 3'), findsOneWidget);
       expect(find.text('Log your first meal'), findsOneWidget);

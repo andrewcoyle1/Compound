@@ -26,6 +26,44 @@ class const Citation({
     doi: '10.1080/0886022X.2023.2273421',
   );
 
+  /// R84.
+  static const bell2023 = Citation(
+    reference:
+        'Bell L, Strafford BW, Coleman M, Androulakis Korakakis P, Nolan D '
+        '(2023). Integrating deloading into strength and physique sports '
+        'training programmes: an international Delphi consensus approach. '
+        'Sports Med Open 9:87.',
+    doi: '10.1186/s40798-023-00633-0',
+  );
+
+  /// R85.
+  static const rogerson2024 = Citation(
+    reference:
+        'Rogerson D, Nolan D, Androulakis Korakakis P, Immonen V, Wolf M, '
+        'Bell L (2024). Deloading practices in strength and physique sports: '
+        'a cross-sectional survey. Sports Med Open 10.',
+    doi: '10.1186/s40798-024-00691-y',
+  );
+
+  /// R86.
+  static const bell2022 = Citation(
+    reference:
+        'Bell L, Nolan D, Androulakis Korakakis P, et al. (2022). "You can\'t '
+        "shoot another bullet until you've reloaded the gun\": coaches' "
+        'perceptions, practices and experiences of deloading in strength and '
+        'physique sports. Front Sports Act Living 4:1073223.',
+    doi: '10.3389/fspor.2022.1073223',
+  );
+
+  /// R87.
+  static const coleman2024 = Citation(
+    reference:
+        'Coleman M, et al. (2024). Gaining more from doing less? The effects '
+        'of a one-week deload period during supervised resistance training on '
+        'muscular adaptations. PeerJ 12:e16777.',
+    doi: '10.7717/peerj.16777',
+  );
+
   /// R95.
   static const pelland2026 = Citation(
     reference:
@@ -405,6 +443,26 @@ class const MethodInfo({
     formula: 'planned sets = Σ planned sets × (1 if primary, 0.5 if secondary)',
     limitations: l10n.plannedSetsMethodLimitations,
     citations: const [Citation.pelland2026],
+  );
+
+  /// A mesocycle's deload week (Swift `MethodInfo.mesocycleDeload`),
+  /// applied by `training_session`'s `deloadedSession`.
+  factory mesocycleDeload(AppLocalizations l10n) => MethodInfo(
+    title: l10n.programDeloadWeek,
+    summary: l10n.deloadMethodSummary,
+    formula:
+        'sets kept = max(1, ⌈planned working sets × 0.5⌉)\n'
+        'weight = planned weight × 0.90, rounded down to equipment\n'
+        'assistance = planned assistance × 1.10\n'
+        'progression afterwards reads past the deload week',
+    limitations: l10n.deloadMethodLimitations,
+    ownChoices: l10n.deloadMethodOwnChoices,
+    citations: const [
+      Citation.bell2023,
+      Citation.rogerson2024,
+      Citation.bell2022,
+      Citation.coleman2024,
+    ],
   );
 
   /// The adaptive expenditure estimate (Swift

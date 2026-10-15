@@ -20,11 +20,17 @@ abstract interface class ProgramRepository {
   /// Saves [macrocycle] to `users/{macrocycle.authorId}/macrocycles/{id}`,
   /// merged, as `MacrocycleManager.save` does.
   ///
-  /// A merge leaves an omitted field as it was, so a null
-  /// `startMicrocycleIndex` does not clear a stored one; Swift has the same
-  /// behaviour. Starting a program writes a new macrocycle, where it does
-  /// not arise.
+  /// A null `startMicrocycleIndex` deletes the stored one. Swift's merge
+  /// leaves it, so moving to the next mesocycle keeps the old join point
+  /// (`swift-findings.md`).
   Future<void> saveMacrocycle(Macrocycle macrocycle);
+
+  /// Deletes `users/{uid}/mesocycles/{id}` (`MesocycleManager
+  /// .deleteMesocycle`).
+  Future<void> deleteMesocycle(String uid, String id);
+
+  /// Deletes `users/{uid}/macrocycles/{id}` (`MacrocycleManager.delete`).
+  Future<void> deleteMacrocycle(String uid, String id);
 }
 
 /// The macrocycle being followed, or just finished and waiting on a repeat:

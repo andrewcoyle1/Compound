@@ -64,5 +64,19 @@ void main() {
           (path, 'permission-denied'),
       ]);
     });
+
+    test('the deletes complete offline; a refusal is reported', () async {
+      await subject.deleteMesocycle('u', 'm');
+      await subject.deleteMacrocycle('u', 'p');
+      expect(refused, isEmpty);
+
+      firestore.refuse('permission-denied');
+      await pumpEventQueue();
+
+      expect(refused, [
+        ('users/u/mesocycles/m', 'permission-denied'),
+        ('users/u/macrocycles/p', 'permission-denied'),
+      ]);
+    });
   });
 }

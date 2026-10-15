@@ -53,6 +53,8 @@ void main() {
     // Training › Workouts › My Upper Body › Start Workout.
     await tester.tap(find.text('Training').last);
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Workouts'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Workouts'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('My Upper Body'));

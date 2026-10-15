@@ -15,6 +15,11 @@ abstract interface class WorkoutSessionRepository {
   /// the sync engine's `saveDocument` is `setData(merge: true)`).
   Future<void> saveSession(String uid, WorkoutSessionModel session);
 
+  /// Deletes the session [id] of [uid] (`WorkoutSessionManager
+  /// .deleteWorkoutSession`): unticking a rest day, or the rest a workout
+  /// trained through.
+  Future<void> deleteSession(String uid, String id);
+
   /// Sets only `week_streak_count` on a stored session, so it cannot undo
   /// an edit made meanwhile (`setWeekStreakCount`). Fails, as Firestore's
   /// update does, when there is no such session.

@@ -11,6 +11,17 @@ abstract interface class UserRepository {
   /// change. Null when there is no document or it cannot be read.
   Stream<PrivateUserSettings?> watchPrivateSettings(String uid);
 
+  /// Whether `users/{uid}` exists, read from the server and never from the
+  /// cache: a cache with no copy of the profile, or one with a copy that
+  /// does not decode, must never pass for a new account. Throws when the
+  /// server cannot be reached.
+  ///
+  /// The AppBloc asks before [createUser]: Swift creates the profile only
+  /// for an account Firebase reports as new (`UserManager.swift:56-60`),
+  /// which a stream of signed-in users cannot tell, and a [createUser] over
+  /// an existing profile would reset `did_complete_onboarding`.
+  Future<bool> userExists(String uid);
+
   /// Writes a brand-new user's profile to `users/{user.userId}`, merged over
   /// anything there, as `UserManager.signIn` does for a new account
   /// (`UserManager.swift:56-60`; `saveDocument` is `setData(merge: true)`).

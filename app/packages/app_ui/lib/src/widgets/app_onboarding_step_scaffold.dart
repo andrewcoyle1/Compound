@@ -22,6 +22,7 @@ class AppOnboardingStepScaffold extends StatelessWidget {
     this.secondaryLabel,
     this.onSecondaryPressed,
     this.actions,
+    this.onBack,
     this.children = const [],
     super.key,
   });
@@ -60,6 +61,10 @@ class AppOnboardingStepScaffold extends StatelessWidget {
   /// App bar actions, such as developer settings in debug builds.
   final List<Widget>? actions;
 
+  /// Called by a back button in the app bar, for a question inside a step
+  /// that has one before it. No button when null.
+  final VoidCallback? onBack;
+
   /// The step's content, usually [AppSection]s.
   final List<Widget> children;
 
@@ -69,25 +74,36 @@ class AppOnboardingStepScaffold extends StatelessWidget {
     final subtitle = this.subtitle;
     final secondaryLabel = this.secondaryLabel;
     return Scaffold(
-      bottomNavigationBar: AppBottomCta(
-        children: [
-          AppCtaButton(
-            label: primaryLabel,
-            onPressed: onPrimaryPressed,
-            isLoading: isPrimaryLoading,
-            loadingLabel: loadingLabel,
-          ),
-          if (secondaryLabel != null)
+      // Above the keyboard, as SwiftUI's safe-area inset is: a Scaffold
+      // leaves its bottom bar under it.
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: AppBottomCta(
+          children: [
             AppCtaButton(
-              label: secondaryLabel,
-              onPressed: onSecondaryPressed,
-              variant: AppCtaVariant.plain,
+              label: primaryLabel,
+              onPressed: onPrimaryPressed,
+              isLoading: isPrimaryLoading,
+              loadingLabel: loadingLabel,
             ),
-        ],
+            if (secondaryLabel != null)
+              AppCtaButton(
+                label: secondaryLabel,
+                onPressed: onSecondaryPressed,
+                variant: AppCtaVariant.plain,
+              ),
+          ],
+        ),
       ),
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(title: Text(title), actions: actions),
+          SliverAppBar.large(
+            title: Text(title),
+            actions: actions,
+            leading: onBack == null ? null : BackButton(onPressed: onBack),
+          ),
           SliverPadding(
             padding: const EdgeInsets.all(AppSpacing.l),
             sliver: SliverToBoxAdapter(

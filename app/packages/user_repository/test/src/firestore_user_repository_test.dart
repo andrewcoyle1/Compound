@@ -107,6 +107,17 @@ void main() {
       });
     });
 
+    group('userExists', () {
+      test('is false with no profile', () async {
+        expect(await subject.userExists(uid), isFalse);
+      });
+
+      test('is true with a profile, even one that does not decode', () async {
+        await user().set({'not': 'a user'});
+        expect(await subject.userExists(uid), isTrue);
+      });
+    });
+
     group('createUser', () {
       for (final name in ['full', 'minimal']) {
         test('stores the $name fixture as the model encodes it', () async {

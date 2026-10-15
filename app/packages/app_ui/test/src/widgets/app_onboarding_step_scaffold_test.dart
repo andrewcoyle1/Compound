@@ -45,6 +45,41 @@ void main() {
       expect((primary, secondary), (1, 1));
     });
 
+    testWidgets('keeps its button above the keyboard', (tester) async {
+      tester.view.viewInsets = const FakeViewPadding(bottom: 900);
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pumpApp(
+        const AppOnboardingStepScaffold(
+          title: 'Name',
+          primaryLabel: 'Continue',
+          onPrimaryPressed: null,
+        ),
+        scaffold: false,
+      );
+      final bottom = tester.getBottomLeft(find.byType(AppCtaButton)).dy;
+      final screen =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      expect(
+        bottom,
+        lessThanOrEqualTo(screen - 900 / tester.view.devicePixelRatio),
+      );
+    });
+
+    testWidgets('shows a back button when given onBack', (tester) async {
+      var back = 0;
+      await tester.pumpApp(
+        AppOnboardingStepScaffold(
+          title: 'Height',
+          primaryLabel: 'Continue',
+          onPrimaryPressed: null,
+          onBack: () => back++,
+        ),
+        scaffold: false,
+      );
+      await tester.tap(find.byType(BackButton));
+      expect(back, 1);
+    });
+
     testWidgets('without extras shows only the primary button', (tester) async {
       await tester.pumpApp(
         const AppOnboardingStepScaffold(

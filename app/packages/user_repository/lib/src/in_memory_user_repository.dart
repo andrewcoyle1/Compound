@@ -33,6 +33,9 @@ class InMemoryUserRepository implements UserRepository {
       _watch(() => _settings[uid]);
 
   @override
+  Future<bool> userExists(String uid) async => _users.containsKey(uid);
+
+  @override
   Future<void> createUser(UserModel user) async {
     _users[user.userId] = UserModel.fromFirestore({
       ...?_users[user.userId]?.toFirestore(),

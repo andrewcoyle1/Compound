@@ -8,7 +8,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/bloc/log_weight_bloc.dart';
 import 'package:compound/log_weight/logic/decimal_wheel_value.dart';
 import 'package:compound/shell/app_tab.dart';
-import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
+import 'package:compound/widgets/number_wheel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -189,7 +189,7 @@ class _Form extends StatelessWidget {
                 key: ValueKey(state.unit),
                 children: [
                   Expanded(
-                    child: _Wheel(
+                    child: NumberWheel(
                       label: l10n.logWeightWeight,
                       values: [for (var v = min; v <= max; v++) v],
                       selected: kilograms ? state.kilograms : state.pounds,
@@ -201,7 +201,7 @@ class _Form extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: _Wheel(
+                    child: NumberWheel(
                       label: l10n.logWeightTenths,
                       values: DecimalWheelValue.tenths,
                       selected: kilograms
@@ -218,58 +218,6 @@ class _Form extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-/// One wheel. Screen readers hear its [label] and the row shown, and swipe
-/// up or down to adjust it.
-class _Wheel extends StatefulWidget {
-  const new({
-    required this.label,
-    required this.values,
-    required this.selected,
-    required this.itemLabel,
-    required this.onChanged,
-  });
-
-  final String label;
-  final List<int> values;
-  final int selected;
-  final String Function(int value) itemLabel;
-  final ValueChanged<int> onChanged;
-
-  @override
-  State<_Wheel> createState() => _WheelState();
-}
-
-class _WheelState extends State<_Wheel> {
-  late final _controller = FixedExtentScrollController(
-    initialItem: widget.values.indexOf(widget.selected),
-  );
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MergeSemantics(
-      child: Semantics(
-        label: widget.label,
-        child: CupertinoPicker(
-          scrollController: _controller,
-          itemExtent: MediaQuery.textScalerOf(context).scale(32),
-          onSelectedItemChanged: (index) =>
-              widget.onChanged(widget.values[index]),
-          children: [
-            for (final value in widget.values)
-              Center(child: Text(widget.itemLabel(value))),
-          ],
-        ),
-      ),
     );
   }
 }

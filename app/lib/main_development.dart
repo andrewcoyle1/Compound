@@ -16,6 +16,8 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:program_repository/program_repository.dart';
+import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -90,6 +92,12 @@ Future<void> main() async {
       bodyRepository: FirestoreBodyRepository(
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,
+      ),
+      programRepository: FirestoreProgramRepository(
+        firestore: FirebaseFirestore.instance,
+      ),
+      trainingLibraryRepository: FirestoreTrainingLibraryRepository(
+        firestore: FirebaseFirestore.instance,
       ),
     );
   });

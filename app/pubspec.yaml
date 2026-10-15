@@ -40,6 +40,10 @@ dependencies:
   material_ui: ^1.1.1
   nutrition_repository:
     path: packages/nutrition_repository
+  program_repository:
+    path: packages/program_repository
+  training_library_repository:
+    path: packages/training_library_repository
   user_repository:
     path: packages/user_repository
   workout_session_repository:

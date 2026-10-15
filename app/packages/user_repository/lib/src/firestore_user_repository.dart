@@ -51,6 +51,10 @@ class FirestoreUserRepository implements UserRepository {
       _watch(_settings(uid), PrivateUserSettings.fromFirestore);
 
   @override
+  Future<bool> userExists(String uid) async =>
+      (await _user(uid).get(const GetOptions(source: Source.server))).exists;
+
+  @override
   Future<void> createUser(UserModel user) =>
       _merge(_user(user.userId), user.toFirestore());
 

@@ -9,6 +9,7 @@ import 'package:compound/profile/profile.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:compound/today/today.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
@@ -74,6 +75,11 @@ class _AppViewState extends State<AppView> {
             StatefulShellBranch(
               routes: [
                 switch (tab) {
+                  AppTab.today => GoRoute(
+                    path: tab.path,
+                    name: tab.name,
+                    builder: (_, _) => const TodayPage(),
+                  ),
                   AppTab.training => GoRoute(
                     path: tab.path,
                     name: tab.name,

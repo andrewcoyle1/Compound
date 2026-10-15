@@ -1,3 +1,4 @@
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
@@ -30,6 +31,7 @@ extension PumpApp on WidgetTester {
     WorkoutSessionRepository? workoutSessionRepository,
     NutritionRepository? nutritionRepository,
     BodyRepository? bodyRepository,
+    AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
     AppBloc? appBloc,
     double textScale = 1,
   }) {
@@ -51,6 +53,7 @@ extension PumpApp on WidgetTester {
           RepositoryProvider.value(
             value: bodyRepository ?? MockBodyRepository(),
           ),
+          RepositoryProvider.value(value: analyticsRepository),
         ],
         child: BlocProvider.value(
           value: appBloc ?? MockAppBloc(),

@@ -4,8 +4,10 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/launch/launch.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/nutrition/nutrition.dart';
+import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/shell/shell.dart';
@@ -18,6 +20,8 @@ import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:program_repository/program_repository.dart';
+import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -27,6 +31,8 @@ class const App({
   required final WorkoutSessionRepository workoutSessionRepository,
   required final NutritionRepository nutritionRepository,
   required final BodyRepository bodyRepository,
+  required final ProgramRepository programRepository,
+  required final TrainingLibraryRepository trainingLibraryRepository,
   final AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
   super.key,
 }) extends StatelessWidget {
@@ -39,11 +45,21 @@ class const App({
         RepositoryProvider.value(value: workoutSessionRepository),
         RepositoryProvider.value(value: nutritionRepository),
         RepositoryProvider.value(value: bodyRepository),
+        RepositoryProvider.value(value: programRepository),
+        RepositoryProvider.value(value: trainingLibraryRepository),
         RepositoryProvider.value(value: analyticsRepository),
+        RepositoryProvider(
+          create: (_) => TrainingSetupService(
+            programs: programRepository,
+            library: trainingLibraryRepository,
+            users: userRepository,
+          ),
+        ),
       ],
       child: BlocProvider(
         create: (_) => AppBloc(
           authRepository: authRepository,
+          userRepository: userRepository,
           analyticsRepository: analyticsRepository,
         )..add(const AppUserSubscriptionRequested()),
         child: const AppView(),
@@ -167,13 +183,27 @@ class _AppViewState extends State<AppView> {
         name: SignInPage.name,
         builder: (_, _) => const SignInPage(),
       ),
+      GoRoute(
+        path: LaunchPage.path,
+        name: LaunchPage.name,
+        builder: (_, _) => const LaunchPage(),
+      ),
+      for (final route in OnboardingRoute.values)
+        GoRoute(
+          path: route.path,
+          name: route.routeName,
+          builder: (_, _) => switch (route) {
+            OnboardingRoute.accountSetup => const AccountSetupPage(),
+            OnboardingRoute.healthDisclaimer => const HealthDisclaimerPage(),
+            OnboardingRoute.goal => const GoalSetupPage(),
+            OnboardingRoute.gymProfile => const GymSetupPage(),
+            OnboardingRoute.program => const ProgramSetupPage(),
+            OnboardingRoute.diet => const DietSetupPage(),
+          },
+        ),
     ],
-    redirect: (context, state) {
-      final signedIn = context.read<AppBloc>().state is AppAuthenticated;
-      final onSignIn = state.matchedLocation == SignInPage.path;
-      if (!signedIn) return onSignIn ? null : SignInPage.path;
-      return onSignIn ? AppTab.today.path : null;
-    },
+    redirect: (context, state) =>
+        appRedirect(context.read<AppBloc>().state, state.uri),
   );
 
   @override
@@ -195,4 +225,35 @@ class _AppViewState extends State<AppView> {
       ),
     );
   }
+}
+
+/// Where the router sends [location] for [state], or null to stay: signed
+/// out to sign-in; while the profile loads (or can't be read) to the launch
+/// screen, remembering where the user was going; during onboarding to the
+/// screen of the step the profile resumes at (`OnboardingStepRouter`); and
+/// once onboarded, away from sign-in, launch and onboarding to the tabs.
+String? appRedirect(AppState state, Uri location) {
+  final path = location.path;
+  final onSignIn = path == SignInPage.path;
+  final onLaunch = path == LaunchPage.path;
+  if (state is! AppAuthenticated) return onSignIn ? null : SignInPage.path;
+  if (state.profileStatus != AppProfileStatus.ready) {
+    if (onLaunch) return null;
+    return Uri(
+      path: LaunchPage.path,
+      queryParameters: onSignIn || path.startsWith(onboardingPath)
+          ? null
+          : {LaunchPage.fromParameter: location.toString()},
+    ).toString();
+  }
+  final step = state.onboardingStep;
+  if (step != null) {
+    final target = onboardingRoute(step)!.path;
+    return path == target ? null : target;
+  }
+  if (onLaunch) {
+    return location.queryParameters[LaunchPage.fromParameter] ??
+        AppTab.today.path;
+  }
+  return onSignIn || path.startsWith(onboardingPath) ? AppTab.today.path : null;
 }

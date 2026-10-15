@@ -22,6 +22,7 @@ class AppOnboardingStepScaffold extends StatelessWidget {
     this.secondaryLabel,
     this.onSecondaryPressed,
     this.actions,
+    this.onBack,
     this.children = const [],
     super.key,
   });
@@ -60,6 +61,10 @@ class AppOnboardingStepScaffold extends StatelessWidget {
   /// App bar actions, such as developer settings in debug builds.
   final List<Widget>? actions;
 
+  /// Called by a back button in the app bar, for a question inside a step
+  /// that has one before it. No button when null.
+  final VoidCallback? onBack;
+
   /// The step's content, usually [AppSection]s.
   final List<Widget> children;
 
@@ -87,7 +92,11 @@ class AppOnboardingStepScaffold extends StatelessWidget {
       ),
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(title: Text(title), actions: actions),
+          SliverAppBar.large(
+            title: Text(title),
+            actions: actions,
+            leading: onBack == null ? null : BackButton(onPressed: onBack),
+          ),
           SliverPadding(
             padding: const EdgeInsets.all(AppSpacing.l),
             sliver: SliverToBoxAdapter(

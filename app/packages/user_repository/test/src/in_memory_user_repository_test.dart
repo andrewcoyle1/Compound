@@ -31,6 +31,11 @@ void main() {
       expect(await subject.watchPrivateSettings('someone').first, isNull);
     });
 
+    test('userExists is true only for a stored profile', () async {
+      expect(await subject.userExists(sampleUserId), isTrue);
+      expect(await subject.userExists('someone'), isFalse);
+    });
+
     test('is empty by default', () async {
       expect(
         await InMemoryUserRepository().watchUser(sampleUserId).first,

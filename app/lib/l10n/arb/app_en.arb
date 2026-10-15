@@ -1146,5 +1146,906 @@
     "logWeightSaveFailure": "Unable to Save Weight",
     "@logWeightSaveFailure": {
         "description": "Log Weight: alert title when saving fails"
+    },
+    "onboardingProgress": "Onboarding progress",
+    "@onboardingProgress": {
+        "description": "Onboarding: accessibility label of the progress bar"
+    },
+    "onboardingContinue": "Continue",
+    "@onboardingContinue": {
+        "description": "Onboarding: the button that goes on to the next question"
+    },
+    "onboardingSaving": "Saving",
+    "@onboardingSaving": {
+        "description": "Onboarding: what screen readers hear while a step saves"
+    },
+    "onboardingCheckConnection": "Please check your internet connection and try again.",
+    "@onboardingCheckConnection": {
+        "description": "Onboarding: message of a failed-save alert"
+    },
+    "onboardingUnits": "Units",
+    "@onboardingUnits": {
+        "description": "Onboarding: accessibility label of the metric/imperial switch"
+    },
+    "onboardingMetric": "Metric",
+    "@onboardingMetric": {
+        "description": "Onboarding: metric units"
+    },
+    "onboardingImperial": "Imperial",
+    "@onboardingImperial": {
+        "description": "Onboarding: imperial units"
+    },
+    "launchLoading": "Loading",
+    "@launchLoading": {
+        "description": "Launch screen: what screen readers hear while the profile loads"
+    },
+    "launchProfileFailure": "Your profile couldn't be loaded.",
+    "@launchProfileFailure": {
+        "description": "Launch screen: the profile could not be read or created"
+    },
+    "onboardingNameTitle": "What's Your Name?",
+    "@onboardingNameTitle": {
+        "description": "Onboarding: title of the name question"
+    },
+    "onboardingNameSubtitle": "A few details tailor your recommendations to your fitness journey.",
+    "@onboardingNameSubtitle": {
+        "description": "Onboarding: subtitle of the name question"
+    },
+    "onboardingNameHeader": "Your Name",
+    "@onboardingNameHeader": {
+        "description": "Onboarding: header of the name fields"
+    },
+    "onboardingNameFooter": "Help us personalize your experience by providing your name. You can also add a profile photo if you'd like.",
+    "@onboardingNameFooter": {
+        "description": "Onboarding: note under the name fields"
+    },
+    "onboardingFirstName": "First name",
+    "@onboardingFirstName": {
+        "description": "Onboarding: first-name field"
+    },
+    "onboardingLastName": "Last name (optional)",
+    "@onboardingLastName": {
+        "description": "Onboarding: last-name field"
+    },
+    "onboardingUnableToSave": "Unable to save",
+    "@onboardingUnableToSave": {
+        "description": "Onboarding: title of the alert when the name could not be saved"
+    },
+    "onboardingGenderTitle": "Sex for Calorie Estimate",
+    "@onboardingGenderTitle": {
+        "description": "Onboarding: title of the sex question"
+    },
+    "onboardingGenderSubtitle": "Used only to estimate the calories you burn. You can change it later in Profile.",
+    "@onboardingGenderSubtitle": {
+        "description": "Onboarding: subtitle of the sex question"
+    },
+    "genderMale": "Male",
+    "@genderMale": {
+        "description": "Sex: male"
+    },
+    "genderFemale": "Female",
+    "@genderFemale": {
+        "description": "Sex: female"
+    },
+    "genderPreferNotToSay": "Prefer not to say",
+    "@genderPreferNotToSay": {
+        "description": "Sex: not said"
+    },
+    "genderPreferNotToSayDetail": "Your calorie estimate will be less accurate.",
+    "@genderPreferNotToSayDetail": {
+        "description": "Onboarding: note under Prefer not to say"
+    },
+    "onboardingDateOfBirthTitle": "When Were You Born?",
+    "@onboardingDateOfBirthTitle": {
+        "description": "Onboarding: title of the date-of-birth question"
+    },
+    "onboardingDateOfBirthSubtitle": "Your age feeds the calorie estimate. You can change it later in Profile.",
+    "@onboardingDateOfBirthSubtitle": {
+        "description": "Onboarding: subtitle of the date-of-birth question"
+    },
+    "onboardingDateOfBirth": "Date of birth",
+    "@onboardingDateOfBirth": {
+        "description": "Onboarding: date-of-birth row"
+    },
+    "onboardingHeightTitle": "How Tall Are You?",
+    "@onboardingHeightTitle": {
+        "description": "Onboarding: title of the height question"
+    },
+    "onboardingHeightSubtitle": "Your height feeds the calorie estimate. You can change it later in Profile.",
+    "@onboardingHeightSubtitle": {
+        "description": "Onboarding: subtitle of the height question"
+    },
+    "onboardingCentimetres": "{value} cm",
+    "@onboardingCentimetres": {
+        "description": "Onboarding: a row of the centimetres wheel",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingFeet": "{value} ft",
+    "@onboardingFeet": {
+        "description": "Onboarding: a row of the feet wheel",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingInches": "{value} in",
+    "@onboardingInches": {
+        "description": "Onboarding: a row of the inches wheel",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingFeetLabel": "Feet",
+    "@onboardingFeetLabel": {
+        "description": "Onboarding: accessibility label of the feet wheel"
+    },
+    "onboardingWeightTitle": "What's Your Weight?",
+    "@onboardingWeightTitle": {
+        "description": "Onboarding: title of the weight question"
+    },
+    "onboardingWeightSubtitle": "Your weight feeds the calorie estimate and your goal. You can log a new weight at any time.",
+    "@onboardingWeightSubtitle": {
+        "description": "Onboarding: subtitle of the weight question"
+    },
+    "onboardingKilogramsValue": "{value} kg",
+    "@onboardingKilogramsValue": {
+        "description": "Onboarding: a row of a kilograms wheel",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingPoundsValue": "{value} lb",
+    "@onboardingPoundsValue": {
+        "description": "Onboarding: a row of a pounds wheel",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingFrequencyTitle": "Do You Work Out?",
+    "@onboardingFrequencyTitle": {
+        "description": "Onboarding: title of the exercise-frequency question"
+    },
+    "onboardingFrequencySubtitle": "How often you exercise feeds the calorie estimate. You can change it later in Profile.",
+    "@onboardingFrequencySubtitle": {
+        "description": "Onboarding: subtitle of the exercise-frequency question"
+    },
+    "frequencyNever": "Never",
+    "@frequencyNever": {
+        "description": "Exercise frequency: never"
+    },
+    "frequencyOneToTwo": "1-2 times per week",
+    "@frequencyOneToTwo": {
+        "description": "Exercise frequency: 1-2 times a week"
+    },
+    "frequencyThreeToFour": "3-4 times per week",
+    "@frequencyThreeToFour": {
+        "description": "Exercise frequency: 3-4 times a week"
+    },
+    "frequencyFiveToSix": "5-6 times per week",
+    "@frequencyFiveToSix": {
+        "description": "Exercise frequency: 5-6 times a week"
+    },
+    "frequencyDaily": "Daily",
+    "@frequencyDaily": {
+        "description": "Exercise frequency: daily"
+    },
+    "onboardingActivityTitle": "How Active Are You?",
+    "@onboardingActivityTitle": {
+        "description": "Onboarding: title of the activity question"
+    },
+    "onboardingActivitySubtitle": "Your activity outside exercise feeds the calorie estimate.",
+    "@onboardingActivitySubtitle": {
+        "description": "Onboarding: subtitle of the activity question"
+    },
+    "activitySedentary": "Sedentary",
+    "@activitySedentary": {
+        "description": "Activity level"
+    },
+    "activityLight": "Light Activity",
+    "@activityLight": {
+        "description": "Activity level"
+    },
+    "activityModerate": "Moderate Activity",
+    "@activityModerate": {
+        "description": "Activity level"
+    },
+    "activityActive": "Active",
+    "@activityActive": {
+        "description": "Activity level"
+    },
+    "activityVeryActive": "Very Active",
+    "@activityVeryActive": {
+        "description": "Activity level"
+    },
+    "activitySedentaryDetail": "Desk job, minimal walking, little or no exercise",
+    "@activitySedentaryDetail": {
+        "description": "Activity level: what sedentary means"
+    },
+    "activityLightDetail": "Light walking and some daily activity, or a desk job with a few workouts a week",
+    "@activityLightDetail": {
+        "description": "Activity level: what light means"
+    },
+    "activityModerateDetail": "Regular walking or standing work, with regular workouts",
+    "@activityModerateDetail": {
+        "description": "Activity level: what moderate means"
+    },
+    "activityActiveDetail": "Active lifestyle or manual work, plus training",
+    "@activityActiveDetail": {
+        "description": "Activity level: what active means"
+    },
+    "activityVeryActiveDetail": "Physically demanding work or hard training most days",
+    "@activityVeryActiveDetail": {
+        "description": "Activity level: what very active means"
+    },
+    "onboardingExpenditureTitle": "How Much Do You Burn?",
+    "@onboardingExpenditureTitle": {
+        "description": "Onboarding: title of the expenditure screen"
+    },
+    "onboardingExpenditureHeader": "An estimate of calories burned per day",
+    "@onboardingExpenditureHeader": {
+        "description": "Onboarding expenditure: header of the total"
+    },
+    "onboardingKcalPerDay": "kcal/day",
+    "@onboardingKcalPerDay": {
+        "description": "Onboarding expenditure: unit after the total"
+    },
+    "onboardingExpenditureFooter": "This is your estimated total daily energy expenditure. Formulas like this are typically within about 10% for three people in four, so Compound refines it from your own logs once you start tracking.",
+    "@onboardingExpenditureFooter": {
+        "description": "Onboarding expenditure: note under the total"
+    },
+    "onboardingBreakdown": "Breakdown",
+    "@onboardingBreakdown": {
+        "description": "Onboarding expenditure: header of the breakdown"
+    },
+    "onboardingRestingCalories": "Resting Calories",
+    "@onboardingRestingCalories": {
+        "description": "Onboarding expenditure: resting part"
+    },
+    "onboardingActivityCalories": "Daily Activity and Exercise",
+    "@onboardingActivityCalories": {
+        "description": "Onboarding expenditure: activity part"
+    },
+    "onboardingDigestionCalories": "Digesting Food",
+    "@onboardingDigestionCalories": {
+        "description": "Onboarding expenditure: digestion part"
+    },
+    "onboardingHowCalculated": "How This Is Calculated",
+    "@onboardingHowCalculated": {
+        "description": "Onboarding expenditure: header of the explanation"
+    },
+    "onboardingPhysicalActivityLevel": "Physical Activity Level",
+    "@onboardingPhysicalActivityLevel": {
+        "description": "Onboarding expenditure: the activity multiplier row"
+    },
+    "onboardingTotal": "Total",
+    "@onboardingTotal": {
+        "description": "Onboarding expenditure: the total row"
+    },
+    "onboardingHowCalculatedFooter": "Resting calories come from the Mifflin-St Jeor equation, using your age, height, weight and sex. They're then multiplied by a physical activity level that already includes your workouts. A calorie floor is applied when your targets are set.",
+    "@onboardingHowCalculatedFooter": {
+        "description": "Onboarding expenditure: how the estimate works"
+    },
+    "onboardingUnableToSaveProfile": "Unable to Save Profile",
+    "@onboardingUnableToSaveProfile": {
+        "description": "Onboarding: title of the alert when the account answers could not be saved"
+    },
+    "onboardingDisclaimerTitle": "Do You Agree?",
+    "@onboardingDisclaimerTitle": {
+        "description": "Onboarding: title of the health disclaimer"
+    },
+    "onboardingDisclaimerHeader": "Health Disclaimer",
+    "@onboardingDisclaimerHeader": {
+        "description": "Onboarding: header of the disclaimer text"
+    },
+    "onboardingDisclaimerText": "Compound is not a medical device and does not provide medical advice. The information presented is for general educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment.\nAlways consult a qualified healthcare provider before starting any diet, exercise, or weight‑loss program, changing medications, or if you have questions about a medical condition.\nIf you experience chest pain, shortness of breath, dizziness, or other concerning symptoms, stop activity and seek medical attention immediately. If you believe you may be experiencing a medical emergency, call your local emergency number right away.",
+    "@onboardingDisclaimerText": {
+        "description": "Onboarding: the health disclaimer"
+    },
+    "onboardingAcceptDisclaimer": "I acknowledge and accept the Terms of the Health Disclaimer",
+    "@onboardingAcceptDisclaimer": {
+        "description": "Onboarding: switch accepting the health disclaimer"
+    },
+    "onboardingAcceptPrivacy": "I acknowledge and accept the Terms of the Consumer Health Privacy Notice",
+    "@onboardingAcceptPrivacy": {
+        "description": "Onboarding: switch accepting the health privacy notice"
+    },
+    "onboardingUnableToSaveConsent": "Unable to Save Consent",
+    "@onboardingUnableToSaveConsent": {
+        "description": "Onboarding: title of the alert when the consent could not be saved"
+    },
+    "onboardingObjectiveTitle": "What Is Your Goal?",
+    "@onboardingObjectiveTitle": {
+        "description": "Onboarding: title of the goal question"
+    },
+    "onboardingObjectiveSubtitle": "Your goal generates a custom plan to get you there. This can be changed later, and your plan will update accordingly.",
+    "@onboardingObjectiveSubtitle": {
+        "description": "Onboarding: subtitle of the goal question"
+    },
+    "objectiveLoseWeight": "Lose weight",
+    "@objectiveLoseWeight": {
+        "description": "Goal objective"
+    },
+    "objectiveMaintain": "Maintain",
+    "@objectiveMaintain": {
+        "description": "Goal objective"
+    },
+    "objectiveGainWeight": "Gain weight",
+    "@objectiveGainWeight": {
+        "description": "Goal objective"
+    },
+    "objectiveLoseWeightDetail": "Goal of losing weight",
+    "@objectiveLoseWeightDetail": {
+        "description": "Goal objective, described"
+    },
+    "objectiveMaintainDetail": "Goal of maintaining weight",
+    "@objectiveMaintainDetail": {
+        "description": "Goal objective, described"
+    },
+    "objectiveGainWeightDetail": "Goal of gaining weight",
+    "@objectiveGainWeightDetail": {
+        "description": "Goal objective, described"
+    },
+    "onboardingTargetTitle": "What's Your Target?",
+    "@onboardingTargetTitle": {
+        "description": "Onboarding: title of the target-weight question"
+    },
+    "onboardingTargetLabel": "Target Weight",
+    "@onboardingTargetLabel": {
+        "description": "Onboarding: accessibility label of the target wheel, and the summary row"
+    },
+    "onboardingLowestTarget": "The lowest target offered is {lowest}, a BMI of 18.5 for your height. Below that is considered underweight.",
+    "@onboardingLowestTarget": {
+        "description": "Onboarding: why the weight-loss wheel stops where it does",
+        "placeholders": {
+            "lowest": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingAlreadyUnderweight": "Your weight is already at a BMI of 18.5 or below for your height, which is considered underweight, so a lower target isn't offered.",
+    "@onboardingAlreadyUnderweight": {
+        "description": "Onboarding: no lower target is offered"
+    },
+    "infoLabel": "Information",
+    "@infoLabel": {
+        "description": "Accessibility label of an information message's icon"
+    },
+    "warningLabel": "Warning",
+    "@warningLabel": {
+        "description": "Accessibility label of a warning message's icon"
+    },
+    "onboardingRateTitle": "At What Rate?",
+    "@onboardingRateTitle": {
+        "description": "Onboarding: title of the weekly-rate question"
+    },
+    "onboardingWeeklyRate": "Weekly Rate",
+    "@onboardingWeeklyRate": {
+        "description": "Onboarding: header of the weekly rate, and the summary row"
+    },
+    "onboardingRateConservative": "Conservative",
+    "@onboardingRateConservative": {
+        "description": "Onboarding: a slow weekly rate"
+    },
+    "onboardingRateStandard": "Standard (Recommended)",
+    "@onboardingRateStandard": {
+        "description": "Onboarding: the recommended weekly rate"
+    },
+    "onboardingRateAggressive": "Aggressive",
+    "@onboardingRateAggressive": {
+        "description": "Onboarding: a fast weekly rate"
+    },
+    "onboardingRateLossWarning": "Losing more than 0.75% of your body weight a week makes a lean person more likely to lose muscle and to feel hungry and tired. A slower rate is easier to keep up.",
+    "@onboardingRateLossWarning": {
+        "description": "Onboarding: warning on a fast loss rate"
+    },
+    "onboardingRateGainWarning": "Gaining more than 0.5% of your body weight a week means more of what you put on is likely to be fat rather than muscle.",
+    "@onboardingRateGainWarning": {
+        "description": "Onboarding: warning on a fast gain rate"
+    },
+    "onboardingWeeklyChange": "{sign}{amount} {unit} ({percent}% of body weight) / Week",
+    "@onboardingWeeklyChange": {
+        "description": "Onboarding: the weekly change, e.g. -0.50 kg (0.6% of body weight) / Week",
+        "placeholders": {
+            "sign": {
+                "type": "String"
+            },
+            "amount": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            },
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingMonthlyChange": "{sign}{amount} {unit} ({percent}% of body weight) / Month",
+    "@onboardingMonthlyChange": {
+        "description": "Onboarding: the monthly change",
+        "placeholders": {
+            "sign": {
+                "type": "String"
+            },
+            "amount": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            },
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingTargetAndTimeline": "Target and Timeline",
+    "@onboardingTargetAndTimeline": {
+        "description": "Onboarding: header of the rate's calorie target and end date"
+    },
+    "onboardingEstimatedTarget": "~ {kcal} kcal estimated daily calorie target",
+    "@onboardingEstimatedTarget": {
+        "description": "Onboarding: the calorie target the rate implies",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingDeficitCapped": "This rate needs a deficit of more than a quarter of what you burn, so your target is capped there and you may lose more slowly.",
+    "@onboardingDeficitCapped": {
+        "description": "Onboarding: the deficit is capped"
+    },
+    "onboardingEndDate": "Approximate end date: {date}",
+    "@onboardingEndDate": {
+        "description": "Onboarding: when the goal is reached at this rate",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingNoEndDate": "No approximate end date at this rate",
+    "@onboardingNoEndDate": {
+        "description": "Onboarding: no end date"
+    },
+    "onboardingStepDown": "Your target will step down as you lose, to keep this rate: about {kcal} kcal a day lower by your goal weight.",
+    "@onboardingStepDown": {
+        "description": "Onboarding: the target falls as weight is lost",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingStepUp": "Your target will step up as you gain, to keep this rate: about {kcal} kcal a day higher by your goal weight.",
+    "@onboardingStepUp": {
+        "description": "Onboarding: the target rises as weight is gained",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingSummaryTitle": "Does This Look Right?",
+    "@onboardingSummaryTitle": {
+        "description": "Onboarding: title of the goal summary"
+    },
+    "onboardingGoalOverview": "Goal Overview",
+    "@onboardingGoalOverview": {
+        "description": "Goal summary: header"
+    },
+    "onboardingYourGoal": "Your Goal",
+    "@onboardingYourGoal": {
+        "description": "Goal summary: the objective row"
+    },
+    "onboardingWeightDetails": "Weight Details",
+    "@onboardingWeightDetails": {
+        "description": "Goal summary: header"
+    },
+    "onboardingCurrentWeight": "Current Weight",
+    "@onboardingCurrentWeight": {
+        "description": "Goal summary row"
+    },
+    "onboardingWeightChange": "Weight Change",
+    "@onboardingWeightChange": {
+        "description": "Goal summary row"
+    },
+    "onboardingPerWeek": "{weight} / week",
+    "@onboardingPerWeek": {
+        "description": "Goal summary: the weekly rate",
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingTimeline": "Timeline",
+    "@onboardingTimeline": {
+        "description": "Goal summary: header"
+    },
+    "onboardingEstimatedTimeline": "Estimated Timeline",
+    "@onboardingEstimatedTimeline": {
+        "description": "Goal summary row"
+    },
+    "onboardingTimelineValue": "{weeks, plural, =1{1 week} other{{weeks} weeks}} ({months, plural, =1{1 month} other{{months} months}})",
+    "@onboardingTimelineValue": {
+        "description": "Goal summary: weeks and months to the goal",
+        "placeholders": {
+            "weeks": {
+                "type": "int"
+            },
+            "months": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingTimelineDetail": "Based on your selected rate of {rate} per week. Your calorie target will step down as you lose, or up as you gain, to keep that rate: about 24 kcal a day per kg (11 per lb).",
+    "@onboardingTimelineDetail": {
+        "description": "Goal summary: how the timeline is worked out",
+        "placeholders": {
+            "rate": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingMaintaining": "Maintaining current weight",
+    "@onboardingMaintaining": {
+        "description": "Goal summary: no timeline when maintaining"
+    },
+    "onboardingMotivation": "Motivation",
+    "@onboardingMotivation": {
+        "description": "Goal summary: header"
+    },
+    "onboardingYouveGotThis": "You've Got This!",
+    "@onboardingYouveGotThis": {
+        "description": "Goal summary: motivation title"
+    },
+    "onboardingMotivationLose": "Every step you take towards your goal is progress. Stay consistent with your nutrition and exercise, and you'll reach your target weight. Remember, sustainable changes lead to lasting results.",
+    "@onboardingMotivationLose": {
+        "description": "Goal summary: motivation"
+    },
+    "onboardingMotivationMaintain": "Maintaining your current weight is a fantastic goal! Focus on balanced nutrition and regular activity to keep your body healthy and strong. Consistency is key to long-term success.",
+    "@onboardingMotivationMaintain": {
+        "description": "Goal summary: motivation"
+    },
+    "onboardingMotivationGain": "Building healthy weight takes time and dedication. Focus on nutrient-dense foods and progressive strength training. Your body will thank you for the consistent effort.",
+    "@onboardingMotivationGain": {
+        "description": "Goal summary: motivation"
+    },
+    "onboardingUnableToSaveGoal": "Unable to save your Goal",
+    "@onboardingUnableToSaveGoal": {
+        "description": "Onboarding: title of the alert when the goal could not be saved"
+    },
+    "onboardingNoCurrentWeight": "Current weight not available.",
+    "@onboardingNoCurrentWeight": {
+        "description": "Onboarding: the goal has no starting weight"
+    },
+    "onboardingGymTitle": "Create Gym Profile",
+    "@onboardingGymTitle": {
+        "description": "Onboarding: title of the gym step"
+    },
+    "onboardingGymHeader": "What would you like to name this gym?",
+    "@onboardingGymHeader": {
+        "description": "Onboarding: header of the gym name field"
+    },
+    "onboardingGymName": "Name",
+    "@onboardingGymName": {
+        "description": "Onboarding: the gym name field"
+    },
+    "onboardingGymFooter": "Your gym starts with the full list of equipment, set up for the units you weigh in. You can change what's there later.",
+    "@onboardingGymFooter": {
+        "description": "Onboarding: note under the gym name"
+    },
+    "onboardingUntitledGym": "Untitled Gym Profile",
+    "@onboardingUntitledGym": {
+        "description": "Name given to a gym saved without one"
+    },
+    "onboardingKilogramStack": "Kilogram stack",
+    "@onboardingKilogramStack": {
+        "description": "Name of the kilogram weight stack added to a machine"
+    },
+    "onboardingUnableToSaveGym": "Unable to Save Gym Profile",
+    "@onboardingUnableToSaveGym": {
+        "description": "Onboarding: title of the alert when the gym could not be saved"
+    },
+    "onboardingProgramTitle": "Choose a Program",
+    "@onboardingProgramTitle": {
+        "description": "Onboarding: title of the program step"
+    },
+    "onboardingProgramSubtitle": "Start with a ready-made mesocycle.",
+    "@onboardingProgramSubtitle": {
+        "description": "Onboarding: subtitle of the program step"
+    },
+    "onboardingRecommended": "Recommended for You",
+    "@onboardingRecommended": {
+        "description": "Onboarding: header of the recommended program"
+    },
+    "onboardingRecommendedFooter": "Based on how often you said you exercise.",
+    "@onboardingRecommendedFooter": {
+        "description": "Onboarding: why the program is recommended"
+    },
+    "onboardingMorePrograms": "More Programs",
+    "@onboardingMorePrograms": {
+        "description": "Onboarding: header of the other programs"
+    },
+    "onboardingPrograms": "Programs",
+    "@onboardingPrograms": {
+        "description": "Onboarding: header of the programs when none is recommended"
+    },
+    "onboardingProgramSummary": "{workouts, plural, =1{1 workout} other{{workouts} workouts}} a week · {weeks, plural, =1{1 week} other{{weeks} weeks}}",
+    "@onboardingProgramSummary": {
+        "description": "Onboarding: a program's week and length",
+        "placeholders": {
+            "workouts": {
+                "type": "int"
+            },
+            "weeks": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingStartProgram": "Start Program",
+    "@onboardingStartProgram": {
+        "description": "Onboarding: starts the chosen program"
+    },
+    "onboardingUnableToStart": "Unable to Start Mesocycle",
+    "@onboardingUnableToStart": {
+        "description": "Onboarding: title of the alert when the program could not be started"
+    },
+    "onboardingDietIntroTitle": "Ready to Plan Meals?",
+    "@onboardingDietIntroTitle": {
+        "description": "Onboarding: title of the diet introduction"
+    },
+    "onboardingDietProgram": "Diet Program",
+    "@onboardingDietProgram": {
+        "description": "Onboarding: header of the diet introduction"
+    },
+    "onboardingDietIntroText": "Let's get to work creating a custom diet program tuned to your needs. This will evolve over time as we learn how your body responds to the diet and make the necessary changes. This can always be manually altered later if you would like a specific change.",
+    "@onboardingDietIntroText": {
+        "description": "Onboarding: the diet introduction"
+    },
+    "onboardingDietIntroFooter": "Use the recommended plan, or answer a few questions to customize it.",
+    "@onboardingDietIntroFooter": {
+        "description": "Onboarding: note under the diet introduction"
+    },
+    "onboardingUseRecommendedPlan": "Use Recommended Plan",
+    "@onboardingUseRecommendedPlan": {
+        "description": "Onboarding: skips the diet questions"
+    },
+    "onboardingCustomize": "Customize",
+    "@onboardingCustomize": {
+        "description": "Onboarding: answers the diet questions"
+    },
+    "onboardingDietTitle": "What's Your Diet?",
+    "@onboardingDietTitle": {
+        "description": "Onboarding: title of the diet question"
+    },
+    "onboardingDietHeader": "Diet",
+    "@onboardingDietHeader": {
+        "description": "Onboarding: header of the diet options"
+    },
+    "dietBalanced": "Balanced",
+    "@dietBalanced": {
+        "description": "Diet"
+    },
+    "dietLowFat": "Low Fat",
+    "@dietLowFat": {
+        "description": "Diet"
+    },
+    "dietLowCarb": "Low Carb",
+    "@dietLowCarb": {
+        "description": "Diet"
+    },
+    "dietKeto": "Keto",
+    "@dietKeto": {
+        "description": "Diet"
+    },
+    "dietBalancedDetail": "30% of calories from fat, with carbs making up the rest.",
+    "@dietBalancedDetail": {
+        "description": "Diet, described"
+    },
+    "dietLowFatDetail": "20% of calories from fat, the lowest guidelines advise, so more carbs.",
+    "@dietLowFatDetail": {
+        "description": "Diet, described"
+    },
+    "dietLowCarbDetail": "20% of calories from carbs, with fat making up the rest.",
+    "@dietLowCarbDetail": {
+        "description": "Diet, described"
+    },
+    "dietKetoDetail": "About 30 g of carbs a day, with fat making up the rest.",
+    "@dietKetoDetail": {
+        "description": "Diet, described"
+    },
+    "onboardingDistributionTitle": "Even or Varied?",
+    "@onboardingDistributionTitle": {
+        "description": "Onboarding: title of the calorie distribution question"
+    },
+    "onboardingDistributionHeader": "Distribution",
+    "@onboardingDistributionHeader": {
+        "description": "Onboarding: header of the distribution options"
+    },
+    "distributionEven": "Distribute Evenly",
+    "@distributionEven": {
+        "description": "Calorie distribution"
+    },
+    "distributionVaried": "Vary By Day",
+    "@distributionVaried": {
+        "description": "Calorie distribution"
+    },
+    "distributionEvenDetail": "Distribute calories evenly across all days of the week.",
+    "@distributionEvenDetail": {
+        "description": "Calorie distribution, described"
+    },
+    "distributionVariedDetail": "One higher day for each training day in your program, spread through the week, and lower days in between. The weekly total stays the same.",
+    "@distributionVariedDetail": {
+        "description": "Calorie distribution, described"
+    },
+    "onboardingProteinTitle": "How Much Protein?",
+    "@onboardingProteinTitle": {
+        "description": "Onboarding: title of the protein question"
+    },
+    "onboardingProteinHeader": "Protein",
+    "@onboardingProteinHeader": {
+        "description": "Onboarding: header of the protein options"
+    },
+    "onboardingProteinFooter": "Worked out on your body weight, or on the weight at a BMI of 30 if you're above it. If you have kidney disease, ask your doctor before eating more protein.",
+    "@onboardingProteinFooter": {
+        "description": "Onboarding: note under the protein options"
+    },
+    "proteinLow": "Low",
+    "@proteinLow": {
+        "description": "Protein intake"
+    },
+    "proteinModerate": "Moderate",
+    "@proteinModerate": {
+        "description": "Protein intake"
+    },
+    "proteinHigh": "High",
+    "@proteinHigh": {
+        "description": "Protein intake"
+    },
+    "proteinVeryHigh": "Very High",
+    "@proteinVeryHigh": {
+        "description": "Protein intake"
+    },
+    "proteinLowDetail": "1.6 g per kg a day: where the benefit for muscle levels off for most people.",
+    "@proteinLowDetail": {
+        "description": "Protein intake, described"
+    },
+    "proteinModerateDetail": "2.0 g per kg a day: a margin above that for people who train hard.",
+    "@proteinModerateDetail": {
+        "description": "Protein intake, described"
+    },
+    "proteinHighDetail": "2.2 g per kg a day: the top of the range studies support for building muscle.",
+    "@proteinHighDetail": {
+        "description": "Protein intake, described"
+    },
+    "proteinVeryHighDetail": "2.6 g per kg a day: for lean lifters cutting hard. No guideline recommends this much for everyone.",
+    "@proteinVeryHighDetail": {
+        "description": "Protein intake, described"
+    },
+    "onboardingPlanTitle": "Happy With This?",
+    "@onboardingPlanTitle": {
+        "description": "Onboarding: title of the diet plan"
+    },
+    "onboardingOverview": "Overview",
+    "@onboardingOverview": {
+        "description": "Diet plan: header"
+    },
+    "onboardingPlanMesocycle": "Mesocycle: {name}, {days} days/week",
+    "@onboardingPlanMesocycle": {
+        "description": "Diet plan: the mesocycle it was built for",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingPlanTdee": "Estimated TDEE: {kcal} kcal/day",
+    "@onboardingPlanTdee": {
+        "description": "Diet plan: the expenditure it was built on",
+        "placeholders": {
+            "kcal": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingPlanDiet": "Preferred diet: {diet}",
+    "@onboardingPlanDiet": {
+        "description": "Diet plan row",
+        "placeholders": {
+            "diet": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingPlanFloor": "Calorie floor: {floor}",
+    "@onboardingPlanFloor": {
+        "description": "Diet plan row",
+        "placeholders": {
+            "floor": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingPlanDistribution": "Distribution: {distribution}",
+    "@onboardingPlanDistribution": {
+        "description": "Diet plan row",
+        "placeholders": {
+            "distribution": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingPlanProtein": "Protein: {protein}",
+    "@onboardingPlanProtein": {
+        "description": "Diet plan row",
+        "placeholders": {
+            "protein": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingPlanFooter": "Your target never goes below your calorie floor, and protein is set per kilogram of body weight.",
+    "@onboardingPlanFooter": {
+        "description": "Diet plan: note under the overview"
+    },
+    "onboardingSevenDayTargets": "7-day targets",
+    "@onboardingSevenDayTargets": {
+        "description": "Diet plan: header of the daily targets"
+    },
+    "onboardingPlanDay": "Day {day}",
+    "@onboardingPlanDay": {
+        "description": "Diet plan: a day of the week, Monday first",
+        "placeholders": {
+            "day": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingPlanDayMacros": "{calories} · P {protein} · C {carbs} · F {fat}",
+    "@onboardingPlanDayMacros": {
+        "description": "Diet plan: a day's calories and protein, carb and fat grams",
+        "placeholders": {
+            "calories": {
+                "type": "String"
+            },
+            "protein": {
+                "type": "String"
+            },
+            "carbs": {
+                "type": "String"
+            },
+            "fat": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingBelowResting": "Some days' targets are below your estimated resting calories ({kcal}). That's a steep deficit: a slower rate is easier to sustain and keeps more muscle.",
+    "@onboardingBelowResting": {
+        "description": "Diet plan: warning when a day is below resting calories",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingUnableToUpdate": "Unable to update your profile",
+    "@onboardingUnableToUpdate": {
+        "description": "Onboarding: title of the alert when the diet plan could not be saved"
     }
 }

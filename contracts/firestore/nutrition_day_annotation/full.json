@@ -1,0 +1,9 @@
+{
+  "author_id": "user_contract_full",
+  "date_modified": {
+    "$timestamp": "2026-10-13T08:30:15.750Z"
+  },
+  "day_key": "2026-10-12",
+  "is_fasting_day": true,
+  "is_partially_logged": true
+}

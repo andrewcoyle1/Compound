@@ -178,6 +178,28 @@ final _models =
         roundTrip: (data) => FoodModel.fromFirestore(data).toFirestore(),
         keys: FoodModelKeys.all,
       ),
+      'nutrition_strategy_settings': (
+        roundTrip: (data) =>
+            NutritionStrategySettings.fromFirestore(data).toFirestore(),
+        keys: NutritionStrategySettingsKeys.all,
+      ),
+      'check_in_record': (
+        roundTrip: (data) => CheckInRecord.fromFirestore(data).toFirestore(),
+        keys: CheckInRecordKeys.all,
+      ),
+      'logging_break': (
+        roundTrip: (data) => LoggingBreak.fromFirestore(data).toFirestore(),
+        keys: LoggingBreakKeys.all,
+      ),
+      'nutrition_day_annotation': (
+        roundTrip: (data) =>
+            NutritionDayAnnotation.fromFirestore(data).toFirestore(),
+        keys: NutritionDayAnnotationKeys.all,
+      ),
+      'shortcut_settings': (
+        roundTrip: (data) => ShortcutSettings.fromFirestore(data).toFirestore(),
+        keys: ShortcutSettingsKeys.all,
+      ),
     };
 
 final _root = Directory('../../../contracts/firestore');
@@ -302,6 +324,10 @@ void main() {
         'DeloadType': raw(DeloadType.values),
         'MacrocycleStatus': raw(MacrocycleStatus.values),
         'MeasurementMethod': raw(MeasurementMethod.values),
+        'ExpenditureEstimationMethod': raw(ExpenditureEstimationMethod.values),
+        'BMREquation': raw(BmrEquation.values),
+        'ExpenditureCalculationMode': raw(ExpenditureCalculationMode.values),
+        'ExpenditureAlgorithmVersion': raw(ExpenditureAlgorithmVersion.values),
       }),
     );
   });

@@ -62,7 +62,7 @@ struct FirestoreContractTests {
 
     private static func contracts() throws -> [Contract] {
         try userAndTrainingContracts() + nutritionContracts() + bodyAndGoalContracts() + libraryContracts()
-            + gymContracts() + programAndFoodContracts()
+            + gymContracts() + programAndFoodContracts() + checkInContracts()
     }
 
     private static func userAndTrainingContracts() throws -> [Contract] {
@@ -330,7 +330,7 @@ struct FirestoreContractTests {
             "NutrientKey": NutrientKey.allCases.map(\.rawValue),
             "TimestampSide": timestampSides.map(\.rawValue)
         ].merging(try Self.bodyAndGoalEnums()) { $1 }.merging(Self.libraryEnums()) { $1 }
-            .merging(Self.programAndFoodEnums()) { $1 }
+            .merging(Self.programAndFoodEnums()) { $1 }.merging(Self.checkInEnums()) { $1 }
         let url = Self.root.appendingPathComponent("enums.json")
         if ProcessInfo.processInfo.environment["RECORD_CONTRACTS"] == "1" { try Self.write(enums, to: url) }
         let fixture = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: [String]])

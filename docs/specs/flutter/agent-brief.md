@@ -38,6 +38,8 @@ manager or model by name.
   - `addTearDown(bloc.close)` on a bloc its `BlocProvider` already closes.
 - **The very_good MCP `test` server is shared by every agent and runs one request at a time.**
   Run your new test files first and fix any hang; run the whole suite only once they pass.
+- **Build test dates from calendar days**, such as `DateTime(now.year, now.month, now.day - 1, 12)`,
+  never `now` minus hours: "20 hours ago" is still today after 20:00, and CI runs in UTC at any hour.
 - **Swift work happens in your own worktree,** never in `/Users/andrewcoyle/Compound`, which is
   the owner's checkout.
 - **The `staging` flavor is the mock build.** It has no Firebase, and the app must be fully usable

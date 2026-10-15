@@ -1,0 +1,407 @@
+import 'dart:async';
+
+import 'package:app_ui/app_ui.dart';
+import 'package:compound/app/app.dart';
+import 'package:compound/l10n/l10n.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound/training_library/bloc/training_library_bloc.dart';
+import 'package:compound/training_library/logic/template_summary.dart';
+import 'package:compound/training_library/models/training_library.dart';
+import 'package:compound/training_library/view/exercise_detail_page.dart';
+import 'package:compound/training_library/view/exercise_image.dart';
+import 'package:compound/training_library/view/library_names.dart';
+import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound_models/compound_models.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+/// One workout template, read-only (Swift `WorkoutTemplateDetailView`): the
+/// muscles it plans sets for and each exercise's plan. Starting it waits
+/// for the tracker; editing, sharing and deleting wait for M5.
+class WorkoutTemplateDetailPage extends StatelessWidget {
+  const new({required this.workoutId, super.key});
+
+  /// The path under the workout library.
+  static const path = ':$idParameter';
+
+  /// The route name.
+  static const name = 'workoutTemplateDetail';
+
+  /// The path parameter holding the template's `workoutId`.
+  static const idParameter = 'workoutId';
+
+  final String workoutId;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.read<AppBloc>().state;
+    if (state is! AppAuthenticated) return const SizedBox.shrink();
+    return TrainingLibraryProvider(
+      uid: state.user.uid,
+      child: WorkoutTemplateDetailView(workoutId: workoutId),
+    );
+  }
+}
+
+class WorkoutTemplateDetailView extends StatelessWidget {
+  const new({required this.workoutId, super.key});
+
+  final String workoutId;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final state = context.watch<TrainingLibraryBloc>().state;
+    final found = switch (state) {
+      TrainingLibraryLoaded(:final library) => library.template(workoutId),
+      _ => null,
+    };
+    final template = found?.$1;
+    final description = template?.description;
+    return Scaffold(
+      appBar: AppBar(
+        title: template == null
+            ? null
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(template.name),
+                  if (description != null && description.isNotEmpty)
+                    Text(
+                      description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.rowDetail.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: switch (state) {
+          TrainingLibraryLoading() => const Center(
+            child: CircularProgressIndicator.adaptive(),
+          ),
+          TrainingLibraryFailure() => LibraryFailure(
+            message: l10n.workoutsLoadFailure,
+            onRetry: () => context.read<TrainingLibraryBloc>().add(
+              const TrainingLibrarySubscriptionRequested(),
+            ),
+          ),
+          TrainingLibraryLoaded(:final library) when template != null => _Plan(
+            template: template,
+            library: library,
+          ),
+          TrainingLibraryLoaded() => Center(
+            child: LibraryEmptyState(
+              icon: AppSymbols.workout,
+              title: l10n.workoutNotFound,
+            ),
+          ),
+        },
+      ),
+    );
+  }
+}
+
+class _Plan extends StatelessWidget {
+  const new({required this.template, required this.library});
+
+  final WorkoutTemplateModel template;
+  final TrainingLibrary library;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final exercises = template.exercises;
+    final summaries = TemplateSummary.targetMuscles(exercises, l10n.muscleName);
+    final letters = TemplateSummary.supersetLetters(exercises);
+    final allExercises = library.allExercises;
+    return LibrarySections(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.s,
+          children: [
+            _HeaderWithInfo(
+              title: l10n.exerciseTargetMusclesHeader,
+              info: MethodInfo.plannedSetsPerMuscle(l10n),
+            ),
+            if (summaries.isEmpty)
+              AppSection(
+                children: [
+                  AppListRow(
+                    title: l10n.workoutNoTargetMuscles,
+                    icon: AppSymbols.muscleGroup,
+                    tint: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              )
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  spacing: AppSpacing.s,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final summary in summaries) _MuscleTile(summary),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        AppSection(
+          header: l10n.workoutExercisesHeader(exercises.length),
+          children: [
+            for (final exercise in exercises)
+              _ExerciseRow(
+                exercise: exercise,
+                supersetLetter: letters[exercise.supersetGroupId],
+                alternatives: TemplateSummary.alternativeNames(
+                  exercise,
+                  allExercises,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// A section title with the method's info button at its trailing edge
+/// (Swift `MethodInfoHeader`).
+class _HeaderWithInfo extends StatelessWidget {
+  const new({required this.title, required this.info});
+
+  final String title;
+  final MethodInfo info;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
+      child: Row(
+        children: [
+          Expanded(
+            child: Semantics(
+              header: true,
+              child: Text(
+                title,
+                style: AppTextStyles.sectionTitle.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          MethodInfoButton(info),
+        ],
+      ),
+    );
+  }
+}
+
+/// A muscle's planned sets and how many exercises work it.
+class _MuscleTile extends StatelessWidget {
+  const new(this.summary);
+
+  final TargetMuscleSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
+    return MergeSemantics(
+      child: AppCard(
+        style: AppCardStyle.tinted(secondary),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.m),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.xxs,
+            children: [
+              Text(
+                l10n.muscleName(summary.muscle),
+                style: AppTextStyles.rowDetail.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                l10n.targetSetsValue(
+                  _sets(l10n, summary.weightedTargetSets, locale),
+                ),
+                style: AppTextStyles.label.copyWith(color: secondary),
+              ),
+              Text(
+                l10n.exerciseCount(summary.exerciseCount),
+                style: AppTextStyles.label.copyWith(color: secondary),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "1 set", "3 sets", "2.5 sets": a fractional count is always plural.
+String _sets(AppLocalizations l10n, double sets, String locale) =>
+    sets == sets.roundToDouble()
+    ? l10n.setCount(sets.round())
+    : l10n.setCountDecimal(AppFormat.setCount(sets, locale: locale));
+
+/// An exercise in the template: its picture and name, the plan's targets
+/// and setup, and the muscles it works (Swift `TemplateExerciseRow` and
+/// `TemplateExercisePlanDetails`). Opens the exercise.
+class _ExerciseRow extends StatelessWidget {
+  const new({
+    required this.exercise,
+    required this.supersetLetter,
+    required this.alternatives,
+  });
+
+  final WorkoutTemplateExercise exercise;
+  final String? supersetLetter;
+  final List<String> alternatives;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    final secondary = AppTextStyles.rowDetail.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
+    final notes = exercise.notes?.trim() ?? '';
+    final setup = [
+      if (exercise.warmupSetCount case final count?) l10n.warmupCount(count),
+      if (exercise.restSeconds case final rest? when rest > 0)
+        l10n.restValue(AppFormat.duration(Duration(seconds: rest))),
+    ].join(' · ');
+    final supersetLetter = this.supersetLetter;
+    final side = MediaQuery.textScalerOf(context).scale(60);
+    return Semantics(
+      button: true,
+      child: InkWell(
+        onTap: () => unawaited(
+          context.pushNamed(
+            ExerciseDetailPage.name,
+            pathParameters: {
+              ExerciseDetailPage.idParameter: exercise.exercise.id,
+            },
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.l,
+            vertical: AppSpacing.m,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.m,
+            children: [
+              ExcludeSemantics(
+                child: ClipRSuperellipse(
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(AppRadius.s),
+                  ),
+                  child: SizedBox.square(
+                    dimension: side,
+                    child: ExerciseImage(exercise.exercise),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.xs,
+                  children: [
+                    Text(
+                      exercise.exercise.name,
+                      style: AppTextStyles.rowTitle.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    Text(_targets(context), style: secondary),
+                    if (supersetLetter != null)
+                      AppChip(
+                        label: l10n.supersetLabel(supersetLetter),
+                        icon: AppSymbols.superset,
+                        tint: context.appColors.superset,
+                      ),
+                    if (setup.isNotEmpty) Text(setup, style: secondary),
+                    if (notes.isNotEmpty)
+                      _Labelled(title: l10n.planNotesLabel, value: notes),
+                    if (alternatives.isNotEmpty)
+                      _Labelled(
+                        title: l10n.alternativesLabel,
+                        value: alternatives.join(', '),
+                      ),
+                    MuscleChips(
+                      TemplateSummary.sortedMuscles(
+                        exercise.exercise.muscleGroups,
+                        l10n.muscleName,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "3 sets · 8–12 · RIR 1", leaving out what the plan doesn't set.
+  String _targets(BuildContext context) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final targets = TemplateSummary.targets(exercise.setTargets);
+    String range(int low, int high) => low == high
+        ? AppFormat.number(low, locale: locale)
+        : AppFormat.repRange(low, high, locale: locale);
+    return [
+      l10n.setCount(targets.sets),
+      switch ((targets.repsLow, targets.repsHigh)) {
+        (final low?, final high?) => range(low, high),
+        (final low?, null) => '${AppFormat.number(low, locale: locale)}+',
+        _ => null,
+      },
+      if ((targets.rirLow, targets.rirHigh) case (final low?, final high?))
+        l10n.rirRange(range(low, high)),
+    ].nonNulls.join(' · ');
+  }
+}
+
+class _Labelled extends StatelessWidget {
+  const new({required this.title, required this.value});
+
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return MergeSemantics(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppSpacing.xxs,
+        children: [
+          Text(
+            title,
+            style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
+          ),
+          Text(
+            value,
+            style: AppTextStyles.rowDetail.copyWith(color: scheme.onSurface),
+          ),
+        ],
+      ),
+    );
+  }
+}

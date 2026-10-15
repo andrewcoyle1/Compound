@@ -26,6 +26,17 @@ class const Citation({
     doi: '10.1080/0886022X.2023.2273421',
   );
 
+  /// R95.
+  static const pelland2026 = Citation(
+    reference:
+        'Pelland JC, Remmert JF, Robinson ZP, Hinson SR, Zourdos MC (2026; '
+        'online Dec 2025). The resistance training dose response: '
+        'meta-regressions exploring the effects of weekly volume and '
+        'frequency on muscle hypertrophy and strength gains. Sports Med '
+        '56(2):481–505.',
+    doi: '10.1007/s40279-025-02344-w',
+  );
+
   /// R31.
   static const orsama2014 = Citation(
     reference:
@@ -200,6 +211,17 @@ class const MethodInfo({
     limitations: l10n.adherenceBandMethodLimitations,
     ownChoices: l10n.adherenceBandMethodOwnChoices,
     citations: const [Citation.cfr21],
+  );
+
+  /// A template's planned sets per muscle (Swift
+  /// `MethodInfo.plannedSetsPerMuscle`), computed by
+  /// `TemplateSummary.targetMuscles`.
+  factory plannedSetsPerMuscle(AppLocalizations l10n) => MethodInfo(
+    title: l10n.plannedSetsMethodTitle,
+    summary: l10n.plannedSetsMethodSummary,
+    formula: 'planned sets = Σ planned sets × (1 if primary, 0.5 if secondary)',
+    limitations: l10n.plannedSetsMethodLimitations,
+    citations: const [Citation.pelland2026],
   );
 
   static const _weightTrendFormula = '''

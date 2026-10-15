@@ -6,8 +6,11 @@ import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:program_repository/program_repository.dart';
+import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -31,9 +34,12 @@ extension PumpApp on WidgetTester {
     WorkoutSessionRepository? workoutSessionRepository,
     NutritionRepository? nutritionRepository,
     BodyRepository? bodyRepository,
+    TrainingLibraryRepository? trainingLibraryRepository,
+    ProgramRepository? programRepository,
     AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
     AppBloc? appBloc,
     double textScale = 1,
+    GoRouter? router,
   }) {
     return pumpWidget(
       MultiRepositoryProvider(
@@ -53,20 +59,39 @@ extension PumpApp on WidgetTester {
           RepositoryProvider.value(
             value: bodyRepository ?? MockBodyRepository(),
           ),
+          RepositoryProvider.value(
+            value:
+                trainingLibraryRepository ??
+                InMemoryTrainingLibraryRepository(),
+          ),
+          RepositoryProvider.value(
+            value: programRepository ?? InMemoryProgramRepository(),
+          ),
           RepositoryProvider.value(value: analyticsRepository),
         ],
         child: BlocProvider.value(
           value: appBloc ?? MockAppBloc(),
-          child: MaterialApp(
-            theme: AppTheme.light,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: MediaQuery.withClampedTextScaling(
-              minScaleFactor: textScale,
-              maxScaleFactor: textScale,
-              child: widget,
-            ),
-          ),
+          // With a [router], [widget] is left out: the router's routes are
+          // the app.
+          child: router != null
+              ? MaterialApp.router(
+                  theme: AppTheme.light,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  routerConfig: router,
+                )
+              : MaterialApp(
+                  theme: AppTheme.light,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  home: MediaQuery.withClampedTextScaling(
+                    minScaleFactor: textScale,
+                    maxScaleFactor: textScale,
+                    child: widget,
+                  ),
+                ),
         ),
       ),
     );

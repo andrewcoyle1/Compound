@@ -2043,5 +2043,699 @@
     "onboardingUnableToUpdate": "Unable to update your profile",
     "@onboardingUnableToUpdate": {
         "description": "Onboarding: title of the alert when the diet plan could not be saved"
+    },
+    "trainingSearchHint": "Exercises and workouts",
+    "@trainingSearchHint": {
+        "description": "Training tab: placeholder of the search field"
+    },
+    "trainingWorkoutsRow": "Workouts",
+    "@trainingWorkoutsRow": {
+        "description": "Training tab Library row, and the workouts screen's title"
+    },
+    "trainingExercisesRow": "Exercises",
+    "@trainingExercisesRow": {
+        "description": "Training tab Library row, and the exercises screen's title"
+    },
+    "searchNoResults": "No Results for “{query}”",
+    "@searchNoResults": {
+        "description": "Search: nothing matched the query",
+        "placeholders": {
+            "query": {
+                "type": "String"
+            }
+        }
+    },
+    "searchNoResultsMessage": "Check the spelling or try a new search.",
+    "@searchNoResultsMessage": {
+        "description": "Search: hint under the no-results title"
+    },
+    "clearSearch": "Clear search",
+    "@clearSearch": {
+        "description": "Accessibility label of the button that empties a search field"
+    },
+    "exercisesSearchHint": "Search exercises",
+    "@exercisesSearchHint": {
+        "description": "Exercises: placeholder of the search field"
+    },
+    "exercisesCustomHeader": "Custom Exercises",
+    "@exercisesCustomHeader": {
+        "description": "Exercises: header of the user's own exercises, and the library filter option"
+    },
+    "exercisesOfficialHeader": "Official Exercises",
+    "@exercisesOfficialHeader": {
+        "description": "Exercises: header of the bundled exercises, and the library filter option"
+    },
+    "exercisesAllOption": "All Exercises",
+    "@exercisesAllOption": {
+        "description": "Exercises: library filter option for every exercise"
+    },
+    "exercisesNoCustomTitle": "No Custom Exercises",
+    "@exercisesNoCustomTitle": {
+        "description": "Exercises: empty state title for the user's own exercises"
+    },
+    "exercisesNoCustomMessage": "You have no custom exercises.",
+    "@exercisesNoCustomMessage": {
+        "description": "Exercises: empty state message for the user's own exercises"
+    },
+    "exercisesNoMatchesTitle": "No Matching Exercises",
+    "@exercisesNoMatchesTitle": {
+        "description": "Exercises: no exercise passes the filters"
+    },
+    "exercisesNoMatchesMessage": "No exercise matches every filter. Try clearing one.",
+    "@exercisesNoMatchesMessage": {
+        "description": "Exercises: hint when no exercise passes the filters"
+    },
+    "exercisesLoadFailure": "Your exercises couldn't be loaded.",
+    "@exercisesLoadFailure": {
+        "description": "Shown when the exercise library can't be read"
+    },
+    "filterClear": "Clear filters",
+    "@filterClear": {
+        "description": "Exercises: the button that resets every filter"
+    },
+    "filterGym": "Gym",
+    "@filterGym": {
+        "description": "Exercises: filter chip for a gym's equipment"
+    },
+    "filterAnyEquipment": "Any Equipment",
+    "@filterAnyEquipment": {
+        "description": "Exercises: gym filter option for no gym"
+    },
+    "filterType": "Type",
+    "@filterType": {
+        "description": "Exercises: filter chip for the exercise type"
+    },
+    "filterLaterality": "Laterality",
+    "@filterLaterality": {
+        "description": "Exercises: filter chip for laterality"
+    },
+    "filterResistance": "Resistance",
+    "@filterResistance": {
+        "description": "Exercises: filter chip for resistance equipment"
+    },
+    "filterSupport": "Support",
+    "@filterSupport": {
+        "description": "Exercises: filter chip for support equipment"
+    },
+    "filterRangeOfMotion": "Range of Motion",
+    "@filterRangeOfMotion": {
+        "description": "Exercises: filter chip and detail row for the range-of-motion rating"
+    },
+    "filterStability": "Stability",
+    "@filterStability": {
+        "description": "Exercises: filter chip and detail row for the stability rating"
+    },
+    "filterLibrary": "Library",
+    "@filterLibrary": {
+        "description": "Exercises: filter chip for whose exercises to show"
+    },
+    "filterAny": "Any",
+    "@filterAny": {
+        "description": "Exercises: rating filter option for no minimum"
+    },
+    "filterRatingChip": "{title} {rating}+",
+    "@filterRatingChip": {
+        "description": "Exercises: a rating filter chip with its minimum, e.g. Stability 3+",
+        "placeholders": {
+            "title": {
+                "type": "String"
+            },
+            "rating": {
+                "type": "int"
+            }
+        }
+    },
+    "filterCountChip": "{title} ({count})",
+    "@filterCountChip": {
+        "description": "Exercises: a filter chip with how many options are chosen",
+        "placeholders": {
+            "title": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "pickerTitleEmpty": "Select at least one exercise",
+    "@pickerTitleEmpty": {
+        "description": "Exercise picker: title while nothing is ticked"
+    },
+    "pickerTitleCount": "{count, plural, =1{1 exercise selected} other{{count} exercises selected}}",
+    "@pickerTitleCount": {
+        "description": "Exercise picker: title with the number ticked",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "pickerAdd": "Add",
+    "@pickerAdd": {
+        "description": "Exercise picker: the confirm button's name for screen readers"
+    },
+    "discardChangesTitle": "Discard Changes?",
+    "@discardChangesTitle": {
+        "description": "Confirmation before closing a screen with unsaved changes"
+    },
+    "discardChangesButton": "Discard Changes",
+    "@discardChangesButton": {
+        "description": "Button that closes a screen and loses its changes"
+    },
+    "keepEditingButton": "Keep Editing",
+    "@keepEditingButton": {
+        "description": "Button that stays on a screen with unsaved changes"
+    },
+    "exerciseAboutTab": "About",
+    "@exerciseAboutTab": {
+        "description": "Exercise detail: the tab with the exercise's definition"
+    },
+    "exerciseHistoryTab": "History",
+    "@exerciseHistoryTab": {
+        "description": "Exercise detail: the tab and section with the exercise's logged sessions"
+    },
+    "exerciseNoHistory": "No history yet",
+    "@exerciseNoHistory": {
+        "description": "Exercise detail: subtitle when the exercise has never been logged"
+    },
+    "exercisePerformed": "{count, plural, =1{Performed 1 time · last {date}} other{Performed {count} times · last {date}}}",
+    "@exercisePerformed": {
+        "description": "Exercise detail: subtitle with how often and when the exercise was last done",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "exerciseNotLoggedTitle": "Not Logged Yet",
+    "@exerciseNotLoggedTitle": {
+        "description": "Exercise detail: empty history title"
+    },
+    "exerciseNotLoggedMessage": "You have not logged this exercise yet.",
+    "@exerciseNotLoggedMessage": {
+        "description": "Exercise detail: empty history message"
+    },
+    "exerciseHistoryDetail": "{sets} · {reps} · top {top}",
+    "@exerciseHistoryDetail": {
+        "description": "Exercise detail: a session's sets, reps and heaviest weight",
+        "placeholders": {
+            "sets": {
+                "type": "String"
+            },
+            "reps": {
+                "type": "String"
+            },
+            "top": {
+                "type": "String"
+            }
+        }
+    },
+    "exerciseHistoryLoadFailure": "Your history couldn't be loaded.",
+    "@exerciseHistoryLoadFailure": {
+        "description": "Exercise detail: the sessions can't be read"
+    },
+    "exerciseNotFound": "This exercise is no longer in your library.",
+    "@exerciseNotFound": {
+        "description": "Exercise detail: opened for an exercise that doesn't exist"
+    },
+    "exerciseDefinitionHeader": "Definition",
+    "@exerciseDefinitionHeader": {
+        "description": "Exercise detail: section header"
+    },
+    "exerciseNameRow": "Exercise Name",
+    "@exerciseNameRow": {
+        "description": "Exercise detail: row title"
+    },
+    "exerciseTrackableMetricsRow": "Trackable Metrics",
+    "@exerciseTrackableMetricsRow": {
+        "description": "Exercise detail: row title"
+    },
+    "exerciseBodyweightRow": "Bodyweight",
+    "@exerciseBodyweightRow": {
+        "description": "Exercise detail: row title, whether body weight is the load"
+    },
+    "yes": "Yes",
+    "@yes": {
+        "description": "Yes, as a value"
+    },
+    "no": "No",
+    "@no": {
+        "description": "No, as a value"
+    },
+    "none": "None",
+    "@none": {
+        "description": "No value"
+    },
+    "exerciseTargetMusclesHeader": "Target Muscles",
+    "@exerciseTargetMusclesHeader": {
+        "description": "Exercise and workout detail: section header"
+    },
+    "musclePrimary": "Primary",
+    "@musclePrimary": {
+        "description": "A muscle an exercise works directly"
+    },
+    "muscleSecondary": "Secondary",
+    "@muscleSecondary": {
+        "description": "A muscle an exercise only assists"
+    },
+    "muscleTargetRow": "{muscle}: {target}",
+    "@muscleTargetRow": {
+        "description": "Exercise detail: a muscle and how much it is worked",
+        "placeholders": {
+            "muscle": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "muscleChipPrimary": "{muscle}, primary",
+    "@muscleChipPrimary": {
+        "description": "Accessibility label of a primary muscle chip",
+        "placeholders": {
+            "muscle": {
+                "type": "String"
+            }
+        }
+    },
+    "muscleChipSecondary": "{muscle}, secondary",
+    "@muscleChipSecondary": {
+        "description": "Accessibility label of a secondary muscle chip",
+        "placeholders": {
+            "muscle": {
+                "type": "String"
+            }
+        }
+    },
+    "exerciseMovementQualityHeader": "Movement Quality",
+    "@exerciseMovementQualityHeader": {
+        "description": "Exercise detail: section header"
+    },
+    "ratingOutOfFive": "{rating} of 5",
+    "@ratingOutOfFive": {
+        "description": "Accessibility value of a 1-5 rating bar",
+        "placeholders": {
+            "rating": {
+                "type": "int"
+            }
+        }
+    },
+    "exerciseEquipmentHeader": "Equipment",
+    "@exerciseEquipmentHeader": {
+        "description": "Exercise detail: section header when there are no variations"
+    },
+    "exerciseVariationHeader": "Variation {number}",
+    "@exerciseVariationHeader": {
+        "description": "Exercise detail: header of one way of doing the exercise",
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "exerciseResistanceLabel": "Resistance:",
+    "@exerciseResistanceLabel": {
+        "description": "Exercise detail: label before resistance equipment"
+    },
+    "exerciseSupportLabel": "Support:",
+    "@exerciseSupportLabel": {
+        "description": "Exercise detail: label before support equipment"
+    },
+    "exerciseNoEquipment": "No equipment selected",
+    "@exerciseNoEquipment": {
+        "description": "Exercise detail: a variation with no equipment"
+    },
+    "removedEquipment": "Removed equipment",
+    "@removedEquipment": {
+        "description": "Name of equipment that no gym or catalogue lists any more"
+    },
+    "exerciseAboutDetailsHeader": "Details",
+    "@exerciseAboutDetailsHeader": {
+        "description": "Exercise detail: section header"
+    },
+    "exerciseBodyWeightContributionRow": "Body Weight Contribution",
+    "@exerciseBodyWeightContributionRow": {
+        "description": "Exercise detail: row title"
+    },
+    "exerciseAlternativeNamesRow": "Alternative Names",
+    "@exerciseAlternativeNamesRow": {
+        "description": "Exercise detail: row title"
+    },
+    "exerciseDescriptionRow": "Description",
+    "@exerciseDescriptionRow": {
+        "description": "Exercise detail: row title"
+    },
+    "workoutsCount": "{count, plural, =1{1 workout} other{{count} workouts}}",
+    "@workoutsCount": {
+        "description": "Workouts: subtitle with how many there are",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "workoutsSearchHint": "Search workouts",
+    "@workoutsSearchHint": {
+        "description": "Workouts: placeholder of the search field"
+    },
+    "workoutsCustomHeader": "Custom Templates",
+    "@workoutsCustomHeader": {
+        "description": "Workouts: header of the user's own templates"
+    },
+    "workoutsPrebuiltHeader": "Pre-Built Templates",
+    "@workoutsPrebuiltHeader": {
+        "description": "Workouts: header of the bundled templates"
+    },
+    "workoutsPrebuiltFooter": "Professional workout templates designed for common training programs.",
+    "@workoutsPrebuiltFooter": {
+        "description": "Workouts: footer under the bundled templates"
+    },
+    "workoutsSearchHeader": "Workout Templates",
+    "@workoutsSearchHeader": {
+        "description": "Workouts: header of the templates matching a search"
+    },
+    "workoutsMesocycleFooter": "Days of this mesocycle. Change them by editing the mesocycle.",
+    "@workoutsMesocycleFooter": {
+        "description": "Workouts: footer under a mesocycle's days"
+    },
+    "workoutsLoadFailure": "Your workouts couldn't be loaded.",
+    "@workoutsLoadFailure": {
+        "description": "Shown when the workout library can't be read"
+    },
+    "workoutNotFound": "This workout is no longer in your library.",
+    "@workoutNotFound": {
+        "description": "Workout detail: opened for a workout that doesn't exist"
+    },
+    "workoutExercisesHeader": "{count, plural, =1{1 Exercise} other{{count} Exercises}}",
+    "@workoutExercisesHeader": {
+        "description": "Workout detail: header of the exercise list",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "workoutNoTargetMuscles": "You haven't added any exercises yet. Once you add an exercise, target muscles will appear here.",
+    "@workoutNoTargetMuscles": {
+        "description": "Workout detail: no exercise, so no target muscles"
+    },
+    "targetSetsValue": "Target: {sets}",
+    "@targetSetsValue": {
+        "description": "Workout detail: a muscle's planned sets",
+        "placeholders": {
+            "sets": {
+                "type": "String"
+            }
+        }
+    },
+    "setCountDecimal": "{count} sets",
+    "@setCountDecimal": {
+        "description": "A set count that can be fractional, such as 2.5 sets",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "exerciseCount": "{count, plural, =1{1 exercise} other{{count} exercises}}",
+    "@exerciseCount": {
+        "description": "A number of exercises",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "rirRange": "RIR {range}",
+    "@rirRange": {
+        "description": "Reps in reserve target, e.g. RIR 1-2",
+        "placeholders": {
+            "range": {
+                "type": "String"
+            }
+        }
+    },
+    "supersetLabel": "Superset {letter}",
+    "@supersetLabel": {
+        "description": "A superset's name, e.g. Superset A",
+        "placeholders": {
+            "letter": {
+                "type": "String"
+            }
+        }
+    },
+    "warmupCount": "{count, plural, =1{1 warm-up} other{{count} warm-ups}}",
+    "@warmupCount": {
+        "description": "Workout detail: planned warm-up sets",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "restValue": "Rest {time}",
+    "@restValue": {
+        "description": "Workout detail: planned rest, e.g. Rest 2:00",
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "planNotesLabel": "Plan notes",
+    "@planNotesLabel": {
+        "description": "Workout detail: label of an exercise's plan notes"
+    },
+    "alternativesLabel": "Alternatives",
+    "@alternativesLabel": {
+        "description": "Workout detail: label of the exercises the plan offers instead"
+    },
+    "plannedSetsMethodTitle": "Planned Sets per Muscle",
+    "@plannedSetsMethodTitle": {
+        "description": "Method info title"
+    },
+    "plannedSetsMethodSummary": "A template's target sets per muscle add up its planned sets the way logged sets are counted: the whole set for an exercise's main muscles, half a set for the muscles it only assists. Drops and mini-sets are credited once they are logged, not in the plan.",
+    "@plannedSetsMethodSummary": {
+        "description": "Method info summary"
+    },
+    "plannedSetsMethodLimitations": "A plan assumes every set will be hard; a set later logged below RPE 6 will not count towards the week.",
+    "@plannedSetsMethodLimitations": {
+        "description": "Method info limitations"
+    },
+    "muscleTriceps": "Triceps",
+    "@muscleTriceps": {
+        "description": "A muscle's name"
+    },
+    "muscleUpperTraps": "Upper Traps",
+    "@muscleUpperTraps": {
+        "description": "A muscle's name"
+    },
+    "muscleObliques": "Obliques",
+    "@muscleObliques": {
+        "description": "A muscle's name"
+    },
+    "muscleNeck": "Neck",
+    "@muscleNeck": {
+        "description": "A muscle's name"
+    },
+    "muscleLats": "Lats",
+    "@muscleLats": {
+        "description": "A muscle's name"
+    },
+    "muscleForearms": "Forearms",
+    "@muscleForearms": {
+        "description": "A muscle's name"
+    },
+    "muscleSideDelts": "Side Delts",
+    "@muscleSideDelts": {
+        "description": "A muscle's name"
+    },
+    "muscleRearDelts": "Rear Delts",
+    "@muscleRearDelts": {
+        "description": "A muscle's name"
+    },
+    "muscleFrontDelts": "Front Delts",
+    "@muscleFrontDelts": {
+        "description": "A muscle's name"
+    },
+    "muscleChest": "Chest",
+    "@muscleChest": {
+        "description": "A muscle's name"
+    },
+    "muscleBiceps": "Biceps",
+    "@muscleBiceps": {
+        "description": "A muscle's name"
+    },
+    "muscleUpperBack": "Upper Back",
+    "@muscleUpperBack": {
+        "description": "A muscle's name"
+    },
+    "muscleLowerBack": "Lower Back",
+    "@muscleLowerBack": {
+        "description": "A muscle's name"
+    },
+    "muscleAbs": "Abs",
+    "@muscleAbs": {
+        "description": "A muscle's name"
+    },
+    "muscleSerratus": "Serratus",
+    "@muscleSerratus": {
+        "description": "A muscle's name"
+    },
+    "muscleQuads": "Quads",
+    "@muscleQuads": {
+        "description": "A muscle's name"
+    },
+    "muscleHamstrings": "Hamstrings",
+    "@muscleHamstrings": {
+        "description": "A muscle's name"
+    },
+    "muscleGlutes": "Glutes",
+    "@muscleGlutes": {
+        "description": "A muscle's name"
+    },
+    "muscleCalves": "Calves",
+    "@muscleCalves": {
+        "description": "A muscle's name"
+    },
+    "muscleAbductors": "Abductors",
+    "@muscleAbductors": {
+        "description": "A muscle's name"
+    },
+    "muscleAdductors": "Adductors",
+    "@muscleAdductors": {
+        "description": "A muscle's name"
+    },
+    "muscleTibialis": "Tibialis",
+    "@muscleTibialis": {
+        "description": "A muscle's name"
+    },
+    "exerciseTypeCompoundUpper": "Upper Compound",
+    "@exerciseTypeCompoundUpper": {
+        "description": "An exercise's movement class"
+    },
+    "exerciseTypeCompoundLower": "Lower Compound",
+    "@exerciseTypeCompoundLower": {
+        "description": "An exercise's movement class"
+    },
+    "exerciseTypeIsolationUpper": "Upper Isolation",
+    "@exerciseTypeIsolationUpper": {
+        "description": "An exercise's movement class"
+    },
+    "exerciseTypeIsolationLower": "Lower Isolation",
+    "@exerciseTypeIsolationLower": {
+        "description": "An exercise's movement class"
+    },
+    "exerciseTypeCore": "Core",
+    "@exerciseTypeCore": {
+        "description": "An exercise's movement class"
+    },
+    "lateralityBilateral": "Bilateral",
+    "@lateralityBilateral": {
+        "description": "Whether an exercise works one side at a time"
+    },
+    "lateralityUnilateral": "Unilateral",
+    "@lateralityUnilateral": {
+        "description": "Whether an exercise works one side at a time"
+    },
+    "lateralityAssymetrical": "Asymmetrical",
+    "@lateralityAssymetrical": {
+        "description": "Whether an exercise works one side at a time"
+    },
+    "lateralityUnilateralBilateral": "Unilateral & Bilateral",
+    "@lateralityUnilateralBilateral": {
+        "description": "Whether an exercise works one side at a time"
+    },
+    "metricReps": "Reps",
+    "@metricReps": {
+        "description": "What an exercise's sets record"
+    },
+    "metricRepsPerSide": "Reps Per Side",
+    "@metricRepsPerSide": {
+        "description": "What an exercise's sets record"
+    },
+    "metricWeight": "Weight",
+    "@metricWeight": {
+        "description": "What an exercise's sets record"
+    },
+    "metricWeightPerSide": "Weight Per Side",
+    "@metricWeightPerSide": {
+        "description": "What an exercise's sets record"
+    },
+    "metricWeightPerSidePersistent": "Weight Per Side (Persistent)",
+    "@metricWeightPerSidePersistent": {
+        "description": "What an exercise's sets record"
+    },
+    "metricWeightPerSideAssistance": "Weight Per Side (Assistance)",
+    "@metricWeightPerSideAssistance": {
+        "description": "What an exercise's sets record"
+    },
+    "metricDuration": "Duration",
+    "@metricDuration": {
+        "description": "What an exercise's sets record"
+    },
+    "metricDurationPerSide": "Duration Per Side",
+    "@metricDurationPerSide": {
+        "description": "What an exercise's sets record"
+    },
+    "metricDistanceShort": "Distance Short",
+    "@metricDistanceShort": {
+        "description": "What an exercise's sets record"
+    },
+    "metricDistanceShortPerSide": "Distance Short Per Side",
+    "@metricDistanceShortPerSide": {
+        "description": "What an exercise's sets record"
+    },
+    "metricDistanceLong": "Distance Long",
+    "@metricDistanceLong": {
+        "description": "What an exercise's sets record"
+    },
+    "equipmentKindFreeWeight": "Free Weights",
+    "@equipmentKindFreeWeight": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindLoadableBar": "Loadable Bars",
+    "@equipmentKindLoadableBar": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindFixedWeightBar": "Fixed Weight Bars",
+    "@equipmentKindFixedWeightBar": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindBands": "Bands",
+    "@equipmentKindBands": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindBodyWeight": "Body Weights",
+    "@equipmentKindBodyWeight": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindSupportEquipment": "Support Equipment",
+    "@equipmentKindSupportEquipment": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindAccessoryEquipment": "Accessory Equipment",
+    "@equipmentKindAccessoryEquipment": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindLoadableAccessoryEquipment": "Loadable Accessory Equipment",
+    "@equipmentKindLoadableAccessoryEquipment": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindCableMachine": "Cable Machines",
+    "@equipmentKindCableMachine": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindPlateLoadedMachine": "Plate Loaded Machines",
+    "@equipmentKindPlateLoadedMachine": {
+        "description": "A kind of gym equipment"
+    },
+    "equipmentKindPinLoadedMachine": "Pin Loaded Machines",
+    "@equipmentKindPinLoadedMachine": {
+        "description": "A kind of gym equipment"
     }
 }

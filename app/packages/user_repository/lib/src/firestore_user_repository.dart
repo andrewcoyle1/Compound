@@ -20,16 +20,21 @@ typedef UserDecodeErrorHandler = void Function(
 ///
 /// Writes go through the models' `toFirestore`, with dates stored as
 /// Timestamps, and whole documents are merged
-/// (`docs/specs/flutter/firestore-contract.md`, Policy).
+/// (`docs/specs/flutter/firestore-contract.md`, Policy). A write completes
+/// once Firestore has it locally, online or not ([writeLocally]).
 class FirestoreUserRepository implements UserRepository {
   /// Creates a [FirestoreUserRepository] reading `firestore`. Decode
   /// failures go to [onDecodeError], or to `dart:developer`'s log when it is
-  /// null.
-  new({required this._firestore, UserDecodeErrorHandler? onDecodeError})
-    : _onDecodeError = onDecodeError ?? _log;
+  /// null, and writes the server refuses go to `onWriteError`.
+  new({
+    required this._firestore,
+    UserDecodeErrorHandler? onDecodeError,
+    this._onWriteError = logWriteError,
+  }) : _onDecodeError = onDecodeError ?? _log;
 
   final FirebaseFirestore _firestore;
   final UserDecodeErrorHandler _onDecodeError;
+  final WriteErrorReporter _onWriteError;
 
   DocumentReference<Map<String, dynamic>> _user(String uid) =>
       _firestore.collection('users').doc(uid);
@@ -47,19 +52,34 @@ class FirestoreUserRepository implements UserRepository {
 
   @override
   Future<void> createUser(UserModel user) =>
-      _user(user.userId)
-          .set(_toFirestore(user.toFirestore()), SetOptions(merge: true));
+      _merge(_user(user.userId), user.toFirestore());
 
+  /// An `update`, which the server refuses with `not-found` when there is no
+  /// profile; that reaches `onWriteError`, as Swift reports it.
   @override
-  Future<void> updateUserFields(String uid, List<UserFieldValue> fields) =>
-      _user(uid).update(
+  Future<void> updateUserFields(String uid, List<UserFieldValue> fields) {
+    final document = _user(uid);
+    return writeLocally(
+      document.path,
+      () => document.update(
         _toFirestore({for (final field in fields) field.key: field.value}),
-      );
+      ),
+      _onWriteError,
+    );
+  }
 
   @override
   Future<void> mergePrivateSettings(String uid, PrivateUserSettings settings) =>
-      _settings(uid)
-          .set(_toFirestore(settings.toFirestore()), SetOptions(merge: true));
+      _merge(_settings(uid), settings.toFirestore());
+
+  Future<void> _merge(
+    DocumentReference<Map<String, dynamic>> document,
+    Map<String, Object?> data,
+  ) => writeLocally(
+    document.path,
+    () => document.set(_toFirestore(data), SetOptions(merge: true)),
+    _onWriteError,
+  );
 
   Stream<T?> _watch<T>(
     DocumentReference<Map<String, dynamic>> document,

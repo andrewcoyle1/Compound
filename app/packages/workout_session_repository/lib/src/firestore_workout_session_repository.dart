@@ -16,15 +16,22 @@ typedef SessionDecodeErrorHandler = void Function(
 /// A document that does not decode is skipped and reported to
 /// `onDecodeError`, as the Swift app's sync engine skips it, so one bad
 /// session never empties the list.
+///
+/// A write completes once Firestore has it locally, online or not
+/// ([writeLocally]).
 class FirestoreWorkoutSessionRepository implements WorkoutSessionRepository {
   /// Creates a [FirestoreWorkoutSessionRepository] reading `firestore`.
   /// Decode failures go to [onDecodeError], or to `dart:developer`'s log
-  /// when it is null.
-  new({required this._firestore, SessionDecodeErrorHandler? onDecodeError})
-    : _onDecodeError = onDecodeError ?? _log;
+  /// when it is null, and writes the server refuses go to `onWriteError`.
+  new({
+    required this._firestore,
+    SessionDecodeErrorHandler? onDecodeError,
+    this._onWriteError = logWriteError,
+  }) : _onDecodeError = onDecodeError ?? _log;
 
   final FirebaseFirestore _firestore;
   final SessionDecodeErrorHandler _onDecodeError;
+  final WriteErrorReporter _onWriteError;
 
   CollectionReference<Map<String, dynamic>> _sessions(String uid) =>
       _firestore.collection('users').doc(uid).collection('workout_sessions');
@@ -49,16 +56,30 @@ class FirestoreWorkoutSessionRepository implements WorkoutSessionRepository {
   }
 
   @override
-  Future<void> saveSession(String uid, WorkoutSessionModel session) =>
-      _sessions(uid)
-          .doc(session.id)
-          .set(_toFirestore(session.toFirestore()), SetOptions(merge: true));
+  Future<void> saveSession(String uid, WorkoutSessionModel session) {
+    final document = _sessions(uid).doc(session.id);
+    return writeLocally(
+      document.path,
+      () => document.set(
+        _toFirestore(session.toFirestore()),
+        SetOptions(merge: true),
+      ),
+      _onWriteError,
+    );
+  }
 
+  /// An `update`: the server refuses a missing session with `not-found`,
+  /// which reaches `onWriteError`. After [saveSession] the session is in the
+  /// local cache, and Firestore sends writes in order, so it never is.
   @override
-  Future<void> updateWeekStreakCount(String uid, String sessionId, int weeks) =>
-      _sessions(uid)
-          .doc(sessionId)
-          .update({WorkoutSessionModelKeys.weekStreakCount: weeks});
+  Future<void> updateWeekStreakCount(String uid, String sessionId, int weeks) {
+    final document = _sessions(uid).doc(sessionId);
+    return writeLocally(
+      document.path,
+      () => document.update({WorkoutSessionModelKeys.weekStreakCount: weeks}),
+      _onWriteError,
+    );
+  }
 
   WorkoutSessionModel? _decode(String path, Map<String, Object?> data) {
     try {

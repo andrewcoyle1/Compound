@@ -4,6 +4,13 @@
 /// the weekly streak stamped on the session and copied to the private
 /// settings for the streak reminder.
 ///
+/// "Saved" means Firestore has the session in its local cache and durable
+/// write queue: the repositories' writes do not wait for the server
+/// (`writeLocally`), so finishing works offline, as Swift's sync engine
+/// does. The retry therefore only sees an error raised while starting the
+/// write; a refusal by the server later goes to the repository's
+/// `onWriteError`, reported as a severe event, and cannot be retried here.
+///
 /// Only what a standalone session needs: a mesocycle's rest days, moving
 /// the macrocycle on, Strava, Apple Health and the Live Activity are later
 /// slices'.

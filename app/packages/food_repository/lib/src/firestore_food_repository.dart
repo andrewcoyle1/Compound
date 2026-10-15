@@ -16,16 +16,21 @@ typedef FoodDecodeErrorHandler = void Function(
 /// A document that does not decode is skipped and reported to
 /// `onDecodeError`, as the Swift app's sync engine skips it. Writes go
 /// through `FoodModel.toFirestore`, dates stored as Timestamps, and merge
-/// (`docs/specs/flutter/firestore-contract.md`, Policy).
+/// (`docs/specs/flutter/firestore-contract.md`, Policy). A write completes
+/// once Firestore has it locally, online or not ([writeLocally]).
 class FirestoreFoodRepository implements FoodRepository {
   /// Creates a [FirestoreFoodRepository] reading `firestore`. Decode
   /// failures go to `onDecodeError`, or to `dart:developer`'s log when it
-  /// is null.
-  new({required this._firestore, FoodDecodeErrorHandler? onDecodeError})
-    : _onDecodeError = onDecodeError ?? _log;
+  /// is null, and writes the server refuses go to `onWriteError`.
+  new({
+    required this._firestore,
+    FoodDecodeErrorHandler? onDecodeError,
+    this._onWriteError = logWriteError,
+  }) : _onDecodeError = onDecodeError ?? _log;
 
   final FirebaseFirestore _firestore;
   final FoodDecodeErrorHandler _onDecodeError;
+  final WriteErrorReporter _onWriteError;
 
   CollectionReference<Map<String, dynamic>> _foods(String uid) =>
       _firestore.collection('users').doc(uid).collection('foods');
@@ -39,10 +44,17 @@ class FirestoreFoodRepository implements FoodRepository {
   );
 
   @override
-  Future<void> saveFood(FoodModel food) =>
-      _foods(requireAuthor(food))
-          .doc(food.ingredientId)
-          .set(_toFirestore(food.toFirestore()), SetOptions(merge: true));
+  Future<void> saveFood(FoodModel food) {
+    final document = _foods(requireAuthor(food)).doc(food.ingredientId);
+    return writeLocally(
+      document.path,
+      () => document.set(
+        _toFirestore(food.toFirestore()),
+        SetOptions(merge: true),
+      ),
+      _onWriteError,
+    );
+  }
 
   FoodModel? _decode(String path, Map<String, Object?> data) {
     try {

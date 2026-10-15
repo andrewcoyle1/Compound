@@ -16,15 +16,21 @@ typedef CheckInDecodeErrorHandler = void Function(
 /// A document that does not decode is skipped and reported to
 /// `onDecodeError`, as the Swift app's sync engine skips it. Writes go
 /// through the models' `toFirestore`, with dates stored as Timestamps, and
-/// merge (`docs/specs/flutter/firestore-contract.md`, Policy).
+/// merge (`docs/specs/flutter/firestore-contract.md`, Policy). A write
+/// completes once Firestore has it locally, online or not ([writeLocally]).
 class FirestoreCheckInRepository implements CheckInRepository {
   /// Creates a [FirestoreCheckInRepository] on `firestore`. Decode failures
-  /// go to [onDecodeError], or to `dart:developer`'s log when it is null.
-  new({required this._firestore, CheckInDecodeErrorHandler? onDecodeError})
-    : _onDecodeError = onDecodeError ?? _log;
+  /// go to [onDecodeError], or to `dart:developer`'s log when it is null,
+  /// and writes the server refuses go to `onWriteError`.
+  new({
+    required this._firestore,
+    CheckInDecodeErrorHandler? onDecodeError,
+    this._onWriteError = logWriteError,
+  }) : _onDecodeError = onDecodeError ?? _log;
 
   final FirebaseFirestore _firestore;
   final CheckInDecodeErrorHandler _onDecodeError;
+  final WriteErrorReporter _onWriteError;
 
   CollectionReference<Map<String, dynamic>> _collection(
     String uid,
@@ -55,12 +61,12 @@ class FirestoreCheckInRepository implements CheckInRepository {
 
   @override
   Future<void> saveStrategySettings(NutritionStrategySettings settings) =>
-      _settings(settings.authorId).set({
+      _merge(_settings(settings.authorId), {
         ..._toFirestore(settings.toFirestore()),
         if (settings.calculationStartDate == null)
           NutritionStrategySettingsKeys.calculationStartDate:
               FieldValue.delete(),
-      }, SetOptions(merge: true));
+      });
 
   @override
   Stream<List<NutritionDayAnnotation>> watchDayAnnotations(String uid) =>
@@ -75,6 +81,8 @@ class FirestoreCheckInRepository implements CheckInRepository {
         ]..sort((a, b) => a.dayKey.compareTo(b.dayKey)),
       );
 
+  /// One batch, reported under the collection's path if the server refuses
+  /// it.
   @override
   Future<void> saveDayAnnotations(
     String uid,
@@ -94,7 +102,7 @@ class FirestoreCheckInRepository implements CheckInRepository {
         );
       }
     }
-    return batch.commit();
+    return writeLocally(collection.path, batch.commit, _onWriteError);
   }
 
   @override
@@ -104,13 +112,16 @@ class FirestoreCheckInRepository implements CheckInRepository {
 
   @override
   Future<void> startLoggingBreak(String uid, DateTime startDate) =>
-      _break(uid).set({
+      _merge(_break(uid), {
         ..._toFirestore(
           LoggingBreak(authorId: uid, startDate: startDate).toFirestore(),
         ),
         LoggingBreakKeys.endDate: FieldValue.delete(),
-      }, SetOptions(merge: true));
+      });
 
+  /// Reads the open break first, so it waits for that read: offline,
+  /// Firestore answers from its cache once it knows it cannot reach the
+  /// server. The write itself does not wait for the server.
   @override
   Future<void> endLoggingBreak(String uid, DateTime endDate) async {
     final current = _decodeDocument(
@@ -118,7 +129,8 @@ class FirestoreCheckInRepository implements CheckInRepository {
       LoggingBreak.fromFirestore,
     );
     if (current == null || current.endDate != null) return;
-    await _break(uid).set(
+    await _merge(
+      _break(uid),
       _toFirestore(
         LoggingBreak(
           id: current.id,
@@ -127,7 +139,6 @@ class FirestoreCheckInRepository implements CheckInRepository {
           endDate: endDate,
         ).toFirestore(),
       ),
-      SetOptions(merge: true),
     );
   }
 
@@ -147,11 +158,21 @@ class FirestoreCheckInRepository implements CheckInRepository {
       _markRecord(uid, CheckInRecordKeys.lastSkippedWeekStart, weekStart);
 
   Future<void> _markRecord(String uid, String field, DateTime weekStart) =>
-      _record(uid).set({
+      _merge(_record(uid), {
         CheckInRecordKeys.id: CheckInRecord.documentId,
         CheckInRecordKeys.authorId: uid,
         field: Timestamp.fromDate(weekStart),
-      }, SetOptions(merge: true));
+      });
+
+  /// Merges [data], already in Firestore's values, into [document].
+  Future<void> _merge(
+    DocumentReference<Map<String, dynamic>> document,
+    Map<String, Object?> data,
+  ) => writeLocally(
+    document.path,
+    () => document.set(data, SetOptions(merge: true)),
+    _onWriteError,
+  );
 
   T? _decodeDocument<T>(
     DocumentSnapshot<Map<String, dynamic>> document,

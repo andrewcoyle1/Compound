@@ -17,16 +17,21 @@ typedef LibraryDecodeErrorHandler = void Function(
 /// `onDecodeError`, as the Swift app's sync engine skips it. Writes go
 /// through the models' `toFirestore`, with dates stored as Timestamps, and
 /// whole documents are merged (`docs/specs/flutter/firestore-contract.md`,
-/// Policy).
+/// Policy). A write completes once Firestore has it locally, online or not
+/// ([writeLocally]).
 class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
   /// Creates a [FirestoreTrainingLibraryRepository] reading `firestore`.
   /// Decode failures go to [onDecodeError], or to `dart:developer`'s log
-  /// when it is null.
-  new({required this._firestore, LibraryDecodeErrorHandler? onDecodeError})
-    : _onDecodeError = onDecodeError ?? _log;
+  /// when it is null, and writes the server refuses go to `onWriteError`.
+  new({
+    required this._firestore,
+    LibraryDecodeErrorHandler? onDecodeError,
+    this._onWriteError = logWriteError,
+  }) : _onDecodeError = onDecodeError ?? _log;
 
   final FirebaseFirestore _firestore;
   final LibraryDecodeErrorHandler _onDecodeError;
+  final WriteErrorReporter _onWriteError;
 
   CollectionReference<Map<String, dynamic>> _user(String uid, String name) =>
       _firestore.collection('users').doc(uid).collection(name);
@@ -55,10 +60,10 @@ class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
       );
 
   @override
-  Future<void> saveGymProfile(GymProfileModel profile) =>
-      _user(profile.authorId, 'gym_profiles')
-          .doc(profile.id)
-          .set(_toFirestore(profile.toFirestore()), SetOptions(merge: true));
+  Future<void> saveGymProfile(GymProfileModel profile) => _merge(
+    _user(profile.authorId, 'gym_profiles').doc(profile.id),
+    profile.toFirestore(),
+  );
 
   @override
   Stream<List<ExerciseSettingsModel>> watchExerciseSettings(String uid) =>
@@ -86,10 +91,19 @@ class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
   Future<void> saveExerciseSettings(
     String uid,
     ExerciseSettingsModel settings,
-  ) => _user(
-    uid,
-    'exercise_settings',
-  ).doc(settings.id).set(settings.toFirestore(), SetOptions(merge: true));
+  ) => _merge(
+    _user(uid, 'exercise_settings').doc(settings.id),
+    settings.toFirestore(),
+  );
+
+  Future<void> _merge(
+    DocumentReference<Map<String, dynamic>> document,
+    Map<String, Object?> data,
+  ) => writeLocally(
+    document.path,
+    () => document.set(_toFirestore(data), SetOptions(merge: true)),
+    _onWriteError,
+  );
 
   List<T> _decodeAll<T>(
     QuerySnapshot<Map<String, dynamic>> snapshot,

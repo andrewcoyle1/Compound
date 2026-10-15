@@ -25,6 +25,12 @@ manager or model by name.
   - Repositories take every SDK object (`FirebaseFirestore`, `FirebaseAuth`, `GoogleSignIn`)
     through the constructor. Blocs and Cubits hold the state. Widgets never touch a repository
     or Firebase directly.
+  - **Firestore writes never wait for the server.** Wrap every `set`, `update` and batch
+    `commit` in `writeLocally` and take an `onWriteError` (`WriteErrorReporter`) in the
+    constructor (`firestore-contract.md`, Policy). A repository's write future then means
+    "saved on this device"; a later refusal by the server goes to `onWriteError`, not the
+    caller. So a bloc can await a save offline, and its failure state covers only an error
+    raised while starting the write. Never await a raw cloud_firestore write future.
 - **The `staging` flavor is the mock build.** It has no Firebase, and the app must be fully usable
   in it.
   - Every repository has an in-memory implementation alongside its Firebase one.

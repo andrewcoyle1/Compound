@@ -17,15 +17,21 @@ typedef ProgramDecodeErrorHandler = void Function(
 /// `onDecodeError`, as the Swift app's sync engine skips it. Writes go
 /// through the models' `toFirestore`, with dates stored as Timestamps, and
 /// whole documents are merged (`docs/specs/flutter/firestore-contract.md`,
-/// Policy).
+/// Policy). A write completes once Firestore has it locally, online or not
+/// ([writeLocally]).
 class FirestoreProgramRepository implements ProgramRepository {
   /// Creates a [FirestoreProgramRepository] on `firestore`. Decode failures
-  /// go to [onDecodeError], or to `dart:developer`'s log when it is null.
-  new({required this._firestore, ProgramDecodeErrorHandler? onDecodeError})
-    : _onDecodeError = onDecodeError ?? _log;
+  /// go to [onDecodeError], or to `dart:developer`'s log when it is null,
+  /// and writes the server refuses go to `onWriteError`.
+  new({
+    required this._firestore,
+    ProgramDecodeErrorHandler? onDecodeError,
+    this._onWriteError = logWriteError,
+  }) : _onDecodeError = onDecodeError ?? _log;
 
   final FirebaseFirestore _firestore;
   final ProgramDecodeErrorHandler _onDecodeError;
+  final WriteErrorReporter _onWriteError;
 
   CollectionReference<Map<String, dynamic>> _user(String uid, String name) =>
       _firestore.collection('users').doc(uid).collection(name);
@@ -53,7 +59,11 @@ class FirestoreProgramRepository implements ProgramRepository {
   Future<void> _save(
     DocumentReference<Map<String, dynamic>> document,
     Map<String, Object?> data,
-  ) => document.set(_toFirestore(data), SetOptions(merge: true));
+  ) => writeLocally(
+    document.path,
+    () => document.set(_toFirestore(data), SetOptions(merge: true)),
+    _onWriteError,
+  );
 
   Stream<List<T>> _watch<T>(
     CollectionReference<Map<String, dynamic>> collection,

@@ -62,7 +62,7 @@ struct FirestoreContractTests {
 
     private static func contracts() throws -> [Contract] {
         try userAndTrainingContracts() + nutritionContracts() + bodyAndGoalContracts() + libraryContracts()
-            + gymContracts() + programAndFoodContracts() + checkInContracts() + socialContracts() + coachContracts()
+            + gymContracts() + programAndFoodContracts() + checkInContracts() + socialContracts() + coachContracts() + stravaContracts()
     }
 
     private static func userAndTrainingContracts() throws -> [Contract] {

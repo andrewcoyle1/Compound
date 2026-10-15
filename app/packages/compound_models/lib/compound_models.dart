@@ -32,6 +32,7 @@ export 'src/set_target.dart';
 export 'src/shortcut_settings.dart';
 export 'src/social.dart';
 export 'src/steps_model.dart';
+export 'src/strava_imported_activity.dart';
 export 'src/tagged_json.dart';
 export 'src/training_enums.dart';
 export 'src/user_enums.dart';

@@ -136,6 +136,46 @@ void main() {
         );
       });
     });
+
+    group('updateStravaActivityId', () {
+      test('sets strava_activity_id alone, as an int', () async {
+        final model = WorkoutSessionModel.fromFirestore(
+          modelFixture('workout_session', 'full'),
+        );
+        await document(
+          model.authorId,
+          model.id,
+        ).set(storedFixture('workout_session', 'full'));
+
+        await subject.updateStravaActivityId(
+          model.authorId,
+          model.id,
+          16384123456,
+        );
+
+        expect(
+          await stored(model.authorId, model.id),
+          strictlyEquals({
+            ...taggedFixture('workout_session', 'full'),
+            WorkoutSessionModelKeys.stravaActivityId: 16384123456,
+          }),
+        );
+      });
+
+      test('fails when there is no such session, as Firestore does', () async {
+        await expectLater(
+          subject.updateStravaActivityId('someone', 'missing', 3),
+          throwsA(isA<FirebaseException>()),
+        );
+      });
+
+      test('names a field of the contract', () {
+        expect(
+          taggedFixture('workout_session', 'full'),
+          contains(WorkoutSessionModelKeys.stravaActivityId),
+        );
+      });
+    });
   });
 
   group('InMemoryWorkoutSessionRepository writes', () {
@@ -191,6 +231,23 @@ void main() {
       await subject.updateWeekStreakCount(uid, model.id, 11);
 
       expect((await subject.session(uid, model.id))!.weekStreakCount, 11);
+    });
+
+    test('sets the Strava activity on a stored session', () async {
+      await subject.saveSession(uid, model);
+
+      await subject.updateStravaActivityId(uid, model.id, 99);
+
+      expect((await subject.session(uid, model.id))!.stravaActivityId, 99);
+    });
+
+    test('fails to set the Strava activity on a missing session', () async {
+      await expectLater(
+        subject.updateStravaActivityId(uid, 'missing', 1),
+        throwsA(
+          isA<FirebaseException>().having((e) => e.code, 'code', 'not-found'),
+        ),
+      );
     });
 
     test('fails to set the week streak on a missing session', () async {

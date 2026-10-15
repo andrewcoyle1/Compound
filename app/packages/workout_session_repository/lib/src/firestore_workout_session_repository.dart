@@ -81,6 +81,23 @@ class FirestoreWorkoutSessionRepository implements WorkoutSessionRepository {
     );
   }
 
+  /// An `update`, as [updateWeekStreakCount] is.
+  @override
+  Future<void> updateStravaActivityId(
+    String uid,
+    String sessionId,
+    int activityId,
+  ) {
+    final document = _sessions(uid).doc(sessionId);
+    return writeLocally(
+      document.path,
+      () => document.update({
+        WorkoutSessionModelKeys.stravaActivityId: activityId,
+      }),
+      _onWriteError,
+    );
+  }
+
   WorkoutSessionModel? _decode(String path, Map<String, Object?> data) {
     try {
       return WorkoutSessionModel.fromFirestore(_fromFirestore(data));

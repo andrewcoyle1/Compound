@@ -1,0 +1,28 @@
+name: strava_repository
+description: Strava - the server-held connection through the strava* callables, workout uploads in Strava's strength format through a per-account queue, and the imported activities; a fake Strava in the staging flavor.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  cloud_firestore: ^6.10.0
+  cloud_functions: ^6.5.0
+  compound_models:
+    path: ../compound_models
+  # The staging flavor's Firestore: the fake Strava writes imported
+  # activities as the server does, so staging runs the real repository.
+  fake_cloud_firestore: ^4.3.0
+  flutter:
+    sdk: flutter
+  http: ^1.6.0
+  workout_session_repository:
+    path: ../workout_session_repository
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0

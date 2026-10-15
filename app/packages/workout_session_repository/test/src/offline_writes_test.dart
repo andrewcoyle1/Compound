@@ -67,5 +67,18 @@ void main() {
         expect(refused, [('users/u/workout_sessions/s', 'not-found')]);
       },
     );
+
+    test(
+      'updateStravaActivityId completes offline; not-found is reported',
+      () async {
+        await subject.updateStravaActivityId('u', 's', 42);
+        expect(refused, isEmpty);
+
+        firestore.refuse('not-found');
+        await pumpEventQueue();
+
+        expect(refused, [('users/u/workout_sessions/s', 'not-found')]);
+      },
+    );
   });
 }

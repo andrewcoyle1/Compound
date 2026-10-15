@@ -65,6 +65,13 @@ t("users: a username must be a reservation the writer holds", async () => {
     await assertSucceeds(setDoc(doc(db(BOB), `users/${BOB}`), { username: null }));
 });
 
+t("users: only the owner deletes their profile, whatever its username (account deletion)", async () => {
+    // The Flutter and Swift apps delete users/{uid} before the Auth user; onUserDeleted does the rest.
+    await seed(`users/${BOB}`, { id: BOB, username: "unreserved" });
+    await assertFails(deleteDoc(doc(db(ALICE), `users/${BOB}`)));
+    await assertSucceeds(deleteDoc(doc(db(BOB), `users/${BOB}`)));
+});
+
 t("users/private: owner only", async () => {
     await assertSucceeds(setDoc(doc(db(ALICE), `users/${ALICE}/private/settings`), { fcm_token: "x" }));
     await assertFails(getDoc(doc(db(BOB), `users/${ALICE}/private/settings`)));

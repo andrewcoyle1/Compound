@@ -47,8 +47,12 @@ void main() {
       );
       await subject.saveGymProfile(gym);
       await subject.saveExerciseSettings('u', settings);
+      await subject.saveWorkoutSettings(const WorkoutSettings(authorId: 'u'));
+      await subject.clearExerciseRestOverride('u', settings.id);
       expect(firestore.writes, [
         'users/${gym.authorId}/gym_profiles/${gym.id}',
+        'users/u/exercise_settings/${settings.id}',
+        'batch',
         'users/u/exercise_settings/${settings.id}',
       ]);
       expect(refused, isEmpty);
@@ -59,6 +63,8 @@ void main() {
       expect(refused, [
         for (final path in [
           'users/${gym.authorId}/gym_profiles/${gym.id}',
+          'users/u/exercise_settings/${settings.id}',
+          'users/u/workout_settings/workout_settings',
           'users/u/exercise_settings/${settings.id}',
         ])
           (path, 'permission-denied'),

@@ -2,7 +2,10 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/profile/bloc/profile_bloc.dart';
+import 'package:compound/settings/account/view/edit_profile_page.dart';
+import 'package:compound/settings/view/settings_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -37,7 +40,16 @@ class ProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<ProfileBloc>().state;
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.profileTitle)),
+      appBar: AppBar(
+        title: Text(context.l10n.profileTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(AppSymbols.settings),
+            tooltip: context.l10n.settingsTitle,
+            onPressed: () => context.pushNamed(SettingsPage.name),
+          ),
+        ],
+      ),
       body: switch (state) {
         ProfileLoading() => const Center(
           child: CircularProgressIndicator.adaptive(),
@@ -76,6 +88,15 @@ class _ProfileList extends StatelessWidget {
               )
             else ...[
               _ProfileHeader(user: user),
+              AppSection(
+                children: [
+                  AppListRowButton(
+                    title: l10n.profileEditProfile,
+                    icon: AppSymbols.edit,
+                    onPressed: () => context.pushNamed(EditProfilePage.name),
+                  ),
+                ],
+              ),
               _AccountSection(user: user),
               _PreferencesSection(user: user),
             ],

@@ -19,6 +19,7 @@ class InMemoryAuthRepository implements AuthRepository {
     isAnonymous: false,
     email: 'alice@example.com',
     displayName: 'Alice Cooper',
+    providers: {SignInProvider.apple},
   );
 
   /// The user an anonymous sign-in creates.
@@ -53,4 +54,15 @@ class InMemoryAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async => _set(null);
+
+  /// Runs [beforeDelete] and signs out; there is nothing to sign in again
+  /// with.
+  @override
+  Future<void> deleteAccount({
+    required Future<void> Function() beforeDelete,
+  }) async {
+    if (_user == null) throw const AuthFailure('No signed-in user');
+    await beforeDelete();
+    _set(null);
+  }
 }

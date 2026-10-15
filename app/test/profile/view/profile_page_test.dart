@@ -2,7 +2,10 @@ import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/settings/account/view/edit_profile_page.dart';
+import 'package:compound/settings/settings.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -146,6 +149,38 @@ void main() {
       await tester.tap(find.text('Sign Out'));
       verify(() => appBloc.add(const AppSignOutPressed())).called(1);
     });
+
+    for (final (control, page) in [
+      (find.byTooltip('Settings'), SettingsPage),
+      (find.text('Edit Profile'), EditProfilePage),
+    ]) {
+      testWidgets('opens $page', (tester) async {
+        when(() => userRepository.watchUser('uid'))
+            .thenAnswer((_) => Stream.value(const UserModel(userId: 'uid')));
+        await tester.pumpApp(
+          const SizedBox(),
+          appBloc: appBloc,
+          userRepository: userRepository,
+          router: GoRouter(
+            initialLocation: ProfilePage.path,
+            routes: [
+              GoRoute(
+                path: ProfilePage.path,
+                builder: (_, _) => const ProfilePage(),
+                routes: profileRoutes,
+              ),
+            ],
+          ),
+        );
+        await tester.pump();
+
+        await tester.tap(control);
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(find.byType(page), findsOneWidget);
+      });
+    }
 
     testWidgets('shows nothing once signed out', (tester) async {
       when(() => appBloc.state).thenReturn(const AppUnauthenticated());

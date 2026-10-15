@@ -1,6 +1,7 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
@@ -54,6 +55,13 @@ Future<void> main() async {
   final onboardingProfile = step == null
       ? null
       : stagingOnboardingProfile(step, uid: anonymous.uid, now: now);
+  final userRepository = InMemoryUserRepository(
+    users: {
+      sampleUserId: sampleUser(now: now),
+      anonymous.uid: ?onboardingProfile,
+    },
+    settings: {sampleUserId: sampleUserSettings(now: now)},
+  );
   final activeSessionStore = InMemoryActiveSessionStore();
   final finished = _workout.isEmpty
       ? null
@@ -69,13 +77,7 @@ Future<void> main() async {
       authRepository: InMemoryAuthRepository(
         user: step == null ? InMemoryAuthRepository.sampleUser : anonymous,
       ),
-      userRepository: InMemoryUserRepository(
-        users: {
-          sampleUserId: sampleUser(now: now),
-          anonymous.uid: ?onboardingProfile,
-        },
-        settings: {sampleUserId: sampleUserSettings(now: now)},
-      ),
+      userRepository: userRepository,
       workoutSessionRepository: InMemoryWorkoutSessionRepository(
         sessions: [
           ...sampleWorkoutSessions(uid: sampleUserId, now: now),
@@ -109,6 +111,12 @@ Future<void> main() async {
         foods: sampleFoods(uid: sampleUserId, now: now),
       ),
       openFoodFacts: FakeOpenFoodFacts(),
+      checkInRepository: InMemoryCheckInRepository(
+        settings: [sampleStrategySettings(uid: sampleUserId)],
+        annotations: sampleDayAnnotations(uid: sampleUserId, now: now),
+        loggingBreaks: [sampleLoggingBreak(uid: sampleUserId, now: now)],
+        records: [sampleCheckInRecord(uid: sampleUserId, now: now)],
+      ),
     ),
   );
 }

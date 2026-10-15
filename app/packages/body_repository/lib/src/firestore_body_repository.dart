@@ -82,6 +82,14 @@ class FirestoreBodyRepository implements BodyRepository {
           );
 
   @override
+  Future<void> saveAnalyticsSettings(AnalyticsSettings settings) => _merge(
+    _user(settings.authorId)
+        .collection('analytics_settings')
+        .doc('analytics_settings'),
+    settings.toFirestore(),
+  );
+
+  @override
   Stream<WeightGoal?> watchCurrentGoal(String uid, {String? currentGoalId}) =>
       _goal(uid, currentGoalDocumentId(uid, currentGoalId)).snapshots().map(
         (document) => _decodeDocument(document, WeightGoal.fromFirestore),

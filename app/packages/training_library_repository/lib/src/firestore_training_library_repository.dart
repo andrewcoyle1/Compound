@@ -88,6 +88,47 @@ class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
       });
 
   @override
+  Future<void> saveWorkoutSettings(WorkoutSettings settings) {
+    final document = _user(
+      settings.authorId,
+      'workout_settings',
+    ).doc('workout_settings');
+    final data = _toFirestore(settings.toFirestore());
+    // One batch: the stored map is deleted, then every known field is
+    // merged in, a null optional as a delete, so the map ends up replaced
+    // rather than merged key by key.
+    return writeLocally(
+      document.path,
+      () =>
+          (_firestore.batch()
+                ..set(document, {
+                  WorkoutSettingsKeys.restDurationsByExerciseType:
+                      FieldValue.delete(),
+                }, SetOptions(merge: true))
+                ..set(document, {
+                  for (final key in WorkoutSettingsKeys.all)
+                    key: data.containsKey(key)
+                        ? data[key]
+                        : FieldValue.delete(),
+                }, SetOptions(merge: true)))
+              .commit(),
+      _onWriteError,
+    );
+  }
+
+  @override
+  Future<void> clearExerciseRestOverride(String uid, String exerciseId) {
+    final document = _user(uid, 'exercise_settings').doc(exerciseId);
+    return writeLocally(
+      document.path,
+      () => document.update({
+        ExerciseSettingsModelKeys.restDurationOverride: FieldValue.delete(),
+      }),
+      _onWriteError,
+    );
+  }
+
+  @override
   Future<void> saveExerciseSettings(
     String uid,
     ExerciseSettingsModel settings,

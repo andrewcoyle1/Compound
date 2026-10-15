@@ -205,6 +205,9 @@ abstract final class AppSymbols {
   /// Legal documents.
   static const IconData legal = Icons.description_rounded;
 
+  /// Getting help: Settings' Support row.
+  static const IconData help = Icons.help_outline_rounded;
+
   // Actions
 
   /// Adding something.

@@ -42,4 +42,21 @@ abstract interface class AuthRepository {
 
   /// Signs out.
   Future<void> signOut();
+
+  /// Deletes the signed-in account, as SwiftfulAuthenticating's
+  /// `deleteAccountWithReauthentication` does for `CoreInteractor
+  /// .deleteAccount`:
+  ///
+  /// 1. signs in again with the account's provider, Apple before Google,
+  ///    which Firebase requires before deleting; an anonymous account has
+  ///    nothing to sign in with and skips this. Signing in as a different
+  ///    account fails;
+  /// 2. runs [beforeDelete] while the account still exists, so the rules
+  ///    still let it delete its own profile;
+  /// 3. deletes the Firebase Auth user, which signs it out.
+  ///
+  /// Throws [SignInCancelled] when the sign-in sheet is dismissed (nothing is
+  /// deleted), and [AuthFailure] otherwise; an error from [beforeDelete]
+  /// propagates as it is, and the account is kept.
+  Future<void> deleteAccount({required Future<void> Function() beforeDelete});
 }

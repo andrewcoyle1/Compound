@@ -100,6 +100,19 @@ void main() {
         );
       });
 
+      test('deleteUser removes the profile, and watchers see it', () async {
+        await repository.createUser(full);
+        final expectation = expectLater(
+          repository.watchUser(full.userId).map((user) => user?.userId),
+          emitsInOrder([full.userId, null]),
+        );
+
+        await repository.deleteUser(full.userId);
+
+        await expectation;
+        expect(await repository.userExists(full.userId), isFalse);
+      });
+
       test('mergePrivateSettings merges, and watchers see it', () async {
         final expectation = expectLater(
           repository

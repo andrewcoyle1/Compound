@@ -73,6 +73,12 @@ class InMemoryUserRepository implements UserRepository {
     _changes.add(null);
   }
 
+  @override
+  Future<void> deleteUser(String uid) async {
+    _users.remove(uid);
+    _changes.add(null);
+  }
+
   /// [read] now and after every write, as a Firestore listener emits.
   Stream<T> _watch<T>(T Function() read) => Stream.multi((listener) {
     listener.add(read());

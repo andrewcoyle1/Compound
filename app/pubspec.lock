@@ -133,6 +133,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.4"
+  checkin_repository:
+    dependency: "direct main"
+    description:
+      path: "packages/checkin_repository"
+      relative: true
+    source: path
+    version: "0.1.0+1"
   cli_config:
     dependency: transitive
     description:

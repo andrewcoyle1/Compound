@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/launch/launch.dart';
@@ -15,6 +16,7 @@ import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/progress/progress.dart';
+import 'package:compound/settings/settings.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/today/today.dart';
@@ -48,6 +50,8 @@ class const App({
   // Empty and offline when left out, for tests that never log food.
   final FoodRepository? foodRepository,
   final OpenFoodFacts? openFoodFacts,
+  // Empty in memory when left out, for tests that never check in.
+  final CheckInRepository? checkInRepository,
 
   /// Where the workout under way is kept between launches; in memory when
   /// left out.
@@ -76,6 +80,9 @@ class const App({
         ),
         RepositoryProvider<OpenFoodFacts>(
           create: (_) => openFoodFacts ?? FakeOpenFoodFacts(),
+        ),
+        RepositoryProvider<CheckInRepository>(
+          create: (_) => checkInRepository ?? InMemoryCheckInRepository(),
         ),
         RepositoryProvider.value(value: trackerClock),
         RepositoryProvider<NotificationsRepository>(
@@ -255,6 +262,7 @@ class _AppViewState extends State<AppView> {
           fullscreenDialog: true,
           child: const ProfilePage(),
         ),
+        routes: profileRoutes,
       ),
       // Over the tabs, as the Swift app's sheet.
       GoRoute(

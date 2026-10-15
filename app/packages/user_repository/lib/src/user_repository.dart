@@ -46,4 +46,15 @@ abstract interface class UserRepository {
   /// consent is withdrawn by writing `coachConsent: false`
   /// (`CoachManager.swift:75`).
   Future<void> mergePrivateSettings(String uid, PrivateUserSettings settings);
+
+  /// Deletes the profile at `users/{uid}`, as `UserManager.deleteCurrentUser`
+  /// does inside account deletion (`CoreInteractor.swift:240-262`). The
+  /// `onUserDeleted` Cloud Function then deletes everything else the account
+  /// owns. Only the profile: its subcollections are the function's.
+  ///
+  /// Unlike every other write here this waits for the server, and fails
+  /// offline: the Auth user is deleted next, after which the rules refuse
+  /// this user, so a delete still queued on the device would never land
+  /// and the account's data would never be cleaned up.
+  Future<void> deleteUser(String uid);
 }

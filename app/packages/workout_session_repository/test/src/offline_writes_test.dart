@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -14,6 +15,19 @@ void main() {
     late OfflineFirestore firestore;
     late List<(String, String)> refused;
     late FirestoreWorkoutSessionRepository subject;
+
+    // FieldValue sentinels bind to whichever FieldValue factory is
+
+    // installed when first used; fake_cloud_firestore installs its own
+
+    // only when a fake is built. Build one first, or when this file runs
+
+    // before the Firestore tests in one isolate (very_good test's
+
+    // optimisation) they get the method-channel factory.
+
+    setUpAll(FakeFirebaseFirestore.new);
+
 
     setUp(() {
       firestore = OfflineFirestore();

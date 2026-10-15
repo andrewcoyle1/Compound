@@ -1,5 +1,6 @@
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/contract.dart';
@@ -14,6 +15,16 @@ void main() {
     late OfflineFirestore firestore;
     late List<(String, String)> refused;
     late FirestoreCheckInRepository subject;
+
+    // FieldValue.delete() binds to whichever FieldValue factory is installed when it is
+
+    // first called. fake_cloud_firestore installs its own only when a fake is built, so
+
+    // build one first: otherwise, when this file runs before the Firestore tests in the
+
+    // same isolate (very_good test's optimisation), they get the method-channel factory.
+
+    setUpAll(FakeFirebaseFirestore.new);
 
     setUp(() {
       firestore = OfflineFirestore();

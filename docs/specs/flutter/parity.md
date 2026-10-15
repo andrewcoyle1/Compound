@@ -76,29 +76,29 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Nutrition | RecipeDetail | `Recipes/RecipeDetail` | M3 | todo | |
 | Nutrition | RecipeStart | `Recipes/RecipeStart` | M3 | todo | |
 | Nutrition | TimelineActions | `TimelineActions` | M3 | todo | |
-| Onboarding | Welcome | `0 - WelcomeView` | M3 | todo | |
-| Onboarding | Auth | `2 - AuthView` | M3 | todo | |
+| Onboarding | Welcome | `0 - WelcomeView` | M3 | partial | onboarding flow (#116) |
+| Onboarding | Auth | `2 - AuthView` | M3 | partial | onboarding flow (#116) |
 | Onboarding | Subscription | `3 - Subscription` | M3 | todo | |
 | Onboarding | NamePhoto | `4 - CompleteAccountSetup/1 - NamePhoto` | M3 | todo | |
-| Onboarding | Gender | `4 - CompleteAccountSetup/2 - Gender` | M3 | todo | |
-| Onboarding | DateOfBirth | `4 - CompleteAccountSetup/3 - DateOfBirth` | M3 | todo | |
-| Onboarding | Height | `4 - CompleteAccountSetup/4 - Height` | M3 | todo | |
-| Onboarding | Weight | `4 - CompleteAccountSetup/5 - Weight` | M3 | todo | |
-| Onboarding | ExerciseFrequency | `4 - CompleteAccountSetup/6 - ExerciseFrequency` | M3 | todo | |
-| Onboarding | Activity | `4 - CompleteAccountSetup/7 - Activity` | M3 | todo | |
-| Onboarding | Expenditure | `4 - CompleteAccountSetup/9 - Expenditure` | M3 | todo | |
+| Onboarding | Gender | `4 - CompleteAccountSetup/2 - Gender` | M3 | partial | onboarding flow (#116) |
+| Onboarding | DateOfBirth | `4 - CompleteAccountSetup/3 - DateOfBirth` | M3 | partial | onboarding flow (#116) |
+| Onboarding | Height | `4 - CompleteAccountSetup/4 - Height` | M3 | partial | onboarding flow (#116) |
+| Onboarding | Weight | `4 - CompleteAccountSetup/5 - Weight` | M3 | partial | onboarding flow (#116) |
+| Onboarding | ExerciseFrequency | `4 - CompleteAccountSetup/6 - ExerciseFrequency` | M3 | partial | onboarding flow (#116) |
+| Onboarding | Activity | `4 - CompleteAccountSetup/7 - Activity` | M3 | partial | onboarding flow (#116) |
+| Onboarding | Expenditure | `4 - CompleteAccountSetup/9 - Expenditure` | M3 | partial | onboarding flow (#116) |
 | Onboarding | HealthDisclaimer | `5 - HealthDisclaimer` | M3 | todo | |
-| Onboarding | OverarchingObjective | `6 - GoalSetting/1 - OverarchingObjective` | M3 | todo | |
-| Onboarding | TargetWeight | `6 - GoalSetting/2 - TargetWeight` | M3 | todo | |
-| Onboarding | WeightRate | `6 - GoalSetting/3 - WeightRate` | M3 | todo | |
-| Onboarding | GoalSummary | `6 - GoalSetting/4 - GoalSummary` | M3 | todo | |
-| Onboarding | CustomisingDietProgram | `8 - OnboardingDiet` | M3 | todo | |
-| Onboarding | PreferredDiet | `8 - OnboardingDiet/1 - PreferredDiet` | M3 | todo | |
-| Onboarding | CalorieFloor | `8 - OnboardingDiet/2 - CalorieFloor` | M3 | todo | |
-| Onboarding | CalorieDistribution | `8 - OnboardingDiet/4 - CalorieDistribution` | M3 | todo | |
-| Onboarding | ProteinIntake | `8 - OnboardingDiet/5 - ProteinIntake` | M3 | todo | |
-| Onboarding | DietPlan | `8 - OnboardingDiet/6 - DietPlan` | M3 | todo | |
-| Onboarding | OnboardingCompleted | `9 - OnboardingCompleted` | M3 | todo | |
+| Onboarding | OverarchingObjective | `6 - GoalSetting/1 - OverarchingObjective` | M3 | partial | onboarding flow (#116) |
+| Onboarding | TargetWeight | `6 - GoalSetting/2 - TargetWeight` | M3 | partial | onboarding flow (#116) |
+| Onboarding | WeightRate | `6 - GoalSetting/3 - WeightRate` | M3 | partial | onboarding flow (#116) |
+| Onboarding | GoalSummary | `6 - GoalSetting/4 - GoalSummary` | M3 | partial | onboarding flow (#116) |
+| Onboarding | CustomisingDietProgram | `8 - OnboardingDiet` | M3 | partial | onboarding flow (#116) |
+| Onboarding | PreferredDiet | `8 - OnboardingDiet/1 - PreferredDiet` | M3 | partial | onboarding flow (#116) |
+| Onboarding | CalorieFloor | `8 - OnboardingDiet/2 - CalorieFloor` | M3 | partial | onboarding flow (#116) |
+| Onboarding | CalorieDistribution | `8 - OnboardingDiet/4 - CalorieDistribution` | M3 | partial | onboarding flow (#116) |
+| Onboarding | ProteinIntake | `8 - OnboardingDiet/5 - ProteinIntake` | M3 | partial | onboarding flow (#116) |
+| Onboarding | DietPlan | `8 - OnboardingDiet/6 - DietPlan` | M3 | partial | onboarding flow (#116) |
+| Onboarding | OnboardingCompleted | `9 - OnboardingCompleted` | M3 | partial | onboarding flow (#116) |
 | Paywalls | Paywall | `Paywall` | M4 | todo | |
 | Profile | Settings | `Compound/Core/Profile` | M5 | todo | |
 | Profile | About | `Subviews/About` | M5 | todo | |
@@ -167,8 +167,8 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | FinalExerciseDetails | `Exercises/CreateExercise/FinalExerciseDetails` | M3 | todo | |
 | Training | MuscleGroupPicker | `Exercises/CreateExercise/MuscleGroupPicker` | M3 | todo | |
 | Training | ExerciseListBuilder | `Exercises/ExerciseListBuilder` | M3 | todo | |
-| Training | ExerciseModelDetail | `Exercises/ExerciseModelDetail` | M3 | todo | |
-| Training | Exercises | `Exercises/Exercises` | M3 | todo | |
+| Training | ExerciseModelDetail | `Exercises/ExerciseModelDetail` | M3 | partial | read-only library (#120) |
+| Training | Exercises | `Exercises/Exercises` | M3 | partial | read-only library (#120) |
 | Training | ActiveMesocycle | `Programs/ActiveMesocycle` | M3 | todo | |
 | Training | CreateMesocycle | `Programs/CreateMesocycle` | M3 | todo | |
 | Training | EditDayOrder | `Programs/CreateMesocycle/EditDayOrder` | M3 | todo | |
@@ -200,12 +200,12 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | todo | |
 | Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | todo | |
 | Training | DefineWorkoutWrapper | `Workouts/CreateWorkout/DefineWorkoutWrapper` | M3 | todo | |
-| Training | ExercisesPicker | `Workouts/CreateWorkout/ExercisesPicker` | M3 | todo | |
+| Training | ExercisesPicker | `Workouts/CreateWorkout/ExercisesPicker` | M3 | partial | read-only library (#120) |
 | Training | NameWorkout | `Workouts/CreateWorkout/NameWorkout` | M3 | todo | |
 | Training | SetTarget | `Workouts/CreateWorkout/SetTarget` | M3 | todo | |
 | Training | WeeklyTargets | `Workouts/CreateWorkout/SetTarget/WeeklyTargets` | M3 | todo | |
-| Training | WorkoutTemplateDetail | `Workouts/WorkoutTemplateDetail` | M3 | todo | |
-| Training | Workouts | `Workouts/Workouts` | M3 | todo | |
+| Training | WorkoutTemplateDetail | `Workouts/WorkoutTemplateDetail` | M3 | partial | read-only library (#120) |
+| Training | Workouts | `Workouts/Workouts` | M3 | partial | read-only library (#120) |
 
 198 modules.
 
@@ -214,18 +214,18 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Feature | Swift | Milestone | Status | Flutter |
 |---|---|---|---|---|
 | Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | done | `auth_repository` (#86) |
-| Offline data and sync | Sync engines | M1–M3 | partial | read-only repositories on Firestore's cache |
+| Offline data and sync | Sync engines | M1–M3 | done | Firestore cache + `writeLocally` (#111) |
 | Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |
-| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | todo | |
-| Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | todo | |
+| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117); app wiring pending |
+| Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); RevenueCat setup is the owner's |
 | A/B tests (Remote Config) | `ABTestManager` | M5 | todo | |
-| HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | todo | |
+| HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | partial | `health_repository` (#121); native setup pending |
 | Live Activity and Dynamic Island (iOS); ongoing notification (Android) | `LiveActivityManager`, `WorkoutSessionActivity/` | M3 (Android), M6 (iOS) | todo | |
 | Home screen widgets | `WorkoutSessionActivity/HomeWidgets.swift` | M6 | todo | |
 | Siri and Shortcuts (App Intents) | `Managers/AppIntents` | M6 | todo | |
-| Strava upload and import | `StravaManager` | M5 | todo | |
-| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | todo | |
-| AI coach (streaming) | `CoachManager` | M5 | todo | |
+| Strava upload and import | `StravaManager` | M5 | partial | `strava_repository` (#122) |
+| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | partial | `ai_repository` (#118) |
+| AI coach (streaming) | `CoachManager` | M5 | partial | `coach_repository` (#118) |
 | Image upload and progress photos | `ImageUploadManager` | M5 | todo | |
 | Reporting and moderation | `ReportManager` | M5 | todo | |
 | Haptics and sound effects | `HapticManager`, `SoundEffectManager` | M3 | todo | |

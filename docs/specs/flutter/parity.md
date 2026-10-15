@@ -10,7 +10,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 |---|---|---|---|---|---|
 | Components | CalendarHeader | `Views/CalendarHeader` | M2 | todo | |
 | Components | Calendar | `Views/CalendarHeader/Calendar` | M2 | todo | |
-| Components | AuthorHeader | `Views/User` | M2 | todo | |
+| Components | AuthorHeader | `Views/User` | M2 | done | social feed and profile (M5 Social 1) |
 | Analytics | Analytics | `Compound/Core/Analytics` | M4 | partial | overview cards; M4/M5 cards hidden (#103) |
 | Analytics | BodyMetrics | `Subviews/BodyMetrics` | M4 | todo | |
 | Analytics | LogMeasurement | `Subviews/BodyMetrics/LogMeasurement` | M4 | todo | |
@@ -106,7 +106,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Profile | AppIcon | `Subviews/AppIcon` | M5 | todo | |
 | Profile | EditProfile | `Subviews/EditProfile` | M5 | todo | |
 | Profile | DeleteAccount | `Subviews/EditProfile/DeleteAccount` | M5 | todo | |
-| Profile | EditUsername | `Subviews/EditProfile/EditUsername` | M5 | todo | |
+| Profile | EditUsername | `Subviews/EditProfile/EditUsername` | M5 | done | from Edit Profile and Social (M5 Social 1) |
 | Profile | CustomiseAnalytics | `Subviews/GeneralSettings/CustomiseAnalytics` | M5 | todo | |
 | Profile | Integrations | `Subviews/GeneralSettings/Integrations` | M5 | todo | |
 | Profile | Siri | `Subviews/GeneralSettings/Siri` | M5 | todo | |
@@ -147,12 +147,12 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Profile | Tutorials | `Subviews/Tutorials` | M5 | todo | |
 | Sharing | ShareToFollower | `ShareToFollower` | M5 | todo | |
 | Sharing | SharedItem | `SharedItem` | M5 | todo | |
-| Social | Social | `Compound/Core/Social` | M5 | todo | |
-| Social | WeeklyGoal | `CircleGoals/WeeklyGoal` | M5 | todo | |
-| Social | SocialProfile | `SocialProfile` | M5 | todo | |
-| Social | FollowersList | `SocialProfile/FollowersList` | M5 | todo | |
-| Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | todo | |
-| Social | Comments | `WorkoutSessionRow/Comments` | M5 | todo | |
+| Social | Social | `Compound/Core/Social` | M5 | partial | strip, leaderboard, recap, feed, search (M5 Social 1); bell, invites, challenges in part 2 |
+| Social | WeeklyGoal | `CircleGoals/WeeklyGoal` | M5 | done | M5 Social 1 |
+| Social | SocialProfile | `SocialProfile` | M5 | partial | own and others, follow, block, privacy (M5 Social 1); Strava year, Share Profile, Report to come |
+| Social | FollowersList | `SocialProfile/FollowersList` | M5 | done | M5 Social 1 |
+| Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | partial | likes and comments (M5 Social 1); share, Save as Template, Report to come |
+| Social | Comments | `WorkoutSessionRow/Comments` | M5 | partial | replies, likes, mentions, delete (M5 Social 1); Report to come |
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | five tabs, per-tab stacks, deep-link paths (#90) |
 | Today | Today | `Compound/Core/Today` | M2 | partial | checklist, streak, protein gap (#101) |
 | Today | WeeklyReview | `WeeklyReview` | M2 | todo | |

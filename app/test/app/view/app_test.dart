@@ -62,7 +62,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Alice Cooper'), findsOneWidget);
 
-      await tester.ensureVisible(find.text('Sign Out'));
+      // Signing out is in Settings, as in the Swift app.
+      await tester.tap(find.byTooltip('Settings'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Sign Out'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sign Out'));
       await tester.pumpAndSettle();
@@ -218,7 +225,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Alice Cooper'), findsOneWidget);
       expect(find.text('@alice.cooper'), findsOneWidget);
-      expect(find.text('alice@example.com'), findsOneWidget);
+      expect(find.text('Edit Profile'), findsOneWidget);
 
       // Closing returns to the tab underneath.
       await tester.tap(find.byType(CloseButton));

@@ -4,15 +4,15 @@ import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/settings/account/cubit/edit_profile_cubit.dart';
+import 'package:compound/social/social_routes.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:user_repository/user_repository.dart';
 
 /// Edit Profile (Swift `EditProfileView`), opened from the profile. Save
-/// writes the profile section; the privacy switch writes as it flips. The
-/// profile photo and the username editor are not built yet: the username
-/// is shown, not edited.
+/// writes the profile section; the privacy switch writes as it flips; the
+/// username row opens its own editor. The profile photo is not built yet.
 class EditProfilePage extends StatelessWidget {
   const new({super.key});
 
@@ -151,7 +151,13 @@ class _ProfileSection extends StatelessWidget {
     final cubit = context.read<EditProfileCubit>();
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dateOfBirth = state.dateOfBirth;
-    final username = state.username;
+    // Live, so a handle chosen in its own editor shows on the way back.
+    final username = context.select<AppBloc, String?>(
+      (bloc) => switch (bloc.state) {
+        AppAuthenticated(:final profile?) => profile.username,
+        _ => state.username,
+      },
+    );
     Widget textField({
       required String initialValue,
       required String label,
@@ -174,8 +180,9 @@ class _ProfileSection extends StatelessWidget {
     return AppSection(
       header: l10n.editProfileProfileHeader,
       children: [
-        AppListRow(
+        AppListRowButton(
           title: l10n.profileUsername,
+          onPressed: () => SocialNavigation.openUsername(context),
           accessory: AppListRowValue(
             username == null
                 ? l10n.profileNotSet

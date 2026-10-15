@@ -306,17 +306,27 @@ class ActiveSessionController {
       original: exercise.sets.firstWhere((s) => s.id == setId),
       now: _clock(),
     );
-    updateSet(exercise.id, logged);
+    _updateSet(exercise.id, logged, flushIfLogged: false);
     final rest = outcome.restSeconds;
     if (_settings.useRestTimers && rest != null) startRest(rest);
     _applyLiveProgression(logged, exercise.id);
+    // A logged set, with the rest it started, is the change worth not
+    // waiting for.
+    flush();
     return LogResult(restSeconds: rest);
   }
 
   /// Writes [updated] over its set at once, carrying an edit onto its open
   /// siblings when Propagate Changes is on; a set newly logged moves the
   /// card and is kept at once (`updateSet`).
-  void updateSet(String exerciseId, m.WorkoutSetModel updated) {
+  void updateSet(String exerciseId, m.WorkoutSetModel updated) =>
+      _updateSet(exerciseId, updated, flushIfLogged: true);
+
+  void _updateSet(
+    String exerciseId,
+    m.WorkoutSetModel updated, {
+    required bool flushIfLogged,
+  }) {
     _recordCompletionUndo(exerciseId, updated);
     _commitPendingEdit(sparing: updated.id);
     final exercise = _exercise(exerciseId);
@@ -338,7 +348,10 @@ class ActiveSessionController {
         now: _clock(),
       );
     }
-    _replaceExercise(exercise.copyWith(sets: sets), flush: isLogged);
+    _replaceExercise(
+      exercise.copyWith(sets: sets),
+      flush: isLogged && flushIfLogged,
+    );
     if (isLogged) _moveFocus(afterLogging: updated.id);
   }
 

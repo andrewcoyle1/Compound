@@ -346,9 +346,8 @@ class GoalSetupView extends StatelessWidget {
         header: l10n.onboardingGoalOverview,
         children: [
           AppListRow(
-            title: l10n.onboardingYourGoal,
+            title: objective.label(l10n),
             subtitle: objective.detail(l10n),
-            accessory: AppListRowValue(objective.label(l10n)),
           ),
         ],
       ),
@@ -381,20 +380,14 @@ class GoalSetupView extends StatelessWidget {
       ),
       AppSection(
         header: l10n.onboardingTimeline,
+        footer: weeks > 0 ? l10n.onboardingTimelineDetail(rate) : null,
         children: [
-          if (weeks > 0)
-            AppListRow(
-              title: l10n.onboardingEstimatedTimeline,
-              subtitle: l10n.onboardingTimelineDetail(rate),
-              accessory: AppListRowValue(
-                l10n.onboardingTimelineValue(weeks, months),
-              ),
-            )
-          else
-            AppListRow(
-              title: l10n.onboardingEstimatedTimeline,
-              accessory: AppListRowValue(l10n.onboardingMaintaining),
-            ),
+          AppListRow(
+            title: l10n.onboardingEstimatedTimeline,
+            subtitle: weeks > 0
+                ? l10n.onboardingTimelineValue(weeks, months)
+                : l10n.onboardingMaintaining,
+          ),
         ],
       ),
       AppSection(

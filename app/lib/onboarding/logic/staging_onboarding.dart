@@ -41,7 +41,8 @@ UserModel? stagingOnboardingProfile(
         ? 'staging-goal'
         : null,
     submittedFavouriteGymProfileId: pastGym ? 'staging-gym' : null,
-    submittedActiveMesocycleId: step == OnboardingStep.customiseProgram
+    submittedActiveMesocycleId:
+        step.orderIndex >= OnboardingStep.customiseProgram.orderIndex
         ? 'staging-mesocycle'
         : null,
   );

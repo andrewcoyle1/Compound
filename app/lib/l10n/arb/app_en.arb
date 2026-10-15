@@ -1645,10 +1645,6 @@
     "@onboardingGoalOverview": {
         "description": "Goal summary: header"
     },
-    "onboardingYourGoal": "Your Goal",
-    "@onboardingYourGoal": {
-        "description": "Goal summary: the objective row"
-    },
     "onboardingWeightDetails": "Weight Details",
     "@onboardingWeightDetails": {
         "description": "Goal summary: header"

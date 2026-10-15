@@ -34,14 +34,23 @@ abstract interface class TrainingLibraryRepository {
   Stream<WorkoutSettings> watchWorkoutSettings(String uid);
 
   /// Saves [settings] whole to
-  /// `users/{settings.authorId}/workout_settings/workout_settings`, merged
-  /// over what is stored, as `WorkoutSettingsManager.saveSettings` does
-  /// (`saveDocument` is `setData(merge: true)`). A field this app does not
-  /// know survives; an optional field left null keeps its stored value, as
-  /// in Swift. `rest_durations_by_exercise_type` is a map, which a merge
-  /// combines key by key: a kind left out keeps its stored rest, so a rest
-  /// can be changed here but never removed (as in Swift).
+  /// `users/{settings.authorId}/workout_settings/workout_settings`, as
+  /// `WorkoutSettingsManager.saveSettings` does, creating it if needed.
+  ///
+  /// Every field the model knows is written as it is in [settings]: an
+  /// optional left null is deleted and `rest_durations_by_exercise_type` is
+  /// replaced whole, so a document saved here reads back as [settings]. A
+  /// field this app does not know survives. Swift's `setData(merge: true)`
+  /// keeps the stored value instead, so its "Off" for the superset rest and
+  /// "Reset Default Timers" never reach Firestore (`swift-findings.md`);
+  /// this writes the same shape without that bug.
   Future<void> saveWorkoutSettings(WorkoutSettings settings);
+
+  /// Deletes the rest override from `users/{uid}/exercise_settings/
+  /// {exerciseId}`, leaving its note. Swift sets it to nil and merges, which
+  /// keeps the stored override (`swift-findings.md`). An `update`, so a
+  /// missing document is refused with `not-found`.
+  Future<void> clearExerciseRestOverride(String uid, String exerciseId);
 
   /// Saves [settings] at `users/{uid}/exercise_settings/{id}`, merged over
   /// what is stored (`ExerciseSettingsManager.setNote` and

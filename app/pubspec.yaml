@@ -51,6 +51,8 @@ dependencies:
     path: packages/program_repository
   training_library_repository:
     path: packages/training_library_repository
+  training_rules:
+    path: packages/training_rules
   user_repository:
     path: packages/user_repository
   workout_session_repository:

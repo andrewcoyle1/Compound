@@ -3139,5 +3139,450 @@
     "profileEditProfile": "Edit Profile",
     "@profileEditProfile": {
         "description": "Profile row: opens Edit Profile"
+    },
+    "workoutSettingsRestTimer": "Rest Timer",
+    "@workoutSettingsRestTimer": {
+        "description": "Workout Settings row, and the Rest Timer screen title"
+    },
+    "workoutSettingsRestTimerSubtitle": "Configure rest timer settings",
+    "@workoutSettingsRestTimerSubtitle": {
+        "description": "Workout Settings: Rest Timer row subtitle"
+    },
+    "workoutSettingsSmartProgression": "Smart Progression",
+    "@workoutSettingsSmartProgression": {
+        "description": "Workout Settings row, and the Smart Progression screen title"
+    },
+    "workoutSettingsSmartProgressionSubtitle": "Configure smart progression settings",
+    "@workoutSettingsSmartProgressionSubtitle": {
+        "description": "Workout Settings: Smart Progression row subtitle"
+    },
+    "workoutSettingsPropagateChanges": "Propagate Changes",
+    "@workoutSettingsPropagateChanges": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsPropagateChangesSubtitle": "Weight and rep edits will propagate to all sets with the same weight and reps",
+    "@workoutSettingsPropagateChangesSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsRirTracking": "Effort (RPE)",
+    "@workoutSettingsRirTracking": {
+        "description": "Workout Settings toggle: log RPE on sets"
+    },
+    "workoutSettingsRirTrackingSubtitle": "Log how hard each set was, from RPE 6 to 10, on the reps keyboard",
+    "@workoutSettingsRirTrackingSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsSupersetAutoScroll": "Superset Auto-Scroll",
+    "@workoutSettingsSupersetAutoScroll": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsSupersetAutoScrollSubtitle": "Scroll automatically between superset exercises after set completion",
+    "@workoutSettingsSupersetAutoScrollSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsSupersetRest": "Rest between superset partners",
+    "@workoutSettingsSupersetRest": {
+        "description": "Workout Settings menu: rest between superset partners"
+    },
+    "workoutSettingsOff": "Off",
+    "@workoutSettingsOff": {
+        "description": "A rest that is turned off"
+    },
+    "workoutSettingsExerciseAutoNext": "Exercise Auto-Next",
+    "@workoutSettingsExerciseAutoNext": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsExerciseAutoNextSubtitle": "Move to the next exercise when its rest ends",
+    "@workoutSettingsExerciseAutoNextSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsPreviousReferenceHeader": "Previous Reference",
+    "@workoutSettingsPreviousReferenceHeader": {
+        "description": "Workout Settings section header"
+    },
+    "workoutSettingsPreviousReferenceFooter": "Applies to the previous values shown beside each set while you train.",
+    "@workoutSettingsPreviousReferenceFooter": {
+        "description": "Workout Settings section footer"
+    },
+    "workoutSettingsAnyExercise": "Any workout",
+    "@workoutSettingsAnyExercise": {
+        "description": "Previous reference option"
+    },
+    "workoutSettingsAnyExerciseSubtitle": "Previous values show the weight, reps, and RIR from the last time you performed this exercise, in any workout at all.",
+    "@workoutSettingsAnyExerciseSubtitle": {
+        "description": "Previous reference option subtitle"
+    },
+    "workoutSettingsSameWorkout": "This workout",
+    "@workoutSettingsSameWorkout": {
+        "description": "Previous reference option"
+    },
+    "workoutSettingsSameWorkoutSubtitle": "Previous values come from the last time you completed this workout, in any mesocycle. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead.",
+    "@workoutSettingsSameWorkoutSubtitle": {
+        "description": "Previous reference option subtitle"
+    },
+    "workoutSettingsInMesocycle": "This workout within the current mesocycle",
+    "@workoutSettingsInMesocycle": {
+        "description": "Previous reference option"
+    },
+    "workoutSettingsInMesocycleSubtitle": "Previous values come from the last time you completed this workout within the current mesocycle. If there is none for an exercise, the last time you performed it anywhere is shown instead.",
+    "@workoutSettingsInMesocycleSubtitle": {
+        "description": "Previous reference option subtitle"
+    },
+    "workoutSettingsDisplayHeader": "Display",
+    "@workoutSettingsDisplayHeader": {
+        "description": "Workout Settings section header"
+    },
+    "workoutSettingsKeepAlive": "Keep Screen On",
+    "@workoutSettingsKeepAlive": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsKeepAliveSubtitle": "Stop the screen locking during a workout",
+    "@workoutSettingsKeepAliveSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsWorkoutTimer": "Workout Timer",
+    "@workoutSettingsWorkoutTimer": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsWorkoutTimerSubtitle": "Show elapsed time during workout sessions",
+    "@workoutSettingsWorkoutTimerSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsBodyweight": "Bodyweight Contribution",
+    "@workoutSettingsBodyweight": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsBodyweightSubtitle": "Display scale weight and body weight contribution during workout sessions",
+    "@workoutSettingsBodyweightSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsLockScreen": "Show on Lock Screen",
+    "@workoutSettingsLockScreen": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsLockScreenSubtitle": "Follow each workout on the Lock Screen and in the Dynamic Island",
+    "@workoutSettingsLockScreenSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsSetPlan": "Set Plan",
+    "@workoutSettingsSetPlan": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsSetPlanSubtitle": "Plan drops, mini-sets and failure targets in your workouts",
+    "@workoutSettingsSetPlanSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsWarmUpHeader": "Warm-Up",
+    "@workoutSettingsWarmUpHeader": {
+        "description": "Workout Settings section header"
+    },
+    "workoutSettingsSmartWarmUps": "Add Smart Warm-Ups",
+    "@workoutSettingsSmartWarmUps": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsSmartWarmUpsSubtitle": "Add warm-up sets based on the weight and how fresh you are",
+    "@workoutSettingsSmartWarmUpsSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsSaveFailed": "Unable to Save Settings",
+    "@workoutSettingsSaveFailed": {
+        "description": "Snack bar when a settings change cannot be saved"
+    },
+    "restTimerBehaviorHeader": "Behavior",
+    "@restTimerBehaviorHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerUseRestTimers": "Use Rest Timers",
+    "@restTimerUseRestTimers": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerUseRestTimersSubtitle": "Rest timers will count down after each exercise set",
+    "@restTimerUseRestTimersSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerDuration": "Timer Duration",
+    "@restTimerDuration": {
+        "description": "Rest Timer row, and the Timer Duration screen title"
+    },
+    "restTimerDurationSubtitle": "Configure rest duration for different exercise types",
+    "@restTimerDurationSubtitle": {
+        "description": "Rest Timer row subtitle"
+    },
+    "restTimerAfterLastWarmUp": "Rest After Last Warm-Up Set",
+    "@restTimerAfterLastWarmUp": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerAfterLastWarmUpSubtitle": "Rest before the first working set. Warm-up sets never rest between themselves",
+    "@restTimerAfterLastWarmUpSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerBetweenExercises": "Rest Between Exercises",
+    "@restTimerBetweenExercises": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerBetweenExercisesSubtitle": "Use rest timers when moving between exercises",
+    "@restTimerBetweenExercisesSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerBetweenSides": "Rest Between Left/Right Sets",
+    "@restTimerBetweenSides": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerBetweenSidesSubtitle": "Use rest timers in between left and right sets",
+    "@restTimerBetweenSidesSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerNotificationsHeader": "Notifications",
+    "@restTimerNotificationsHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerPlaySound": "Play Sound",
+    "@restTimerPlaySound": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerPlaySoundSubtitle": "Play sound when rest time is over",
+    "@restTimerPlaySoundSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerVibrate": "Vibrate",
+    "@restTimerVibrate": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerVibrateSubtitle": "Vibrate when rest time is over",
+    "@restTimerVibrateSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerScalingHeader": "Rest Scaling",
+    "@restTimerScalingHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerScalingWarmUp": "After Warm-Ups",
+    "@restTimerScalingWarmUp": {
+        "description": "Rest scaling menu"
+    },
+    "restTimerScalingBetweenExercises": "Between Exercises",
+    "@restTimerScalingBetweenExercises": {
+        "description": "Rest scaling menu"
+    },
+    "restTimerScalingSides": "Between Left and Right Sides",
+    "@restTimerScalingSides": {
+        "description": "Rest scaling menu"
+    },
+    "restTimerWithinSetHeader": "Within a Set",
+    "@restTimerWithinSetHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerWithinSetFooter": "A set's normal rest follows its last piece. The Live Activity shows the short rest as a bar, not a countdown, and buzzes once.",
+    "@restTimerWithinSetFooter": {
+        "description": "Rest Timer section footer"
+    },
+    "restTimerDropSet": "Drop set",
+    "@restTimerDropSet": {
+        "description": "Set kind"
+    },
+    "restTimerDropSetSubtitle": "Change the weight and go",
+    "@restTimerDropSetSubtitle": {
+        "description": "Drop set row subtitle"
+    },
+    "restTimerNone": "None",
+    "@restTimerNone": {
+        "description": "A drop set has no rest within it"
+    },
+    "restTimerMyo": "Myo-reps",
+    "@restTimerMyo": {
+        "description": "Set kind"
+    },
+    "restTimerMyoSubtitle": "Between mini-sets",
+    "@restTimerMyoSubtitle": {
+        "description": "Myo-reps row subtitle"
+    },
+    "restTimerRestPause": "Rest-pause",
+    "@restTimerRestPause": {
+        "description": "Set kind"
+    },
+    "restTimerRestPauseSubtitle": "Between pauses",
+    "@restTimerRestPauseSubtitle": {
+        "description": "Rest-pause row subtitle"
+    },
+    "restTimerCluster": "Cluster",
+    "@restTimerCluster": {
+        "description": "Set kind"
+    },
+    "restTimerClusterSubtitle": "Between clusters",
+    "@restTimerClusterSubtitle": {
+        "description": "Cluster row subtitle"
+    },
+    "restTimerFailureSetsHeader": "Failure Sets",
+    "@restTimerFailureSetsHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerRaiseTarget": "Raise the Target",
+    "@restTimerRaiseTarget": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerRaiseTargetSubtitle": "After beating it twice in a row",
+    "@restTimerRaiseTargetSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerAddWeight": "Add Weight Instead",
+    "@restTimerAddWeight": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerAddWeightOff": "Off: the target keeps rising",
+    "@restTimerAddWeightOff": {
+        "description": "Add Weight Instead subtitle when off"
+    },
+    "restTimerCeilingLabel": "Target that adds weight",
+    "@restTimerCeilingLabel": {
+        "description": "Stepper accessibility label"
+    },
+    "timerDurationDefaultsHeader": "Default Timers",
+    "@timerDurationDefaultsHeader": {
+        "description": "Timer Duration section header"
+    },
+    "timerDurationDefaultsFooter": "Until you set a time for a type, compound sets of 6 reps or fewer rest 3:00.",
+    "@timerDurationDefaultsFooter": {
+        "description": "Timer Duration section footer"
+    },
+    "timerDurationReset": "Reset Default Timers",
+    "@timerDurationReset": {
+        "description": "Timer Duration button"
+    },
+    "timerDurationResetTitle": "Reset Default Timers?",
+    "@timerDurationResetTitle": {
+        "description": "Reset confirmation title"
+    },
+    "timerDurationResetMessage": "Every exercise type goes back to its default rest time. Exercise timers are kept.",
+    "@timerDurationResetMessage": {
+        "description": "Reset confirmation message"
+    },
+    "timerDurationResetConfirm": "Reset Timers",
+    "@timerDurationResetConfirm": {
+        "description": "Reset confirmation button"
+    },
+    "timerDurationCancel": "Cancel",
+    "@timerDurationCancel": {
+        "description": "Cancel button"
+    },
+    "timerDurationExerciseHeader": "Exercise Timers",
+    "@timerDurationExerciseHeader": {
+        "description": "Timer Duration section header"
+    },
+    "timerDurationExerciseFooter": "These take precedence over default timers",
+    "@timerDurationExerciseFooter": {
+        "description": "Timer Duration section footer"
+    },
+    "timerDurationAddExercise": "Add Exercise Timer",
+    "@timerDurationAddExercise": {
+        "description": "Timer Duration row"
+    },
+    "timerDurationAddExerciseSubtitle": "Set timers for specific exercises",
+    "@timerDurationAddExerciseSubtitle": {
+        "description": "Timer Duration row subtitle"
+    },
+    "timerDurationRemove": "Remove",
+    "@timerDurationRemove": {
+        "description": "Removes an exercise timer"
+    },
+    "timerDurationChooseExercise": "Choose Exercise",
+    "@timerDurationChooseExercise": {
+        "description": "Exercise picker title"
+    },
+    "timerDurationMinutes": "Minutes",
+    "@timerDurationMinutes": {
+        "description": "Duration wheel label"
+    },
+    "timerDurationSeconds": "Seconds",
+    "@timerDurationSeconds": {
+        "description": "Duration wheel label"
+    },
+    "timerDurationSave": "Save",
+    "@timerDurationSave": {
+        "description": "Saves a duration"
+    },
+    "smartProgressionBehaviorHeader": "Behavior",
+    "@smartProgressionBehaviorHeader": {
+        "description": "Smart Progression section header"
+    },
+    "smartProgressionInitialLogFill": "Initial log fill",
+    "@smartProgressionInitialLogFill": {
+        "description": "Smart Progression menu"
+    },
+    "smartProgressionFillSmart": "Smart Progression values",
+    "@smartProgressionFillSmart": {
+        "description": "Initial log fill option"
+    },
+    "smartProgressionFillPrevious": "Previous workout values",
+    "@smartProgressionFillPrevious": {
+        "description": "Initial log fill option"
+    },
+    "smartProgressionFillEmpty": "Leave empty",
+    "@smartProgressionFillEmpty": {
+        "description": "Initial log fill option"
+    },
+    "smartProgressionApplyInSession": "Apply in session",
+    "@smartProgressionApplyInSession": {
+        "description": "Smart Progression toggle"
+    },
+    "smartProgressionApplyInSessionSubtitle": "Update targets during a workout as you log sets",
+    "@smartProgressionApplyInSessionSubtitle": {
+        "description": "Smart Progression toggle subtitle"
+    },
+    "smartProgressionAdjustmentMode": "Adjustment Mode",
+    "@smartProgressionAdjustmentMode": {
+        "description": "Smart Progression menu"
+    },
+    "smartProgressionWeightFirst": "Weight-first",
+    "@smartProgressionWeightFirst": {
+        "description": "Adjustment mode option"
+    },
+    "smartProgressionRepsFirst": "Reps-first",
+    "@smartProgressionRepsFirst": {
+        "description": "Adjustment mode option"
+    },
+    "workoutSettingsSeconds": "{seconds} s",
+    "@workoutSettingsSeconds": {
+        "description": "A rest in seconds",
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "restTimerAddWeightAt": "Once the target reaches {target}",
+    "@restTimerAddWeightAt": {
+        "description": "Add Weight Instead subtitle when on",
+        "placeholders": {
+            "target": {
+                "type": "int"
+            }
+        }
+    },
+    "restTimerCeiling": "Target {target}",
+    "@restTimerCeiling": {
+        "description": "Stepper: the AMRAP target that adds weight",
+        "placeholders": {
+            "target": {
+                "type": "int"
+            }
+        }
+    },
+    "timerDurationMinutesValue": "{minutes} min",
+    "@timerDurationMinutesValue": {
+        "description": "Minutes wheel row",
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "timerDurationSecondsValue": "{seconds} sec",
+    "@timerDurationSecondsValue": {
+        "description": "Seconds wheel row",
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
     }
 }

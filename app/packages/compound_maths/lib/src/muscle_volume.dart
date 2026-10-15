@@ -130,3 +130,61 @@ Map<Muscle, List<double>> weeklyMuscleSets(
   }
   return result;
 }
+
+/// Weighted hard sets per muscle on each day a session ended, keyed by day
+/// key (`MuscleGroupSetsAggregator`, `MuscleVolume.weightedSets`). A muscle
+/// or day with no hard sets is absent.
+Map<Muscle, Map<String, double>> dailyMuscleSets(
+  List<WorkoutSession> sessions,
+  Map<String, Map<Muscle, MuscleTarget>> templates,
+) {
+  final result = <Muscle, Map<String, double>>{};
+  for (final session in sessions) {
+    for (final exercise in session.exercises) {
+      final groups = templates[exercise.templateId];
+      if (groups == null) continue;
+      final sets = hardSets(exercise);
+      if (sets <= 0) continue;
+      groups.forEach((muscle, target) {
+        final days = result.putIfAbsent(muscle, () => {});
+        days[session.day] =
+            (days[session.day] ?? 0) + sets * MuscleVolume.factor(target);
+      });
+    }
+  }
+  return result;
+}
+
+/// Where a week's hard sets for one muscle fall (`MuscleBalanceStatus`). One
+/// band for every muscle; only 10–20 rests on the meta-analyses, the 4 and
+/// 10 cut-points are Compound's own.
+enum VolumeTier {
+  /// Fewer than 4 sets.
+  belowMaintenance,
+
+  /// 4 to under 10.
+  maintaining,
+
+  /// 10–20.
+  productive,
+
+  /// Over 20.
+  high;
+
+  /// Below this a week is unlikely to keep what has been built.
+  static const maintenanceSets = 4.0;
+
+  /// The productive band's lower end.
+  static const productiveLow = 10.0;
+
+  /// The productive band's upper end.
+  static const productiveHigh = 20.0;
+
+  /// The tier of [sets] a week (`MuscleVolume.tier`).
+  static VolumeTier of(double sets) {
+    if (sets < maintenanceSets) return belowMaintenance;
+    if (sets < productiveLow) return maintaining;
+    if (sets > productiveHigh) return high;
+    return productive;
+  }
+}

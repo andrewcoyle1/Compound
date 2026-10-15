@@ -266,6 +266,141 @@ List<WorkoutSessionModel> sampleWorkoutSessions({
   ];
 }
 
+/// [weeks] weeks of Push, Pull and Legs before [sampleWorkoutSessions]'
+/// week, a little lighter each week further back, for the staging flavor's
+/// training analytics: one-rep max trends, weekly sets per muscle, planned
+/// sets done and last week's review. One planned set is missed now and then.
+/// Newest last.
+List<WorkoutSessionModel> sampleEarlierWorkoutSessions({
+  required String uid,
+  required DateTime now,
+  int weeks = 5,
+}) {
+  DateTime at(int daysAgo, int hour) {
+    final day = now.subtract(Duration(days: daysAgo));
+    return DateTime(day.year, day.month, day.day, hour);
+  }
+
+  List<SetTarget> targets(String id, int count, int min, int max) => [
+    for (var i = 1; i <= count; i++)
+      SetTarget(id: '$id-$i', setNumber: i, minReps: min, maxReps: max),
+  ];
+
+  _ExerciseDraft lift(
+    String templateId,
+    String name,
+    double kg,
+    List<int> reps, {
+    required int planned,
+    required int min,
+    required int max,
+    double rpe = 8,
+  }) => _exercise(
+    uid,
+    templateId,
+    name,
+    sets: [for (final r in reps) _working(kg, r, rpe: rpe)],
+    setTargets: targets(templateId, planned, min, max),
+  );
+
+  return [
+    for (var week = weeks; week >= 1; week--) ...[
+      _session(
+        uid,
+        id: 'sample-earlier-push-$week',
+        name: 'Push A',
+        start: at(7 * week + 6, 7),
+        minutes: 60,
+        exercises: [
+          lift(
+            'system-barbell-bench-press',
+            'Barbell Bench Press',
+            80 - 2.5 * week,
+            [8, 8, 7],
+            planned: 3,
+            min: 6,
+            max: 8,
+          ),
+          lift(
+            'system-45-degree-incline-dumbbell-press',
+            '45° Incline Dumbbell Press',
+            26 - week.toDouble(),
+            [10, 9, 8],
+            planned: 3,
+            min: 8,
+            max: 10,
+          ),
+          lift(
+            'system-cable-pushdown-straight-bar',
+            'Cable Pushdown (Straight Bar)',
+            35 - 2.5 * week,
+            // A set skipped every other week.
+            week.isEven ? [12, 11] : [12, 11, 10],
+            planned: 3,
+            min: 10,
+            max: 12,
+          ),
+        ],
+      ),
+      _session(
+        uid,
+        id: 'sample-earlier-pull-$week',
+        name: 'Pull A',
+        start: at(7 * week + 5, 18),
+        minutes: 55,
+        exercises: [
+          lift(
+            'system-barbell-sumo-deadlift',
+            'Barbell Sumo Deadlift',
+            140 - 5 * week.toDouble(),
+            [5, 5, 5],
+            planned: 3,
+            min: 4,
+            max: 6,
+            rpe: 8.5,
+          ),
+          lift(
+            'system-bent-over-barbell-row',
+            'Bent-Over Barbell Row',
+            70 - 2.5 * week,
+            [10, 10, 9],
+            planned: 3,
+            min: 8,
+            max: 10,
+          ),
+        ],
+      ),
+      _session(
+        uid,
+        id: 'sample-earlier-legs-$week',
+        name: 'Legs',
+        start: at(7 * week + 3, 17),
+        minutes: 65,
+        exercises: [
+          lift(
+            'system-barbell-squat',
+            'Barbell Squat',
+            110 - 5 * week.toDouble(),
+            [6, 6, 6],
+            planned: 3,
+            min: 5,
+            max: 6,
+          ),
+          lift(
+            'system-45-degree-leg-press',
+            '45° Leg Press',
+            180 - 10 * week.toDouble(),
+            [12, 11, 10],
+            planned: 3,
+            min: 10,
+            max: 12,
+          ),
+        ],
+      ),
+    ],
+  ];
+}
+
 WorkoutSessionModel _session(
   String uid, {
   required String id,

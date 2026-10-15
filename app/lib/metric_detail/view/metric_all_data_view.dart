@@ -12,6 +12,7 @@ class MetricAllDataView extends StatelessWidget {
     required this.unit,
     required this.entries,
     this.format,
+    this.valueText,
     super.key,
   });
 
@@ -28,12 +29,28 @@ class MetricAllDataView extends StatelessWidget {
   /// The entries, in [unit], in the order shown.
   final List<MetricPoint> entries;
 
+  /// The text for the entry at an index, for an entry that says more than
+  /// its value (a workout's sets and volume); by default its value and
+  /// [unit].
+  final String Function(int index)? valueText;
+
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dates = DateFormat.yMMMd(locale);
-    String value(double v) =>
-        '${AppFormat.number(v, maxFractionDigits: 1, locale: locale)} $unit';
+    final format = this.format;
+    final text =
+        valueText ??
+        (index) => format != null
+            ? format(entries[index].value)
+            : [
+                AppFormat.number(
+                  entries[index].value,
+                  maxFractionDigits: 1,
+                  locale: locale,
+                ),
+                if (unit.isNotEmpty) unit,
+              ].join(' ');
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
@@ -42,9 +59,9 @@ class MetricAllDataView extends StatelessWidget {
         AppSection(
           header: title,
           children: [
-            for (final entry in entries)
+            for (final (index, entry) in entries.indexed)
               AppListRow(
-                title: format?.call(entry.value) ?? value(entry.value),
+                title: text(index),
                 accessory: AppListRowValue(dates.format(entry.date)),
               ),
           ],

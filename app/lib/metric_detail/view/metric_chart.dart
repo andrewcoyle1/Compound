@@ -4,12 +4,14 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
 
 /// One series on a metric chart: what it is called, its points in the unit
-/// shown, its colour, and whether it is drawn as a line or as dots.
+/// shown, its colour, and whether it is drawn as a line, as bars or as dots.
+/// Bars are totals (sets, say), so their buckets add up rather than average.
 class const MetricChartSeries({
   required final String label,
   required final List<MetricPoint> points,
   required final Color color,
   final bool isLine = false,
+  final bool isBar = false,
 }) {
   /// This series with [points] in place of its own.
   MetricChartSeries withPoints(List<MetricPoint> points) => MetricChartSeries(
@@ -17,6 +19,7 @@ class const MetricChartSeries({
     points: points,
     color: color,
     isLine: isLine,
+    isBar: isBar,
   );
 }
 
@@ -102,8 +105,10 @@ class _MetricChartPainter extends CustomPainter {
         for (final p in s.points) p.value,
     ];
     if (values.isEmpty) return;
+    // Bars stand on zero.
+    final bars = series.any((s) => s.isBar);
     final (low, high) = niceBounds(
-      values.reduce(math.min),
+      bars ? 0 : values.reduce(math.min),
       values.reduce(math.max),
     );
 
@@ -149,10 +154,26 @@ class _MetricChartPainter extends CustomPainter {
       );
     }
 
+    final bucketWidth = plot.width * half * 2 / span;
     for (final s in series) {
       final points = s.points.map(at).toList();
-      if (s.isLine) {
-        if (points.length < 2) continue;
+      if (s.isBar) {
+        final bar = Paint()..color = s.color;
+        final width = math.max(bucketWidth * 0.6, 2);
+        for (final point in points) {
+          canvas.drawRRect(
+            RRect.fromLTRBAndCorners(
+              point.dx - width / 2,
+              point.dy,
+              point.dx + width / 2,
+              plot.bottom,
+              topLeft: const Radius.circular(2),
+              topRight: const Radius.circular(2),
+            ),
+            bar,
+          );
+        }
+      } else if (s.isLine && points.length > 1) {
         canvas.drawPath(
           Path()..addPolygon(points, false),
           Paint()
@@ -163,6 +184,7 @@ class _MetricChartPainter extends CustomPainter {
             ..strokeCap = StrokeCap.round,
         );
       } else {
+        // Dots, and a line's lone reading, which has nothing to join.
         final dot = Paint()..color = s.color;
         for (final point in points) {
           canvas.drawCircle(point, _dotRadius, dot);

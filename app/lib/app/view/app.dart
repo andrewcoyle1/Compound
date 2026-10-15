@@ -28,7 +28,9 @@ import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/social/social.dart';
 import 'package:compound/today/today.dart';
 import 'package:compound/training/training.dart';
+import 'package:compound/training_analytics/training_analytics_routes.dart';
 import 'package:compound/training_library/training_library.dart';
+import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
@@ -214,6 +216,13 @@ class _AppViewState extends State<AppView> {
                     path: tab.path,
                     name: tab.name,
                     builder: (_, _) => const TodayPage(),
+                    routes: [
+                      GoRoute(
+                        path: WeeklyReviewPage.path,
+                        name: WeeklyReviewPage.name,
+                        builder: (_, _) => const WeeklyReviewPage(),
+                      ),
+                    ],
                   ),
                   AppTab.training => GoRoute(
                     path: tab.path,
@@ -306,6 +315,7 @@ class _AppViewState extends State<AppView> {
                             ),
                           ],
                         ),
+                      ...trainingAnalyticsRoutes,
                       for (final metric in ExpenditureMetric.values)
                         GoRoute(
                           path: metric.path,

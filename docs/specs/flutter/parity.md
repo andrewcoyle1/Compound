@@ -11,32 +11,32 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Components | CalendarHeader | `Views/CalendarHeader` | M2 | todo | |
 | Components | Calendar | `Views/CalendarHeader/Calendar` | M2 | todo | |
 | Components | AuthorHeader | `Views/User` | M2 | done | social feed and profile (M5 Social 1) |
-| Analytics | Analytics | `Compound/Core/Analytics` | M4 | partial | overview cards; M4/M5 cards hidden (#103) |
+| Analytics | Analytics | `Compound/Core/Analytics` | M4 | partial | overview cards (#103); Expenditure and Energy Balance (#130); Muscle Groups and Exercises sections (#133); the carousel and the More list to come |
 | Analytics | BodyMetrics | `Subviews/BodyMetrics` | M4 | todo | |
 | Analytics | LogMeasurement | `Subviews/BodyMetrics/LogMeasurement` | M4 | todo | |
 | Analytics | LogWeight | `Subviews/BodyMetrics/LogMeasurement/LogWeightView` | M4 | done | #106 (HealthKit export M5) |
 | Analytics | ProgressPhotos | `Subviews/BodyMetrics/ProgressPhotos` | M4 | todo | |
 | Analytics | ScaleWeight | `Subviews/BodyMetrics/ScaleWeight` | M4 | partial | read-only + Log Weight (#98, #106) |
-| Analytics | ExerciseAnalytics | `Subviews/ExerciseAnalytics` | M4 | todo | |
-| Analytics | ExerciseDetail | `Subviews/ExerciseAnalytics/ExerciseDetail` | M4 | todo | |
+| Analytics | ExerciseAnalytics | `Subviews/ExerciseAnalytics` | M4 | done | #133 (profile unit, not per-exercise) |
+| Analytics | ExerciseDetail | `Subviews/ExerciseAnalytics/ExerciseDetail` | M4 | done | #133 |
 | Analytics | FoodLoggingConsistency | `Subviews/FoodLoggingConsistency` | M4 | todo | |
 | Analytics | Habits | `Subviews/Habits` | M4 | partial | card on Progress (#103) |
 | Analytics | InsightsAndAnalytics | `Subviews/InsightsAndAnalytics` | M4 | todo | |
 | Analytics | EnergyBalance | `Subviews/InsightsAndAnalytics/EnergyBalance` | M4 | todo | |
 | Analytics | ExpenditureDetail | `Subviews/InsightsAndAnalytics/ExpenditureDetail` | M4 | todo | |
 | Analytics | GoalProgress | `Subviews/InsightsAndAnalytics/GoalProgress` | M4 | partial | card on Progress (#103) |
-| Analytics | MuscleGroupDetail | `Subviews/InsightsAndAnalytics/MuscleGroupDetail` | M4 | todo | |
+| Analytics | MuscleGroupDetail | `Subviews/InsightsAndAnalytics/MuscleGroupDetail` | M4 | done | #133 (Ask Coach waits for the coach UI) |
 | Analytics | Steps | `Subviews/InsightsAndAnalytics/Steps` | M4 | todo | |
 | Analytics | WeightTrend | `Subviews/InsightsAndAnalytics/WeightTrend` | M4 | partial | read-only (#98) |
-| Analytics | Workout | `Subviews/InsightsAndAnalytics/Workouts` | M4 | todo | |
-| Analytics | MuscleBalance | `Subviews/MuscleBalance` | M4 | todo | |
-| Analytics | MuscleGroups | `Subviews/MuscleGroups` | M4 | todo | |
+| Analytics | Workout | `Subviews/InsightsAndAnalytics/Workouts` | M4 | done | #133 |
+| Analytics | MuscleBalance | `Subviews/MuscleBalance` | M4 | done | #133 |
+| Analytics | MuscleGroups | `Subviews/MuscleGroups` | M4 | done | #133 |
 | Analytics | NutritionAnalytics | `Subviews/NutritionAnalytics` | M4 | todo | |
 | Analytics | NutritionMetricDetail | `Subviews/NutritionAnalytics/NutritionMetricDetail` | M4 | todo | |
 | Analytics | NutritionTargetChart | `Subviews/NutritionTargetChart` | M4 | todo | |
 | Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | todo | |
 | Analytics | WeighInConsistency | `Subviews/WeighInConsistency` | M4 | todo | |
-| Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | todo | |
+| Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | done | #133 (no month labels or press callout) |
 | AppView | App | `Compound/Core/AppView` | M1 | partial | sign-in redirect, shell (#86, #90) |
 | Challenges | ChallengeDetail | `ChallengeDetail` | M5 | todo | |
 | Challenges | CreateChallenge | `CreateChallenge` | M5 | todo | |
@@ -155,7 +155,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Social | Comments | `WorkoutSessionRow/Comments` | M5 | partial | replies, likes, mentions, delete (M5 Social 1); Report to come |
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | five tabs, per-tab stacks, deep-link paths (#90) |
 | Today | Today | `Compound/Core/Today` | M2 | partial | checklist, streak, protein gap (#101); today's workout and macrocycle repeat (M5 Programs 1) |
-| Today | WeeklyReview | `WeeklyReview` | M2 | todo | |
+| Today | WeeklyReview | `WeeklyReview` | M2 | partial | #133; share card, Strava line and Ask Coach deferred |
 | Training | Training | `Compound/Core/Training` | M3 | partial | search, active mesocycle, library rows (M5 Programs 1); calendar header and + menu to come |
 | Training | TodaysWorkoutCard | `Components/TodaysWorkoutCard` | M3 | done | M5 Programs 1 |
 | Training | TrainingAccessory | `Components/TrainingAccessory` | M3 | todo | |

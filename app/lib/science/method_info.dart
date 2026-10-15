@@ -165,6 +165,158 @@ class const Citation({
     doi: '10.1016/S2468-2667(25)00164-1',
   );
 
+  /// R73.
+  static const reynolds2006 = Citation(
+    reference:
+        'Reynolds JM, Gordon TJ, Robergs RA (2006). Prediction of one '
+        'repetition maximum strength from multiple repetition maximum testing '
+        'and anthropometry. J Strength Cond Res 20(3):584–592.',
+    doi: '10.1519/00124278-200608000-00020',
+  );
+
+  /// R74.
+  static const ribeiro2024 = Citation(
+    reference:
+        'Ribeiro AS, et al. (2024). Accuracy of 1RM prediction equations '
+        'before and after resistance training in three different lifts. Int J '
+        'Strength Cond. DOI not found — locate manually.',
+    url: 'https://doaj.org/article/248a0c4089a641d5b87f1ca3f9770895',
+  );
+
+  /// R75.
+  static const richens2014 = Citation(
+    reference:
+        'Richens B, Cleather DJ (2014). The relationship between the number '
+        'of repetitions performed at given intensities is different in '
+        'endurance and strength trained athletes. Biol Sport 31(2):157–161.',
+    doi: '10.5604/20831862.1099047',
+  );
+
+  /// R76.
+  static const halperin2022 = Citation(
+    reference:
+        'Halperin I, et al. (2022). Accuracy in predicting repetitions to task '
+        'failure in resistance exercise: a scoping review and exploratory '
+        'meta-analysis. Sports Med 52(2):377–390.',
+    doi: '10.1007/s40279-021-01559-x',
+  );
+
+  /// R77.
+  static const zourdos2016 = Citation(
+    reference:
+        'Zourdos MC, et al. (2016). Novel resistance training-specific rating '
+        'of perceived exertion scale measuring repetitions in reserve. J '
+        'Strength Cond Res 30(1):267–275.',
+    doi: '10.1519/JSC.0000000000001049',
+  );
+
+  /// R78.
+  static const epley1985 = Citation(
+    reference:
+        'Epley B (1985). Poundage Chart. Boyd Epley Workout. Lincoln, NE: Body '
+        'Enterprises. No DOI; Unreviewed (practitioner chart, cited via '
+        'Reynolds 2006 [R73]).',
+    isPeerReviewed: false,
+  );
+
+  /// R81.
+  static const robinson2024 = Citation(
+    reference:
+        'Robinson ZP, Pelland JC, Remmert JF, Refalo MC, Jukic I, Steele J, '
+        'Zourdos MC (2024). Exploring the dose–response relationship between '
+        'estimated resistance training proximity to failure, strength gain, '
+        'and muscle hypertrophy: a series of meta-regressions. Sports Med '
+        '54(9):2209–2231.',
+    doi: '10.1007/s40279-024-02069-2',
+  );
+
+  /// R82.
+  static const refalo2023 = Citation(
+    reference:
+        'Refalo MC, et al. (2023). Influence of resistance training '
+        'proximity-to-failure on skeletal muscle hypertrophy: a systematic '
+        'review with meta-analysis. Sports Med 53(3):649–665.',
+    doi: '10.1007/s40279-022-01784-y',
+  );
+
+  /// R96.
+  static const pelland = Citation(
+    reference:
+        'Pelland JC, et al. SportRxiv preprints 460 (v2, the above '
+        'meta-regression) and 537 (follow-up). Unreviewed preprints.',
+    url: 'https://sportrxiv.org/index.php/server/preprint/view/460',
+    isPeerReviewed: false,
+  );
+
+  /// R97.
+  static const schoenfeld2017 = Citation(
+    reference:
+        'Schoenfeld BJ, Ogborn D, Krieger JW (2017; online 2016). '
+        'Dose-response relationship between weekly resistance training volume '
+        'and increases in muscle mass: a systematic review and meta-analysis. '
+        'J Sports Sci 35(11):1073–1082.',
+    doi: '10.1080/02640414.2016.1210197',
+  );
+
+  /// R98.
+  static const bazvalle2022 = Citation(
+    reference:
+        'Baz-Valle E, Balsalobre-Fernández C, Alix-Fages C, Santos-Concejero J '
+        '(2022). A systematic review of the effects of different resistance '
+        'training volumes on muscle hypertrophy. J Hum Kinet 81:199–210.',
+    doi: '10.2478/hukin-2022-0017',
+  );
+
+  /// R99.
+  static const schoenfeld2017b = Citation(
+    reference:
+        'Schoenfeld BJ, Grgic J, Ogborn D, Krieger JW (2017). Strength and '
+        'hypertrophy adaptations between low- vs. high-load resistance '
+        'training: a systematic review and meta-analysis. J Strength Cond Res '
+        '31(12):3508–3523.',
+    doi: '10.1519/JSC.0000000000002200',
+  );
+
+  /// R100.
+  static const schoenfeld2021 = Citation(
+    reference:
+        'Schoenfeld BJ, Grgic J, Van Every DW, Plotkin DL (2021). Loading '
+        'recommendations for muscle strength, hypertrophy, and local '
+        'endurance: a re-examination of the repetition continuum. Sports '
+        '9(2):32.',
+    doi: '10.3390/sports9020032',
+  );
+
+  /// R103.
+  static const scarpelli2022 = Citation(
+    reference:
+        'Scarpelli MC, Nóbrega SR, Santanielo N, Alvarez IF, Otoboni GB, '
+        'Ugrinowitsch C, Libardi CA (2022; online 2020). Muscle hypertrophy '
+        'response is affected by previous resistance training volume in '
+        'trained individuals. J Strength Cond Res 36(4):1153–1157.',
+    doi: '10.1519/JSC.0000000000003558',
+  );
+
+  /// R104.
+  static const camargo2026 = Citation(
+    reference:
+        'Camargo JBB, et al. (2026). Large increases in resistance training '
+        'volume do not impair muscle hypertrophy or anabolic–catabolic '
+        'molecular signaling in trained individuals. J Appl Physiol (online '
+        '16 July 2026).',
+    doi: '10.1152/japplphysiol.00284.2026',
+  );
+
+  /// R105.
+  static const spiering2021 = Citation(
+    reference:
+        'Spiering BA, Mujika I, Sharp MA, Foulis SA (2021). Maintaining '
+        'physical performance: the minimal dose of exercise needed to '
+        'preserve endurance and strength over time. J Strength Cond Res '
+        '35(5):1449–1458.',
+    doi: '10.1519/JSC.0000000000003964',
+  );
+
   /// R34.
   static const hall2011b = Citation(
     reference:
@@ -434,6 +586,98 @@ class const MethodInfo({
     citations: const [Citation.cfr21],
   );
 
+  /// The estimated one-rep max (Swift `MethodInfo.estimatedOneRepMax`),
+  /// computed by `compound_maths`' `estimatedOneRepMax`.
+  factory estimatedOneRepMax(AppLocalizations l10n) => MethodInfo(
+    title: l10n.e1rmMethodTitle,
+    summary: l10n.e1rmMethodSummary,
+    formula:
+        'n = reps + (10 − RPE)   (RPE logged)\n'
+        'n = reps                (no RPE)\n'
+        'e1RM = weight                 if n ≤ 1\n'
+        'e1RM = weight × (1 + n / 30)  if 1 < n ≤ 10\n'
+        'no estimate                   if n > 10',
+    limitations: l10n.e1rmMethodLimitations,
+    ownChoices: l10n.e1rmMethodOwnChoices,
+    citations: const [
+      Citation.reynolds2006,
+      Citation.epley1985,
+      Citation.zourdos2016,
+      Citation.halperin2022,
+      Citation.richens2014,
+      Citation.ribeiro2024,
+    ],
+  );
+
+  /// What counts as a hard set (Swift `MethodInfo.weeklyHardSets`),
+  /// computed by `compound_maths`' `hardSets`.
+  factory weeklyHardSets(AppLocalizations l10n) => MethodInfo(
+    title: l10n.hardSetsMethodTitle,
+    summary: l10n.hardSetsMethodSummary,
+    formula:
+        'hard set = completed AND not warm-up AND (RPE missing OR RPE ≥ 6)\n'
+        'set credit = min(2, 1 + 0.5 × finished drops or myo/rest-pause '
+        'mini-sets)\n'
+        'muscle sets = Σ set credit × (1 if primary, 0.5 if secondary)\n'
+        'left + right pair = one set, worth its better half',
+    limitations: l10n.hardSetsMethodLimitations,
+    ownChoices: l10n.hardSetsMethodOwnChoices,
+    citations: const [
+      Citation.pelland2026,
+      Citation.robinson2024,
+      Citation.refalo2023,
+      Citation.schoenfeld2021,
+      Citation.schoenfeld2017b,
+    ],
+  );
+
+  /// The weekly volume tiers (Swift `MethodInfo.weeklyVolumeTiers`),
+  /// computed by `compound_maths`' `VolumeTier.of`.
+  factory weeklyVolumeTiers(AppLocalizations l10n) => MethodInfo(
+    title: l10n.volumeTiersMethodTitle,
+    summary: l10n.volumeTiersMethodSummary,
+    formula:
+        '< 4 sets/week    below maintenance\n'
+        '4 to < 10        maintaining\n'
+        '10–20            productive\n'
+        '> 20             high',
+    limitations: l10n.volumeTiersMethodLimitations,
+    ownChoices: l10n.volumeTiersMethodOwnChoices,
+    citations: const [
+      Citation.pelland2026,
+      Citation.schoenfeld2017,
+      Citation.bazvalle2022,
+      Citation.spiering2021,
+      Citation.pelland,
+    ],
+  );
+
+  /// The per-muscle volume suggestion (Swift
+  /// `MethodInfo.volumeRecommendation`), computed by `compound_maths`'
+  /// `recommendVolume`.
+  factory volumeRecommendation(AppLocalizations l10n) => MethodInfo(
+    title: l10n.volumeRecommendationTitle,
+    summary: l10n.volumeRecommendationMethodSummary,
+    formula:
+        'baseline = median weekly hard sets, last 4 weeks\n'
+        '  (fewer than 4 trained weeks: clamped into 10–20)\n'
+        'trend = median over primary exercises of\n'
+        '        least-squares slope of e1RM ÷ mean e1RM × 7 × 100  (%/week)\n'
+        'adherence < 80%                  → be consistent first\n'
+        'trend < −0.5 OR RPE drift ≥ +1   → reduce 20–33%\n'
+        'trend > +0.5                     → keep\n'
+        'otherwise                        → add max(10%, 1 set) to 20%\n'
+        'floor 4 sets (6 from age 60); suggestions rounded to whole sets',
+    limitations: l10n.volumeRecommendationMethodLimitations,
+    ownChoices: l10n.volumeRecommendationMethodOwnChoices,
+    citations: const [
+      Citation.scarpelli2022,
+      Citation.camargo2026,
+      Citation.spiering2021,
+      Citation.pelland2026,
+    ],
+  );
+
   /// A template's planned sets per muscle (Swift
   /// `MethodInfo.plannedSetsPerMuscle`), computed by
   /// `TemplateSummary.targetMuscles`.
@@ -573,12 +817,16 @@ class const MethodInfo({
   /// habits), for Settings › Methods & Sources. Add each new method here.
   static Map<String, MethodInfo> all(AppLocalizations l10n) => {
     'weight-trend': MethodInfo.weightTrend(l10n),
+    'training.e1rm': MethodInfo.estimatedOneRepMax(l10n),
+    'volume.hardSets': MethodInfo.weeklyHardSets(l10n),
+    'volume.tiers': MethodInfo.weeklyVolumeTiers(l10n),
     'adaptive-expenditure': MethodInfo.adaptiveExpenditure(l10n),
     'energy-balance': MethodInfo.energyBalance(l10n),
     'target-proposal': MethodInfo.targetProposal(l10n),
     'check-in-rules': MethodInfo.checkInRules(l10n),
     'macro-split': MethodInfo.macroSplit(l10n),
     'volume.plannedSets': MethodInfo.plannedSetsPerMuscle(l10n),
+    'volume.recommendation': MethodInfo.volumeRecommendation(l10n),
     'habits.weeklyGoal': MethodInfo.weeklySessionGoal(l10n),
     'habits.stepGoal': MethodInfo.dailyStepGoal(l10n),
     'habits.adherenceBand': MethodInfo.calorieAdherenceBand(l10n),

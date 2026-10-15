@@ -52,6 +52,9 @@ final class const TodayState({
   /// Whether reading the sessions, meals or weigh-ins failed.
   final bool failed = false,
 
+  /// Whether the weekly review card was opened since the screen started.
+  final bool weeklyReviewOpened = false,
+
   /// The check-in's day and the weeks done, or null until read.
   final NutritionStrategySettings? strategySettings,
   final CheckInRecord? checkInRecord,
@@ -179,6 +182,25 @@ final class const TodayState({
     eatenGrams: nutritionTotals.proteinGrams,
   );
 
+  /// Whether to offer last week's review: from the start of a week until
+  /// it is opened, when last week has a workout or a meal to review
+  /// (`TodayPresenter.showsWeeklyReviewCard`).
+  bool get showsWeeklyReviewCard {
+    if (weeklyReviewOpened) return false;
+    final thisWeek = weekStartOf(todayKey, firstWeekday: firstWeekday);
+    final lastWeek = addDays(thisWeek, -7);
+    bool inLastWeek(DateTime date) {
+      final day = dayKeyOf(date.toLocal());
+      return day.compareTo(lastWeek) >= 0 && day.compareTo(thisWeek) < 0;
+    }
+
+    final trained = (sessions ?? const []).any(
+      (s) =>
+          s.authorId == uid && s.endedAt != null && inLastWeek(s.dateCreated),
+    );
+    return trained || (meals ?? const []).any((m) => inLastWeek(m.date));
+  }
+
   /// The week the check-in card offers, or null when none is waiting
   /// (`TodayPresenter.dueCheckInWeekStart`).
   DateTime? get dueCheckInWeekStart {
@@ -205,6 +227,7 @@ final class const TodayState({
     UserModel? Function()? user,
     WeightGoal? Function()? goal,
     bool? failed,
+    bool? weeklyReviewOpened,
     NutritionStrategySettings? strategySettings,
     CheckInRecord? Function()? checkInRecord,
     LoggingBreak? Function()? loggingBreak,
@@ -225,6 +248,7 @@ final class const TodayState({
     user: user == null ? this.user : user(),
     goal: goal == null ? this.goal : goal(),
     failed: failed ?? this.failed,
+    weeklyReviewOpened: weeklyReviewOpened ?? this.weeklyReviewOpened,
     strategySettings: strategySettings ?? this.strategySettings,
     checkInRecord: checkInRecord == null ? this.checkInRecord : checkInRecord(),
     loggingBreak: loggingBreak == null ? this.loggingBreak : loggingBreak(),
@@ -246,6 +270,7 @@ final class const TodayState({
     user,
     goal,
     failed,
+    weeklyReviewOpened,
     strategySettings,
     checkInRecord,
     loggingBreak,

@@ -8,12 +8,14 @@ import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/progress/logic/progress_overview.dart';
 import 'package:compound/today/logic/today_checklist.dart' show countedSessions;
+import 'package:compound/training_analytics/logic/training_analytics.dart';
 import 'package:compound/weight_metric/models/weight_metric.dart';
 import 'package:compound_maths/compound_maths.dart'
-    hide CheckInState, LoggingBreak;
+    hide CheckInState, LoggingBreak, Muscle;
 import 'package:compound_models/compound_models.dart' show WorkoutSessionStats;
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -31,6 +33,7 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
     required this._bodyRepository,
     required this._userRepository,
     required this._analyticsRepository,
+    required this._trainingLibraryRepository,
     required this._checkInRepository,
     required this._uid,
     required int firstWeekday,
@@ -47,6 +50,7 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
   final BodyRepository _bodyRepository;
   final UserRepository _userRepository;
   final AnalyticsRepository _analyticsRepository;
+  final TrainingLibraryRepository _trainingLibraryRepository;
   final CheckInRepository _checkInRepository;
   final String _uid;
 
@@ -80,7 +84,7 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
         onError: failed,
       ),
       // The rest are niceties: without them, no protein target, no steps,
-      // every section, kilograms and no goal.
+      // every section, the system exercises only, kilograms and no goal.
       emit.forEach(
         _nutritionRepository.watchDietPlan(_uid),
         onData: (plan) => state.copyWith(dietPlan: () => plan),
@@ -114,6 +118,11 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
         _checkInRepository.watchLoggingBreak(_uid),
         onData: (loggingBreak) =>
             state.copyWith(loggingBreak: () => loggingBreak),
+        onError: (_, _) => state,
+      ),
+      emit.forEach(
+        _trainingLibraryRepository.watchUserExercises(_uid),
+        onData: (exercises) => state.copyWith(userExercises: exercises),
         onError: (_, _) => state,
       ),
       emit.forEach(

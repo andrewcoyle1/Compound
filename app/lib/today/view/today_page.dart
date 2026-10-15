@@ -16,6 +16,7 @@ import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound/today/view/day_checklist_card.dart';
 import 'package:compound/today/view/streak_card.dart';
 import 'package:compound/today/view/today_text.dart';
+import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -24,8 +25,8 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// The Today tab (Swift `TodayView`): getting started, the day's
 /// checklist, the weekly check-in's card, the evening protein reminder,
-/// today's workout from the active mesocycle and the weekly streak.
-/// Weigh-ins can be logged from it. Logging meals, the weekly review and
+/// today's workout from the active mesocycle, last week's review and the
+/// weekly streak. Weigh-ins can be logged from it. Logging meals and
 /// friends who trained come with the milestones that build them.
 class TodayPage extends StatelessWidget {
   const new({super.key});
@@ -153,6 +154,23 @@ class _Day extends StatelessWidget {
                   title: l10n.todayProteinGap(AppFormat.grams(gap)),
                   icon: AppSymbols.protein,
                   tint: context.appColors.protein,
+                ),
+              ],
+            ),
+          ],
+          if (state.showsWeeklyReviewCard) ...[
+            const SizedBox(height: AppSpacing.xl),
+            AppSection(
+              children: [
+                AppListRowButton(
+                  title: l10n.weeklyReviewReady,
+                  icon: AppSymbols.weeklyReview,
+                  onPressed: () {
+                    context.read<TodayBloc>().add(
+                      const TodayWeeklyReviewOpened(),
+                    );
+                    context.goNamed(WeeklyReviewPage.name);
+                  },
                 ),
               ],
             ),

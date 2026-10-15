@@ -32,6 +32,12 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     DateTime Function() now = DateTime.now,
   }) : super(TodayState(uid: _uid, now: now(), firstWeekday: firstWeekday)) {
     on<TodaySubscriptionRequested>(_onSubscriptionRequested);
+    on<TodayWeeklyReviewOpened>((event, emit) {
+      _analyticsRepository.trackEvent(
+        const AnalyticsEvent('TodayView_WeeklyReview_Press'),
+      );
+      emit(state.copyWith(weeklyReviewOpened: true));
+    });
     on<_TodayGoalChanged>(
       (event, emit) => emit(state.copyWith(goal: () => event.goal)),
     );

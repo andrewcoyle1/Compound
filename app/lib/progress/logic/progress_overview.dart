@@ -29,10 +29,10 @@ enum ProgressSection {
   /// Scale weight and visual body fat.
   bodyMetrics('body_metrics'),
 
-  /// Weekly sets per muscle (M5).
+  /// Weekly sets per muscle.
   muscleGroups('muscle_groups'),
 
-  /// Estimated one-rep maxes (M5).
+  /// Estimated one-rep maxes.
   exercises('exercises');
 
   new(this.id);

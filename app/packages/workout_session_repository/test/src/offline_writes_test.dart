@@ -28,7 +28,6 @@ void main() {
 
     setUpAll(FakeFirebaseFirestore.new);
 
-
     setUp(() {
       firestore = OfflineFirestore();
       refused = [];

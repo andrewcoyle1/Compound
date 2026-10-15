@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
@@ -58,6 +59,12 @@ class WeightMetricView extends StatelessWidget {
         actions: [
           if (!allData && state.metric == WeightMetric.weightTrend)
             MethodInfoButton(MethodInfo.weightTrend(l10n)),
+          if (!allData)
+            IconButton(
+              icon: const Icon(AppSymbols.add),
+              tooltip: l10n.logWeightTitle,
+              onPressed: () => context.pushNamed(LogWeightPage.name),
+            ),
         ],
       ),
       body: switch (state.status) {

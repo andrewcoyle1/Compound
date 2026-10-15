@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/firebase_options_development.dart';
+import 'package:compound_models/compound_models.dart' show logWriteError;
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,6 +54,20 @@ Future<void> main() async {
           ),
       ],
     );
+    // A write the server refuses after Firestore applied it locally (the
+    // repositories never wait for the server): logged, and a severe event,
+    // which Crashlytics records as a non-fatal error.
+    void onWriteError(String path, Object error, StackTrace stackTrace) {
+      logWriteError(path, error, stackTrace);
+      analyticsRepository.trackEvent(
+        AnalyticsEvent(
+          'Firestore_Write_Fail',
+          parameters: {'path': path, 'error_description': '$error'},
+          type: LogType.severe,
+        ),
+      );
+    }
+
     return App(
       analyticsRepository: analyticsRepository,
       authRepository: FirebaseAuthRepository(
@@ -62,15 +77,19 @@ Future<void> main() async {
       ),
       userRepository: FirestoreUserRepository(
         firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
       ),
       workoutSessionRepository: FirestoreWorkoutSessionRepository(
         firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
       ),
       nutritionRepository: FirestoreNutritionRepository(
         firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
       ),
       bodyRepository: FirestoreBodyRepository(
         firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
       ),
     );
   });

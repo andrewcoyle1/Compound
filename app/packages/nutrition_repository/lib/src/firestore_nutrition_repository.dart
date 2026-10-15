@@ -20,16 +20,21 @@ typedef NutritionDecodeErrorHandler = void Function(
 ///
 /// Writes go through the models' `toFirestore`, with dates stored as
 /// Timestamps, and whole documents are merged
-/// (`docs/specs/flutter/firestore-contract.md`, Policy).
+/// (`docs/specs/flutter/firestore-contract.md`, Policy). A write completes
+/// once Firestore has it locally, online or not ([writeLocally]).
 class FirestoreNutritionRepository implements NutritionRepository {
   /// Creates a [FirestoreNutritionRepository] reading `firestore`. Decode
   /// failures go to [onDecodeError], or to `dart:developer`'s log when it
-  /// is null.
-  new({required this._firestore, NutritionDecodeErrorHandler? onDecodeError})
-    : _onDecodeError = onDecodeError ?? _log;
+  /// is null, and writes the server refuses go to `onWriteError`.
+  new({
+    required this._firestore,
+    NutritionDecodeErrorHandler? onDecodeError,
+    this._onWriteError = logWriteError,
+  }) : _onDecodeError = onDecodeError ?? _log;
 
   final FirebaseFirestore _firestore;
   final NutritionDecodeErrorHandler _onDecodeError;
+  final WriteErrorReporter _onWriteError;
 
   DocumentReference<Map<String, dynamic>> _user(String uid) =>
       _firestore.collection('users').doc(uid);
@@ -71,17 +76,25 @@ class FirestoreNutritionRepository implements NutritionRepository {
           );
 
   @override
-  Future<void> saveMeal(MealLogModel meal) =>
-      _user(meal.authorId)
-          .collection('meal_logs')
-          .doc(meal.mealId)
-          .set(_toFirestore(meal.toFirestore()), SetOptions(merge: true));
+  Future<void> saveMeal(MealLogModel meal) => _merge(
+    _user(meal.authorId).collection('meal_logs').doc(meal.mealId),
+    meal.toFirestore(),
+  );
 
   @override
-  Future<void> saveDietPlan(DietPlan plan) => _firestore
-      .collection('diet_plans')
-      .doc(plan.planId)
-      .set(_toFirestore(plan.toFirestore()), SetOptions(merge: true));
+  Future<void> saveDietPlan(DietPlan plan) => _merge(
+    _firestore.collection('diet_plans').doc(plan.planId),
+    plan.toFirestore(),
+  );
+
+  Future<void> _merge(
+    DocumentReference<Map<String, dynamic>> document,
+    Map<String, Object?> data,
+  ) => writeLocally(
+    document.path,
+    () => document.set(_toFirestore(data), SetOptions(merge: true)),
+    _onWriteError,
+  );
 
   T? _decodeDocument<T>(
     DocumentSnapshot<Map<String, dynamic>> document,

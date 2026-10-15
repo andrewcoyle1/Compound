@@ -20,16 +20,21 @@ typedef BodyDecodeErrorHandler = void Function(
 ///
 /// Writes go through the models' `toFirestore`, with dates stored as
 /// Timestamps, and whole documents are merged
-/// (`docs/specs/flutter/firestore-contract.md`, Policy).
+/// (`docs/specs/flutter/firestore-contract.md`, Policy). A write completes
+/// once Firestore has it locally, online or not ([writeLocally]).
 class FirestoreBodyRepository implements BodyRepository {
   /// Creates a [FirestoreBodyRepository] reading `firestore`. Decode
   /// failures go to [onDecodeError], or to `dart:developer`'s log when it
-  /// is null.
-  new({required this._firestore, BodyDecodeErrorHandler? onDecodeError})
-    : _onDecodeError = onDecodeError ?? _log;
+  /// is null, and writes the server refuses go to `onWriteError`.
+  new({
+    required this._firestore,
+    BodyDecodeErrorHandler? onDecodeError,
+    this._onWriteError = logWriteError,
+  }) : _onDecodeError = onDecodeError ?? _log;
 
   final FirebaseFirestore _firestore;
   final BodyDecodeErrorHandler _onDecodeError;
+  final WriteErrorReporter _onWriteError;
 
   DocumentReference<Map<String, dynamic>> _user(String uid) =>
       _firestore.collection('users').doc(uid);
@@ -83,23 +88,36 @@ class FirestoreBodyRepository implements BodyRepository {
       );
 
   @override
-  Future<void> saveMeasurement(BodyMeasurementEntry entry) =>
-      _user(entry.authorId)
-          .collection('body_measurements')
-          .doc(entry.id)
-          .set(_toFirestore(entry.toFirestore()), SetOptions(merge: true));
+  Future<void> saveMeasurement(BodyMeasurementEntry entry) => _merge(
+    _user(entry.authorId).collection('body_measurements').doc(entry.id),
+    entry.toFirestore(),
+  );
 
   @override
-  Future<void> saveGoal(WeightGoal goal) => _goal(
-    goal.userId,
-    goal.goalId,
-  ).set(_toFirestore(goal.toFirestore()), SetOptions(merge: true));
+  Future<void> saveGoal(WeightGoal goal) =>
+      _merge(_goal(goal.userId, goal.goalId), goal.toFirestore());
 
+  /// An `update`: the server refuses a missing goal with `not-found`, which
+  /// reaches `onWriteError`.
   @override
-  Future<void> abandonGoal(String uid, String goalId) => _goal(
-    uid,
-    goalId,
-  ).update({WeightGoalKeys.status: GoalStatus.abandoned.value});
+  Future<void> abandonGoal(String uid, String goalId) {
+    final document = _goal(uid, goalId);
+    return writeLocally(
+      document.path,
+      () =>
+          document.update({WeightGoalKeys.status: GoalStatus.abandoned.value}),
+      _onWriteError,
+    );
+  }
+
+  Future<void> _merge(
+    DocumentReference<Map<String, dynamic>> document,
+    Map<String, Object?> data,
+  ) => writeLocally(
+    document.path,
+    () => document.set(_toFirestore(data), SetOptions(merge: true)),
+    _onWriteError,
+  );
 
   DocumentReference<Map<String, dynamic>> _goal(String uid, String goalId) =>
       _user(uid).collection('goals').doc(goalId);

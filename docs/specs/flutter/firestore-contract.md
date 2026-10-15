@@ -59,6 +59,28 @@ data disappear from the iOS app without an error. The contract makes that a fail
    - Dart writes use `SetOptions(merge: true)`, as Swift does, so a top-level field Dart doesn't
      know about survives.
    - At M6 the source of truth flips to Dart.
+   - **Writes complete once Firestore has them locally, not when the server acknowledges.**
+     cloud_firestore's `set`, `update` and `commit` futures complete only on the server's
+     acknowledgement, so offline a repository that awaited them would never return and the
+     screen's spinner would hang. Firestore applies each write to its local cache, and queues it
+     durably, as soon as it is started, as Swift's sync engines do with their pending writes.
+     Every repository write goes through `writeLocally` (`compound_models`,
+     `firestore_writes.dart`):
+     - it completes when the write does, or after one turn of the event loop, whichever is first;
+     - an error raised while starting the write (an encoder rejecting a value) still fails the
+       returned future, so the caller can say the save failed;
+     - anything later can only come from the server (`permission-denied`, `not-found` for an
+       `update()` of a missing document, as Swift reports it). It goes to the repository's
+       `onWriteError`, a `WriteErrorReporter`. The default logs at the severe level; the app
+       passes one that also tracks a severe `Firestore_Write_Fail` event, which Crashlytics
+       records as a non-fatal error. A refused write is reverted in the local cache, and the
+       listeners show that.
+     - Reads are not changed. A write that needs a read first (`endLoggingBreak`) still waits for
+       that read, which Firestore answers from its cache once it knows it is offline. A
+       transaction or anything reading a server value must keep awaiting the server; none exists
+       yet, and one should say why in its doc comment.
+     - In-memory repositories stay synchronous. Each repository's `offline_writes_test.dart` runs
+       its writes against an `OfflineFirestore` that never answers, then refuses them.
 7. **CI**:
    - A new `Flutter` job in `.github/workflows/ci.yml` runs `very_good test --coverage` for `app/`
      and its packages.

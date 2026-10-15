@@ -12,6 +12,7 @@ export 'src/exercise_model.dart';
 export 'src/exercise_settings_model.dart';
 export 'src/firestore_enum.dart';
 export 'src/firestore_values.dart';
+export 'src/firestore_writes.dart';
 export 'src/food_log_settings.dart';
 export 'src/food_model.dart';
 export 'src/gym_equipment.dart';

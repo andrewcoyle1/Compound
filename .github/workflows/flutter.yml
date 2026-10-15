@@ -255,3 +255,15 @@ jobs:
       min_coverage: 100
       # No blocs in a repository.
       run_bloc_lint: false
+
+  strava_repository:
+    name: strava_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/strava_repository
+      flutter_version: "3.47.7"
+      # Its tests read ../../../contracts/firestore and the Swift app's
+      # PrebuiltExercises.json. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false

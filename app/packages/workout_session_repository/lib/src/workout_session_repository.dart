@@ -19,4 +19,13 @@ abstract interface class WorkoutSessionRepository {
   /// an edit made meanwhile (`setWeekStreakCount`). Fails, as Firestore's
   /// update does, when there is no such session.
   Future<void> updateWeekStreakCount(String uid, String sessionId, int weeks);
+
+  /// Sets only `strava_activity_id` on a stored session, once Strava has
+  /// made the activity it was uploaded as (`setStravaActivityId`). Fails, as
+  /// Firestore's update does, when there is no such session.
+  Future<void> updateStravaActivityId(
+    String uid,
+    String sessionId,
+    int activityId,
+  );
 }

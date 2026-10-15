@@ -60,7 +60,22 @@ class InMemoryWorkoutSessionRepository implements WorkoutSessionRepository {
     String uid,
     String sessionId,
     int weeks,
-  ) async {
+  ) async =>
+      _update(uid, sessionId, WorkoutSessionModelKeys.weekStreakCount, weeks);
+
+  @override
+  Future<void> updateStravaActivityId(
+    String uid,
+    String sessionId,
+    int activityId,
+  ) async => _update(
+    uid,
+    sessionId,
+    WorkoutSessionModelKeys.stravaActivityId,
+    activityId,
+  );
+
+  void _update(String uid, String sessionId, String field, Object value) {
     final index = _indexOf(uid, sessionId);
     if (index < 0) {
       throw FirebaseException(
@@ -72,7 +87,7 @@ class InMemoryWorkoutSessionRepository implements WorkoutSessionRepository {
     }
     _sessions[index] = WorkoutSessionModel.fromFirestore({
       ..._sessions[index].toFirestore(),
-      WorkoutSessionModelKeys.weekStreakCount: weeks,
+      field: value,
     });
     _changes.add(null);
   }

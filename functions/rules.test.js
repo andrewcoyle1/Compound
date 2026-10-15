@@ -14,7 +14,7 @@ import {
 } from "firebase/firestore";
 import {
     SOCIAL_PUSH_PREFERENCE_KEYS, buildFollowAcceptedNotification, buildFollowNotification, buildInviteFollowRequest,
-    planChallengeProgress,
+    planChallengeProgress, stravaActivityDoc,
 } from "./lib.js";
 
 const skip = !process.env.FIRESTORE_EMULATOR_HOST && "FIRESTORE_EMULATOR_HOST not set; run npm run test:rules";
@@ -328,6 +328,19 @@ test("coachChat writes and reads the coach_chat fixture's shape", () => {
     assert.deepEqual(enumsFixture.CoachMessageRole, ["user", "assistant"]);
     // Read back when it appends a turn, and by historyForModel.
     assertKeysIn(["title", "created_at", "context_kind", "messages"], "coach_chat");
+});
+
+test("stravaActivityDoc writes the strava_imported_activity fixture's shape", () => {
+    // Every field, from a full Strava activity; a missing heart rate is left out, as minimal has.
+    const full = stravaActivityDoc({
+        id: 12345678901, name: "Morning Run", sport_type: "Run", start_date: "2026-10-11T06:30:00Z",
+        elapsed_time: 2100, moving_time: 1980, distance: 6200.5, total_elevation_gain: 45.5, average_heartrate: 151.25,
+    });
+    assert.deepEqual(Object.keys(full).sort(), keysOf("strava_imported_activity").sort());
+    const bare = stravaActivityDoc({ id: 1, start_date: "2026-10-11T06:30:00Z" });
+    for (const key of keysOf("strava_imported_activity", "minimal")) assert.ok(key in bare, `activity lacks ${key}`);
+    assertKeysIn(Object.keys(bare), "strava_imported_activity");
+    assert.equal(typeof full.id, "string");
 });
 
 test("functions read only fields the social fixtures have", () => {
@@ -936,7 +949,8 @@ for (const path of ["food_search_cache/q", "moderation_queue/t", `strava_connect
 
 t("users/strava_activities: the owner reads them; nobody writes them", async () => {
     const path = `users/${ALICE}/strava_activities/1`;
-    await seed(path, { id: "1", name: "Morning Run" });
+    // The contract's full activity: the shape the server writes and both apps read.
+    await seed(path, contractFixture("strava_imported_activity"));
     await assertSucceeds(getDoc(doc(db(ALICE), path)));
     await assertFails(getDoc(doc(db(BOB), path)));
     await assertFails(setDoc(doc(db(ALICE), path), { id: "1", name: "Faster Run" }));

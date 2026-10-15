@@ -245,6 +245,11 @@ final _models =
         roundTrip: (data) => CoachChat.fromFirestore(data).toFirestore(),
         keys: CoachChatKeys.all,
       ),
+      'strava_imported_activity': (
+        roundTrip: (data) =>
+            StravaImportedActivity.fromFirestore(data).toFirestore(),
+        keys: StravaImportedActivityKeys.all,
+      ),
     };
 
 final _root = Directory('../../../contracts/firestore');

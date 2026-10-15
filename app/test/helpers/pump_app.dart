@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
@@ -41,6 +42,7 @@ extension PumpApp on WidgetTester {
     AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
     FoodRepository? foodRepository,
     OpenFoodFacts? openFoodFacts,
+    CheckInRepository? checkInRepository,
     MealDraftCubit? mealDraftCubit,
     AppBloc? appBloc,
     double textScale = 1,
@@ -78,6 +80,9 @@ extension PumpApp on WidgetTester {
           ),
           RepositoryProvider<OpenFoodFacts>.value(
             value: openFoodFacts ?? FakeOpenFoodFacts(),
+          ),
+          RepositoryProvider<CheckInRepository>.value(
+            value: checkInRepository ?? InMemoryCheckInRepository(),
           ),
         ],
         child: MultiBlocProvider(

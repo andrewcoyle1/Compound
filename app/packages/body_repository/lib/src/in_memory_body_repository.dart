@@ -21,15 +21,16 @@ class InMemoryBodyRepository implements BodyRepository {
     List<BodyMeasurementEntry> measurements = const [],
     List<StepsModel> steps = const [],
     List<WeightGoal> goals = const [],
-    this._analyticsSettings,
-  }) : _measurements = List.of(measurements),
+    AnalyticsSettings? analyticsSettings,
+  }) : _analyticsSettings = {?analyticsSettings?.authorId: ?analyticsSettings},
+       _measurements = List.of(measurements),
        _steps = List.of(steps),
        _goals = List.of(goals);
 
   final List<BodyMeasurementEntry> _measurements;
   final List<StepsModel> _steps;
   final List<WeightGoal> _goals;
-  final AnalyticsSettings? _analyticsSettings;
+  final Map<String, AnalyticsSettings> _analyticsSettings;
   final _changes = StreamController<void>.broadcast(sync: true);
 
   @override
@@ -51,11 +52,18 @@ class InMemoryBodyRepository implements BodyRepository {
   );
 
   @override
-  Stream<AnalyticsSettings> watchAnalyticsSettings(String uid) => Stream.value(
-    _analyticsSettings?.authorId == uid
-        ? _analyticsSettings!
-        : AnalyticsSettings(authorId: uid),
-  );
+  Stream<AnalyticsSettings> watchAnalyticsSettings(String uid) =>
+      _watch(() => _analyticsSettings[uid] ?? AnalyticsSettings(authorId: uid));
+
+  /// Merges as Firestore does, field by field.
+  @override
+  Future<void> saveAnalyticsSettings(AnalyticsSettings settings) async {
+    _analyticsSettings[settings.authorId] = AnalyticsSettings.fromFirestore({
+      ...?_analyticsSettings[settings.authorId]?.toFirestore(),
+      ...settings.toFirestore(),
+    });
+    _changes.add(null);
+  }
 
   @override
   Stream<WeightGoal?> watchCurrentGoal(String uid, {String? currentGoalId}) {

@@ -66,6 +66,20 @@ void main() {
       },
     );
 
+    test(
+      'saveFoodLogSettings completes offline; a refusal is reported',
+      () async {
+        await subject.saveFoodLogSettings(const FoodLogSettings(authorId: 'u'));
+        const path = 'users/u/food_log_settings/food_log_settings';
+        expect(firestore.writes, [path]);
+
+        firestore.refuse('permission-denied');
+        await pumpEventQueue();
+
+        expect(refused, [(path, 'permission-denied')]);
+      },
+    );
+
     test('deleteMeal completes offline; a refusal is reported', () async {
       await subject.deleteMeal('u', 'm');
       expect(firestore.writes, ['users/u/meal_logs/m']);

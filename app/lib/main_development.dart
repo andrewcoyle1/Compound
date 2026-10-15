@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound/app/app.dart';
@@ -73,6 +74,10 @@ Future<void> main() async {
       );
     }
 
+    final userRepository = FirestoreUserRepository(
+      firestore: FirebaseFirestore.instance,
+      onWriteError: onWriteError,
+    );
     return App(
       analyticsRepository: analyticsRepository,
       authRepository: FirebaseAuthRepository(
@@ -80,10 +85,7 @@ Future<void> main() async {
         googleSignIn: GoogleSignIn.instance,
         googleClientId: options.iosClientId,
       ),
-      userRepository: FirestoreUserRepository(
-        firestore: FirebaseFirestore.instance,
-        onWriteError: onWriteError,
-      ),
+      userRepository: userRepository,
       workoutSessionRepository: FirestoreWorkoutSessionRepository(
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,
@@ -101,6 +103,7 @@ Future<void> main() async {
       ),
       trainingLibraryRepository: FirestoreTrainingLibraryRepository(
         firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
       ),
       foodRepository: FirestoreFoodRepository(
         firestore: FirebaseFirestore.instance,
@@ -110,6 +113,10 @@ Future<void> main() async {
       openFoodFacts: RemoteOpenFoodFacts(
         functions: FirebaseFunctions.instanceFor(region: 'us-central1'),
         client: http.Client(),
+      ),
+      checkInRepository: FirestoreCheckInRepository(
+        firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
       ),
     );
   });

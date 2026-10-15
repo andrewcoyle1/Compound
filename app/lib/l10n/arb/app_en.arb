@@ -3022,5 +3022,122 @@
     "nutritionDeleteFailed": "Unable to Remove Food",
     "@nutritionDeleteFailed": {
         "description": "A failed delete"
+    },
+    "settingsTitle": "Settings",
+    "@settingsTitle": {
+        "description": "Title of the Settings screen"
+    },
+    "settingsGeneralHeader": "General",
+    "@settingsGeneralHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsNutritionHeader": "Nutrition Settings",
+    "@settingsNutritionHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsTrainingHeader": "Training Settings",
+    "@settingsTrainingHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsCommunityHeader": "Community & Support",
+    "@settingsCommunityHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsOtherHeader": "Other",
+    "@settingsOtherHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsSecurityHeader": "Security",
+    "@settingsSecurityHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsNotificationSettings": "Notification Settings",
+    "@settingsNotificationSettings": {
+        "description": "Settings row: opens the notification settings"
+    },
+    "settingsUnits": "Units",
+    "@settingsUnits": {
+        "description": "Settings row: opens the units screen"
+    },
+    "settingsAnalytics": "Analytics",
+    "@settingsAnalytics": {
+        "description": "Settings row: opens Customize Analytics"
+    },
+    "settingsFoodLog": "Food Log",
+    "@settingsFoodLog": {
+        "description": "Settings row: opens the food log settings"
+    },
+    "settingsExpenditure": "Expenditure",
+    "@settingsExpenditure": {
+        "description": "Settings row: opens the expenditure settings"
+    },
+    "settingsStrategy": "Strategy",
+    "@settingsStrategy": {
+        "description": "Settings row: opens the check-in strategy settings"
+    },
+    "settingsWorkoutSettings": "Workout Settings",
+    "@settingsWorkoutSettings": {
+        "description": "Settings row: opens the workout settings"
+    },
+    "settingsSupport": "Support",
+    "@settingsSupport": {
+        "description": "Settings row, and the title of its alert"
+    },
+    "settingsLegal": "Legal",
+    "@settingsLegal": {
+        "description": "Settings row: opens the legal documents"
+    },
+    "settingsMethodsAndSources": "Methods & Sources",
+    "@settingsMethodsAndSources": {
+        "description": "Settings row: opens the list of calculation methods"
+    },
+    "settingsAbout": "About",
+    "@settingsAbout": {
+        "description": "Settings row: opens About"
+    },
+    "settingsSignInMethod": "Sign-In Method",
+    "@settingsSignInMethod": {
+        "description": "Settings row: how the account signs in"
+    },
+    "settingsSignInNotSaved": "Not saved",
+    "@settingsSignInNotSaved": {
+        "description": "Sign-in method of an anonymous account"
+    },
+    "settingsSignInApple": "Apple",
+    "@settingsSignInApple": {
+        "description": "Sign-in method: Sign in with Apple"
+    },
+    "settingsSignInGoogle": "Google",
+    "@settingsSignInGoogle": {
+        "description": "Sign-in method: Google"
+    },
+    "settingsEmailNotProvided": "Not provided",
+    "@settingsEmailNotProvided": {
+        "description": "Email row value when the account has no email"
+    },
+    "settingsDeleteAccount": "Delete Account",
+    "@settingsDeleteAccount": {
+        "description": "Settings row: opens the delete account confirmation"
+    },
+    "settingsSignOutFailed": "Unable to Sign Out",
+    "@settingsSignOutFailed": {
+        "description": "Snack bar when signing out fails"
+    },
+    "settingsOk": "OK",
+    "@settingsOk": {
+        "description": "Button that closes an alert"
+    },
+    "settingsSupportMessage": "Email {email} and we will get back to you.",
+    "@settingsSupportMessage": {
+        "description": "Support alert: where to write",
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "profileEditProfile": "Edit Profile",
+    "@profileEditProfile": {
+        "description": "Profile row: opens Edit Profile"
     }
 }

@@ -18,13 +18,14 @@ class InMemoryNutritionRepository implements NutritionRepository {
   new({
     List<MealLogModel> meals = const [],
     DietPlan? dietPlan,
-    this._foodLogSettings,
-  }) : _meals = List.of(meals),
+    FoodLogSettings? foodLogSettings,
+  }) : _foodLogSettings = {?foodLogSettings?.authorId: ?foodLogSettings},
+       _meals = List.of(meals),
        _dietPlans = {?dietPlan?.planId: ?dietPlan};
 
   final List<MealLogModel> _meals;
   final Map<String, DietPlan> _dietPlans;
-  final FoodLogSettings? _foodLogSettings;
+  final Map<String, FoodLogSettings> _foodLogSettings;
   final _changes = StreamController<void>.broadcast(sync: true);
 
   @override
@@ -45,11 +46,18 @@ class InMemoryNutritionRepository implements NutritionRepository {
   Stream<DietPlan?> watchDietPlan(String uid) => _watch(() => _dietPlans[uid]);
 
   @override
-  Stream<FoodLogSettings> watchFoodLogSettings(String uid) => Stream.value(
-    _foodLogSettings?.authorId == uid
-        ? _foodLogSettings!
-        : FoodLogSettings(authorId: uid),
-  );
+  Stream<FoodLogSettings> watchFoodLogSettings(String uid) =>
+      _watch(() => _foodLogSettings[uid] ?? FoodLogSettings(authorId: uid));
+
+  /// Merges as Firestore does, field by field.
+  @override
+  Future<void> saveFoodLogSettings(FoodLogSettings settings) async {
+    _foodLogSettings[settings.authorId] = FoodLogSettings.fromFirestore({
+      ...?_foodLogSettings[settings.authorId]?.toFirestore(),
+      ...settings.toFirestore(),
+    });
+    _changes.add(null);
+  }
 
   @override
   Future<void> saveMeal(MealLogModel meal) async {

@@ -88,6 +88,12 @@ class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
       });
 
   @override
+  Future<void> saveWorkoutSettings(WorkoutSettings settings) => _merge(
+    _user(settings.authorId, 'workout_settings').doc('workout_settings'),
+    settings.toFirestore(),
+  );
+
+  @override
   Future<void> saveExerciseSettings(
     String uid,
     ExerciseSettingsModel settings,

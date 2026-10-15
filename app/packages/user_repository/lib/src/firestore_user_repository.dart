@@ -72,6 +72,10 @@ class FirestoreUserRepository implements UserRepository {
     );
   }
 
+  /// Awaits the server on purpose; see [UserRepository.deleteUser].
+  @override
+  Future<void> deleteUser(String uid) => _user(uid).delete();
+
   @override
   Future<void> mergePrivateSettings(String uid, PrivateUserSettings settings) =>
       _merge(_settings(uid), settings.toFirestore());

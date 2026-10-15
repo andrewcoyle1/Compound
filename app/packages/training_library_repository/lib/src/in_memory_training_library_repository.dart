@@ -21,7 +21,7 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
        _workoutTemplates = List.unmodifiable(workoutTemplates),
        _gymProfiles = List.of(gymProfiles),
        _exerciseSettings = List.of(exerciseSettings),
-       _workoutSettings = List.unmodifiable(workoutSettings);
+       _workoutSettings = List.of(workoutSettings);
 
   final List<ExerciseModel> _exercises;
   final List<WorkoutTemplateModel> _workoutTemplates;
@@ -116,11 +116,47 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
     _settingsChanges.add(null);
   }
 
+  final _workoutSettingsChanges = StreamController<void>.broadcast(sync: true);
+
   @override
-  Stream<WorkoutSettings> watchWorkoutSettings(String uid) => Stream.value(
-    _workoutSettings
-            .where((settings) => settings.authorId == uid)
-            .firstOrNull ??
-        WorkoutSettings(authorId: uid),
-  );
+  Stream<WorkoutSettings> watchWorkoutSettings(String uid) =>
+      Stream.multi((listener) {
+        WorkoutSettings read() =>
+            _workoutSettings
+                .where((settings) => settings.authorId == uid)
+                .firstOrNull ??
+            WorkoutSettings(authorId: uid);
+        listener.add(read());
+        final subscription = _workoutSettingsChanges.stream.listen(
+          (_) => listener.add(read()),
+        );
+        // Not `subscription.cancel` itself: `first` would wait on the
+        // Future that returns, which never completes under a widget test's
+        // fake clock.
+        listener.onCancel = () => unawaited(subscription.cancel());
+      });
+
+  /// Merges as Firestore does: a field left null keeps what was stored, and
+  /// the rest-by-kind map merges key by key.
+  @override
+  Future<void> saveWorkoutSettings(WorkoutSettings settings) async {
+    final index = _workoutSettings.indexWhere(
+      (stored) => stored.authorId == settings.authorId,
+    );
+    if (index < 0) {
+      _workoutSettings.add(settings);
+    } else {
+      final stored = _workoutSettings[index];
+      _workoutSettings[index] = WorkoutSettings.fromFirestore({
+        ...stored.toFirestore(),
+        ...settings.toFirestore(),
+        // A map merges key by key in Firestore.
+        WorkoutSettingsKeys.restDurationsByExerciseType: {
+          ...stored.restDurationsByExerciseType,
+          ...settings.restDurationsByExerciseType,
+        },
+      });
+    }
+    _workoutSettingsChanges.add(null);
+  }
 }

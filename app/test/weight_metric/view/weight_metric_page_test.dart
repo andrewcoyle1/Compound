@@ -108,6 +108,16 @@ void main() {
       expect(find.text('Show All Data'), findsOneWidget);
     });
 
+    testWidgets('offers Log Weight', (tester) async {
+      await pumpView(tester, WeightMetric.scaleWeight);
+      expect(find.byTooltip('Log Weight'), findsOneWidget);
+    });
+
+    testWidgets('All Recorded Data has no Log Weight', (tester) async {
+      await pumpView(tester, WeightMetric.scaleWeight, allData: true);
+      expect(find.byTooltip('Log Weight'), findsNothing);
+    });
+
     testWidgets('changes the range from the picker', (tester) async {
       final bloc = await pumpView(tester, WeightMetric.scaleWeight);
       await tester.tap(find.text('Y'));

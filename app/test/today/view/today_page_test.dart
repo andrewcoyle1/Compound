@@ -3,6 +3,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/today/today.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
@@ -39,6 +40,7 @@ void main() {
       () => router.goNamed(any(), pathParameters: any(named: 'pathParameters')),
     ).thenReturn(null);
     when(() => router.go(any())).thenReturn(null);
+    when(() => router.pushNamed<Object?>(any())).thenAnswer((_) async => null);
   });
 
   Future<void> pumpView(
@@ -133,6 +135,16 @@ void main() {
       verify(() => router.go(AppTab.nutrition.path)).called(1);
       await tester.tap(find.text('Steps'));
       verifyNoMoreInteractions(router);
+    });
+
+    testWidgets('logs a weigh-in until one is in today', (tester) async {
+      await pumpView(tester, measurements: const []);
+
+      await tester.tap(find.text('Weigh In'));
+      verify(() => router.pushNamed<Object?>(LogWeightPage.name)).called(1);
+      await tester.tap(find.text('Log your weight'));
+      verify(() => router.pushNamed<Object?>(LogWeightPage.name)).called(1);
+      verifyNever(() => router.goNamed(WeightMetric.scaleWeight.name));
     });
 
     testWidgets(

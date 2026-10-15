@@ -1083,5 +1083,68 @@
                 "type": "String"
             }
         }
+    },
+    "logWeightTitle": "Log Weight",
+    "@logWeightTitle": {
+        "description": "Log Weight screen title; also the action that opens it"
+    },
+    "logWeightSave": "Save",
+    "@logWeightSave": {
+        "description": "Log Weight: the confirm button's name for screen readers"
+    },
+    "logWeightDate": "Date",
+    "@logWeightDate": {
+        "description": "Log Weight: the row choosing the weigh-in's day"
+    },
+    "logWeightUnits": "Units",
+    "@logWeightUnits": {
+        "description": "Log Weight: the unit picker's name for screen readers"
+    },
+    "logWeightMetric": "Metric (kg)",
+    "@logWeightMetric": {
+        "description": "Log Weight: unit choice, kilograms"
+    },
+    "logWeightImperial": "Imperial (lb)",
+    "@logWeightImperial": {
+        "description": "Log Weight: unit choice, pounds"
+    },
+    "logWeightWeight": "Weight",
+    "@logWeightWeight": {
+        "description": "Log Weight: the weight section header and the whole-number wheel's name"
+    },
+    "logWeightTenths": "Tenths",
+    "@logWeightTenths": {
+        "description": "Log Weight: the tenths wheel's name for screen readers"
+    },
+    "logWeightWholeKilograms": "{value} kg",
+    "@logWeightWholeKilograms": {
+        "description": "Log Weight: a row of the whole-number wheel in kilograms",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "logWeightWholePounds": "{value} lb",
+    "@logWeightWholePounds": {
+        "description": "Log Weight: a row of the whole-number wheel in pounds",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "logWeightTenthsValue": ".{value}",
+    "@logWeightTenthsValue": {
+        "description": "Log Weight: a row of the tenths wheel, the digit after the decimal separator",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "logWeightSaveFailure": "Unable to Save Weight",
+    "@logWeightSaveFailure": {
+        "description": "Log Weight: alert title when saving fails"
     }
 }

@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/profile/profile.dart';
@@ -10,6 +11,7 @@ import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -218,6 +220,83 @@ void main() {
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Weight Trend'), findsOneWidget);
+    });
+
+    testWidgets('logs a weigh-in from Scale Weight and returns to it', (
+      tester,
+    ) async {
+      final users = seededUsers();
+      final body = InMemoryBodyRepository(
+        measurements: [
+          BodyMeasurementEntry(
+            id: 'old',
+            authorId: sampleUserId,
+            weightKg: 80,
+            date: DateTime.now().subtract(const Duration(days: 3)),
+            source: WeightSource.manual,
+            dateCreated: DateTime.now().subtract(const Duration(days: 3)),
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        App(
+          authRepository: InMemoryAuthRepository(
+            user: InMemoryAuthRepository.sampleUser,
+          ),
+          userRepository: users,
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: body,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('Progress'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Scale Weight'),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(ProgressView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Scale Weight'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Log Weight'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LogWeightView), findsOneWidget);
+      // It opens on the latest weigh-in.
+      expect(find.text('80 kg'), findsOneWidget);
+      await tester.drag(
+        find.byType(CupertinoPicker).first,
+        const Offset(0, -64),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LogWeightView), findsNothing);
+      expect(find.widgetWithText(AppBar, 'Scale Weight'), findsOneWidget);
+      expect(find.text('Latest: Today'), findsOneWidget);
+      final saved = await body.watchMeasurements(sampleUserId).first;
+      expect(saved, hasLength(2));
+      expect(saved.last.weightKg, 82);
+      expect(saved.last.source, WeightSource.manual);
+      final user = await users.watchUser(sampleUserId).first;
+      expect(user?.submittedWeightKilograms, 82);
+      expect(
+        user?.submittedWeightUnitPreference,
+        WeightUnitPreference.kilograms,
+      );
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/shell/app_tab.dart';
@@ -148,14 +149,18 @@ class _ItemRow extends StatelessWidget {
     );
   }
 
-  /// Where the item leads, read only: the workout's summary, the weigh-ins,
-  /// or the day's meals. Steps has no screen yet.
+  /// Where the item leads: the workout's summary, the day's meals, or for the
+  /// weigh-in, the weigh-ins once today's is in and logging one until then
+  /// (Swift `onChecklistItemPressed`). Steps has no screen yet.
   VoidCallback? _destination(BuildContext context) => switch (item) {
     TrainingItem(:final session) => () => context.goNamed(
       WorkoutSessionDetailPage.name,
       pathParameters: {WorkoutSessionDetailPage.sessionIdParameter: session.id},
     ),
-    WeighInItem() => () => context.goNamed(WeightMetric.scaleWeight.name),
+    WeighInItem(isDone: true) => () => context.goNamed(
+      WeightMetric.scaleWeight.name,
+    ),
+    WeighInItem() => () => context.pushNamed(LogWeightPage.name),
     NutritionItem() => () => context.go(AppTab.nutrition.path),
     StepsItem() => null,
   };

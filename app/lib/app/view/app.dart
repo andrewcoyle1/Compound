@@ -4,6 +4,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/progress/progress.dart';
@@ -149,6 +150,16 @@ class _AppViewState extends State<AppView> {
           key: state.pageKey,
           fullscreenDialog: true,
           child: const ProfilePage(),
+        ),
+      ),
+      // Over the tabs, as the Swift app's sheet.
+      GoRoute(
+        path: LogWeightPage.path,
+        name: LogWeightPage.name,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: const LogWeightPage(),
         ),
       ),
       GoRoute(

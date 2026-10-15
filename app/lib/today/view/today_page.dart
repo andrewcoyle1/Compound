@@ -3,6 +3,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/today/bloc/today_bloc.dart';
 import 'package:compound/today/logic/today_checklist.dart';
@@ -10,14 +11,16 @@ import 'package:compound/today/view/day_checklist_card.dart';
 import 'package:compound/today/view/streak_card.dart';
 import 'package:compound/today/view/today_text.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
-/// The Today tab (Swift `TodayView`), read only: getting started, the
-/// day's checklist, the evening protein reminder and the weekly streak.
-/// Logging, the check-in, today's planned workout, the weekly review and
-/// friends who trained come with the milestones that build them.
+/// The Today tab (Swift `TodayView`): getting started, the day's
+/// checklist, the evening protein reminder and the weekly streak. Weigh-ins
+/// can be logged from it. Logging meals and workouts, the check-in, today's
+/// planned workout, the weekly review and friends who trained come with the
+/// milestones that build them.
 class TodayPage extends StatelessWidget {
   const new({super.key});
 
@@ -89,10 +92,17 @@ class _Day extends StatelessWidget {
               ),
               children: [
                 for (final step in starter)
-                  AppListRow(
-                    title: TodayText.starter(l10n, step),
-                    icon: TodayText.starterIcon(step),
-                  ),
+                  if (step == StarterStep.firstWeighIn)
+                    AppListRowButton(
+                      title: TodayText.starter(l10n, step),
+                      icon: TodayText.starterIcon(step),
+                      onPressed: () => context.pushNamed(LogWeightPage.name),
+                    )
+                  else
+                    AppListRow(
+                      title: TodayText.starter(l10n, step),
+                      icon: TodayText.starterIcon(step),
+                    ),
               ],
             ),
             const SizedBox(height: AppSpacing.xl),

@@ -467,10 +467,6 @@
     "@nutritionCalendarNextWeek": {
         "description": "Calendar strip: accessibility action showing the week after"
     },
-    "progressBodyHeader": "Body",
-    "@progressBodyHeader": {
-        "description": "Progress tab: heading over the body metrics (scale weight, weight trend)"
-    },
     "scaleWeightTitle": "Scale Weight",
     "@scaleWeightTitle": {
         "description": "Title of the Scale Weight screen and its row on Progress; also the chart series of weigh-ins"
@@ -910,5 +906,182 @@
     "adherenceBandMethodOwnChoices": "The 10% band is Compound's own choice, sized to sit inside typical food-label error.",
     "@adherenceBandMethodOwnChoices": {
         "description": "On-target band method sheet: Compound's own choices"
+    },
+    "progressInsightsHeader": "Insights & Analytics",
+    "@progressInsightsHeader": {
+        "description": "Progress tab: heading over workouts, weight trend and goal progress"
+    },
+    "progressHabitsHeader": "Habits",
+    "@progressHabitsHeader": {
+        "description": "Progress tab: heading over the weigh-in and workout grids"
+    },
+    "progressNutritionHeader": "Nutrition",
+    "@progressNutritionHeader": {
+        "description": "Progress tab: heading over the macros and protein cards"
+    },
+    "progressBodyMetricsHeader": "Body Metrics",
+    "@progressBodyMetricsHeader": {
+        "description": "Progress tab: heading over scale weight and body fat"
+    },
+    "progressGeneralHeader": "General",
+    "@progressGeneralHeader": {
+        "description": "Progress tab: heading over the steps card"
+    },
+    "progressWorkouts": "Workouts",
+    "@progressWorkouts": {
+        "description": "Progress card: workouts (sets per workout, or the workout grid)"
+    },
+    "progressGoalProgress": "Goal Progress",
+    "@progressGoalProgress": {
+        "description": "Progress card: progress toward the weight goal"
+    },
+    "progressWeighIn": "Weigh In",
+    "@progressWeighIn": {
+        "description": "Progress card: the weigh-in habit grid"
+    },
+    "progressMacros": "Macros",
+    "@progressMacros": {
+        "description": "Progress card: calories and macros over the last week"
+    },
+    "progressProtein": "Protein",
+    "@progressProtein": {
+        "description": "Progress card: protein eaten today"
+    },
+    "progressVisualBodyFat": "Visual Body Fat",
+    "@progressVisualBodyFat": {
+        "description": "Progress card: body-fat readings"
+    },
+    "progressSteps": "Steps",
+    "@progressSteps": {
+        "description": "Progress card: daily steps"
+    },
+    "progressNoData": "No Data",
+    "@progressNoData": {
+        "description": "Progress card subtitle: nothing logged"
+    },
+    "progressNoEntries": "No Entries",
+    "@progressNoEntries": {
+        "description": "Progress card subtitle: no weigh-ins or readings"
+    },
+    "progressNoWorkouts": "No Workouts",
+    "@progressNoWorkouts": {
+        "description": "Progress card subtitle: no finished workouts"
+    },
+    "progressNoGoalSet": "No Goal Set",
+    "@progressNoGoalSet": {
+        "description": "Progress card subtitle: the user has no weight goal"
+    },
+    "progressLast7Days": "Last 7 Days",
+    "@progressLast7Days": {
+        "description": "Progress card subtitle"
+    },
+    "progressLast7Entries": "Last 7 Entries",
+    "@progressLast7Entries": {
+        "description": "Progress card subtitle"
+    },
+    "progressLast7Workouts": "Last 7 Workouts",
+    "@progressLast7Workouts": {
+        "description": "Progress card subtitle"
+    },
+    "progressLast30Days": "Last 30 Days",
+    "@progressLast30Days": {
+        "description": "Progress card subtitle: the habit grids"
+    },
+    "progressToday": "Today",
+    "@progressToday": {
+        "description": "Progress card subtitle: the protein card"
+    },
+    "progressTowardTarget": "Toward Target",
+    "@progressTowardTarget": {
+        "description": "Progress card subtitle: goal progress is measured"
+    },
+    "progressThisWeek": "this week",
+    "@progressThisWeek": {
+        "description": "Unit after a count on the habit cards, e.g. '3 this week'"
+    },
+    "progressSetsUnit": "sets",
+    "@progressSetsUnit": {
+        "description": "Unit after the working-set total on the workouts card"
+    },
+    "progressStepsUnit": "steps",
+    "@progressStepsUnit": {
+        "description": "Unit after the step count on the steps card"
+    },
+    "progressLoadFailure": "Your progress couldn't be loaded.",
+    "@progressLoadFailure": {
+        "description": "Progress tab: error when the data could not be read"
+    },
+    "progressSetsChartLabel": "Working sets",
+    "@progressSetsChartLabel": {
+        "description": "Accessibility label of the workouts card's bar chart"
+    },
+    "progressSetsChartValue": "{total} in total, the most in one bar {most}",
+    "@progressSetsChartValue": {
+        "description": "Accessibility value of the workouts card's bar chart",
+        "placeholders": {
+            "total": {
+                "type": "String"
+            },
+            "most": {
+                "type": "String"
+            }
+        }
+    },
+    "progressMacrosChartLabel": "Macros, last {count} days",
+    "@progressMacrosChartLabel": {
+        "description": "Accessibility label of the macros card's chart",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "progressMacrosChartValue": "Daily average: protein {protein}, carbs {carbs}, fat {fat}",
+    "@progressMacrosChartValue": {
+        "description": "Accessibility value of the macros card's chart",
+        "placeholders": {
+            "protein": {
+                "type": "String"
+            },
+            "carbs": {
+                "type": "String"
+            },
+            "fat": {
+                "type": "String"
+            }
+        }
+    },
+    "progressOfTarget": "{current} of {target}",
+    "@progressOfTarget": {
+        "description": "Accessibility value of a progress bar, e.g. '48 g of 150 g'",
+        "placeholders": {
+            "current": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "progressTrendChartValue": "From {first} to {last}",
+    "@progressTrendChartValue": {
+        "description": "Accessibility value of a card's line chart: its first and last readings",
+        "placeholders": {
+            "first": {
+                "type": "String"
+            },
+            "last": {
+                "type": "String"
+            }
+        }
+    },
+    "progressGridChartValue": "{count} of the last 30 days",
+    "@progressGridChartValue": {
+        "description": "Accessibility value of a habit grid: days with the habit",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
     }
 }

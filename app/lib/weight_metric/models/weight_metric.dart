@@ -51,3 +51,15 @@ List<MetricPoint> trendOf(List<BodyMeasurementEntry> weighIns) {
       (date: entry.date, value: trend[i]),
   ];
 }
+
+/// The trend weight at the latest weigh-in, in kilograms, or null with none
+/// logged (`GoalTimeline.latestTrendWeightKg`). Goal progress is measured
+/// from it, so a day of water does not move the bar. A weight that is not a
+/// positive number is left out.
+double? latestTrendWeightKg(Iterable<BodyMeasurementEntry> measurements) {
+  final weighIns = [
+    for (final entry in weighInsOf(measurements))
+      if (entry.weightKg!.isFinite && entry.weightKg! > 0) entry,
+  ];
+  return weighIns.isEmpty ? null : trendOf(weighIns).last.value;
+}

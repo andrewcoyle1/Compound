@@ -1,0 +1,27 @@
+name: coach_repository
+description: The AI coach - streaming coachChat answers, consent, and the saved chats in Firestore; canned answers over an in-memory Firestore in the staging flavor.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  cloud_firestore: ^6.10.0
+  cloud_functions: ^6.5.0
+  compound_models:
+    path: ../compound_models
+  # The staging flavor's Firestore: the fake coach writes chats as the
+  # function does, so staging runs the real repository over it.
+  fake_cloud_firestore: ^4.3.0
+  flutter:
+    sdk: flutter
+  user_repository:
+    path: ../user_repository
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0

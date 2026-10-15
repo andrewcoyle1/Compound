@@ -7,6 +7,7 @@ export 'src/body_enums.dart';
 export 'src/body_measurement_entry.dart';
 export 'src/check_in.dart';
 export 'src/circle.dart';
+export 'src/coach_chat.dart';
 export 'src/diet_plan.dart';
 export 'src/equipment_variation.dart';
 export 'src/exercise_model.dart';

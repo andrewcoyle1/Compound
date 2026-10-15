@@ -241,6 +241,10 @@ final _models =
         roundTrip: (data) => ShareModel.fromFirestore(data).toFirestore(),
         keys: ShareModelKeys.all,
       ),
+      'coach_chat': (
+        roundTrip: (data) => CoachChat.fromFirestore(data).toFirestore(),
+        keys: CoachChatKeys.all,
+      ),
     };
 
 final _root = Directory('../../../contracts/firestore');
@@ -374,6 +378,7 @@ void main() {
         'ActivityType': raw(ActivityType.values),
         'ReportContentType': raw(ReportContentType.values),
         'ReportReason': raw(ReportReason.values),
+        'CoachMessageRole': raw(CoachMessageRole.values),
       }),
     );
   });

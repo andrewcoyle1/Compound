@@ -1,0 +1,21 @@
+{
+  "context_kind": null,
+  "created_at": {
+    "$timestamp": "2026-10-14T07:30:00.000Z"
+  },
+  "id": "chat_contract_legacy",
+  "messages": [
+    {
+      "created_at": {
+        "$timestamp": "2026-10-14T07:30:00.000Z"
+      },
+      "id": "m_user",
+      "role": "user",
+      "text": "How did my training go this week?"
+    }
+  ],
+  "title": "How did my training go this week?",
+  "updated_at": {
+    "$timestamp": "2026-10-14T07:30:00.000Z"
+  }
+}

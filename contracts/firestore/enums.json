@@ -28,6 +28,10 @@
     "advanced",
     "elite"
   ],
+  "CoachMessageRole": [
+    "user",
+    "assistant"
+  ],
   "DeloadType": [
     "none",
     "start",

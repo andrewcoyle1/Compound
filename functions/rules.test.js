@@ -321,6 +321,15 @@ const assertNotificationShape = (written) => {
 };
 const enumsFixture = JSON.parse(readFileSync(new URL("../contracts/firestore/enums.json", import.meta.url), "utf8"));
 
+test("coachChat writes and reads the coach_chat fixture's shape", () => {
+    // The chat it sets in its transaction, and the turns appendChatMessages stores.
+    assert.deepEqual(keysOf("coach_chat").sort(), ["context_kind", "created_at", "id", "messages", "title", "updated_at"]);
+    assert.deepEqual(Object.keys(contractFixture("coach_chat").messages[0]).sort(), ["created_at", "id", "role", "text"]);
+    assert.deepEqual(enumsFixture.CoachMessageRole, ["user", "assistant"]);
+    // Read back when it appends a turn, and by historyForModel.
+    assertKeysIn(["title", "created_at", "context_kind", "messages"], "coach_chat");
+});
+
 test("functions read only fields the social fixtures have", () => {
     // onActivityNotificationCreated, buildActivityPush, activityAlert, nudgeOnCooldown, unreadBadgeCount.
     assertKeysIn(["type", "actor_id", "actor_name", "comment_text", "is_reply", "session_id", "session_author_id",
@@ -936,7 +945,8 @@ t("users/strava_activities: the owner reads them; nobody writes them", async () 
 
 t("users/coach_chats: the owner reads and deletes them; nobody writes them", async () => {
     const path = `users/${ALICE}/coach_chats/c1`;
-    await seed(path, { id: "c1", title: "Bench", messages: [] });
+    // The contract's full chat: the shape coachChat writes and both apps read.
+    await seed(path, contractFixture("coach_chat"));
     await assertSucceeds(getDoc(doc(db(ALICE), path)));
     await assertFails(getDoc(doc(db(BOB), path)));
     await assertFails(setDoc(doc(db(ALICE), path), { id: "c1", title: "Edited", messages: [] }));

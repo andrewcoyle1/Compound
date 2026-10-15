@@ -54,6 +54,18 @@ final class const TodayState({
 
   /// Whether the weekly review card was opened since the screen started.
   final bool weeklyReviewOpened = false,
+
+  /// The check-in's day and the weeks done, or null until read.
+  final NutritionStrategySettings? strategySettings,
+  final CheckInRecord? checkInRecord,
+  final LoggingBreak? loggingBreak,
+
+  /// This week's check-in was skipped here; the card stays away while the
+  /// write lands.
+  final bool checkInSkipped = false,
+
+  /// Moves each time skipping the check-in fails.
+  final int skipFailures = 0,
 }) extends Equatable {
   /// Where the data has got to.
   TodayStatus get status => failed
@@ -189,6 +201,22 @@ final class const TodayState({
     return trained || (meals ?? const []).any((m) => inLastWeek(m.date));
   }
 
+  /// The week the check-in card offers, or null when none is waiting
+  /// (`TodayPresenter.dueCheckInWeekStart`).
+  DateTime? get dueCheckInWeekStart {
+    final settings = strategySettings;
+    if (settings == null || checkInSkipped) return null;
+    final inputs = ExpenditureInputs(
+      now: now,
+      settings: settings,
+      loggingBreak: loggingBreak,
+      checkInRecord: checkInRecord,
+    );
+    return inputs.checkInState == CheckInState.due
+        ? inputs.checkInWeekStart
+        : null;
+  }
+
   TodayState copyWith({
     List<WorkoutSessionModel>? sessions,
     List<MealLogModel>? meals,
@@ -200,6 +228,11 @@ final class const TodayState({
     WeightGoal? Function()? goal,
     bool? failed,
     bool? weeklyReviewOpened,
+    NutritionStrategySettings? strategySettings,
+    CheckInRecord? Function()? checkInRecord,
+    LoggingBreak? Function()? loggingBreak,
+    bool? checkInSkipped,
+    int? skipFailures,
   }) => TodayState(
     uid: uid,
     now: now,
@@ -216,6 +249,11 @@ final class const TodayState({
     goal: goal == null ? this.goal : goal(),
     failed: failed ?? this.failed,
     weeklyReviewOpened: weeklyReviewOpened ?? this.weeklyReviewOpened,
+    strategySettings: strategySettings ?? this.strategySettings,
+    checkInRecord: checkInRecord == null ? this.checkInRecord : checkInRecord(),
+    loggingBreak: loggingBreak == null ? this.loggingBreak : loggingBreak(),
+    checkInSkipped: checkInSkipped ?? this.checkInSkipped,
+    skipFailures: skipFailures ?? this.skipFailures,
   );
 
   @override
@@ -233,5 +271,10 @@ final class const TodayState({
     goal,
     failed,
     weeklyReviewOpened,
+    strategySettings,
+    checkInRecord,
+    loggingBreak,
+    checkInSkipped,
+    skipFailures,
   ];
 }

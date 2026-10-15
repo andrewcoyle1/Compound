@@ -4,8 +4,11 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
+import 'package:compound/social/circle/circle_bloc.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
@@ -13,6 +16,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
@@ -43,8 +47,11 @@ extension PumpApp on WidgetTester {
     FoodRepository? foodRepository,
     OpenFoodFacts? openFoodFacts,
     CheckInRepository? checkInRepository,
+    ProposalDismissals? proposalDismissals,
     MealDraftCubit? mealDraftCubit,
     AppBloc? appBloc,
+    SocialRepository? socialRepository,
+    CircleBloc? circleBloc,
     double textScale = 1,
     GoRouter? router,
   }) {
@@ -84,11 +91,32 @@ extension PumpApp on WidgetTester {
           RepositoryProvider<CheckInRepository>.value(
             value: checkInRepository ?? InMemoryCheckInRepository(),
           ),
+          RepositoryProvider<SocialRepository>.value(
+            value:
+                socialRepository ??
+                SocialRepository(
+                  firestore: FakeFirebaseFirestore(),
+                  callFunction: (_, _) async => null,
+                  users: userRepository ?? MockUserRepository(),
+                ),
+          ),
+          RepositoryProvider.value(
+            value: proposalDismissals ?? ProposalDismissals(),
+          ),
         ],
         child: MultiBlocProvider(
           providers: [
             BlocProvider.value(value: appBloc ?? MockAppBloc()),
             BlocProvider.value(value: mealDraftCubit ?? MealDraftCubit()),
+            BlocProvider<CircleBloc>(
+              create: (context) =>
+                  circleBloc ??
+                  CircleBloc(
+                    social: context.read(),
+                    sessions: context.read(),
+                    analytics: analyticsRepository,
+                  ),
+            ),
           ],
           // With a [router], [widget] is left out: the router's routes are
           // the app.

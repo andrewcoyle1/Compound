@@ -23,8 +23,8 @@ class MetricDetailView extends StatelessWidget {
     super.key,
   });
 
-  /// A section above Show All Data, for a figure that needs a reading as
-  /// well as a chart (Swift `summarySection`).
+  /// A section shown above Show All Data, such as Expenditure's estimate
+  /// for today (Swift `summarySection`).
   final Widget? summary;
 
   /// The metric's name, for the chart's accessibility summary.
@@ -102,11 +102,11 @@ class MetricDetailView extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: AppSpacing.xl),
         if (summary case final summary?) ...[
-          summary,
           const SizedBox(height: AppSpacing.xl),
+          summary,
         ],
+        const SizedBox(height: AppSpacing.xl),
         AppSection(
           children: [
             AppListRowButton(

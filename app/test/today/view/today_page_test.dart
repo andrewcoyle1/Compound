@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/shell/app_tab.dart';
@@ -9,6 +10,7 @@ import 'package:compound/today/today.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
+import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -42,6 +44,12 @@ void main() {
     ).thenReturn(null);
     when(() => router.go(any())).thenReturn(null);
     when(() => router.pushNamed<Object?>(any())).thenAnswer((_) async => null);
+    when(
+      () => router.pushNamed<Object?>(
+        any(),
+        queryParameters: any(named: 'queryParameters'),
+      ),
+    ).thenAnswer((_) async => null);
   });
 
   Future<void> pumpView(
@@ -51,6 +59,8 @@ void main() {
     List<BodyMeasurementEntry>? measurements,
     WorkoutSessionRepository? workoutSessionRepository,
     int firstWeekday = DateTime.monday,
+    // This week's check-in done, unless a test wants the card.
+    bool checkInDue = false,
   }) async {
     final workouts =
         workoutSessionRepository ??
@@ -66,6 +76,17 @@ void main() {
       steps: sampleSteps(uid: uid, now: now),
       goals: [sampleWeightGoal(uid: uid, now: now)],
     );
+    final checkIns = InMemoryCheckInRepository(
+      records: [
+        if (!checkInDue)
+          CheckInRecord(
+            authorId: uid,
+            lastCompletedWeekStart: localMidnight(
+              checkInWeekStart(localDayKey(now)),
+            ),
+          ),
+      ],
+    );
     final users = InMemoryUserRepository(users: {uid: sampleUser(now: now)});
     await tester.pumpApp(
       InheritedGoRouter(
@@ -77,6 +98,7 @@ void main() {
             bodyRepository: body,
             userRepository: users,
             analyticsRepository: const AnalyticsRepository(),
+            checkInRepository: checkIns,
             uid: uid,
             firstWeekday: firstWeekday,
             now: () => now,
@@ -171,6 +193,24 @@ void main() {
         expect(find.text('At Risk'), findsOneWidget);
       },
     );
+
+    testWidgets('offers the weekly check-in while it is due', (tester) async {
+      await pumpView(tester, checkInDue: true);
+      expect(find.text('Weekly Check-In Ready'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Skip This Week'), 200);
+      await tester.pump();
+      await tester.tap(find.text('Start'));
+      verify(
+        () => router.pushNamed<Object?>(
+          'checkIn',
+          queryParameters: {'week': '2026-10-12'},
+        ),
+      ).called(1);
+
+      await tester.tap(find.text('Skip This Week'));
+      await tester.pump();
+      expect(find.text('Weekly Check-In Ready'), findsNothing);
+    });
 
     testWidgets('shows a failure when the sessions cannot be read', (
       tester,

@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/check_in/check_in.dart';
+import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/profile/profile.dart';
@@ -21,10 +24,10 @@ import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// The Today tab (Swift `TodayView`): getting started, the day's
-/// checklist, the evening protein reminder, last week's review and the
-/// weekly streak. Weigh-ins can be logged from it. Logging meals and
-/// workouts, the check-in, today's planned workout and friends who trained
-/// come with the milestones that build them.
+/// checklist, the weekly check-in's card, the evening protein reminder,
+/// last week's review and the weekly streak. Weigh-ins can be logged from
+/// it. Logging meals and workouts, today's planned workout and friends who
+/// trained come with the milestones that build them.
 class TodayPage extends StatelessWidget {
   const new({super.key});
 
@@ -43,6 +46,7 @@ class TodayPage extends StatelessWidget {
         bodyRepository: context.read<BodyRepository>(),
         userRepository: context.read<UserRepository>(),
         analyticsRepository: context.read<AnalyticsRepository>(),
+        checkInRepository: context.read<CheckInRepository>(),
         uid: state.user.uid,
         firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
       )..add(const TodaySubscriptionRequested()),
@@ -58,18 +62,24 @@ class TodayView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<TodayBloc>().state;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.tabToday),
-        actions: const [ProfileButton()],
-      ),
-      body: switch (state.status) {
-        TodayStatus.loading => const Center(
-          child: CircularProgressIndicator.adaptive(),
+    return BlocListener<TodayBloc, TodayState>(
+      listenWhen: (previous, current) =>
+          previous.skipFailures != current.skipFailures,
+      listener: (context, _) =>
+          unawaited(showFailureAlert(context, l10n.checkInSkipFailed)),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.tabToday),
+          actions: const [ProfileButton()],
         ),
-        TodayStatus.failure => const _LoadFailure(),
-        TodayStatus.loaded => _Day(state: state),
-      },
+        body: switch (state.status) {
+          TodayStatus.loading => const Center(
+            child: CircularProgressIndicator.adaptive(),
+          ),
+          TodayStatus.failure => const _LoadFailure(),
+          TodayStatus.loaded => _Day(state: state),
+        },
+      ),
     );
   }
 }
@@ -118,6 +128,21 @@ class _Day extends StatelessWidget {
                 ? AppWeightUnit.pounds
                 : AppWeightUnit.kilograms,
           ),
+          if (state.dueCheckInWeekStart case final weekStart?) ...[
+            const SizedBox(height: AppSpacing.xl),
+            DecisionCard(
+              title: l10n.checkInReadyTitle,
+              message: l10n.checkInReadyMessage,
+              primary: l10n.checkInStart,
+              onPrimary: () {
+                context.read<TodayBloc>().add(const TodayCheckInStarted());
+                unawaited(CheckInPage.show(context, weekStart));
+              },
+              secondary: l10n.checkInSkipWeek,
+              onSecondary: () =>
+                  context.read<TodayBloc>().add(const TodayCheckInSkipped()),
+            ),
+          ],
           if (gap != null) ...[
             const SizedBox(height: AppSpacing.xl),
             AppSection(

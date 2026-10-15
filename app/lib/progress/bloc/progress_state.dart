@@ -57,6 +57,12 @@ final class const ProgressState({
 
   /// Whether reading the sessions, meals or weigh-ins failed.
   final bool failed = false,
+
+  /// What the expenditure engine reads besides the logs; the settings are
+  /// null until read.
+  final NutritionStrategySettings? strategySettings,
+  final List<NutritionDayAnnotation> annotations = const [],
+  final LoggingBreak? loggingBreak,
 }) extends Equatable {
   /// Where the data has got to.
   ProgressStatus get status => failed
@@ -180,6 +186,36 @@ final class const ProgressState({
     exerciseCards(_finished.map(mathsSession).toList(), _library),
   );
 
+  // MARK: Expenditure
+
+  /// The engine's figure on each of the last seven days and today's
+  /// (`expenditureSparklineData`, `energyBalanceExpenditure`): the day's
+  /// estimate, the last after a break, the formula before the history.
+  /// Null until the strategy settings arrive.
+  ({List<ProgressPoint> week, double today})? get expenditure {
+    final settings = strategySettings;
+    if (settings == null) return null;
+    final inputs = ExpenditureInputs(
+      now: now,
+      settings: settings,
+      user: user,
+      meals: meals ?? const [],
+      measurements: _measurements,
+      steps: steps,
+      annotations: annotations,
+      loggingBreak: loggingBreak,
+    );
+    final history = inputs.history;
+    final on = expenditureOn(history, inputs.priorKcal);
+    return (
+      week: [
+        for (final day in lastWeekDays(now))
+          (date: localMidnight(day), value: on(day)),
+      ],
+      today: history.lastOrNull?.kcal ?? inputs.priorKcal,
+    );
+  }
+
   ProgressState copyWith({
     List<WorkoutSessionModel>? sessions,
     List<MealLogModel>? meals,
@@ -191,6 +227,9 @@ final class const ProgressState({
     WeightGoal? Function()? goal,
     List<ExerciseModel>? userExercises,
     bool? failed,
+    NutritionStrategySettings? strategySettings,
+    List<NutritionDayAnnotation>? annotations,
+    LoggingBreak? Function()? loggingBreak,
   }) => ProgressState(
     uid: uid,
     now: now,
@@ -207,6 +246,9 @@ final class const ProgressState({
     goal: goal == null ? this.goal : goal(),
     userExercises: userExercises ?? this.userExercises,
     failed: failed ?? this.failed,
+    strategySettings: strategySettings ?? this.strategySettings,
+    annotations: annotations ?? this.annotations,
+    loggingBreak: loggingBreak == null ? this.loggingBreak : loggingBreak(),
   );
 
   @override
@@ -224,5 +266,8 @@ final class const ProgressState({
     goal,
     userExercises,
     failed,
+    strategySettings,
+    annotations,
+    loggingBreak,
   ];
 }

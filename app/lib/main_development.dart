@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
+import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/firebase_options_development.dart';
 import 'package:compound/notifications/notifications.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
@@ -27,6 +28,7 @@ import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
@@ -130,6 +132,13 @@ Future<void> main() async {
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,
       ),
+      checkInRepository: FirestoreCheckInRepository(
+        firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
+      ),
+      proposalDismissals: ProposalDismissals(
+        file: File('${support.path}/dismissed_target_proposals.json'),
+      ),
       foodRepository: FirestoreFoodRepository(
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,
@@ -139,8 +148,13 @@ Future<void> main() async {
         functions: FirebaseFunctions.instanceFor(region: 'us-central1'),
         client: http.Client(),
       ),
-      checkInRepository: FirestoreCheckInRepository(
+      // The social callables are us-central1 and enforce App Check.
+      socialRepository: SocialRepository(
         firestore: FirebaseFirestore.instance,
+        callFunction: callFirebaseFunction(
+          FirebaseFunctions.instanceFor(region: 'us-central1'),
+        ),
+        users: userRepository,
         onWriteError: onWriteError,
       ),
     );

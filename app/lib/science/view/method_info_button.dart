@@ -143,3 +143,36 @@ class MethodInfoSheet extends StatelessWidget {
     );
   }
 }
+
+/// A section header with the method's info button at its trailing edge
+/// (Swift `MethodInfoHeader`), above an [AppSection] without a header.
+class MethodInfoHeader extends StatelessWidget {
+  const new({required this.title, required this.info, super.key});
+
+  /// The section's title.
+  final String title;
+
+  /// The method the section's figures come from.
+  final MethodInfo info;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
+    child: Row(
+      children: [
+        Expanded(
+          child: Semantics(
+            header: true,
+            child: Text(
+              title,
+              style: AppTextStyles.sectionTitle.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+        MethodInfoButton(info),
+      ],
+    ),
+  );
+}

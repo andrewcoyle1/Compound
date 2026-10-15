@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/progress/view/card_charts.dart';
@@ -81,6 +82,7 @@ void main() {
             userRepository: users,
             analyticsRepository: const AnalyticsRepository(),
             trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
+            checkInRepository: InMemoryCheckInRepository(),
             uid: uid,
             firstWeekday: DateTime.monday,
             now: () => now,
@@ -114,6 +116,8 @@ void main() {
       for (final title in [
         'Weight Trend',
         'Goal Progress',
+        'Expenditure',
+        'Energy Balance',
         'Weigh In',
         'Macros',
         'Protein',
@@ -130,14 +134,12 @@ void main() {
       expect(find.text('Last 30 Days'), findsNWidgets(2));
       expect(find.text('Toward Target'), findsOneWidget);
       expect(find.text('Today'), findsOneWidget);
-      // Not yet: it needs the expenditure engine.
-      expect(find.text('Expenditure'), findsNothing);
       expect(find.byType(MuscleSetsCard), findsNWidgets(2));
       expect(find.byType(ExerciseOneRepMaxCard), findsNWidgets(2));
-      expect(find.byType(ProgressCard), findsNWidgets(14));
-      expect(find.byType(Sparkline), findsNWidgets(6));
+      expect(find.byType(ProgressCard), findsNWidgets(16));
+      expect(find.byType(Sparkline), findsNWidgets(7));
       expect(find.byType(HabitGridChart), findsNWidgets(2));
-      expect(find.byType(StackedBars), findsNWidgets(4));
+      expect(find.byType(StackedBars), findsNWidgets(5));
       expect(find.byType(ProgressBarChart), findsNWidgets(2));
     });
 
@@ -148,9 +150,10 @@ void main() {
       expect(find.text('No Entries'), findsNWidgets(3));
       expect(find.text('No Goal Set'), findsOneWidget);
       expect(find.text('No Data'), findsNWidgets(3));
-      // Workouts, trend, goal, macros, protein, weight, body fat, steps and
-      // the two exercises; the muscles show 0 sets.
-      expect(find.text(AppFormat.placeholder), findsNWidgets(10));
+      // Workouts, trend, goal, energy balance, macros, protein, weight,
+      // body fat, steps and the two exercises; the muscles show 0 sets.
+      // Expenditure still has the profile's formula.
+      expect(find.text(AppFormat.placeholder), findsNWidgets(11));
     });
 
     testWidgets('leaves out hidden sections', (tester) async {

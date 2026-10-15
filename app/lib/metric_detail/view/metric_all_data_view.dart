@@ -11,9 +11,14 @@ class MetricAllDataView extends StatelessWidget {
     required this.title,
     required this.unit,
     required this.entries,
+    this.format,
     this.valueText,
     super.key,
   });
+
+  /// How each value is written, when not as a number and [unit]; Energy
+  /// Balance writes "350 deficit".
+  final String Function(double value)? format;
 
   /// The metric's name, the section's header.
   final String title;
@@ -33,16 +38,19 @@ class MetricAllDataView extends StatelessWidget {
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final dates = DateFormat.yMMMd(locale);
+    final format = this.format;
     final text =
         valueText ??
-        (index) => [
-          AppFormat.number(
-            entries[index].value,
-            maxFractionDigits: 1,
-            locale: locale,
-          ),
-          if (unit.isNotEmpty) unit,
-        ].join(' ');
+        (index) => format != null
+            ? format(entries[index].value)
+            : [
+                AppFormat.number(
+                  entries[index].value,
+                  maxFractionDigits: 1,
+                  locale: locale,
+                ),
+                if (unit.isNotEmpty) unit,
+              ].join(' ');
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [

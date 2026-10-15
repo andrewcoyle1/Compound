@@ -6,6 +6,9 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
+import 'package:compound/check_in/check_in.dart';
+import 'package:compound/expenditure/expenditure.dart';
+import 'package:compound/expenditure_metric/expenditure_metric.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/launch/launch.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -13,12 +16,14 @@ import 'package:compound/notifications/notifications.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/nutrition.dart';
+import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/settings/settings.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:compound/social/social.dart';
 import 'package:compound/today/today.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_analytics/training_analytics_routes.dart';
@@ -28,6 +33,8 @@ import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
+import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -35,6 +42,7 @@ import 'package:go_router/go_router.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
@@ -52,8 +60,11 @@ class const App({
   // Empty and offline when left out, for tests that never log food.
   final FoodRepository? foodRepository,
   final OpenFoodFacts? openFoodFacts,
-  // Empty in memory when left out, for tests that never check in.
+  // The check-in's data, empty in memory when left out.
   final CheckInRepository? checkInRepository,
+
+  /// The target proposals waved away; in memory when left out.
+  final ProposalDismissals? proposalDismissals,
 
   /// Where the workout under way is kept between launches; in memory when
   /// left out.
@@ -62,6 +73,10 @@ class const App({
   /// Push and local notifications; the fake (nothing reaches the platform)
   /// when left out.
   final NotificationsRepository? notificationsRepository,
+
+  /// Follows, the feed, likes and comments; an empty in-memory world when
+  /// left out, for tests that never open Social.
+  final SocialRepository? socialRepository,
   final TrackerClock trackerClock = const TrackerClock(),
   super.key,
 }) extends StatelessWidget {
@@ -87,9 +102,21 @@ class const App({
           create: (_) => checkInRepository ?? InMemoryCheckInRepository(),
         ),
         RepositoryProvider.value(value: trackerClock),
+        RepositoryProvider<ProposalDismissals>(
+          create: (_) => proposalDismissals ?? ProposalDismissals(),
+        ),
         RepositoryProvider<NotificationsRepository>(
           create: (_) =>
               notificationsRepository ?? FakeNotificationsRepository(),
+        ),
+        RepositoryProvider<SocialRepository>(
+          create: (_) =>
+              socialRepository ??
+              SocialRepository(
+                firestore: FakeFirebaseFirestore(),
+                callFunction: (_, _) async => null,
+                users: userRepository,
+              ),
         ),
         RepositoryProvider(
           create: (_) => TrainingSetupService(
@@ -124,6 +151,13 @@ class const App({
               analytics: analyticsRepository,
               store: activeSessionStore ?? InMemoryActiveSessionStore(),
               clock: trackerClock.now,
+            ),
+          ),
+          BlocProvider(
+            create: (context) => CircleBloc(
+              social: context.read(),
+              sessions: workoutSessionRepository,
+              analytics: analyticsRepository,
             ),
           ),
         ],
@@ -228,6 +262,18 @@ class _AppViewState extends State<AppView> {
                     path: tab.path,
                     name: tab.name,
                     builder: (_, _) => const NutritionPage(),
+                    routes: [
+                      GoRoute(
+                        path: NutritionOverviewPage.path,
+                        name: NutritionOverviewPage.name,
+                        builder: (_, state) => NutritionOverviewPage(
+                          dayKey:
+                              state.uri.queryParameters[NutritionOverviewPage
+                                  .dayParameter] ??
+                              localDayKey(DateTime.now()),
+                        ),
+                      ),
+                    ],
                   ),
                   AppTab.progress => GoRoute(
                     path: tab.path,
@@ -251,12 +297,29 @@ class _AppViewState extends State<AppView> {
                           ],
                         ),
                       ...trainingAnalyticsRoutes,
+                      for (final metric in ExpenditureMetric.values)
+                        GoRoute(
+                          path: metric.path,
+                          name: metric.name,
+                          builder: (_, _) =>
+                              ExpenditureMetricPage(metric: metric),
+                          routes: [
+                            GoRoute(
+                              path: 'data',
+                              name: metric.dataRouteName,
+                              builder: (_, _) => ExpenditureMetricPage(
+                                metric: metric,
+                                allData: true,
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
-                  _ => GoRoute(
+                  AppTab.social => GoRoute(
                     path: tab.path,
                     name: tab.name,
-                    builder: (_, _) => TabPlaceholderPage(tab: tab),
+                    builder: (_, _) => const SocialPage(),
                   ),
                 },
               ],
@@ -274,6 +337,9 @@ class _AppViewState extends State<AppView> {
         ),
         routes: profileRoutes,
       ),
+      // Profiles, someone's workout and its comments, and the username:
+      // over the tabs, from Social and from the profile cover alike.
+      ...socialRoutes,
       // Over the tabs, as the Swift app's sheet.
       GoRoute(
         path: LogWeightPage.path,
@@ -282,6 +348,22 @@ class _AppViewState extends State<AppView> {
           key: state.pageKey,
           fullscreenDialog: true,
           child: const LogWeightPage(),
+        ),
+      ),
+      // Over the tabs, as the Swift app's sheet; the week reviewed is the
+      // query's, this week's without one.
+      GoRoute(
+        path: CheckInPage.path,
+        name: CheckInPage.name,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: CheckInPage(
+            weekStart: localMidnight(
+              state.uri.queryParameters[CheckInPage.weekParameter] ??
+                  checkInWeekStart(localDayKey(DateTime.now())),
+            ),
+          ),
         ),
       ),
       // Over the tabs, as the Swift app's full-screen cover; the meal to
@@ -401,6 +483,9 @@ class _AppViewState extends State<AppView> {
   /// links are routed once they are past onboarding.
   void _followUser(AppState state) {
     final uid = state is AppAuthenticated ? state.user.uid : null;
+    context.read<CircleBloc>().add(
+      CircleViewerChanged(state is AppAuthenticated ? state.profile : null),
+    );
     unawaited(context.read<ActiveWorkoutCubit>().userChanged(uid));
     unawaited(
       context.read<NotificationsCubit>().userChanged(
@@ -455,13 +540,22 @@ class _AppViewState extends State<AppView> {
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: _router,
         // How the finished workout's save is going, wherever the user is.
-        builder: (context, child) =>
+        builder: (context, child) => MultiBlocListener(
+          listeners: [
             BlocListener<ActiveWorkoutCubit, ActiveWorkoutState>(
               listenWhen: (previous, current) =>
                   current.saveNoticeId != previous.saveNoticeId,
               listener: _showSaveNotice,
-              child: child,
             ),
+            // A follow or nudge that failed, from whichever screen.
+            BlocListener<CircleBloc, CircleState>(
+              listenWhen: (previous, current) =>
+                  current.noticeId != previous.noticeId,
+              listener: showCircleNotice,
+            ),
+          ],
+          child: child!,
+        ),
       ),
     );
   }

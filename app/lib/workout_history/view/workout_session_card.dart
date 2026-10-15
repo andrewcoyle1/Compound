@@ -7,15 +7,36 @@ import 'package:compound_models/compound_models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-/// One finished workout in the history: its name and date, its highlights,
-/// totals and exercises, and its note. Opens the session detail. A port of
-/// the Swift app's `WorkoutSessionRowView`, read-only: no likes, comments,
-/// sharing or menu.
+/// One finished workout: its name and date, its highlights, totals and
+/// exercises, and its note. Opens the session detail. A port of the Swift
+/// app's `WorkoutSessionRowView`; the history shows it alone, and the
+/// social feed adds the author over it and likes and comments under it.
 class WorkoutSessionCard extends StatelessWidget {
-  const new({required this.entry, super.key});
+  const new({
+    required this.entry,
+    this.header,
+    this.footer,
+    this.onPressed,
+    this.showsNote = true,
+    super.key,
+  });
 
   /// The workout and its highlights.
   final WorkoutHistoryEntry entry;
+
+  /// Over the workout, in place of its date: the feed's author.
+  final Widget? header;
+
+  /// Under the workout, after a divider: the feed's likes and comments.
+  final Widget? footer;
+
+  /// What a tap on the workout does; the history's session detail when
+  /// null.
+  final VoidCallback? onPressed;
+
+  /// Whether the note shows: a note is its author's private reminder, so
+  /// a follower's feed leaves it out.
+  final bool showsNote;
 
   @override
   Widget build(BuildContext context) {
@@ -33,117 +54,154 @@ class WorkoutSessionCard extends StatelessWidget {
       color: scheme.onSurfaceVariant,
     );
 
-    return AppCard(
-      child: MergeSemantics(
-        child: Semantics(
-          button: true,
-          child: InkWell(
-            onTap: () => context.goNamed(
-              WorkoutSessionDetailPage.name,
-              pathParameters: {
-                WorkoutSessionDetailPage.sessionIdParameter: session.id,
-              },
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.l),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: AppSpacing.m,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: AppSpacing.xxs,
-                    children: [
-                      Text(session.name, style: AppTextStyles.sectionTitle),
+    final header = this.header;
+    final footer = this.footer;
+    final content = MergeSemantics(
+      child: Semantics(
+        button: true,
+        child: InkWell(
+          onTap:
+              onPressed ??
+              () => context.goNamed(
+                WorkoutSessionDetailPage.name,
+                pathParameters: {
+                  WorkoutSessionDetailPage.sessionIdParameter: session.id,
+                },
+              ),
+          child: Padding(
+            padding: header == null
+                ? const EdgeInsets.all(AppSpacing.l)
+                : const EdgeInsets.fromLTRB(
+                    AppSpacing.l,
+                    AppSpacing.m,
+                    AppSpacing.l,
+                    AppSpacing.l,
+                  ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: AppSpacing.m,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.xxs,
+                  children: [
+                    Text(session.name, style: AppTextStyles.sectionTitle),
+                    if (header == null)
                       Text(
                         DateFormat.yMMMEd(locale)
                             .add_jm()
                             .format(session.dateCreated.toLocal()),
                         style: secondary,
                       ),
-                    ],
-                  ),
-                  _Highlights(entry: entry),
-                  Wrap(
-                    spacing: AppSpacing.xl,
-                    runSpacing: AppSpacing.s,
-                    children: [
+                  ],
+                ),
+                _Highlights(entry: entry),
+                Wrap(
+                  spacing: AppSpacing.xl,
+                  runSpacing: AppSpacing.s,
+                  children: [
+                    AppStat(
+                      value: AppFormat.number(
+                        session.doneExercises.length,
+                        locale: locale,
+                      ),
+                      label: l10n.statExercises,
+                      size: AppStatSize.small,
+                    ),
+                    AppStat(
+                      value: AppFormat.number(
+                        session.loggedSetCount,
+                        locale: locale,
+                      ),
+                      label: l10n.statSets,
+                      size: AppStatSize.small,
+                    ),
+                    if (volume != null)
                       AppStat(
-                        value: AppFormat.number(
-                          session.doneExercises.length,
-                          locale: locale,
-                        ),
-                        label: l10n.statExercises,
+                        value: volume,
+                        label: l10n.statVolume,
                         size: AppStatSize.small,
                       ),
+                    if (duration != null)
                       AppStat(
-                        value: AppFormat.number(
-                          session.loggedSetCount,
-                          locale: locale,
-                        ),
-                        label: l10n.statSets,
+                        value: AppFormat.duration(duration),
+                        label: l10n.statDuration,
                         size: AppStatSize.small,
                       ),
-                      if (volume != null)
-                        AppStat(
-                          value: volume,
-                          label: l10n.statVolume,
-                          size: AppStatSize.small,
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.xs,
+                  children: [
+                    for (final exercise in session.doneExercises)
+                      _ExerciseLine(
+                        name: exercise.name,
+                        sets: WorkoutText.exerciseSets(
+                          l10n,
+                          exercise,
+                          session,
+                          locale: locale,
                         ),
-                      if (duration != null)
-                        AppStat(
-                          value: AppFormat.duration(duration),
-                          label: l10n.statDuration,
-                          size: AppStatSize.small,
-                        ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                        isLargeText: isLargeText,
+                      ),
+                  ],
+                ),
+                if (showsNote && note != null && note.isNotEmpty)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     spacing: AppSpacing.xs,
                     children: [
-                      for (final exercise in session.doneExercises)
-                        _ExerciseLine(
-                          name: exercise.name,
-                          sets: WorkoutText.exerciseSets(
-                            l10n,
-                            exercise,
-                            session,
-                            locale: locale,
-                          ),
-                          isLargeText: isLargeText,
+                      ExcludeSemantics(
+                        child: Icon(
+                          AppSymbols.note,
+                          size: AppIconSize.small.of(context),
+                          color: scheme.onSurfaceVariant,
                         ),
-                    ],
-                  ),
-                  if (note != null && note.isNotEmpty)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: AppSpacing.xs,
-                      children: [
-                        ExcludeSemantics(
-                          child: Icon(
-                            AppSymbols.note,
-                            size: AppIconSize.small.of(context),
+                      ),
+                      Expanded(
+                        child: Text(
+                          note,
+                          style: AppTextStyles.label.copyWith(
                             color: scheme.onSurfaceVariant,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        Expanded(
-                          child: Text(
-                            note,
-                            style: AppTextStyles.label.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
           ),
         ),
+      ),
+    );
+    if (header == null && footer == null) return AppCard(child: content);
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (header != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.l,
+                AppSpacing.l,
+                AppSpacing.l,
+                0,
+              ),
+              child: header,
+            ),
+          content,
+          if (footer != null) ...[
+            const Divider(
+              height: 1,
+              indent: AppSpacing.l,
+              endIndent: AppSpacing.l,
+            ),
+            footer,
+          ],
+        ],
       ),
     );
   }

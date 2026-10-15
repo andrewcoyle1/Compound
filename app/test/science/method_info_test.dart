@@ -39,4 +39,28 @@ void main() {
     ]);
     expect(MethodInfo.calorieAdherenceBand(l10n).citations, [Citation.cfr21]);
   });
+
+  test('the expenditure and check-in methods use the Swift sources', () {
+    for (final locale in AppLocalizations.supportedLocales) {
+      final l10n = lookupAppLocalizations(locale);
+      final infos = {
+        MethodInfo.adaptiveExpenditure(l10n): 9,
+        MethodInfo.energyBalance(l10n): 3,
+        MethodInfo.targetProposal(l10n): 4,
+        MethodInfo.checkInRules(l10n): 3,
+        MethodInfo.macroSplit(l10n): 7,
+      };
+      for (final MapEntry(key: info, value: sources) in infos.entries) {
+        expect(info.title, isNotEmpty);
+        expect(info.summary, isNotEmpty);
+        expect(info.formula, isNotEmpty);
+        expect(info.limitations, isNotEmpty);
+        expect(info.ownChoices, isNotEmpty);
+        expect(info.citations, hasLength(sources));
+      }
+    }
+    // A book, cited without a DOI or an address, as in Swift.
+    expect(Citation.acsm2021.linkText, isNull);
+    expect(Citation.macrofactor.isPeerReviewed, isFalse);
+  });
 }

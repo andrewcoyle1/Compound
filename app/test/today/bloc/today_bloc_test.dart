@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound/today/today.dart';
 import 'package:compound_maths/compound_maths.dart';
@@ -159,6 +160,7 @@ void main() {
     bodyRepository: bodyRepository,
     userRepository: userRepository,
     analyticsRepository: analyticsRepository,
+    checkInRepository: InMemoryCheckInRepository(),
     uid: uid,
     firstWeekday: DateTime.monday,
     now: () => now,

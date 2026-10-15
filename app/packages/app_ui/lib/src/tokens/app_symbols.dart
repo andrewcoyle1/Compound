@@ -276,6 +276,41 @@ abstract final class AppSymbols {
   /// Pausing.
   static const IconData pause = Icons.pause_rounded;
 
+  // Social
+
+  /// A like on a workout.
+  static const IconData like = Icons.thumb_up_alt_outlined;
+
+  /// A like given.
+  static const IconData liked = Icons.thumb_up_alt_rounded;
+
+  /// Comments on a workout.
+  static const IconData comment = Icons.chat_bubble_outline_rounded;
+
+  /// A like on a comment.
+  static const IconData heart = Icons.favorite_border_rounded;
+
+  /// A like given to a comment.
+  static const IconData heartFilled = Icons.favorite_rounded;
+
+  /// Replying to a comment.
+  static const IconData reply = Icons.reply_rounded;
+
+  /// Sending a comment.
+  static const IconData send = Icons.send_rounded;
+
+  /// A username: the `@` handle.
+  static const IconData username = Icons.alternate_email_rounded;
+
+  /// A private profile.
+  static const IconData lock = Icons.lock_rounded;
+
+  /// Blocking someone.
+  static const IconData block = Icons.block_rounded;
+
+  /// The leader of the week.
+  static const IconData leader = Icons.workspace_premium_rounded;
+
   // Status
 
   /// Information.

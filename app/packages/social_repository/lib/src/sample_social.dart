@@ -7,14 +7,15 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 /// mocks (`UserModel.mocks`, `ChallengeModel.mocks`, `ShareModel.mocks`,
 /// `MockUserQueryService`, `MockInviteService`):
 ///
-/// - six other users: the four [uid] follows (Alice, Charlie, Priya and Dev,
+/// - six other users: the four [uid] follows (Maya, Charlie, Priya and Dev,
 ///   each with two recent sessions in the feed), Bob, private, with a
 ///   pending request to follow [uid], and David, who has blocked [uid];
 /// - every handle reserved, [uid]'s `alice.cooper` included;
-/// - comments on Alice's newest session and on [uid]'s own newest one,
-///   which are `workout_session_repository`'s `sampleWorkoutSessions`;
-/// - two challenges with standings, Alice's invite `PUSH2345`, and a
-///   pending template share from Alice;
+/// - [uid]'s own sessions, `workout_session_repository`'s
+///   `sampleWorkoutSessions`, so likes on them land as they do in Firestore;
+/// - comments on Maya's newest session and on [uid]'s own newest one;
+/// - two challenges with standings, Maya's invite `PUSH2345`, and a
+///   pending template share from Maya;
 /// - notifications for [uid]: a like, a comment, a share and a nudge
 ///   unread, and a follow read.
 Map<String, Map<String, Object?>> sampleSocial({
@@ -24,10 +25,11 @@ Map<String, Map<String, Object?>> sampleSocial({
   DateTime ago(Duration duration) => now.subtract(duration);
   const day = Duration(days: 1);
   const hour = Duration(hours: 1);
-  final ownNewest = sampleWorkoutSessions(uid: uid, now: now).last;
+  final own = sampleWorkoutSessions(uid: uid, now: now);
+  final ownNewest = own.last;
 
   final friends = [
-    _friend('user1', 'Alice', 'Cooper', 'alice', ago(day * 365), [
+    _friend('user1', 'Maya', 'Chen', 'maya.chen', ago(day * 365), [
       uid,
       'user3',
     ]),
@@ -71,13 +73,13 @@ Map<String, Map<String, Object?>> sampleSocial({
           },
       ],
   };
-  final aliceNewest = feed['user1']!.first;
-  final aliceSessionId = aliceNewest[WorkoutSessionModelKeys.id]! as String;
+  final mayaNewest = feed['user1']!.first;
+  final mayaSessionId = mayaNewest[WorkoutSessionModelKeys.id]! as String;
 
   final comments = [
     WorkoutSessionComment(
       id: 'sample-comment-1',
-      sessionId: aliceSessionId,
+      sessionId: mayaSessionId,
       sessionAuthorId: 'user1',
       authorId: 'user3',
       authorName: 'Charlie Nguyen',
@@ -88,7 +90,7 @@ Map<String, Map<String, Object?>> sampleSocial({
     ),
     WorkoutSessionComment(
       id: 'sample-comment-2',
-      sessionId: aliceSessionId,
+      sessionId: mayaSessionId,
       sessionAuthorId: 'user1',
       authorId: uid,
       authorName: 'Alice Cooper',
@@ -101,8 +103,8 @@ Map<String, Map<String, Object?>> sampleSocial({
       sessionId: ownNewest.id,
       sessionAuthorId: uid,
       authorId: 'user1',
-      authorName: 'Alice Cooper',
-      authorImageUrl: _avatar('alice'),
+      authorName: 'Maya Chen',
+      authorImageUrl: _avatar('maya'),
       text: 'Those pushdowns 🔥',
       dateCreated: ago(hour),
     ),
@@ -182,7 +184,7 @@ Map<String, Map<String, Object?>> sampleSocial({
       'comment_sample-comment-3',
       ActivityType.comment,
       'user1',
-      'Alice Cooper',
+      'Maya Chen',
       hour,
       sessionId: ownNewest.id,
       text: 'Those pushdowns 🔥',
@@ -191,7 +193,7 @@ Map<String, Map<String, Object?>> sampleSocial({
       'share_${share.id}',
       ActivityType.share,
       'user1',
-      'Alice Cooper',
+      'Maya Chen',
       hour,
       text: PrebuiltCatalogue.instance.workoutTemplates.first.name,
       shareId: share.id,
@@ -218,6 +220,8 @@ Map<String, Map<String, Object?>> sampleSocial({
   return {
     for (final friend in friends)
       'users/${friend.userId}': friend.toFirestore(),
+    for (final session in own)
+      'users/$uid/workout_sessions/${session.id}': session.toFirestore(),
     for (final MapEntry(key: friend, value: sessions) in feed.entries)
       for (final session in sessions)
         'users/$friend/workout_sessions/${session[WorkoutSessionModelKeys.id]}':
@@ -274,6 +278,8 @@ UserModel _friend(
   displayName: '$first $last',
   firstName: first,
   lastName: last,
+  submittedFirstName: first,
+  submittedLastName: last,
   photoUrl: _avatar(first.toLowerCase()),
   submittedProfileImage: _avatar(first.toLowerCase()),
   creationDate: created,

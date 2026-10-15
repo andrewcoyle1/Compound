@@ -354,30 +354,32 @@ m.WorkoutSessionModel sessionFromTemplate({
     );
 
     exercises.add(
-      m.WorkoutExerciseModel(
-        id: newId(),
-        authorId: authorId,
-        templateId: exercise.id,
-        name: exercise.name,
-        trackingMode: mode,
-        index: idx + 1,
-        imageName: exercise.sessionImageName,
-        sets: [
-          for (final (position, set) in [...warmUps, ...workingSets].indexed)
-            set.copyWith(index: position + 1),
-        ],
-        setTargets: setTargets,
-        chosenVariationId: chosen,
-        equipmentVariations: variations,
-        supersetGroupId: templateExercise.supersetGroupId,
-        planNotes: templateExercise.notes,
-        planSlotId: templateExercise.id,
-        restSeconds: templateExercise.restSeconds,
-        linkUrl: templateExercise.linkUrl,
-        substituteExerciseIds: templateExercise.substituteExerciseIds,
-        weightUnit: weightUnit,
-        loadsPerSet: SessionLoadChoice.loadsPerSet(exercise),
-        machineBaseKg: SessionLoadChoice.machineBaseKg(refs: refs, gym: gym),
+      stampingMachineBase(
+        m.WorkoutExerciseModel(
+          id: newId(),
+          authorId: authorId,
+          templateId: exercise.id,
+          name: exercise.name,
+          trackingMode: mode,
+          index: idx + 1,
+          imageName: exercise.sessionImageName,
+          sets: [
+            for (final (position, set) in [...warmUps, ...workingSets].indexed)
+              set.copyWith(index: position + 1),
+          ],
+          setTargets: setTargets,
+          chosenVariationId: chosen,
+          equipmentVariations: variations,
+          supersetGroupId: templateExercise.supersetGroupId,
+          planNotes: templateExercise.notes,
+          planSlotId: templateExercise.id,
+          restSeconds: templateExercise.restSeconds,
+          linkUrl: templateExercise.linkUrl,
+          substituteExerciseIds: templateExercise.substituteExerciseIds,
+          weightUnit: weightUnit,
+          loadsPerSet: SessionLoadChoice.loadsPerSet(exercise),
+          machineBaseKg: SessionLoadChoice.machineBaseKg(refs: refs, gym: gym),
+        ),
       ),
     );
   }

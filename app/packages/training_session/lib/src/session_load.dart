@@ -140,16 +140,33 @@ m.WorkoutExerciseModel takingLoad(
     chosenVariationId: chosen,
   );
   final refs = loaded.activeVariation?.resistanceEquipment;
-  return loaded.copyWith(
-    weightUnit: SessionLoadChoice.weightUnit(
-      preference: preference,
-      refs: refs,
-      gym: gym,
+  return stampingMachineBase(
+    loaded.copyWith(
+      weightUnit: SessionLoadChoice.weightUnit(
+        preference: preference,
+        refs: refs,
+        gym: gym,
+      ),
+      loadsPerSet: SessionLoadChoice.loadsPerSet(exercise),
+      machineBaseKg: SessionLoadChoice.machineBaseKg(refs: refs, gym: gym),
     ),
-    loadsPerSet: SessionLoadChoice.loadsPerSet(exercise),
-    machineBaseKg: SessionLoadChoice.machineBaseKg(refs: refs, gym: gym),
   );
 }
+
+/// [exercise] with its machine base on every set not yet logged, as Swift's
+/// `machineBaseKg` stamps them whenever it is set; a logged set keeps the
+/// one it was logged with.
+m.WorkoutExerciseModel stampingMachineBase(m.WorkoutExerciseModel exercise) =>
+    exercise.copyWith(
+      sets: [
+        for (final set in exercise.sets)
+          if (set.completedAt == null &&
+              set.machineBaseKg != exercise.machineBaseKg)
+            set.copyWith(machineBaseKg: exercise.machineBaseKg)
+          else
+            set,
+      ],
+    );
 
 /// After the equipment or the gym changes: the unit again, and every open
 /// set on a weight the new equipment makes (`refitLoad`). Logged sets keep
@@ -172,16 +189,18 @@ m.WorkoutExerciseModel refittingLoad(
     preferredUnit: unit,
     resistanceEquipment: refs,
   );
-  return session.copyWith(
-    weightUnit: unit,
-    machineBaseKg: SessionLoadChoice.machineBaseKg(refs: refs, gym: gym),
-    sets: [
-      for (final set in session.sets)
-        if (set.completedAt == null && set.weightKg != null)
-          set.copyWith(weightKg: rule.round(set.weightKg!))
-        else
-          set,
-    ],
+  return stampingMachineBase(
+    session.copyWith(
+      weightUnit: unit,
+      machineBaseKg: SessionLoadChoice.machineBaseKg(refs: refs, gym: gym),
+      sets: [
+        for (final set in session.sets)
+          if (set.completedAt == null && set.weightKg != null)
+            set.copyWith(weightKg: rule.round(set.weightKg!))
+          else
+            set,
+      ],
+    ),
   );
 }
 

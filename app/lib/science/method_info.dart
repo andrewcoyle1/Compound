@@ -126,6 +126,189 @@ class const Citation({
         'Health 10(8):e668–e681.',
     doi: '10.1016/S2468-2667(25)00164-1',
   );
+
+  /// R34.
+  static const hall2011b = Citation(
+    reference:
+        'Hall KD, Chow CC (2011). Estimating changes in free-living energy '
+        'intake and its confidence interval. Am J Clin Nutr 94(1):66–74.',
+    doi: '10.3945/ajcn.111.014399',
+  );
+
+  /// R35.
+  static const sanghvi2015 = Citation(
+    reference:
+        'Sanghvi A, Redman LM, Martin CK, Ravussin E, Hall KD (2015). '
+        'Validation of an inexpensive and accurate mathematical method to '
+        'measure long-term changes in free-living energy intake. Am J Clin '
+        'Nutr 102(2):353–358.',
+    doi: '10.3945/ajcn.115.111070',
+  );
+
+  /// R37.
+  static const guo2020 = Citation(
+    reference:
+        'Guo P, Rivera DE, Savage JS, Hohman EE, Pauley AM, Leonard KS, Downs '
+        'DS (2020; online 2018). System identification approaches for energy '
+        'intake estimation: enhancing interventions for managing gestational '
+        'weight gain. IEEE Trans Control Syst Technol 28(1):63–78.',
+    doi: '10.1109/TCST.2018.2871871',
+  );
+
+  /// R38.
+  static const guo2017 = Citation(
+    reference:
+        'Guo P, Rivera DE, Savage JS, Downs DS (2017). State estimation under '
+        'correlated partial measurement losses: implications for weight '
+        'control interventions. IFAC-PapersOnLine 50(1):13532–13537 (20th '
+        'IFAC World Congress). DOI not found — locate manually. Record:.',
+    url: 'https://asu.elsevierpure.com/en/publications/state-estimation-under-correlated-partial-measurement-losses-impl/',
+  );
+
+  /// R14.
+  static const nasem2023 = Citation(
+    reference:
+        'National Academies of Sciences, Engineering, and Medicine (2023). '
+        'Dietary Reference Intakes for Energy. Washington, DC: National '
+        'Academies Press.',
+    doi: '10.17226/26818',
+  );
+
+  /// R36.
+  static const lichtman1992 = Citation(
+    reference:
+        'Lichtman SW, et al. (1992). Discrepancy between self-reported and '
+        'actual caloric intake and exercise in obese subjects. N Engl J Med '
+        '327(27):1893–1898.',
+    doi: '10.1056/NEJM199212313272701',
+  );
+
+  /// R40.
+  static const martins2020 = Citation(
+    reference:
+        'Martins C, et al. (2020). Metabolic adaptation is an illusion, only '
+        'present when participants are in negative energy balance. Am J Clin '
+        'Nutr 112(5):1212–1218.',
+    doi: '10.1093/ajcn/nqaa220',
+  );
+
+  /// R54.
+  static const nunes2022b = Citation(
+    reference:
+        'Nunes CL, et al. (2022). Adaptive thermogenesis after moderate '
+        'weight loss: magnitude and methodological issues. Eur J Nutr '
+        '61(3):1405–1416.',
+    doi: '10.1007/s00394-021-02742-6',
+  );
+
+  /// R21.
+  static const acsm2021 = Citation(
+    reference:
+        "American College of Sports Medicine. ACSM's Guidelines for Exercise "
+        'Testing and Prescription, 11th ed. Philadelphia: Wolters Kluwer, '
+        '2021 (metabolic equations for walking). No DOI.',
+  );
+
+  /// R43.
+  static const martin2015 = Citation(
+    reference:
+        'Martin CK, et al. (2015). Efficacy of SmartLoss, a smartphone-based '
+        'weight loss intervention: results from a randomized controlled '
+        'trial. Obesity 23(5):935–942.',
+    doi: '10.1002/oby.21063',
+  );
+
+  /// R46.
+  static const thomas2014 = Citation(
+    reference:
+        'Thomas DM, Martin CK, Redman LM, Heymsfield SB, Lettieri S, Levine '
+        'JA, Bouchard C, Schoeller DA (2014). Effect of dietary adherence on '
+        'the body weight plateau: a mathematical model incorporating '
+        'intermittent compliance with energy intake prescription. Am J Clin '
+        'Nutr 100(3):787–795.',
+    doi: '10.3945/ajcn.113.079822',
+  );
+
+  /// R42.
+  static const macrofactor = Citation(
+    reference:
+        'MacroFactor help centre, "How should I interpret changes to my '
+        'energy expenditure?" (Unreviewed).',
+    url: 'https://help.macrofactorapp.com/en/articles/26-how-should-i-interpret-changes-to-my-energy-expenditure',
+    isPeerReviewed: false,
+  );
+
+  /// R25.
+  static const hall2011 = Citation(
+    reference:
+        'Hall KD, Sacks G, Chandramohan D, Chow CC, Wang YC, Gortmaker SL, '
+        'Swinburn BA (2011). Quantification of the effect of energy '
+        'imbalance on bodyweight. Lancet 378(9793):826–837.',
+    doi: '10.1016/S0140-6736(11)60812-X',
+  );
+
+  /// R17.
+  static const iom2005 = Citation(
+    reference:
+        'Institute of Medicine (2005). Dietary Reference Intakes for Energy, '
+        'Carbohydrate, Fiber, Fat, Fatty Acids, Cholesterol, Protein, and '
+        'Amino Acids. Washington, DC: National Academies Press.',
+    doi: '10.17226/10490',
+  );
+
+  /// R55.
+  static const thomas2016 = Citation(
+    reference:
+        'Thomas DT, Erdman KA, Burke LM (2016). Position of the Academy of '
+        'Nutrition and Dietetics, Dietitians of Canada, and the American '
+        'College of Sports Medicine: nutrition and athletic performance. J '
+        'Acad Nutr Diet 116(3):501–528.',
+    doi: '10.1016/j.jand.2015.12.006',
+  );
+
+  /// R56.
+  static const whittaker2021 = Citation(
+    reference:
+        'Whittaker J, Wu K (2021). Low-fat diets and testosterone in men: '
+        'systematic review and meta-analysis of intervention studies. J '
+        'Steroid Biochem Mol Biol 210:105878.',
+    doi: '10.1016/j.jsbmb.2021.105878',
+  );
+
+  /// R57.
+  static const iraki2019 = Citation(
+    reference:
+        'Iraki J, Fitschen P, Espinar S, Helms E (2019). Nutrition '
+        'recommendations for bodybuilders in the off-season: a narrative '
+        'review. Sports 7(7):154.',
+    doi: '10.3390/sports7070154',
+  );
+
+  /// R58.
+  static const feinman2015 = Citation(
+    reference:
+        'Feinman RD, et al. (2015). Dietary carbohydrate restriction as the '
+        'first approach in diabetes management: critical review and evidence '
+        'base. Nutrition 31(1):1–13.',
+    doi: '10.1016/j.nut.2014.06.011',
+  );
+
+  /// R59.
+  static const henselmans2022 = Citation(
+    reference:
+        'Henselmans M, Bjørnsen T, Hedderman R, Vårvik FT (2022). The effect '
+        'of carbohydrate intake on strength and resistance training '
+        'performance: a systematic review. Nutrients 14(4):856.',
+    doi: '10.3390/nu14040856',
+  );
+
+  /// R60.
+  static const fao2003 = Citation(
+    reference:
+        'FAO (2003). Food energy – methods of analysis and conversion '
+        'factors. FAO Food and Nutrition Paper 77. Rome: FAO.',
+    url: 'https://www.fao.org/4/y5022e/y5022e00.htm',
+  );
 }
 
 /// What one calculation does and what it rests on, for the info button
@@ -223,6 +406,134 @@ class const MethodInfo({
     limitations: l10n.plannedSetsMethodLimitations,
     citations: const [Citation.pelland2026],
   );
+
+  /// The adaptive expenditure estimate (Swift
+  /// `MethodInfo.adaptiveExpenditure`), computed by `compound_maths`'
+  /// `expenditureHistory`.
+  factory adaptiveExpenditure(AppLocalizations l10n) => MethodInfo(
+    title: l10n.adaptiveExpenditureMethodTitle,
+    summary: l10n.adaptiveExpenditureMethodSummary,
+    formula: _adaptiveExpenditureFormula,
+    limitations: l10n.adaptiveExpenditureMethodLimitations,
+    ownChoices: l10n.adaptiveExpenditureMethodOwnChoices,
+    citations: const [
+      Citation.hall2011b,
+      Citation.sanghvi2015,
+      Citation.guo2020,
+      Citation.guo2017,
+      Citation.nasem2023,
+      Citation.lichtman1992,
+      Citation.martins2020,
+      Citation.nunes2022b,
+      Citation.acsm2021,
+    ],
+  );
+
+  /// The energy balance (Swift `MethodInfo.energyBalance`), computed by
+  /// `expenditureOn` and `loggedAverage`.
+  factory energyBalance(AppLocalizations l10n) => MethodInfo(
+    title: l10n.energyBalanceTitle,
+    summary: l10n.energyBalanceMethodSummary,
+    formula:
+        'balance = expenditure − mean(intake over logged days)\n'
+        'positive → deficit, negative → surplus\n'
+        "expenditure on a day = that day's adaptive estimate\n"
+        '  (last estimate after the history stops; formula before it starts)',
+    limitations: l10n.energyBalanceMethodLimitations,
+    ownChoices: l10n.energyBalanceMethodOwnChoices,
+    citations: const [
+      Citation.sanghvi2015,
+      Citation.lichtman1992,
+      Citation.hall2011b,
+    ],
+  );
+
+  /// Target suggestions (Swift `MethodInfo.targetProposal`), computed by
+  /// `evaluateTarget`.
+  factory targetProposal(AppLocalizations l10n) => MethodInfo(
+    title: l10n.targetProposalMethodTitle,
+    summary: l10n.targetProposalMethodSummary,
+    formula: _targetProposalFormula,
+    limitations: l10n.targetProposalMethodLimitations,
+    ownChoices: l10n.targetProposalMethodOwnChoices,
+    citations: const [
+      Citation.martin2015,
+      Citation.thomas2014,
+      Citation.macrofactor,
+      Citation.hall2011,
+    ],
+  );
+
+  /// The weekly check-in's rules (Swift `MethodInfo.checkInRules`), applied
+  /// by `CheckInFlow` and `expenditureSamples`.
+  factory checkInRules(AppLocalizations l10n) => MethodInfo(
+    title: l10n.checkInRulesMethodTitle,
+    summary: l10n.checkInRulesMethodSummary,
+    formula:
+        'incomplete or in a break → intake not read; weigh-in still used\n'
+        'fast → intake read as logged (0 kcal if nothing logged)\n'
+        'logged < 0.5 × expenditure and not a fast → treated as partial\n'
+        'weigh-in step shown when the latest weigh-in is > 3 days old',
+    limitations: l10n.checkInRulesMethodLimitations,
+    ownChoices: l10n.checkInRulesMethodOwnChoices,
+    citations: const [
+      Citation.lichtman1992,
+      Citation.guo2017,
+      Citation.hall2011b,
+    ],
+  );
+
+  /// The fat and carbohydrate split (Swift `MethodInfo.macroSplit`),
+  /// computed by `dailyMacros`.
+  factory macroSplit(AppLocalizations l10n) => MethodInfo(
+    title: l10n.macroSplitMethodTitle,
+    summary: l10n.macroSplitMethodSummary,
+    formula:
+        'remaining = calories − 4 × protein g\n'
+        'fat kcal: balanced 0.30 × calories, low fat 0.20 × calories,\n'
+        '  low carb remaining − 0.20 × calories, keto remaining − '
+        'min(4 × 30, remaining)\n'
+        'fat kcal = min(remaining, max(fat kcal, 9 × 0.5 × reference kg, '
+        '0.20 × calories))\n'
+        'carb g = (remaining − fat kcal) ÷ 4\n'
+        'Atwater factors: protein 4, carbs 4, fat 9 kcal/g',
+    limitations: l10n.macroSplitMethodLimitations,
+    ownChoices: l10n.macroSplitMethodOwnChoices,
+    citations: const [
+      Citation.iom2005,
+      Citation.thomas2016,
+      Citation.whittaker2021,
+      Citation.iraki2019,
+      Citation.feinman2015,
+      Citation.henselmans2022,
+      Citation.fao2003,
+    ],
+  );
+
+  static const _adaptiveExpenditureFormula = '''
+State x = [L (kg), E (kcal/d), T (kcal/d)], one step per day:
+  L ← L + (E − T)/ρ        ρ = energy per kg (see Energy in a kilogram)
+  process SDs per day: L 0.05 kg, E 30 kcal, T 13 kcal
+Weigh-in observes L (weight trend rules); complete logged day observes E:
+  σ_I = SD of your logged days in the last 28, held in 300–500 kcal
+        (400 with fewer than 7), ×2 if under 60% of days are logged
+  a day below 0.5·T is skipped unless marked as a fast
+Start: T = E = formula, SD(T) = max(0.15·formula, 340), SD(E) = 500
+Calibrating until: ≥21 days, ≥14 weigh-ins, √P_TT < 200 kcal and ≥80% of the
+  last 28 days logged. Until then the formula figure is shown.
+Shown: clamp(T, 0.6·formula, 1.6·formula) + step nowcast
+80% interval: T ± 1.28·√P_TT
+Step nowcast (optional): (mean steps last 7 d − mean steps last 28 d)
+  × 0.0004 kcal/step/kg × trend weight, capped at ±300 kcal''';
+
+  static const _targetProposalFormula = '''
+target = T + ρ·r/7                 r = goal rate, kg/week (negative to lose)
+target = max(target, calorie floor)
+suggest if |target − current| > max(50, SD of T)
+       and the plan is ≥ 7 days old and the estimate is calibrated
+new target = current + clamp(target − current, −150, +150)
+adherence first: if lowering, last week's mean logged intake > 1.10 × current
+       and the trend rate is above the goal rate → no change, a note instead''';
 
   static const _weightTrendFormula = '''
 State: level L (kg), slope b (kg/day). Between weigh-ins Δt days apart:

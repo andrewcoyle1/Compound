@@ -86,22 +86,27 @@ String _trainingFocus(ExerciseFrequency? frequency) =>
 
 /// The diet plan `NutritionManager.computeDietPlan` builds from the formula
 /// expenditure, the active [goal] (only an active one counts) and the
-/// active [mesocycle]'s training days. Its id is the user's: that is where
-/// the plan is read from, and the rules refuse any other.
+/// active [mesocycle]'s training days. [expenditureKcal] replaces the
+/// formula, and [targetKcal] the goal's target, as a target proposal passes
+/// them. Its id is the user's: that is where the plan is read from, and the
+/// rules refuse any other.
 DietPlan buildDietPlan({
   required UserModel user,
   required DietChoices choices,
   required DateTime now,
   WeightGoal? goal,
   Mesocycle? mesocycle,
+  double? expenditureKcal,
+  double? targetKcal,
 }) {
-  final tdee = formulaExpenditure(user, now: now);
+  final tdee = expenditureKcal ?? formulaExpenditure(user, now: now);
   final active = goal != null && goal.status == GoalStatus.active ? goal : null;
   final days = maths.dietPlanDays(
     expenditureKcal: tdee,
     diet: choices.diet,
     distribution: choices.distribution,
     protein: choices.protein,
+    targetKcal: targetKcal,
     goalWeeklyChangeKg: active == null
         ? null
         : maths.signedWeeklyChangeKg(

@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
+import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/firebase_options_development.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -109,6 +111,13 @@ Future<void> main() async {
       ),
       trainingLibraryRepository: FirestoreTrainingLibraryRepository(
         firestore: FirebaseFirestore.instance,
+      ),
+      checkInRepository: FirestoreCheckInRepository(
+        firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
+      ),
+      proposalDismissals: ProposalDismissals(
+        file: File('${support.path}/dismissed_target_proposals.json'),
       ),
       foodRepository: FirestoreFoodRepository(
         firestore: FirebaseFirestore.instance,

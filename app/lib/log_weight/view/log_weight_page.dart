@@ -127,11 +127,6 @@ class _Form extends StatelessWidget {
     final l10n = context.l10n;
     final bloc = context.read<LogWeightBloc>();
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final scaler = MediaQuery.textScalerOf(context);
-    final kilograms = state.unit == WeightUnitPreference.kilograms;
-    final (min, max) = kilograms
-        ? (WeightWheelRange.kilograms.min, WeightWheelRange.kilograms.max)
-        : (WeightWheelRange.pounds.min, WeightWheelRange.pounds.max);
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
@@ -156,6 +151,47 @@ class _Form extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.xl),
+        WeightWheels(
+          state: state,
+          onUnitChanged: (unit) => bloc.add(LogWeightUnitChanged(unit)),
+          onWholeChanged: (whole) => bloc.add(LogWeightWholeChanged(whole)),
+          onTenthsChanged: (tenths) => bloc.add(LogWeightTenthsChanged(tenths)),
+        ),
+      ],
+    );
+  }
+}
+
+/// The unit and the weight on a whole-number wheel and a tenths wheel
+/// (Swift `WeightPickerInput`), shared by Log Weight and the weekly
+/// check-in's weigh-in.
+class WeightWheels extends StatelessWidget {
+  const new({
+    required this.state,
+    required this.onUnitChanged,
+    required this.onWholeChanged,
+    required this.onTenthsChanged,
+    super.key,
+  });
+
+  /// The unit and both units' wheels.
+  final LogWeightState state;
+  final ValueChanged<WeightUnitPreference> onUnitChanged;
+  final ValueChanged<int> onWholeChanged;
+  final ValueChanged<int> onTenthsChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final scaler = MediaQuery.textScalerOf(context);
+    final kilograms = state.unit == WeightUnitPreference.kilograms;
+    final (min, max) = kilograms
+        ? (WeightWheelRange.kilograms.min, WeightWheelRange.kilograms.max)
+        : (WeightWheelRange.pounds.min, WeightWheelRange.pounds.max);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
         Semantics(
           label: l10n.logWeightUnits,
           container: true,
@@ -172,8 +208,7 @@ class _Form extends StatelessWidget {
             ],
             selected: {state.unit},
             showSelectedIcon: false,
-            onSelectionChanged: (selection) =>
-                bloc.add(LogWeightUnitChanged(selection.single)),
+            onSelectionChanged: (selection) => onUnitChanged(selection.single),
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
@@ -196,8 +231,7 @@ class _Form extends StatelessWidget {
                       itemLabel: kilograms
                           ? l10n.logWeightWholeKilograms
                           : l10n.logWeightWholePounds,
-                      onChanged: (whole) =>
-                          bloc.add(LogWeightWholeChanged(whole)),
+                      onChanged: onWholeChanged,
                     ),
                   ),
                   Expanded(
@@ -208,8 +242,7 @@ class _Form extends StatelessWidget {
                           ? state.kilogramsTenths
                           : state.poundsTenths,
                       itemLabel: l10n.logWeightTenthsValue,
-                      onChanged: (tenths) =>
-                          bloc.add(LogWeightTenthsChanged(tenths)),
+                      onChanged: onTenthsChanged,
                     ),
                   ),
                 ],

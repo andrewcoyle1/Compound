@@ -8,6 +8,7 @@ import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/nutrition/view/widgets/calendar_strip.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
+import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -386,6 +387,12 @@ void main() {
               return const Text('logger');
             },
           ),
+          GoRoute(
+            path: '/overview',
+            name: NutritionOverviewPage.name,
+            builder: (_, state) =>
+                Text('overview ${state.uri.queryParameters['day']}'),
+          ),
         ],
       );
       addTearDown(router.dispose);
@@ -398,6 +405,13 @@ void main() {
       await tester.pump();
       return opened;
     }
+
+    testWidgets('opens the Nutrition Overview for the day', (tester) async {
+      await pumpRouted(tester);
+      await tester.tap(find.byTooltip('Nutrition Overview'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('overview 2026-'), findsOneWidget);
+    });
 
     testWidgets("the toolbar's + logs a meal for the user", (tester) async {
       final opened = await pumpRouted(tester);

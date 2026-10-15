@@ -1,6 +1,7 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
@@ -77,7 +78,10 @@ Future<void> main() async {
         ],
       ),
       nutritionRepository: InMemoryNutritionRepository(
-        meals: sampleMealLogs(uid: sampleUserId, now: now),
+        meals: [
+          ...sampleMealLogs(uid: sampleUserId, now: now),
+          ...sampleMealHistory(uid: sampleUserId, now: now),
+        ],
         dietPlan: sampleDietPlan(uid: sampleUserId, now: now),
       ),
       bodyRepository: InMemoryBodyRepository(
@@ -103,6 +107,12 @@ Future<void> main() async {
         foods: sampleFoods(uid: sampleUserId, now: now),
       ),
       openFoodFacts: FakeOpenFoodFacts(),
+      checkInRepository: InMemoryCheckInRepository(
+        settings: [sampleStrategySettings(uid: sampleUserId)],
+        annotations: sampleDayAnnotations(uid: sampleUserId, now: now),
+        loggingBreaks: [sampleLoggingBreak(uid: sampleUserId, now: now)],
+        records: [sampleCheckInRecord(uid: sampleUserId, now: now)],
+      ),
     ),
   );
 }

@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/progress/view/card_charts.dart';
@@ -78,6 +79,7 @@ void main() {
             bodyRepository: body,
             userRepository: users,
             analyticsRepository: const AnalyticsRepository(),
+            checkInRepository: InMemoryCheckInRepository(),
             uid: uid,
             firstWeekday: DateTime.monday,
             now: () => now,
@@ -109,6 +111,8 @@ void main() {
       for (final title in [
         'Weight Trend',
         'Goal Progress',
+        'Expenditure',
+        'Energy Balance',
         'Weigh In',
         'Macros',
         'Protein',
@@ -124,13 +128,12 @@ void main() {
       expect(find.text('Last 30 Days'), findsNWidgets(2));
       expect(find.text('Toward Target'), findsOneWidget);
       expect(find.text('Today'), findsOneWidget);
-      // Not yet: they need M4 and M5.
-      expect(find.text('Expenditure'), findsNothing);
+      // Not yet: they need M5.
       expect(find.text('Muscle Groups'), findsNothing);
-      expect(find.byType(ProgressCard), findsNWidgets(10));
-      expect(find.byType(Sparkline), findsNWidgets(4));
+      expect(find.byType(ProgressCard), findsNWidgets(12));
+      expect(find.byType(Sparkline), findsNWidgets(5));
       expect(find.byType(HabitGridChart), findsNWidgets(2));
-      expect(find.byType(StackedBars), findsNWidgets(2));
+      expect(find.byType(StackedBars), findsNWidgets(3));
       expect(find.byType(ProgressBarChart), findsNWidgets(2));
     });
 
@@ -141,8 +144,9 @@ void main() {
       expect(find.text('No Entries'), findsNWidgets(3));
       expect(find.text('No Goal Set'), findsOneWidget);
       expect(find.text('No Data'), findsNWidgets(3));
-      // Workouts, trend, goal, macros, protein, weight, body fat, steps.
-      expect(find.text(AppFormat.placeholder), findsNWidgets(8));
+      // Workouts, trend, goal, energy balance, macros, protein, weight,
+      // body fat, steps. Expenditure still has the profile's formula.
+      expect(find.text(AppFormat.placeholder), findsNWidgets(9));
     });
 
     testWidgets('leaves out hidden sections', (tester) async {

@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/today/logic/today_checklist.dart';
-import 'package:compound_maths/compound_maths.dart';
+import 'package:compound_maths/compound_maths.dart'
+    hide CheckInState, LoggingBreak;
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -24,6 +26,7 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     required this._bodyRepository,
     required this._userRepository,
     required this._analyticsRepository,
+    required this._checkInRepository,
     required this._uid,
     required int firstWeekday,
     DateTime Function() now = DateTime.now,
@@ -32,6 +35,12 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     on<_TodayGoalChanged>(
       (event, emit) => emit(state.copyWith(goal: () => event.goal)),
     );
+    on<TodayCheckInStarted>(
+      (event, emit) => _analyticsRepository.trackEvent(
+        const AnalyticsEvent('TodayView_CheckIn_Start'),
+      ),
+    );
+    on<TodayCheckInSkipped>(_onCheckInSkipped);
   }
 
   final WorkoutSessionRepository _workoutSessionRepository;
@@ -39,6 +48,7 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
   final BodyRepository _bodyRepository;
   final UserRepository _userRepository;
   final AnalyticsRepository _analyticsRepository;
+  final CheckInRepository _checkInRepository;
   final String _uid;
 
   StreamSubscription<WeightGoal?>? _goalSubscription;
@@ -86,6 +96,23 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
         onData: (settings) => state.copyWith(analyticsSettings: () => settings),
         onError: (_, _) => state,
       ),
+      // The check-in card's: without them, no card.
+      emit.forEach(
+        _checkInRepository.watchStrategySettings(_uid),
+        onData: (settings) => state.copyWith(strategySettings: settings),
+        onError: (_, _) => state,
+      ),
+      emit.forEach(
+        _checkInRepository.watchCheckInRecord(_uid),
+        onData: (record) => state.copyWith(checkInRecord: () => record),
+        onError: (_, _) => state,
+      ),
+      emit.forEach(
+        _checkInRepository.watchLoggingBreak(_uid),
+        onData: (loggingBreak) =>
+            state.copyWith(loggingBreak: () => loggingBreak),
+        onError: (_, _) => state,
+      ),
       emit.forEach(
         _userRepository.watchUser(_uid),
         onData: (user) {
@@ -95,6 +122,41 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
         onError: (_, _) => state,
       ),
     ]);
+  }
+
+  /// Optimistic, and puts the card back if the write does not land: a card
+  /// that vanished on a failed write would look like a week dealt with.
+  /// `TodayView_CheckIn_Skip` is the write's Start.
+  Future<void> _onCheckInSkipped(
+    TodayCheckInSkipped event,
+    Emitter<TodayState> emit,
+  ) async {
+    final weekStart = state.dueCheckInWeekStart;
+    if (weekStart == null) return;
+    _analyticsRepository.trackEvent(
+      const AnalyticsEvent('TodayView_CheckIn_Skip'),
+    );
+    emit(state.copyWith(checkInSkipped: true));
+    try {
+      await _checkInRepository.markCheckInSkipped(_uid, weekStart);
+      _analyticsRepository.trackEvent(
+        const AnalyticsEvent('TodayView_CheckIn_Skip_Success'),
+      );
+    } on Object catch (error) {
+      _analyticsRepository.trackEvent(
+        AnalyticsEvent(
+          'TodayView_CheckIn_Skip_Fail',
+          parameters: {'error_description': '$error'},
+          type: LogType.severe,
+        ),
+      );
+      emit(
+        state.copyWith(
+          checkInSkipped: false,
+          skipFailures: state.skipFailures + 1,
+        ),
+      );
+    }
   }
 
   /// Follows the goal named by [goalId] (the uid's, without one), dropping

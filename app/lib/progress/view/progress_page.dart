@@ -1,7 +1,10 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/expenditure/expenditure.dart';
+import 'package:compound/expenditure_metric/expenditure_metric.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/progress/bloc/progress_bloc.dart';
@@ -9,7 +12,7 @@ import 'package:compound/progress/logic/progress_overview.dart';
 import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/progress/view/progress_card.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
-import 'package:compound_maths/compound_maths.dart' show Macros;
+import 'package:compound_maths/compound_maths.dart' show Macros, loggedAverage;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -18,9 +21,8 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// The Progress tab (Swift `AnalyticsView`), read only: the cards that are
 /// built from synced data alone, in the Swift sections, honouring the
-/// sections the user has hidden. The header carousel, Expenditure and
-/// Energy Balance need the expenditure engine (M4); Muscle Groups and
-/// Exercises need the exercise library (M5).
+/// sections the user has hidden. The header carousel waits for a later
+/// slice; Muscle Groups and Exercises need the exercise library (M5).
 class ProgressPage extends StatelessWidget {
   const new({super.key});
 
@@ -38,6 +40,7 @@ class ProgressPage extends StatelessWidget {
         bodyRepository: context.read<BodyRepository>(),
         userRepository: context.read<UserRepository>(),
         analyticsRepository: context.read<AnalyticsRepository>(),
+        checkInRepository: context.read<CheckInRepository>(),
         uid: state.user.uid,
         firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
       )..add(const ProgressSubscriptionRequested()),
@@ -98,8 +101,10 @@ class _Overview extends StatelessWidget {
                         header: l10n.progressInsightsHeader,
                         cards: [
                           cards.workouts(),
+                          cards.expenditure(),
                           cards.weightTrend(),
                           cards.goalProgress(),
+                          cards.energyBalance(),
                         ],
                       ),
                     ],
@@ -199,14 +204,17 @@ class _Cards {
     required Color color,
     int decimals = 1,
     VoidCallback? onTap,
+    String? value,
   }) {
     String text(double v) => '${_number(v, decimals)} $unit';
     return ProgressCard(
       title: title,
       subtitle: subtitle,
-      value: points.isEmpty
-          ? AppFormat.placeholder
-          : _number(points.last.value, decimals),
+      value:
+          value ??
+          (points.isEmpty
+              ? AppFormat.placeholder
+              : _number(points.last.value, decimals)),
       unit: unit,
       onTap: onTap,
       chart: Sparkline(
@@ -242,6 +250,66 @@ class _Cards {
         semanticsValue: l10n.progressSetsChartValue(
           _number(total),
           _number(most),
+        ),
+      ),
+    );
+  }
+
+  /// Today's adaptive estimate over the last seven days' line, or the
+  /// formula's before there is one.
+  Widget expenditure() {
+    final figures = state.expenditure;
+    final today = figures?.today ?? 0;
+    return _sparkline(
+      title: l10n.expenditureTitle,
+      subtitle: l10n.progressLast7Days,
+      points: figures?.week ?? const [],
+      unit: 'kcal',
+      color: colors.expenditure,
+      decimals: 0,
+      value: today > 0 ? _number(today) : AppFormat.placeholder,
+      onTap: () => router?.goNamed(ExpenditureMetric.expenditure.name),
+    );
+  }
+
+  /// The week's mean intake over its logged days against today's estimate:
+  /// a day with nothing logged is left out, not counted as eating nothing.
+  Widget energyBalance() {
+    final intake = [for (final day in state.macrosWeek) day.calories];
+    final figures = state.expenditure;
+    final average = loggedAverage(intake);
+    final week = figures?.week ?? const <ProgressPoint>[];
+    String kcal(Iterable<double> values) => values.isEmpty
+        ? AppFormat.placeholder
+        : AppFormat.kcal(
+            (values.reduce((a, b) => a + b) / values.length).round(),
+            locale: locale,
+          );
+    return ProgressCard(
+      title: l10n.energyBalanceTitle,
+      subtitle: average == null
+          ? l10n.progressLast7Days
+          : l10n.energyBalanceLoggedDays(average.days),
+      value: average == null || figures == null
+          ? AppFormat.placeholder
+          : ExpenditureText.balance(
+              l10n,
+              expenditureKcal: figures.today,
+              intakeKcal: average.meanKcal,
+              locale: locale,
+            ),
+      onTap: () => router?.goNamed(ExpenditureMetric.energyBalance.name),
+      chart: StackedBars(
+        stacks: [
+          for (final kcal in intake) [kcal],
+        ],
+        colors: [colors.calories],
+        line: [for (final point in week) point.value],
+        lineColor: colors.expenditure,
+        semanticsLabel: l10n.energyBalanceChartLabel,
+        semanticsValue: l10n.energyBalanceChartValue(
+          kcal(intake),
+          kcal([for (final point in week) point.value]),
         ),
       ),
     );

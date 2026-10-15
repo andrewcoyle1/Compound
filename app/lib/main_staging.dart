@@ -92,7 +92,10 @@ Future<void> main() async {
         ],
       ),
       nutritionRepository: InMemoryNutritionRepository(
-        meals: sampleMealLogs(uid: sampleUserId, now: now),
+        meals: [
+          ...sampleMealLogs(uid: sampleUserId, now: now),
+          ...sampleMealHistory(uid: sampleUserId, now: now),
+        ],
         dietPlan: sampleDietPlan(uid: sampleUserId, now: now),
       ),
       bodyRepository: InMemoryBodyRepository(

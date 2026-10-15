@@ -98,13 +98,16 @@ class _SparklinePainter extends CustomPainter {
 }
 
 /// Bars in [slots] equal slots, each stacked from [stacks]' values in
-/// [colors] order; slots past the data stay empty. Heights are against the
-/// tallest bar.
+/// [colors] order; slots past the data stay empty. A [line], one value a
+/// slot, is drawn over them in [lineColor] (Energy Balance's expenditure).
+/// Heights are against the tallest bar or line point.
 final class StackedBars extends CardChart {
   const new({
     required this.stacks,
     required this.colors,
     this.slots = 7,
+    this.line,
+    this.lineColor,
     super.semanticsLabel,
     super.semanticsValue,
     super.key,
@@ -119,11 +122,19 @@ final class StackedBars extends CardChart {
   /// How many bars there is room for.
   final int slots;
 
+  /// A line over the bars, one value a slot.
+  final List<double>? line;
+
+  /// The [line]'s colour.
+  final Color? lineColor;
+
   @override
   CustomPainter _painter(BuildContext context) => _BarsPainter(
     stacks: stacks,
     colors: colors,
     slots: slots,
+    line: line ?? const [],
+    lineColor: lineColor ?? Theme.of(context).colorScheme.onSurface,
     empty: Theme.of(context).colorScheme.outlineVariant,
   );
 }
@@ -134,17 +145,21 @@ class _BarsPainter extends CustomPainter {
     required this.colors,
     required this.slots,
     required this.empty,
+    this.line = const [],
+    this.lineColor = const Color(0x00000000),
   });
 
   final List<List<double>> stacks;
   final List<Color> colors;
   final int slots;
   final Color empty;
+  final List<double> line;
+  final Color lineColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final totals = [for (final s in stacks) s.fold<double>(0, (a, b) => a + b)];
-    final tallest = totals.fold<double>(0, math.max);
+    final tallest = [...totals, ...line].fold<double>(0, math.max);
     final slot = size.width / slots;
     final barWidth = slot * 0.6;
     for (var i = 0; i < slots; i++) {
@@ -175,11 +190,33 @@ class _BarsPainter extends CustomPainter {
         bottom = top;
       }
     }
+    if (line.isEmpty || tallest <= 0) return;
+    Offset at(int i) => Offset(
+      i * slot + slot / 2,
+      size.height - line[i] / tallest * size.height,
+    );
+    final path = Path()..moveTo(at(0).dx, at(0).dy);
+    for (var i = 1; i < line.length; i++) {
+      path.lineTo(at(i).dx, at(i).dy);
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = lineColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
   }
 
   @override
   bool shouldRepaint(_BarsPainter old) =>
-      old.stacks != stacks || old.colors != colors || old.empty != empty;
+      old.stacks != stacks ||
+      old.colors != colors ||
+      old.empty != empty ||
+      old.line != line ||
+      old.lineColor != lineColor;
 }
 
 /// A bar filled to [current] of [maximum], with a mark at [target] when

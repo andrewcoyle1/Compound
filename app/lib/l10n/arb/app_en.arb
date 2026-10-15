@@ -1235,6 +1235,712 @@
     "@weightTrendMethodOwnChoices": {
         "description": "Weight Trend method sheet: Compound's own choices"
     },
+    "adaptiveExpenditureMethodTitle": "Adaptive Expenditure",
+    "@adaptiveExpenditureMethodTitle": {
+        "description": "Method sheet title for the adaptive expenditure estimate"
+    },
+    "adaptiveExpenditureMethodSummary": "Your expenditure (TDEE) is learned from what you log and what the scale does. One Kalman filter, updated every day, tracks three things: your trend weight, your usual intake and your expenditure. Each day your trend weight moves by the difference between intake and expenditure, divided by the energy in a kilogram. Weigh-ins correct the trend; completely logged days correct your usual intake; together they reveal expenditure. Days you did not log, marked as incomplete, spent on a logging break, or logged at under half your expenditure (unless you marked a fast) are not read as intake: the filter only becomes less sure. It starts from your profile's formula estimate and shows that figure while it is still calibrating. Because it learns from your logs, it is based on what you logged: if you consistently under-log, it reads lower by the same amount, and targets built on it still work.",
+    "@adaptiveExpenditureMethodSummary": {
+        "description": "Adaptive Expenditure method sheet: summary"
+    },
+    "adaptiveExpenditureMethodLimitations": "Even with daily weights and complete logs, weight-based estimates of an individual's energy balance were off by about 200 kcal a day in a two-year trial, and around four weeks of daily weigh-ins are needed for a usable estimate. Logging that changes in accuracy (more careful after a stall), or unlogged days that differ from logged ones (weekends), will bias it. No study has validated an app's Kalman expenditure estimate against doubly labeled water.",
+    "@adaptiveExpenditureMethodLimitations": {
+        "description": "Adaptive Expenditure method sheet: limitations"
+    },
+    "adaptiveExpenditureMethodOwnChoices": "The three-part filter itself, its process noises (0.05 kg, 30 kcal and 13 kcal a day), the 300–500 kcal intake noise and its doubling below 60% logged, the half-of-expenditure partial-day rule, the starting SDs, the calibration gate (21 days, 14 weigh-ins, SD under 200 kcal, 80% logged), the 60–160% guard, the 80% interval, and the step nowcast's 300 kcal cap and 1,300–1,400 steps per km behind its 0.0004 constant are Compound's own choices, to be tuned on real histories.",
+    "@adaptiveExpenditureMethodOwnChoices": {
+        "description": "Adaptive Expenditure method sheet: Compound's own choices"
+    },
+    "energyBalanceTitle": "Energy Balance",
+    "@energyBalanceTitle": {
+        "description": "Energy Balance: screen, card and method sheet title"
+    },
+    "energyBalanceMethodSummary": "Energy balance compares what you ate with what your body spent. Expenditure is your adaptive estimate for each day (the formula figure while it calibrates, and held where it was during a logging break). Intake is averaged only over the days you logged: a day with nothing logged is a day the app knows nothing about, not a day you ate nothing, so it is left out and the card says how many days it used.",
+    "@energyBalanceMethodSummary": {
+        "description": "Energy Balance method sheet: summary"
+    },
+    "energyBalanceMethodLimitations": "Self-reported intake usually runs below what was really eaten, sometimes by a lot, so a logged deficit can be larger than the real one. The expenditure estimate is learned from the same logs, so the two errors partly cancel, but only if you log consistently.",
+    "@energyBalanceMethodLimitations": {
+        "description": "Energy Balance method sheet: limitations"
+    },
+    "energyBalanceMethodOwnChoices": "Counting any day with calories logged as a logged day is Compound's own choice.",
+    "@energyBalanceMethodOwnChoices": {
+        "description": "Energy Balance method sheet: Compound's own choices"
+    },
+    "targetProposalMethodTitle": "Target Suggestions",
+    "@targetProposalMethodTitle": {
+        "description": "Method sheet title for calorie target suggestions"
+    },
+    "targetProposalMethodSummary": "Your calorie target is your expenditure estimate plus the daily share of your goal's weekly change. Compound suggests a new target at most once a week, only once the estimate has finished calibrating, and only when the new figure differs from your current target by more than the estimate's own uncertainty (and at least 50 kcal). A single suggestion moves at most 150 kcal. There is no separate correction for being off your goal rate: the expenditure estimate already absorbs that, and adding it again would count it twice. If the target would come down but you have been eating more than 10% over it while losing slower than planned, the check-in talks about that instead of lowering a target you are not following. Your calorie floor always applies.",
+    "@targetProposalMethodSummary": {
+        "description": "Target Suggestions method sheet: summary"
+    },
+    "targetProposalMethodLimitations": "The structure follows clinical weight-management programs that adjust from observed weight and intake, but no trial has tested these exact thresholds. Weight loss also slows as you get lighter, so holding the rate means the target steps down over time.",
+    "@targetProposalMethodLimitations": {
+        "description": "Target Suggestions method sheet: limitations"
+    },
+    "targetProposalMethodOwnChoices": "The 50 kcal minimum, the uncertainty deadband, the 150 kcal step, the 7-day cadence and the 10% adherence margin are Compound's own choices, to be tuned on real histories. Removing the rate-error correction follows the report's reasoning, not a trial.",
+    "@targetProposalMethodOwnChoices": {
+        "description": "Target Suggestions method sheet: Compound's own choices"
+    },
+    "checkInRulesMethodTitle": "Check-In Rules",
+    "@checkInRulesMethodTitle": {
+        "description": "Method sheet title for the weekly check-in's rules"
+    },
+    "checkInRulesMethodSummary": "The weekly check-in cleans up the week before your targets are reviewed. Days you mark as incomplete, and days inside a logging break, are left out of your expenditure estimate's intake but still count as weigh-ins. A day you mark as a fast counts as a real, low intake. Any other day logged at under half your expenditure is read as partly logged and skipped, which is why a fast check-in only asks about those days. It asks for a weigh-in if you have none from the last three days.",
+    "@checkInRulesMethodSummary": {
+        "description": "Check-In Rules method sheet: summary"
+    },
+    "checkInRulesMethodLimitations": "People under-report intake, and the gap is largest on days that are only partly logged, which is why those days are left out rather than averaged in.",
+    "@checkInRulesMethodLimitations": {
+        "description": "Check-In Rules method sheet: limitations"
+    },
+    "checkInRulesMethodOwnChoices": "The half-of-expenditure threshold and the three-day weigh-in window are Compound's own choices.",
+    "@checkInRulesMethodOwnChoices": {
+        "description": "Check-In Rules method sheet: Compound's own choices"
+    },
+    "macroSplitMethodTitle": "Fat and Carbohydrate Split",
+    "@macroSplitMethodTitle": {
+        "description": "Method sheet title for the fat and carbohydrate split"
+    },
+    "macroSplitMethodSummary": "After protein, the rest of each day's calories are split by your diet choice: balanced gives 30% of calories to fat, low fat 20%, low carb gives 20% to carbs, and keto caps carbs at about 30 g. Fat never drops below 20% of calories or 0.5 g per kilogram, whichever is more, and carbs take whatever is left.",
+    "@macroSplitMethodSummary": {
+        "description": "Fat and Carbohydrate Split method sheet: summary"
+    },
+    "macroSplitMethodLimitations": "The fat floor of 0.5 g/kg is expert opinion rather than a tested threshold. Carbohydrate has no floor because studies found it generally did not limit strength training, though endurance athletes may need more.",
+    "@macroSplitMethodLimitations": {
+        "description": "Fat and Carbohydrate Split method sheet: limitations"
+    },
+    "macroSplitMethodOwnChoices": "The 30% balanced share and the 30 g keto default (inside the usual 20–50 g definition) are Compound's choices.",
+    "@macroSplitMethodOwnChoices": {
+        "description": "Fat and Carbohydrate Split method sheet: Compound's own choices"
+    },
+    "checkInTitle": "Weekly Check-In",
+    "@checkInTitle": {
+        "description": "Weekly check-in: title before a step shows"
+    },
+    "checkInStepIntroduction": "Your Week",
+    "@checkInStepIntroduction": {
+        "description": "Weekly check-in step title: the week's summary"
+    },
+    "checkInStepPartialLogging": "Partial Logging",
+    "@checkInStepPartialLogging": {
+        "description": "Weekly check-in step title: days partly logged"
+    },
+    "checkInStepWeighIn": "Weigh-In",
+    "@checkInStepWeighIn": {
+        "description": "Weekly check-in step title: a weigh-in"
+    },
+    "checkInStepFasting": "Fasting",
+    "@checkInStepFasting": {
+        "description": "Weekly check-in step title: fasting days"
+    },
+    "checkInStepLoggingBreak": "Logging Break",
+    "@checkInStepLoggingBreak": {
+        "description": "Weekly check-in step title: logging break"
+    },
+    "checkInStepProgramUpdate": "Program Update",
+    "@checkInStepProgramUpdate": {
+        "description": "Weekly check-in step title: new targets"
+    },
+    "checkInLastSevenDays": "The last seven days",
+    "@checkInLastSevenDays": {
+        "description": "Weekly check-in: header of the week's summary"
+    },
+    "checkInDaysLogged": "Days logged",
+    "@checkInDaysLogged": {
+        "description": "Weekly check-in: row label for days with food logged"
+    },
+    "checkInDaysLoggedValue": "{count} of 7",
+    "@checkInDaysLoggedValue": {
+        "description": "Weekly check-in: days logged out of seven",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "checkInWeighIns": "Weigh-ins",
+    "@checkInWeighIns": {
+        "description": "Weekly check-in: row label for weigh-ins this week"
+    },
+    "checkInWeightTrend": "Weight trend",
+    "@checkInWeightTrend": {
+        "description": "Weekly check-in: row label for the weight trend's weekly change"
+    },
+    "checkInNotEnoughData": "Not enough data yet",
+    "@checkInNotEnoughData": {
+        "description": "Weekly check-in: weight trend before there is enough data"
+    },
+    "checkInTrendSteady": "holding steady",
+    "@checkInTrendSteady": {
+        "description": "Weekly check-in: weight trend unchanged over the week"
+    },
+    "checkInTrendDown": "down {kg} kg",
+    "@checkInTrendDown": {
+        "description": "Weekly check-in: weight trend fell this much a week",
+        "placeholders": {
+            "kg": {
+                "type": "String"
+            }
+        }
+    },
+    "checkInTrendUp": "up {kg} kg",
+    "@checkInTrendUp": {
+        "description": "Weekly check-in: weight trend rose this much a week",
+        "placeholders": {
+            "kg": {
+                "type": "String"
+            }
+        }
+    },
+    "checkInNothingLogged": "Nothing logged",
+    "@checkInNothingLogged": {
+        "description": "Weekly check-in: a day with no food logged"
+    },
+    "checkInPartialHeader": "Any days you did not finish logging?",
+    "@checkInPartialHeader": {
+        "description": "Weekly check-in: partial logging question"
+    },
+    "checkInPartialFooter": "Days you mark as incomplete are left out of your expenditure estimate, as are days logged under half of it.",
+    "@checkInPartialFooter": {
+        "description": "Weekly check-in: partial logging explanation"
+    },
+    "checkInWeighInPrompt": "A recent weigh-in keeps the trend honest.",
+    "@checkInWeighInPrompt": {
+        "description": "Weekly check-in: why to weigh in"
+    },
+    "checkInFastingHeader": "Did you fast on any of these days?",
+    "@checkInFastingHeader": {
+        "description": "Weekly check-in: fasting question"
+    },
+    "checkInFastingFooter": "A fasting day counts as 0 kcal rather than a day you forgot to log.",
+    "@checkInFastingFooter": {
+        "description": "Weekly check-in: fasting explanation"
+    },
+    "checkInOnBreakHeader": "You are on a logging break",
+    "@checkInOnBreakHeader": {
+        "description": "Weekly check-in: header while a logging break is open"
+    },
+    "checkInOnBreakDetail": "Your expenditure estimate is frozen while the break is open.",
+    "@checkInOnBreakDetail": {
+        "description": "Weekly check-in: what an open break does"
+    },
+    "checkInTakeBreakHeader": "Take a break from logging?",
+    "@checkInTakeBreakHeader": {
+        "description": "Weekly check-in: offer of a logging break"
+    },
+    "checkInTakeBreakDetail": "Your estimate freezes until you end the break, and the check-in stops asking.",
+    "@checkInTakeBreakDetail": {
+        "description": "Weekly check-in: what a logging break does"
+    },
+    "checkInNewTargets": "New targets suggested",
+    "@checkInNewTargets": {
+        "description": "Weekly check-in and Nutrition Overview: a target proposal's header"
+    },
+    "checkInAboutIntake": "About your intake",
+    "@checkInAboutIntake": {
+        "description": "Weekly check-in: header of the adherence note"
+    },
+    "checkInTargetsUnchanged": "Your targets are unchanged this week",
+    "@checkInTargetsUnchanged": {
+        "description": "Weekly check-in: header when no new target is suggested"
+    },
+    "checkInExpenditureValue": "{kcal} kcal a day",
+    "@checkInExpenditureValue": {
+        "description": "Weekly check-in: expenditure estimate",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "checkInExpenditureRange": "{kcal} kcal a day, likely {low}–{high}",
+    "@checkInExpenditureRange": {
+        "description": "Weekly check-in: expenditure estimate with its 80% interval",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            },
+            "low": {
+                "type": "String"
+            },
+            "high": {
+                "type": "String"
+            }
+        }
+    },
+    "checkInExpenditureCalibrating": "{kcal} kcal a day (calibrating)",
+    "@checkInExpenditureCalibrating": {
+        "description": "Weekly check-in: expenditure estimate still the formula's",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "checkInAdherence": "You averaged {intake} kcal a day against a target of {target}. Your target stays where it is: getting closer to it will do more than lowering it.",
+    "@checkInAdherence": {
+        "description": "Weekly check-in: adherence note",
+        "placeholders": {
+            "intake": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "proposalSummaryUp": "{proposed} kcal a day, up from {current}.",
+    "@proposalSummaryUp": {
+        "description": "Target proposal: the new calorie target, higher than the current one",
+        "placeholders": {
+            "proposed": {
+                "type": "String"
+            },
+            "current": {
+                "type": "String"
+            }
+        }
+    },
+    "proposalSummaryDown": "{proposed} kcal a day, down from {current}.",
+    "@proposalSummaryDown": {
+        "description": "Target proposal: the new calorie target, lower than the current one",
+        "placeholders": {
+            "proposed": {
+                "type": "String"
+            },
+            "current": {
+                "type": "String"
+            }
+        }
+    },
+    "checkInContinue": "Continue",
+    "@checkInContinue": {
+        "description": "Weekly check-in button: next step"
+    },
+    "checkInLogWeight": "Log Weight",
+    "@checkInLogWeight": {
+        "description": "Weekly check-in button: save the weigh-in"
+    },
+    "checkInSkip": "Skip",
+    "@checkInSkip": {
+        "description": "Weekly check-in button: skip the weigh-in"
+    },
+    "checkInEndBreak": "End My Break",
+    "@checkInEndBreak": {
+        "description": "Weekly check-in button: end the logging break"
+    },
+    "checkInStayOnBreak": "Stay on a Break",
+    "@checkInStayOnBreak": {
+        "description": "Weekly check-in button: keep the logging break"
+    },
+    "checkInNoThanks": "No Thanks",
+    "@checkInNoThanks": {
+        "description": "Weekly check-in button: decline a logging break"
+    },
+    "checkInStartBreak": "Start a Break",
+    "@checkInStartBreak": {
+        "description": "Weekly check-in button: start a logging break"
+    },
+    "checkInAccept": "Accept",
+    "@checkInAccept": {
+        "description": "Button accepting a target proposal"
+    },
+    "checkInNotNow": "Not Now",
+    "@checkInNotNow": {
+        "description": "Weekly check-in button: decline the target proposal"
+    },
+    "checkInDone": "Done",
+    "@checkInDone": {
+        "description": "Weekly check-in button: finish"
+    },
+    "checkInClose": "Close",
+    "@checkInClose": {
+        "description": "Weekly check-in: close button"
+    },
+    "checkInLogWeightFailed": "Unable to Log Weight",
+    "@checkInLogWeightFailed": {
+        "description": "Weekly check-in alert: the weigh-in did not save"
+    },
+    "checkInSaveFailed": "Unable to Save Your Answer",
+    "@checkInSaveFailed": {
+        "description": "Weekly check-in alert: an answer did not save"
+    },
+    "checkInCompleteFailed": "Unable to Complete Check-In",
+    "@checkInCompleteFailed": {
+        "description": "Weekly check-in alert: completing failed"
+    },
+    "checkInTryAgain": "Please try again.",
+    "@checkInTryAgain": {
+        "description": "Weekly check-in alert message"
+    },
+    "checkInSkipFailed": "Unable to Skip Check-In",
+    "@checkInSkipFailed": {
+        "description": "Alert: skipping the week's check-in failed"
+    },
+    "checkInReadyTitle": "Weekly Check-In Ready",
+    "@checkInReadyTitle": {
+        "description": "Today card: the weekly check-in is waiting"
+    },
+    "checkInReadyMessage": "Review the week and update your nutrition targets.",
+    "@checkInReadyMessage": {
+        "description": "Today card: what the check-in does"
+    },
+    "checkInStart": "Start",
+    "@checkInStart": {
+        "description": "Button starting the weekly check-in"
+    },
+    "checkInSkipWeek": "Skip This Week",
+    "@checkInSkipWeek": {
+        "description": "Button skipping this week's check-in"
+    },
+    "nutritionOverviewTitle": "Nutrition Overview",
+    "@nutritionOverviewTitle": {
+        "description": "Nutrition Overview screen title and the Nutrition tab's link to it"
+    },
+    "nutritionOverviewCheckInReady": "Weekly check-in ready",
+    "@nutritionOverviewCheckInReady": {
+        "description": "Nutrition Overview card: the weekly check-in is waiting"
+    },
+    "nutritionOverviewCheckInMessage": "Review the week and update your program.",
+    "@nutritionOverviewCheckInMessage": {
+        "description": "Nutrition Overview card: what the check-in does"
+    },
+    "nutritionOverviewNotNow": "Not now",
+    "@nutritionOverviewNotNow": {
+        "description": "Nutrition Overview: dismiss the target proposal"
+    },
+    "nutritionOverviewUpdateFailed": "Unable to Update Your Targets",
+    "@nutritionOverviewUpdateFailed": {
+        "description": "Nutrition Overview alert: accepting the proposal failed"
+    },
+    "nutritionOverviewCalories": "Calories",
+    "@nutritionOverviewCalories": {
+        "description": "Nutrition Overview: calories section header"
+    },
+    "nutritionOverviewContributors": "Contributors",
+    "@nutritionOverviewContributors": {
+        "description": "Nutrition Overview: switch showing the foods that contributed most"
+    },
+    "nutritionOverviewTopContributors": "Top Contributors",
+    "@nutritionOverviewTopContributors": {
+        "description": "Nutrition Overview: header of the foods that contributed most"
+    },
+    "nutritionOverviewConsumed": "{kcal} consumed",
+    "@nutritionOverviewConsumed": {
+        "description": "Nutrition Overview: calories eaten today",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionOverviewOfTarget": "/ {target}",
+    "@nutritionOverviewOfTarget": {
+        "description": "Nutrition Overview: the target after an amount",
+        "placeholders": {
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionOverviewProtein": "{grams} P",
+    "@nutritionOverviewProtein": {
+        "description": "Nutrition Overview: a food's protein",
+        "placeholders": {
+            "grams": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionOverviewFat": "{grams} F",
+    "@nutritionOverviewFat": {
+        "description": "Nutrition Overview: a food's fat",
+        "placeholders": {
+            "grams": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionOverviewCarbs": "{grams} C",
+    "@nutritionOverviewCarbs": {
+        "description": "Nutrition Overview: a food's carbohydrate",
+        "placeholders": {
+            "grams": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionOverviewCarbBreakdown": "Carb Breakdown",
+    "@nutritionOverviewCarbBreakdown": {
+        "description": "Nutrition Overview section header"
+    },
+    "nutritionOverviewFatBreakdown": "Fat Breakdown",
+    "@nutritionOverviewFatBreakdown": {
+        "description": "Nutrition Overview section header"
+    },
+    "nutritionOverviewVitamins": "Vitamins",
+    "@nutritionOverviewVitamins": {
+        "description": "Nutrition Overview section header"
+    },
+    "nutritionOverviewMinerals": "Minerals",
+    "@nutritionOverviewMinerals": {
+        "description": "Nutrition Overview section header"
+    },
+    "nutritionOverviewOther": "Other",
+    "@nutritionOverviewOther": {
+        "description": "Nutrition Overview section header"
+    },
+    "nutrientFiber": "Fiber",
+    "@nutrientFiber": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientSugar": "Sugar",
+    "@nutrientSugar": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientNetCarbs": "Net Carbs",
+    "@nutrientNetCarbs": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientSaturated": "Saturated",
+    "@nutrientSaturated": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientMonounsaturated": "Monounsaturated",
+    "@nutrientMonounsaturated": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientPolyunsaturated": "Polyunsaturated",
+    "@nutrientPolyunsaturated": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientVitaminA": "Vitamin A",
+    "@nutrientVitaminA": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientVitaminB6": "Vitamin B6",
+    "@nutrientVitaminB6": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientVitaminB12": "Vitamin B12",
+    "@nutrientVitaminB12": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientVitaminC": "Vitamin C",
+    "@nutrientVitaminC": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientVitaminD": "Vitamin D",
+    "@nutrientVitaminD": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientVitaminE": "Vitamin E",
+    "@nutrientVitaminE": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientVitaminK": "Vitamin K",
+    "@nutrientVitaminK": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientThiamin": "Thiamin",
+    "@nutrientThiamin": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientRiboflavin": "Riboflavin",
+    "@nutrientRiboflavin": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientNiacin": "Niacin",
+    "@nutrientNiacin": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientPantothenicAcid": "Pantothenic Acid",
+    "@nutrientPantothenicAcid": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientFolate": "Folate",
+    "@nutrientFolate": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientSodium": "Sodium",
+    "@nutrientSodium": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientPotassium": "Potassium",
+    "@nutrientPotassium": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientCalcium": "Calcium",
+    "@nutrientCalcium": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientIron": "Iron",
+    "@nutrientIron": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientMagnesium": "Magnesium",
+    "@nutrientMagnesium": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientZinc": "Zinc",
+    "@nutrientZinc": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientCopper": "Copper",
+    "@nutrientCopper": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientManganese": "Manganese",
+    "@nutrientManganese": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientPhosphorus": "Phosphorus",
+    "@nutrientPhosphorus": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientSelenium": "Selenium",
+    "@nutrientSelenium": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientCholesterol": "Cholesterol",
+    "@nutrientCholesterol": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "nutrientCaffeine": "Caffeine",
+    "@nutrientCaffeine": {
+        "description": "Nutrient name in a nutrient table"
+    },
+    "expenditureTitle": "Expenditure",
+    "@expenditureTitle": {
+        "description": "Expenditure: screen and card title, and the check-in's row label"
+    },
+    "expenditureIntake": "Intake",
+    "@expenditureIntake": {
+        "description": "Energy Balance chart: the calories eaten series"
+    },
+    "expenditureToday": "Today",
+    "@expenditureToday": {
+        "description": "Expenditure screen: header of today's estimate"
+    },
+    "expenditureNoData": "No expenditure data",
+    "@expenditureNoData": {
+        "description": "Expenditure screen: nothing to show"
+    },
+    "energyBalanceNoData": "No data for the last 90 days",
+    "@energyBalanceNoData": {
+        "description": "Energy Balance screen: nothing logged in 90 days"
+    },
+    "energyBalanceDeficit": "{kcal} deficit",
+    "@energyBalanceDeficit": {
+        "description": "Energy Balance entry: spent more than eaten",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "energyBalanceSurplus": "{kcal} surplus",
+    "@energyBalanceSurplus": {
+        "description": "Energy Balance entry: ate more than spent",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "energyBalanceBalanced": "Balanced",
+    "@energyBalanceBalanced": {
+        "description": "Energy Balance: ate what was spent"
+    },
+    "energyBalanceKcalDeficit": "{kcal} kcal deficit",
+    "@energyBalanceKcalDeficit": {
+        "description": "Energy Balance card: the week's deficit",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "energyBalanceKcalSurplus": "{kcal} kcal surplus",
+    "@energyBalanceKcalSurplus": {
+        "description": "Energy Balance card: the week's surplus",
+        "placeholders": {
+            "kcal": {
+                "type": "String"
+            }
+        }
+    },
+    "energyBalanceLoggedDays": "Last 7 Days · {days} logged",
+    "@energyBalanceLoggedDays": {
+        "description": "Energy Balance card: how many days the average used",
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "energyBalanceChartLabel": "Energy balance, last 7 days",
+    "@energyBalanceChartLabel": {
+        "description": "Energy Balance card chart: accessibility label"
+    },
+    "energyBalanceChartValue": "Average intake {intake}, expenditure {expenditure}",
+    "@energyBalanceChartValue": {
+        "description": "Energy Balance card chart: accessibility value",
+        "placeholders": {
+            "intake": {
+                "type": "String"
+            },
+            "expenditure": {
+                "type": "String"
+            }
+        }
+    },
+    "expenditureCalibrating": "Calibrating",
+    "@expenditureCalibrating": {
+        "description": "Expenditure confidence badge"
+    },
+    "expenditureLowConfidence": "Low confidence",
+    "@expenditureLowConfidence": {
+        "description": "Expenditure confidence badge"
+    },
+    "expenditureMediumConfidence": "Medium confidence",
+    "@expenditureMediumConfidence": {
+        "description": "Expenditure confidence badge"
+    },
+    "expenditureHighConfidence": "High confidence",
+    "@expenditureHighConfidence": {
+        "description": "Expenditure confidence badge"
+    },
+    "expenditureLikely": "Likely {low} to {high}, based on what you logged.",
+    "@expenditureLikely": {
+        "description": "Expenditure: the 80% interval",
+        "placeholders": {
+            "low": {
+                "type": "String"
+            },
+            "high": {
+                "type": "String"
+            }
+        }
+    },
+    "expenditureFixed": "Fixed at your profile's estimate.",
+    "@expenditureFixed": {
+        "description": "Expenditure: fixed mode"
+    },
+    "expenditureUntilCalibrated": "Using the estimate from your profile until {days} days and {weighIns} weigh-ins are logged, with most days logged.",
+    "@expenditureUntilCalibrated": {
+        "description": "Expenditure: why the formula figure is shown",
+        "placeholders": {
+            "days": {
+                "type": "int"
+            },
+            "weighIns": {
+                "type": "int"
+            }
+        }
+    },
     "todayLoadFailure": "Today couldn't be loaded.",
     "@todayLoadFailure": {
         "description": "Shown on the Today tab when the workouts, meals or weigh-ins can't be read"

@@ -11,8 +11,13 @@ class MetricAllDataView extends StatelessWidget {
     required this.title,
     required this.unit,
     required this.entries,
+    this.format,
     super.key,
   });
+
+  /// How each value is written, when not as a number and [unit]; Energy
+  /// Balance writes "350 deficit".
+  final String Function(double value)? format;
 
   /// The metric's name, the section's header.
   final String title;
@@ -39,7 +44,7 @@ class MetricAllDataView extends StatelessWidget {
           children: [
             for (final entry in entries)
               AppListRow(
-                title: value(entry.value),
+                title: format?.call(entry.value) ?? value(entry.value),
                 accessory: AppListRowValue(dates.format(entry.date)),
               ),
           ],

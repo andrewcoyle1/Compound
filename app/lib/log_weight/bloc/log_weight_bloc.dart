@@ -98,29 +98,12 @@ class LogWeightBloc extends Bloc<LogWeightEvent, LogWeightState> {
   void _onWholeChanged(
     LogWeightWholeChanged event,
     Emitter<LogWeightState> emit,
-  ) => emit(switch (state.unit) {
-    WeightUnitPreference.kilograms => state.withKilograms(
-      DecimalWheelValue.combine(
-        whole: event.whole,
-        tenths: state.kilogramsTenths,
-      ),
-    ),
-    WeightUnitPreference.pounds => state.withPounds(
-      DecimalWheelValue.combine(whole: event.whole, tenths: state.poundsTenths),
-    ),
-  });
+  ) => emit(state.withWhole(event.whole));
 
   void _onTenthsChanged(
     LogWeightTenthsChanged event,
     Emitter<LogWeightState> emit,
-  ) => emit(switch (state.unit) {
-    WeightUnitPreference.kilograms => state.withKilograms(
-      DecimalWheelValue.combine(whole: state.kilograms, tenths: event.tenths),
-    ),
-    WeightUnitPreference.pounds => state.withPounds(
-      DecimalWheelValue.combine(whole: state.pounds, tenths: event.tenths),
-    ),
-  });
+  ) => emit(state.withTenths(event.tenths));
 
   /// Saves the weigh-in, then the profile's weight and unit, as
   /// `LogWeightPresenter.saveWeight` does. Swift exports to Apple Health

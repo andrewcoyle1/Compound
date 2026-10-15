@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:compound_models/compound_models.dart';
 
 /// A week of [uid]'s meals up to [now], for the staging flavor: breakfast,
@@ -59,6 +61,55 @@ List<MealLogModel> sampleMealLogs({
     );
   }
   return meals;
+}
+
+/// [uid]'s eating from a week before [now] back about two months, for the
+/// expenditure engine in staging: three quick-added meals a day around
+/// 2,300 kcal, which with the sample weigh-ins' 0.3 kg a week loss is an
+/// expenditure near 2,600. Every ninth day or so is left unlogged.
+/// [sampleMealLogs] covers the last week.
+List<MealLogModel> sampleMealHistory({
+  required String uid,
+  required DateTime now,
+}) => [
+  for (var daysAgo = 62; daysAgo >= 7; daysAgo--)
+    if (daysAgo % 9 != 4)
+      for (final (index, (name, hour, share)) in const [
+        ('Breakfast', 8, 0.25),
+        ('Lunch', 13, 0.35),
+        ('Dinner', 19, 0.4),
+      ].indexed)
+        _historyMeal(uid, now, daysAgo, index, name, hour, share),
+];
+
+MealLogModel _historyMeal(
+  String uid,
+  DateTime now,
+  int daysAgo,
+  int index,
+  String name,
+  int hour,
+  double share,
+) {
+  final date = DateTime(now.year, now.month, now.day - daysAgo, hour);
+  final dayKey = _dayKey(date);
+  final kcal = ((2300 + 180 * math.sin(daysAgo * 2.1)) * share).roundToDouble();
+  final mealId = 'sample-history-$dayKey-$index';
+  return MealLogModel(
+    mealId: mealId,
+    authorId: uid,
+    dayKey: dayKey,
+    date: date,
+    items: [
+      _quickAdd(
+        name,
+        kcal: kcal,
+        protein: (kcal * 0.075).roundToDouble(),
+        carbs: (kcal * 0.1).roundToDouble(),
+        fat: (kcal * 0.035).roundToDouble(),
+      )('$mealId-0'),
+    ],
+  );
 }
 
 /// [uid]'s plan, made a fortnight before [now]: seven days of targets,

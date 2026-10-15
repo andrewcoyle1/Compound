@@ -4,6 +4,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
@@ -46,6 +47,7 @@ extension PumpApp on WidgetTester {
     FoodRepository? foodRepository,
     OpenFoodFacts? openFoodFacts,
     CheckInRepository? checkInRepository,
+    ProposalDismissals? proposalDismissals,
     MealDraftCubit? mealDraftCubit,
     AppBloc? appBloc,
     SocialRepository? socialRepository,
@@ -97,6 +99,9 @@ extension PumpApp on WidgetTester {
                   callFunction: (_, _) async => null,
                   users: userRepository ?? MockUserRepository(),
                 ),
+          ),
+          RepositoryProvider.value(
+            value: proposalDismissals ?? ProposalDismissals(),
           ),
         ],
         child: MultiBlocProvider(

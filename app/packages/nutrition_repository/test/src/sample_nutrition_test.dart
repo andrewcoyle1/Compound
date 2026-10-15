@@ -64,6 +64,35 @@ void main() {
     });
   });
 
+  test('sampleMealHistory is about two months before the sample week', () {
+    final now = DateTime(2026, 10, 14, 13);
+    final meals = sampleMealHistory(uid: 'me', now: now);
+    final days = mealsByDay(meals);
+    final week = {
+      for (var daysAgo = 0; daysAgo < 7; daysAgo++)
+        _dayKey(now.subtract(Duration(days: daysAgo))),
+    };
+    expect(days.keys.toSet().intersection(week), isEmpty);
+    expect(days.length, inInclusiveRange(48, 56));
+    for (final MapEntry(key: day, value: dayMeals) in days.entries) {
+      expect(dayMeals, hasLength(3));
+      final kcal = [
+        for (final meal in dayMeals)
+          for (final item in meal.items)
+            item.nutrients.values[NutrientKey.calories]!,
+      ].reduce((a, b) => a + b);
+      expect(kcal, inInclusiveRange(2100, 2500), reason: day);
+    }
+    for (final meal in meals) {
+      expect(meal.authorId, 'me');
+      expect(meal.dayKey, _dayKey(meal.date));
+      expect(
+        MealLogModel.fromFirestore(meal.toFirestore()).toFirestore(),
+        equals(meal.toFirestore()),
+      );
+    }
+  });
+
   test('sampleDietPlan is seven days of targets, Monday first', () {
     final now = DateTime(2026, 10, 14);
     final plan = sampleDietPlan(uid: 'me', now: now);

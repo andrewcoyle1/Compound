@@ -9,8 +9,10 @@ import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/view/widgets/calendar_strip.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
+import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
 
@@ -63,6 +65,18 @@ class NutritionView extends StatelessWidget {
                   selectedDay: state.selectedDay,
                   now: DateTime.now(),
                 ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(AppSymbols.analytics),
+              tooltip: l10n.nutritionOverviewTitle,
+              onPressed: () => context.goNamed(
+                NutritionOverviewPage.name,
+                queryParameters: {
+                  NutritionOverviewPage.dayParameter: dayKeyOf(
+                    state.selectedDay,
+                  ),
+                },
               ),
             ),
             const ProfileButton(),

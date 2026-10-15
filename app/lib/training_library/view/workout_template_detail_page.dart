@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
@@ -16,6 +17,8 @@ import 'package:compound/training_library/view/exercise_detail_page.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/workout_editor/cubit/delete_workout_cubit.dart';
+import 'package:compound/workout_editor/view/workout_wizard_pages.dart';
 import 'package:compound/workout_tracker/view/start_workout.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +26,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart'
     show workoutCopyName;
+import 'package:training_library_repository/training_library_repository.dart'
+    show TrainingLibraryRepository;
 import 'package:training_session/training_session.dart' show weekOf;
 
 /// One workout template (Swift `WorkoutTemplateDetailView`): the muscles it
@@ -30,8 +35,8 @@ import 'package:training_session/training_session.dart' show weekOf;
 /// a program's day it shows, and starts on, that microcycle's targets, cut
 /// to a deload's in a deload week; a later microcycle's day is a preview
 /// with no Start. A day of the user's own mesocycle offers Edit Mesocycle
-/// and Save a Copy to Workouts; editing a library workout, sharing and
-/// deleting come with the workout editor and sharing.
+/// and Save a Copy to Workouts; the user's own library workout offers Edit
+/// Workout and Delete Workout. Sharing comes with its slice.
 class WorkoutTemplateDetailPage extends StatelessWidget {
   const new({
     required this.workoutId,
@@ -107,12 +112,18 @@ class WorkoutTemplateDetailPage extends StatelessWidget {
     if (state is! AppAuthenticated) return const SizedBox.shrink();
     return TrainingLibraryProvider(
       uid: state.user.uid,
-      child: WorkoutTemplateDetailView(
-        workoutId: workoutId,
-        mesocycleId: mesocycleId,
-        microcycleIndex: microcycleIndex,
-        isDeload: isDeload,
-        allowsStart: allowsStart,
+      child: BlocProvider(
+        create: (context) => DeleteWorkoutCubit(
+          library: context.read<TrainingLibraryRepository>(),
+          analytics: context.read<AnalyticsRepository>(),
+        ),
+        child: WorkoutTemplateDetailView(
+          workoutId: workoutId,
+          mesocycleId: mesocycleId,
+          microcycleIndex: microcycleIndex,
+          isDeload: isDeload,
+          allowsStart: allowsStart,
+        ),
       ),
     );
   }
@@ -153,88 +164,164 @@ class WorkoutTemplateDetailView extends StatelessWidget {
         mesocycle,
       _ => null,
     };
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          if (owning != null && template != null)
-            PopupMenuButton<VoidCallback>(
-              icon: Icon(AppSymbols.more),
-              tooltip: l10n.programMesocycleOptions,
-              onSelected: (action) => action(),
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: () =>
-                      unawaited(MesocycleDesignPage.edit(context, owning.id)),
-                  child: Text(l10n.programEditMesocycle),
-                ),
-                PopupMenuItem(
-                  value: () => unawaited(_saveCopy(context, template)),
-                  child: Text(l10n.programSaveCopy),
-                ),
-              ],
-            ),
-        ],
-        title: template == null
-            ? null
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(template.name),
-                  if (description != null && description.isNotEmpty)
-                    Text(
-                      description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+    // The user's own library workout is changed here (Swift `isAuthor`).
+    final ownWorkout = switch (template) {
+      final template?
+          when found?.$2 == null &&
+              app is AppAuthenticated &&
+              template.authorId == app.user.uid =>
+        template,
+      _ => null,
+    };
+    final deleting =
+        context.watch<DeleteWorkoutCubit>().state ==
+        DeleteWorkoutStatus.deleting;
+    return BlocListener<DeleteWorkoutCubit, DeleteWorkoutStatus>(
+      listener: (context, status) => unawaited(_deleted(context, status)),
+      child: Scaffold(
+        appBar: AppBar(
+          actions: [
+            if (ownWorkout != null)
+              PopupMenuButton<VoidCallback>(
+                key: const Key('WorkoutTemplateDetail.options'),
+                icon: Icon(AppSymbols.more),
+                tooltip: l10n.editorWorkoutOptions,
+                enabled: !deleting,
+                onSelected: (action) => action(),
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: () => unawaited(
+                      NameWorkoutPage.edit(context, ownWorkout.workoutId),
                     ),
+                    child: Text(l10n.editorEditWorkout),
+                  ),
+                  PopupMenuItem(
+                    value: () => unawaited(_delete(context, ownWorkout)),
+                    child: Text(
+                      l10n.editorDeleteWorkout,
+                      style: TextStyle(color: context.appColors.danger),
+                    ),
+                  ),
                 ],
               ),
-      ),
-      body: SafeArea(
-        bottom: false,
-        child: switch (state) {
-          TrainingLibraryLoading() => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
-          TrainingLibraryFailure() => LibraryFailure(
-            message: l10n.workoutsLoadFailure,
-            onRetry: () => context.read<TrainingLibraryBloc>().add(
-              const TrainingLibrarySubscriptionRequested(),
-            ),
-          ),
-          TrainingLibraryLoaded(:final library) when template != null => _Plan(
-            template: weekOf(template, microcycleIndex),
-            library: library,
-          ),
-          TrainingLibraryLoaded() => Center(
-            child: LibraryEmptyState(
-              icon: AppSymbols.workout,
-              title: l10n.workoutNotFound,
-            ),
-          ),
-        },
-      ),
-      bottomNavigationBar: AppBottomCta(
-        children: [
-          if (allowsStart && template != null && template.exercises.isNotEmpty)
-            AppCtaButton(
-              label: l10n.startWorkout,
-              onPressed: () => unawaited(
-                startWorkout(
-                  context,
-                  template: template,
-                  eventPrefix: 'WorkoutTemplateDetailView_StartWorkout',
-                  mesocycleId: mesocycleId,
-                  microcycleIndex: microcycleIndex,
-                  isDeload: isDeload,
+            if (owning != null && template != null)
+              PopupMenuButton<VoidCallback>(
+                icon: Icon(AppSymbols.more),
+                tooltip: l10n.programMesocycleOptions,
+                onSelected: (action) => action(),
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: () =>
+                        unawaited(MesocycleDesignPage.edit(context, owning.id)),
+                    child: Text(l10n.programEditMesocycle),
+                  ),
+                  PopupMenuItem(
+                    value: () => unawaited(_saveCopy(context, template)),
+                    child: Text(l10n.programSaveCopy),
+                  ),
+                ],
+              ),
+          ],
+          title: template == null
+              ? null
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(template.name),
+                    if (description != null && description.isNotEmpty)
+                      Text(
+                        description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.rowDetail.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
                 ),
+        ),
+        body: SafeArea(
+          bottom: false,
+          child: switch (state) {
+            TrainingLibraryLoading() => const Center(
+              child: CircularProgressIndicator.adaptive(),
+            ),
+            TrainingLibraryFailure() => LibraryFailure(
+              message: l10n.workoutsLoadFailure,
+              onRetry: () => context.read<TrainingLibraryBloc>().add(
+                const TrainingLibrarySubscriptionRequested(),
               ),
             ),
-        ],
+            TrainingLibraryLoaded(:final library) when template != null =>
+              _Plan(
+                template: weekOf(template, microcycleIndex),
+                library: library,
+              ),
+            TrainingLibraryLoaded() => Center(
+              child: LibraryEmptyState(
+                icon: AppSymbols.workout,
+                title: l10n.workoutNotFound,
+              ),
+            ),
+          },
+        ),
+        bottomNavigationBar: AppBottomCta(
+          children: [
+            if (allowsStart &&
+                template != null &&
+                template.exercises.isNotEmpty)
+              AppCtaButton(
+                label: l10n.startWorkout,
+                onPressed: () => unawaited(
+                  startWorkout(
+                    context,
+                    template: template,
+                    eventPrefix: 'WorkoutTemplateDetailView_StartWorkout',
+                    mesocycleId: mesocycleId,
+                    microcycleIndex: microcycleIndex,
+                    isDeload: isDeload,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
+  }
+}
+
+/// Asks, then deletes the user's [workout] (Swift
+/// `showDeleteConfirmation`).
+Future<void> _delete(BuildContext context, WorkoutTemplateModel workout) async {
+  final l10n = context.l10n;
+  final cubit = context.read<DeleteWorkoutCubit>();
+  final app = context.read<AppBloc>().state;
+  final confirmed = await confirmDestructive(
+    context,
+    title: l10n.editorDeleteWorkout,
+    message: l10n.editorDeleteMessage(workout.name),
+    confirmLabel: l10n.editorDelete,
+  );
+  if (!confirmed || app is! AppAuthenticated) return;
+  await cubit.delete(app.user.uid, workout.workoutId);
+}
+
+/// Leaves once the workout is deleted, or says it could not be.
+Future<void> _deleted(BuildContext context, DeleteWorkoutStatus status) async {
+  final l10n = context.l10n;
+  switch (status) {
+    case DeleteWorkoutStatus.deleted:
+      unawaited(HapticFeedback.successNotification());
+      if (context.canPop()) context.pop();
+    case DeleteWorkoutStatus.failed:
+      unawaited(HapticFeedback.errorNotification());
+      await showFailureAlert(
+        context,
+        l10n.editorDeleteFailed,
+        l10n.editorTryAgain,
+      );
+    case DeleteWorkoutStatus.idle || DeleteWorkoutStatus.deleting:
+      break;
   }
 }
 
@@ -291,42 +378,11 @@ class _Plan extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final exercises = template.exercises;
-    final summaries = TemplateSummary.targetMuscles(exercises, l10n.muscleName);
     final letters = TemplateSummary.supersetLetters(exercises);
     final allExercises = library.allExercises;
     return LibrarySections(
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: AppSpacing.s,
-          children: [
-            _HeaderWithInfo(
-              title: l10n.exerciseTargetMusclesHeader,
-              info: MethodInfo.plannedSetsPerMuscle(l10n),
-            ),
-            if (summaries.isEmpty)
-              AppSection(
-                children: [
-                  AppListRow(
-                    title: l10n.workoutNoTargetMuscles,
-                    icon: AppSymbols.muscleGroup,
-                    tint: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ],
-              )
-            else
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  spacing: AppSpacing.s,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (final summary in summaries) _MuscleTile(summary),
-                  ],
-                ),
-              ),
-          ],
-        ),
+        TargetMusclesSection(exercises: exercises),
         AppSection(
           header: l10n.workoutExercisesHeader(exercises.length),
           children: [
@@ -341,6 +397,49 @@ class _Plan extends StatelessWidget {
               ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// The muscles [exercises] plan sets for, with the method's info button
+/// (Swift `TargetMusclesSection`): a tile per muscle, or a row saying there
+/// are none yet.
+class const TargetMusclesSection({
+  required final List<WorkoutTemplateExercise> exercises,
+  super.key,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final summaries = TemplateSummary.targetMuscles(exercises, l10n.muscleName);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.s,
+      children: [
+        _HeaderWithInfo(
+          title: l10n.exerciseTargetMusclesHeader,
+          info: MethodInfo.plannedSetsPerMuscle(l10n),
+        ),
+        if (summaries.isEmpty)
+          AppSection(
+            children: [
+              AppListRow(
+                title: l10n.workoutNoTargetMuscles,
+                icon: AppSymbols.muscleGroup,
+                tint: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ],
+          )
+        else
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              spacing: AppSpacing.s,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [for (final summary in summaries) _MuscleTile(summary)],
+            ),
+          ),
       ],
     );
   }

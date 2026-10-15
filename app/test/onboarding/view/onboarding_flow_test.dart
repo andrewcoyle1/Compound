@@ -190,6 +190,34 @@ void main() {
     });
   }
 
+  testWidgets('Build My Own designs a mesocycle and moves on', (tester) async {
+    await pumpAt(tester, OnboardingStep.mesocycleSetup);
+    await tapText(tester, 'Build My Own');
+    await tester.enterText(find.byKey(const Key('NameProgram.name')), 'Mine');
+    await tester.pumpAndSettle();
+    await tapText(tester, 'Continue');
+    await tapText(tester, 'Continue');
+    // A rest day: Activate waits for exercises.
+    expect(
+      find.text('Add exercises to turn this rest day into a workout day.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('DefineWorkout.addExercise')));
+    await tester.pumpAndSettle();
+    final exercise = PrebuiltCatalogue.instance.exercises
+        .map((e) => e.name)
+        .reduce((a, b) => a.compareTo(b) <= 0 ? a : b);
+    await tapText(tester, exercise);
+    await tester.tap(find.byTooltip('Add'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('ProgramDesign.activate')));
+    await tester.pumpAndSettle();
+
+    final profile = await tester.runAsync(() => users.watchUser(uid).first);
+    expect(profile?.submittedActiveMesocycleId, isNotNull);
+    expect(find.text('Build My Own'), findsNothing);
+  });
+
   testWidgets('account setup in feet and pounds', (tester) async {
     tester.platformDispatcher.localeTestValue = const Locale('en', 'US');
     addTearDown(tester.platformDispatcher.clearLocaleTestValue);

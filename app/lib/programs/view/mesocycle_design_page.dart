@@ -10,8 +10,7 @@ import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/mesocycle_settings_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
-import 'package:compound/training_library/view/workout_template_detail_page.dart';
-import 'package:compound_models/compound_models.dart';
+import 'package:compound/workout_editor/view/define_workout_editor.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -19,10 +18,10 @@ import 'package:program_repository/program_repository.dart';
 
 /// The days of a mesocycle, new or saved (Swift `MesocycleDesignView`):
 /// a tab per day, Add Day, Remove and Rename, the settings, and Activate and
-/// Save. The day's exercises show read-only until the workout editor is
-/// ported. As the create flow's last step it has a back button; on a saved
-/// mesocycle it is the editor, with Close (asking first when something
-/// changed) and Delete.
+/// Save. Each day's exercises are the workout editor's
+/// ([DefineWorkoutEditor]). As the create flow's last step it has a back
+/// button; on a saved mesocycle it is the editor, with Close (asking first
+/// when something changed) and Delete.
 class const MesocycleDesignPage({
   final Mesocycle? draft,
   final String? mesocycleId,
@@ -266,17 +265,13 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
                   ),
                 ),
                 Expanded(
-                  child: _DayPlan(
-                    day: state.selectedDay,
-                    // Only a saved day is in the library to open.
-                    mesocycleId:
-                        isEditing &&
-                            state.initial.workoutTemplates.any(
-                              (day) =>
-                                  day.workoutId == state.selectedDay.workoutId,
-                            )
-                        ? state.mesocycle.id
-                        : null,
+                  // A day of its own each, as Swift's `.id(dayPlan.id)`.
+                  child: DefineWorkoutEditor(
+                    key: ValueKey(state.selectedDay.workoutId),
+                    exercises: state.selectedDay.exercises,
+                    read: () => cubit.state.selectedDay.exercises,
+                    write: cubit.setSelectedDayExercises,
+                    isMesocycleDay: true,
                   ),
                 ),
               ],
@@ -350,55 +345,6 @@ class const _DayBar({
           ),
         ],
       ),
-    );
-  }
-}
-
-/// The selected day's exercises, read-only (Swift `DefineWorkoutView` is
-/// the workout editor's slice), and a link to the saved day's workout.
-class const _DayPlan({
-  required final WorkoutTemplateModel day,
-  final String? mesocycleId,
-}) extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final mesocycleId = this.mesocycleId;
-    return LibrarySections(
-      children: [
-        if (day.exercises.isEmpty)
-          LibraryEmptyState(
-            icon: AppSymbols.restDay,
-            title: l10n.programRest,
-            message: l10n.programDayEditorLater,
-          )
-        else
-          AppSection(
-            header: l10n.programDayExercisesHeader,
-            footer: l10n.programDayEditorLater,
-            children: [
-              for (final exercise in day.exercises)
-                AppListRow(
-                  title: exercise.exercise.name,
-                  subtitle: templateTargetsText(context, exercise.setTargets),
-                ),
-            ],
-          ),
-        if (mesocycleId != null && day.exercises.isNotEmpty)
-          Center(
-            child: TextButton(
-              onPressed: () => unawaited(
-                WorkoutTemplateDetailPage.open(
-                  context,
-                  day.workoutId,
-                  mesocycleId: mesocycleId,
-                  allowsStart: false,
-                ),
-              ),
-              child: Text(l10n.programViewWorkout),
-            ),
-          ),
-      ],
     );
   }
 }

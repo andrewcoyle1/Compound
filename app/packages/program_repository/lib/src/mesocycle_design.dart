@@ -200,6 +200,38 @@ Mesocycle renamingDay(Mesocycle mesocycle, String dayId, String name) =>
       ],
     );
 
+/// [mesocycle] with the day [dayId]'s exercises set to [exercises], the
+/// days renamed to fit: a rest day given exercises becomes "Workout A"
+/// (`selectedWorkoutTemplateModelExercises`).
+Mesocycle settingDayExercises(
+  Mesocycle mesocycle,
+  String dayId,
+  List<WorkoutTemplateExercise> exercises, {
+  required DayNameLabels labels,
+}) => withDayNames(
+  editedMesocycle(
+    mesocycle,
+    workoutTemplates: [
+      for (final day in mesocycle.workoutTemplates)
+        if (day.workoutId == dayId)
+          WorkoutTemplateModel(
+            workoutId: day.workoutId,
+            authorId: day.authorId,
+            name: day.name,
+            description: day.description,
+            gymProfileId: day.gymProfileId,
+            imageUrl: day.imageUrl,
+            dateCreated: day.dateCreated,
+            dateModified: day.dateModified,
+            exercises: exercises,
+          )
+        else
+          day,
+    ],
+  ),
+  labels,
+);
+
 /// Whether [mesocycle] has a workout to train: one of rest days alone has
 /// nothing to activate or save.
 bool hasWorkoutDay(Mesocycle mesocycle) =>

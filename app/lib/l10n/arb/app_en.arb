@@ -7204,5 +7204,399 @@
     "deloadMethodLimitations": "Deloading is widely practised but little studied. The one trial found that a full week off mid-programme did not change muscle growth and slightly reduced strength gains, so the benefit is mainly recovery and practicality.",
     "@deloadMethodLimitations": {},
     "deloadMethodOwnChoices": "Half the sets, 90% of the weight (the middle of 85–95%), and keeping warm-ups are Compound's own choices. When the deload falls is set by the mesocycle.",
-    "@deloadMethodOwnChoices": {}
+    "@deloadMethodOwnChoices": {},
+    "editorKindStandard": "Standard",
+    "@editorKindStandard": {
+        "description": "Set plan: the standard kind of set"
+    },
+    "editorKindFailure": "Failure",
+    "@editorKindFailure": {
+        "description": "Set plan: an AMRAP set, to failure"
+    },
+    "editorKindMyo": "Myo-reps",
+    "@editorKindMyo": {},
+    "editorKindRestPause": "Rest-pause",
+    "@editorKindRestPause": {},
+    "editorKindCluster": "Cluster",
+    "@editorKindCluster": {},
+    "editorKindDrop": "Drop set",
+    "@editorKindDrop": {},
+    "editorKindPartials": "Lengthened partials",
+    "@editorKindPartials": {},
+    "editorKindStretch": "Loaded stretch",
+    "@editorKindStretch": {},
+    "editorKindHold": "Static hold",
+    "@editorKindHold": {},
+    "editorFailureChip": "Failure {reps}+",
+    "@editorFailureChip": {
+        "description": "Set plan chip: an AMRAP set and its target",
+        "placeholders": {
+            "reps": {
+                "type": "int"
+            }
+        }
+    },
+    "editorAmrapTarget": "As many as possible, target {reps}",
+    "@editorAmrapTarget": {
+        "placeholders": {
+            "reps": {
+                "type": "int"
+            }
+        }
+    },
+    "editorAmrap": "As many as possible",
+    "@editorAmrap": {},
+    "editorThen": "{first}, then {second}",
+    "@editorThen": {
+        "description": "Set plan: the set, then what follows it",
+        "placeholders": {
+            "first": {
+                "type": "String"
+            },
+            "second": {
+                "type": "String"
+            }
+        }
+    },
+    "editorEach": "{reps} each",
+    "@editorEach": {
+        "description": "Set plan: reps on each drop",
+        "placeholders": {
+            "reps": {
+                "type": "String"
+            }
+        }
+    },
+    "editorToFailure": "to failure",
+    "@editorToFailure": {},
+    "editorMiniSets": "{count, plural, =1{1 mini-set} other{{count} mini-sets}}",
+    "@editorMiniSets": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "editorSeconds": "{seconds} s",
+    "@editorSeconds": {
+        "description": "A time in seconds",
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "editorBreath": "{miniSets}, {rest} breath",
+    "@editorBreath": {
+        "description": "Set plan: mini-sets and the breath between them",
+        "placeholders": {
+            "miniSets": {
+                "type": "String"
+            },
+            "rest": {
+                "type": "String"
+            }
+        }
+    },
+    "editorPartials": "{count, plural, =1{1 partial} other{{count} partials}}",
+    "@editorPartials": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "editorPartialsToFailure": "partials to failure",
+    "@editorPartialsToFailure": {},
+    "editorStretch": "a {seconds} s stretch",
+    "@editorStretch": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "editorHold": "a {seconds} s hold",
+    "@editorHold": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "editorRepRange": "{range} reps",
+    "@editorRepRange": {
+        "description": "A rep range, e.g. 8–12 reps",
+        "placeholders": {
+            "range": {
+                "type": "String"
+            }
+        }
+    },
+    "editorFromWeek": "From week {week}",
+    "@editorFromWeek": {
+        "placeholders": {
+            "week": {
+                "type": "int"
+            }
+        }
+    },
+    "editorWeek": "Week {week}",
+    "@editorWeek": {
+        "placeholders": {
+            "week": {
+                "type": "int"
+            }
+        }
+    },
+    "editorWeeks": "Weeks {from}–{through}",
+    "@editorWeeks": {
+        "placeholders": {
+            "from": {
+                "type": "int"
+            },
+            "through": {
+                "type": "int"
+            }
+        }
+    },
+    "editorSegment": "{weeks}: {sets}",
+    "@editorSegment": {
+        "description": "Weekly targets: the weeks and their sets",
+        "placeholders": {
+            "weeks": {
+                "type": "String"
+            },
+            "sets": {
+                "type": "String"
+            }
+        }
+    },
+    "editorSameEveryWeek": "Same every week",
+    "@editorSameEveryWeek": {},
+    "editorRestPart": "{time} rest",
+    "@editorRestPart": {
+        "description": "Workout editor: an exercise's planned rest",
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "editorAlternatives": "{count, plural, =1{1 alternative} other{{count} alternatives}}",
+    "@editorAlternatives": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "editorNotesPart": "notes",
+    "@editorNotesPart": {
+        "description": "Workout editor: the exercise has plan notes"
+    },
+    "editorLinkPart": "link",
+    "@editorLinkPart": {
+        "description": "Workout editor: the exercise has a link"
+    },
+    "editorVariesByWeek": "varies by week",
+    "@editorVariesByWeek": {},
+    "editorSetNumber": "Set {number}",
+    "@editorSetNumber": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "editorSetKindLabel": "Set {number}, set type, {kind}",
+    "@editorSetKindLabel": {
+        "description": "Screen reader label of a set's plan",
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "kind": {
+                "type": "String"
+            }
+        }
+    },
+    "editorSetTypeLabel": "Set {number}, set type",
+    "@editorSetTypeLabel": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "editorDrops": "{count, plural, =1{1 drop} other{{count} drops}}",
+    "@editorDrops": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "editorEachDrop": "Each Drop",
+    "@editorEachDrop": {},
+    "editorRepsOnEachDrop": "Reps on Each Drop",
+    "@editorRepsOnEachDrop": {},
+    "editorTargetReps": "Target Reps",
+    "@editorTargetReps": {},
+    "editorPartialReps": "Partial Reps",
+    "@editorPartialReps": {},
+    "editorDuration": "Duration",
+    "@editorDuration": {},
+    "editorSetType": "Set Type",
+    "@editorSetType": {},
+    "editorSetPlanFooter": "Drops and mini-sets count with their set. Progression plans from the first piece.",
+    "@editorSetPlanFooter": {},
+    "editorToFailureTitle": "To failure",
+    "@editorToFailureTitle": {},
+    "editorAutomatic": "Automatic",
+    "@editorAutomatic": {},
+    "editorWarmupSets": "Warm-up sets",
+    "@editorWarmupSets": {},
+    "editorRest": "Rest",
+    "@editorRest": {},
+    "editorNotes": "Notes",
+    "@editorNotes": {},
+    "editorLink": "Link",
+    "@editorLink": {},
+    "editorWeeklyTargets": "Weekly Targets",
+    "@editorWeeklyTargets": {},
+    "editorPlan": "Plan",
+    "@editorPlan": {},
+    "editorSubstitutions": "Substitutions",
+    "@editorSubstitutions": {},
+    "editorAddSubstitution": "Add substitution",
+    "@editorAddSubstitution": {},
+    "editorRemove": "Remove",
+    "@editorRemove": {},
+    "editorLinkError": "Enter a web address starting with http:// or https://",
+    "@editorLinkError": {},
+    "editorSetRestTimers": "Set Rest Timers",
+    "@editorSetRestTimers": {},
+    "editorSetRestTimersSubtitle": "This will override default exercise settings.",
+    "@editorSetRestTimersSubtitle": {},
+    "editorTargets": "Targets",
+    "@editorTargets": {},
+    "editorRepsMin": "Reps Min",
+    "@editorRepsMin": {},
+    "editorRepsMax": "Reps Max",
+    "@editorRepsMax": {},
+    "editorRir": "RIR",
+    "@editorRir": {},
+    "editorOptional": "Optional",
+    "@editorOptional": {},
+    "editorAddSet": "Add Set",
+    "@editorAddSet": {},
+    "editorAddSetLabel": "Add set target",
+    "@editorAddSetLabel": {},
+    "editorRepsInReserve": "Reps in reserve",
+    "@editorRepsInReserve": {},
+    "editorNone": "None",
+    "@editorNone": {},
+    "editorMinRepsLabel": "Set {number}, minimum reps",
+    "@editorMinRepsLabel": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "editorMaxRepsLabel": "Set {number}, maximum reps",
+    "@editorMaxRepsLabel": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "editorRirLabel": "Set {number}, reps in reserve",
+    "@editorRirLabel": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "editorWeeklyFooter": "Each week's targets apply from that week until the next one listed.",
+    "@editorWeeklyFooter": {},
+    "editorAddWeek": "Add Week",
+    "@editorAddWeek": {},
+    "editorWorkoutName": "Workout Name",
+    "@editorWorkoutName": {},
+    "editorEnterName": "Enter workout name",
+    "@editorEnterName": {},
+    "editorNameWorkout": "Name Workout",
+    "@editorNameWorkout": {},
+    "editorEditWorkout": "Edit Workout",
+    "@editorEditWorkout": {},
+    "editorContinue": "Continue",
+    "@editorContinue": {},
+    "editorChooseGym": "Choose Gym Profile",
+    "@editorChooseGym": {},
+    "editorChooseGymHeader": "This will be associated with the workout template.",
+    "@editorChooseGymHeader": {},
+    "editorNoGyms": "No Gym Profiles",
+    "@editorNoGyms": {},
+    "editorNoGymsMessage": "A workout is built around the equipment at a gym. Create one to continue.",
+    "@editorNoGymsMessage": {},
+    "editorActiveEquipment": "{count, plural, =1{1 active piece of equipment} other{{count} active pieces of equipment}}",
+    "@editorActiveEquipment": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "editorSave": "Save",
+    "@editorSave": {},
+    "editorSaveFailed": "Unable to Save Workout",
+    "@editorSaveFailed": {},
+    "editorTryAgain": "Please try again.",
+    "@editorTryAgain": {},
+    "editorRestDay": "Rest Day",
+    "@editorRestDay": {},
+    "editorRestDayMessage": "Add exercises to turn this rest day into a workout day.",
+    "@editorRestDayMessage": {},
+    "editorSelectTwo": "Select two or more exercises",
+    "@editorSelectTwo": {},
+    "editorAddExercise": "Add exercise",
+    "@editorAddExercise": {},
+    "editorSuperset": "Superset",
+    "@editorSuperset": {},
+    "editorEdit": "Edit",
+    "@editorEdit": {},
+    "editorDone": "Done",
+    "@editorDone": {},
+    "editorCancel": "Cancel",
+    "@editorCancel": {},
+    "editorDelete": "Delete",
+    "@editorDelete": {},
+    "editorRemoveFromSuperset": "Remove from superset",
+    "@editorRemoveFromSuperset": {},
+    "editorNewWorkout": "New Workout",
+    "@editorNewWorkout": {},
+    "editorDeleteWorkout": "Delete Workout",
+    "@editorDeleteWorkout": {},
+    "editorDeleteMessage": "Are you sure you want to delete '{name}'? This action cannot be undone.",
+    "@editorDeleteMessage": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "editorDeleteFailed": "Unable to Delete Workout",
+    "@editorDeleteFailed": {},
+    "editorWorkoutOptions": "Workout options",
+    "@editorWorkoutOptions": {},
+    "editorDecrease": "Decrease",
+    "@editorDecrease": {},
+    "editorIncrease": "Increase",
+    "@editorIncrease": {},
+    "onboardingBuildMyOwn": "Build My Own",
+    "@onboardingBuildMyOwn": {}
 }

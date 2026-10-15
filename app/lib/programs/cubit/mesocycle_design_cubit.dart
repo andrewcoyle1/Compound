@@ -147,6 +147,20 @@ class MesocycleDesignCubit extends Cubit<MesocycleDesignState> {
     state.copyWith(mesocycle: renamingDay(state.mesocycle, dayId, name)),
   );
 
+  /// The selected day's exercises as the workout editor left them; a rest
+  /// day given exercises takes a workout's name, and the reverse
+  /// (`selectedWorkoutTemplateModelExercises`).
+  void setSelectedDayExercises(List<WorkoutTemplateExercise> exercises) => emit(
+    state.copyWith(
+      mesocycle: settingDayExercises(
+        state.mesocycle,
+        state.selectedDay.workoutId,
+        exercises,
+        labels: _labels,
+      ),
+    ),
+  );
+
   /// Changes the settings (Swift's settings `Binding`).
   void edit({
     String? name,

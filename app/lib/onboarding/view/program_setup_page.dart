@@ -7,6 +7,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/training/program_setup_cubit.dart';
 import 'package:compound/onboarding/view/onboarding_widgets.dart';
+import 'package:compound/programs/programs.dart' show NameMesocyclePage;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:program_repository/program_repository.dart';
@@ -83,6 +84,11 @@ class ProgramSetupView extends StatelessWidget {
             state.status == ProgramSetupStatus.starting ||
             state.status == ProgramSetupStatus.started,
         onContinue: state.selected == null ? null : cubit.start,
+        secondaryLabel: l10n.onboardingBuildMyOwn,
+        onSecondary: () {
+          cubit.buildOwnPressed();
+          unawaited(NameMesocyclePage.openInPlace(context));
+        },
         children: [
           if (recommended != null)
             AppSection(

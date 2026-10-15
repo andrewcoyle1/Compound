@@ -43,6 +43,8 @@ void main() {
     expect(at(newUser, '/launch'), '/onboarding/account');
     expect(at(newUser, '/onboarding/goal'), '/onboarding/account');
     expect(at(newUser, '/onboarding/account'), isNull);
+    // Build My Own's day editor picks exercises over the program step.
+    expect(at(newUser, '/exercise-picker'), isNull);
   });
 
   test('once onboarded, back where it was going, or to Today', () {

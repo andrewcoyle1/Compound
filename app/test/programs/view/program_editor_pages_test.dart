@@ -10,7 +10,6 @@ import 'package:compound/programs/programs.dart';
 import 'package:compound/programs/view/import_program_page.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_library/training_library.dart';
-import 'package:compound_models/compound_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -176,7 +175,8 @@ void main() {
 
       await tester.tap(find.text('Add Day'));
       await tester.pumpAndSettle();
-      expect(find.text('Rest Day'), findsNWidgets(2));
+      // Two day buttons, and the selected rest day's own section.
+      expect(find.text('Rest Day'), findsNWidgets(3));
       expect(
         world.analytics.names,
         containsAllInOrder([
@@ -298,12 +298,11 @@ void main() {
       expect(find.text('No Mesocycles'), findsOneWidget);
     });
 
-    testWidgets('a saved day opens its workout', (tester) async {
+    testWidgets("a day's exercise opens its targets", (tester) async {
       await pump(tester, '/training/edit-mesocycle/m2');
-      await tester.tap(find.text('View Workout'));
+      await tester.tap(find.text('Bench'));
       await tester.pumpAndSettle();
-      expect(find.byType(WorkoutTemplateDetailPage), findsOneWidget);
-      expect(find.text('Start Workout'), findsNothing);
+      expect(find.text('Targets'), findsOneWidget);
     });
   });
 

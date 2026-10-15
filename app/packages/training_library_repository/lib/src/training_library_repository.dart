@@ -20,8 +20,15 @@ abstract interface class TrainingLibraryRepository {
 
   /// Saves [template] to `users/{template.authorId}/workout_templates/
   /// {template.workoutId}`, merged, as `WorkoutTemplateManager
-  /// .saveWorkoutTemplate` does without a picture.
+  /// .saveWorkoutTemplate` does without a picture. Every field the model
+  /// knows is written as it is in [template]: an optional left null is
+  /// deleted, where Swift's merge would keep the stored value. A field this
+  /// app does not know survives.
   Future<void> saveWorkoutTemplate(WorkoutTemplateModel template);
+
+  /// Deletes `users/{uid}/workout_templates/{workoutId}`
+  /// (`WorkoutTemplateManager.deleteWorkoutTemplate`).
+  Future<void> deleteWorkoutTemplate(String uid, String workoutId);
 
   /// The profiles at `users/{uid}/gym_profiles`, each list completed from
   /// the catalogue ([GymProfileModel.fromFirestore]).

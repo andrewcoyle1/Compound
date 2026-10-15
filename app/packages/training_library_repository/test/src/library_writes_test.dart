@@ -53,6 +53,41 @@ void main() {
       });
     }
 
+    test('saveWorkoutTemplate deletes a field the template cleared', () async {
+      final template = _template('full');
+      final document = firestore.doc(
+        'users/${template.authorId}/workout_templates/${template.workoutId}',
+      );
+      await document.set({'field_from_a_newer_build': 1});
+      await subject.saveWorkoutTemplate(template);
+
+      await subject.saveWorkoutTemplate(
+        WorkoutTemplateModel.fromFirestore(
+          {...template.toFirestore()}
+            ..remove(WorkoutTemplateModelKeys.description),
+        ),
+      );
+
+      final stored = (await document.get()).data()!;
+      expect(stored.containsKey(WorkoutTemplateModelKeys.description), isFalse);
+      expect(stored['field_from_a_newer_build'], 1);
+    });
+
+    test('deleteWorkoutTemplate removes the document', () async {
+      final template = _template('full');
+      await subject.saveWorkoutTemplate(template);
+
+      await subject.deleteWorkoutTemplate(
+        template.authorId,
+        template.workoutId,
+      );
+
+      expect(
+        await subject.watchUserWorkoutTemplates(template.authorId).first,
+        isEmpty,
+      );
+    });
+
     test('saves merge, keeping a field this app does not know', () async {
       final exercise = _exercise('full');
       final document = firestore.doc('exercise_templates/${exercise.id}');
@@ -119,6 +154,27 @@ void main() {
       await subject.saveWorkoutTemplate(renamed);
 
       await expectation;
+    });
+
+    test("deleteWorkoutTemplate removes the author's own only", () async {
+      final template = _template('full');
+      final subject = InMemoryTrainingLibraryRepository(
+        workoutTemplates: [template],
+      );
+
+      await subject.deleteWorkoutTemplate('other', template.workoutId);
+      expect(
+        await subject.watchUserWorkoutTemplates(template.authorId).first,
+        hasLength(1),
+      );
+      await subject.deleteWorkoutTemplate(
+        template.authorId,
+        template.workoutId,
+      );
+      expect(
+        await subject.watchUserWorkoutTemplates(template.authorId).first,
+        isEmpty,
+      );
     });
   });
 }

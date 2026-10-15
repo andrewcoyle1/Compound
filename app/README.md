@@ -46,6 +46,27 @@ gitignored:
 and run with `--dart-define-from-file=dart_defines.json`. Without it, Mixpanel is off and Firebase
 Analytics, Crashlytics and the console still log.
 
+### RevenueCat keys
+
+Subscriptions go through RevenueCat (`packages/purchases_repository`), with the Firebase uid as the
+app user id, as in the Swift app. RevenueCat gives each platform app its own public SDK key, so
+there are two, in the same gitignored `app/dart_defines.json`:
+
+```json
+{
+  "MIXPANEL_TOKEN": "…",
+  "REVENUECAT_APPLE_API_KEY": "appl_…",
+  "REVENUECAT_GOOGLE_API_KEY": "goog_…"
+}
+```
+
+The app passes the one for the running platform to `RevenueCatPurchasesRepository.init`. They
+belong to the RevenueCat apps for the Flutter bundle ids (`com.andrewcoyle.compound.flutter.dev`
+on iOS, `com.andrewcoyle.compound.dev` on Android), not the Swift app's `revenueCatDevAPIKey`.
+Without a key, purchases are off: the user is treated as not premium (unless the app passes the
+development override, Swift's "Simulate Premium") and the paywall can't load products. The
+staging flavor uses `FakePurchasesRepository` and needs no key.
+
 ---
 
 ## Running Tests 🧪

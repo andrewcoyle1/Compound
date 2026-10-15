@@ -1,11 +1,13 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/shell/app_tab.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_session_detail/bloc/workout_session_detail_bloc.dart';
 import 'package:compound/workout_session_detail/view/set_detail_row.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
@@ -14,8 +16,23 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 /// volume and notes, then each exercise with its sets. A port of the Swift
 /// app's `WorkoutSessionDetailView` without editing, deleting, sharing,
 /// Strava or Ask Coach.
+///
+/// As the summary of a workout just finished (`isWorkoutSummary`), it opens
+/// over the tabs in the tracker's place, shows the [session] it is handed
+/// rather than waiting for the save, and Done closes it.
 class WorkoutSessionDetailPage extends StatelessWidget {
-  const new({required this.sessionId, super.key});
+  const new({
+    required this.sessionId,
+    this.session,
+    this.isWorkoutSummary = false,
+    super.key,
+  });
+
+  /// The summary's path, over the tabs.
+  static const summaryPath = '/workout-summary/:$sessionIdParameter';
+
+  /// The summary's route name.
+  static const summaryName = 'workoutSummary';
 
   /// The path under the workout history.
   static const path = ':$sessionIdParameter';
@@ -29,6 +46,12 @@ class WorkoutSessionDetailPage extends StatelessWidget {
   /// The workout to show.
   final String sessionId;
 
+  /// The workout itself, when the caller has it.
+  final WorkoutSessionModel? session;
+
+  /// The summary of the workout just finished.
+  final bool isWorkoutSummary;
+
   @override
   Widget build(BuildContext context) {
     // The router only shows this page while someone is signed in.
@@ -40,14 +63,17 @@ class WorkoutSessionDetailPage extends StatelessWidget {
         userRepository: context.read<UserRepository>(),
         uid: state.user.uid,
         sessionId: sessionId,
+        session: session,
       )..add(const WorkoutSessionDetailRequested()),
-      child: const WorkoutSessionDetailView(),
+      child: WorkoutSessionDetailView(isWorkoutSummary: isWorkoutSummary),
     );
   }
 }
 
 class WorkoutSessionDetailView extends StatelessWidget {
-  const new({super.key});
+  const new({this.isWorkoutSummary = false, super.key});
+
+  final bool isWorkoutSummary;
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +81,23 @@ class WorkoutSessionDetailView extends StatelessWidget {
     final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !isWorkoutSummary,
         title: Text(switch (state) {
           WorkoutSessionDetailLoaded(:final session) => session.name,
           _ => '',
         }),
+        actions: [
+          if (isWorkoutSummary)
+            TextButton(
+              onPressed: () => context.canPop()
+                  ? context.pop()
+                  : context.go(AppTab.today.path),
+              child: Text(
+                l10n.summaryDone,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+        ],
       ),
       body: switch (state) {
         WorkoutSessionDetailLoading() => const Center(

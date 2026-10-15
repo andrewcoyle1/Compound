@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
@@ -10,6 +12,7 @@ import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound/today/view/day_checklist_card.dart';
 import 'package:compound/today/view/streak_card.dart';
 import 'package:compound/today/view/today_text.dart';
+import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -126,6 +129,26 @@ class _Day extends StatelessWidget {
               ],
             ),
           ],
+          const SizedBox(height: AppSpacing.xl),
+          AppSection(
+            children: [
+              AppListRowButton(
+                title: l10n.startEmptyWorkout,
+                icon: AppSymbols.start,
+                onPressed: () {
+                  context.read<ActiveWorkoutCubit>().pressed(
+                    'TodayView_StartEmptyWorkout_Press',
+                  );
+                  unawaited(
+                    startWorkout(
+                      context,
+                      eventPrefix: 'TodayView_StartBlankWorkout',
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.xl),
           StreakCard(
             streak: state.streak,

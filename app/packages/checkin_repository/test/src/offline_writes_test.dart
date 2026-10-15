@@ -16,14 +16,11 @@ void main() {
     late List<(String, String)> refused;
     late FirestoreCheckInRepository subject;
 
-    // FieldValue.delete() binds to whichever FieldValue factory is installed when it is
-
-    // first called. fake_cloud_firestore installs its own only when a fake is built, so
-
-    // build one first: otherwise, when this file runs before the Firestore tests in the
-
-    // same isolate (very_good test's optimisation), they get the method-channel factory.
-
+    // FieldValue.delete() binds to whichever FieldValue factory is
+    // installed when first called; fake_cloud_firestore installs its own
+    // only when a fake is built. Build one first, or when this file runs
+    // before the Firestore tests in one isolate (very_good test's
+    // optimisation) they get the method-channel factory.
     setUpAll(FakeFirebaseFirestore.new);
 
     setUp(() {

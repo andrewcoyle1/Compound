@@ -1,0 +1,9 @@
+{
+  "author_id": "user_contract_full",
+  "id": "shortcut_settings",
+  "quick_action_ids": [
+    "log_meal",
+    "start_workout",
+    "browse_recipes"
+  ]
+}

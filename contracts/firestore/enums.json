@@ -6,6 +6,11 @@
     "active",
     "very_active"
   ],
+  "BMREquation": [
+    "mifflinStJeor",
+    "harrisBenedict",
+    "katchMcArdle"
+  ],
   "CardioFitnessLevel": [
     "beginner",
     "novice",
@@ -52,6 +57,17 @@
   "ExerciseWeightUnit": [
     "kilograms",
     "pounds"
+  ],
+  "ExpenditureAlgorithmVersion": [
+    "v1"
+  ],
+  "ExpenditureCalculationMode": [
+    "dynamic",
+    "fixed"
+  ],
+  "ExpenditureEstimationMethod": [
+    "standard",
+    "bodyFatAware"
   ],
   "Gender": [
     "male",

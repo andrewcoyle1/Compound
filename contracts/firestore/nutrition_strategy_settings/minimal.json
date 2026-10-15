@@ -1,0 +1,16 @@
+{
+  "algorithm_version": "v1",
+  "author_id": "user_contract_minimal",
+  "bmr_equation": "mifflinStJeor",
+  "calculation_mode": "dynamic",
+  "check_in_weekday": 2,
+  "estimation_method": "standard",
+  "fast_check_in": false,
+  "fasting_enabled": true,
+  "id": "nutrition_strategy_settings",
+  "logging_break_enabled": true,
+  "partial_logging_enabled": true,
+  "predictive_goal_adjustments": true,
+  "step_informed_updates": false,
+  "weigh_in_enabled": true
+}

@@ -8,7 +8,7 @@ import {
 } from "@firebase/rules-unit-testing";
 import {
     doc, getDoc, setDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove,
-    collectionGroup, query, where, getDocs, Timestamp,
+    collectionGroup, query, where, getDocs, Timestamp, deleteField, writeBatch,
 } from "firebase/firestore";
 
 const skip = !process.env.FIRESTORE_EMULATOR_HOST && "FIRESTORE_EMULATOR_HOST not set; run npm run test:rules";
@@ -160,6 +160,28 @@ t("contract: the owner creates the full mesocycle, macrocycle and food at their 
     await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/foods/${food.ingredient_id}`), food));
     await assertFails(setDoc(doc(db(BOB), `users/${uid}/foods/bob_copy`), food));
     await assertFails(setDoc(doc(db(BOB), `users/${BOB}/foods/${food.ingredient_id}`), food));
+});
+
+t("contract: the owner creates the full check-in documents and shortcut settings at their paths", async () => {
+    const paths = {
+        nutrition_strategy_settings: "nutrition_strategy_settings/nutrition_strategy_settings",
+        check_in_record: "check_in_record/check_in_record",
+        logging_break: "logging_break/logging_break",
+        nutrition_day_annotation: `nutrition_day_annotations/${contractFixture("nutrition_day_annotation").day_key}`,
+        shortcut_settings: "shortcut_settings/shortcut_settings",
+    };
+    for (const [model, path] of Object.entries(paths)) {
+        const fixture = contractFixture(model);
+        const uid = fixture.author_id;
+        await assertFails(setDoc(doc(db(BOB), `users/${uid}/${path}`), fixture));
+        await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/${path}`), fixture));
+        await assertFails(getDoc(doc(db(BOB), `users/${uid}/${path}`)));
+    }
+    // The check-in documents must name their owner when created.
+    const annotation = contractFixture("nutrition_day_annotation");
+    for (const path of ["check_in_record/check_in_record", "logging_break/logging_break", "nutrition_day_annotations/2026-10-01"]) {
+        await assertFails(setDoc(doc(db(BOB), `users/${BOB}/${path}`), { ...annotation, author_id: ALICE }));
+    }
 });
 
 // ---------------- FLUTTER WRITES (M3) ----------------
@@ -342,6 +364,51 @@ t("flutter: saveExerciseSettings merges a note and a rest override", async () =>
     await assertSucceeds(merge(ref(uid), settings));
     await assertSucceeds(merge(ref(uid), { id: settings.id, author_id: uid, rest_duration_override: 90 }));
     await assertFails(merge(ref(BOB), { id: settings.id, author_id: uid, note: "x" }));
+});
+
+t("flutter: the check-in writes, in the shapes checkin_repository makes them", async () => {
+    const settings = contractFixture("nutrition_strategy_settings");
+    const uid = settings.author_id;
+    const settingsRef = (as) => doc(db(as), `users/${uid}/nutrition_strategy_settings/nutrition_strategy_settings`);
+    await assertFails(merge(settingsRef(BOB), settings));
+    await assertSucceeds(merge(settingsRef(uid), settings));
+    // A cleared start date is deleted rather than left behind by the merge.
+    await assertSucceeds(merge(settingsRef(uid), { ...settings, calculation_start_date: deleteField() }));
+
+    // Day annotations: set and delete in one batch.
+    const annotation = contractFixture("nutrition_day_annotation");
+    const annotationRef = (as, day) => doc(db(as), `users/${uid}/nutrition_day_annotations/${day}`);
+    const batch = (as) => {
+        const firestore = db(as);
+        const path = (day) => `users/${uid}/nutrition_day_annotations/${day}`;
+        return writeBatch(firestore)
+            .set(doc(firestore, path(annotation.day_key)), annotation, { merge: true })
+            .delete(doc(firestore, path("2026-10-11")));
+    };
+    await assertFails(batch(BOB).commit());
+    await assertSucceeds(batch(uid).commit());
+    await assertSucceeds(merge(annotationRef(uid, annotation.day_key), { ...annotation, is_fasting_day: false }));
+    await assertFails(deleteDoc(annotationRef(BOB, annotation.day_key)));
+    await assertSucceeds(deleteDoc(annotationRef(uid, annotation.day_key)));
+
+    // The logging break: started with any old end deleted, then ended.
+    const loggingBreak = contractFixture("logging_break");
+    const breakRef = (as) => doc(db(as), `users/${uid}/logging_break/logging_break`);
+    const open = { ...loggingBreak };
+    delete open.end_date;
+    await assertFails(merge(breakRef(BOB), { ...open, end_date: deleteField() }));
+    await assertSucceeds(merge(breakRef(uid), { ...open, end_date: deleteField() }));
+    await assertFails(merge(breakRef(BOB), loggingBreak));
+    await assertSucceeds(merge(breakRef(uid), loggingBreak));
+    await assertSucceeds(merge(breakRef(uid), { ...open, start_date: now(), end_date: deleteField() }));
+
+    // The record: one week start merged at a time.
+    const recordRef = (as) => doc(db(as), `users/${uid}/check_in_record/check_in_record`);
+    const mark = (field) => ({ id: "check_in_record", author_id: uid, [field]: now() });
+    await assertFails(merge(recordRef(BOB), mark("last_completed_week_start")));
+    await assertSucceeds(merge(recordRef(uid), mark("last_completed_week_start")));
+    await assertSucceeds(merge(recordRef(uid), mark("last_skipped_week_start")));
+    await assertFails(merge(recordRef(BOB), mark("last_skipped_week_start")));
 });
 
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.

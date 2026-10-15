@@ -10,6 +10,7 @@ import {
 import {
     doc, getDoc, setDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove,
     collectionGroup, query, where, getDocs, Timestamp, deleteField, writeBatch,
+    collection, orderBy, limit, serverTimestamp,
 } from "firebase/firestore";
 import {
     SOCIAL_PUSH_PREFERENCE_KEYS, buildFollowAcceptedNotification, buildFollowNotification, buildInviteFollowRequest,
@@ -589,6 +590,179 @@ t("flutter: the check-in writes, in the shapes checkin_repository makes them", a
     await assertSucceeds(merge(recordRef(uid), mark("last_completed_week_start")));
     await assertSucceeds(merge(recordRef(uid), mark("last_skipped_week_start")));
     await assertFails(merge(recordRef(BOB), mark("last_skipped_week_start")));
+});
+
+// ---------------- FLUTTER WRITES (M5): SOCIAL ----------------
+// Each write social_repository makes, in its shape: whole documents with a plain `set` (as the
+// Swift services write them), single fields with `update`, deletes, and batches of `is_read`.
+// ACTOR writes, FRIEND is on the other end, BOB is a stranger; friendBlocksActor() blocks ACTOR.
+const flutterNotification = (type, extra = {}) => ({
+    type, actor_id: ACTOR, actor_name: "Ada Lovelace", actor_image_url: "https://example.com/ada.jpg",
+    session_id: "", session_author_id: FRIEND, date_created: now(), is_read: false, ...extra,
+});
+
+t("flutter social: follow, unfollow and block edit the viewer's own lists; the follow notification is the actor's", async () => {
+    await seed(`users/${ACTOR}`, { user_id: ACTOR, following_ids: [] });
+    await assertSucceeds(updateDoc(doc(db(ACTOR), `users/${ACTOR}`), { following_ids: [FRIEND] }));
+    await assertFails(updateDoc(doc(db(BOB), `users/${ACTOR}`), { following_ids: [BOB] }));
+    await assertSucceeds(updateDoc(doc(db(ACTOR), `users/${ACTOR}`), { blocked_user_ids: [BOB], following_ids: [] }));
+    const ref = (as) => doc(db(as), `users/${FRIEND}/notifications/follow_${ACTOR}`);
+    await assertFails(setDoc(ref(BOB), flutterNotification("follow")));
+    await assertSucceeds(setDoc(ref(ACTOR), flutterNotification("follow")));
+    // Following again overwrites it, as `set` does.
+    await assertSucceeds(setDoc(ref(ACTOR), flutterNotification("follow")));
+    await assertFails(deleteDoc(ref(BOB)));
+    await assertSucceeds(deleteDoc(ref(ACTOR)));
+    await friendBlocksActor();
+    await assertFails(setDoc(ref(ACTOR), flutterNotification("follow")));
+});
+
+t("flutter social: a nudge, once a day per id, and never to someone who blocked the actor", async () => {
+    const ref = doc(db(ACTOR), `users/${FRIEND}/notifications/nudge_${ACTOR}_2026-10-14`);
+    await assertSucceeds(setDoc(ref, flutterNotification("nudge")));
+    await assertSucceeds(setDoc(ref, flutterNotification("nudge")));
+    await friendBlocksActor();
+    await assertFails(setDoc(ref, flutterNotification("nudge")));
+});
+
+t("flutter social: a follow request is sent and cancelled by its requester, answered by its target", async () => {
+    const request = contractFixture("follow_request");
+    const ref = (as) => doc(db(as), `users/${FRIEND}/follow_requests/${ACTOR}`);
+    await assertFails(setDoc(ref(BOB), request));
+    await assertSucceeds(setDoc(ref(ACTOR), request));
+    await assertFails(updateDoc(ref(ACTOR), { status: "accepted" }));
+    await assertFails(updateDoc(ref(BOB), { status: "declined" }));
+    await assertSucceeds(updateDoc(ref(FRIEND), { status: "declined" }));
+    // Asking again after a decline overwrites it pending.
+    await assertSucceeds(setDoc(ref(ACTOR), request));
+    await assertFails(deleteDoc(ref(FRIEND)));
+    await assertFails(deleteDoc(ref(BOB)));
+    await assertSucceeds(deleteDoc(ref(ACTOR)));
+});
+
+t("flutter social: incoming requests are the target's to list; sent ones the requester's, through the group", async () => {
+    await seed(`users/${FRIEND}/follow_requests/${ACTOR}`, contractFixture("follow_request"));
+    const incoming = (as) => getDocs(query(collectionGroup(db(as), "follow_requests"),
+        where("requester_id", "==", ACTOR), where("status", "==", "pending")));
+    await assertSucceeds(incoming(ACTOR));
+    await assertFails(incoming(BOB));
+    const pending = (as) => getDocs(query(
+        collection(db(as), `users/${FRIEND}/follow_requests`), where("status", "==", "pending"), limit(100)));
+    await assertSucceeds(pending(FRIEND));
+    await assertFails(pending(ACTOR));
+});
+
+t("flutter social: a like adds or removes only the liker's id; its notification is theirs", async () => {
+    const session = contractFixture("workout_session");
+    const path = `users/${FRIEND}/workout_sessions/${session.id}`;
+    await seed(path, { ...session, author_id: FRIEND, liked_by_user_ids: [] });
+    const ref = (as) => doc(db(as), path);
+    await assertSucceeds(updateDoc(ref(ACTOR), { liked_by_user_ids: arrayUnion(ACTOR) }));
+    await assertFails(updateDoc(ref(BOB), { liked_by_user_ids: arrayUnion(ACTOR) }));
+    await assertFails(updateDoc(ref(BOB), { liked_by_user_ids: arrayRemove(ACTOR) }));
+    await assertSucceeds(updateDoc(ref(ACTOR), { liked_by_user_ids: arrayRemove(ACTOR) }));
+    const like = (as) => doc(db(as), `users/${FRIEND}/notifications/like_${session.id}_${ACTOR}`);
+    await assertSucceeds(setDoc(like(ACTOR), flutterNotification("like", { session_id: session.id })));
+    await assertSucceeds(deleteDoc(like(ACTOR)));
+    await friendBlocksActor();
+    await assertFails(updateDoc(ref(ACTOR), { liked_by_user_ids: arrayUnion(ACTOR) }));
+});
+
+t("flutter social: a comment is set whole by its author, soft-deleted by them, liked one id at a time", async () => {
+    const comment = contractFixture("session_comment", "minimal");
+    const ref = (as) => doc(db(as), `workout_session_comments/${comment.id}`);
+    await assertFails(setDoc(ref(BOB), comment));
+    await assertSucceeds(setDoc(ref(ACTOR), comment));
+    await assertSucceeds(getDocs(query(collection(db(BOB), "workout_session_comments"),
+        where("session_id", "==", comment.session_id))));
+    await assertSucceeds(updateDoc(ref(FRIEND), { liked_by_user_ids: arrayUnion(FRIEND) }));
+    await assertFails(updateDoc(ref(FRIEND), { liked_by_user_ids: arrayUnion(BOB) }));
+    await assertSucceeds(updateDoc(ref(FRIEND), { liked_by_user_ids: arrayRemove(FRIEND) }));
+    await assertFails(updateDoc(ref(FRIEND), { deleted_at: now() }));
+    await assertSucceeds(updateDoc(ref(ACTOR), { deleted_at: now() }));
+    await assertFails(deleteDoc(ref(ACTOR)));
+    // Its notification to the session's author.
+    const notification = doc(db(ACTOR), `users/${FRIEND}/notifications/comment_${comment.id}`);
+    await assertSucceeds(setDoc(notification, flutterNotification("comment", {
+        session_id: comment.session_id, comment_text: comment.text,
+    })));
+});
+
+t("flutter social: only the recipient pages, marks read in a batch and deletes notifications", async () => {
+    for (const id of ["n1", "n2"]) {
+        await seed(`users/${FRIEND}/notifications/${id}`, flutterNotification("follow"));
+    }
+    const page = (as) => getDocs(query(collection(db(as), `users/${FRIEND}/notifications`),
+        orderBy("date_created", "desc"), limit(50)));
+    await assertSucceeds(page(FRIEND));
+    await assertFails(page(ACTOR));
+    const markRead = (as) => {
+        const firestore = db(as);
+        const batch = writeBatch(firestore);
+        for (const id of ["n1", "n2"]) batch.update(doc(firestore, `users/${FRIEND}/notifications/${id}`), { is_read: true });
+        return batch.commit();
+    };
+    await assertFails(markRead(BOB));
+    await assertSucceeds(markRead(FRIEND));
+    await assertFails(deleteDoc(doc(db(BOB), `users/${FRIEND}/notifications/n1`)));
+    await assertSucceeds(deleteDoc(doc(db(FRIEND), `users/${FRIEND}/notifications/n1`)));
+});
+
+t("flutter social: a challenge is created by its owner; a member leaves alone; members list theirs", async () => {
+    const challenge = contractFixture("challenge");
+    const ref = (as) => doc(db(as), `challenges/${challenge.id}`);
+    await assertFails(setDoc(ref(BOB), challenge));
+    await assertSucceeds(setDoc(ref(ACTOR), challenge));
+    const mine = (as, uid = as) => getDocs(query(collection(db(as), "challenges"),
+        where("member_ids", "array-contains", uid)));
+    await assertSucceeds(mine(FRIEND));
+    await assertFails(mine(BOB, FRIEND));
+    await assertFails(updateDoc(ref(FRIEND), { member_ids: arrayRemove(ACTOR) }));
+    await assertFails(updateDoc(ref(BOB), { member_ids: arrayRemove(BOB) }));
+    await assertSucceeds(updateDoc(ref(FRIEND), { member_ids: arrayRemove(FRIEND) }));
+});
+
+t("flutter social: an invite is created once under a valid code, and found by its inviter", async () => {
+    const invite = contractFixture("invite");
+    const ref = (as, code = invite.code) => doc(db(as), `invites/${code}`);
+    await assertFails(setDoc(ref(BOB), invite));
+    await assertFails(setDoc(ref(ACTOR, "abcd2345"), { ...invite, code: "abcd2345" }));
+    await assertSucceeds(setDoc(ref(ACTOR), invite));
+    // A code taken in between: the second create is an update, which no client may make.
+    await assertFails(setDoc(ref(ACTOR), invite));
+    await assertSucceeds(getDocs(query(collection(db(ACTOR), "invites"),
+        where("inviter_id", "==", ACTOR), limit(1))));
+});
+
+t("flutter social: a share is sent pending with its notification; the recipient answers with status alone", async () => {
+    const share = contractFixture("share", "minimal");
+    const ref = (as) => doc(db(as), `shares/${share.id}`);
+    await assertFails(setDoc(ref(BOB), share));
+    await assertSucceeds(setDoc(ref(ACTOR), share));
+    await assertSucceeds(setDoc(doc(db(ACTOR), `users/${FRIEND}/notifications/share_${share.id}`),
+        flutterNotification("share", { share_id: share.id, comment_text: "Push A" })));
+    await assertFails(updateDoc(ref(ACTOR), { status: "dismissed" }));
+    await assertFails(updateDoc(ref(FRIEND), { status: "pending" }));
+    await assertSucceeds(updateDoc(ref(FRIEND), { status: "dismissed" }));
+});
+
+t("flutter social: a report is set once by its reporter with the allowed keys", async () => {
+    const report = contractFixture("report", "minimal");
+    await assertFails(setDoc(doc(db(BOB), `reports/${report.id}`), report));
+    await assertSucceeds(setDoc(doc(db(ACTOR), `reports/${report.id}`), report));
+    await assertFails(setDoc(doc(db(ACTOR), `reports/${report.id}`), report));
+});
+
+t("flutter social: claiming a handle reserves it with a server timestamp, then names it on the profile", async () => {
+    await seed(`users/${ACTOR}`, { user_id: ACTOR });
+    const reserve = (as, handle) => setDoc(doc(db(as), `usernames/${handle}`),
+        { user_id: as, date_created: serverTimestamp() });
+    await assertFails(setDoc(doc(db(BOB), "usernames/ada_l"), { user_id: ACTOR, date_created: serverTimestamp() }));
+    await assertSucceeds(reserve(ACTOR, "ada_l"));
+    await assertFails(reserve(BOB, "ada_l"));
+    await assertFails(reserve(ACTOR, "Ada"));
+    await assertFails(updateDoc(doc(db(ACTOR), `users/${ACTOR}`), { username: "someone_else" }));
+    await assertSucceeds(updateDoc(doc(db(ACTOR), `users/${ACTOR}`), { username: "ada_l" }));
 });
 
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.

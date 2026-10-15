@@ -3139,5 +3139,458 @@
     "profileEditProfile": "Edit Profile",
     "@profileEditProfile": {
         "description": "Profile row: opens Edit Profile"
+    },
+    "foodLogSettingsTitle": "Food Log",
+    "@foodLogSettingsTitle": {
+        "description": "Title of the Food Log settings screen"
+    },
+    "foodLogSettingsSaveFailed": "Unable to Save Settings",
+    "@foodLogSettingsSaveFailed": {
+        "description": "Snack bar when a settings change could not be saved"
+    },
+    "foodLogSettingsReportingHeader": "Nutrient Reporting",
+    "@foodLogSettingsReportingHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsShowOverages": "Show Overages",
+    "@foodLogSettingsShowOverages": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsOveragesOn": "Negative numbers will be used in nutrient remaining views if you exceed your target.",
+    "@foodLogSettingsOveragesOn": {
+        "description": "Show Overages subtitle while it is on"
+    },
+    "foodLogSettingsOveragesOff": "No negative numbers will be used if you exceed a nutrient target.",
+    "@foodLogSettingsOveragesOff": {
+        "description": "Show Overages subtitle while it is off"
+    },
+    "foodLogSettingsTimelineHeader": "Timeline Options",
+    "@foodLogSettingsTimelineHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsStartHour": "Start Hour",
+    "@foodLogSettingsStartHour": {
+        "description": "Food Log settings: first hour the timeline shows"
+    },
+    "foodLogSettingsEndHour": "End Hour",
+    "@foodLogSettingsEndHour": {
+        "description": "Food Log settings: last hour the timeline shows"
+    },
+    "foodLogSettingsTimestampSide": "Timestamp Side",
+    "@foodLogSettingsTimestampSide": {
+        "description": "Food Log settings: which side of the timeline the times sit on"
+    },
+    "foodLogSettingsLeft": "Left",
+    "@foodLogSettingsLeft": {
+        "description": "Timestamp side option"
+    },
+    "foodLogSettingsRight": "Right",
+    "@foodLogSettingsRight": {
+        "description": "Timestamp side option"
+    },
+    "foodLogSettingsAddFoods": "Add Foods to Hour",
+    "@foodLogSettingsAddFoods": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsAddFoodsDetail": "Show + button on each hour",
+    "@foodLogSettingsAddFoodsDetail": {
+        "description": "Add Foods to Hour subtitle"
+    },
+    "foodLogSettingsTimestamps": "Food Timestamps",
+    "@foodLogSettingsTimestamps": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsTimestampsDetail": "Show timestamps",
+    "@foodLogSettingsTimestampsDetail": {
+        "description": "Food Timestamps subtitle"
+    },
+    "foodLogSettingsHourlyTotals": "Hourly Macro Totals",
+    "@foodLogSettingsHourlyTotals": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsWeekBanner": "Calendar Week Banner",
+    "@foodLogSettingsWeekBanner": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsSearchHeader": "Food Search",
+    "@foodLogSettingsSearchHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsBranded": "Branded Results",
+    "@foodLogSettingsBranded": {
+        "description": "Food Log settings: switch for branded foods in search"
+    },
+    "foodLogSettingsOpenFoodFacts": "Open Food Facts Results",
+    "@foodLogSettingsOpenFoodFacts": {
+        "description": "Food Log settings: switch for Open Food Facts foods in search"
+    },
+    "foodLogSettingsTilesHeader": "Food Tiles",
+    "@foodLogSettingsTilesHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsTimelineTiles": "Timeline Food Tiles",
+    "@foodLogSettingsTimelineTiles": {
+        "description": "Food Log settings row, and the title of its screen"
+    },
+    "foodLogSettingsTimelineTilesDetail": "Customize how foods appear in your timeline",
+    "@foodLogSettingsTimelineTilesDetail": {
+        "description": "Timeline Food Tiles row subtitle"
+    },
+    "foodLogSettingsLoggerTiles": "Logger Food Tiles",
+    "@foodLogSettingsLoggerTiles": {
+        "description": "Food Log settings row, and the title of its screen"
+    },
+    "foodLogSettingsLoggerTilesDetail": "Customize how foods appear in search",
+    "@foodLogSettingsLoggerTilesDetail": {
+        "description": "Logger Food Tiles row subtitle"
+    },
+    "foodLogSettingsLoggerHeader": "Logger Options",
+    "@foodLogSettingsLoggerHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsLoggerBanner": "Logger Banner",
+    "@foodLogSettingsLoggerBanner": {
+        "description": "Food Log settings row, and the title of its screen"
+    },
+    "foodLogSettingsLoggerBannerDetail": "Customize the top of your plate",
+    "@foodLogSettingsLoggerBannerDetail": {
+        "description": "Logger Banner row subtitle"
+    },
+    "foodLogSettingsAutoTime": "Auto-set Current Time",
+    "@foodLogSettingsAutoTime": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsAutoTimeDetail": "Automatically set the time to now when logging a meal",
+    "@foodLogSettingsAutoTimeDetail": {
+        "description": "Auto-set Current Time subtitle"
+    },
+    "foodLogSettingsFavourites": "Favorite Measurements",
+    "@foodLogSettingsFavourites": {
+        "description": "Food Log settings row, and the title of its screen"
+    },
+    "foodLogSettingsFavouritesDetail": "Select the measurements to pin to serving size selections.",
+    "@foodLogSettingsFavouritesDetail": {
+        "description": "Favorite Measurements row subtitle"
+    },
+    "foodLogSettingsQuickAdd": "Quick Add",
+    "@foodLogSettingsQuickAdd": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsQuickAddDetail": "Use default portion and skip the amount entry screen",
+    "@foodLogSettingsQuickAddDetail": {
+        "description": "Quick Add subtitle"
+    },
+    "loggerBannerCalories": "Calories Ring",
+    "@loggerBannerCalories": {
+        "description": "Logger Banner: switch"
+    },
+    "loggerBannerCaloriesDetail": "Show calorie ring in the logger banner",
+    "@loggerBannerCaloriesDetail": {
+        "description": "Calories Ring subtitle"
+    },
+    "loggerBannerProtein": "Protein Ring",
+    "@loggerBannerProtein": {
+        "description": "Logger Banner: switch"
+    },
+    "loggerBannerProteinDetail": "Show protein ring in the logger banner",
+    "@loggerBannerProteinDetail": {
+        "description": "Protein Ring subtitle"
+    },
+    "loggerBannerFat": "Fat Ring",
+    "@loggerBannerFat": {
+        "description": "Logger Banner: switch"
+    },
+    "loggerBannerFatDetail": "Show fat ring in the logger banner",
+    "@loggerBannerFatDetail": {
+        "description": "Fat Ring subtitle"
+    },
+    "loggerBannerCarbs": "Carbs Ring",
+    "@loggerBannerCarbs": {
+        "description": "Logger Banner: switch"
+    },
+    "loggerBannerCarbsDetail": "Show carbs ring in the logger banner",
+    "@loggerBannerCarbsDetail": {
+        "description": "Carbs Ring subtitle"
+    },
+    "loggerTilesImage": "Show Food Image",
+    "@loggerTilesImage": {
+        "description": "Food tiles: switch"
+    },
+    "loggerTilesImageDetail": "Display food image in search result rows",
+    "@loggerTilesImageDetail": {
+        "description": "Show Food Image subtitle"
+    },
+    "loggerTilesCalories": "Show Calories",
+    "@loggerTilesCalories": {
+        "description": "Food tiles: switch"
+    },
+    "loggerTilesCaloriesDetail": "Display calorie count in search result rows",
+    "@loggerTilesCaloriesDetail": {
+        "description": "Show Calories subtitle"
+    },
+    "loggerTilesMacros": "Show Macros",
+    "@loggerTilesMacros": {
+        "description": "Food tiles: switch"
+    },
+    "loggerTilesMacrosDetail": "Display P/F/C macros in search result rows",
+    "@loggerTilesMacrosDetail": {
+        "description": "Show Macros subtitle"
+    },
+    "timelineTilesImage": "Show Food Image",
+    "@timelineTilesImage": {
+        "description": "Food tiles: switch"
+    },
+    "timelineTilesImageDetail": "Display food image in timeline rows",
+    "@timelineTilesImageDetail": {
+        "description": "Show Food Image subtitle"
+    },
+    "timelineTilesCalories": "Show Calories",
+    "@timelineTilesCalories": {
+        "description": "Food tiles: switch"
+    },
+    "timelineTilesCaloriesDetail": "Display calorie count in timeline rows",
+    "@timelineTilesCaloriesDetail": {
+        "description": "Show Calories subtitle"
+    },
+    "timelineTilesMacros": "Show Macros",
+    "@timelineTilesMacros": {
+        "description": "Food tiles: switch"
+    },
+    "timelineTilesMacrosDetail": "Display P/F/C macros in timeline rows",
+    "@timelineTilesMacrosDetail": {
+        "description": "Show Macros subtitle"
+    },
+    "loggerTilesPortion": "Show Portion",
+    "@loggerTilesPortion": {
+        "description": "Logger food tiles: switch"
+    },
+    "loggerTilesPortionDetail": "Display portion size in search result rows",
+    "@loggerTilesPortionDetail": {
+        "description": "Show Portion subtitle"
+    },
+    "favouriteMeasurementsHeader": "Favorites",
+    "@favouriteMeasurementsHeader": {
+        "description": "Favorite Measurements: section header"
+    },
+    "strategySettingsTitle": "Strategy",
+    "@strategySettingsTitle": {
+        "description": "Title of the check-in strategy settings screen"
+    },
+    "strategySettingsGeneralHeader": "General",
+    "@strategySettingsGeneralHeader": {
+        "description": "Strategy settings: section header"
+    },
+    "strategySettingsCheckInDay": "Check-in Day",
+    "@strategySettingsCheckInDay": {
+        "description": "Strategy settings row: the weekday of the weekly check-in"
+    },
+    "strategySettingsFastCheckIn": "Fast Check-in",
+    "@strategySettingsFastCheckIn": {
+        "description": "Strategy settings: switch"
+    },
+    "strategySettingsModulesHeader": "Coaching Modules",
+    "@strategySettingsModulesHeader": {
+        "description": "Strategy settings: section header"
+    },
+    "strategySettingsModulesFooter": "Individually configure which modules can appear during your check in.",
+    "@strategySettingsModulesFooter": {
+        "description": "Strategy settings: footer under the modules"
+    },
+    "strategySettingsPartialLogging": "Partial Logging",
+    "@strategySettingsPartialLogging": {
+        "description": "Strategy settings: check-in module switch"
+    },
+    "strategySettingsWeighIn": "Weigh-In",
+    "@strategySettingsWeighIn": {
+        "description": "Strategy settings: check-in module switch"
+    },
+    "strategySettingsFasting": "Fasting",
+    "@strategySettingsFasting": {
+        "description": "Strategy settings: check-in module switch"
+    },
+    "strategySettingsLoggingBreak": "Logging Break",
+    "@strategySettingsLoggingBreak": {
+        "description": "Strategy settings: check-in module switch"
+    },
+    "expenditureSettingsTitle": "Expenditure",
+    "@expenditureSettingsTitle": {
+        "description": "Title of the expenditure settings screen"
+    },
+    "expenditureSettingsTodayHeader": "Today's Expenditure",
+    "@expenditureSettingsTodayHeader": {
+        "description": "Expenditure settings: header over the estimate"
+    },
+    "expenditureSettingsKcal": "{kcal} kcal",
+    "@expenditureSettingsKcal": {
+        "description": "Today's expenditure figure",
+        "placeholders": {
+            "kcal": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsFixed": "Fixed",
+    "@expenditureSettingsFixed": {
+        "description": "Expenditure source: held fixed; also the Fixed calculation mode"
+    },
+    "expenditureSettingsCalibrating": "Calibrating: estimated from your profile until {days} days and {weighIns} weigh-ins are logged",
+    "@expenditureSettingsCalibrating": {
+        "description": "Expenditure source: still the profile estimate",
+        "placeholders": {
+            "days": {
+                "type": "int"
+            },
+            "weighIns": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsAdaptive": "Adaptive · {logged} of {window} days logged",
+    "@expenditureSettingsAdaptive": {
+        "description": "Expenditure source: learned from the log",
+        "placeholders": {
+            "logged": {
+                "type": "int"
+            },
+            "window": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsLikely": "Likely {low}–{high} kcal, based on what you logged",
+    "@expenditureSettingsLikely": {
+        "description": "The 80% range of the estimate",
+        "placeholders": {
+            "low": {
+                "type": "int"
+            },
+            "high": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsSteps": "Includes {sign}{kcal} kcal from your recent step count",
+    "@expenditureSettingsSteps": {
+        "description": "The step adjustment included in the estimate; sign is + or −",
+        "placeholders": {
+            "sign": {
+                "type": "String"
+            },
+            "kcal": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsInitialHeader": "Initial Estimate",
+    "@expenditureSettingsInitialHeader": {
+        "description": "Expenditure settings: section header"
+    },
+    "expenditureSettingsEstimationMethod": "Estimation Method",
+    "@expenditureSettingsEstimationMethod": {
+        "description": "Expenditure settings: picker"
+    },
+    "expenditureSettingsStartDate": "Calculation Start Date",
+    "@expenditureSettingsStartDate": {
+        "description": "Expenditure settings row"
+    },
+    "expenditureSettingsDefault": "Default",
+    "@expenditureSettingsDefault": {
+        "description": "Calculation start date when none is chosen"
+    },
+    "expenditureSettingsUseDefault": "Use Default",
+    "@expenditureSettingsUseDefault": {
+        "description": "Button that clears the calculation start date"
+    },
+    "expenditureSettingsBmrEquation": "BMR Equation",
+    "@expenditureSettingsBmrEquation": {
+        "description": "Expenditure settings: picker"
+    },
+    "expenditureSettingsCalculationHeader": "Expenditure Calculation",
+    "@expenditureSettingsCalculationHeader": {
+        "description": "Expenditure settings: section header"
+    },
+    "expenditureSettingsCalculationMode": "Calculation Mode",
+    "@expenditureSettingsCalculationMode": {
+        "description": "Expenditure settings: picker"
+    },
+    "expenditureSettingsAlgorithm": "Algorithm",
+    "@expenditureSettingsAlgorithm": {
+        "description": "Expenditure settings: picker"
+    },
+    "expenditureSettingsCalculationFooter": "Dynamic learns from your logged intake and your weight trend, day by day. Fixed holds the figure where it is.",
+    "@expenditureSettingsCalculationFooter": {
+        "description": "Expenditure settings: footer under the calculation pickers"
+    },
+    "expenditureSettingsModifiersHeader": "Expenditure Modifiers",
+    "@expenditureSettingsModifiersHeader": {
+        "description": "Expenditure settings: section header"
+    },
+    "expenditureSettingsStepInformed": "Step-Informed Updates",
+    "@expenditureSettingsStepInformed": {
+        "description": "Expenditure settings: switch"
+    },
+    "expenditureSettingsStepInformedDetail": "Use your steps to update expenditure sooner",
+    "@expenditureSettingsStepInformedDetail": {
+        "description": "Step-Informed Updates subtitle"
+    },
+    "expenditureSettingsStandard": "Standard",
+    "@expenditureSettingsStandard": {
+        "description": "Estimation method option"
+    },
+    "expenditureSettingsStandardDetail": "Estimate from height, weight, age and activity.",
+    "@expenditureSettingsStandardDetail": {
+        "description": "Standard estimation method subtitle"
+    },
+    "expenditureSettingsBodyFatAware": "Body-fat aware",
+    "@expenditureSettingsBodyFatAware": {
+        "description": "Estimation method option"
+    },
+    "expenditureSettingsBodyFatAwareDetail": "Use your latest logged body fat percentage where one is available, which suits lean, muscular builds better. Only as accurate as that reading.",
+    "@expenditureSettingsBodyFatAwareDetail": {
+        "description": "Body-fat aware subtitle"
+    },
+    "expenditureSettingsMifflin": "Mifflin-St Jeor",
+    "@expenditureSettingsMifflin": {
+        "description": "BMR equation option"
+    },
+    "expenditureSettingsMifflinDetail": "The usual default, and the most accurate for most people.",
+    "@expenditureSettingsMifflinDetail": {
+        "description": "Mifflin-St Jeor subtitle"
+    },
+    "expenditureSettingsHarris": "Harris-Benedict",
+    "@expenditureSettingsHarris": {
+        "description": "BMR equation option"
+    },
+    "expenditureSettingsHarrisDetail": "Older, and tends to read slightly high.",
+    "@expenditureSettingsHarrisDetail": {
+        "description": "Harris-Benedict subtitle"
+    },
+    "expenditureSettingsCunningham": "Cunningham",
+    "@expenditureSettingsCunningham": {
+        "description": "BMR equation option"
+    },
+    "expenditureSettingsCunninghamDetail": "Based on lean mass, so it needs a body fat percentage. Suits muscular, lean builds best.",
+    "@expenditureSettingsCunninghamDetail": {
+        "description": "Cunningham subtitle"
+    },
+    "expenditureSettingsDynamic": "Dynamic",
+    "@expenditureSettingsDynamic": {
+        "description": "Calculation mode option"
+    },
+    "expenditureSettingsDynamicDetail": "Adapt the estimate as your logged intake and weight change over time.",
+    "@expenditureSettingsDynamicDetail": {
+        "description": "Dynamic subtitle"
+    },
+    "expenditureSettingsFixedDetail": "Keep the estimate where it is until you change it yourself.",
+    "@expenditureSettingsFixedDetail": {
+        "description": "Fixed calculation mode subtitle"
+    },
+    "expenditureSettingsVersion1": "Expenditure V1",
+    "@expenditureSettingsVersion1": {
+        "description": "Algorithm option"
+    },
+    "expenditureSettingsVersion1Detail": "The only version so far.",
+    "@expenditureSettingsVersion1Detail": {
+        "description": "Expenditure V1 subtitle"
     }
 }

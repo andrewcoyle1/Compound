@@ -4,11 +4,13 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart' show AppFormat, AppWeightUnit;
 import 'package:bloc/bloc.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/progress/logic/progress_overview.dart';
 import 'package:compound/today/logic/today_checklist.dart' show countedSessions;
 import 'package:compound/weight_metric/models/weight_metric.dart';
-import 'package:compound_maths/compound_maths.dart';
+import 'package:compound_maths/compound_maths.dart'
+    hide CheckInState, LoggingBreak;
 import 'package:compound_models/compound_models.dart' show WorkoutSessionStats;
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -29,6 +31,7 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
     required this._bodyRepository,
     required this._userRepository,
     required this._analyticsRepository,
+    required this._checkInRepository,
     required this._uid,
     required int firstWeekday,
     DateTime Function() now = DateTime.now,
@@ -44,6 +47,7 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
   final BodyRepository _bodyRepository;
   final UserRepository _userRepository;
   final AnalyticsRepository _analyticsRepository;
+  final CheckInRepository _checkInRepository;
   final String _uid;
 
   StreamSubscription<WeightGoal?>? _goalSubscription;
@@ -90,6 +94,26 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
       emit.forEach(
         _bodyRepository.watchAnalyticsSettings(_uid),
         onData: (settings) => state.copyWith(analyticsSettings: () => settings),
+        onError: (_, _) => state,
+      ),
+      // The expenditure engine's: without them, Swift's default settings,
+      // no annotations and no break.
+      emit.forEach(
+        _checkInRepository.watchStrategySettings(_uid),
+        onData: (settings) => state.copyWith(strategySettings: settings),
+        onError: (_, _) => state.copyWith(
+          strategySettings: NutritionStrategySettings(authorId: _uid),
+        ),
+      ),
+      emit.forEach(
+        _checkInRepository.watchDayAnnotations(_uid),
+        onData: (annotations) => state.copyWith(annotations: annotations),
+        onError: (_, _) => state,
+      ),
+      emit.forEach(
+        _checkInRepository.watchLoggingBreak(_uid),
+        onData: (loggingBreak) =>
+            state.copyWith(loggingBreak: () => loggingBreak),
         onError: (_, _) => state,
       ),
       emit.forEach(

@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
+import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/firebase_options_development.dart';
 import 'package:compound/notifications/notifications.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
@@ -130,6 +131,13 @@ Future<void> main() async {
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,
       ),
+      checkInRepository: FirestoreCheckInRepository(
+        firestore: FirebaseFirestore.instance,
+        onWriteError: onWriteError,
+      ),
+      proposalDismissals: ProposalDismissals(
+        file: File('${support.path}/dismissed_target_proposals.json'),
+      ),
       foodRepository: FirestoreFoodRepository(
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,
@@ -138,10 +146,6 @@ Future<void> main() async {
       openFoodFacts: RemoteOpenFoodFacts(
         functions: FirebaseFunctions.instanceFor(region: 'us-central1'),
         client: http.Client(),
-      ),
-      checkInRepository: FirestoreCheckInRepository(
-        firestore: FirebaseFirestore.instance,
-        onWriteError: onWriteError,
       ),
     );
   });

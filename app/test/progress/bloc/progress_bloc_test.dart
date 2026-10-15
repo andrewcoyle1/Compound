@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart' show AppWeightUnit;
 import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/progress/logic/progress_overview.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -159,6 +160,7 @@ void main() {
     bodyRepository: bodyRepository,
     userRepository: userRepository,
     analyticsRepository: analyticsRepository,
+    checkInRepository: InMemoryCheckInRepository(),
     uid: uid,
     firstWeekday: DateTime.monday,
     now: () => now,

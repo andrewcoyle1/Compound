@@ -12,6 +12,7 @@ library;
 export 'src/check_in_schedule.dart';
 export 'src/daily_macros.dart';
 export 'src/day_key.dart';
+export 'src/energy_balance.dart';
 export 'src/energy_density.dart';
 export 'src/expenditure_engine.dart';
 export 'src/expenditure_filter.dart';

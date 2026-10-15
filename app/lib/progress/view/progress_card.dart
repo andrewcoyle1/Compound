@@ -76,8 +76,10 @@ class ProgressCard extends StatelessWidget {
               spacing: AppSpacing.xs,
               children: [
                 // A headline number is short; the unit takes what is left.
-                Text(value, style: AppTextStyles.metricSmall),
-                if (unit != null)
+                // Without a unit the value is words (Energy Balance's
+                // "582 kcal deficit"), which wrap.
+                if (unit != null) ...[
+                  Text(value, style: AppTextStyles.metricSmall),
                   Expanded(
                     child: Text(
                       unit,
@@ -85,9 +87,11 @@ class ProgressCard extends StatelessWidget {
                       maxLines: maxLines,
                       overflow: overflow,
                     ),
-                  )
-                else
-                  const Spacer(),
+                  ),
+                ] else
+                  Expanded(
+                    child: Text(value, style: AppTextStyles.metricSmall),
+                  ),
                 if (onTap != null)
                   ExcludeSemantics(
                     child: Icon(

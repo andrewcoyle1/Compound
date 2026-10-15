@@ -98,6 +98,26 @@ final class const LogWeightState({
     );
   }
 
+  /// The wheels with [whole] on the whole-number wheel of [unit].
+  LogWeightState withWhole(int whole) => switch (unit) {
+    WeightUnitPreference.kilograms => withKilograms(
+      DecimalWheelValue.combine(whole: whole, tenths: kilogramsTenths),
+    ),
+    WeightUnitPreference.pounds => withPounds(
+      DecimalWheelValue.combine(whole: whole, tenths: poundsTenths),
+    ),
+  };
+
+  /// The wheels with [tenths] on the tenths wheel of [unit].
+  LogWeightState withTenths(int tenths) => switch (unit) {
+    WeightUnitPreference.kilograms => withKilograms(
+      DecimalWheelValue.combine(whole: kilograms, tenths: tenths),
+    ),
+    WeightUnitPreference.pounds => withPounds(
+      DecimalWheelValue.combine(whole: pounds, tenths: tenths),
+    ),
+  };
+
   @override
   List<Object> get props => [
     date,

@@ -6,6 +6,9 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
+import 'package:compound/check_in/check_in.dart';
+import 'package:compound/expenditure/expenditure.dart';
+import 'package:compound/expenditure_metric/expenditure_metric.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/launch/launch.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -13,6 +16,7 @@ import 'package:compound/notifications/notifications.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/nutrition.dart';
+import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/progress/progress.dart';
@@ -26,6 +30,7 @@ import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
+import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -50,8 +55,11 @@ class const App({
   // Empty and offline when left out, for tests that never log food.
   final FoodRepository? foodRepository,
   final OpenFoodFacts? openFoodFacts,
-  // Empty in memory when left out, for tests that never check in.
+  // The check-in's data, empty in memory when left out.
   final CheckInRepository? checkInRepository,
+
+  /// The target proposals waved away; in memory when left out.
+  final ProposalDismissals? proposalDismissals,
 
   /// Where the workout under way is kept between launches; in memory when
   /// left out.
@@ -85,6 +93,9 @@ class const App({
           create: (_) => checkInRepository ?? InMemoryCheckInRepository(),
         ),
         RepositoryProvider.value(value: trackerClock),
+        RepositoryProvider<ProposalDismissals>(
+          create: (_) => proposalDismissals ?? ProposalDismissals(),
+        ),
         RepositoryProvider<NotificationsRepository>(
           create: (_) =>
               notificationsRepository ?? FakeNotificationsRepository(),
@@ -219,6 +230,18 @@ class _AppViewState extends State<AppView> {
                     path: tab.path,
                     name: tab.name,
                     builder: (_, _) => const NutritionPage(),
+                    routes: [
+                      GoRoute(
+                        path: NutritionOverviewPage.path,
+                        name: NutritionOverviewPage.name,
+                        builder: (_, state) => NutritionOverviewPage(
+                          dayKey:
+                              state.uri.queryParameters[NutritionOverviewPage
+                                  .dayParameter] ??
+                              localDayKey(DateTime.now()),
+                        ),
+                      ),
+                    ],
                   ),
                   AppTab.progress => GoRoute(
                     path: tab.path,
@@ -235,6 +258,23 @@ class _AppViewState extends State<AppView> {
                               path: 'data',
                               name: metric.dataRouteName,
                               builder: (_, _) => WeightMetricPage(
+                                metric: metric,
+                                allData: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                      for (final metric in ExpenditureMetric.values)
+                        GoRoute(
+                          path: metric.path,
+                          name: metric.name,
+                          builder: (_, _) =>
+                              ExpenditureMetricPage(metric: metric),
+                          routes: [
+                            GoRoute(
+                              path: 'data',
+                              name: metric.dataRouteName,
+                              builder: (_, _) => ExpenditureMetricPage(
                                 metric: metric,
                                 allData: true,
                               ),
@@ -272,6 +312,22 @@ class _AppViewState extends State<AppView> {
           key: state.pageKey,
           fullscreenDialog: true,
           child: const LogWeightPage(),
+        ),
+      ),
+      // Over the tabs, as the Swift app's sheet; the week reviewed is the
+      // query's, this week's without one.
+      GoRoute(
+        path: CheckInPage.path,
+        name: CheckInPage.name,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: CheckInPage(
+            weekStart: localMidnight(
+              state.uri.queryParameters[CheckInPage.weekParameter] ??
+                  checkInWeekStart(localDayKey(DateTime.now())),
+            ),
+          ),
         ),
       ),
       // Over the tabs, as the Swift app's full-screen cover; the meal to

@@ -51,6 +51,18 @@ final class const TodayState({
 
   /// Whether reading the sessions, meals or weigh-ins failed.
   final bool failed = false,
+
+  /// The check-in's day and the weeks done, or null until read.
+  final NutritionStrategySettings? strategySettings,
+  final CheckInRecord? checkInRecord,
+  final LoggingBreak? loggingBreak,
+
+  /// This week's check-in was skipped here; the card stays away while the
+  /// write lands.
+  final bool checkInSkipped = false,
+
+  /// Moves each time skipping the check-in fails.
+  final int skipFailures = 0,
 }) extends Equatable {
   /// Where the data has got to.
   TodayStatus get status => failed
@@ -167,6 +179,22 @@ final class const TodayState({
     eatenGrams: nutritionTotals.proteinGrams,
   );
 
+  /// The week the check-in card offers, or null when none is waiting
+  /// (`TodayPresenter.dueCheckInWeekStart`).
+  DateTime? get dueCheckInWeekStart {
+    final settings = strategySettings;
+    if (settings == null || checkInSkipped) return null;
+    final inputs = ExpenditureInputs(
+      now: now,
+      settings: settings,
+      loggingBreak: loggingBreak,
+      checkInRecord: checkInRecord,
+    );
+    return inputs.checkInState == CheckInState.due
+        ? inputs.checkInWeekStart
+        : null;
+  }
+
   TodayState copyWith({
     List<WorkoutSessionModel>? sessions,
     List<MealLogModel>? meals,
@@ -177,6 +205,11 @@ final class const TodayState({
     UserModel? Function()? user,
     WeightGoal? Function()? goal,
     bool? failed,
+    NutritionStrategySettings? strategySettings,
+    CheckInRecord? Function()? checkInRecord,
+    LoggingBreak? Function()? loggingBreak,
+    bool? checkInSkipped,
+    int? skipFailures,
   }) => TodayState(
     uid: uid,
     now: now,
@@ -192,6 +225,11 @@ final class const TodayState({
     user: user == null ? this.user : user(),
     goal: goal == null ? this.goal : goal(),
     failed: failed ?? this.failed,
+    strategySettings: strategySettings ?? this.strategySettings,
+    checkInRecord: checkInRecord == null ? this.checkInRecord : checkInRecord(),
+    loggingBreak: loggingBreak == null ? this.loggingBreak : loggingBreak(),
+    checkInSkipped: checkInSkipped ?? this.checkInSkipped,
+    skipFailures: skipFailures ?? this.skipFailures,
   );
 
   @override
@@ -208,5 +246,10 @@ final class const TodayState({
     user,
     goal,
     failed,
+    strategySettings,
+    checkInRecord,
+    loggingBreak,
+    checkInSkipped,
+    skipFailures,
   ];
 }

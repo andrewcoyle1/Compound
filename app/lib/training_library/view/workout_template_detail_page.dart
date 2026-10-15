@@ -12,13 +12,14 @@ import 'package:compound/training_library/view/exercise_detail_page.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/workout_tracker/view/start_workout.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-/// One workout template, read-only (Swift `WorkoutTemplateDetailView`): the
-/// muscles it plans sets for and each exercise's plan. Starting it waits
-/// for the tracker; editing, sharing and deleting wait for M5.
+/// One workout template (Swift `WorkoutTemplateDetailView`): the muscles it
+/// plans sets for and each exercise's plan, and Start Workout. Editing,
+/// sharing and deleting wait for M5.
 class WorkoutTemplateDetailPage extends StatelessWidget {
   const new({required this.workoutId, super.key});
 
@@ -102,6 +103,21 @@ class WorkoutTemplateDetailView extends StatelessWidget {
             ),
           ),
         },
+      ),
+      bottomNavigationBar: AppBottomCta(
+        children: [
+          if (template != null && template.exercises.isNotEmpty)
+            AppCtaButton(
+              label: l10n.startWorkout,
+              onPressed: () => unawaited(
+                startWorkout(
+                  context,
+                  template: template,
+                  eventPrefix: 'WorkoutTemplateDetailView_StartWorkout',
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

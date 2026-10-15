@@ -9,6 +9,7 @@ import 'package:compound/training_library/training_library.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/workout_history/view/workout_history_page.dart';
+import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -88,6 +89,17 @@ class _Library extends StatelessWidget {
     final l10n = context.l10n;
     return LibrarySections(
       children: [
+        AppSection(
+          children: [
+            AppListRowButton(
+              title: l10n.startEmptyWorkout,
+              icon: AppSymbols.start,
+              onPressed: () => unawaited(
+                startWorkout(context, eventPrefix: 'TrainingView_StartWorkout'),
+              ),
+            ),
+          ],
+        ),
         AppSection(
           header: l10n.trainingLibraryHeader,
           children: [

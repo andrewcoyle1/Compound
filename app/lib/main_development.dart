@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -9,19 +10,25 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/firebase_options_development.dart';
+import 'package:compound/notifications/notifications.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -78,7 +85,24 @@ Future<void> main() async {
       firestore: FirebaseFirestore.instance,
       onWriteError: onWriteError,
     );
+    // Before the app: a tap that launched it is picked up here and held
+    // until someone is signed in.
+    final notificationsRepository = FirebaseNotificationsRepository(
+      messaging: FirebaseMessaging.instance,
+      localNotifications: FlutterLocalNotificationsPlugin(),
+      userRepository: userRepository,
+      copy: AppNotificationCopy(),
+      onError: (error, stackTrace) =>
+          unawaited(crashlytics.recordError(error, stackTrace)),
+    );
+    await notificationsRepository.initialize();
+
+    // The workout under way, kept on the device between launches.
+    final support = await getApplicationSupportDirectory();
     return App(
+      activeSessionStore: FileActiveSessionStore(
+        File('${support.path}/active_workout_session.json'),
+      ),
       analyticsRepository: analyticsRepository,
       authRepository: FirebaseAuthRepository(
         firebaseAuth: FirebaseAuth.instance,
@@ -86,6 +110,7 @@ Future<void> main() async {
         googleClientId: options.iosClientId,
       ),
       userRepository: userRepository,
+      notificationsRepository: notificationsRepository,
       workoutSessionRepository: FirestoreWorkoutSessionRepository(
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,

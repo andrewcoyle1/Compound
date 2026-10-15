@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -7,6 +9,7 @@ import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/launch/launch.dart';
 import 'package:compound/log_weight/log_weight.dart';
+import 'package:compound/notifications/notifications.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/nutrition.dart';
@@ -22,12 +25,16 @@ import 'package:compound/training_library/training_library.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
+import 'package:compound/workout_tracker/workout_tracker.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -45,6 +52,15 @@ class const App({
   final OpenFoodFacts? openFoodFacts,
   // Empty in memory when left out, for tests that never check in.
   final CheckInRepository? checkInRepository,
+
+  /// Where the workout under way is kept between launches; in memory when
+  /// left out.
+  final ActiveSessionStore? activeSessionStore,
+
+  /// Push and local notifications; the fake (nothing reaches the platform)
+  /// when left out.
+  final NotificationsRepository? notificationsRepository,
+  final TrackerClock trackerClock = const TrackerClock(),
   super.key,
 }) extends StatelessWidget {
   @override
@@ -68,6 +84,11 @@ class const App({
         RepositoryProvider<CheckInRepository>(
           create: (_) => checkInRepository ?? InMemoryCheckInRepository(),
         ),
+        RepositoryProvider.value(value: trackerClock),
+        RepositoryProvider<NotificationsRepository>(
+          create: (_) =>
+              notificationsRepository ?? FakeNotificationsRepository(),
+        ),
         RepositoryProvider(
           create: (_) => TrainingSetupService(
             programs: programRepository,
@@ -86,6 +107,23 @@ class const App({
             )..add(const AppUserSubscriptionRequested()),
           ),
           BlocProvider(create: (_) => MealDraftCubit()),
+          BlocProvider(
+            create: (context) => NotificationsCubit(
+              notifications: context.read(),
+              users: userRepository,
+            ),
+          ),
+          BlocProvider(
+            create: (context) => ActiveWorkoutCubit(
+              notifications: context.read(),
+              sessions: workoutSessionRepository,
+              users: userRepository,
+              library: trainingLibraryRepository,
+              analytics: analyticsRepository,
+              store: activeSessionStore ?? InMemoryActiveSessionStore(),
+              clock: trackerClock.now,
+            ),
+          ),
         ],
         child: const AppView(),
       ),
@@ -268,6 +306,39 @@ class _AppViewState extends State<AppView> {
           ),
         ),
       ),
+      // Over the tabs, as the Swift app's full-screen cover; minimised, the
+      // workout carries on under the tabs' bar.
+      GoRoute(
+        path: WorkoutTrackerPage.path,
+        name: WorkoutTrackerPage.name,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: WorkoutTrackerPage(
+            opensKeypad:
+                state.uri.queryParameters[WorkoutTrackerPage.keypadParameter] ==
+                '1',
+          ),
+        ),
+      ),
+      // The tracker's last page: the workout just finished.
+      GoRoute(
+        path: WorkoutSessionDetailPage.summaryPath,
+        name: WorkoutSessionDetailPage.summaryName,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: WorkoutSessionDetailPage(
+            sessionId: state
+                .pathParameters[WorkoutSessionDetailPage.sessionIdParameter]!,
+            session: switch (state.extra) {
+              final WorkoutSessionModel session => session,
+              _ => null,
+            },
+            isWorkoutSummary: true,
+          ),
+        ),
+      ),
       GoRoute(
         path: SignInPage.path,
         name: SignInPage.name,
@@ -292,28 +363,120 @@ class _AppViewState extends State<AppView> {
           },
         ),
     ],
-    redirect: (context, state) =>
-        appRedirect(context.read<AppBloc>().state, state.uri),
+    redirect: (context, state) {
+      // A `compound://` URL from the platform (its own deep-link handling,
+      // which passes the whole URL): held until it can be routed, from
+      // Today meanwhile. The app's own locations never have a scheme.
+      if (state.uri.hasScheme) {
+        context.read<NotificationsCubit>().linkOpened(state.uri);
+        return AppTab.today.path;
+      }
+      return appRedirect(context.read<AppBloc>().state, state.uri);
+    },
   );
+
+  /// The app coming back to the front moves the come-back reminders out.
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: () => unawaited(context.read<NotificationsCubit>().resumed()),
+    );
+    _followUser(context.read<AppBloc>().state);
+  }
+
+  /// The workout under way and the notifications follow the signed-in user;
+  /// links are routed once they are past onboarding.
+  void _followUser(AppState state) {
+    final uid = state is AppAuthenticated ? state.user.uid : null;
+    unawaited(context.read<ActiveWorkoutCubit>().userChanged(uid));
+    unawaited(
+      context.read<NotificationsCubit>().userChanged(
+        uid,
+        ready:
+            state is AppAuthenticated &&
+            state.profileStatus == AppProfileStatus.ready &&
+            state.onboardingStep == null,
+      ),
+    );
+  }
+
+  void _routeLink(BuildContext context, NotificationsState state) {
+    final link = state.link;
+    if (link == null) return;
+    final appState = context.read<AppBloc>().state;
+    _router.go(
+      deepLinkLocation(
+        link,
+        currentUserId: appState is AppAuthenticated ? appState.user.uid : null,
+        workoutActive: context.read<ActiveWorkoutCubit>().state.isActive,
+      ),
+    );
+  }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     _router.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AppBloc, AppState>(
-      listener: (_, _) => _router.refresh(),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AppBloc, AppState>(
+          listener: (_, state) {
+            _router.refresh();
+            _followUser(state);
+          },
+        ),
+        BlocListener<NotificationsCubit, NotificationsState>(
+          listenWhen: (previous, current) => current.linkId != previous.linkId,
+          listener: _routeLink,
+        ),
+      ],
       child: MaterialApp.router(
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: _router,
+        // How the finished workout's save is going, wherever the user is.
+        builder: (context, child) =>
+            BlocListener<ActiveWorkoutCubit, ActiveWorkoutState>(
+              listenWhen: (previous, current) =>
+                  current.saveNoticeId != previous.saveNoticeId,
+              listener: _showSaveNotice,
+              child: child,
+            ),
       ),
     );
+  }
+
+  static void _showSaveNotice(BuildContext context, ActiveWorkoutState state) {
+    final l10n = context.l10n;
+    final notice = state.saveNotice;
+    if (notice == null) return;
+    if (notice == SaveProgress.failed) {
+      unawaited(HapticFeedback.errorNotification());
+    } else if (notice == SaveProgress.saved) {
+      unawaited(HapticFeedback.successNotification());
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(switch (notice) {
+            SaveProgress.retrying => l10n.saveRetrying,
+            SaveProgress.saved => l10n.saveSaved,
+            SaveProgress.failed => l10n.saveFailed,
+          }),
+          duration: Duration(seconds: notice == SaveProgress.failed ? 8 : 6),
+        ),
+      );
   }
 }
 

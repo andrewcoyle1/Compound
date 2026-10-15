@@ -11,11 +11,15 @@ Notifications for Compound, ported from the Swift app's `PushManager`, `DeepLink
 - `LocalReminders`: the local notifications as pure plans (come-back 1/3/5 days, meals at
   08:00/12:30/18:30, rest over, idle workout), with `RestOverAlert`, `IdleWorkout`,
   `ForegroundPresentation` and `ReminderOffer`.
+- `OngoingWorkout`: the workout under way as an Android ongoing notification (the Live
+  Activity's stand-in), with Android's own chronometer counting the rest down or the workout up;
+  `showsOngoingWorkout` is false on iOS, where Live Activities wait for M6.
 - `NotificationsRepository`: permission, push-token sync into `users/{uid}/private/settings`
   (`fcm_token` and `timezone`, never the public profile), foreground messages, a `DeepLinkInbox`
   for taps, and scheduling. `FirebaseNotificationsRepository` uses `firebase_messaging` (BSD-3),
   `flutter_local_notifications` (BSD-3), `timezone` (BSD-2) and `flutter_timezone` (Apache-2.0);
   `FakeNotificationsRepository` is for the staging flavor and tests.
 
-Words come from the app through `NotificationCopy`. Run the tests with the very_good_cli `test`
+Words come from the app through `NotificationCopy`. The Android channels (`workout`, `reminders`,
+`social`) are created at launch; the small icon is the app's `@drawable/ic_notification`. Run the tests with the very_good_cli `test`
 tool at `min_coverage: 100`.

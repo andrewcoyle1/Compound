@@ -18,6 +18,13 @@ enum WeightMetric {
   /// The route path under the Progress tab; its name is the enum's.
   final String path;
 
+  /// The Swift view's analytics name, for `_Appear`, `_Disappear` and
+  /// `_DeleteEntry_*`.
+  String get analyticsName => switch (this) {
+    scaleWeight => 'ScaleWeightView',
+    weightTrend => 'WeightTrendView',
+  };
+
   /// The name of the route listing every entry, under [path].
   String get dataRouteName => '${name}Data';
 

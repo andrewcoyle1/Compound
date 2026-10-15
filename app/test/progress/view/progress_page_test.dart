@@ -7,6 +7,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/progress/view/progress_card.dart';
+import 'package:compound/progress/view/progress_metric_pages.dart';
 import 'package:compound/training_analytics/training_analytics.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -159,10 +160,15 @@ void main() {
     testWidgets('leaves out hidden sections', (tester) async {
       await pumpView(tester, hidden: ['habits', 'body_metrics']);
 
-      expect(find.text('Habits'), findsNothing);
-      expect(find.text('Body Metrics'), findsNothing);
+      // Only in the More list, which keeps a hidden section reachable.
+      expect(find.text('Habits'), findsOneWidget);
+      expect(find.text('Body Metrics'), findsOneWidget);
+      expect(find.text('Weigh In'), findsNothing);
       expect(find.text('Insights & Analytics'), findsOneWidget);
       expect(find.text('General'), findsOneWidget);
+      await tester.ensureVisible(find.text('Habits'));
+      await tester.tap(find.text('Habits'));
+      verify(() => router.goNamed(HabitsPage.name)).called(1);
     });
 
     testWidgets('opens the weight screens', (tester) async {
@@ -172,9 +178,9 @@ void main() {
       verify(() => router.goNamed(WeightMetric.weightTrend.name)).called(1);
       await tester.tap(find.text('Scale Weight'));
       verify(() => router.goNamed(WeightMetric.scaleWeight.name)).called(1);
-      // Display only, for now.
+      await tester.ensureVisible(find.text('Steps'));
       await tester.tap(find.text('Steps'));
-      verifyNever(() => router.goNamed(any()));
+      verify(() => router.goNamed(StepsPage.name)).called(1);
     });
 
     testWidgets('opens the training screens', (tester) async {
@@ -189,11 +195,13 @@ void main() {
       await tester.tap(find.text('Last 30 Days').last);
       verify(() => router.goNamed(WorkoutConsistencyPage.name)).called(1);
       final seeAll = find.text('See All');
-      expect(seeAll, findsNWidgets(2));
-      await tester.ensureVisible(seeAll.first);
-      await tester.tap(seeAll.first);
+      expect(seeAll, findsNWidgets(6));
+      await tester.ensureVisible(seeAll.at(4));
+      await tester.tap(seeAll.at(4));
+      verify(() => router.goNamed(MuscleGroupsPage.name)).called(1);
+      await tester.ensureVisible(seeAll.last);
       await tester.tap(seeAll.last);
-      await tester.pump();
+      verify(() => router.goNamed(ExerciseAnalyticsPage.name)).called(1);
     });
 
     testWidgets('summarises its charts for a screen reader', (tester) async {
@@ -244,6 +252,99 @@ void main() {
       await pumpView(tester, bodyRepository: body);
 
       expect(find.text("Your progress couldn't be loaded."), findsOneWidget);
+    });
+  });
+
+  group('carousel', () {
+    Future<void> nextPage(WidgetTester tester) async {
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the week against its targets selects a day', (tester) async {
+      await pumpView(tester);
+      expect(find.text('This Week Against Your Targets'), findsOneWidget);
+      // Opens on today; the week's label shows only with no day picked.
+      expect(find.text('Week'), findsNothing);
+      final bloc = tester
+          .element(find.byType(ProgressView))
+          .read<ProgressBloc>();
+      final today = bloc.state.targetDay!;
+      await tester.tap(find.bySemanticsLabel(RegExp('^Thursday, Calories')));
+      await tester.pump();
+      expect(bloc.state.targetDay, isNull);
+      expect(find.text('Week'), findsOneWidget);
+      expect(today, 3);
+    });
+
+    testWidgets('without a plan says so', (tester) async {
+      await pumpView(tester, empty: true);
+      expect(find.text('No Diet Plan'), findsOneWidget);
+    });
+
+    testWidgets('pages through nutrition, energy, training and records', (
+      tester,
+    ) async {
+      await pumpView(tester);
+
+      await nextPage(tester);
+      expect(find.text('Daily Nutrition'), findsOneWidget);
+      expect(find.text('Consumed'), findsWidgets);
+      await tester.tap(find.text('Remaining').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Target'), findsOneWidget);
+
+      await nextPage(tester);
+      expect(find.text('Last 30 Days'), findsWidgets);
+      expect(find.text('Difference'), findsOneWidget);
+      await tester.tap(find.text('Targets'));
+      await tester.pumpAndSettle();
+      expect(find.text('Targets'), findsWidgets);
+
+      await nextPage(tester);
+      expect(find.text('Weekly Workouts'), findsOneWidget);
+      expect(find.text('Muscles'), findsOneWidget);
+
+      await nextPage(tester);
+      expect(find.text('Recent Records'), findsOneWidget);
+      await tester.tap(find.text('Reps'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('reps'), findsWidgets);
+      await tester.tap(find.text('1-RM'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining(' kg'), findsWidgets);
+    });
+
+    testWidgets('records without a workout say so', (tester) async {
+      await pumpView(tester, empty: true);
+      for (var page = 0; page < 4; page++) {
+        await nextPage(tester);
+      }
+      expect(find.text('No Records Yet'), findsOneWidget);
+    });
+  });
+
+  group('menus', () {
+    testWidgets('More lists Weekly Review and Customize Analytics', (
+      tester,
+    ) async {
+      await pumpView(tester);
+      expect(find.text('More'), findsOneWidget);
+      await tester.ensureVisible(find.text('Weekly Review'));
+      await tester.tap(find.text('Weekly Review'));
+      verify(() => router.goNamed('weeklyReview')).called(1);
+      expect(find.text('Customize Analytics'), findsOneWidget);
+    });
+
+    testWidgets('+ offers Log Weight and every measurement', (tester) async {
+      await pumpView(tester);
+      await tester.tap(find.byTooltip('Log body metrics'));
+      await tester.pumpAndSettle();
+      expect(find.text('Log Weight'), findsOneWidget);
+      await tester.tap(find.text('Log Measurement'));
+      await tester.pumpAndSettle();
+      expect(find.text('Upper Body'), findsOneWidget);
+      expect(find.text('Right Ankle'), findsOneWidget);
     });
   });
 

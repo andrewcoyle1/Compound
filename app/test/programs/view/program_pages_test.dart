@@ -84,7 +84,13 @@ void main() {
   late AppBloc appBloc;
   final m1 = programMesocycle('m1');
   final m2 = programMesocycle('m2', cycles: 3);
-  final yesterday = programNow.subtract(const Duration(hours: 20));
+  // Midday on the previous calendar day, whatever the time now.
+  final yesterday = DateTime(
+    programNow.year,
+    programNow.month,
+    programNow.day - 1,
+    12,
+  );
 
   setUp(() {
     appBloc = MockAppBloc();

@@ -55,6 +55,10 @@ void main() {
       expect(niceBounds(70.3, 70.3), (69.0, 71.0));
       expect(niceBounds(70.1, 74.6), (70.0, 76.0));
       expect(niceBounds(70.1, 72.6), (70.0, 74.0));
+      // A ratio steps in tenths.
+      expect(readingBounds(0.44, 0.5), (0.4, 0.6));
+      expect(readingBounds(70.3, 70.3), (69.0, 71.0));
+      expect(readingBounds(-0.5, 0.5), niceBounds(-0.5, 0.5));
     });
   });
 

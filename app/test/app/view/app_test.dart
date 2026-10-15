@@ -390,6 +390,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      // Below the header carousel.
+      await tester.ensureVisible(find.text('Weight Trend'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Weight Trend'));
       await tester.pumpAndSettle();
       expect(find.byType(WeightMetricView), findsOneWidget);

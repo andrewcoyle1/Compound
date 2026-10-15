@@ -10,6 +10,7 @@
 /// the nutrition cases the Swift and this port are checked against.
 library;
 
+export 'src/body_ratio.dart';
 export 'src/check_in_schedule.dart';
 export 'src/daily_macros.dart';
 export 'src/day_key.dart';

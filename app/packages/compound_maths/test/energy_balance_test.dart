@@ -90,4 +90,30 @@ void main() {
       expect(loggedAverage([0, 0]), isNull);
     });
   });
+
+  // ProgressCarouselMetricsTests.testAveragesSkipUnloggedDays.
+  group('compared averages', () {
+    const days = [
+      (intake: 2000.0, expenditure: 2500.0, target: 2200.0),
+      (intake: 0.0, expenditure: 3000.0, target: 2200.0),
+      (intake: 2400.0, expenditure: 2700.0, target: null),
+    ];
+
+    test('averages only the logged days, each against its comparison', () {
+      final expenditure = comparedAverages([
+        for (final d in days) (intake: d.intake, comparison: d.expenditure),
+      ])!;
+      final targets = comparedAverages([
+        for (final d in days) (intake: d.intake, comparison: d.target),
+      ])!;
+      expect(expenditure.intake, 2200);
+      expect(expenditure.comparison, 2600);
+      expect(targets.comparison, 2200);
+    });
+
+    test('is null with nothing logged or nothing to compare', () {
+      expect(comparedAverages([(intake: 0, comparison: 3000)]), isNull);
+      expect(comparedAverages([(intake: 2000, comparison: null)]), isNull);
+    });
+  });
 }

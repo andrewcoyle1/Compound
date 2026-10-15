@@ -33,8 +33,9 @@ double? setEstimatedOneRepMax(WorkoutSet set) {
   return estimatedOneRepMax(weight, reps, rpe: set.rpe);
 }
 
-/// One session's best estimate for an exercise.
-typedef OneRepMaxPoint = ({String day, double value});
+/// One session's best estimate for an exercise: its day, the session's
+/// [WorkoutSession.at], and the estimate.
+typedef OneRepMaxPoint = ({String day, DateTime at, double value});
 
 /// An exercise's estimates: the best of each of its seven most recent sessions,
 /// newest first, and the best of those.
@@ -73,7 +74,7 @@ Map<String, ExerciseOneRepMax> exerciseOneRepMax(
       final list = points.putIfAbsent(exercise.templateId, () => []);
       names.putIfAbsent(exercise.templateId, () => exercise.name);
       if (list.length >= 7) continue;
-      list.add((day: session.day, value: best));
+      list.add((day: session.day, at: session.at, value: best));
     }
   }
   return points.map(

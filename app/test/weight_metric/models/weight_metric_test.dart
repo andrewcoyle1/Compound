@@ -104,4 +104,32 @@ void main() {
       expect(trendOf(const []), isEmpty);
     });
   });
+
+  // GoalTimelineTests / NutritionTargetsTests: the weight goal progress is
+  // measured from.
+  group('latestTrendWeightKg', () {
+    test('is null with no weigh-ins', () {
+      expect(latestTrendWeightKg(const []), isNull);
+      expect(latestTrendWeightKg([entry('waist', null, 0)]), isNull);
+    });
+
+    test('is the trend at the latest weigh-in', () {
+      final entries = [for (var d = 10; d >= 0; d--) entry('e$d', 72, d)];
+      expect(latestTrendWeightKg(entries), closeTo(72, 1e-9));
+      expect(latestTrendWeightKg(entries), trendOf(entries).last.value);
+    });
+
+    test('leaves out deleted, zero and non-finite weights', () {
+      final kept = [entry('a', 80, 2), entry('b', 80, 1)];
+      expect(
+        latestTrendWeightKg([
+          ...kept,
+          entry('gone', 60, 0, deleted: true),
+          entry('zero', 0, 0),
+          entry('nan', double.nan, 0),
+        ]),
+        latestTrendWeightKg(kept),
+      );
+    });
+  });
 }

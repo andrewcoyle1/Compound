@@ -1,0 +1,13 @@
+{
+  "created_at": {
+    "$timestamp": "2026-10-13T19:00:00.000Z"
+  },
+  "id": "chat_contract_minimal",
+  "messages": [
+
+  ],
+  "title": "Hello",
+  "updated_at": {
+    "$timestamp": "2026-10-13T19:00:00.000Z"
+  }
+}

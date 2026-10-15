@@ -54,6 +54,7 @@ class ProgramsCubit extends Cubit<ProgramsState> {
     List<WorkoutSessionModel>? sessions;
     var userLoaded = false;
     var activeId = state.activeMesocycleId;
+    var migrated = false;
 
     void update() {
       if (isClosed || _uid != uid) return;
@@ -72,6 +73,12 @@ class ProgramsCubit extends Cubit<ProgramsState> {
           activeMesocycleId: () => activeId,
         ),
       );
+      // Once per sign-in, as Swift's `logIn` does, once everything it reads
+      // has loaded.
+      if (!migrated) {
+        migrated = true;
+        unawaited(_service.migrateIfNeeded(uid));
+      }
     }
 
     void fail(Object _, StackTrace _) {
@@ -157,6 +164,19 @@ class ProgramsCubit extends Cubit<ProgramsState> {
   }) => _run(
     '${eventPrefix}_DeleteProgram',
     (uid) => _service.deleteMesocycle(uid, mesocycle.id),
+  );
+
+  /// Saves [day] of a mesocycle as a library workout of the user's own,
+  /// named [copyName] of it when [library] has a workout of its name
+  /// ([workoutCopyName]).
+  Future<void> saveWorkoutCopy(
+    WorkoutTemplateModel day, {
+    required Iterable<WorkoutTemplateModel> library,
+    required String Function(String name) copyName,
+  }) => _run(
+    'WorkoutTemplateDetailView_SaveCopy',
+    (uid) =>
+        _setup.saveWorkoutCopy(uid, day, library: library, copyName: copyName),
   );
 
   /// Starts the user's own copy of the shipped [mesocycle].

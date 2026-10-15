@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
+import 'package:compound/programs/view/mesocycle_style.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:program_repository/program_repository.dart';
 
@@ -34,8 +35,8 @@ String deloadTitle(AppLocalizations l10n, DeloadType deload) =>
 
 /// A mesocycle's badge in its colour, its name and how many workouts a
 /// microcycle holds, with the deload and phase chips when they apply
-/// (Swift `MesocycleHeader`). The badge draws the mesocycle glyph: the SF
-/// Symbol a mesocycle names has no Material twin.
+/// (Swift `MesocycleHeader`). The badge draws the glyph its SF Symbol is
+/// mapped to ([mesocycleGlyph]), or the mesocycle glyph.
 class const MesocycleHeader({
   required final Mesocycle mesocycle,
   final bool isDeload = false,
@@ -68,7 +69,7 @@ class const MesocycleHeader({
                     color: AppColors.tintedSurface(colour),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(AppSymbols.mesocycle, color: colour),
+                  child: Icon(mesocycleGlyph(mesocycle.icon), color: colour),
                 ),
               ),
             ),
@@ -180,14 +181,14 @@ class const DayPlanRow({
 Future<bool> confirmDestructive(
   BuildContext context, {
   required String title,
-  required String message,
   required String confirmLabel,
+  String? message,
 }) async {
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(title),
-      content: Text(message),
+      content: message == null ? null : Text(message),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),

@@ -242,7 +242,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Lower'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Workout options'));
+      // The saved mesocycle's menu; the active one has Edit alone.
+      await tester.tap(find.byTooltip('Workout options').last);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Delete Mesocycle'));
       await tester.pumpAndSettle();
@@ -319,7 +320,9 @@ void main() {
       expect(find.text('1 mesocycle · Mesocycle 1 of 1'), findsOneWidget);
       expect(find.text('2 mesocycles · Ended'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('New Macrocycle'));
+      await tester.tap(find.byTooltip('Add macrocycle'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('New Macrocycle'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Block m2').last);
       await tester.pumpAndSettle();
@@ -336,7 +339,14 @@ void main() {
     });
 
     testWidgets('with none, offers a new one', (tester) async {
-      await pump(tester, '/training/macrocycles', macrocycles: const []);
+      // Following nothing: an active mesocycle would be given a
+      // macrocycle on sign-in.
+      await pump(
+        tester,
+        '/training/macrocycles',
+        macrocycles: const [],
+        active: null,
+      );
       expect(find.text('No Macrocycles'), findsOneWidget);
       await tester.tap(find.text('New Macrocycle'));
       await tester.pumpAndSettle();

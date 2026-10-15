@@ -16,8 +16,8 @@ import 'package:go_router/go_router.dart';
 
 /// The Training tab's root (Swift `TrainingView`): a search over exercises
 /// and workouts, the active mesocycle's schedule (or a way to choose one),
-/// and the Library. The calendar header and the + menu's New items wait
-/// for their slices.
+/// and the Library, with a + menu. The calendar header waits for its
+/// slice.
 class TrainingPage extends StatelessWidget {
   const new({super.key});
 
@@ -62,7 +62,7 @@ class TrainingView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.tabTraining),
-        actions: const [ProfileButton()],
+        actions: const [_AddMenu(), ProfileButton()],
       ),
       body: SafeArea(
         bottom: false,
@@ -78,6 +78,50 @@ class TrainingView extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The + menu (Swift `TrainingView`'s toolbar). New Workout and New
+/// Exercise come with the workout and exercise editors.
+class _AddMenu extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return PopupMenuButton<VoidCallback>(
+      icon: const Icon(AppSymbols.add),
+      tooltip: l10n.trainingAddTraining,
+      onSelected: (action) => action(),
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: () => unawaited(
+            startWorkout(context, eventPrefix: 'TrainingView_StartWorkout'),
+          ),
+          child: ListTile(
+            leading: const Icon(AppSymbols.start),
+            title: Text(l10n.startEmptyWorkout),
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: () => unawaited(
+            MacrocycleDetailPage.open(context, MacrocycleDetailPage.newId),
+          ),
+          child: ListTile(
+            leading: const Icon(AppSymbols.macrocycle),
+            title: Text(l10n.programNewMacrocycle),
+          ),
+        ),
+        PopupMenuItem(
+          value: () => unawaited(NameMesocyclePage.open(context)),
+          child: ListTile(
+            leading: const Icon(AppSymbols.mesocycle),
+            title: Text(l10n.programNewMesocycle),
+          ),
+        ),
+      ],
     );
   }
 }

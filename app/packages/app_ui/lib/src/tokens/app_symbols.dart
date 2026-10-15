@@ -61,6 +61,19 @@ abstract final class AppSymbols {
   /// A mesocycle.
   static const IconData mesocycle = Icons.assignment_rounded;
 
+  /// The glyphs a mesocycle can be given, by the SF Symbol name it stores
+  /// (Swift's `MesocycleIconPresenter.defaultIcons`). Any other name draws
+  /// [mesocycle].
+  static const Map<String, IconData> mesocycleIcons = {
+    'flag.pattern.checkered': Icons.sports_score_rounded,
+    'arcade.stick': Icons.gamepad_rounded,
+    'gamecontroller': Icons.sports_esports_rounded,
+    'figure.walk': Icons.directions_walk_rounded,
+    'airplane.up.right': Icons.flight_takeoff_rounded,
+    'sailboat.fill': Icons.sailing_rounded,
+    'gauge.with.dots.needle.bottom.100percent': Icons.speed_rounded,
+  };
+
   /// A macrocycle: mesocycles run one after another.
   static const IconData macrocycle = Icons.view_agenda_rounded;
 

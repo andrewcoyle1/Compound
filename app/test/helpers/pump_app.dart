@@ -107,6 +107,20 @@ extension PumpApp on WidgetTester {
           RepositoryProvider.value(
             value: proposalDismissals ?? ProposalDismissals(),
           ),
+          RepositoryProvider(
+            create: (context) => ProgramService(
+              programs: context.read(),
+              users: context.read(),
+              sessions: context.read(),
+            ),
+          ),
+          RepositoryProvider(
+            create: (context) => TrainingSetupService(
+              programs: context.read(),
+              library: context.read(),
+              users: context.read(),
+            ),
+          ),
         ],
         child: MultiBlocProvider(
           providers: [

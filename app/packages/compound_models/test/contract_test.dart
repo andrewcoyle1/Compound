@@ -166,6 +166,18 @@ final _models =
             PlateLoadedMachine.fromFirestore(data).toFirestore(),
         keys: GymEquipmentKeys.plateLoadedMachineFields,
       ),
+      'mesocycle': (
+        roundTrip: (data) => Mesocycle.fromFirestore(data).toFirestore(),
+        keys: MesocycleKeys.all,
+      ),
+      'macrocycle': (
+        roundTrip: (data) => Macrocycle.fromFirestore(data).toFirestore(),
+        keys: MacrocycleKeys.all,
+      ),
+      'food_model': (
+        roundTrip: (data) => FoodModel.fromFirestore(data).toFirestore(),
+        keys: FoodModelKeys.all,
+      ),
     };
 
 final _root = Directory('../../../contracts/firestore');
@@ -287,6 +299,9 @@ void main() {
         ),
         'InitialLogFillOption': raw(InitialLogFillOption.values),
         'ProgressionAdjustmentMode': raw(ProgressionAdjustmentMode.values),
+        'DeloadType': raw(DeloadType.values),
+        'MacrocycleStatus': raw(MacrocycleStatus.values),
+        'MeasurementMethod': raw(MeasurementMethod.values),
       }),
     );
   });

@@ -146,6 +146,22 @@ t("contract: the owner creates the full gym profile and exercise and workout set
     await assertFails(setDoc(doc(db(BOB), `users/${uid}/workout_settings/workout_settings`), workoutSettings));
 });
 
+t("contract: the owner creates the full mesocycle, macrocycle and food at their paths", async () => {
+    const mesocycle = contractFixture("mesocycle");
+    const uid = mesocycle.author_id;
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/mesocycles/${mesocycle.id}`), mesocycle));
+    await assertFails(setDoc(doc(db(BOB), `users/${uid}/mesocycles/bob_copy`), mesocycle));
+    await assertFails(setDoc(doc(db(BOB), `users/${BOB}/mesocycles/${mesocycle.id}`), mesocycle));
+    const macrocycle = contractFixture("macrocycle");
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/macrocycles/${macrocycle.id}`), macrocycle));
+    await assertFails(setDoc(doc(db(BOB), `users/${uid}/macrocycles/bob_copy`), macrocycle));
+    await assertFails(setDoc(doc(db(BOB), `users/${BOB}/macrocycles/${macrocycle.id}`), macrocycle));
+    const food = contractFixture("food_model");
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/foods/${food.ingredient_id}`), food));
+    await assertFails(setDoc(doc(db(BOB), `users/${uid}/foods/bob_copy`), food));
+    await assertFails(setDoc(doc(db(BOB), `users/${BOB}/foods/${food.ingredient_id}`), food));
+});
+
 // ---------------- FLUTTER WRITES (M3) ----------------
 // Each write the Flutter repositories make, in the shape they make it: whole documents merged
 // (`set` with `merge: true`) and partial updates with `update`. The owner may make each one;

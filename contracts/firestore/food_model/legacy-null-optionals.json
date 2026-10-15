@@ -1,0 +1,29 @@
+{
+  "author_id": null,
+  "barcode": null,
+  "bookmark_count": null,
+  "brand_name": null,
+  "click_count": null,
+  "date_created": {
+    "$timestamp": "2026-07-02T08:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-07-02T08:00:00.000Z"
+  },
+  "description": null,
+  "favourite_count": null,
+  "image_url": null,
+  "ingredient_id": "food_contract_minimal",
+  "measurement_method": "weight",
+  "name": "Water",
+  "nutrients": {},
+  "portion_name": null,
+  "portion_size": null,
+  "portion_volume": null,
+  "portion_weight": null,
+  "serving_weight": null,
+  "volume_portion_name": null,
+  "volume_portion_size": null,
+  "weight_portion_name": null,
+  "weight_portion_size": null
+}

@@ -1,0 +1,21 @@
+{
+  "calories": 52.5,
+  "carbs": 13.75,
+  "date_created": {
+    "$timestamp": "2026-07-02T08:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-07-02T08:00:00.000Z"
+  },
+  "fat_total": 0.25,
+  "ingredient_id": "food_contract_minimal",
+  "measurement_method": "weight",
+  "name": "Water",
+  "nutrients": {
+    "calories": 52.5,
+    "protein": 0.25
+  },
+  "protein": 0.25,
+  "sodium_mg": 1.5,
+  "vitamin_c_mg": 4.5
+}

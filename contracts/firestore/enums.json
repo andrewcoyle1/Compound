@@ -13,6 +13,11 @@
     "advanced",
     "elite"
   ],
+  "DeloadType": [
+    "none",
+    "start",
+    "end"
+  ],
   "DistanceUnitPreference": [
     "kilometers",
     "miles"
@@ -74,10 +79,20 @@
     "centimeters",
     "inches"
   ],
+  "MacrocycleStatus": [
+    "notStarted",
+    "active",
+    "completed",
+    "ended"
+  ],
   "MealItemSourceType": [
     "ingredient",
     "recipe",
     "quick_add"
+  ],
+  "MeasurementMethod": [
+    "weight",
+    "volume"
   ],
   "Muscles": [
     "triceps",

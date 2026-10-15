@@ -291,6 +291,22 @@ t("flutter: saveGymProfile merges a gym, then setFavouriteGymProfile names it", 
     await assertSucceeds(updateDoc(doc(db(uid), `users/${uid}`), { submitted_favourite_gym_profile_id: gym.id }));
 });
 
+t("flutter: saveFood merges a food, and never one without author_id", async () => {
+    const food = contractFixture("food_model");
+    const uid = food.author_id;
+    const ref = (as) => doc(db(as), `users/${uid}/foods/${food.ingredient_id}`);
+    const { author_id: _, ...unowned } = food;
+    await assertFails(merge(ref(uid), unowned));
+    await assertFails(merge(ref(BOB), food));
+    await assertSucceeds(merge(ref(uid), food));
+    await assertSucceeds(merge(ref(uid), { ...food, name: "Oat Milk Light" }));
+    await assertFails(merge(ref(BOB), { ...food, name: "Oat Milk Light" }));
+    // An Open Food Facts result cached in the library, as the barcode lookup saves it.
+    const offRef = doc(db(uid), `users/${uid}/foods/off-5010029000061`);
+    await assertFails(merge(offRef, { ...unowned, ingredient_id: "off-5010029000061" }));
+    await assertSucceeds(merge(offRef, { ...food, ingredient_id: "off-5010029000061" }));
+});
+
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.
 for (const [sub, key] of [
     ["body_measurements", "author_id"], ["steps", "author_id"], ["goals", "user_id"],

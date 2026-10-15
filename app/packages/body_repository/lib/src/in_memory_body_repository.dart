@@ -11,7 +11,8 @@ import 'package:compound_models/compound_models.dart';
 ///
 /// Writes behave as Firestore's do, so staging behaves as the real app:
 /// saves merge over the stored document field by field, an update of a
-/// missing goal fails with `not-found`, and every watcher sees the change.
+/// missing goal or entry fails with `not-found`, and every watcher sees the
+/// change.
 class InMemoryBodyRepository implements BodyRepository {
   /// Creates an [InMemoryBodyRepository] holding `measurements`, `steps`,
   /// `goals` (stored, like Firestore's, under their `goalId`) and
@@ -22,7 +23,7 @@ class InMemoryBodyRepository implements BodyRepository {
     List<WeightGoal> goals = const [],
     this._analyticsSettings,
   }) : _measurements = List.of(measurements),
-       _steps = List.unmodifiable(steps),
+       _steps = List.of(steps),
        _goals = List.of(goals);
 
   final List<BodyMeasurementEntry> _measurements;
@@ -41,8 +42,8 @@ class InMemoryBodyRepository implements BodyRepository {
   );
 
   @override
-  Stream<List<StepsModel>> watchSteps(String uid) => Stream.value(
-    liveOldestFirst(
+  Stream<List<StepsModel>> watchSteps(String uid) => _watch(
+    () => liveOldestFirst(
       _steps.where((steps) => steps.authorId == uid),
       date: (steps) => steps.date,
       deletedAt: (steps) => steps.deletedAt,
@@ -69,6 +70,41 @@ class InMemoryBodyRepository implements BodyRepository {
       entry,
       (stored) => stored.authorId == entry.authorId && stored.id == entry.id,
       BodyMeasurementEntry.fromFirestore,
+      (model) => model.toFirestore(),
+    );
+  }
+
+  @override
+  Future<void> clearMeasurementFields(
+    String uid,
+    String entryId,
+    Set<String> fields,
+  ) async {
+    checkClearable(fields);
+    final index = _measurements.indexWhere(
+      (stored) => stored.authorId == uid && stored.id == entryId,
+    );
+    if (index < 0) {
+      throw FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'not-found',
+        message: 'No document to update: users/$uid/body_measurements/$entryId',
+      );
+    }
+    _measurements[index] = BodyMeasurementEntry.fromFirestore(
+      _measurements[index].toFirestore()
+        ..removeWhere((key, _) => fields.contains(key)),
+    );
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> saveSteps(StepsModel steps) async {
+    _merge(
+      _steps,
+      steps,
+      (stored) => stored.authorId == steps.authorId && stored.id == steps.id,
+      StepsModel.fromFirestore,
       (model) => model.toFirestore(),
     );
   }

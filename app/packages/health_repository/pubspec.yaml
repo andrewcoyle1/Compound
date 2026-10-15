@@ -1,0 +1,25 @@
+name: health_repository
+description: Reads from and writes to Apple Health (HealthKit) and Health Connect through the health package, and imports steps, weigh-ins and food totals into the body and nutrition repositories as the Swift app does.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  body_repository:
+    path: ../body_repository
+  compound_models:
+    path: ../compound_models
+  flutter:
+    sdk: flutter
+  health: ^13.3.2
+  nutrition_repository:
+    path: ../nutrition_repository
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0

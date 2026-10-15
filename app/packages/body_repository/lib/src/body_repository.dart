@@ -1,3 +1,4 @@
+import 'package:body_repository/src/body_rules.dart';
 import 'package:compound_models/compound_models.dart';
 
 /// The signed-in user's body data, steps and weight goal.
@@ -28,12 +29,31 @@ abstract interface class BodyRepository {
   /// merged over anything there, as `BodyMeasurementsManager
   /// .saveBodyMeasurement` does (`BodyMeasurementsManager.swift:56`;
   /// `saveDocument` is `setData(merge: true)`). The Apple Health export
-  /// Swift does first is not ported yet (M5).
+  /// Swift does first is `health_repository`'s `saveMeasurement`.
   ///
   /// A merge leaves a field the entry omits as it was, so this cannot clear
   /// a value: Swift's `withCleared` has exactly that bug
-  /// (`swift-findings.md`). Clearing is not part of M3.
+  /// (`swift-findings.md`). Use [clearMeasurementFields] to clear.
   Future<void> saveMeasurement(BodyMeasurementEntry entry);
+
+  /// Removes [fields] from `users/{uid}/body_measurements/{entryId}`, with
+  /// `FieldValue.delete()`, so the value is gone on every device (Swift's
+  /// merge cannot do this; see [saveMeasurement]).
+  ///
+  /// Each field must be one of [clearableMeasurementFields]: an optional
+  /// value, never one the model requires. Anything else throws an
+  /// [ArgumentError] before writing. An `update`, so a missing entry is
+  /// refused with `not-found`.
+  Future<void> clearMeasurementFields(
+    String uid,
+    String entryId,
+    Set<String> fields,
+  );
+
+  /// Saves [steps] to `users/{steps.authorId}/steps/{steps.id}`, merged, as
+  /// `StepsManager.createStepsEntry` and its Apple Health import do
+  /// (`saveDocument` is `setData(merge: true)`).
+  Future<void> saveSteps(StepsModel steps);
 
   /// Saves a new [goal] to `users/{goal.userId}/goals/{goal.goalId}`,
   /// merged, as `GoalManager.saveGoal` does (`GoalManager.swift:44-47`).

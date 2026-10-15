@@ -94,6 +94,29 @@ class FirestoreBodyRepository implements BodyRepository {
   );
 
   @override
+  Future<void> clearMeasurementFields(
+    String uid,
+    String entryId,
+    Set<String> fields,
+  ) {
+    checkClearable(fields);
+    final document = _user(uid).collection('body_measurements').doc(entryId);
+    return writeLocally(
+      document.path,
+      () => document.update({
+        for (final field in fields) field: FieldValue.delete(),
+      }),
+      _onWriteError,
+    );
+  }
+
+  @override
+  Future<void> saveSteps(StepsModel steps) => _merge(
+    _user(steps.authorId).collection('steps').doc(steps.id),
+    steps.toFirestore(),
+  );
+
+  @override
   Future<void> saveGoal(WeightGoal goal) =>
       _merge(_goal(goal.userId, goal.goalId), goal.toFirestore());
 

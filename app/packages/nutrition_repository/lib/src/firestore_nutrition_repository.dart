@@ -40,21 +40,27 @@ class FirestoreNutritionRepository implements NutritionRepository {
       _firestore.collection('users').doc(uid);
 
   @override
-  Stream<List<MealLogModel>> watchMeals(String uid) =>
+  Stream<List<MealLogModel>> watchMeals(
+    String uid, {
+    bool includeHiddenHealthImports = false,
+  }) =>
       _user(uid)
           .collection('meal_logs')
           .where(MealLogModelKeys.authorId, isEqualTo: uid)
           .snapshots()
-          .map(
-            (snapshot) => withoutDuplicateHealthImports([
+          .map((snapshot) {
+            final meals = [
               for (final document in snapshot.docs)
                 ?_decode(
                   document.reference.path,
                   document.data(),
                   MealLogModel.fromFirestore,
                 ),
-            ]),
-          );
+            ];
+            return includeHiddenHealthImports
+                ? meals
+                : withoutDuplicateHealthImports(meals);
+          });
 
   @override
   Stream<DietPlan?> watchDietPlan(String uid) => _firestore
@@ -80,6 +86,12 @@ class FirestoreNutritionRepository implements NutritionRepository {
     _user(meal.authorId).collection('meal_logs').doc(meal.mealId),
     meal.toFirestore(),
   );
+
+  @override
+  Future<void> deleteMeal(String uid, String mealId) {
+    final document = _user(uid).collection('meal_logs').doc(mealId);
+    return writeLocally(document.path, document.delete, _onWriteError);
+  }
 
   @override
   Future<void> saveDietPlan(DietPlan plan) => _merge(

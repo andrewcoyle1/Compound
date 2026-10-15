@@ -55,6 +55,22 @@ void main() {
       },
     );
 
+    test('saveSteps and clearMeasurementFields complete offline; a refusal '
+        'is reported', () async {
+      final steps = StepsModel.fromFirestore(modelFixture('steps', 'full'));
+      await subject.saveSteps(steps);
+      await subject.clearMeasurementFields('u', 'e', {'weight_kg'});
+      expect(refused, isEmpty);
+
+      firestore.refuse('not-found');
+      await pumpEventQueue();
+
+      expect(refused, [
+        ('users/${steps.authorId}/steps/${steps.id}', 'not-found'),
+        ('users/u/body_measurements/e', 'not-found'),
+      ]);
+    });
+
     test('abandonGoal completes offline; not-found is reported', () async {
       await subject.abandonGoal('u', 'g');
       expect(refused, isEmpty);

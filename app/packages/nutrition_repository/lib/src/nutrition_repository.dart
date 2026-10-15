@@ -6,7 +6,15 @@ abstract interface class NutritionRepository {
   /// The meals at `users/{uid}/meal_logs` whose author is [uid], as the
   /// Swift app's listener reads them, less the Apple Health imports
   /// [withoutDuplicateHealthImports] drops. Re-emitted on every change.
-  Stream<List<MealLogModel>> watchMeals(String uid);
+  ///
+  /// [includeHiddenHealthImports] keeps those imports, as Swift's import
+  /// reads the sync engine's whole collection: an import hidden behind a
+  /// logged meal is still kept current, so it is right again if the meal is
+  /// deleted. Screens leave it false.
+  Stream<List<MealLogModel>> watchMeals(
+    String uid, {
+    bool includeHiddenHealthImports = false,
+  });
 
   /// The plan at `diet_plans/{uid}`, or null when there is none or it
   /// cannot be read.
@@ -22,6 +30,11 @@ abstract interface class NutritionRepository {
   /// (`MealLogManager.swift:88`; `saveDocument` is `setData(merge: true)`).
   /// `items` is a list, so a save replaces it whole.
   Future<void> saveMeal(MealLogModel meal);
+
+  /// Deletes `users/{uid}/meal_logs/{mealId}`, as `MealLogManager
+  /// .deleteMeal` does (`deleteDocument` is a plain `delete()`). Deleting a
+  /// meal that is not there is not an error, as in Firestore.
+  Future<void> deleteMeal(String uid, String mealId);
 
   /// Saves [plan] to `diet_plans/{plan.planId}`, merged, as
   /// `NutritionManager.saveDietPlan` does (`NutritionManager.swift:51`).

@@ -51,6 +51,32 @@ void main() {
       );
     });
 
+    test('watchMeals keeps hidden imports when asked', () {
+      expect(
+        subject
+            .watchMeals('me', includeHiddenHealthImports: true)
+            .map((meals) => meals.length),
+        emits(3),
+      );
+    });
+
+    test('deleteMeal removes only that meal, and watchers see it', () async {
+      final expectation = expectLater(
+        subject
+            .watchMeals('me')
+            .map((meals) => [for (final m in meals) m.mealId]),
+        emitsInOrder([
+          ['a', 'healthkit-nutrition-2026-10-11'],
+          ['healthkit-nutrition-2026-10-12', 'healthkit-nutrition-2026-10-11'],
+        ]),
+      );
+
+      await subject.deleteMeal('me', 'a');
+      await subject.deleteMeal('me', 'missing');
+
+      await expectation;
+    });
+
     group('watchDietPlan', () {
       test("emits the user's plan", () {
         expect(subject.watchDietPlan('me'), emits(plan));

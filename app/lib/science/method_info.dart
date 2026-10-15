@@ -224,6 +224,17 @@ class const MethodInfo({
     citations: const [Citation.pelland2026],
   );
 
+  /// Every method ported so far, keyed by its Swift `MethodInfo.id`, in
+  /// Swift's order (`MethodInfo.all`: energy, nutrition, training, volume,
+  /// habits), for Settings › Methods & Sources. Add each new method here.
+  static Map<String, MethodInfo> all(AppLocalizations l10n) => {
+    'weight-trend': MethodInfo.weightTrend(l10n),
+    'volume.plannedSets': MethodInfo.plannedSetsPerMuscle(l10n),
+    'habits.weeklyGoal': MethodInfo.weeklySessionGoal(l10n),
+    'habits.stepGoal': MethodInfo.dailyStepGoal(l10n),
+    'habits.adherenceBand': MethodInfo.calorieAdherenceBand(l10n),
+  };
+
   static const _weightTrendFormula = '''
 State: level L (kg), slope b (kg/day). Between weigh-ins Δt days apart:
   L ← L + b·Δt

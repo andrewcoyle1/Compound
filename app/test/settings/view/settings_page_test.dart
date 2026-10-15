@@ -1,4 +1,5 @@
 import 'package:auth_repository/auth_repository.dart';
+import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/general/view/about_page.dart';
@@ -56,6 +57,9 @@ void main() {
       const SizedBox(),
       appBloc: appBloc,
       authRepository: authRepository,
+      // The screens the rows open read these.
+      userRepository: InMemoryUserRepository(),
+      bodyRepository: InMemoryBodyRepository(),
       router: GoRouter(
         initialLocation: '/profile/settings',
         routes: [

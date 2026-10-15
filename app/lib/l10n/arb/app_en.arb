@@ -3139,5 +3139,141 @@
     "profileEditProfile": "Edit Profile",
     "@profileEditProfile": {
         "description": "Profile row: opens Edit Profile"
+    },
+    "editProfileTitle": "Edit Profile",
+    "@editProfileTitle": {
+        "description": "Title of the Edit Profile screen"
+    },
+    "editProfileProfileHeader": "Profile",
+    "@editProfileProfileHeader": {
+        "description": "Edit Profile: section header"
+    },
+    "editProfileLastName": "Last name",
+    "@editProfileLastName": {
+        "description": "Edit Profile: last name field"
+    },
+    "editProfileSex": "Sex",
+    "@editProfileSex": {
+        "description": "Edit Profile: the sex picker"
+    },
+    "editProfileNotSpecified": "Not specified",
+    "@editProfileNotSpecified": {
+        "description": "Edit Profile: a picker with no answer"
+    },
+    "editProfileHeight": "Height",
+    "@editProfileHeight": {
+        "description": "Edit Profile: the height field"
+    },
+    "editProfileCardioExperience": "Cardio Experience",
+    "@editProfileCardioExperience": {
+        "description": "Edit Profile: the cardio fitness picker"
+    },
+    "editProfileExerciseFrequency": "Exercise Frequency",
+    "@editProfileExerciseFrequency": {
+        "description": "Edit Profile: how often the user works out"
+    },
+    "editProfileDailyActivity": "Daily Activity",
+    "@editProfileDailyActivity": {
+        "description": "Edit Profile: the daily activity picker"
+    },
+    "editProfileCardioBeginner": "Beginner",
+    "@editProfileCardioBeginner": {
+        "description": "Cardio fitness level"
+    },
+    "editProfileCardioNovice": "Novice",
+    "@editProfileCardioNovice": {
+        "description": "Cardio fitness level"
+    },
+    "editProfileCardioIntermediate": "Intermediate",
+    "@editProfileCardioIntermediate": {
+        "description": "Cardio fitness level"
+    },
+    "editProfileCardioAdvanced": "Advanced",
+    "@editProfileCardioAdvanced": {
+        "description": "Cardio fitness level"
+    },
+    "editProfileCardioElite": "Elite",
+    "@editProfileCardioElite": {
+        "description": "Cardio fitness level"
+    },
+    "editProfilePrivacyHeader": "Privacy",
+    "@editProfilePrivacyHeader": {
+        "description": "Edit Profile: section header"
+    },
+    "editProfilePrivateProfile": "Private profile",
+    "@editProfilePrivateProfile": {
+        "description": "Edit Profile: the privacy switch"
+    },
+    "editProfilePrivacyFooter": "People must ask to follow a private profile. Until you accept, they see only your name and counts. Private profiles are left out of suggestions.",
+    "@editProfilePrivacyFooter": {
+        "description": "Edit Profile: what the privacy switch does"
+    },
+    "editProfileSaveFailedTitle": "Unable to Save Profile",
+    "@editProfileSaveFailedTitle": {
+        "description": "Alert title when saving the profile fails"
+    },
+    "editProfileSaveFailedMessage": "Please check your internet connection and try again.",
+    "@editProfileSaveFailedMessage": {
+        "description": "Alert message when saving the profile fails"
+    },
+    "editProfilePrivacyFailed": "Unable to Change Privacy",
+    "@editProfilePrivacyFailed": {
+        "description": "Snack bar when the privacy switch cannot be saved"
+    },
+    "deleteAccountWhatIsDeleted": "What Is Deleted",
+    "@deleteAccountWhatIsDeleted": {
+        "description": "Delete Account: section header"
+    },
+    "deleteAccountItemProfile": "Your profile, username and photos",
+    "@deleteAccountItemProfile": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountItemWorkouts": "Workouts, mesocycles, exercises and gym profiles",
+    "@deleteAccountItemWorkouts": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountItemMeals": "Meals, foods and recipes",
+    "@deleteAccountItemMeals": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountItemBody": "Body measurements, goals and progress photos",
+    "@deleteAccountItemBody": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountItemSocial": "Comments, likes and follows",
+    "@deleteAccountItemSocial": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountWhatIsDeletedFooter": "Your account is closed straight away, and the rest of your data is removed from our servers within 30 days. This cannot be undone.",
+    "@deleteAccountWhatIsDeletedFooter": {
+        "description": "Delete Account: when the data goes"
+    },
+    "deleteAccountSubscriptionHeader": "Subscription",
+    "@deleteAccountSubscriptionHeader": {
+        "description": "Delete Account: section header"
+    },
+    "deleteAccountSubscriptionMessage": "Your subscription is billed by the App Store or Google Play and is not canceled by deleting your account. Cancel it there first if you do not want to be charged again.",
+    "@deleteAccountSubscriptionMessage": {
+        "description": "Delete Account: deleting does not cancel the subscription"
+    },
+    "deleteAccountSignInAgain": "You'll be asked to sign in again to confirm.",
+    "@deleteAccountSignInAgain": {
+        "description": "Delete Account: footer for an Apple or Google account"
+    },
+    "deleteAccountFailedTitle": "Unable to Delete Account",
+    "@deleteAccountFailedTitle": {
+        "description": "Alert title when deleting the account fails"
+    },
+    "deleteAccountFailedMessage": "Please check your connection and try again.",
+    "@deleteAccountFailedMessage": {
+        "description": "Alert message when deleting the account fails"
+    },
+    "deleteAccountDeleted": "Account Deleted",
+    "@deleteAccountDeleted": {
+        "description": "Shown once the account is deleted"
+    },
+    "deleteAccountDeletedMessage": "The rest of your data is removed from our servers within 30 days.",
+    "@deleteAccountDeletedMessage": {
+        "description": "Shown once the account is deleted"
     }
 }

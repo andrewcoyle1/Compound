@@ -11,31 +11,31 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Components | CalendarHeader | `Views/CalendarHeader` | M2 | todo | |
 | Components | Calendar | `Views/CalendarHeader/Calendar` | M2 | todo | |
 | Components | AuthorHeader | `Views/User` | M2 | done | social feed and profile (M5 Social 1) |
-| Analytics | Analytics | `Compound/Core/Analytics` | M4 | partial | overview cards (#103); Expenditure and Energy Balance (#130); Muscle Groups and Exercises sections (#133); the carousel and the More list to come |
-| Analytics | BodyMetrics | `Subviews/BodyMetrics` | M4 | todo | |
-| Analytics | LogMeasurement | `Subviews/BodyMetrics/LogMeasurement` | M4 | todo | |
+| Analytics | Analytics | `Compound/Core/Analytics` | M4 | done | overview cards (#103); Expenditure and Energy Balance (#130); Muscle Groups and Exercises (#133); carousel, See All, More list and + menu (M4 Progress 3) |
+| Analytics | BodyMetrics | `Subviews/BodyMetrics` | M4 | partial | M4 Progress 3: every card, ratios, detail screens; progress photos wait for image upload |
+| Analytics | LogMeasurement | `Subviews/BodyMetrics/LogMeasurement` | M4 | done | M4 Progress 3 |
 | Analytics | LogWeight | `Subviews/BodyMetrics/LogMeasurement/LogWeightView` | M4 | done | #106 (HealthKit export M5) |
 | Analytics | ProgressPhotos | `Subviews/BodyMetrics/ProgressPhotos` | M4 | todo | |
-| Analytics | ScaleWeight | `Subviews/BodyMetrics/ScaleWeight` | M4 | partial | read-only + Log Weight (#98, #106) |
+| Analytics | ScaleWeight | `Subviews/BodyMetrics/ScaleWeight` | M4 | done | #98, #106; delete (M4 Progress 3); Health sync with the Health Connect slice |
 | Analytics | ExerciseAnalytics | `Subviews/ExerciseAnalytics` | M4 | done | #133 (profile unit, not per-exercise) |
 | Analytics | ExerciseDetail | `Subviews/ExerciseAnalytics/ExerciseDetail` | M4 | done | #133 |
-| Analytics | FoodLoggingConsistency | `Subviews/FoodLoggingConsistency` | M4 | todo | |
-| Analytics | Habits | `Subviews/Habits` | M4 | partial | card on Progress (#103) |
-| Analytics | InsightsAndAnalytics | `Subviews/InsightsAndAnalytics` | M4 | todo | |
+| Analytics | FoodLoggingConsistency | `Subviews/FoodLoggingConsistency` | M4 | done | M4 Progress 3 |
+| Analytics | Habits | `Subviews/Habits` | M4 | done | M4 Progress 3 |
+| Analytics | InsightsAndAnalytics | `Subviews/InsightsAndAnalytics` | M4 | done | M4 Progress 3 |
 | Analytics | EnergyBalance | `Subviews/InsightsAndAnalytics/EnergyBalance` | M4 | todo | |
 | Analytics | ExpenditureDetail | `Subviews/InsightsAndAnalytics/ExpenditureDetail` | M4 | todo | |
-| Analytics | GoalProgress | `Subviews/InsightsAndAnalytics/GoalProgress` | M4 | partial | card on Progress (#103) |
+| Analytics | GoalProgress | `Subviews/InsightsAndAnalytics/GoalProgress` | M4 | partial | M4 Progress 3; Set Goal and Change Goal wait for a goal editor outside onboarding |
 | Analytics | MuscleGroupDetail | `Subviews/InsightsAndAnalytics/MuscleGroupDetail` | M4 | done | #133 (Ask Coach waits for the coach UI) |
-| Analytics | Steps | `Subviews/InsightsAndAnalytics/Steps` | M4 | todo | |
-| Analytics | WeightTrend | `Subviews/InsightsAndAnalytics/WeightTrend` | M4 | partial | read-only (#98) |
+| Analytics | Steps | `Subviews/InsightsAndAnalytics/Steps` | M4 | partial | M4 Progress 3, stored history; Health sync with the Health Connect slice |
+| Analytics | WeightTrend | `Subviews/InsightsAndAnalytics/WeightTrend` | M4 | done | #98; delete (M4 Progress 3); Ask Coach deferred |
 | Analytics | Workout | `Subviews/InsightsAndAnalytics/Workouts` | M4 | done | #133 |
 | Analytics | MuscleBalance | `Subviews/MuscleBalance` | M4 | done | #133 |
 | Analytics | MuscleGroups | `Subviews/MuscleGroups` | M4 | done | #133 |
-| Analytics | NutritionAnalytics | `Subviews/NutritionAnalytics` | M4 | todo | |
-| Analytics | NutritionMetricDetail | `Subviews/NutritionAnalytics/NutritionMetricDetail` | M4 | todo | |
-| Analytics | NutritionTargetChart | `Subviews/NutritionTargetChart` | M4 | todo | |
-| Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | todo | |
-| Analytics | WeighInConsistency | `Subviews/WeighInConsistency` | M4 | todo | |
+| Analytics | NutritionAnalytics | `Subviews/NutritionAnalytics` | M4 | done | M4 Progress 3 |
+| Analytics | NutritionMetricDetail | `Subviews/NutritionAnalytics/NutritionMetricDetail` | M4 | done | M4 Progress 3 |
+| Analytics | NutritionTargetChart | `Subviews/NutritionTargetChart` | M4 | partial | M4 Progress 3; Create Diet Plan waits for a diet questionnaire outside onboarding |
+| Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | partial | M4 Progress 3; program targets and the Active Program toggle wait for Programs |
+| Analytics | WeighInConsistency | `Subviews/WeighInConsistency` | M4 | done | M4 Progress 3 |
 | Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | done | #133 (no month labels or press callout) |
 | AppView | App | `Compound/Core/AppView` | M1 | partial | sign-in redirect, shell (#86, #90) |
 | Challenges | ChallengeDetail | `ChallengeDetail` | M5 | todo | |
@@ -232,4 +232,4 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Spanish localisation, 100% | `Localizable.xcstrings` | M1 | done | `scripts/arb-spanish.py`, CI check |
 | iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | todo | |
 | Mac (Catalyst) | Catalyst | M6 | todo | Decided at M6 |
-| Methods & Sources (citations) | `Components/Science` | M4 | todo | |
+| Methods & Sources (citations) | `Components/Science` | M4 | partial | ratios, goal progress and tonnage added (M4 Progress 3) |

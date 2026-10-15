@@ -37,6 +37,9 @@ final class const WeightMetricState({
 
   /// Whether reading the weigh-ins failed.
   final bool failed = false,
+
+  /// How many deletes have failed, so the screen alerts on each.
+  final int deleteFailures = 0,
 }) extends Equatable {
   /// Where the weigh-ins have got to.
   WeightMetricStatus get status => failed
@@ -74,7 +77,14 @@ final class const WeightMetricState({
     WeightMetric.weightTrend => [
       for (final p in trendKg) (date: p.date, value: _inUnit(p.value)),
     ],
-  }..sort((a, b) => b.date.compareTo(a.date));
+  }.reversed.toList();
+
+  /// The weigh-in behind each of [entries], for deleting it: a trend row
+  /// deletes the weigh-in it was worked out at, as in Swift.
+  List<String> get entryIds => [
+    for (final entry in (weighIns ?? const <BodyMeasurementEntry>[]).reversed)
+      entry.id,
+  ];
 
   double _inUnit(double kilograms) => unit == AppWeightUnit.pounds
       ? kilograms * AppFormat.poundsPerKilogram
@@ -86,6 +96,7 @@ final class const WeightMetricState({
     List<MetricPoint>? trendKg,
     WeightUnitPreference? Function()? weightUnitPreference,
     bool? failed,
+    int? deleteFailures,
   }) => WeightMetricState(
     metric: metric,
     today: today,
@@ -96,6 +107,7 @@ final class const WeightMetricState({
         ? this.weightUnitPreference
         : weightUnitPreference(),
     failed: failed ?? this.failed,
+    deleteFailures: deleteFailures ?? this.deleteFailures,
   );
 
   @override
@@ -107,5 +119,6 @@ final class const WeightMetricState({
     trendKg,
     weightUnitPreference,
     failed,
+    deleteFailures,
   ];
 }

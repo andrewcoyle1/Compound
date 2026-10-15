@@ -1,9 +1,11 @@
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
+import 'package:compound/progress/view/progress_metric_view.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/weight_metric/bloc/weight_metric_bloc.dart';
@@ -33,6 +35,7 @@ class WeightMetricPage extends StatelessWidget {
       create: (context) => WeightMetricBloc(
         bodyRepository: context.read<BodyRepository>(),
         userRepository: context.read<UserRepository>(),
+        analyticsRepository: context.read<AnalyticsRepository>(),
         uid: state.user.uid,
         metric: metric,
       )..add(const WeightMetricSubscriptionRequested()),
@@ -53,39 +56,65 @@ class WeightMetricView extends StatelessWidget {
     final state = context.watch<WeightMetricBloc>().state;
     final title = state.metric.title(l10n);
     final hasEntries = state.weighIns?.isNotEmpty ?? false;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(allData ? l10n.metricAllRecordedData : title),
-        actions: [
-          if (!allData && state.metric == WeightMetric.weightTrend)
-            MethodInfoButton(MethodInfo.weightTrend(l10n)),
-          if (!allData)
-            IconButton(
-              icon: const Icon(AppSymbols.add),
-              tooltip: l10n.logWeightTitle,
-              onPressed: () => context.pushNamed(LogWeightPage.name),
+    final logWeight = ProgressMetricAction(
+      label: l10n.logWeightTitle,
+      icon: AppSymbols.add,
+      onPressed: () => context.pushNamed(LogWeightPage.name),
+    );
+    return BlocListener<WeightMetricBloc, WeightMetricState>(
+      listenWhen: (previous, current) =>
+          current.deleteFailures > previous.deleteFailures,
+      listener: (context, _) => showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(context.l10n.metricDeleteFailed),
+          content: Text(context.l10n.metricTryAgain),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(MaterialLocalizations.of(context).okButtonLabel),
             ),
-        ],
+          ],
+        ),
       ),
-      body: switch (state.status) {
-        WeightMetricStatus.loading => const Center(
-          child: CircularProgressIndicator.adaptive(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(allData ? l10n.metricAllRecordedData : title),
+          actions: [
+            if (!allData && state.metric == WeightMetric.weightTrend)
+              MethodInfoButton(MethodInfo.weightTrend(l10n)),
+            if (!allData)
+              IconButton(
+                icon: const Icon(AppSymbols.add),
+                tooltip: l10n.logWeightTitle,
+                onPressed: () => context.pushNamed(LogWeightPage.name),
+              ),
+          ],
         ),
-        WeightMetricStatus.failure => _Message(
-          title: title,
-          message: l10n.weightLoadFailure,
-        ),
-        WeightMetricStatus.loaded when !hasEntries => _Message(
-          title: title,
-          message: l10n.weightNoEntries,
-        ),
-        WeightMetricStatus.loaded when allData => MetricAllDataView(
-          title: title,
-          unit: state.unit.symbol,
-          entries: state.entries,
-        ),
-        WeightMetricStatus.loaded => _Detail(state: state, title: title),
-      },
+        body: switch (state.status) {
+          WeightMetricStatus.loading => const Center(
+            child: CircularProgressIndicator.adaptive(),
+          ),
+          WeightMetricStatus.failure => ProgressMessage(
+            title: title,
+            message: l10n.weightLoadFailure,
+          ),
+          WeightMetricStatus.loaded when !hasEntries => ProgressMessage(
+            title: title,
+            message: l10n.weightNoEntries,
+            action: logWeight,
+          ),
+          WeightMetricStatus.loaded when allData => MetricAllDataView(
+            title: title,
+            unit: state.unit.symbol,
+            entries: state.entries,
+            onDelete: (index) => context.read<WeightMetricBloc>().add(
+              WeightMetricEntryDeleted(state.entryIds[index]),
+            ),
+          ),
+          WeightMetricStatus.loaded => _Detail(state: state, title: title),
+        },
+      ),
     );
   }
 }
@@ -128,46 +157,6 @@ class _Detail extends StatelessWidget {
         WeightMetricRangeSelected(range),
       ),
       onShowAllData: () => context.goNamed(state.metric.dataRouteName),
-    );
-  }
-}
-
-/// An empty or failed state: the analytics glyph, the metric's name and a
-/// line saying why (Swift's `ContentUnavailableView`).
-class _Message extends StatelessWidget {
-  const new({required this.title, required this.message});
-
-  final String title;
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: [
-            Icon(
-              AppSymbols.analytics,
-              size: AppIconSize.hero.of(context),
-              color: secondary,
-            ),
-            Text(
-              title,
-              style: AppTextStyles.sectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

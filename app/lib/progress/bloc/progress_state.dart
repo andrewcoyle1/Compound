@@ -63,7 +63,20 @@ final class const ProgressState({
   final NutritionStrategySettings? strategySettings,
   final List<NutritionDayAnnotation> annotations = const [],
   final LoggingBreak? loggingBreak,
+
+  /// A metric chart's range; a week to start, as QuickCharts opens.
+  final MetricRange range = MetricRange.week,
+
+  /// How many deletes have failed, so the screen alerts on each.
+  final int deleteFailures = 0,
+
+  /// The weekly target grid's selected day (0 = the week's first), or null
+  /// for the whole week.
+  final int? targetDay,
 }) extends Equatable {
+  /// Today, at local midnight, when the screen opened.
+  DateTime get today => startOfDay(now);
+
   /// Where the data has got to.
   ProgressStatus get status => failed
       ? ProgressStatus.failure
@@ -193,6 +206,20 @@ final class const ProgressState({
   /// estimate, the last after a break, the formula before the history.
   /// Null until the strategy settings arrive.
   ({List<ProgressPoint> week, double today})? get expenditure {
+    final lookup = expenditureLookup;
+    if (lookup == null) return null;
+    return (
+      week: [
+        for (final day in lastWeekDays(now))
+          (date: localMidnight(day), value: lookup.on(day)),
+      ],
+      today: lookup.today,
+    );
+  }
+
+  /// The engine's figure for any day, and today's; null until the strategy
+  /// settings arrive.
+  ({double Function(String day) on, double today})? get expenditureLookup {
     final settings = strategySettings;
     if (settings == null) return null;
     final inputs = ExpenditureInputs(
@@ -206,12 +233,8 @@ final class const ProgressState({
       loggingBreak: loggingBreak,
     );
     final history = inputs.history;
-    final on = expenditureOn(history, inputs.priorKcal);
     return (
-      week: [
-        for (final day in lastWeekDays(now))
-          (date: localMidnight(day), value: on(day)),
-      ],
+      on: expenditureOn(history, inputs.priorKcal),
       today: history.lastOrNull?.kcal ?? inputs.priorKcal,
     );
   }
@@ -230,6 +253,9 @@ final class const ProgressState({
     NutritionStrategySettings? strategySettings,
     List<NutritionDayAnnotation>? annotations,
     LoggingBreak? Function()? loggingBreak,
+    MetricRange? range,
+    int? deleteFailures,
+    int? Function()? targetDay,
   }) => ProgressState(
     uid: uid,
     now: now,
@@ -249,6 +275,9 @@ final class const ProgressState({
     strategySettings: strategySettings ?? this.strategySettings,
     annotations: annotations ?? this.annotations,
     loggingBreak: loggingBreak == null ? this.loggingBreak : loggingBreak(),
+    range: range ?? this.range,
+    deleteFailures: deleteFailures ?? this.deleteFailures,
+    targetDay: targetDay == null ? this.targetDay : targetDay(),
   );
 
   @override
@@ -269,5 +298,8 @@ final class const ProgressState({
     strategySettings,
     annotations,
     loggingBreak,
+    range,
+    deleteFailures,
+    targetDay,
   ];
 }

@@ -1,3 +1,4 @@
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
@@ -5,6 +6,8 @@ import 'package:compound/app/app.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
+import 'package:compound_models/compound_models.dart'
+    show BodyMeasurementEntryKeys;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -40,6 +43,7 @@ void main() {
           bodyRepository ??
           InMemoryBodyRepository(measurements: measurements ?? samples),
       userRepository: InMemoryUserRepository(),
+      analyticsRepository: const AnalyticsRepository(),
       uid: uid,
       metric: metric,
       now: now,
@@ -178,6 +182,70 @@ void main() {
       final oldest = tester.getTopLeft(find.text('73 kg'));
       expect(newest.dy, lessThan(oldest.dy));
       expect(find.text('Oct 15, 2026'), findsOneWidget);
+    });
+
+    testWidgets('an empty screen offers Log Weight', (tester) async {
+      await pumpView(tester, WeightMetric.scaleWeight, measurements: const []);
+      expect(find.widgetWithText(TextButton, 'Log Weight'), findsOneWidget);
+    });
+
+    testWidgets('swiping a row deletes its weigh-in', (tester) async {
+      final repository = InMemoryBodyRepository(
+        measurements: [
+          BodyMeasurementEntry(
+            id: 'e0',
+            authorId: uid,
+            weightKg: 73,
+            waistCircumference: 80,
+            date: DateTime(2026, 10, 14, 7),
+            source: WeightSource.manual,
+            dateCreated: DateTime(2026, 10, 14, 7),
+          ),
+        ],
+      );
+      await pumpView(
+        tester,
+        WeightMetric.scaleWeight,
+        bodyRepository: repository,
+        allData: true,
+      );
+      await tester.drag(find.text('73 kg'), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('73 kg'), findsNothing);
+      final entry = (await repository.watchMeasurements(uid).first).single;
+      expect(entry.weightKg, isNull);
+      expect(entry.waistCircumference, 80);
+    });
+
+    testWidgets('a failed delete says so', (tester) async {
+      final repository = MockBodyRepository();
+      final entry = BodyMeasurementEntry(
+        id: 'e0',
+        authorId: uid,
+        weightKg: 73,
+        date: DateTime(2026, 10, 14, 7),
+        source: WeightSource.manual,
+        dateCreated: DateTime(2026, 10, 14, 7),
+      );
+      when(() => repository.watchMeasurements(uid))
+          .thenAnswer((_) => Stream.value([entry]));
+      when(
+        () => repository.clearMeasurementFields(uid, 'e0', {
+          BodyMeasurementEntryKeys.weightKg,
+        }),
+      ).thenThrow(Exception('offline'));
+      await pumpView(
+        tester,
+        WeightMetric.scaleWeight,
+        bodyRepository: repository,
+        allData: true,
+      );
+      await tester.drag(find.text('73 kg'), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('Unable to Delete Entry'), findsOneWidget);
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.text('73 kg'), findsOneWidget);
     });
   });
 }

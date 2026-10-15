@@ -2380,6 +2380,644 @@
             }
         }
     },
+    "progressMore": "More",
+    "@progressMore": {
+        "description": "Progress tab: heading of the list of hidden sections and other screens"
+    },
+    "progressCustomizeAnalytics": "Customize Analytics",
+    "@progressCustomizeAnalytics": {
+        "description": "Progress tab row opening Customize Analytics"
+    },
+    "progressLogMeasurement": "Log Measurement",
+    "@progressLogMeasurement": {
+        "description": "Progress tab + menu: submenu of circumferences to log"
+    },
+    "progressLogBodyMetrics": "Log body metrics",
+    "@progressLogBodyMetrics": {
+        "description": "Progress tab + menu button, for screen readers"
+    },
+    "targetChartTitle": "This Week Against Your Targets",
+    "@targetChartTitle": {
+        "description": "Progress carousel: title of the weekly target grid"
+    },
+    "targetChartNoPlan": "No Diet Plan",
+    "@targetChartNoPlan": {
+        "description": "Weekly target grid with no diet plan: title"
+    },
+    "targetChartNoPlanMessage": "Create a diet plan and your daily calorie and macro targets appear here.",
+    "@targetChartNoPlanMessage": {
+        "description": "Weekly target grid with no diet plan: message"
+    },
+    "targetChartKey": "Bar shows what you ate, the tick is your target, and a caret means you went over.",
+    "@targetChartKey": {
+        "description": "Key under the weekly target grid"
+    },
+    "targetChartAmountOf": "{amount} of {target}",
+    "@targetChartAmountOf": {
+        "description": "A target grid cell for screen readers: what was eaten of the day's target",
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "targetChartOverTarget": "{amounts}, over target",
+    "@targetChartOverTarget": {
+        "description": "A target grid cell for screen readers when over target",
+        "placeholders": {
+            "amounts": {
+                "type": "String"
+            }
+        }
+    },
+    "targetChartShowsWeek": "Shows the week",
+    "@targetChartShowsWeek": {
+        "description": "Screen reader hint on the selected day of the target grid"
+    },
+    "targetChartShowsDay": "Shows this day",
+    "@targetChartShowsDay": {
+        "description": "Screen reader hint on a day of the target grid"
+    },
+    "targetChartThisWeek": "{metric} this week",
+    "@targetChartThisWeek": {
+        "description": "Screen reader label of a target grid row's week total",
+        "placeholders": {
+            "metric": {
+                "type": "String"
+            }
+        }
+    },
+    "targetChartOf": "of {target}",
+    "@targetChartOf": {
+        "description": "Under a target grid total: the target it is against",
+        "placeholders": {
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "targetChartWeek": "Week",
+    "@targetChartWeek": {
+        "description": "Label under the target grid summary column while it shows the week"
+    },
+    "carouselDailyNutrition": "Daily Nutrition",
+    "@carouselDailyNutrition": {
+        "description": "Progress carousel page title"
+    },
+    "carouselConsumed": "Consumed",
+    "@carouselConsumed": {
+        "description": "Progress carousel: calories eaten so far"
+    },
+    "carouselRemaining": "Remaining",
+    "@carouselRemaining": {
+        "description": "Progress carousel: calories left today"
+    },
+    "carouselTarget": "Target",
+    "@carouselTarget": {
+        "description": "Progress carousel: today's calorie target"
+    },
+    "carouselTargets": "Targets",
+    "@carouselTargets": {
+        "description": "Progress carousel: compare intake against the plan targets"
+    },
+    "carouselDifference": "Difference",
+    "@carouselDifference": {
+        "description": "Progress carousel: intake minus the comparison"
+    },
+    "carouselLastDays": "{count, plural, =1{Last Day} other{Last {count} Days}}",
+    "@carouselLastDays": {
+        "description": "Progress carousel: how many days the energy chart covers",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "carouselWeeklyWorkouts": "Weekly Workouts",
+    "@carouselWeeklyWorkouts": {
+        "description": "Progress carousel page title"
+    },
+    "carouselMuscles": "Muscles",
+    "@carouselMuscles": {
+        "description": "Progress carousel: muscles trained this week"
+    },
+    "carouselRecentRecords": "Recent Records",
+    "@carouselRecentRecords": {
+        "description": "Progress carousel page title"
+    },
+    "carouselVolume": "Volume",
+    "@carouselVolume": {
+        "description": "Progress carousel record kind"
+    },
+    "carouselReps": "Reps",
+    "@carouselReps": {
+        "description": "Progress carousel record kind"
+    },
+    "carouselOneRepMax": "1-RM",
+    "@carouselOneRepMax": {
+        "description": "Progress carousel record kind: estimated one-rep max"
+    },
+    "carouselNoRecords": "No Records Yet",
+    "@carouselNoRecords": {
+        "description": "Recent records with no finished workout: title"
+    },
+    "carouselNoRecordsMessage": "Finish a workout and your best lifts appear here.",
+    "@carouselNoRecordsMessage": {
+        "description": "Recent records with no finished workout: message"
+    },
+    "insightsActivity": "Activity",
+    "@insightsActivity": {
+        "description": "Insights & Analytics section heading"
+    },
+    "insightsEnergy": "Energy",
+    "@insightsEnergy": {
+        "description": "Insights & Analytics section heading"
+    },
+    "insightsBody": "Body",
+    "@insightsBody": {
+        "description": "Insights & Analytics section heading"
+    },
+    "insightsGoals": "Goals",
+    "@insightsGoals": {
+        "description": "Insights & Analytics section heading"
+    },
+    "habitsTraining": "Training",
+    "@habitsTraining": {
+        "description": "Habits section heading"
+    },
+    "weighInEmpty": "No weigh-ins logged",
+    "@weighInEmpty": {
+        "description": "Empty state of the weigh-in consistency screen"
+    },
+    "weighInGridLabel": "{count, plural, =1{1 weigh-in} other{{count} weigh-ins}}",
+    "@weighInGridLabel": {
+        "description": "Screen reader summary of the weigh-in grid",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "stepsEntry": "{steps} steps",
+    "@stepsEntry": {
+        "description": "A day on the Steps history; steps is the formatted count",
+        "placeholders": {
+            "steps": {
+                "type": "String"
+            }
+        }
+    },
+    "stepsEmpty": "No step data",
+    "@stepsEmpty": {
+        "description": "Empty state of the Steps screen"
+    },
+    "goalProgressEntry": "{weight} ({percent})",
+    "@goalProgressEntry": {
+        "description": "A weigh-in on the Goal Progress history: the weight and the progress it stood at",
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            },
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "goalProgressNoGoal": "No Active Weight Goal",
+    "@goalProgressNoGoal": {
+        "description": "Goal Progress with no goal: title"
+    },
+    "goalProgressNoGoalMessage": "Set a weight goal to track your progress toward your target.",
+    "@goalProgressNoGoalMessage": {
+        "description": "Goal Progress with no goal: message"
+    },
+    "goalProgressNoEntries": "Log your weight to track progress toward your target.",
+    "@goalProgressNoEntries": {
+        "description": "Goal Progress with no weigh-in since the goal was set"
+    },
+    "goalProgressStart": "Start",
+    "@goalProgressStart": {
+        "description": "Goal Progress: label over the goal's starting weight"
+    },
+    "goalProgressTrend": "Trend",
+    "@goalProgressTrend": {
+        "description": "Goal Progress: label over the trend weight now"
+    },
+    "goalProgressTarget": "Target",
+    "@goalProgressTarget": {
+        "description": "Goal Progress: label over the goal's target weight"
+    },
+    "nutritionMetricMacrosEntry": "{protein} P · {carbs} C · {fat} F",
+    "@nutritionMetricMacrosEntry": {
+        "description": "A day on the Macros history: grams of protein, carbs and fat",
+        "placeholders": {
+            "protein": {
+                "type": "String"
+            },
+            "carbs": {
+                "type": "String"
+            },
+            "fat": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionMetricMacrosEmpty": "No macro data. Log meals to see your nutrition over time.",
+    "@nutritionMetricMacrosEmpty": {
+        "description": "Empty state of the Macros history"
+    },
+    "nutritionMetricEmpty": "No {metric} data. Log meals to see your nutrition over time.",
+    "@nutritionMetricEmpty": {
+        "description": "Empty state of a nutrient history; metric is its lower-case name",
+        "placeholders": {
+            "metric": {
+                "type": "String"
+            }
+        }
+    },
+    "foodLoggingEmpty": "No food logged. Log meals to see your consistency.",
+    "@foodLoggingEmpty": {
+        "description": "Empty state of the food logging consistency screen"
+    },
+    "foodLoggingGridLabel": "{count, plural, =1{Food logged on 1 day} other{Food logged on {count} days}}",
+    "@foodLoggingGridLabel": {
+        "description": "Screen reader summary of the food logging grid",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "logMeasurementTitle": "Log {name} Measurement",
+    "@logMeasurementTitle": {
+        "description": "Title of the measurement logger; name is the measurement, such as Waist",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "logMeasurementSaveFailure": "Unable to Save Measurement",
+    "@logMeasurementSaveFailure": {
+        "description": "Alert title when saving a body measurement fails"
+    },
+    "logMeasurementMetric": "Metric (cm)",
+    "@logMeasurementMetric": {
+        "description": "Unit choice on the measurement logger"
+    },
+    "logMeasurementImperial": "Imperial (in)",
+    "@logMeasurementImperial": {
+        "description": "Unit choice on the measurement logger"
+    },
+    "logMeasurementWholeCentimetres": "{value} cm",
+    "@logMeasurementWholeCentimetres": {
+        "description": "Log Measurement: a row of the whole-number wheel in centimetres",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "logMeasurementWholeInches": "{value} in",
+    "@logMeasurementWholeInches": {
+        "description": "Log Measurement: a row of the whole-number wheel in inches",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "metricAdd": "Add",
+    "@metricAdd": {
+        "description": "App bar action adding an entry on a metric screen"
+    },
+    "measurementCircumference": "{name} Circumference",
+    "@measurementCircumference": {
+        "description": "Title of a body measurement screen and its chart series, such as Waist Circumference",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "measurementEmpty": "No {name} measurement entries",
+    "@measurementEmpty": {
+        "description": "Empty state of a body measurement screen; name is the measurement, such as Waist",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "bodyFatSeries": "Body Fat",
+    "@bodyFatSeries": {
+        "description": "Chart series name for visual body fat"
+    },
+    "bodyFatEmpty": "No body fat entries",
+    "@bodyFatEmpty": {
+        "description": "Empty state of the visual body fat screen"
+    },
+    "bodyRatioSeries": "Ratio",
+    "@bodyRatioSeries": {
+        "description": "Chart series name for a body ratio"
+    },
+    "bodyRatioWaistToHeightRequirement": "Log a waist measurement and set your height to see this ratio.",
+    "@bodyRatioWaistToHeightRequirement": {
+        "description": "Empty state of the waist-to-height screen"
+    },
+    "bodyRatioWaistToHipRequirement": "Log a waist and a hip measurement on the same date to see this ratio.",
+    "@bodyRatioWaistToHipRequirement": {
+        "description": "Empty state of the waist-to-hip screen"
+    },
+    "bodyRatioLogWaist": "Log Waist",
+    "@bodyRatioLogWaist": {
+        "description": "Action on a ratio screen opening the waist logger"
+    },
+    "bodyRatioScreening": "Screening",
+    "@bodyRatioScreening": {
+        "description": "Section heading for a ratio screening band"
+    },
+    "bodyRatioLatest": "Latest",
+    "@bodyRatioLatest": {
+        "description": "Row label: the latest ratio"
+    },
+    "bodyRatioBand": "Screening Band",
+    "@bodyRatioBand": {
+        "description": "Row label: which screening band the ratio falls in"
+    },
+    "bodyRatioUnderHalfHeight": "Under half your height",
+    "@bodyRatioUnderHalfHeight": {
+        "description": "Waist-to-height band"
+    },
+    "bodyRatioIncreasedRisk": "Increased risk",
+    "@bodyRatioIncreasedRisk": {
+        "description": "Waist-to-height band"
+    },
+    "bodyRatioHighRisk": "High risk",
+    "@bodyRatioHighRisk": {
+        "description": "Waist-to-height band"
+    },
+    "bodyRatioBelowCutOff": "Below the WHO cut-off",
+    "@bodyRatioBelowCutOff": {
+        "description": "Waist-to-hip band"
+    },
+    "bodyRatioSubstantiallyIncreased": "Substantially increased risk",
+    "@bodyRatioSubstantiallyIncreased": {
+        "description": "Waist-to-hip band"
+    },
+    "bodyRatioWaistToHeightBands": "NICE bands: 0.40–0.49 healthy, 0.50–0.59 increased risk, 0.60 or more high risk. Keep your waist to less than half your height. Screening, not diagnosis.",
+    "@bodyRatioWaistToHeightBands": {
+        "description": "Footer explaining the waist-to-height bands"
+    },
+    "bodyRatioWaistToHipBandsMen": "WHO cut-off for men: 0.90 or more is a substantially increased risk. Screening, not diagnosis.",
+    "@bodyRatioWaistToHipBandsMen": {
+        "description": "Footer explaining the waist-to-hip cut-off for men"
+    },
+    "bodyRatioWaistToHipBandsWomen": "WHO cut-off for women: 0.85 or more is a substantially increased risk. Screening, not diagnosis.",
+    "@bodyRatioWaistToHipBandsWomen": {
+        "description": "Footer explaining the waist-to-hip cut-off for women"
+    },
+    "bodyRatioWaistToHipBands": "WHO cut-offs: 0.90 or more for men, 0.85 or more for women, is a substantially increased risk. Set your sex in your profile to see your band. Screening, not diagnosis.",
+    "@bodyRatioWaistToHipBands": {
+        "description": "Footer explaining the waist-to-hip cut-offs when the profile has no sex"
+    },
+    "waistToHeightMethodTitle": "Waist-to-Height Ratio",
+    "@waistToHeightMethodTitle": {
+        "description": "Method info title"
+    },
+    "waistToHeightMethodSummary": "Your waist divided by your height, both in centimeters, from the same day's waist measurement and your profile height. NICE uses it to screen for central fat: 0.40 to 0.49 is the healthy range (keep your waist to less than half your height), 0.50 to 0.59 is increased risk and 0.60 or more is high risk. The bands apply to all sexes and ethnicities, including people with a lot of muscle. This is screening, not a diagnosis.",
+    "@waistToHeightMethodSummary": {
+        "description": "Method info for waistToHeightRatio: its summary"
+    },
+    "waistToHeightMethodLimitations": "NICE gives these bands for people with a BMI under 35. Whether NICE sets a band below 0.40 could not be confirmed, so Compound shows none. A tape measurement can vary by a centimeter or two with where and how it is taken.",
+    "@waistToHeightMethodLimitations": {
+        "description": "Method info for waistToHeightRatio: its limitations"
+    },
+    "waistToHipMethodTitle": "Waist-to-Hip Ratio",
+    "@waistToHipMethodTitle": {
+        "description": "Method info title"
+    },
+    "waistToHipMethodSummary": "Your waist divided by your hips, from measurements logged on the same day. A WHO expert consultation marks a substantially increased risk of metabolic complications from 0.90 in men and 0.85 in women. Compound uses the cut-off for the sex in your profile, and shows both when it is not set. This is screening, not a diagnosis.",
+    "@waistToHipMethodSummary": {
+        "description": "Method info for waistToHipRatio: its summary"
+    },
+    "waistToHipMethodLimitations": "The cut-offs come from population studies and were not set for any one ethnicity or for very muscular people. Waist-to-height is the better-supported ratio for lifters.",
+    "@waistToHipMethodLimitations": {
+        "description": "Method info for waistToHipRatio: its limitations"
+    },
+    "goalProgressMethodSummary": "Progress is how far your trend weight, the smoothed line on the Weight Trend screen, has moved from where the goal started toward its target, from 0% to 100%. Using the trend rather than your last weigh-in means a single heavy or light day barely moves it. Moving away from the target reads as 0%, not negative.",
+    "@goalProgressMethodSummary": {
+        "description": "Method info for goalProgress: its summary"
+    },
+    "goalProgressMethodLimitations": "Day-to-day weight varies by about half a percent of body weight from water and food alone, so the trend lags a real change by a week or two.",
+    "@goalProgressMethodLimitations": {
+        "description": "Method info for goalProgress: its limitations"
+    },
+    "tonnageMethodTitle": "Volume (Tonnage)",
+    "@tonnageMethodTitle": {
+        "description": "Method info title"
+    },
+    "tonnageMethodSummary": "Volume is weight × reps summed over the working sets you logged. A dumbbell set is logged as one dumbbell, as it reads on the rack, so an exercise that holds one in each hand counts it twice; so does a left-and-right set logged as one. With Show Bodyweight Contribution on, your own workouts also count the share of your bodyweight a movement lifts, set on each exercise. Dips count 100%, pull-ups 95% and squats 85%. Force-plate studies put a push-up at about 64–75% of body mass and a knee push-up at about 49–62%. Assistance is taken off. Without it, or for other people's workouts, only the external load counts, so a pull-up adds nothing. The Progress tab's records and circle leaderboards always use external load, so they compare like with like. On a plate-loaded machine set to enter plates only, the weight is the plates you loaded, not the machine's own weight.",
+    "@tonnageMethodSummary": {
+        "description": "Method info for tonnage: its summary"
+    },
+    "tonnageMethodLimitations": "Tonnage is a rough measure of work: it treats a heavy triple and a light set of fifteen alike, and it uses today's bodyweight, so older workouts change with the scale.",
+    "@tonnageMethodLimitations": {
+        "description": "Method info for tonnage: its limitations"
+    },
+    "tonnageMethodOwnChoices": "The bodyweight shares in the exercise library (dips 100%, pull-ups 95%, squats and lunges 85%, hinges 60%) and the 75% starting value for a new bodyweight exercise are Compound's own choices. Only the push-up figures are measured.",
+    "@tonnageMethodOwnChoices": {
+        "description": "Method info for tonnage: its own choices"
+    },
+    "metricDeleteEntry": "Delete",
+    "@metricDeleteEntry": {
+        "description": "Action deleting one entry on All Recorded Data, for swipe and screen readers"
+    },
+    "metricDeleteFailed": "Unable to Delete Entry",
+    "@metricDeleteFailed": {
+        "description": "Alert title when deleting a metric entry fails"
+    },
+    "metricTryAgain": "Please try again.",
+    "@metricTryAgain": {
+        "description": "Alert message asking the user to try again"
+    },
+    "measurementNeck": "Neck",
+    "@measurementNeck": {
+        "description": "Body measurement name"
+    },
+    "measurementShoulders": "Shoulders",
+    "@measurementShoulders": {
+        "description": "Body measurement name"
+    },
+    "measurementBust": "Bust",
+    "@measurementBust": {
+        "description": "Body measurement name"
+    },
+    "measurementChest": "Chest",
+    "@measurementChest": {
+        "description": "Body measurement name"
+    },
+    "measurementWaist": "Waist",
+    "@measurementWaist": {
+        "description": "Body measurement name"
+    },
+    "measurementHips": "Hips",
+    "@measurementHips": {
+        "description": "Body measurement name"
+    },
+    "measurementLeftBicep": "Left Bicep",
+    "@measurementLeftBicep": {
+        "description": "Body measurement name"
+    },
+    "measurementRightBicep": "Right Bicep",
+    "@measurementRightBicep": {
+        "description": "Body measurement name"
+    },
+    "measurementLeftForearm": "Left Forearm",
+    "@measurementLeftForearm": {
+        "description": "Body measurement name"
+    },
+    "measurementRightForearm": "Right Forearm",
+    "@measurementRightForearm": {
+        "description": "Body measurement name"
+    },
+    "measurementLeftWrist": "Left Wrist",
+    "@measurementLeftWrist": {
+        "description": "Body measurement name"
+    },
+    "measurementRightWrist": "Right Wrist",
+    "@measurementRightWrist": {
+        "description": "Body measurement name"
+    },
+    "measurementLeftThigh": "Left Thigh",
+    "@measurementLeftThigh": {
+        "description": "Body measurement name"
+    },
+    "measurementRightThigh": "Right Thigh",
+    "@measurementRightThigh": {
+        "description": "Body measurement name"
+    },
+    "measurementLeftCalf": "Left Calf",
+    "@measurementLeftCalf": {
+        "description": "Body measurement name"
+    },
+    "measurementRightCalf": "Right Calf",
+    "@measurementRightCalf": {
+        "description": "Body measurement name"
+    },
+    "measurementLeftAnkle": "Left Ankle",
+    "@measurementLeftAnkle": {
+        "description": "Body measurement name"
+    },
+    "measurementRightAnkle": "Right Ankle",
+    "@measurementRightAnkle": {
+        "description": "Body measurement name"
+    },
+    "bodyMetricsWeightAndBodyFat": "Weight & Body Fat",
+    "@bodyMetricsWeightAndBodyFat": {
+        "description": "Body Metrics section heading"
+    },
+    "bodyMetricsUpperBody": "Upper Body",
+    "@bodyMetricsUpperBody": {
+        "description": "Body Metrics section heading"
+    },
+    "bodyMetricsArms": "Arms",
+    "@bodyMetricsArms": {
+        "description": "Body Metrics section heading"
+    },
+    "bodyMetricsLegs": "Legs",
+    "@bodyMetricsLegs": {
+        "description": "Body Metrics section heading"
+    },
+    "bodyMetricsRatios": "Ratios",
+    "@bodyMetricsRatios": {
+        "description": "Body Metrics section heading for the derived ratios"
+    },
+    "bodyMetricsRatiosEmpty": "Log a waist measurement to see your body ratios.",
+    "@bodyMetricsRatiosEmpty": {
+        "description": "Body Metrics ratios section with no waist logged"
+    },
+    "bodyRatioWaistToHeight": "Waist to Height",
+    "@bodyRatioWaistToHeight": {
+        "description": "Body ratio name"
+    },
+    "bodyRatioWaistToHip": "Waist to Hip",
+    "@bodyRatioWaistToHip": {
+        "description": "Body ratio name"
+    },
+    "nutritionMetricNetCarbs": "Net (Non-fiber)",
+    "@nutritionMetricNetCarbs": {
+        "description": "Nutrition analytics card: net carbohydrate"
+    },
+    "nutritionMetricSugars": "Sugars",
+    "@nutritionMetricSugars": {
+        "description": "Nutrition analytics card"
+    },
+    "nutritionMetricThiamin": "B1, Thiamine",
+    "@nutritionMetricThiamin": {
+        "description": "Nutrition analytics card"
+    },
+    "nutritionMetricRiboflavin": "B2, Riboflavin",
+    "@nutritionMetricRiboflavin": {
+        "description": "Nutrition analytics card"
+    },
+    "nutritionMetricNiacin": "B3, Niacin",
+    "@nutritionMetricNiacin": {
+        "description": "Nutrition analytics card"
+    },
+    "nutritionMetricPantothenicAcid": "B5, Pantothenic Acid",
+    "@nutritionMetricPantothenicAcid": {
+        "description": "Nutrition analytics card"
+    },
+    "nutritionMetricVitaminB6": "B6, Pyridoxine",
+    "@nutritionMetricVitaminB6": {
+        "description": "Nutrition analytics card"
+    },
+    "nutritionMetricVitaminB12": "B12, Cobalamin",
+    "@nutritionMetricVitaminB12": {
+        "description": "Nutrition analytics card"
+    },
+    "nutritionAnalyticsCaloriesAndMacros": "Calories & Macros",
+    "@nutritionAnalyticsCaloriesAndMacros": {
+        "description": "Nutrition analytics section heading"
+    },
+    "nutritionAnalyticsVitamins": "Vitamin Breakdown",
+    "@nutritionAnalyticsVitamins": {
+        "description": "Nutrition analytics section heading"
+    },
+    "nutritionAnalyticsMinerals": "Mineral Breakdown",
+    "@nutritionAnalyticsMinerals": {
+        "description": "Nutrition analytics section heading"
+    },
+    "nutritionAnalyticsOther": "Other Breakdown",
+    "@nutritionAnalyticsOther": {
+        "description": "Nutrition analytics section heading"
+    },
+    "progressFoodLogging": "Food Logging",
+    "@progressFoodLogging": {
+        "description": "Habit card and screen title: days with food logged"
+    },
+    "progressOutOfSeven": "{count}/7",
+    "@progressOutOfSeven": {
+        "description": "Days this week with food logged, out of seven",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "progressLastEntries": "{count, plural, =1{Last 1 Entry} other{Last {count} Entries}}",
+    "@progressLastEntries": {
+        "description": "Card subtitle: how many entries the chart shows",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "logWeightTitle": "Log Weight",
     "@logWeightTitle": {
         "description": "Log Weight screen title; also the action that opens it"

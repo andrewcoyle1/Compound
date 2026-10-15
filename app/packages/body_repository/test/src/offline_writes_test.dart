@@ -84,6 +84,22 @@ void main() {
       ]);
     });
 
+    test(
+      'saveAnalyticsSettings completes offline; a refusal is reported',
+      () async {
+        await subject.saveAnalyticsSettings(
+          const AnalyticsSettings(authorId: 'u'),
+        );
+        const path = 'users/u/analytics_settings/analytics_settings';
+        expect(firestore.writes, [path]);
+
+        firestore.refuse('permission-denied');
+        await pumpEventQueue();
+
+        expect(refused, [(path, 'permission-denied')]);
+      },
+    );
+
     test('abandonGoal completes offline; not-found is reported', () async {
       await subject.abandonGoal('u', 'g');
       expect(refused, isEmpty);

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseException;
 import 'package:compound_models/compound_models.dart';
 import 'package:training_library_repository/src/training_library_repository.dart';
 
@@ -21,7 +22,7 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
        _workoutTemplates = List.unmodifiable(workoutTemplates),
        _gymProfiles = List.of(gymProfiles),
        _exerciseSettings = List.of(exerciseSettings),
-       _workoutSettings = List.unmodifiable(workoutSettings);
+       _workoutSettings = List.of(workoutSettings);
 
   final List<ExerciseModel> _exercises;
   final List<WorkoutTemplateModel> _workoutTemplates;
@@ -96,6 +97,31 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
         listener.onCancel = () => unawaited(subscription.cancel());
       });
 
+  /// Fails with `not-found` when there are no settings, as Firestore's
+  /// `update` does.
+  @override
+  Future<void> clearExerciseRestOverride(String uid, String exerciseId) async {
+    final index = _exerciseSettings.indexWhere(
+      (stored) => stored.authorId == uid && stored.id == exerciseId,
+    );
+    if (index < 0) {
+      throw FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'not-found',
+        message:
+            'No document to update: users/$uid/exercise_settings/'
+            '$exerciseId',
+      );
+    }
+    final stored = _exerciseSettings[index];
+    _exerciseSettings[index] = ExerciseSettingsModel(
+      id: stored.id,
+      authorId: stored.authorId,
+      note: stored.note,
+    );
+    _settingsChanges.add(null);
+  }
+
   /// Merges as Firestore does: a field left empty keeps what was stored.
   @override
   Future<void> saveExerciseSettings(
@@ -116,11 +142,33 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
     _settingsChanges.add(null);
   }
 
+  final _workoutSettingsChanges = StreamController<void>.broadcast(sync: true);
+
   @override
-  Stream<WorkoutSettings> watchWorkoutSettings(String uid) => Stream.value(
+  Stream<WorkoutSettings> watchWorkoutSettings(String uid) =>
+      Stream.multi((listener) {
+        WorkoutSettings read() =>
+            _workoutSettings
+                .where((settings) => settings.authorId == uid)
+                .firstOrNull ??
+            WorkoutSettings(authorId: uid);
+        listener.add(read());
+        final subscription = _workoutSettingsChanges.stream.listen(
+          (_) => listener.add(read()),
+        );
+        // Not `subscription.cancel` itself: `first` would wait on the
+        // Future that returns, which never completes under a widget test's
+        // fake clock.
+        listener.onCancel = () => unawaited(subscription.cancel());
+      });
+
+  /// Replaces the stored settings, as the Firestore save writes every
+  /// field the model knows.
+  @override
+  Future<void> saveWorkoutSettings(WorkoutSettings settings) async {
     _workoutSettings
-            .where((settings) => settings.authorId == uid)
-            .firstOrNull ??
-        WorkoutSettings(authorId: uid),
-  );
+      ..removeWhere((stored) => stored.authorId == settings.authorId)
+      ..add(settings);
+    _workoutSettingsChanges.add(null);
+  }
 }

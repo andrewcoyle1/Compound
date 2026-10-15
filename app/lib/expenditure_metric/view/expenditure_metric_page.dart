@@ -12,6 +12,7 @@ import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound/settings/account/view/edit_profile_page.dart';
 import 'package:compound_maths/compound_maths.dart'
     show
         ExpenditureConfidence,
@@ -90,6 +91,13 @@ class ExpenditureMetricView extends StatelessWidget {
               icon: const Icon(AppSymbols.add),
               tooltip: l10n.nutritionLogMeal,
               onPressed: logMeal,
+            ),
+          // Expenditure's formula reads the profile (Swift's Edit Profile).
+          if (!allData && metric == ExpenditureMetric.expenditure)
+            IconButton(
+              icon: const Icon(AppSymbols.profile),
+              tooltip: l10n.profileEditProfile,
+              onPressed: () => context.pushNamed(EditProfilePage.name),
             ),
         ],
       ),

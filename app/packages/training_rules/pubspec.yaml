@@ -9,7 +9,7 @@ environment:
 dependencies:
   compound_maths:
     path: ../compound_maths
-  equatable: ^3.0.0
+  equatable: ">=2.1.0 <4.0.0"
 
 dev_dependencies:
   test: ^1.32.0

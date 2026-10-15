@@ -12,6 +12,7 @@ import 'package:compound/expenditure_metric/expenditure_metric.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/launch/launch.dart';
 import 'package:compound/log_weight/log_weight.dart';
+import 'package:compound/notifications/notifications.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/nutrition.dart';
@@ -19,6 +20,7 @@ import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/progress/progress.dart';
+import 'package:compound/settings/settings.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/today/today.dart';
@@ -33,6 +35,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -61,6 +64,10 @@ class const App({
   /// Where the workout under way is kept between launches; in memory when
   /// left out.
   final ActiveSessionStore? activeSessionStore,
+
+  /// Push and local notifications; the fake (nothing reaches the platform)
+  /// when left out.
+  final NotificationsRepository? notificationsRepository,
   final TrackerClock trackerClock = const TrackerClock(),
   super.key,
 }) extends StatelessWidget {
@@ -82,12 +89,16 @@ class const App({
         RepositoryProvider<OpenFoodFacts>(
           create: (_) => openFoodFacts ?? FakeOpenFoodFacts(),
         ),
-        RepositoryProvider.value(value: trackerClock),
         RepositoryProvider<CheckInRepository>(
           create: (_) => checkInRepository ?? InMemoryCheckInRepository(),
         ),
+        RepositoryProvider.value(value: trackerClock),
         RepositoryProvider<ProposalDismissals>(
           create: (_) => proposalDismissals ?? ProposalDismissals(),
+        ),
+        RepositoryProvider<NotificationsRepository>(
+          create: (_) =>
+              notificationsRepository ?? FakeNotificationsRepository(),
         ),
         RepositoryProvider(
           create: (_) => TrainingSetupService(
@@ -108,7 +119,14 @@ class const App({
           ),
           BlocProvider(create: (_) => MealDraftCubit()),
           BlocProvider(
-            create: (_) => ActiveWorkoutCubit(
+            create: (context) => NotificationsCubit(
+              notifications: context.read(),
+              users: userRepository,
+            ),
+          ),
+          BlocProvider(
+            create: (context) => ActiveWorkoutCubit(
+              notifications: context.read(),
               sessions: workoutSessionRepository,
               users: userRepository,
               library: trainingLibraryRepository,
@@ -284,6 +302,7 @@ class _AppViewState extends State<AppView> {
           fullscreenDialog: true,
           child: const ProfilePage(),
         ),
+        routes: profileRoutes,
       ),
       // Over the tabs, as the Swift app's sheet.
       GoRoute(
@@ -400,36 +419,81 @@ class _AppViewState extends State<AppView> {
           },
         ),
     ],
-    redirect: (context, state) =>
-        appRedirect(context.read<AppBloc>().state, state.uri),
+    redirect: (context, state) {
+      // A `compound://` URL from the platform (its own deep-link handling,
+      // which passes the whole URL): held until it can be routed, from
+      // Today meanwhile. The app's own locations never have a scheme.
+      if (state.uri.hasScheme) {
+        context.read<NotificationsCubit>().linkOpened(state.uri);
+        return AppTab.today.path;
+      }
+      return appRedirect(context.read<AppBloc>().state, state.uri);
+    },
   );
+
+  /// The app coming back to the front moves the come-back reminders out.
+  late final AppLifecycleListener _lifecycle;
 
   @override
   void initState() {
     super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: () => unawaited(context.read<NotificationsCubit>().resumed()),
+    );
     _followUser(context.read<AppBloc>().state);
   }
 
-  /// The workout under way follows the signed-in user.
-  void _followUser(AppState state) => unawaited(
-    context.read<ActiveWorkoutCubit>().userChanged(
-      state is AppAuthenticated ? state.user.uid : null,
-    ),
-  );
+  /// The workout under way and the notifications follow the signed-in user;
+  /// links are routed once they are past onboarding.
+  void _followUser(AppState state) {
+    final uid = state is AppAuthenticated ? state.user.uid : null;
+    unawaited(context.read<ActiveWorkoutCubit>().userChanged(uid));
+    unawaited(
+      context.read<NotificationsCubit>().userChanged(
+        uid,
+        ready:
+            state is AppAuthenticated &&
+            state.profileStatus == AppProfileStatus.ready &&
+            state.onboardingStep == null,
+      ),
+    );
+  }
+
+  void _routeLink(BuildContext context, NotificationsState state) {
+    final link = state.link;
+    if (link == null) return;
+    final appState = context.read<AppBloc>().state;
+    _router.go(
+      deepLinkLocation(
+        link,
+        currentUserId: appState is AppAuthenticated ? appState.user.uid : null,
+        workoutActive: context.read<ActiveWorkoutCubit>().state.isActive,
+      ),
+    );
+  }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     _router.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AppBloc, AppState>(
-      listener: (_, state) {
-        _router.refresh();
-        _followUser(state);
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AppBloc, AppState>(
+          listener: (_, state) {
+            _router.refresh();
+            _followUser(state);
+          },
+        ),
+        BlocListener<NotificationsCubit, NotificationsState>(
+          listenWhen: (previous, current) => current.linkId != previous.linkId,
+          listener: _routeLink,
+        ),
+      ],
       child: MaterialApp.router(
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,

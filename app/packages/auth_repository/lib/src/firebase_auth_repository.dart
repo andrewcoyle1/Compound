@@ -62,6 +62,35 @@ class FirebaseAuthRepository({
     if (_googleInitialization != null) await _googleSignIn.signOut();
   });
 
+  @override
+  Future<void> deleteAccount({
+    required Future<void> Function() beforeDelete,
+  }) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw const AuthFailure('No signed-in user');
+    final providers = user.toAuthUser().providers;
+    // Signing in as another account fails with `user-mismatch`, Swift's
+    // `changedAuthenticatedUser`.
+    await _guard(() async {
+      if (providers.contains(SignInProvider.apple)) {
+        await user.reauthenticateWithProvider(AppleAuthProvider());
+      } else if (providers.contains(SignInProvider.google)) {
+        await _initializeGoogle();
+        final account = await _googleSignIn.authenticate();
+        await user.reauthenticateWithCredential(
+          GoogleAuthProvider.credential(
+            idToken: account.authentication.idToken,
+          ),
+        );
+      }
+    });
+    await beforeDelete();
+    await _guard(() async {
+      await user.delete();
+      if (_googleInitialization != null) await _googleSignIn.signOut();
+    });
+  }
+
   /// From an anonymous account, links the provider so the uid (and the data
   /// under it) carries over. If the provider already belongs to another
   /// account, signs in to that one instead and the anonymous account is
@@ -115,5 +144,13 @@ extension on User {
     isAnonymous: isAnonymous,
     email: email,
     displayName: displayName,
+    providers: {
+      for (final info in providerData)
+        ?switch (info.providerId) {
+          'apple.com' => SignInProvider.apple,
+          'google.com' => SignInProvider.google,
+          _ => null,
+        },
+    },
   );
 }

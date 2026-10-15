@@ -510,6 +510,22 @@ class const MethodInfo({
     ],
   );
 
+  /// Every method ported so far, keyed by its Swift `MethodInfo.id`, in
+  /// Swift's order (`MethodInfo.all`: energy, nutrition, training, volume,
+  /// habits), for Settings › Methods & Sources. Add each new method here.
+  static Map<String, MethodInfo> all(AppLocalizations l10n) => {
+    'weight-trend': MethodInfo.weightTrend(l10n),
+    'adaptive-expenditure': MethodInfo.adaptiveExpenditure(l10n),
+    'energy-balance': MethodInfo.energyBalance(l10n),
+    'target-proposal': MethodInfo.targetProposal(l10n),
+    'check-in-rules': MethodInfo.checkInRules(l10n),
+    'macro-split': MethodInfo.macroSplit(l10n),
+    'volume.plannedSets': MethodInfo.plannedSetsPerMuscle(l10n),
+    'habits.weeklyGoal': MethodInfo.weeklySessionGoal(l10n),
+    'habits.stepGoal': MethodInfo.dailyStepGoal(l10n),
+    'habits.adherenceBand': MethodInfo.calorieAdherenceBand(l10n),
+  };
+
   static const _adaptiveExpenditureFormula = '''
 State x = [L (kg), E (kcal/d), T (kcal/d)], one step per day:
   L ← L + (E − T)/ρ        ρ = energy per kg (see Energy in a kilogram)

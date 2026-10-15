@@ -163,4 +163,20 @@ void main() {
       });
     });
   });
+
+  group('$FakeNotificationsRepository ongoing workout', () {
+    const workout = OngoingWorkout(title: 'Push Day');
+
+    test('is kept only where it shows', () async {
+      final hidden = FakeNotificationsRepository();
+      await hidden.showOngoingWorkout(workout);
+      expect(hidden.ongoingWorkout, isNull);
+
+      final shown = FakeNotificationsRepository(showsOngoingWorkout: true);
+      await shown.showOngoingWorkout(workout);
+      expect(shown.ongoingWorkout, workout);
+      await shown.clearOngoingWorkout();
+      expect(shown.ongoingWorkout, isNull);
+    });
+  });
 }

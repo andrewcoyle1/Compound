@@ -19,6 +19,13 @@ abstract interface class BodyRepository {
   /// `AnalyticsSettingsManager` falls back.
   Stream<AnalyticsSettings> watchAnalyticsSettings(String uid);
 
+  /// Saves [settings] whole to
+  /// `users/{settings.authorId}/analytics_settings/analytics_settings`,
+  /// merged, as `AnalyticsSettingsManager.saveSettings` does (`saveDocument`
+  /// is `setData(merge: true)`). A null `dailyStepGoal` keeps the stored
+  /// goal, as in Swift.
+  Future<void> saveAnalyticsSettings(AnalyticsSettings settings);
+
   /// The goal at `users/{uid}/goals/{currentGoalId ?? uid}`, as
   /// `GoalManager.signIn` picks it: pass the user's `currentGoalId`. Goals
   /// saved before goal ids live under the user id. Null when there is none

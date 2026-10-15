@@ -25,6 +25,14 @@ abstract interface class NutritionRepository {
   /// `FoodLogSettingsManager` falls back.
   Stream<FoodLogSettings> watchFoodLogSettings(String uid);
 
+  /// Saves [settings] whole to
+  /// `users/{settings.authorId}/food_log_settings/food_log_settings`, merged,
+  /// as `FoodLogSettingsManager.saveSettings` does (`saveDocument` is
+  /// `setData(merge: true)`). Every field is written, the favourites lists
+  /// whole, so a document an older build wrote without the later fields
+  /// becomes one Swift's strict decoder reads again (`swift-findings.md`).
+  Future<void> saveFoodLogSettings(FoodLogSettings settings);
+
   /// Saves [meal] to `users/{meal.authorId}/meal_logs/{meal.mealId}`,
   /// merged over anything there, as `MealLogManager.saveMeal` does
   /// (`MealLogManager.swift:88`; `saveDocument` is `setData(merge: true)`).

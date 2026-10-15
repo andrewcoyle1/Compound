@@ -2,7 +2,7 @@
 // stored is exactly the model's canonical encoding.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compound_models/compound_models.dart'
-    show ExerciseSettingsModelKeys;
+    show ExerciseSettingsModel, ExerciseSettingsModelKeys;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -77,6 +77,81 @@ void main() {
           ExerciseSettingsModelKeys.note: 'X',
           'field_from_a_newer_build': 1,
         }),
+      );
+    });
+  });
+
+  group('FirestoreTrainingLibraryRepository.clearExerciseRestOverride', () {
+    test('deletes only the override, keeping the note', () async {
+      final firestore = FakeFirebaseFirestore();
+      final subject = FirestoreTrainingLibraryRepository(firestore: firestore);
+      final full = ExerciseSettingsModel.fromFirestore(
+        modelFixture('exercise_settings', 'full'),
+      );
+      final document = firestore.doc(
+        'users/${full.authorId}/exercise_settings/${full.id}',
+      );
+      await document.set({
+        ...storedFixture('exercise_settings', 'full'),
+        'field_from_a_newer_build': 1,
+      });
+
+      await subject.clearExerciseRestOverride(full.authorId, full.id);
+
+      expect(
+        storedAsTagged((await document.get()).data()!),
+        strictlyEquals(
+          {
+            ...taggedFixture('exercise_settings', 'full'),
+            'field_from_a_newer_build': 1,
+          }..remove(ExerciseSettingsModelKeys.restDurationOverride),
+        ),
+      );
+    });
+  });
+
+  group('InMemoryTrainingLibraryRepository.clearExerciseRestOverride', () {
+    test(
+      'deletes the override, keeping the note, and watchers see it',
+      () async {
+        final subject = InMemoryTrainingLibraryRepository(
+          exerciseSettings: const [
+            ExerciseSettingsModel(
+              id: 'bench',
+              authorId: 'me',
+              note: 'Wide grip',
+              restDurationOverride: 120,
+            ),
+          ],
+        );
+        final overrides = subject
+            .watchExerciseSettings('me')
+            .map(
+              (all) => [for (final s in all) (s.note, s.restDurationOverride)],
+            );
+        final expectation = expectLater(
+          overrides,
+          emitsInOrder([
+            [('Wide grip', 120)],
+            [('Wide grip', null)],
+          ]),
+        );
+
+        await subject.clearExerciseRestOverride('me', 'bench');
+
+        await expectation;
+      },
+    );
+
+    test('fails with not-found when there are no settings', () {
+      expect(
+        InMemoryTrainingLibraryRepository().clearExerciseRestOverride(
+          'me',
+          'bench',
+        ),
+        throwsA(
+          isA<FirebaseException>().having((e) => e.code, 'code', 'not-found'),
+        ),
       );
     });
   });

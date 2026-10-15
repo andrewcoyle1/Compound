@@ -99,6 +99,8 @@ void main() {
       );
       router = _MockGoRouter();
       when(() => router.goNamed(any())).thenReturn(null);
+      when(() => router.pushNamed<Object?>(any()))
+          .thenAnswer((_) async => null);
       data = StagingData();
       analytics = AnalyticsRecorder();
     });
@@ -140,6 +142,8 @@ void main() {
       await tester.tap(find.text('Show All Data'));
       verify(() => router.goNamed('expenditureData')).called(1);
       expect(analytics.names.first, 'ExpenditureDetailView_Appear');
+      await tester.tap(find.byTooltip('Edit Profile'));
+      verify(() => router.pushNamed<Object?>('editProfile')).called(1);
     });
 
     testWidgets('Energy Balance charts intake against expenditure', (

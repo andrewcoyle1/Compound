@@ -81,6 +81,20 @@ final class SavedEffect extends TrackerEffect {
   const new();
 }
 
+/// The rest ran out while the tracker is up: the rest-complete sound and
+/// haptic, as the settings ask (`announceRestCompletion`).
+final class RestOverEffect extends TrackerEffect {
+  const new();
+}
+
+/// An hour has passed since [lastSet] was logged: "Still training?", with
+/// Finish as of that set or Keep Going.
+final class const StillTrainingEffect(final DateTime lastSet)
+    extends TrackerEffect {
+  @override
+  List<Object?> get props => [lastSet];
+}
+
 /// The workout could not be started.
 final class StartFailedEffect extends TrackerEffect {
   const new();

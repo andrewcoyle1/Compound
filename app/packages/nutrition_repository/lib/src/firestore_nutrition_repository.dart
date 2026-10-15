@@ -82,6 +82,14 @@ class FirestoreNutritionRepository implements NutritionRepository {
           );
 
   @override
+  Future<void> saveFoodLogSettings(FoodLogSettings settings) => _merge(
+    _user(settings.authorId)
+        .collection('food_log_settings')
+        .doc('food_log_settings'),
+    settings.toFirestore(),
+  );
+
+  @override
   Future<void> saveMeal(MealLogModel meal) => _merge(
     _user(meal.authorId).collection('meal_logs').doc(meal.mealId),
     meal.toFirestore(),

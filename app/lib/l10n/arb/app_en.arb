@@ -3729,6 +3729,1301 @@
     "@nutritionDeleteFailed": {
         "description": "A failed delete"
     },
+    "settingsTitle": "Settings",
+    "@settingsTitle": {
+        "description": "Title of the Settings screen"
+    },
+    "settingsGeneralHeader": "General",
+    "@settingsGeneralHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsNutritionHeader": "Nutrition Settings",
+    "@settingsNutritionHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsTrainingHeader": "Training Settings",
+    "@settingsTrainingHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsCommunityHeader": "Community & Support",
+    "@settingsCommunityHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsOtherHeader": "Other",
+    "@settingsOtherHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsSecurityHeader": "Security",
+    "@settingsSecurityHeader": {
+        "description": "Settings: section header"
+    },
+    "settingsNotificationSettings": "Notification Settings",
+    "@settingsNotificationSettings": {
+        "description": "Settings row: opens the notification settings"
+    },
+    "settingsUnits": "Units",
+    "@settingsUnits": {
+        "description": "Settings row: opens the units screen"
+    },
+    "settingsAnalytics": "Analytics",
+    "@settingsAnalytics": {
+        "description": "Settings row: opens Customize Analytics"
+    },
+    "settingsFoodLog": "Food Log",
+    "@settingsFoodLog": {
+        "description": "Settings row: opens the food log settings"
+    },
+    "settingsExpenditure": "Expenditure",
+    "@settingsExpenditure": {
+        "description": "Settings row: opens the expenditure settings"
+    },
+    "settingsStrategy": "Strategy",
+    "@settingsStrategy": {
+        "description": "Settings row: opens the check-in strategy settings"
+    },
+    "settingsWorkoutSettings": "Workout Settings",
+    "@settingsWorkoutSettings": {
+        "description": "Settings row: opens the workout settings"
+    },
+    "settingsSupport": "Support",
+    "@settingsSupport": {
+        "description": "Settings row, and the title of its alert"
+    },
+    "settingsLegal": "Legal",
+    "@settingsLegal": {
+        "description": "Settings row: opens the legal documents"
+    },
+    "settingsMethodsAndSources": "Methods & Sources",
+    "@settingsMethodsAndSources": {
+        "description": "Settings row: opens the list of calculation methods"
+    },
+    "settingsAbout": "About",
+    "@settingsAbout": {
+        "description": "Settings row: opens About"
+    },
+    "settingsSignInMethod": "Sign-In Method",
+    "@settingsSignInMethod": {
+        "description": "Settings row: how the account signs in"
+    },
+    "settingsSignInNotSaved": "Not saved",
+    "@settingsSignInNotSaved": {
+        "description": "Sign-in method of an anonymous account"
+    },
+    "settingsSignInApple": "Apple",
+    "@settingsSignInApple": {
+        "description": "Sign-in method: Sign in with Apple"
+    },
+    "settingsSignInGoogle": "Google",
+    "@settingsSignInGoogle": {
+        "description": "Sign-in method: Google"
+    },
+    "settingsEmailNotProvided": "Not provided",
+    "@settingsEmailNotProvided": {
+        "description": "Email row value when the account has no email"
+    },
+    "settingsDeleteAccount": "Delete Account",
+    "@settingsDeleteAccount": {
+        "description": "Settings row: opens the delete account confirmation"
+    },
+    "settingsSignOutFailed": "Unable to Sign Out",
+    "@settingsSignOutFailed": {
+        "description": "Snack bar when signing out fails"
+    },
+    "settingsOk": "OK",
+    "@settingsOk": {
+        "description": "Button that closes an alert"
+    },
+    "settingsSupportMessage": "Email {email} and we will get back to you.",
+    "@settingsSupportMessage": {
+        "description": "Support alert: where to write",
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "profileEditProfile": "Edit Profile",
+    "@profileEditProfile": {
+        "description": "Profile row: opens Edit Profile"
+    },
+    "editProfileTitle": "Edit Profile",
+    "@editProfileTitle": {
+        "description": "Title of the Edit Profile screen"
+    },
+    "editProfileProfileHeader": "Profile",
+    "@editProfileProfileHeader": {
+        "description": "Edit Profile: section header"
+    },
+    "editProfileLastName": "Last name",
+    "@editProfileLastName": {
+        "description": "Edit Profile: last name field"
+    },
+    "editProfileSex": "Sex",
+    "@editProfileSex": {
+        "description": "Edit Profile: the sex picker"
+    },
+    "editProfileNotSpecified": "Not specified",
+    "@editProfileNotSpecified": {
+        "description": "Edit Profile: a picker with no answer"
+    },
+    "editProfileHeight": "Height",
+    "@editProfileHeight": {
+        "description": "Edit Profile: the height field"
+    },
+    "editProfileCardioExperience": "Cardio Experience",
+    "@editProfileCardioExperience": {
+        "description": "Edit Profile: the cardio fitness picker"
+    },
+    "editProfileExerciseFrequency": "Exercise Frequency",
+    "@editProfileExerciseFrequency": {
+        "description": "Edit Profile: how often the user works out"
+    },
+    "editProfileDailyActivity": "Daily Activity",
+    "@editProfileDailyActivity": {
+        "description": "Edit Profile: the daily activity picker"
+    },
+    "editProfileCardioBeginner": "Beginner",
+    "@editProfileCardioBeginner": {
+        "description": "Cardio fitness level"
+    },
+    "editProfileCardioNovice": "Novice",
+    "@editProfileCardioNovice": {
+        "description": "Cardio fitness level"
+    },
+    "editProfileCardioIntermediate": "Intermediate",
+    "@editProfileCardioIntermediate": {
+        "description": "Cardio fitness level"
+    },
+    "editProfileCardioAdvanced": "Advanced",
+    "@editProfileCardioAdvanced": {
+        "description": "Cardio fitness level"
+    },
+    "editProfileCardioElite": "Elite",
+    "@editProfileCardioElite": {
+        "description": "Cardio fitness level"
+    },
+    "editProfilePrivacyHeader": "Privacy",
+    "@editProfilePrivacyHeader": {
+        "description": "Edit Profile: section header"
+    },
+    "editProfilePrivateProfile": "Private profile",
+    "@editProfilePrivateProfile": {
+        "description": "Edit Profile: the privacy switch"
+    },
+    "editProfilePrivacyFooter": "People must ask to follow a private profile. Until you accept, they see only your name and counts. Private profiles are left out of suggestions.",
+    "@editProfilePrivacyFooter": {
+        "description": "Edit Profile: what the privacy switch does"
+    },
+    "editProfileSaveFailedTitle": "Unable to Save Profile",
+    "@editProfileSaveFailedTitle": {
+        "description": "Alert title when saving the profile fails"
+    },
+    "editProfileSaveFailedMessage": "Please check your internet connection and try again.",
+    "@editProfileSaveFailedMessage": {
+        "description": "Alert message when saving the profile fails"
+    },
+    "editProfilePrivacyFailed": "Unable to Change Privacy",
+    "@editProfilePrivacyFailed": {
+        "description": "Snack bar when the privacy switch cannot be saved"
+    },
+    "deleteAccountWhatIsDeleted": "What Is Deleted",
+    "@deleteAccountWhatIsDeleted": {
+        "description": "Delete Account: section header"
+    },
+    "deleteAccountItemProfile": "Your profile, username and photos",
+    "@deleteAccountItemProfile": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountItemWorkouts": "Workouts, mesocycles, exercises and gym profiles",
+    "@deleteAccountItemWorkouts": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountItemMeals": "Meals, foods and recipes",
+    "@deleteAccountItemMeals": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountItemBody": "Body measurements, goals and progress photos",
+    "@deleteAccountItemBody": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountItemSocial": "Comments, likes and follows",
+    "@deleteAccountItemSocial": {
+        "description": "Delete Account: something that is deleted"
+    },
+    "deleteAccountWhatIsDeletedFooter": "Your account is closed straight away, and the rest of your data is removed from our servers within 30 days. This cannot be undone.",
+    "@deleteAccountWhatIsDeletedFooter": {
+        "description": "Delete Account: when the data goes"
+    },
+    "deleteAccountSubscriptionHeader": "Subscription",
+    "@deleteAccountSubscriptionHeader": {
+        "description": "Delete Account: section header"
+    },
+    "deleteAccountSubscriptionMessage": "Your subscription is billed by the App Store or Google Play and is not canceled by deleting your account. Cancel it there first if you do not want to be charged again.",
+    "@deleteAccountSubscriptionMessage": {
+        "description": "Delete Account: deleting does not cancel the subscription"
+    },
+    "deleteAccountSignInAgain": "You'll be asked to sign in again to confirm.",
+    "@deleteAccountSignInAgain": {
+        "description": "Delete Account: footer for an Apple or Google account"
+    },
+    "deleteAccountFailedTitle": "Unable to Delete Account",
+    "@deleteAccountFailedTitle": {
+        "description": "Alert title when deleting the account fails"
+    },
+    "deleteAccountFailedMessage": "Please check your connection and try again.",
+    "@deleteAccountFailedMessage": {
+        "description": "Alert message when deleting the account fails"
+    },
+    "deleteAccountDeleted": "Account Deleted",
+    "@deleteAccountDeleted": {
+        "description": "Shown once the account is deleted"
+    },
+    "deleteAccountDeletedMessage": "The rest of your data is removed from our servers within 30 days.",
+    "@deleteAccountDeletedMessage": {
+        "description": "Shown once the account is deleted"
+    },
+    "unitsHeightFooter": "Also used for body measurements.",
+    "@unitsHeightFooter": {
+        "description": "Units: footer under the height units"
+    },
+    "unitsSaveFailed": "Unable to Save Settings",
+    "@unitsSaveFailed": {
+        "description": "Snack bar when a settings change could not be saved"
+    },
+    "customiseAnalyticsTitle": "Customize Analytics",
+    "@customiseAnalyticsTitle": {
+        "description": "Title of the screen that hides Progress sections"
+    },
+    "customiseAnalyticsSectionsHeader": "Sections",
+    "@customiseAnalyticsSectionsHeader": {
+        "description": "Customize Analytics: section header"
+    },
+    "customiseAnalyticsFooter": "Turn a section off to hide it from the Progress tab.",
+    "@customiseAnalyticsFooter": {
+        "description": "Customize Analytics: footer under the section switches"
+    },
+    "customiseAnalyticsShowAll": "Show All Sections",
+    "@customiseAnalyticsShowAll": {
+        "description": "Customize Analytics: button that shows every hidden section"
+    },
+    "customiseAnalyticsMuscleGroups": "Muscle Groups",
+    "@customiseAnalyticsMuscleGroups": {
+        "description": "Progress section: weekly sets per muscle"
+    },
+    "customiseAnalyticsExercises": "Exercises",
+    "@customiseAnalyticsExercises": {
+        "description": "Progress section: estimated one-rep maxes"
+    },
+    "notificationSettingsSocialHeader": "Social",
+    "@notificationSettingsSocialHeader": {
+        "description": "Notification Settings: section header"
+    },
+    "notificationSettingsLikes": "Likes",
+    "@notificationSettingsLikes": {
+        "description": "Notification switch: likes"
+    },
+    "notificationSettingsComments": "Comments",
+    "@notificationSettingsComments": {
+        "description": "Notification switch: comments"
+    },
+    "notificationSettingsMentions": "Mentions",
+    "@notificationSettingsMentions": {
+        "description": "Notification switch: mentions"
+    },
+    "notificationSettingsFollows": "New followers",
+    "@notificationSettingsFollows": {
+        "description": "Notification switch: new followers"
+    },
+    "notificationSettingsNudges": "Nudges",
+    "@notificationSettingsNudges": {
+        "description": "Notification switch: nudges"
+    },
+    "notificationSettingsShares": "Shares",
+    "@notificationSettingsShares": {
+        "description": "Notification switch: shares"
+    },
+    "notificationSettingsChallenges": "Challenges",
+    "@notificationSettingsChallenges": {
+        "description": "Notification switch: challenges"
+    },
+    "notificationSettingsSocialFooter": "Get a push when someone in your circle interacts with you, even when Compound is closed.",
+    "@notificationSettingsSocialFooter": {
+        "description": "Notification Settings: footer under the social switches"
+    },
+    "notificationSettingsRemindersHeader": "Reminders",
+    "@notificationSettingsRemindersHeader": {
+        "description": "Notification Settings: section header"
+    },
+    "notificationSettingsStreakReminder": "Streak reminder",
+    "@notificationSettingsStreakReminder": {
+        "description": "Notification switch: the streak reminder"
+    },
+    "notificationSettingsRemindAt": "Remind me at",
+    "@notificationSettingsRemindAt": {
+        "description": "Notification Settings: row choosing the streak reminder hour"
+    },
+    "notificationSettingsWeeklyDigest": "Weekly digest",
+    "@notificationSettingsWeeklyDigest": {
+        "description": "Notification switch: the Sunday digest"
+    },
+    "notificationSettingsWorkoutReminders": "Workout reminders",
+    "@notificationSettingsWorkoutReminders": {
+        "description": "Notification switch: come-back reminders"
+    },
+    "notificationSettingsMealReminders": "Meal reminders",
+    "@notificationSettingsMealReminders": {
+        "description": "Notification switch: meal reminders"
+    },
+    "notificationSettingsRemindersFooter": "The streak reminder comes only when this week's goal needs a session that day. The weekly digest arrives on Sunday evening. Workout reminders come one, three and five days after you last open Compound. Meal reminders come at breakfast, lunch and dinner.",
+    "@notificationSettingsRemindersFooter": {
+        "description": "Notification Settings: footer under the reminders"
+    },
+    "notificationSettingsSaveFailed": "Unable to Save Setting",
+    "@notificationSettingsSaveFailed": {
+        "description": "Snack bar when a notification setting could not be saved"
+    },
+    "methodsAndSourcesFooter": "Each figure Compound calculates for you has an ⓘ beside it that opens the same explanation.",
+    "@methodsAndSourcesFooter": {
+        "description": "Methods & Sources: footer under the list"
+    },
+    "legalAgreementsHeader": "Agreements",
+    "@legalAgreementsHeader": {
+        "description": "Legal: section header"
+    },
+    "legalTermsOfService": "Terms of Service",
+    "@legalTermsOfService": {
+        "description": "Legal document"
+    },
+    "legalPrivacyPolicy": "Privacy Policy",
+    "@legalPrivacyPolicy": {
+        "description": "Legal document"
+    },
+    "legalHealthDisclaimer": "Health Disclaimer",
+    "@legalHealthDisclaimer": {
+        "description": "Legal document"
+    },
+    "legalConsumerHealthPrivacy": "Consumer Health Privacy",
+    "@legalConsumerHealthPrivacy": {
+        "description": "Legal document"
+    },
+    "legalNotPublished": "The documents are not published yet.",
+    "@legalNotPublished": {
+        "description": "Legal: footer while the documents have no address"
+    },
+    "aboutTitle": "About Compound",
+    "@aboutTitle": {
+        "description": "Title of the About screen"
+    },
+    "aboutBody": "Compound is your training and nutrition platform. Every session builds on the last.",
+    "@aboutBody": {
+        "description": "About: what the app is"
+    },
+    "aboutViewLicences": "View Licenses",
+    "@aboutViewLicences": {
+        "description": "About: button that opens the open-source licenses"
+    },
+    "licencesIntro": "Compound is built on the open-source packages below. Thank you to everyone who maintains them.",
+    "@licencesIntro": {
+        "description": "Licenses: text above the list"
+    },
+    "workoutSettingsRestTimer": "Rest Timer",
+    "@workoutSettingsRestTimer": {
+        "description": "Workout Settings row, and the Rest Timer screen title"
+    },
+    "workoutSettingsRestTimerSubtitle": "Configure rest timer settings",
+    "@workoutSettingsRestTimerSubtitle": {
+        "description": "Workout Settings: Rest Timer row subtitle"
+    },
+    "workoutSettingsSmartProgression": "Smart Progression",
+    "@workoutSettingsSmartProgression": {
+        "description": "Workout Settings row, and the Smart Progression screen title"
+    },
+    "workoutSettingsSmartProgressionSubtitle": "Configure smart progression settings",
+    "@workoutSettingsSmartProgressionSubtitle": {
+        "description": "Workout Settings: Smart Progression row subtitle"
+    },
+    "workoutSettingsPropagateChanges": "Propagate Changes",
+    "@workoutSettingsPropagateChanges": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsPropagateChangesSubtitle": "Weight and rep edits will propagate to all sets with the same weight and reps",
+    "@workoutSettingsPropagateChangesSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsRirTracking": "Effort (RPE)",
+    "@workoutSettingsRirTracking": {
+        "description": "Workout Settings toggle: log RPE on sets"
+    },
+    "workoutSettingsRirTrackingSubtitle": "Log how hard each set was, from RPE 6 to 10, on the reps keyboard",
+    "@workoutSettingsRirTrackingSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsSupersetAutoScroll": "Superset Auto-Scroll",
+    "@workoutSettingsSupersetAutoScroll": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsSupersetAutoScrollSubtitle": "Scroll automatically between superset exercises after set completion",
+    "@workoutSettingsSupersetAutoScrollSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsSupersetRest": "Rest between superset partners",
+    "@workoutSettingsSupersetRest": {
+        "description": "Workout Settings menu: rest between superset partners"
+    },
+    "workoutSettingsOff": "Off",
+    "@workoutSettingsOff": {
+        "description": "A rest that is turned off"
+    },
+    "workoutSettingsExerciseAutoNext": "Exercise Auto-Next",
+    "@workoutSettingsExerciseAutoNext": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsExerciseAutoNextSubtitle": "Move to the next exercise when its rest ends",
+    "@workoutSettingsExerciseAutoNextSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsPreviousReferenceHeader": "Previous Reference",
+    "@workoutSettingsPreviousReferenceHeader": {
+        "description": "Workout Settings section header"
+    },
+    "workoutSettingsPreviousReferenceFooter": "Applies to the previous values shown beside each set while you train.",
+    "@workoutSettingsPreviousReferenceFooter": {
+        "description": "Workout Settings section footer"
+    },
+    "workoutSettingsAnyExercise": "Any workout",
+    "@workoutSettingsAnyExercise": {
+        "description": "Previous reference option"
+    },
+    "workoutSettingsAnyExerciseSubtitle": "Previous values show the weight, reps, and RIR from the last time you performed this exercise, in any workout at all.",
+    "@workoutSettingsAnyExerciseSubtitle": {
+        "description": "Previous reference option subtitle"
+    },
+    "workoutSettingsSameWorkout": "This workout",
+    "@workoutSettingsSameWorkout": {
+        "description": "Previous reference option"
+    },
+    "workoutSettingsSameWorkoutSubtitle": "Previous values come from the last time you completed this workout, in any mesocycle. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead.",
+    "@workoutSettingsSameWorkoutSubtitle": {
+        "description": "Previous reference option subtitle"
+    },
+    "workoutSettingsInMesocycle": "This workout within the current mesocycle",
+    "@workoutSettingsInMesocycle": {
+        "description": "Previous reference option"
+    },
+    "workoutSettingsInMesocycleSubtitle": "Previous values come from the last time you completed this workout within the current mesocycle. If there is none for an exercise, the last time you performed it anywhere is shown instead.",
+    "@workoutSettingsInMesocycleSubtitle": {
+        "description": "Previous reference option subtitle"
+    },
+    "workoutSettingsDisplayHeader": "Display",
+    "@workoutSettingsDisplayHeader": {
+        "description": "Workout Settings section header"
+    },
+    "workoutSettingsKeepAlive": "Keep Screen On",
+    "@workoutSettingsKeepAlive": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsKeepAliveSubtitle": "Stop the screen locking during a workout",
+    "@workoutSettingsKeepAliveSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsWorkoutTimer": "Workout Timer",
+    "@workoutSettingsWorkoutTimer": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsWorkoutTimerSubtitle": "Show elapsed time during workout sessions",
+    "@workoutSettingsWorkoutTimerSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsBodyweight": "Bodyweight Contribution",
+    "@workoutSettingsBodyweight": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsBodyweightSubtitle": "Display scale weight and body weight contribution during workout sessions",
+    "@workoutSettingsBodyweightSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsLockScreen": "Show on Lock Screen",
+    "@workoutSettingsLockScreen": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsLockScreenSubtitle": "Follow each workout on the Lock Screen and in the Dynamic Island",
+    "@workoutSettingsLockScreenSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsSetPlan": "Set Plan",
+    "@workoutSettingsSetPlan": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsSetPlanSubtitle": "Plan drops, mini-sets and failure targets in your workouts",
+    "@workoutSettingsSetPlanSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsWarmUpHeader": "Warm-Up",
+    "@workoutSettingsWarmUpHeader": {
+        "description": "Workout Settings section header"
+    },
+    "workoutSettingsSmartWarmUps": "Add Smart Warm-Ups",
+    "@workoutSettingsSmartWarmUps": {
+        "description": "Workout Settings toggle"
+    },
+    "workoutSettingsSmartWarmUpsSubtitle": "Add warm-up sets based on the weight and how fresh you are",
+    "@workoutSettingsSmartWarmUpsSubtitle": {
+        "description": "Workout Settings toggle subtitle"
+    },
+    "workoutSettingsSaveFailed": "Unable to Save Settings",
+    "@workoutSettingsSaveFailed": {
+        "description": "Snack bar when a settings change cannot be saved"
+    },
+    "restTimerBehaviorHeader": "Behavior",
+    "@restTimerBehaviorHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerUseRestTimers": "Use Rest Timers",
+    "@restTimerUseRestTimers": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerUseRestTimersSubtitle": "Rest timers will count down after each exercise set",
+    "@restTimerUseRestTimersSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerDuration": "Timer Duration",
+    "@restTimerDuration": {
+        "description": "Rest Timer row, and the Timer Duration screen title"
+    },
+    "restTimerDurationSubtitle": "Configure rest duration for different exercise types",
+    "@restTimerDurationSubtitle": {
+        "description": "Rest Timer row subtitle"
+    },
+    "restTimerAfterLastWarmUp": "Rest After Last Warm-Up Set",
+    "@restTimerAfterLastWarmUp": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerAfterLastWarmUpSubtitle": "Rest before the first working set. Warm-up sets never rest between themselves",
+    "@restTimerAfterLastWarmUpSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerBetweenExercises": "Rest Between Exercises",
+    "@restTimerBetweenExercises": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerBetweenExercisesSubtitle": "Use rest timers when moving between exercises",
+    "@restTimerBetweenExercisesSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerBetweenSides": "Rest Between Left/Right Sets",
+    "@restTimerBetweenSides": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerBetweenSidesSubtitle": "Use rest timers in between left and right sets",
+    "@restTimerBetweenSidesSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerNotificationsHeader": "Notifications",
+    "@restTimerNotificationsHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerPlaySound": "Play Sound",
+    "@restTimerPlaySound": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerPlaySoundSubtitle": "Play sound when rest time is over",
+    "@restTimerPlaySoundSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerVibrate": "Vibrate",
+    "@restTimerVibrate": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerVibrateSubtitle": "Vibrate when rest time is over",
+    "@restTimerVibrateSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerScalingHeader": "Rest Scaling",
+    "@restTimerScalingHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerScalingWarmUp": "After Warm-Ups",
+    "@restTimerScalingWarmUp": {
+        "description": "Rest scaling menu"
+    },
+    "restTimerScalingBetweenExercises": "Between Exercises",
+    "@restTimerScalingBetweenExercises": {
+        "description": "Rest scaling menu"
+    },
+    "restTimerScalingSides": "Between Left and Right Sides",
+    "@restTimerScalingSides": {
+        "description": "Rest scaling menu"
+    },
+    "restTimerWithinSetHeader": "Within a Set",
+    "@restTimerWithinSetHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerWithinSetFooter": "A set's normal rest follows its last piece. The Live Activity shows the short rest as a bar, not a countdown, and buzzes once.",
+    "@restTimerWithinSetFooter": {
+        "description": "Rest Timer section footer"
+    },
+    "restTimerDropSet": "Drop set",
+    "@restTimerDropSet": {
+        "description": "Set kind"
+    },
+    "restTimerDropSetSubtitle": "Change the weight and go",
+    "@restTimerDropSetSubtitle": {
+        "description": "Drop set row subtitle"
+    },
+    "restTimerNone": "None",
+    "@restTimerNone": {
+        "description": "A drop set has no rest within it"
+    },
+    "restTimerMyo": "Myo-reps",
+    "@restTimerMyo": {
+        "description": "Set kind"
+    },
+    "restTimerMyoSubtitle": "Between mini-sets",
+    "@restTimerMyoSubtitle": {
+        "description": "Myo-reps row subtitle"
+    },
+    "restTimerRestPause": "Rest-pause",
+    "@restTimerRestPause": {
+        "description": "Set kind"
+    },
+    "restTimerRestPauseSubtitle": "Between pauses",
+    "@restTimerRestPauseSubtitle": {
+        "description": "Rest-pause row subtitle"
+    },
+    "restTimerCluster": "Cluster",
+    "@restTimerCluster": {
+        "description": "Set kind"
+    },
+    "restTimerClusterSubtitle": "Between clusters",
+    "@restTimerClusterSubtitle": {
+        "description": "Cluster row subtitle"
+    },
+    "restTimerFailureSetsHeader": "Failure Sets",
+    "@restTimerFailureSetsHeader": {
+        "description": "Rest Timer section header"
+    },
+    "restTimerRaiseTarget": "Raise the Target",
+    "@restTimerRaiseTarget": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerRaiseTargetSubtitle": "After beating it twice in a row",
+    "@restTimerRaiseTargetSubtitle": {
+        "description": "Rest Timer toggle subtitle"
+    },
+    "restTimerAddWeight": "Add Weight Instead",
+    "@restTimerAddWeight": {
+        "description": "Rest Timer toggle"
+    },
+    "restTimerAddWeightOff": "Off: the target keeps rising",
+    "@restTimerAddWeightOff": {
+        "description": "Add Weight Instead subtitle when off"
+    },
+    "restTimerCeilingLabel": "Target that adds weight",
+    "@restTimerCeilingLabel": {
+        "description": "Stepper accessibility label"
+    },
+    "timerDurationDefaultsHeader": "Default Timers",
+    "@timerDurationDefaultsHeader": {
+        "description": "Timer Duration section header"
+    },
+    "timerDurationDefaultsFooter": "Until you set a time for a type, compound sets of 6 reps or fewer rest 3:00.",
+    "@timerDurationDefaultsFooter": {
+        "description": "Timer Duration section footer"
+    },
+    "timerDurationReset": "Reset Default Timers",
+    "@timerDurationReset": {
+        "description": "Timer Duration button"
+    },
+    "timerDurationResetTitle": "Reset Default Timers?",
+    "@timerDurationResetTitle": {
+        "description": "Reset confirmation title"
+    },
+    "timerDurationResetMessage": "Every exercise type goes back to its default rest time. Exercise timers are kept.",
+    "@timerDurationResetMessage": {
+        "description": "Reset confirmation message"
+    },
+    "timerDurationResetConfirm": "Reset Timers",
+    "@timerDurationResetConfirm": {
+        "description": "Reset confirmation button"
+    },
+    "timerDurationCancel": "Cancel",
+    "@timerDurationCancel": {
+        "description": "Cancel button"
+    },
+    "timerDurationExerciseHeader": "Exercise Timers",
+    "@timerDurationExerciseHeader": {
+        "description": "Timer Duration section header"
+    },
+    "timerDurationExerciseFooter": "These take precedence over default timers",
+    "@timerDurationExerciseFooter": {
+        "description": "Timer Duration section footer"
+    },
+    "timerDurationAddExercise": "Add Exercise Timer",
+    "@timerDurationAddExercise": {
+        "description": "Timer Duration row"
+    },
+    "timerDurationAddExerciseSubtitle": "Set timers for specific exercises",
+    "@timerDurationAddExerciseSubtitle": {
+        "description": "Timer Duration row subtitle"
+    },
+    "timerDurationRemove": "Remove",
+    "@timerDurationRemove": {
+        "description": "Removes an exercise timer"
+    },
+    "timerDurationChooseExercise": "Choose Exercise",
+    "@timerDurationChooseExercise": {
+        "description": "Exercise picker title"
+    },
+    "timerDurationMinutes": "Minutes",
+    "@timerDurationMinutes": {
+        "description": "Duration wheel label"
+    },
+    "timerDurationSeconds": "Seconds",
+    "@timerDurationSeconds": {
+        "description": "Duration wheel label"
+    },
+    "timerDurationSave": "Save",
+    "@timerDurationSave": {
+        "description": "Saves a duration"
+    },
+    "smartProgressionBehaviorHeader": "Behavior",
+    "@smartProgressionBehaviorHeader": {
+        "description": "Smart Progression section header"
+    },
+    "smartProgressionInitialLogFill": "Initial log fill",
+    "@smartProgressionInitialLogFill": {
+        "description": "Smart Progression menu"
+    },
+    "smartProgressionFillSmart": "Smart Progression values",
+    "@smartProgressionFillSmart": {
+        "description": "Initial log fill option"
+    },
+    "smartProgressionFillPrevious": "Previous workout values",
+    "@smartProgressionFillPrevious": {
+        "description": "Initial log fill option"
+    },
+    "smartProgressionFillEmpty": "Leave empty",
+    "@smartProgressionFillEmpty": {
+        "description": "Initial log fill option"
+    },
+    "smartProgressionApplyInSession": "Apply in session",
+    "@smartProgressionApplyInSession": {
+        "description": "Smart Progression toggle"
+    },
+    "smartProgressionApplyInSessionSubtitle": "Update targets during a workout as you log sets",
+    "@smartProgressionApplyInSessionSubtitle": {
+        "description": "Smart Progression toggle subtitle"
+    },
+    "smartProgressionAdjustmentMode": "Adjustment Mode",
+    "@smartProgressionAdjustmentMode": {
+        "description": "Smart Progression menu"
+    },
+    "smartProgressionWeightFirst": "Weight-first",
+    "@smartProgressionWeightFirst": {
+        "description": "Adjustment mode option"
+    },
+    "smartProgressionRepsFirst": "Reps-first",
+    "@smartProgressionRepsFirst": {
+        "description": "Adjustment mode option"
+    },
+    "workoutSettingsSeconds": "{seconds} s",
+    "@workoutSettingsSeconds": {
+        "description": "A rest in seconds",
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "restTimerAddWeightAt": "Once the target reaches {target}",
+    "@restTimerAddWeightAt": {
+        "description": "Add Weight Instead subtitle when on",
+        "placeholders": {
+            "target": {
+                "type": "int"
+            }
+        }
+    },
+    "restTimerCeiling": "Target {target}",
+    "@restTimerCeiling": {
+        "description": "Stepper: the AMRAP target that adds weight",
+        "placeholders": {
+            "target": {
+                "type": "int"
+            }
+        }
+    },
+    "timerDurationMinutesValue": "{minutes} min",
+    "@timerDurationMinutesValue": {
+        "description": "Minutes wheel row",
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "timerDurationSecondsValue": "{seconds} sec",
+    "@timerDurationSecondsValue": {
+        "description": "Seconds wheel row",
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "foodLogSettingsTitle": "Food Log",
+    "@foodLogSettingsTitle": {
+        "description": "Title of the Food Log settings screen"
+    },
+    "foodLogSettingsSaveFailed": "Unable to Save Settings",
+    "@foodLogSettingsSaveFailed": {
+        "description": "Snack bar when a settings change could not be saved"
+    },
+    "foodLogSettingsReportingHeader": "Nutrient Reporting",
+    "@foodLogSettingsReportingHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsShowOverages": "Show Overages",
+    "@foodLogSettingsShowOverages": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsOveragesOn": "Negative numbers will be used in nutrient remaining views if you exceed your target.",
+    "@foodLogSettingsOveragesOn": {
+        "description": "Show Overages subtitle while it is on"
+    },
+    "foodLogSettingsOveragesOff": "No negative numbers will be used if you exceed a nutrient target.",
+    "@foodLogSettingsOveragesOff": {
+        "description": "Show Overages subtitle while it is off"
+    },
+    "foodLogSettingsTimelineHeader": "Timeline Options",
+    "@foodLogSettingsTimelineHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsStartHour": "Start Hour",
+    "@foodLogSettingsStartHour": {
+        "description": "Food Log settings: first hour the timeline shows"
+    },
+    "foodLogSettingsEndHour": "End Hour",
+    "@foodLogSettingsEndHour": {
+        "description": "Food Log settings: last hour the timeline shows"
+    },
+    "foodLogSettingsTimestampSide": "Timestamp Side",
+    "@foodLogSettingsTimestampSide": {
+        "description": "Food Log settings: which side of the timeline the times sit on"
+    },
+    "foodLogSettingsLeft": "Left",
+    "@foodLogSettingsLeft": {
+        "description": "Timestamp side option"
+    },
+    "foodLogSettingsRight": "Right",
+    "@foodLogSettingsRight": {
+        "description": "Timestamp side option"
+    },
+    "foodLogSettingsAddFoods": "Add Foods to Hour",
+    "@foodLogSettingsAddFoods": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsAddFoodsDetail": "Show + button on each hour",
+    "@foodLogSettingsAddFoodsDetail": {
+        "description": "Add Foods to Hour subtitle"
+    },
+    "foodLogSettingsTimestamps": "Food Timestamps",
+    "@foodLogSettingsTimestamps": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsTimestampsDetail": "Show timestamps",
+    "@foodLogSettingsTimestampsDetail": {
+        "description": "Food Timestamps subtitle"
+    },
+    "foodLogSettingsHourlyTotals": "Hourly Macro Totals",
+    "@foodLogSettingsHourlyTotals": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsWeekBanner": "Calendar Week Banner",
+    "@foodLogSettingsWeekBanner": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsSearchHeader": "Food Search",
+    "@foodLogSettingsSearchHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsBranded": "Branded Results",
+    "@foodLogSettingsBranded": {
+        "description": "Food Log settings: switch for branded foods in search"
+    },
+    "foodLogSettingsOpenFoodFacts": "Open Food Facts Results",
+    "@foodLogSettingsOpenFoodFacts": {
+        "description": "Food Log settings: switch for Open Food Facts foods in search"
+    },
+    "foodLogSettingsTilesHeader": "Food Tiles",
+    "@foodLogSettingsTilesHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsTimelineTiles": "Timeline Food Tiles",
+    "@foodLogSettingsTimelineTiles": {
+        "description": "Food Log settings row, and the title of its screen"
+    },
+    "foodLogSettingsTimelineTilesDetail": "Customize how foods appear in your timeline",
+    "@foodLogSettingsTimelineTilesDetail": {
+        "description": "Timeline Food Tiles row subtitle"
+    },
+    "foodLogSettingsLoggerTiles": "Logger Food Tiles",
+    "@foodLogSettingsLoggerTiles": {
+        "description": "Food Log settings row, and the title of its screen"
+    },
+    "foodLogSettingsLoggerTilesDetail": "Customize how foods appear in search",
+    "@foodLogSettingsLoggerTilesDetail": {
+        "description": "Logger Food Tiles row subtitle"
+    },
+    "foodLogSettingsLoggerHeader": "Logger Options",
+    "@foodLogSettingsLoggerHeader": {
+        "description": "Food Log settings: section header"
+    },
+    "foodLogSettingsLoggerBanner": "Logger Banner",
+    "@foodLogSettingsLoggerBanner": {
+        "description": "Food Log settings row, and the title of its screen"
+    },
+    "foodLogSettingsLoggerBannerDetail": "Customize the top of your plate",
+    "@foodLogSettingsLoggerBannerDetail": {
+        "description": "Logger Banner row subtitle"
+    },
+    "foodLogSettingsAutoTime": "Auto-set Current Time",
+    "@foodLogSettingsAutoTime": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsAutoTimeDetail": "Automatically set the time to now when logging a meal",
+    "@foodLogSettingsAutoTimeDetail": {
+        "description": "Auto-set Current Time subtitle"
+    },
+    "foodLogSettingsFavourites": "Favorite Measurements",
+    "@foodLogSettingsFavourites": {
+        "description": "Food Log settings row, and the title of its screen"
+    },
+    "foodLogSettingsFavouritesDetail": "Select the measurements to pin to serving size selections.",
+    "@foodLogSettingsFavouritesDetail": {
+        "description": "Favorite Measurements row subtitle"
+    },
+    "foodLogSettingsQuickAdd": "Quick Add",
+    "@foodLogSettingsQuickAdd": {
+        "description": "Food Log settings: switch"
+    },
+    "foodLogSettingsQuickAddDetail": "Use default portion and skip the amount entry screen",
+    "@foodLogSettingsQuickAddDetail": {
+        "description": "Quick Add subtitle"
+    },
+    "loggerBannerCalories": "Calories Ring",
+    "@loggerBannerCalories": {
+        "description": "Logger Banner: switch"
+    },
+    "loggerBannerCaloriesDetail": "Show calorie ring in the logger banner",
+    "@loggerBannerCaloriesDetail": {
+        "description": "Calories Ring subtitle"
+    },
+    "loggerBannerProtein": "Protein Ring",
+    "@loggerBannerProtein": {
+        "description": "Logger Banner: switch"
+    },
+    "loggerBannerProteinDetail": "Show protein ring in the logger banner",
+    "@loggerBannerProteinDetail": {
+        "description": "Protein Ring subtitle"
+    },
+    "loggerBannerFat": "Fat Ring",
+    "@loggerBannerFat": {
+        "description": "Logger Banner: switch"
+    },
+    "loggerBannerFatDetail": "Show fat ring in the logger banner",
+    "@loggerBannerFatDetail": {
+        "description": "Fat Ring subtitle"
+    },
+    "loggerBannerCarbs": "Carbs Ring",
+    "@loggerBannerCarbs": {
+        "description": "Logger Banner: switch"
+    },
+    "loggerBannerCarbsDetail": "Show carbs ring in the logger banner",
+    "@loggerBannerCarbsDetail": {
+        "description": "Carbs Ring subtitle"
+    },
+    "loggerTilesImage": "Show Food Image",
+    "@loggerTilesImage": {
+        "description": "Food tiles: switch"
+    },
+    "loggerTilesImageDetail": "Display food image in search result rows",
+    "@loggerTilesImageDetail": {
+        "description": "Show Food Image subtitle"
+    },
+    "loggerTilesCalories": "Show Calories",
+    "@loggerTilesCalories": {
+        "description": "Food tiles: switch"
+    },
+    "loggerTilesCaloriesDetail": "Display calorie count in search result rows",
+    "@loggerTilesCaloriesDetail": {
+        "description": "Show Calories subtitle"
+    },
+    "loggerTilesMacros": "Show Macros",
+    "@loggerTilesMacros": {
+        "description": "Food tiles: switch"
+    },
+    "loggerTilesMacrosDetail": "Display P/F/C macros in search result rows",
+    "@loggerTilesMacrosDetail": {
+        "description": "Show Macros subtitle"
+    },
+    "timelineTilesImage": "Show Food Image",
+    "@timelineTilesImage": {
+        "description": "Food tiles: switch"
+    },
+    "timelineTilesImageDetail": "Display food image in timeline rows",
+    "@timelineTilesImageDetail": {
+        "description": "Show Food Image subtitle"
+    },
+    "timelineTilesCalories": "Show Calories",
+    "@timelineTilesCalories": {
+        "description": "Food tiles: switch"
+    },
+    "timelineTilesCaloriesDetail": "Display calorie count in timeline rows",
+    "@timelineTilesCaloriesDetail": {
+        "description": "Show Calories subtitle"
+    },
+    "timelineTilesMacros": "Show Macros",
+    "@timelineTilesMacros": {
+        "description": "Food tiles: switch"
+    },
+    "timelineTilesMacrosDetail": "Display P/F/C macros in timeline rows",
+    "@timelineTilesMacrosDetail": {
+        "description": "Show Macros subtitle"
+    },
+    "loggerTilesPortion": "Show Portion",
+    "@loggerTilesPortion": {
+        "description": "Logger food tiles: switch"
+    },
+    "loggerTilesPortionDetail": "Display portion size in search result rows",
+    "@loggerTilesPortionDetail": {
+        "description": "Show Portion subtitle"
+    },
+    "favouriteMeasurementsHeader": "Favorites",
+    "@favouriteMeasurementsHeader": {
+        "description": "Favorite Measurements: section header"
+    },
+    "strategySettingsTitle": "Strategy",
+    "@strategySettingsTitle": {
+        "description": "Title of the check-in strategy settings screen"
+    },
+    "strategySettingsGeneralHeader": "General",
+    "@strategySettingsGeneralHeader": {
+        "description": "Strategy settings: section header"
+    },
+    "strategySettingsCheckInDay": "Check-in Day",
+    "@strategySettingsCheckInDay": {
+        "description": "Strategy settings row: the weekday of the weekly check-in"
+    },
+    "strategySettingsFastCheckIn": "Fast Check-in",
+    "@strategySettingsFastCheckIn": {
+        "description": "Strategy settings: switch"
+    },
+    "strategySettingsModulesHeader": "Coaching Modules",
+    "@strategySettingsModulesHeader": {
+        "description": "Strategy settings: section header"
+    },
+    "strategySettingsModulesFooter": "Individually configure which modules can appear during your check in.",
+    "@strategySettingsModulesFooter": {
+        "description": "Strategy settings: footer under the modules"
+    },
+    "strategySettingsPartialLogging": "Partial Logging",
+    "@strategySettingsPartialLogging": {
+        "description": "Strategy settings: check-in module switch"
+    },
+    "strategySettingsWeighIn": "Weigh-In",
+    "@strategySettingsWeighIn": {
+        "description": "Strategy settings: check-in module switch"
+    },
+    "strategySettingsFasting": "Fasting",
+    "@strategySettingsFasting": {
+        "description": "Strategy settings: check-in module switch"
+    },
+    "strategySettingsLoggingBreak": "Logging Break",
+    "@strategySettingsLoggingBreak": {
+        "description": "Strategy settings: check-in module switch"
+    },
+    "expenditureSettingsTitle": "Expenditure",
+    "@expenditureSettingsTitle": {
+        "description": "Title of the expenditure settings screen"
+    },
+    "expenditureSettingsTodayHeader": "Today's Expenditure",
+    "@expenditureSettingsTodayHeader": {
+        "description": "Expenditure settings: header over the estimate"
+    },
+    "expenditureSettingsKcal": "{kcal} kcal",
+    "@expenditureSettingsKcal": {
+        "description": "Today's expenditure figure",
+        "placeholders": {
+            "kcal": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsFixed": "Fixed",
+    "@expenditureSettingsFixed": {
+        "description": "Expenditure source: held fixed; also the Fixed calculation mode"
+    },
+    "expenditureSettingsCalibrating": "Calibrating: estimated from your profile until {days} days and {weighIns} weigh-ins are logged",
+    "@expenditureSettingsCalibrating": {
+        "description": "Expenditure source: still the profile estimate",
+        "placeholders": {
+            "days": {
+                "type": "int"
+            },
+            "weighIns": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsAdaptive": "Adaptive · {logged} of {window} days logged",
+    "@expenditureSettingsAdaptive": {
+        "description": "Expenditure source: learned from the log",
+        "placeholders": {
+            "logged": {
+                "type": "int"
+            },
+            "window": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsLikely": "Likely {low}–{high} kcal, based on what you logged",
+    "@expenditureSettingsLikely": {
+        "description": "The 80% range of the estimate",
+        "placeholders": {
+            "low": {
+                "type": "int"
+            },
+            "high": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsSteps": "Includes {sign}{kcal} kcal from your recent step count",
+    "@expenditureSettingsSteps": {
+        "description": "The step adjustment included in the estimate; sign is + or −",
+        "placeholders": {
+            "sign": {
+                "type": "String"
+            },
+            "kcal": {
+                "type": "int"
+            }
+        }
+    },
+    "expenditureSettingsInitialHeader": "Initial Estimate",
+    "@expenditureSettingsInitialHeader": {
+        "description": "Expenditure settings: section header"
+    },
+    "expenditureSettingsEstimationMethod": "Estimation Method",
+    "@expenditureSettingsEstimationMethod": {
+        "description": "Expenditure settings: picker"
+    },
+    "expenditureSettingsStartDate": "Calculation Start Date",
+    "@expenditureSettingsStartDate": {
+        "description": "Expenditure settings row"
+    },
+    "expenditureSettingsDefault": "Default",
+    "@expenditureSettingsDefault": {
+        "description": "Calculation start date when none is chosen"
+    },
+    "expenditureSettingsUseDefault": "Use Default",
+    "@expenditureSettingsUseDefault": {
+        "description": "Button that clears the calculation start date"
+    },
+    "expenditureSettingsBmrEquation": "BMR Equation",
+    "@expenditureSettingsBmrEquation": {
+        "description": "Expenditure settings: picker"
+    },
+    "expenditureSettingsCalculationHeader": "Expenditure Calculation",
+    "@expenditureSettingsCalculationHeader": {
+        "description": "Expenditure settings: section header"
+    },
+    "expenditureSettingsCalculationMode": "Calculation Mode",
+    "@expenditureSettingsCalculationMode": {
+        "description": "Expenditure settings: picker"
+    },
+    "expenditureSettingsAlgorithm": "Algorithm",
+    "@expenditureSettingsAlgorithm": {
+        "description": "Expenditure settings: picker"
+    },
+    "expenditureSettingsCalculationFooter": "Dynamic learns from your logged intake and your weight trend, day by day. Fixed holds the figure where it is.",
+    "@expenditureSettingsCalculationFooter": {
+        "description": "Expenditure settings: footer under the calculation pickers"
+    },
+    "expenditureSettingsModifiersHeader": "Expenditure Modifiers",
+    "@expenditureSettingsModifiersHeader": {
+        "description": "Expenditure settings: section header"
+    },
+    "expenditureSettingsStepInformed": "Step-Informed Updates",
+    "@expenditureSettingsStepInformed": {
+        "description": "Expenditure settings: switch"
+    },
+    "expenditureSettingsStepInformedDetail": "Use your steps to update expenditure sooner",
+    "@expenditureSettingsStepInformedDetail": {
+        "description": "Step-Informed Updates subtitle"
+    },
+    "expenditureSettingsStandard": "Standard",
+    "@expenditureSettingsStandard": {
+        "description": "Estimation method option"
+    },
+    "expenditureSettingsStandardDetail": "Estimate from height, weight, age and activity.",
+    "@expenditureSettingsStandardDetail": {
+        "description": "Standard estimation method subtitle"
+    },
+    "expenditureSettingsBodyFatAware": "Body-fat aware",
+    "@expenditureSettingsBodyFatAware": {
+        "description": "Estimation method option"
+    },
+    "expenditureSettingsBodyFatAwareDetail": "Use your latest logged body fat percentage where one is available, which suits lean, muscular builds better. Only as accurate as that reading.",
+    "@expenditureSettingsBodyFatAwareDetail": {
+        "description": "Body-fat aware subtitle"
+    },
+    "expenditureSettingsMifflin": "Mifflin-St Jeor",
+    "@expenditureSettingsMifflin": {
+        "description": "BMR equation option"
+    },
+    "expenditureSettingsMifflinDetail": "The usual default, and the most accurate for most people.",
+    "@expenditureSettingsMifflinDetail": {
+        "description": "Mifflin-St Jeor subtitle"
+    },
+    "expenditureSettingsHarris": "Harris-Benedict",
+    "@expenditureSettingsHarris": {
+        "description": "BMR equation option"
+    },
+    "expenditureSettingsHarrisDetail": "Older, and tends to read slightly high.",
+    "@expenditureSettingsHarrisDetail": {
+        "description": "Harris-Benedict subtitle"
+    },
+    "expenditureSettingsCunningham": "Cunningham",
+    "@expenditureSettingsCunningham": {
+        "description": "BMR equation option"
+    },
+    "expenditureSettingsCunninghamDetail": "Based on lean mass, so it needs a body fat percentage. Suits muscular, lean builds best.",
+    "@expenditureSettingsCunninghamDetail": {
+        "description": "Cunningham subtitle"
+    },
+    "expenditureSettingsDynamic": "Dynamic",
+    "@expenditureSettingsDynamic": {
+        "description": "Calculation mode option"
+    },
+    "expenditureSettingsDynamicDetail": "Adapt the estimate as your logged intake and weight change over time.",
+    "@expenditureSettingsDynamicDetail": {
+        "description": "Dynamic subtitle"
+    },
+    "expenditureSettingsFixedDetail": "Keep the estimate where it is until you change it yourself.",
+    "@expenditureSettingsFixedDetail": {
+        "description": "Fixed calculation mode subtitle"
+    },
+    "expenditureSettingsVersion1": "Expenditure V1",
+    "@expenditureSettingsVersion1": {
+        "description": "Algorithm option"
+    },
+    "expenditureSettingsVersion1Detail": "The only version so far.",
+    "@expenditureSettingsVersion1Detail": {
+        "description": "Expenditure V1 subtitle"
+    },
     "trackerMinimize": "Minimize workout",
     "@trackerMinimize": {
         "description": "Tracker: the chevron that hides the tracker while the workout runs"
@@ -4165,5 +5460,115 @@
                 "type": "int"
             }
         }
+    },
+    "notifComeBack1Title": "Keep the Momentum",
+    "@notifComeBack1Title": {
+        "description": "Local notification a day after the app was last opened: title"
+    },
+    "notifComeBack1Body": "Your training plan is ready for your next session.",
+    "@notifComeBack1Body": {
+        "description": "Local notification a day after the app was last opened: body"
+    },
+    "notifComeBack3Title": "Stay Consistent",
+    "@notifComeBack3Title": {
+        "description": "Local notification three days after the app was last opened: title"
+    },
+    "notifComeBack3Body": "It's been a few days since you opened Compound. Your plan is ready when you are.",
+    "@notifComeBack3Body": {
+        "description": "Local notification three days after the app was last opened: body"
+    },
+    "notifComeBack5Title": "Your Progress Is Waiting",
+    "@notifComeBack5Title": {
+        "description": "Local notification five days after the app was last opened: title"
+    },
+    "notifComeBack5Body": "Your workouts and history are right where you left them.",
+    "@notifComeBack5Body": {
+        "description": "Local notification five days after the app was last opened: body"
+    },
+    "notifBreakfastTitle": "Breakfast",
+    "@notifBreakfastTitle": {
+        "description": "Daily meal reminder: title"
+    },
+    "notifBreakfastBody": "A reminder to log your breakfast.",
+    "@notifBreakfastBody": {
+        "description": "Daily meal reminder: body"
+    },
+    "notifLunchTitle": "Lunch",
+    "@notifLunchTitle": {
+        "description": "Daily meal reminder: title"
+    },
+    "notifLunchBody": "A reminder to log your lunch.",
+    "@notifLunchBody": {
+        "description": "Daily meal reminder: body"
+    },
+    "notifDinnerTitle": "Dinner",
+    "@notifDinnerTitle": {
+        "description": "Daily meal reminder: title"
+    },
+    "notifDinnerBody": "A reminder to log your dinner.",
+    "@notifDinnerBody": {
+        "description": "Daily meal reminder: body"
+    },
+    "notifRestOverTitle": "Rest Complete",
+    "@notifRestOverTitle": {
+        "description": "Notification when a rest timer runs out: title"
+    },
+    "notifRestOverFallback": "Rest complete",
+    "@notifRestOverFallback": {
+        "description": "Ongoing workout notification when a rest runs out and nothing is left to do"
+    },
+    "notifRestOverNext": "Next: {name}",
+    "@notifRestOverNext": {
+        "description": "Rest-over notification body: the next exercise",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "notifRestOverNextTarget": "Next: {name}, {target}",
+    "@notifRestOverNextTarget": {
+        "description": "Rest-over notification body: the next exercise and its set, e.g. Next: Bench Press, 60 kg × 8",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "notifIdleTitle": "Still training?",
+    "@notifIdleTitle": {
+        "description": "Notification and alert an hour after the last logged set: title"
+    },
+    "notifIdleBody": "No set logged in the last hour.",
+    "@notifIdleBody": {
+        "description": "Notification and alert an hour after the last logged set: body"
+    },
+    "notifChannelWorkout": "Workout",
+    "@notifChannelWorkout": {
+        "description": "Android notification channel: rest timer, workout under way"
+    },
+    "notifChannelReminders": "Reminders",
+    "@notifChannelReminders": {
+        "description": "Android notification channel: come-back and meal reminders"
+    },
+    "notifChannelSocial": "Social",
+    "@notifChannelSocial": {
+        "description": "Android notification channel: likes, comments, follows"
+    },
+    "trackerFinishAt": "Finish at {time}",
+    "@trackerFinishAt": {
+        "description": "Still training? alert: finish the workout as of the last set, e.g. Finish at 6:42 PM",
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerKeepGoing": "Keep Going",
+    "@trackerKeepGoing": {
+        "description": "Still training? alert: carry on with the workout"
     }
 }

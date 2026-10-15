@@ -35,5 +35,24 @@ void main() {
       await repository.signOut();
       expect(repository.currentUser, isNull);
     });
+
+    test('deletes the account after beforeDelete, signing out', () async {
+      final repository = InMemoryAuthRepository(
+        user: InMemoryAuthRepository.sampleUser,
+      );
+      var ranBefore = false;
+      await repository.deleteAccount(
+        beforeDelete: () async => ranBefore = true,
+      );
+      expect(ranBefore, isTrue);
+      expect(repository.currentUser, isNull);
+    });
+
+    test('deleting with no one signed in fails', () {
+      expect(
+        InMemoryAuthRepository().deleteAccount(beforeDelete: () async {}),
+        throwsA(isA<AuthFailure>()),
+      );
+    });
   });
 }

@@ -183,6 +183,19 @@ void main() {
       });
     });
 
+    group('deleteUser', () {
+      test('deletes the profile, leaving its subcollections to the '
+          'function', () async {
+        await user().set(storedFixture('user_model', 'full'));
+        await settings().set(storedFixture('private_user_settings', 'full'));
+
+        await subject.deleteUser(uid);
+
+        expect((await user().get()).exists, isFalse);
+        expect((await settings().get()).exists, isTrue);
+      });
+    });
+
     group('mergePrivateSettings', () {
       test('stores the full fixture as the model encodes it', () async {
         final model = PrivateUserSettings.fromFirestore(

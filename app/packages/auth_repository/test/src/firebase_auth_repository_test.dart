@@ -14,6 +14,14 @@ class _MockGoogleSignIn extends Mock implements GoogleSignIn;
 
 class _MockGoogleSignInAccount extends Mock implements GoogleSignInAccount;
 
+class _MockUserInfo extends Mock implements UserInfo;
+
+UserInfo _provider(String id) {
+  final info = _MockUserInfo();
+  when(() => info.providerId).thenReturn(id);
+  return info;
+}
+
 void main() {
   late FirebaseAuth firebaseAuth;
   late GoogleSignIn googleSignIn;
@@ -47,6 +55,7 @@ void main() {
     when(() => user.isAnonymous).thenReturn(false);
     when(() => user.email).thenReturn('a@b.com');
     when(() => user.displayName).thenReturn('Ann');
+    when(() => user.providerData).thenReturn([]);
 
     final account = _MockGoogleSignInAccount();
     when(
@@ -254,6 +263,136 @@ void main() {
       await expectLater(
         repository.signInAnonymously(),
         throwsA(isA<AuthFailure>().having((f) => f.error, 'error', error)),
+      );
+    });
+  });
+
+  group('user providers', () {
+    test('maps Apple and Google, and ignores any other provider', () {
+      final providers = [
+        _provider('apple.com'),
+        _provider('google.com'),
+        _provider('password'),
+      ];
+      when(() => user.providerData).thenReturn(providers);
+      when(() => firebaseAuth.currentUser).thenReturn(user);
+      expect(repository.currentUser?.providers, {
+        SignInProvider.apple,
+        SignInProvider.google,
+      });
+    });
+  });
+
+  group('deleteAccount', () {
+    late List<String> calls;
+
+    Future<void> beforeDelete() async => calls.add('beforeDelete');
+
+    void signedInWith(List<String> providerIds) {
+      final providers = [for (final id in providerIds) _provider(id)];
+      when(() => user.providerData).thenReturn(providers);
+      when(() => firebaseAuth.currentUser).thenReturn(user);
+    }
+
+    setUp(() {
+      calls = [];
+      when(() => user.reauthenticateWithProvider(any())).thenAnswer((_) async {
+        calls.add('reauthenticate');
+        return userCredential;
+      });
+      when(() => user.reauthenticateWithCredential(any()))
+          .thenAnswer((_) async {
+            calls.add('reauthenticate');
+            return userCredential;
+          });
+      when(user.delete).thenAnswer((_) async => calls.add('delete'));
+    });
+
+    test('fails with no signed-in user, deleting nothing', () async {
+      await expectLater(
+        repository.deleteAccount(beforeDelete: beforeDelete),
+        throwsA(isA<AuthFailure>()),
+      );
+      expect(calls, isEmpty);
+    });
+
+    test('signs in again with Apple first, then deletes in order', () async {
+      signedInWith(['google.com', 'apple.com']);
+
+      await repository.deleteAccount(beforeDelete: beforeDelete);
+
+      expect(calls, ['reauthenticate', 'beforeDelete', 'delete']);
+      verify(
+        () => user.reauthenticateWithProvider(
+          any(that: isA<AppleAuthProvider>()),
+        ),
+      ).called(1);
+      verifyNever(() => user.reauthenticateWithCredential(any()));
+      verifyNever(googleSignIn.signOut);
+    });
+
+    test('signs in again with Google, and signs out of Google after', () async {
+      signedInWith(['google.com']);
+
+      await repository.deleteAccount(beforeDelete: beforeDelete);
+
+      expect(calls, ['reauthenticate', 'beforeDelete', 'delete']);
+      verify(
+        () => user.reauthenticateWithCredential(any(that: hasGoogleIdToken)),
+      ).called(1);
+      verify(googleSignIn.signOut).called(1);
+    });
+
+    test('an anonymous account is deleted without signing in', () async {
+      signInAnonymousUser();
+
+      await repository.deleteAccount(beforeDelete: beforeDelete);
+
+      expect(calls, ['beforeDelete', 'delete']);
+    });
+
+    test('dismissing the sign-in deletes nothing', () async {
+      signedInWith(['apple.com']);
+      when(() => user.reauthenticateWithProvider(any()))
+          .thenThrow(FirebaseAuthException(code: 'canceled'));
+
+      await expectLater(
+        repository.deleteAccount(beforeDelete: beforeDelete),
+        throwsA(isA<SignInCancelled>()),
+      );
+      expect(calls, isEmpty);
+    });
+
+    test('signing in as another account deletes nothing', () async {
+      signedInWith(['google.com']);
+      when(() => user.reauthenticateWithCredential(any()))
+          .thenThrow(FirebaseAuthException(code: 'user-mismatch'));
+
+      await expectLater(
+        repository.deleteAccount(beforeDelete: beforeDelete),
+        throwsA(isA<AuthFailure>()),
+      );
+      expect(calls, isEmpty);
+    });
+
+    test('a failure before deletion keeps the account', () async {
+      signInAnonymousUser();
+
+      await expectLater(
+        repository.deleteAccount(beforeDelete: () => throw StateError('no')),
+        throwsA(isA<StateError>()),
+      );
+      verifyNever(user.delete);
+    });
+
+    test('a failed deletion is an AuthFailure', () async {
+      signInAnonymousUser();
+      when(user.delete)
+          .thenThrow(FirebaseAuthException(code: 'requires-recent-login'));
+
+      await expectLater(
+        repository.deleteAccount(beforeDelete: beforeDelete),
+        throwsA(isA<AuthFailure>()),
       );
     });
   });

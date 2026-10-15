@@ -35,35 +35,42 @@ enum MetricRange {
     year => DateTime(date.year, date.month),
   };
 
-  /// [points] inside the window ending on [today], averaged into buckets,
-  /// oldest first. A bucket that starts before the window keeps only the
-  /// readings inside it, dated at the window's start.
-  List<MetricPoint> visible(List<MetricPoint> points, DateTime today) {
+  /// [points] inside the window ending on [today], averaged into buckets
+  /// (added up for a [total] chart, such as sets), oldest first. A bucket
+  /// that starts before the window keeps only the readings inside it, dated
+  /// at the window's start.
+  List<MetricPoint> visible(
+    List<MetricPoint> points,
+    DateTime today, {
+    bool total = false,
+  }) {
     final first = start(today);
     final end = DateTime(today.year, today.month, today.day + 1);
-    return averagedBy(
+    return combinedBy(
       points.where((p) => !p.date.isBefore(first) && p.date.isBefore(end)),
       (date) {
         final bucket = this.bucket(date);
         return bucket.isBefore(first) ? first : bucket;
       },
+      total: total,
     );
   }
 }
 
-/// [points] averaged within each [bucket], dated at the bucket's start,
-/// oldest first.
-List<MetricPoint> averagedBy(
+/// [points] averaged within each [bucket] (added up when [total]), dated
+/// at the bucket's start, oldest first.
+List<MetricPoint> combinedBy(
   Iterable<MetricPoint> points,
-  DateTime Function(DateTime date) bucket,
-) {
+  DateTime Function(DateTime date) bucket, {
+  bool total = false,
+}) {
   final buckets = <DateTime, List<double>>{};
   for (final point in points) {
     (buckets[bucket(point.date)] ??= []).add(point.value);
   }
   return [
     for (final MapEntry(key: date, :value) in buckets.entries)
-      (date: date, value: _mean(value)),
+      (date: date, value: total ? _sum(value) : _mean(value)),
   ]..sort((a, b) => a.date.compareTo(b.date));
 }
 
@@ -72,11 +79,14 @@ List<MetricPoint> averagedBy(
 /// first series: the others are derived from it, as Weight Trend's trend
 /// line is, so mixing them in would describe neither.
 ///
-/// Only line charts are ported: a bar chart's day is a total across its
-/// series, which no ported metric needs yet.
+/// A bar chart's day is its total (`total`), as Swift's for a single
+/// series; a total across several bar series is not ported, as no screen
+/// needs it yet.
 class MetricReadings {
-  /// Groups [points] by day, averaging a day's readings.
-  new(List<MetricPoint> points) : days = averagedBy(points, startOfDay);
+  /// Groups [points] by day, averaging a day's readings, or adding them up
+  /// for a [total] chart.
+  new(List<MetricPoint> points, {bool total = false})
+    : days = combinedBy(points, startOfDay, total: total);
 
   /// One reading a day, oldest first.
   final List<MetricPoint> days;
@@ -104,7 +114,7 @@ class MetricReadings {
       days.isEmpty ? null : days.lastWhere((d) => test(d.value));
 }
 
-double _mean(List<double> values) =>
-    values.reduce((a, b) => a + b) / values.length;
+double _sum(List<double> values) => values.reduce((a, b) => a + b);
+double _mean(List<double> values) => _sum(values) / values.length;
 double _max(double a, double b) => a > b ? a : b;
 double _min(double a, double b) => a < b ? a : b;

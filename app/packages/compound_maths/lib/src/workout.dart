@@ -46,6 +46,10 @@ class const WorkoutExercise({
   required final String templateId,
   required final String name,
   required final List<WorkoutSet> sets,
+
+  /// How many sets the plan asked for (`setTargets.count`); 0 without a
+  /// plan.
+  final int plannedSets = 0,
 });
 
 /// One finished session.
@@ -56,6 +60,10 @@ class const WorkoutSession({
   required final String day,
   required final DateTime at,
   required final List<WorkoutExercise> exercises,
+
+  /// Whether the session was a deload week's, which asks for about half the
+  /// sets its targets list.
+  final bool isDeload = false,
 });
 
 /// How many sets these rows amount to, a left/right pair counting once.

@@ -6,8 +6,10 @@ import 'package:intl/intl.dart' show DateFormat;
 
 /// A metric's screen body (Swift `MetricDetailView`): the range picker, the
 /// average of what is on screen, the chart, the Latest, Highest, Lowest and
-/// Average rows, and a way to every entry. The first of [series] is the
-/// readings the rows describe; the rest are derived from it.
+/// Average rows, an optional [summary], and a way to every entry. The first
+/// of [series] is the readings the rows describe; the rest are derived from
+/// it. A bar series is a total: its days and buckets add up, the figures are
+/// whole numbers and the average is the daily average.
 class MetricDetailView extends StatelessWidget {
   const new({
     required this.title,
@@ -50,9 +52,12 @@ class MetricDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final readings = MetricReadings(series.first.points);
-    String value(double v) =>
-        '${AppFormat.number(v, maxFractionDigits: 1, locale: locale)} $unit';
+    final total = series.first.isBar;
+    final readings = MetricReadings(series.first.points, total: total);
+    String value(double v) => [
+      AppFormat.number(v, maxFractionDigits: total ? 0 : 1, locale: locale),
+      if (unit.isNotEmpty) unit,
+    ].join(' ');
     String day(DateTime date) => metricDayText(l10n, date, today, locale);
 
     final latest = readings.latest;
@@ -92,7 +97,7 @@ class MetricDetailView extends StatelessWidget {
             ],
             if (average != null)
               AppListRow(
-                title: l10n.metricAverage,
+                title: total ? l10n.metricDailyAverage : l10n.metricAverage,
                 accessory: AppListRowValue(value(average)),
               ),
           ],
@@ -194,12 +199,24 @@ class _Chart extends StatelessWidget {
     final end = DateTime(today.year, today.month, today.day + 1);
     final visible = [
       for (final s in series)
-        if (s.points.isNotEmpty) s.withPoints(range.visible(s.points, today)),
-    ];
-    final averages = [
-      for (final s in visible)
         if (s.points.isNotEmpty)
-          (series: s, average: MetricReadings(s.points).average!),
+          s.withPoints(range.visible(s.points, today, total: s.isBar)),
+    ];
+    // A total's header is its daily average, over the days in the range
+    // that have one; a reading's, the average of what is plotted.
+    final averages = [
+      for (final s in series)
+        if (range.visible(s.points, today) case final shown
+            when shown.isNotEmpty)
+          (
+            series: s,
+            average: s.isBar
+                ? MetricReadings([
+                    for (final p in s.points)
+                      if (!p.date.isBefore(start) && p.date.isBefore(end)) p,
+                  ], total: true).average!
+                : MetricReadings(shown).average!,
+          ),
     ];
     final dates = DateFormat.yMMMd(locale);
     final from = dates.format(start);
@@ -227,7 +244,10 @@ class _Chart extends StatelessWidget {
           spacing: AppSpacing.xs,
           children: [
             Text(
-              l10n.metricAverage.toUpperCase(),
+              (series.first.isBar
+                      ? l10n.metricDailyAverage
+                      : l10n.metricAverage)
+                  .toUpperCase(),
               style: AppTextStyles.label.copyWith(
                 color: scheme.onSurfaceVariant,
               ),

@@ -6160,5 +6160,375 @@
     "trackerKeepGoing": "Keep Going",
     "@trackerKeepGoing": {
         "description": "Still training? alert: carry on with the workout"
+    },
+    "e1rmMethodTitle": "Estimated One-Rep Max",
+    "@e1rmMethodTitle": {
+        "description": "Method info for estimatedOneRepMax: its title"
+    },
+    "e1rmMethodSummary": "Your one-rep max is estimated from each completed working set with Epley's equation, using the reps you could have done: the reps logged plus the reps you had left, read from the RPE you logged (RPE 8 means 2 left). With no RPE, only the reps you did count. A single taken to failure is its own max. Sets that come to more than 10 reps to failure give no estimate, because prediction equations agree closely at low reps and drift apart above about 10. Those sets still count for volume and rep records. Each session shows its best set's estimate. On a plate-loaded machine set to enter plates only, the weight is the plates you loaded, not the machine's own weight.",
+    "@e1rmMethodSummary": {
+        "description": "Method info for estimatedOneRepMax: its summary"
+    },
+    "e1rmMethodLimitations": "This is an estimate, not a tested max, and it is less reliable as reps rise. No single equation is best for every lift or person: people trained for endurance do far more reps at a given share of their max than strength athletes. People also tend to underestimate their reps in reserve by about one rep, which makes the estimate slightly low, the cautious direction.",
+    "@e1rmMethodLimitations": {
+        "description": "Method info for estimatedOneRepMax: its limitations"
+    },
+    "e1rmMethodOwnChoices": "Using Epley rather than another equation, and treating a set with no RPE as having no reps in reserve, are Compound's own choices. The 10-rep cap follows Reynolds et al. Showing it as an estimate rather than a tested max is a choice too: there is no published error band for it.",
+    "@e1rmMethodOwnChoices": {
+        "description": "Method info for estimatedOneRepMax: its ownChoices"
+    },
+    "hardSetsMethodTitle": "Weekly Hard Sets",
+    "@hardSetsMethodTitle": {
+        "description": "Method info for weeklyHardSets: its title"
+    },
+    "hardSetsMethodSummary": "Sets per muscle count only hard sets: finished, not warm-ups, and not logged below RPE 6. A set with no RPE still counts, so not logging effort costs you nothing. An exercise's main muscles get the whole set and the muscles it only assists get half. A left and right set count as one, worth the harder side. Each finished drop, or mini-set of a myo-rep or rest-pause set, adds half a set, up to two sets in all. Weeks are rolling seven-day windows.",
+    "@hardSetsMethodSummary": {
+        "description": "Method info for weeklyHardSets: its summary"
+    },
+    "hardSetsMethodLimitations": "The half-set credit is the best-supported way to count, but which muscles an exercise lists as assisting is a judgment, and the credit is the same for every exercise. Sets are not weighted by load or reps, and RPE is self-reported.",
+    "@hardSetsMethodLimitations": {
+        "description": "Method info for weeklyHardSets: its limitations"
+    },
+    "hardSetsMethodOwnChoices": "The RPE 6 cut-off (about four reps in reserve), the half-set credit per drop or mini-set and the cap of two sets are Compound's own choices. The research shows only that sets nearer failure build more muscle, not where a set stops counting.",
+    "@hardSetsMethodOwnChoices": {
+        "description": "Method info for weeklyHardSets: its ownChoices"
+    },
+    "volumeTiersMethodTitle": "Weekly Volume Tiers",
+    "@volumeTiersMethodTitle": {
+        "description": "Method info for weeklyVolumeTiers: its title"
+    },
+    "volumeTiersMethodSummary": "Every muscle is read against the same tiers of weekly hard sets: below maintenance (fewer than 4), maintaining (4 to under 10), productive (10–20) and high (over 20). Muscle growth keeps rising with weekly sets, with smaller gains for each extra set and no clear plateau below about 20. No meta-analysis supports a lower target for small muscles, and the one muscle-level signal, for triceps, pointed the other way. Strength levels off at far fewer sets than size.",
+    "@volumeTiersMethodSummary": {
+        "description": "Method info for weeklyVolumeTiers: its summary"
+    },
+    "volumeTiersMethodLimitations": "The tiers come from group averages, mostly in young adults. People respond differently, and above 20 sets can still be right for someone who keeps progressing and recovering.",
+    "@volumeTiersMethodLimitations": {
+        "description": "Method info for weeklyVolumeTiers: its limitations"
+    },
+    "volumeTiersMethodOwnChoices": "The tier names and the 4 and 10 cut-points are Compound's own choices. The 4-set line is anchored loosely on the minimal dose found to maintain strength. Only the 10–20 band rests on the meta-analyses.",
+    "@volumeTiersMethodOwnChoices": {
+        "description": "Method info for weeklyVolumeTiers: its ownChoices"
+    },
+    "volumeRecommendationTitle": "Adjusts Based on Your Progress",
+    "@volumeRecommendationTitle": {
+        "description": "Method info for volumeRecommendation: its title"
+    },
+    "volumeRecommendationMethodSummary": "A suggestion for this muscle's weekly hard sets over the next two to three weeks. It starts from your median weekly sets over the last four weeks and looks at three things: how the estimated one-rep max is moving on exercises that train this muscle directly, whether RPE is rising at the same load, and how many of your planned sets you did. If you did fewer than 80% of them, it suggests consistency first. If strength is rising, keep what you are doing. If it is flat with steady effort, add 10–20%. If it is falling, or effort is rising at the same load, take 20–33% off. Nothing changes in your templates unless you change them.",
+    "@volumeRecommendationMethodSummary": {
+        "description": "Method info for volumeRecommendation: its summary"
+    },
+    "volumeRecommendationMethodLimitations": "No closed-loop volume rule has been tested in a trial, so this is defensible in direction only. Session-to-session swings in estimated one-rep max can hide a real trend over four weeks, and sleep, stress and soreness are not taken into account.",
+    "@volumeRecommendationMethodLimitations": {
+        "description": "Method info for volumeRecommendation: its limitations"
+    },
+    "volumeRecommendationMethodOwnChoices": "Every threshold is Compound's own: the four-week window, the ±0.5% a week flat band (a placeholder until it can be tuned on real training logs), the 80% adherence line, the RPE drift of 1, the 20–33% reduction, and the median across exercises. The 10–20% step follows trials of increases over habitual volume, and the 4-set floor follows the minimal maintenance dose.",
+    "@volumeRecommendationMethodOwnChoices": {
+        "description": "Method info for volumeRecommendation: its ownChoices"
+    },
+    "metricDailyAverage": "Daily Average",
+    "@metricDailyAverage": {
+        "description": "Metric screen: the average of daily totals (sets, say) across days that have one; also the chart header for a total"
+    },
+    "seeAll": "See All",
+    "@seeAll": {
+        "description": "Section header action that opens the section's own screen"
+    },
+    "trainingAnalyticsLoadFailure": "Your training couldn't be loaded.",
+    "@trainingAnalyticsLoadFailure": {
+        "description": "Training analytics screens: the sessions could not be read"
+    },
+    "progressExercises": "Exercises",
+    "@progressExercises": {
+        "description": "Progress tab section and screen: estimated one-rep max per exercise"
+    },
+    "progressMuscleGroups": "Muscle Groups",
+    "@progressMuscleGroups": {
+        "description": "Progress tab section and screen: weekly sets per muscle"
+    },
+    "muscleRegionUpper": "Upper",
+    "@muscleRegionUpper": {
+        "description": "Muscle Groups and Muscle Balance: the upper-body section"
+    },
+    "muscleRegionLower": "Lower",
+    "@muscleRegionLower": {
+        "description": "Muscle Groups and Muscle Balance: the lower-body section"
+    },
+    "muscleBalanceTitle": "Muscle Balance",
+    "@muscleBalanceTitle": {
+        "description": "Screen and button: every muscle's weekly sets against the volume tiers"
+    },
+    "muscleBalanceFooter": "Hard sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend.",
+    "@muscleBalanceFooter": {
+        "description": "Muscle Balance: the note under the last section"
+    },
+    "muscleBalanceRange": "Productive range {range} sets a week",
+    "@muscleBalanceRange": {
+        "description": "Muscle Balance tile, screen reader value: the productive band, such as 10–20",
+        "placeholders": {
+            "range": {
+                "type": "String"
+            }
+        }
+    },
+    "muscleBalanceTrendTitle": "{muscle} · last 12 weeks",
+    "@muscleBalanceTrendTitle": {
+        "description": "Muscle Balance: title of a muscle's trend card",
+        "placeholders": {
+            "muscle": {
+                "type": "String"
+            }
+        }
+    },
+    "tierBelowMaintenance": "Below maintenance",
+    "@tierBelowMaintenance": {
+        "description": "Volume tier: fewer than 4 hard sets a week"
+    },
+    "tierMaintaining": "Maintaining",
+    "@tierMaintaining": {
+        "description": "Volume tier: 4 to under 10 hard sets a week"
+    },
+    "tierProductive": "Productive",
+    "@tierProductive": {
+        "description": "Volume tier: 10–20 hard sets a week"
+    },
+    "tierHigh": "High",
+    "@tierHigh": {
+        "description": "Volume tier: over 20 hard sets a week"
+    },
+    "tierBelowMaintenanceDetail": "Fewer than 4 sets a week may not keep what you have built.",
+    "@tierBelowMaintenanceDetail": {
+        "description": "What the below-maintenance tier means"
+    },
+    "tierMaintainingDetail": "Enough to keep muscle; 10–20 sets a week builds more.",
+    "@tierMaintainingDetail": {
+        "description": "What the maintaining tier means"
+    },
+    "tierProductiveDetail": "In the 10–20 sets a week band where most growth happens.",
+    "@tierProductiveDetail": {
+        "description": "What the productive tier means"
+    },
+    "tierHighDetail": "Over 20 sets a week: fine while you keep progressing and recovering.",
+    "@tierHighDetail": {
+        "description": "What the high tier means"
+    },
+    "oneRepMaxSeries": "1-RM",
+    "@oneRepMaxSeries": {
+        "description": "Exercise 1RM chart: the series name"
+    },
+    "oneRepMaxEmpty": "No 1-RM data for {exercise}",
+    "@oneRepMaxEmpty": {
+        "description": "Exercise 1RM screen with nothing logged",
+        "placeholders": {
+            "exercise": {
+                "type": "String"
+            }
+        }
+    },
+    "muscleSetsEmpty": "No sets for {muscle} in recent workouts",
+    "@muscleSetsEmpty": {
+        "description": "Muscle screen with nothing logged",
+        "placeholders": {
+            "muscle": {
+                "type": "String"
+            }
+        }
+    },
+    "workoutsEmpty": "No completed workouts",
+    "@workoutsEmpty": {
+        "description": "Workouts screens with nothing logged"
+    },
+    "workoutGridLabel": "{count, plural, =1{1 workout} other{{count} workouts}}",
+    "@workoutGridLabel": {
+        "description": "Workout consistency grid, for a screen reader: how many workouts it shows",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "volumeKeepTitle": "Keep your current sets",
+    "@volumeKeepTitle": {
+        "description": "Volume suggestion: strength is rising"
+    },
+    "volumeKeepDetail": "Your lifts for this muscle are still climbing.",
+    "@volumeKeepDetail": {
+        "description": "Volume suggestion: why to keep"
+    },
+    "volumeAddTitle": "Add a few sets",
+    "@volumeAddTitle": {
+        "description": "Volume suggestion: strength is flat"
+    },
+    "volumeAddDetail": "Strength has been flat with steady effort, so 10–20% more sets may help.",
+    "@volumeAddDetail": {
+        "description": "Volume suggestion: why to add"
+    },
+    "volumeReduceTitle": "Ease off for a block",
+    "@volumeReduceTitle": {
+        "description": "Volume suggestion: strength falling or effort rising"
+    },
+    "volumeReduceDetail": "Strength is slipping or the same weights feel harder, so try 20–33% fewer sets.",
+    "@volumeReduceDetail": {
+        "description": "Volume suggestion: why to reduce"
+    },
+    "volumeConsistencyTitle": "Consistency first",
+    "@volumeConsistencyTitle": {
+        "description": "Volume suggestion: planned sets were missed"
+    },
+    "volumeConsistencyDetail": "Fewer than 80% of your planned sets were done. Hit the plan before adding more.",
+    "@volumeConsistencyDetail": {
+        "description": "Volume suggestion: why consistency comes first"
+    },
+    "volumeMoreDataTitle": "Keep logging",
+    "@volumeMoreDataTitle": {
+        "description": "Volume suggestion: not enough history"
+    },
+    "volumeMoreDataDetail": "A few more weeks of workouts with this muscle will give a suggestion.",
+    "@volumeMoreDataDetail": {
+        "description": "Volume suggestion: what it needs"
+    },
+    "volumeRecentWeeks": "Your recent weeks",
+    "@volumeRecentWeeks": {
+        "description": "Volume suggestion row: the median weekly sets"
+    },
+    "volumeSuggested": "Suggested",
+    "@volumeSuggested": {
+        "description": "Volume suggestion row: the suggested weekly sets"
+    },
+    "volumeStrengthTrend": "Strength trend",
+    "@volumeStrengthTrend": {
+        "description": "Volume suggestion row: the e1RM trend, % a week"
+    },
+    "volumePlannedSetsDone": "Planned sets done",
+    "@volumePlannedSetsDone": {
+        "description": "Volume suggestion row: share of planned sets done"
+    },
+    "volumeHighFooter": "Over 20 sets a week is high volume: fine while you keep progressing and recovering.",
+    "@volumeHighFooter": {
+        "description": "Volume suggestion: the note when the baseline is over 20 sets"
+    },
+    "perWeek": "{value} a week",
+    "@perWeek": {
+        "description": "A rate per week, such as +1.2% a week",
+        "placeholders": {
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "weeklyReviewTitle": "Weekly Review",
+    "@weeklyReviewTitle": {
+        "description": "The Weekly Review screen"
+    },
+    "weeklyReviewReady": "Your weekly review is ready",
+    "@weeklyReviewReady": {
+        "description": "Today: the card that opens last week's review"
+    },
+    "weeklyReviewPreviousWeek": "Previous week",
+    "@weeklyReviewPreviousWeek": {
+        "description": "Weekly Review: button for the week before"
+    },
+    "weeklyReviewNextWeek": "Next week",
+    "@weeklyReviewNextWeek": {
+        "description": "Weekly Review: button for the week after"
+    },
+    "weeklyReviewNoSessions": "No sessions logged this week.",
+    "@weeklyReviewNoSessions": {
+        "description": "Weekly Review takeaway: nothing logged"
+    },
+    "weeklyReviewGoalAndRecords": "{count, plural, =1{Goal hit and 1 PR set. Great week.} other{Goal hit and {count} PRs set. Great week.}}",
+    "@weeklyReviewGoalAndRecords": {
+        "description": "Weekly Review takeaway: goal hit with personal records",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "weeklyReviewGoalHit": "Goal hit: {sessions} of {goal} sessions.",
+    "@weeklyReviewGoalHit": {
+        "description": "Weekly Review takeaway: goal hit",
+        "placeholders": {
+            "sessions": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "weeklyReviewVolumeUp": "Volume up {percent} on last week.",
+    "@weeklyReviewVolumeUp": {
+        "description": "Weekly Review takeaway: volume up 10% or more",
+        "placeholders": {
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "weeklyReviewSessionsToGo": "{count, plural, =1{1 more session would have hit your goal.} other{{count} more sessions would have hit your goal.}}",
+    "@weeklyReviewSessionsToGo": {
+        "description": "Weekly Review takeaway: sessions short of the goal",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "weeklyReviewSessions": "Sessions",
+    "@weeklyReviewSessions": {
+        "description": "Weekly Review row: sessions against the goal"
+    },
+    "weeklyReviewOfGoal": "{sessions} of {goal}",
+    "@weeklyReviewOfGoal": {
+        "description": "Weekly Review: sessions done of the weekly goal",
+        "placeholders": {
+            "sessions": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "weeklyReviewVolumeChange": "{change} vs last week",
+    "@weeklyReviewVolumeChange": {
+        "description": "Weekly Review: volume change, such as +10%",
+        "placeholders": {
+            "change": {
+                "type": "String"
+            }
+        }
+    },
+    "weeklyReviewAverageRpe": "Average RPE",
+    "@weeklyReviewAverageRpe": {
+        "description": "Weekly Review row: the mean RPE of the week's sets"
+    },
+    "weeklyReviewSetsPerMuscle": "Sets per Muscle",
+    "@weeklyReviewSetsPerMuscle": {
+        "description": "Weekly Review section: hard sets per muscle"
+    },
+    "weeklyReviewPersonalRecords": "Personal Records",
+    "@weeklyReviewPersonalRecords": {
+        "description": "Weekly Review section: the week's records"
+    },
+    "weeklyReviewBodyAndNutrition": "Body & Nutrition",
+    "@weeklyReviewBodyAndNutrition": {
+        "description": "Weekly Review section: trend weight and calorie adherence"
+    },
+    "weeklyReviewCalories": "Calories",
+    "@weeklyReviewCalories": {
+        "description": "Weekly Review row: days on calorie target"
+    },
+    "weeklyReviewDaysOnTarget": "{onTarget} of {logged} logged days on target",
+    "@weeklyReviewDaysOnTarget": {
+        "description": "Weekly Review: days within 10% of the calorie target",
+        "placeholders": {
+            "onTarget": {
+                "type": "int"
+            },
+            "logged": {
+                "type": "int"
+            }
+        }
     }
 }

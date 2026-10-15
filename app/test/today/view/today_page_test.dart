@@ -7,6 +7,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/today/today.dart';
+import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
@@ -219,6 +220,35 @@ void main() {
           .thenAnswer((_) => Stream.error(Exception('offline')));
       await pumpView(tester, workoutSessionRepository: repository);
       expect(find.text("Today couldn't be loaded."), findsOneWidget);
+    });
+
+    testWidgets("offers last week's review until it is opened", (tester) async {
+      final lastWeek = DateTime(now.year, now.month, now.day - 7, 12);
+      await pumpView(
+        tester,
+        sessions: [
+          WorkoutSessionModel(
+            id: 'last-week',
+            authorId: uid,
+            name: 'Push',
+            dateCreated: lastWeek,
+            dateModified: lastWeek,
+            endedAt: lastWeek.add(const Duration(hours: 1)),
+            exercises: const [],
+          ),
+        ],
+      );
+      final card = find.text('Your weekly review is ready');
+      await tester.scrollUntilVisible(card, 200);
+      await tester.tap(card);
+      await tester.pump();
+      verify(() => router.goNamed(WeeklyReviewPage.name)).called(1);
+      expect(card, findsNothing);
+    });
+
+    testWidgets('has no review card when last week was empty', (tester) async {
+      await pumpView(tester, sessions: const []);
+      expect(find.text('Your weekly review is ready'), findsNothing);
     });
 
     testWidgets('waits for the data', (tester) async {

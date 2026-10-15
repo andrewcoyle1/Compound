@@ -66,4 +66,45 @@ void main() {
       }
     });
   });
+
+  group('sampleEarlierWorkoutSessions', () {
+    final now = DateTime(2026, 10, 14, 9);
+    final sessions = sampleEarlierWorkoutSessions(uid: 'me', now: now);
+
+    test('are three a week before the sample week, oldest first', () {
+      expect(sessions, hasLength(15));
+      final week = sampleWorkoutSessions(uid: 'me', now: now);
+      final first = week
+          .map((s) => s.dateCreated)
+          .reduce((a, b) => a.isBefore(b) ? a : b);
+      for (final (index, session) in sessions.indexed) {
+        expect(session.authorId, 'me');
+        expect(session.dateCreated.isBefore(first), isTrue);
+        if (index > 0) {
+          expect(
+            session.dateCreated.isAfter(sessions[index - 1].dateCreated),
+            isTrue,
+          );
+        }
+        expect(
+          WorkoutSessionModel.fromFirestore(session.toFirestore())
+              .toFirestore(),
+          equals(session.toFirestore()),
+        );
+      }
+    });
+
+    test('get heavier each week and sometimes miss a planned set', () {
+      double bench(WorkoutSessionModel s) =>
+          s.exercises.first.sets.first.weightKg!;
+      final pushes = sessions.where((s) => s.name == 'Push A').toList();
+      expect(bench(pushes.last), greaterThan(bench(pushes.first)));
+      final missed = [
+        for (final s in sessions)
+          for (final e in s.exercises)
+            if (e.sets.length < e.setTargets.length) e,
+      ];
+      expect(missed, isNotEmpty);
+    });
+  });
 }

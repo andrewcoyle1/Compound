@@ -52,6 +52,9 @@ final class const ProgressState({
   /// The current weight goal, or null without one.
   final WeightGoal? goal,
 
+  /// The user's own exercises.
+  final List<ExerciseModel> userExercises = const [],
+
   /// Whether reading the sessions, meals or weigh-ins failed.
   final bool failed = false,
 
@@ -160,6 +163,29 @@ final class const ProgressState({
   /// Progress toward the weight goal.
   GoalProgress get goalProgress => progressTowardGoal(goal, _measurements);
 
+  // MARK: Training
+
+  List<ExerciseModel> get _library =>
+      exerciseLibrary(userExercises, PrebuiltCatalogue.instance.exercises);
+
+  /// Each muscle's hard sets on each of the last seven days, oldest first.
+  Map<Muscles, List<double>> get muscleLastSevenDays {
+    final daily = dailyMuscleSets(
+      _finished.map(mathsSession).toList(),
+      muscleTargets(_library),
+    );
+    final today = dayKeyOf(now.toLocal());
+    return {
+      for (final muscle in Muscles.values)
+        muscle: lastSevenDays(daily[mathsMuscle(muscle)], today),
+    };
+  }
+
+  /// The two strongest exercises' 1RM cards.
+  List<ExerciseCard> get topExercises => topExerciseCards(
+    exerciseCards(_finished.map(mathsSession).toList(), _library),
+  );
+
   // MARK: Expenditure
 
   /// The engine's figure on each of the last seven days and today's
@@ -199,6 +225,7 @@ final class const ProgressState({
     AnalyticsSettings? Function()? analyticsSettings,
     UserModel? Function()? user,
     WeightGoal? Function()? goal,
+    List<ExerciseModel>? userExercises,
     bool? failed,
     NutritionStrategySettings? strategySettings,
     List<NutritionDayAnnotation>? annotations,
@@ -217,6 +244,7 @@ final class const ProgressState({
         : analyticsSettings(),
     user: user == null ? this.user : user(),
     goal: goal == null ? this.goal : goal(),
+    userExercises: userExercises ?? this.userExercises,
     failed: failed ?? this.failed,
     strategySettings: strategySettings ?? this.strategySettings,
     annotations: annotations ?? this.annotations,
@@ -236,6 +264,7 @@ final class const ProgressState({
     analyticsSettings,
     user,
     goal,
+    userExercises,
     failed,
     strategySettings,
     annotations,

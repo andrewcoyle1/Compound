@@ -19,11 +19,14 @@ void main() {
     MetricRange range = MetricRange.week,
     void Function(MetricRange)? onRangeSelected,
     void Function()? onShowAllData,
+    String unit = 'kg',
+    Widget? summary,
   }) => tester.pumpApp(
     Scaffold(
       body: MetricDetailView(
         title: 'Weight',
-        unit: 'kg',
+        unit: unit,
+        summary: summary,
         series: series,
         range: range,
         today: today,
@@ -114,6 +117,42 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Show All Data'));
       expect(opened, isTrue);
+    });
+
+    testWidgets('a bar total reads in whole numbers and daily averages', (
+      tester,
+    ) async {
+      await pumpDetail(
+        tester,
+        [
+          MetricChartSeries(
+            label: 'Sets',
+            points: [at(1, 4), at(0, 3), at(0, 2.5)],
+            color: const Color(0xFF000000),
+            isBar: true,
+          ),
+        ],
+        unit: '',
+        summary: const Text('Summary'),
+      );
+      expect(find.text('DAILY AVERAGE'), findsOneWidget);
+      expect(find.text('Daily Average'), findsOneWidget);
+      // 5.5 sets today, rounded.
+      expect(find.text('6'), findsWidgets);
+      expect(find.text('Summary'), findsOneWidget);
+      expect(find.byType(MetricChart), findsOneWidget);
+    });
+
+    testWidgets('draws a lone reading on a line', (tester) async {
+      await pumpDetail(tester, [
+        MetricChartSeries(
+          label: '1RM',
+          points: [at(0, 100)],
+          color: const Color(0xFF000000),
+          isLine: true,
+        ),
+      ]);
+      expect(find.byType(MetricChart), findsOneWidget);
     });
 
     testWidgets('draws every range', (tester) async {

@@ -15,6 +15,7 @@ import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound/today/view/day_checklist_card.dart';
 import 'package:compound/today/view/streak_card.dart';
 import 'package:compound/today/view/today_text.dart';
+import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -23,11 +24,10 @@ import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// The Today tab (Swift `TodayView`): getting started, the day's
-/// checklist, the weekly check-in's card, the evening protein reminder and
-/// the weekly streak. Weigh-ins
-/// can be logged from it. Logging meals and workouts, today's
-/// planned workout, the weekly review and friends who trained come with the
-/// milestones that build them.
+/// checklist, the weekly check-in's card, the evening protein reminder,
+/// last week's review and the weekly streak. Weigh-ins can be logged from
+/// it. Logging meals and workouts, today's planned workout and friends who
+/// trained come with the milestones that build them.
 class TodayPage extends StatelessWidget {
   const new({super.key});
 
@@ -175,6 +175,23 @@ class _Day extends StatelessWidget {
               ),
             ],
           ),
+          if (state.showsWeeklyReviewCard) ...[
+            const SizedBox(height: AppSpacing.xl),
+            AppSection(
+              children: [
+                AppListRowButton(
+                  title: l10n.weeklyReviewReady,
+                  icon: AppSymbols.weeklyReview,
+                  onPressed: () {
+                    context.read<TodayBloc>().add(
+                      const TodayWeeklyReviewOpened(),
+                    );
+                    context.goNamed(WeeklyReviewPage.name);
+                  },
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: AppSpacing.xl),
           StreakCard(
             streak: state.streak,

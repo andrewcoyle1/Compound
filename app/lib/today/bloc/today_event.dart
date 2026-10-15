@@ -18,6 +18,11 @@ final class const _TodayGoalChanged(final WeightGoal? goal) extends TodayEvent {
   List<Object?> get props => [goal];
 }
 
+/// The user opened last week's review from its card.
+final class TodayWeeklyReviewOpened extends TodayEvent {
+  const new();
+}
+
 /// Start on the check-in card; the view opens the check-in.
 final class TodayCheckInStarted extends TodayEvent {
   const new();

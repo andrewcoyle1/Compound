@@ -11,18 +11,21 @@ import 'package:compound/progress/bloc/progress_bloc.dart';
 import 'package:compound/progress/logic/progress_overview.dart';
 import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/progress/view/progress_card.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/training_analytics/training_analytics.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound_maths/compound_maths.dart' show Macros, loggedAverage;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// The Progress tab (Swift `AnalyticsView`), read only: the cards that are
 /// built from synced data alone, in the Swift sections, honouring the
 /// sections the user has hidden. The header carousel waits for a later
-/// slice; Muscle Groups and Exercises need the exercise library (M5).
+/// slice.
 class ProgressPage extends StatelessWidget {
   const new({super.key});
 
@@ -40,6 +43,7 @@ class ProgressPage extends StatelessWidget {
         bodyRepository: context.read<BodyRepository>(),
         userRepository: context.read<UserRepository>(),
         analyticsRepository: context.read<AnalyticsRepository>(),
+        trainingLibraryRepository: context.read<TrainingLibraryRepository>(),
         checkInRepository: context.read<CheckInRepository>(),
         uid: state.user.uid,
         firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
@@ -126,9 +130,37 @@ class _Overview extends StatelessWidget {
                         cards: [cards.scaleWeight(), cards.bodyFat()],
                       ),
                     ],
-                    // Need the exercise library and set aggregation (M5).
-                    ProgressSection.muscleGroups ||
-                    ProgressSection.exercises => const <Widget>[],
+                    ProgressSection.muscleGroups => [
+                      _Section(
+                        header: l10n.progressMuscleGroups,
+                        info: MethodInfo.weeklyHardSets(l10n),
+                        onSeeAll: () => context.goNamed(MuscleGroupsPage.name),
+                        cards: [
+                          for (final muscle in topMuscles(
+                            state.muscleLastSevenDays,
+                          ))
+                            MuscleSetsCard(
+                              muscle: muscle,
+                              lastSevenDays: state.muscleLastSevenDays[muscle]!,
+                            ),
+                        ],
+                      ),
+                    ],
+                    ProgressSection.exercises => [
+                      _Section(
+                        header: l10n.progressExercises,
+                        info: MethodInfo.estimatedOneRepMax(l10n),
+                        onSeeAll: () =>
+                            context.goNamed(ExerciseAnalyticsPage.name),
+                        cards: [
+                          for (final card in state.topExercises)
+                            ExerciseOneRepMaxCard(
+                              card: card,
+                              usesPounds: state.unit == AppWeightUnit.pounds,
+                            ),
+                        ],
+                      ),
+                    ],
                   },
               // Not hideable in Swift either.
               _Section(
@@ -143,12 +175,20 @@ class _Overview extends StatelessWidget {
   }
 }
 
-/// A heading and its grid of cards.
+/// A heading, with the method's info button and See All when given, and
+/// its grid of cards.
 class _Section extends StatelessWidget {
-  const new({required this.header, required this.cards});
+  const new({
+    required this.header,
+    required this.cards,
+    this.info,
+    this.onSeeAll,
+  });
 
   final String header;
   final List<Widget> cards;
+  final MethodInfo? info;
+  final VoidCallback? onSeeAll;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -157,18 +197,7 @@ class _Section extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.s,
       children: [
-        Padding(
-          padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
-          child: Semantics(
-            header: true,
-            child: Text(
-              header,
-              style: AppTextStyles.sectionTitle.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ),
+        AnalyticsSectionHeader(title: header, info: info, onSeeAll: onSeeAll),
         ProgressCardGrid(children: cards),
       ],
     ),
@@ -241,6 +270,7 @@ class _Cards {
           : l10n.progressLast7Workouts,
       value: total > 0 ? _number(total) : AppFormat.placeholder,
       unit: l10n.progressSetsUnit,
+      onTap: () => router?.goNamed(WorkoutMetricPage.name),
       chart: StackedBars(
         stacks: [
           for (final v in values) [v],
@@ -346,11 +376,17 @@ class _Cards {
     );
   }
 
-  Widget _habit(String title, List<bool> days, int thisWeek) => ProgressCard(
+  Widget _habit(
+    String title,
+    List<bool> days,
+    int thisWeek, {
+    VoidCallback? onTap,
+  }) => ProgressCard(
     title: title,
     subtitle: l10n.progressLast30Days,
     value: _number(thisWeek),
     unit: l10n.progressThisWeek,
+    onTap: onTap,
     chart: HabitGridChart(
       days: days,
       color: colors.habits,
@@ -363,8 +399,12 @@ class _Cards {
   Widget weighInHabit() =>
       _habit(l10n.progressWeighIn, state.weighInGrid, state.weighInsThisWeek);
 
-  Widget workoutHabit() =>
-      _habit(l10n.progressWorkouts, state.workoutGrid, state.workoutsThisWeek);
+  Widget workoutHabit() => _habit(
+    l10n.progressWorkouts,
+    state.workoutGrid,
+    state.workoutsThisWeek,
+    onTap: () => router?.goNamed(WorkoutConsistencyPage.name),
+  );
 
   Widget macros() {
     final week = state.macrosWeek;

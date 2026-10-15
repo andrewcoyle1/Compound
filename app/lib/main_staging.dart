@@ -87,6 +87,7 @@ Future<void> main() async {
       userRepository: userRepository,
       workoutSessionRepository: InMemoryWorkoutSessionRepository(
         sessions: [
+          ...sampleEarlierWorkoutSessions(uid: sampleUserId, now: now),
           ...sampleWorkoutSessions(uid: sampleUserId, now: now),
           ?finished,
         ],

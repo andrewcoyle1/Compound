@@ -377,6 +377,10 @@ class const QuickAddState({
   final double? fat,
   final double? alcohol,
   final MacroUnit macroUnit = MacroUnit.grams,
+
+  /// Set once Log has put the item on the plate, so a second Log after a
+  /// failed save does not add it twice.
+  final bool addedForLog = false,
 }) extends Equatable {
   static const kilojoulesPerKilocalorie = 4.184;
   static const gramsPerOunce = 28.349523125;
@@ -441,6 +445,7 @@ class const QuickAddState({
     double? Function()? fat,
     double? Function()? alcohol,
     MacroUnit? macroUnit,
+    bool? addedForLog,
   }) => QuickAddState(
     name: name ?? this.name,
     energy: energy == null ? this.energy : energy(),
@@ -450,6 +455,7 @@ class const QuickAddState({
     fat: fat == null ? this.fat : fat(),
     alcohol: alcohol == null ? this.alcohol : alcohol(),
     macroUnit: macroUnit ?? this.macroUnit,
+    addedForLog: addedForLog ?? this.addedForLog,
   );
 
   @override
@@ -462,5 +468,6 @@ class const QuickAddState({
     fat,
     alcohol,
     macroUnit,
+    addedForLog,
   ];
 }

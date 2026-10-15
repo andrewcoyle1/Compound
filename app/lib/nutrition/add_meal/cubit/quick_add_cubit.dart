@@ -5,9 +5,8 @@ import 'package:compound/nutrition/logic/meal_logging.dart';
 class QuickAddCubit extends Cubit<QuickAddState> {
   new() : super(const QuickAddState());
 
-  /// Set once Log has put the item on the plate, so a second Log after a
-  /// failed save does not add it twice.
-  bool addedForLog = false;
+  /// Log has put the item on the plate (see [QuickAddState.addedForLog]).
+  void addedForLog() => emit(state.copyWith(addedForLog: true));
 
   void nameChanged(String name) => emit(state.copyWith(name: name));
 

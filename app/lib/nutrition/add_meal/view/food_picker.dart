@@ -601,8 +601,8 @@ class _QuickAddView extends StatelessWidget {
               isLoading: saving,
               onPressed: state.canSubmit
                   ? () {
-                      if (!cubit.addedForLog) {
-                        cubit.addedForLog = true;
+                      if (!state.addedForLog) {
+                        cubit.addedForLog();
                         bloc.add(AddMealItemAdded(item()));
                       }
                       bloc.add(const AddMealSaveRequested());

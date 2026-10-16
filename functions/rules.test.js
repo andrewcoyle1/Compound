@@ -860,6 +860,20 @@ t("flutter social: a report is set once by its reporter with the allowed keys", 
     await assertFails(setDoc(doc(db(ACTOR), `reports/${report.id}`), report));
 });
 
+// The rules' `size()` counts UTF-16 code units, as Dart's `String.length` does, so the Flutter
+// report sheet limits the note by that. Swift counts characters (grapheme clusters): its 500
+// emoji pass the sheet and are refused here.
+t("flutter social: a report note is limited to 500 UTF-16 code units", async () => {
+    const file = (id, note) => setDoc(doc(db(ACTOR), `reports/${id}`),
+        { ...contractFixture("report", "minimal"), id, note });
+    await assertSucceeds(file("ascii-500", "a".repeat(500)));
+    await assertFails(file("ascii-501", "a".repeat(501)));
+    await assertSucceeds(file("accent-500", "é".repeat(500)));
+    await assertSucceeds(file("emoji-250", "💪".repeat(250)));
+    await assertFails(file("emoji-251", "💪".repeat(251)));
+    await assertFails(file("emoji-500", "💪".repeat(500)));
+});
+
 t("flutter social: claiming a handle reserves it with a server timestamp, then names it on the profile", async () => {
     await seed(`users/${ACTOR}`, { user_id: ACTOR });
     const reserve = (as, handle) => setDoc(doc(db(as), `usernames/${handle}`),

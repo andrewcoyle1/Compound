@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/create_exercise/view/create_exercise_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/training_library/cubit/exercise_list_cubit.dart';
@@ -107,6 +108,9 @@ class ExercisePickerView extends StatelessWidget {
           child: ExerciseList(
             onExercisePressed: context.read<ExercisePickerCubit>().toggled,
             isSelected: (exercise) => state.isSelected(exercise.id),
+            // As in Swift, a new exercise isn't added for the caller: it
+            // appears here, unticked, once created.
+            onCreateExercise: () => unawaited(CreateExercisePage.open(context)),
           ),
         ),
       ),

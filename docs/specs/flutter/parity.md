@@ -50,16 +50,16 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Nutrition | MealAccessory | `Components/MealAccessory` | M3 | todo | |
 | Nutrition | MealHourHeader | `Components/MealHourHeader` | M3 | todo | |
 | Nutrition | RecipeListBuilder | `Components/RecipeListBuilder` | M3 | todo | |
-| Nutrition | Foods | `Foods` | M3 | todo | |
-| Nutrition | CreateFood | `Foods/CreateFood` | M3 | todo | |
-| Nutrition | FoodDefinition | `Foods/CreateFood/FoodDefinition` | M3 | todo | |
-| Nutrition | FoodPackaging | `Foods/CreateFood/FoodPackaging` | M3 | todo | |
-| Nutrition | PortionDefinition | `Foods/CreateFood/PortionDefinition` | M3 | todo | |
-| Nutrition | FoodDetail | `Foods/FoodDetail` | M3 | todo | |
+| Nutrition | Foods | `Foods` | M3 | done | M5 foods (with the IngredientListBuilder list it embeds) |
+| Nutrition | CreateFood | `Foods/CreateFood` | M3 | partial | M5 foods; the food image waits for image upload |
+| Nutrition | FoodDefinition | `Foods/CreateFood/FoodDefinition` | M3 | done | M5 foods |
+| Nutrition | FoodPackaging | `Foods/CreateFood/FoodPackaging` | M3 | todo | deferred by M5 foods: unreachable in Swift (public contribution switched off), photos only |
+| Nutrition | PortionDefinition | `Foods/CreateFood/PortionDefinition` | M3 | done | M5 foods (the serving option, the only one Swift offers) |
+| Nutrition | FoodDetail | `Foods/FoodDetail` | M3 | done | M5 foods |
 | Nutrition | AddMeal | `MealLog/AddMeal` | M3 | todo | |
 | Nutrition | IngredientAmount | `MealLog/IngredientAmount` | M3 | todo | |
-| Nutrition | MealDetail | `MealLog/MealDetail` | M3 | todo | |
-| Nutrition | MealItemAmountView | `MealLog/MealItemAmountView` | M3 | todo | |
+| Nutrition | MealDetail | `MealLog/MealDetail` | M3 | done | M5 foods |
+| Nutrition | MealItemAmountView | `MealLog/MealItemAmountView` | M3 | done | #126 (plate); M5 foods (timeline) |
 | Nutrition | NutritionLibraryPicker | `MealLog/NutritionLibraryPicker` | M3 | todo | |
 | Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | todo | |
 | Nutrition | FoodItemQuickAdd | `MealLog/NutritionLibraryPicker/FoodItemQuickAdd` | M3 | todo | |
@@ -75,7 +75,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Nutrition | RecipePreparation | `Recipes/CreateRecipe/RecipePreparation` | M3 | todo | |
 | Nutrition | RecipeDetail | `Recipes/RecipeDetail` | M3 | todo | |
 | Nutrition | RecipeStart | `Recipes/RecipeStart` | M3 | todo | |
-| Nutrition | TimelineActions | `TimelineActions` | M3 | todo | |
+| Nutrition | TimelineActions | `TimelineActions` | M3 | done | M5 foods |
 | Onboarding | Welcome | `0 - WelcomeView` | M3 | partial | onboarding flow (#116) |
 | Onboarding | Auth | `2 - AuthView` | M3 | partial | onboarding flow (#116) |
 | Onboarding | Subscription | `3 - Subscription` | M3 | todo | |

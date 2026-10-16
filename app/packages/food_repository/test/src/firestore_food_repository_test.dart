@@ -185,5 +185,17 @@ void main() {
         expect(written['nutrients'], strictlyEquals(expected));
       });
     });
+
+    group('deleteFood', () {
+      test('deletes the document, and a missing one is no error', () async {
+        final full = fixtureFood('full');
+        await subject.saveFood(full);
+
+        await subject.deleteFood(uid, full.ingredientId);
+        await subject.deleteFood(uid, 'missing');
+
+        expect((await foods(uid).get()).docs, isEmpty);
+      });
+    });
   });
 }

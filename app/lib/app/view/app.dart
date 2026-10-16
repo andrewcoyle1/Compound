@@ -7,6 +7,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/check_in/check_in.dart';
+import 'package:compound/create_exercise/create_exercise.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
 import 'package:compound/l10n/l10n.dart';
@@ -16,6 +17,7 @@ import 'package:compound/notifications/notifications.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/nutrition.dart';
+import 'package:compound/nutrition/nutrition_routes.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
@@ -290,6 +292,7 @@ class _AppViewState extends State<AppView> {
                     name: tab.name,
                     builder: (_, _) => const NutritionPage(),
                     routes: [
+                      ...nutritionRoutes,
                       GoRoute(
                         path: NutritionOverviewPage.path,
                         name: NutritionOverviewPage.name,
@@ -418,6 +421,7 @@ class _AppViewState extends State<AppView> {
           ),
         ),
       ),
+      createFoodRoute,
       // Over the tabs, as the Swift app's sheet. Pops with the exercises
       // picked (`ExercisePickerPage.show`).
       GoRoute(
@@ -432,6 +436,17 @@ class _AppViewState extends State<AppView> {
               _ => const ExercisePickerRequest(),
             },
           ),
+        ),
+      ),
+      // Over the tabs, as the Swift app's full-screen cover, from Training's
+      // + menu and the exercise list (the library and the picker).
+      GoRoute(
+        path: CreateExercisePage.path,
+        name: CreateExercisePage.name,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: const CreateExercisePage(),
         ),
       ),
       // Over the tabs, as the Swift app's full-screen cover; minimised, the
@@ -643,8 +658,11 @@ String? appRedirect(AppState state, Uri location) {
   final step = state.onboardingStep;
   if (step != null) {
     final target = onboardingRoute(step)!.path;
-    // Build My Own's day editor picks exercises over the program step.
-    if (path == ExercisePickerPage.path) return null;
+    // Build My Own's day editor picks exercises over the program step, and
+    // can create one from the picker.
+    if (path == ExercisePickerPage.path || path == CreateExercisePage.path) {
+      return null;
+    }
     return path == target ? null : target;
   }
   if (onLaunch) {

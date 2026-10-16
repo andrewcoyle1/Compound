@@ -350,7 +350,7 @@ void main() {
         expect(errors, hasLength(1));
       });
 
-      test('opens app_settings\' notification page by default', () async {
+      test("opens app_settings' notification page by default", () async {
         const channel = MethodChannel('com.spencerccf.app_settings/methods');
         final calls = <MethodCall>[];
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

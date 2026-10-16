@@ -56,6 +56,12 @@ class FirestoreFoodRepository implements FoodRepository {
     );
   }
 
+  @override
+  Future<void> deleteFood(String uid, String ingredientId) {
+    final document = _foods(uid).doc(ingredientId);
+    return writeLocally(document.path, document.delete, _onWriteError);
+  }
+
   FoodModel? _decode(String path, Map<String, Object?> data) {
     try {
       return FoodModel.fromFirestore(_fromFirestore(data));

@@ -42,6 +42,11 @@ class InMemoryFoodRepository implements FoodRepository {
     );
     _changes.add(null);
   }
+
+  @override
+  Future<void> deleteFood(String uid, String ingredientId) async {
+    if (_foods.remove((uid, ingredientId)) != null) _changes.add(null);
+  }
 }
 
 /// [update] merged over [stored] as Firestore's `set(merge: true)` merges:

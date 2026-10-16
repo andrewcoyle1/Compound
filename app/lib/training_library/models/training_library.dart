@@ -117,6 +117,23 @@ final class const TrainingLibrary({
     };
   }
 
+  /// Every type of equipment an exercise can name, with its name: the
+  /// catalogue's, then those the user's gyms add, once each (Swift
+  /// `GymProfileModel.equipmentTypes(including:)`).
+  List<(EquipmentKey, String)> get equipmentTypes {
+    final seen = <EquipmentKey>{};
+    return [
+      for (final gym in [_catalogue, ...gymProfiles])
+        for (final (kind, item) in _equipment(gym))
+          if (seen.add((kind, item.typeId)))
+            (
+              (kind, item.typeId),
+              item.toFirestore()[GymEquipmentKeys.name] as String? ??
+                  item.typeId,
+            ),
+    ];
+  }
+
   /// What [ref] is called: the first catalogue item of its type, else the
   /// first in the user's gyms (a machine they added). Null when nothing
   /// names it any more.

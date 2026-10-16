@@ -1,16 +1,26 @@
+import 'dart:async';
+
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/check_in/view/check_in_page.dart'
+    show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
+import 'package:compound/nutrition/add_meal/view/amount_sheets.dart';
 import 'package:compound/nutrition/bloc/nutrition_day_bloc.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
+import 'package:compound/nutrition/foods/view/foods_page.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
+import 'package:compound/nutrition/meal_detail/meal_detail_page.dart';
+import 'package:compound/nutrition/timeline_actions/timeline_actions_sheet.dart';
 import 'package:compound/nutrition/view/widgets/calendar_strip.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -31,6 +41,7 @@ class NutritionPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => NutritionDayBloc(
         nutritionRepository: context.read<NutritionRepository>(),
+        analyticsRepository: context.read<AnalyticsRepository>(),
         uid: state.user.uid,
       )..add(const NutritionDaySubscriptionRequested()),
       child: const NutritionView(),
@@ -46,12 +57,44 @@ class NutritionView extends StatelessWidget {
     final l10n = context.l10n;
     final state = context.watch<NutritionDayBloc>().state;
     final draft = context.watch<MealDraftCubit>().state;
-    return BlocListener<NutritionDayBloc, NutritionDayState>(
-      listenWhen: (previous, current) =>
-          current.deleteFailures > previous.deleteFailures,
-      listener: (context, _) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.nutritionDeleteFailed)),
-      ),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<NutritionDayBloc, NutritionDayState>(
+          listenWhen: (previous, current) =>
+              current.deleteFailures > previous.deleteFailures,
+          listener: (context, _) => ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.nutritionDeleteFailed)),
+          ),
+        ),
+        BlocListener<NutritionDayBloc, NutritionDayState>(
+          listenWhen: (previous, current) =>
+              current.editFailures > previous.editFailures,
+          listener: (context, _) {
+            unawaited(HapticFeedback.errorNotification());
+            unawaited(
+              showFailureAlert(context, context.l10n.nutritionUpdateFoodFailed),
+            );
+          },
+        ),
+        BlocListener<NutritionDayBloc, NutritionDayState>(
+          listenWhen: (previous, current) =>
+              current.logAgainFailures > previous.logAgainFailures,
+          listener: (context, _) {
+            unawaited(HapticFeedback.errorNotification());
+            unawaited(
+              showFailureAlert(context, context.l10n.nutritionLogMealFailed),
+            );
+          },
+        ),
+        // From another day the copy lands out of sight, on today.
+        BlocListener<NutritionDayBloc, NutritionDayState>(
+          listenWhen: (previous, current) =>
+              current.loggedAgainToday > previous.loggedAgainToday,
+          listener: (context, _) => ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.nutritionLoggedAgainToday)),
+          ),
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.tabNutrition),
@@ -170,10 +213,14 @@ class _Day extends StatelessWidget {
         if (target != null)
           MacroHeader(totals: state.totals, target: target, settings: settings),
         Expanded(
-          child: timeline.isEmpty
-              ? _Message(
+          child: ListView(
+            padding: const EdgeInsets.all(AppSpacing.l),
+            children: [
+              if (timeline.isEmpty)
+                _Message(
                   title: l10n.nutritionNothingLoggedTitle,
                   message: l10n.nutritionNothingLoggedMessage,
+                  scrolls: false,
                   // With Hide Empty Hours on there are no hour buttons;
                   // this keeps the day's one job reachable.
                   action: FilledButton(
@@ -186,92 +233,146 @@ class _Day extends StatelessWidget {
                     ),
                     child: Text(l10n.nutritionLogMeal),
                   ),
-                )
-              : ListView(
-                  padding: const EdgeInsets.all(AppSpacing.l),
-                  children: [
-                    for (final hour in timeline) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.s,
-                        ),
-                        child: MealHourHeader(
-                          hour: hour.hour,
-                          meals: hour.meals,
-                          showTotals: settings.showHourlyMacroTotals,
-                          onAdd: settings.showAddFoodsButton
-                              ? () => openMealLogger(
-                                  context,
-                                  date: hourMealDate(
-                                    hour: hour.hour,
-                                    now: DateTime.now(),
-                                    autoSetCurrentTime:
-                                        settings.autoSetCurrentTime,
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
-                      for (final meal in hour.meals)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.s),
-                          child: MealCard(
-                            meal: meal,
-                            settings: settings,
-                            onDeleteItem: (item) =>
-                                context.read<NutritionDayBloc>().add(
-                                  NutritionDayItemDeleted(meal, item.itemId),
-                                ),
-                          ),
-                        ),
-                    ],
-                  ],
                 ),
+              for (final hour in timeline) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
+                  child: MealHourHeader(
+                    hour: hour.hour,
+                    meals: hour.meals,
+                    showTotals: settings.showHourlyMacroTotals,
+                    onAdd: settings.showAddFoodsButton
+                        ? () => openMealLogger(
+                            context,
+                            date: hourMealDate(
+                              hour: hour.hour,
+                              now: DateTime.now(),
+                              autoSetCurrentTime: settings.autoSetCurrentTime,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+                for (final meal in hour.meals)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.s),
+                    child: MealCard(
+                      meal: meal,
+                      settings: settings,
+                      onDeleteItem: (item) => context
+                          .read<NutritionDayBloc>()
+                          .add(NutritionDayItemDeleted(meal, item.itemId)),
+                      onOpenMeal: () =>
+                          unawaited(MealDetailPage.show(context, meal)),
+                      onEditItem: (item) =>
+                          unawaited(_edit(context, meal, item)),
+                      onLogAgain: () {
+                        unawaited(HapticFeedback.successNotification());
+                        context.read<NutritionDayBloc>().add(
+                          NutritionDayMealLoggedAgain(meal),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+              // The foods the user has made, otherwise reachable only from
+              // inside the meal logger (Swift's Library section; Recipes
+              // come with their own slice).
+              const SizedBox(height: AppSpacing.l),
+              AppSection(
+                header: l10n.nutritionLibraryHeader,
+                children: [
+                  AppListRowButton(
+                    key: const Key('Nutrition.foods'),
+                    title: l10n.nutritionFoods,
+                    icon: AppSymbols.food,
+                    onPressed: () => unawaited(showFoods(context)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.l),
+              AppSection(
+                children: [
+                  AppListRowButton(
+                    key: const Key('Nutrition.timelineActions'),
+                    title: l10n.nutritionTimelineActions,
+                    icon: AppSymbols.more,
+                    onPressed: () => unawaited(
+                      showTimelineActions(context, state.selectedDay),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );
+  }
+
+  /// The pencil: the amount sheet, then the corrected food written back
+  /// into its meal.
+  Future<void> _edit(
+    BuildContext context,
+    MealLogModel meal,
+    MealItemModel item,
+  ) async {
+    final bloc = context.read<NutritionDayBloc>();
+    final edited = await showItemAmountSheet(context, item);
+    if (edited == null) return;
+    unawaited(HapticFeedback.successNotification());
+    bloc.add(NutritionDayItemEdited(meal, edited));
   }
 }
 
 /// An empty or failed state: the meal glyph, a title and an optional line.
 class _Message extends StatelessWidget {
-  const new({required this.title, this.message, this.action});
+  const new({
+    required this.title,
+    this.message,
+    this.action,
+    this.scrolls = true,
+  });
 
   final String title;
   final String? message;
   final Widget? action;
 
+  /// Whether it centres and scrolls itself; false inside a list.
+  final bool scrolls;
+
   @override
   Widget build(BuildContext context) {
     final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final message = this.message;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: [
-            Icon(
-              AppSymbols.meal,
-              size: AppIconSize.hero.of(context),
-              color: secondary,
-            ),
+    final column = Padding(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        spacing: AppSpacing.s,
+        children: [
+          Icon(
+            AppSymbols.meal,
+            size: AppIconSize.hero.of(context),
+            color: secondary,
+          ),
+          Text(
+            title,
+            style: AppTextStyles.sectionTitle,
+            textAlign: TextAlign.center,
+          ),
+          if (message != null)
             Text(
-              title,
-              style: AppTextStyles.sectionTitle,
+              message,
+              style: AppTextStyles.rowDetail.copyWith(color: secondary),
               textAlign: TextAlign.center,
             ),
-            if (message != null)
-              Text(
-                message,
-                style: AppTextStyles.rowDetail.copyWith(color: secondary),
-                textAlign: TextAlign.center,
-              ),
-            ?action,
-          ],
-        ),
+          ?action,
+        ],
       ),
     );
+    return scrolls
+        ? Center(child: SingleChildScrollView(child: column))
+        : column;
   }
 }

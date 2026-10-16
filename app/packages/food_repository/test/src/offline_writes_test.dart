@@ -56,5 +56,15 @@ void main() {
           (path, 'permission-denied'),
       ]);
     });
+
+    test('deleteFood completes offline; a refusal is reported', () async {
+      await subject.deleteFood('u', 'f');
+      expect(firestore.writes, ['users/u/foods/f']);
+
+      firestore.refuse('not-found');
+      await pumpEventQueue();
+
+      expect(refused, [('users/u/foods/f', 'not-found')]);
+    });
   });
 }

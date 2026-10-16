@@ -10,6 +10,7 @@ import 'package:compound/nutrition/add_meal/cubit/barcode_scanner_cubit.dart';
 import 'package:compound/nutrition/add_meal/cubit/quick_add_cubit.dart';
 import 'package:compound/nutrition/add_meal/view/amount_sheets.dart';
 import 'package:compound/nutrition/add_meal/view/barcode_camera.dart';
+import 'package:compound/nutrition/foods/view/create_food_pages.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -234,11 +235,17 @@ class _Header extends StatelessWidget {
 
 /// An empty list's explanation.
 class _Empty extends StatelessWidget {
-  const new({required this.icon, required this.title, this.message});
+  const new({
+    required this.icon,
+    required this.title,
+    this.message,
+    this.action,
+  });
 
   final IconData icon;
   final String title;
   final String? message;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -261,6 +268,7 @@ class _Empty extends StatelessWidget {
               style: AppTextStyles.rowDetail.copyWith(color: secondary),
               textAlign: TextAlign.center,
             ),
+          ?action,
         ],
       ),
     );
@@ -461,12 +469,22 @@ class _LibraryTabState extends State<_LibraryTab> {
                     icon: AppSymbols.food,
                     title: l10n.addMealLibraryEmptyTitle,
                     message: l10n.addMealLibraryEmptyMessage,
+                    action: FilledButton(
+                      onPressed: () => unawaited(_createFood(context)),
+                      child: Text(l10n.foodsCreate),
+                    ),
                   ),
                 )
               : ListView(
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   children: [
+                    ListTile(
+                      key: const Key('FoodPicker.createFood'),
+                      leading: const Icon(AppSymbols.add),
+                      title: Text(l10n.foodsCreate),
+                      onTap: () => unawaited(_createFood(context)),
+                    ),
                     if (favourites.isNotEmpty) ...[
                       _Header(l10n.addMealFavorites),
                       for (final food in favourites) FoodRow(food: food),
@@ -479,6 +497,19 @@ class _LibraryTabState extends State<_LibraryTab> {
       ],
     );
   }
+}
+
+/// The library's + (`IngredientListBuilderPresenter
+/// .onAddIngredientPressed` with a plate): Create Food, whose Create & Add
+/// puts the new food on the plate at 100, the basis its nutrients are
+/// stored on (`FoodDefinitionPresenter.onCreateAndAddPressed`).
+Future<void> _createFood(BuildContext context) async {
+  final bloc = context.read<AddMealBloc>();
+  context.read<AnalyticsRepository>().trackEvent(
+    const AnalyticsEvent('IngredientsView_AddIngredientPressed'),
+  );
+  final food = await CreateFoodPage.showForPlate(context);
+  if (food != null) bloc.add(AddMealItemAdded(food.mealItem(100)));
 }
 
 // MARK: - Quick add
@@ -733,7 +764,7 @@ class _BarcodeView extends StatelessWidget {
                 icon: const Icon(AppSymbols.edit),
                 label: Text(l10n.addMealBarcodeEnter),
                 onPressed: () async {
-                  final code = await _enterBarcode(context, state.code);
+                  final code = await enterBarcode(context, state.code);
                   if (code != null && context.mounted) {
                     cubit.rescan();
                     detected(code);
@@ -757,35 +788,58 @@ class _BarcodeView extends StatelessWidget {
 
 /// Typing a barcode, the fallback when the camera cannot read it; prefilled
 /// with whatever it did catch. Null when cancelled.
-Future<String?> _enterBarcode(BuildContext context, String? scanned) {
-  final controller = TextEditingController(text: scanned);
-  return showDialog<String>(
-    context: context,
-    builder: (context) {
-      final l10n = context.l10n;
-      void submit() {
-        final code = controller.text.trim();
-        if (code.isNotEmpty) Navigator.of(context).pop(code);
-      }
+Future<String?> enterBarcode(BuildContext context, String? scanned) =>
+    showDialog<String>(
+      context: context,
+      builder: (_) => _BarcodeEntryDialog(scanned: scanned),
+    );
 
-      return AlertDialog(
-        title: Text(l10n.addMealBarcodeEnter),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(hintText: l10n.addMealBarcodeField),
-          onSubmitted: (_) => submit(),
+/// The dialog owns its field's controller, so the controller outlives the
+/// dialog's closing animation (disposing it when the future completed
+/// broke the field mid-animation).
+class _BarcodeEntryDialog extends StatefulWidget {
+  const new({required this.scanned});
+
+  final String? scanned;
+
+  @override
+  State<_BarcodeEntryDialog> createState() => _BarcodeEntryDialogState();
+}
+
+class _BarcodeEntryDialogState extends State<_BarcodeEntryDialog> {
+  late final _controller = TextEditingController(text: widget.scanned);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final code = _controller.text.trim();
+    if (code.isNotEmpty) Navigator.of(context).pop(code);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.addMealBarcodeEnter),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(hintText: l10n.addMealBarcodeField),
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-          ),
-          TextButton(onPressed: submit, child: Text(l10n.addMealBarcodeLookUp)),
-        ],
-      );
-    },
-  ).whenComplete(controller.dispose);
+        TextButton(onPressed: _submit, child: Text(l10n.addMealBarcodeLookUp)),
+      ],
+    );
+  }
 }

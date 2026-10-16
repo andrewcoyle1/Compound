@@ -36,6 +36,16 @@ final class const NutritionDayState({
 
   /// How many deletes have failed, so the screen says so each time.
   final int deleteFailures = 0,
+
+  /// How many corrected amounts have failed to save.
+  final int editFailures = 0,
+
+  /// How many Log Agains have failed.
+  final int logAgainFailures = 0,
+
+  /// How many meals were logged again from another day, out of sight on
+  /// today, so the screen says where each went.
+  final int loggedAgainToday = 0,
 }) extends Equatable {
   /// Where the data has got to.
   NutritionDayStatus get status => failed
@@ -77,6 +87,9 @@ final class const NutritionDayState({
     FoodLogSettings? settings,
     bool? failed,
     int? deleteFailures,
+    int? editFailures,
+    int? logAgainFailures,
+    int? loggedAgainToday,
   }) => NutritionDayState(
     selectedDay: selectedDay ?? this.selectedDay,
     today: today,
@@ -85,6 +98,9 @@ final class const NutritionDayState({
     settings: settings ?? this.settings,
     failed: failed ?? this.failed,
     deleteFailures: deleteFailures ?? this.deleteFailures,
+    editFailures: editFailures ?? this.editFailures,
+    logAgainFailures: logAgainFailures ?? this.logAgainFailures,
+    loggedAgainToday: loggedAgainToday ?? this.loggedAgainToday,
   );
 
   @override
@@ -96,5 +112,8 @@ final class const NutritionDayState({
     settings,
     failed,
     deleteFailures,
+    editFailures,
+    logAgainFailures,
+    loggedAgainToday,
   ];
 }

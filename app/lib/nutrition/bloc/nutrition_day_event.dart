@@ -28,3 +28,21 @@ final class const NutritionDayItemDeleted(
   @override
   List<Object> get props => [meal.mealId, itemId];
 }
+
+/// The logged food [item] was corrected in [meal]; [item] keeps its id
+/// (`NutritionPresenter.onEditMealItem`).
+final class const NutritionDayItemEdited(
+  final MealLogModel meal,
+  final MealItemModel item,
+) extends NutritionDayEvent {
+  @override
+  List<Object> get props => [meal.mealId, item];
+}
+
+/// Log Again: [meal]'s foods logged again as a new meal now
+/// (`NutritionPresenter.onLogAgainPressed`).
+final class const NutritionDayMealLoggedAgain(final MealLogModel meal)
+    extends NutritionDayEvent {
+  @override
+  List<Object> get props => [meal.mealId];
+}

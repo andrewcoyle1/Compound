@@ -155,6 +155,127 @@ void main() {
     );
   });
 
+  group('editing and logging again (NutritionPresenterTests)', () {
+    MealItemModel food(String id, double amount) => MealItemModel(
+      itemId: id,
+      sourceType: MealItemSourceType.ingredient,
+      sourceId: 's',
+      displayName: id,
+      amount: amount,
+      unit: 'g',
+      nutrients: NutrientMap({NutrientKey.calories: amount}),
+    );
+    final meal = MealLogModel(
+      mealId: 'm1',
+      authorId: uid,
+      dayKey: '2026-09-14',
+      date: DateTime(2026, 9, 14, 8),
+      items: [food('a', 100), food('b', 200)],
+      notes: 'Post-run',
+    );
+    late AnalyticsRecorder analytics;
+
+    setUpAll(() => registerFallbackValue(meal));
+    setUp(() => analytics = AnalyticsRecorder());
+
+    NutritionDayBloc buildWithAnalytics() => NutritionDayBloc(
+      nutritionRepository: repository,
+      uid: uid,
+      analyticsRepository: analytics,
+      now: now,
+      newId: () => 'copy',
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'editing a logged item saves the new amount into its meal',
+      setUp: () =>
+          when(() => repository.saveMeal(any())).thenAnswer((_) async {}),
+      build: buildWithAnalytics,
+      act: (bloc) => bloc.add(NutritionDayItemEdited(meal, food('b', 250))),
+      expect: () => <NutritionDayState>[],
+      verify: (_) {
+        final saved =
+            verify(() => repository.saveMeal(captureAny())).captured.single
+                as MealLogModel;
+        expect(saved.mealId, 'm1');
+        expect(saved.items.map((item) => item.itemId), ['a', 'b']);
+        expect(saved.items.map((item) => item.amount), [100, 250]);
+        expect(saved.notes, 'Post-run');
+        expect(analytics.names, [
+          'NutritionView_SaveMeal_Start',
+          'NutritionView_SaveMeal_Success',
+        ]);
+      },
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'an item no longer in the meal is left alone',
+      build: buildWithAnalytics,
+      act: (bloc) => bloc.add(NutritionDayItemEdited(meal, food('z', 1))),
+      verify: (_) => verifyNever(() => repository.saveMeal(any())),
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'a failed edit is reported',
+      setUp: () =>
+          when(() => repository.saveMeal(any()))
+              .thenAnswer((_) async => throw Exception('refused')),
+      build: buildWithAnalytics,
+      act: (bloc) => bloc.add(NutritionDayItemEdited(meal, food('a', 50))),
+      expect: () => [initial.copyWith(editFailures: 1)],
+      verify: (_) =>
+          expect(analytics.names.last, 'NutritionView_SaveMeal_Fail'),
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'log again logs a copy of the meal now',
+      setUp: () =>
+          when(() => repository.saveMeal(any())).thenAnswer((_) async {}),
+      build: buildWithAnalytics,
+      act: (bloc) => bloc.add(NutritionDayMealLoggedAgain(meal)),
+      // Logged again from today, the copy is on screen: no message.
+      expect: () => <NutritionDayState>[],
+      verify: (_) {
+        final copy =
+            verify(() => repository.saveMeal(captureAny())).captured.single
+                as MealLogModel;
+        expect(copy.mealId, 'copy');
+        expect(copy.dayKey, '2026-09-21');
+        expect(copy.date, now());
+        expect(copy.items.map((item) => item.itemId), ['a', 'b']);
+        expect(copy.notes, 'Post-run');
+      },
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'log again from another day says where the meal went',
+      setUp: () =>
+          when(() => repository.saveMeal(any())).thenAnswer((_) async {}),
+      build: buildWithAnalytics,
+      act: (bloc) => bloc
+        ..add(NutritionDayDateSelected(DateTime(2026, 9, 14)))
+        ..add(NutritionDayMealLoggedAgain(meal)),
+      skip: 1,
+      expect: () => [
+        NutritionDayState(
+          selectedDay: DateTime(2026, 9, 14),
+          today: today,
+          loggedAgainToday: 1,
+        ),
+      ],
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'a failed log again is reported',
+      setUp: () =>
+          when(() => repository.saveMeal(any()))
+              .thenAnswer((_) async => throw Exception('refused')),
+      build: buildWithAnalytics,
+      act: (bloc) => bloc.add(NutritionDayMealLoggedAgain(meal)),
+      expect: () => [initial.copyWith(logAgainFailures: 1)],
+    );
+  });
+
   group(NutritionDayState, () {
     test('has no timeline before the settings arrive', () {
       expect(initial.copyWith(meals: meals).timeline, isEmpty);

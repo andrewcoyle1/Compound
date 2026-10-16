@@ -7,6 +7,9 @@ class _FailingFoods implements FoodRepository {
 
   @override
   Stream<List<FoodModel>> watchFoods(String uid) => const Stream.empty();
+
+  @override
+  Future<void> deleteFood(String uid, String ingredientId) async {}
 }
 
 void main() {

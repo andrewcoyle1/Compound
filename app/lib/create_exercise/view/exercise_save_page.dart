@@ -32,13 +32,16 @@ class ExerciseSavePage extends StatelessWidget {
         library: context.read<TrainingLibraryRepository>(),
         analytics: context.read<AnalyticsRepository>(),
       ),
-      child: const ExerciseSaveView(),
+      child: ExerciseSaveView(draft: draft),
     );
   }
 }
 
 class ExerciseSaveView extends StatelessWidget {
-  const new({super.key});
+  const new({required this.draft, super.key});
+
+  /// The exercise to create.
+  final ExerciseDraft draft;
 
   static Future<void> _done(
     BuildContext context,
@@ -84,7 +87,7 @@ class ExerciseSaveView extends StatelessWidget {
                 ? const Center(child: CircularProgressIndicator.adaptive())
                 : ExerciseAbout(
                     // Only shown: the id and dates are made on Create.
-                    exercise: cubit.draft.toModel(
+                    exercise: draft.toModel(
                       id: '',
                       authorId: '',
                       now: DateTime.utc(2000),

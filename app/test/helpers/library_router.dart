@@ -68,10 +68,8 @@ GoRouter libraryRouter(
     GoRoute(
       path: CreateExercisePage.path,
       name: CreateExercisePage.name,
-      pageBuilder: (_, state) => MaterialPage(
-        key: state.pageKey,
-        child: const CreateExercisePage(),
-      ),
+      pageBuilder: (_, state) =>
+          MaterialPage(key: state.pageKey, child: const CreateExercisePage()),
     ),
     GoRoute(
       path: '/launcher',

@@ -1,5 +1,4 @@
 import 'package:compound/workout_editor/workout_editor.dart';
-import 'package:compound_models/compound_models.dart' show GymProfileModelKeys;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 

@@ -166,6 +166,9 @@ void main() {
       await tester.enterText(find.byType(TextField), 'Home');
       await tester.pumpAndSettle();
       await next();
+      // Its equipment, then Continue makes it the usual gym.
+      expect(find.text('Equipment'), findsOneWidget);
+      await next();
 
       // Program: the recommended one is chosen.
       expect(find.text('Choose a Program'), findsWidgets);

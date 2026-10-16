@@ -142,6 +142,10 @@ final class const ActiveWorkoutState({
   /// How saving the finished workout is going, to tell the user.
   final SaveProgress? saveNotice,
   final int saveNoticeId = 0,
+
+  /// The gym the workout loads from, which Gym Settings opens: the
+  /// session's, else the usual one.
+  final GymProfileModel? gym,
 }) extends Equatable {
   bool get isActive => status == ActiveWorkoutStatus.active && session != null;
 
@@ -216,5 +220,6 @@ final class const ActiveWorkoutState({
     finishedSession,
     saveNotice,
     saveNoticeId,
+    gym,
   ];
 }

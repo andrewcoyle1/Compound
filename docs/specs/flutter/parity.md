@@ -121,25 +121,25 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Profile | TimelineFoodTiles | `Subviews/NutritionSettings/FoodLogSettings/TimelineFoodTiles` | M5 | todo | |
 | Profile | StrategySettings | `Subviews/NutritionSettings/StrategySettings` | M5 | todo | |
 | Profile | ExerciseAssessment | `Subviews/TrainingSettings/ExerciseAssessment` | M5 | todo | |
-| Profile | GymProfiles | `Subviews/TrainingSettings/GymProfiles` | M5 | todo | |
-| Profile | GymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile` | M5 | todo | |
-| Profile | AddGymMachine | `Subviews/TrainingSettings/GymProfiles/GymProfile/AddGymMachine` | M5 | todo | |
-| Profile | CreateGymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile/CreateGymProfile` | M5 | todo | |
-| Profile | EditBand | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand` | M5 | todo | |
-| Profile | AddBand | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand/AddBand` | M5 | todo | |
-| Profile | EditBodyWeight | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBodyWeight` | M5 | todo | |
-| Profile | AddBodyWeight | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBodyWeight/AddBodyWeight` | M5 | todo | |
-| Profile | EditFixedWeightBar | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditFixedWeightBar` | M5 | todo | |
-| Profile | AddFixedWeightBar | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditFixedWeightBar/AddFixedWeightBar` | M5 | todo | |
-| Profile | EditFreeWeight | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditFreeWeight` | M5 | todo | |
-| Profile | AddFreeWeight | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditFreeWeight/AddFreeWeight` | M5 | todo | |
-| Profile | EditLoadableAccessory | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableAccessory` | M5 | todo | |
-| Profile | EditLoadableBar | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableBar` | M5 | todo | |
-| Profile | AddLoadableBar | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableBar/AddLoadableBar` | M5 | todo | |
-| Profile | EditPlateLoadedMachine | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine` | M5 | todo | |
-| Profile | EditStackMachine | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine` | M5 | todo | |
-| Profile | AddWeightStack | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine/AddWeightStack` | M5 | todo | |
-| Profile | EditWeightRange | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange` | M5 | todo | |
+| Profile | GymProfiles | `Subviews/TrainingSettings/GymProfiles` | M5 | done | Settings › Gym Profiles |
+| Profile | GymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile` | M5 | done | Thumbnails and the gym photo left out |
+| Profile | AddGymMachine | `Subviews/TrainingSettings/GymProfiles/GymProfile/AddGymMachine` | M5 | done | |
+| Profile | CreateGymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile/CreateGymProfile` | M5 | done | Also onboarding and Choose Gym Profile |
+| Profile | EditBand | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand` | M5 | done | Shared editor |
+| Profile | AddBand | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand/AddBand` | M5 | done | Shared editor |
+| Profile | EditBodyWeight | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBodyWeight` | M5 | done | Shared editor |
+| Profile | AddBodyWeight | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBodyWeight/AddBodyWeight` | M5 | done | Shared editor |
+| Profile | EditFixedWeightBar | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditFixedWeightBar` | M5 | done | Shared editor |
+| Profile | AddFixedWeightBar | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditFixedWeightBar/AddFixedWeightBar` | M5 | done | Shared editor |
+| Profile | EditFreeWeight | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditFreeWeight` | M5 | done | Shared editor |
+| Profile | AddFreeWeight | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditFreeWeight/AddFreeWeight` | M5 | done | Shared editor |
+| Profile | EditLoadableAccessory | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableAccessory` | M5 | done | |
+| Profile | EditLoadableBar | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableBar` | M5 | done | Shared editor |
+| Profile | AddLoadableBar | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableBar/AddLoadableBar` | M5 | done | Shared editor |
+| Profile | EditPlateLoadedMachine | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine` | M5 | done | |
+| Profile | EditStackMachine | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine` | M5 | done | Cable and pin-loaded share it |
+| Profile | AddWeightStack | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine/AddWeightStack` | M5 | done | |
+| Profile | EditWeightRange | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange` | M5 | done | |
 | Profile | WorkoutSettings | `Subviews/TrainingSettings/WorkoutSettings` | M5 | todo | |
 | Profile | RestTimerSettings | `Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings` | M5 | todo | |
 | Profile | TimerDuration | `Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration` | M5 | todo | |
@@ -197,7 +197,7 @@ Status: `todo`, `partial` (read-only or part of the screen), `done`, `dropped`.
 | Training | WorkoutNotes | `Session/WorkoutNotes` | M3 | todo | |
 | Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | read-only (#93) |
 | Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | todo | |
-| Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | partial | M5 workout editor; Create Gym Profile waits for the gym editor |
+| Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | done | |
 | Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | done | M5 workout editor |
 | Training | DefineWorkoutWrapper | `Workouts/CreateWorkout/DefineWorkoutWrapper` | M3 | done | M5 workout editor |
 | Training | ExercisesPicker | `Workouts/CreateWorkout/ExercisesPicker` | M3 | done | #120's picker, for exercises and substitutions (M5 workout editor) |

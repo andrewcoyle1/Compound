@@ -747,6 +747,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   void discardPressed() => _track('WorkoutTracker_Discard_Pressed');
 
+  /// Gym Settings opened from the menu.
+  void gymSettingsOpened() => _track('WorkoutTracker_GymSettings_Opened');
+
   /// Ends the workout now and stores it (`WorkoutFinisher`): the summary
   /// opens at once, while the save, its retries and the streak run here,
   /// where they outlive the tracker. A save that fails leaves the workout
@@ -910,6 +913,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     finishedSession: clearFinished ? null : state.finishedSession,
     saveNotice: saveNotice ?? state.saveNotice,
     saveNoticeId: saveNoticeId ?? state.saveNoticeId,
+    gym: state.gym,
   );
 
   /// The tracker as the controller now has it; [keypad] replaces the open
@@ -986,6 +990,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       effectId: effect == null ? state.effectId : state.effectId + 1,
       saveNotice: state.saveNotice,
       saveNoticeId: state.saveNoticeId,
+      gym: _gym(session.gymProfileId) ?? _favouriteGym,
     );
     final now = _clock();
     final slot = next.slotAt(now);

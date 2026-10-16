@@ -92,10 +92,19 @@ class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
       );
 
   @override
-  Future<void> saveGymProfile(GymProfileModel profile) => _merge(
-    _user(profile.authorId, 'gym_profiles').doc(profile.id),
-    profile.toFirestore(),
-  );
+  Future<void> saveGymProfile(GymProfileModel profile) {
+    final data = profile.toFirestore();
+    return _merge(_user(profile.authorId, 'gym_profiles').doc(profile.id), {
+      for (final key in GymProfileModelKeys.all)
+        key: data.containsKey(key) ? data[key] : FieldValue.delete(),
+    });
+  }
+
+  @override
+  Future<void> deleteGymProfile(String uid, String profileId) {
+    final document = _user(uid, 'gym_profiles').doc(profileId);
+    return writeLocally(document.path, document.delete, _onWriteError);
+  }
 
   @override
   Stream<List<ExerciseSettingsModel>> watchExerciseSettings(String uid) =>

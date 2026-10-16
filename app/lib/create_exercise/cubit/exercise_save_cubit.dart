@@ -13,7 +13,7 @@ class ExerciseSaveCubit extends Cubit<ExerciseSaveStatus> {
   /// The uid is the signed-in user's, who owns the exercise; without one
   /// nothing is written.
   new({
-    required this.draft,
+    required this._draft,
     required this._uid,
     required this._library,
     required this._analytics,
@@ -23,8 +23,7 @@ class ExerciseSaveCubit extends Cubit<ExerciseSaveStatus> {
 
   static const _screen = 'ExerciseSaveView';
 
-  /// The exercise to create.
-  final ExerciseDraft draft;
+  final ExerciseDraft _draft;
   final String? _uid;
   final TrainingLibraryRepository _library;
   final AnalyticsRepository _analytics;
@@ -53,7 +52,7 @@ class ExerciseSaveCubit extends Cubit<ExerciseSaveStatus> {
     try {
       final now = _now();
       await _library.saveUserExercise(
-        draft.toModel(id: _newId(), authorId: uid, now: now),
+        _draft.toModel(id: _newId(), authorId: uid, now: now),
       );
       _analytics.analytic('CreateExercise_Success');
       emit(ExerciseSaveStatus.saved);

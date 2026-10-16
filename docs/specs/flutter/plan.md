@@ -34,8 +34,9 @@ Flutter replaces the SwiftUI app: Android first, then iOS. Agreed 14 Oct 2026; w
   switches/pickers, haptics, and system fonts with Dynamic Type. Liquid Glass can't be reproduced
   exactly, so iOS users will notice the change at M6; that trade is accepted.
 - **Daily development on the iOS Simulator**, with a regular check on the Android emulator. The
-  Flutter iOS dev build uses bundle id `com.andrewcoyle.compound.flutter.dev` so it installs
-  alongside the Swift dev app. That is one extra app to register in `compound-development` at M1.
+  Flutter iOS dev build first used bundle id `com.andrewcoyle.compound.flutter.dev` so it installed
+  alongside the Swift dev app; since 16 Oct 2026 it uses the Swift dev app's `com.andrewcoyle.compound.dev`
+  and replaces it (`decisions.md`).
 - **M2 (read-only mirror) stays.**
 - **Android 1.0 ships at full parity**: social, coach, programs and Strava are all in. M4 becomes
   an internal milestone, and the public release moves to the end of M5.
@@ -50,8 +51,8 @@ Flutter replaces the SwiftUI app: Android first, then iOS. Agreed 14 Oct 2026; w
   call in `docs/specs/flutter/decisions.md`. It stops only for something outside the plan: a new
   paid service, a change to Swift code, or anything touching prod.
 - **Firebase: the dev project only** (`compound-development`), and only once M1 starts.
-  - Register the iOS app `com.andrewcoyle.compound.flutter.dev` and the Android app
-    `com.andrewcoyle.compound.dev`.
+  - Register the Android app `com.andrewcoyle.compound.dev`; iOS uses the Swift dev app's
+    registration, `com.andrewcoyle.compound.dev` (originally `com.andrewcoyle.compound.flutter.dev`).
   - Add the debug SHA fingerprints and the App Check debug provider.
   - Never touch `dialed-c3cb5`.
 - **Pace:** M1 runs the scaffold first and alone, then `app_ui`, the contract harness and the strings

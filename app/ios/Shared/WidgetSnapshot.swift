@@ -73,8 +73,10 @@ struct WidgetSnapshot: Codable, Equatable {
     }
 }
 
-/// The flavor's App Group (`AppGroupIdentifier` in both Info.plists, from `APP_GROUP_ID`): never the
-/// Swift app's. Nil where the build has none (production, until it is configured).
+/// The flavor's App Group (`AppGroupIdentifier` in both Info.plists, from `APP_GROUP_ID`). Development
+/// uses the Swift app's `group.com.compound.app`, as its bundle id is the Swift dev app's: the same key
+/// and format carry the snapshot across the switch, and, as between Swift's own dev and prod builds, two
+/// builds on one device share it. Nil where the build has none (production, until it is configured).
 enum AppGroup {
     static var defaults: UserDefaults? {
         guard let id = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String,

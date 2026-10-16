@@ -263,10 +263,11 @@ Ordered by user value. Each is meant to be one PR into `feature/flutter`.
 None left: label OCR (#185) and A/B tests (#186) closed the last two.
 
 ### (b) Waiting on the owner
-- **RevenueCat:** apps for iOS `com.andrewcoyle.compound.flutter.dev` and Play
-  `com.andrewcoyle.compound.dev`, the Play subscriptions on the same entitlement, a Play
-  service-account credential, and `REVENUECAT_APPLE_API_KEY` / `REVENUECAT_GOOGLE_API_KEY` in
-  `app/dart_defines.json`. Until then development runs the premium fake (#114, #155).
+- **RevenueCat:** iOS development is done: it shares the Swift dev app's bundle id and so its
+  RevenueCat app and products, with `REVENUECAT_APPLE_API_KEY` in `app/dart_defines.json`. Android
+  still needs a Play app `com.andrewcoyle.compound.dev`, its subscriptions on the same entitlement, a
+  Play service-account credential and `REVENUECAT_GOOGLE_API_KEY`; until then Android development
+  runs the premium fake (#114, #155).
 - **APNs and push:** done for development on 16 Oct 2026: a sandbox APNs key on both dev iOS apps in
   `compound-development`, a production key on `com.andrewcoyle.compound` in prod, and Push, Time
   Sensitive, HealthKit and App Groups on the dev App IDs, with the entitlements in #188. Optionally the

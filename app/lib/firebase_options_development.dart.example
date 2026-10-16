@@ -66,6 +66,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'compound-development.firebasestorage.app',
     androidClientId: 'REPLACE_ME',
     iosClientId: 'REPLACE_ME',
-    iosBundleId: 'com.andrewcoyle.compound.flutter.dev',
+    iosBundleId: 'com.andrewcoyle.compound.dev',
   );
 }

@@ -6,7 +6,7 @@ import 'package:mocktail/mocktail.dart';
 
 class _MockHealth extends Mock implements Health;
 
-const _own = 'com.andrewcoyle.compound.flutter.dev';
+const _own = 'com.andrewcoyle.compound.dev';
 
 HealthDataPoint _point(
   HealthDataType type,

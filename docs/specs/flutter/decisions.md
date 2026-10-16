@@ -281,13 +281,17 @@ why, and what would change it. Review these with the `feature/flutter` → `deve
 | 16 Oct 2026 | M5 polish (#172) | Clearing delivered pushes skips reminder ids and the ongoing workout; iOS pushes shown in the background aren't cleared | `cancel(id)` also cancels scheduled ones; the plugin lists those without ids | M6, by identifier |
 | 16 Oct 2026 | M5 polish (#172) | First weekday from a CLDR territory table; a 0 kg set prints its reps only | Dart has no region week data; "@ 0 kg" is a display bug (Swift finding) | A region reports the wrong day |
 | 16 Oct 2026 | M5 polish (#172) | The review date is stored as an ISO string under Swift's key; one `KeypadEditing` mixin shared by both cubits | shared_preferences can't hold a `Date`; folds #171's copy | — |
+| 16 Oct 2026 | Dev bundle id (owner) | The iOS `development` flavor takes the Swift dev app's bundle id `com.andrewcoyle.compound.dev` (extension `…dev.WorkoutSessionActivity`) and App Group `group.com.compound.app`, replacing the Swift dev app on a device; staging keeps `…flutter.stg` | Reuses the Swift dev App ID's capabilities, its Firebase iOS app, RevenueCat app and products, and rehearses the production switch (same widget snapshot key and format). Two dev builds on one device share the App Group, as Swift's dev and prod always have | The two dev apps are needed side by side on one device |
 
 To regenerate the gitignored dev config, run this from `app/`:
 
 ```bash
 flutterfire configure --project=compound-development --platforms=ios,android \
-  --ios-bundle-id=com.andrewcoyle.compound.flutter.dev --android-package-name=com.andrewcoyle.compound.dev \
+  --ios-bundle-id=com.andrewcoyle.compound.dev --android-package-name=com.andrewcoyle.compound.dev \
   --out=lib/firebase_options_development.dart \
   --ios-out=ios/flavors/development/GoogleService-Info.plist --ios-build-config=Debug-development \
   --android-out=android/app/src/development/google-services.json --yes
 ```
+
+It also adds two "FlutterFire" build phases to `project.pbxproj`; revert them, because the project's own
+script bundles the plist and skips it when the config is missing (CI).

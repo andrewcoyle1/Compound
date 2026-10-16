@@ -72,6 +72,7 @@ void main() {
   late InMemoryActiveSessionStore store;
   late List<Duration> waits;
   late List<SaveProgress> progress;
+  late List<(Object, bool)> failures;
   late String? signedIn;
 
   final workout = _finished('session-1', _now);
@@ -83,6 +84,7 @@ void main() {
     await store.save(ActiveSessionState(session: workout));
     waits = [];
     progress = [];
+    failures = [];
     signedIn = author;
   });
 
@@ -105,6 +107,8 @@ void main() {
     firstWeekday: DateTime.monday,
     currentUid: () => signedIn,
     onProgress: progress.add,
+    onAttemptFailed: (error, {required isTransient}) =>
+        failures.add((error, isTransient)),
   );
 
   group('saving', () {
@@ -158,6 +162,8 @@ void main() {
       expect((await finish()).saved, isFalse);
       expect(sessions.saveAttempts, 2);
       expect(progress, [SaveProgress.retrying, SaveProgress.failed]);
+      // Each failed attempt is reported (`finish_workout_save_error`).
+      expect([for (final (_, transient) in failures) transient], [true, false]);
     });
 
     test('a save that never works ends with the failure', () async {

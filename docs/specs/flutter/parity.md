@@ -54,7 +54,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Challenges | ChallengeDetail | `ChallengeDetail` | M5 | done | #146, `/challenges/:challengeId` |
 | Challenges | CreateChallenge | `CreateChallenge` | M5 | done | #146, `/challenges/new` |
 | Coach | Coach | `Compound/Core/Coach` | M5 | done | #147, `/coach` and `/coach-chats`; See Plans opens the paywall (#155) |
-| DevSettings | DevSettings | `Compound/Core/DevSettings` | M5 | partial | #166, a Settings row outside production; no A/B overrides (wait for the A/B tests); seeding resets not needed (#166); share-card export through the share sheet (this PR) |
+| DevSettings | DevSettings | `Compound/Core/DevSettings` | M5 | partial | #166, a Settings row outside production; no A/B overrides (wait for the A/B tests); seeding resets not needed (#166); share-card export through the share sheet (#177) |
 | Notifications | Notifications | `Compound/Core/Notifications` | M5 | done | #144, `/social/notifications`; share and challenge rows open (#146, #148); delivered pushes cleared on opening (#172) |
 | Notifications | NotificationSettings | `NotificationSettings` | M5 | done | #128; permission prompt (#144); reminders applied by #127 |
 | Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | done | #95, #126, #130, #142, #145, #147, #151; calendar header (#164); Customize Food Log row (#167); meal-reminder offer on the first visit (#176) |
@@ -234,7 +234,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |
 | Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed aren't cleared (M6); no https share links (link host) |
 | Local reminders | `PushManager` (local) | M4 | done | come-back and meal reminders, rest-over, "Still training?" (#127, last asked on the device #170); permission prompt (#144); in-app reminder offers (`ReminderOfferFlow`, #176) |
-| Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); paywall, gate, RevenueCat logIn/logOut (#155); development runs the fake until the owner's keys; production not wired; logIn sends the email and the Mixpanel and Firebase Analytics ids (this PR) |
+| Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); paywall, gate, RevenueCat logIn/logOut (#155); development runs the fake until the owner's keys; production not wired; logIn sends the email and the Mixpanel and Firebase Analytics ids (#177) |
 | A/B tests (Remote Config) | `ABTestManager` | M5 | todo | Swift runs `notificationsTest` and `paywallTest` |
 | App rating prompt | `ReviewMoment` | M5 | done | `ReviewMoment`, Rate row and food moments (#166); workout-finish moment and stored date (#172) |
 | HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | partial | `health_repository` (#121), UI and native setup (#151); no live workout session (heart rate, active energy; iOS, M6); HealthKit capability is an owner TODO |

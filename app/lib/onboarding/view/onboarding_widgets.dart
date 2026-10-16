@@ -6,7 +6,9 @@ import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:flutter/services.dart';
 
 /// An onboarding question: [AppOnboardingStepScaffold] with the step's
-/// progress, the shared labels, and a back button inside a step.
+/// progress, the shared labels, and a back button inside a step. Without a
+/// [step] (a goal or diet question opened after onboarding) there is no
+/// progress bar.
 class OnboardingQuestion extends StatelessWidget {
   const new({
     required this.step,
@@ -22,7 +24,7 @@ class OnboardingQuestion extends StatelessWidget {
     super.key,
   });
 
-  final OnboardingStep step;
+  final OnboardingStep? step;
   final String title;
   final String? subtitle;
 
@@ -43,7 +45,7 @@ class OnboardingQuestion extends StatelessWidget {
     return AppOnboardingStepScaffold(
       title: title,
       subtitle: subtitle,
-      progress: step.progress,
+      progress: step?.progress,
       progressLabel: l10n.onboardingProgress,
       primaryLabel: continueLabel ?? l10n.onboardingContinue,
       onPrimaryPressed: onContinue,

@@ -136,15 +136,17 @@ double _wheelWeight(double? currentKg) =>
 }
 
 /// Where the target wheel opens (`TargetWeightPresenter.onAppear`): the
-/// user's weight, truncated, clamped into the range. A whole number of
+/// user's weight, or [openingKg] (an edited goal's target), truncated,
+/// clamped into the range around the user's weight. A whole number of
 /// kilograms or pounds, in [unit].
 int initialTargetWheelValue(
   OverarchingObjective objective, {
   required WeightUnitPreference unit,
   required double? currentKg,
   required double? heightCm,
+  double? openingKg,
 }) {
-  final weight = _wheelWeight(currentKg);
+  final weight = _wheelWeight(openingKg ?? currentKg);
   if (unit == WeightUnitPreference.kilograms) {
     final current = max(1, weight.toInt());
     final range = targetKilogramRange(

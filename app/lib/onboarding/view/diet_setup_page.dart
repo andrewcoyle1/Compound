@@ -6,9 +6,12 @@ import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/diet/diet_setup_cubit.dart';
+import 'package:compound/onboarding/logic/diet_plan_builder.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/onboarding/view/onboarding_widgets.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound_maths/compound_maths.dart' as maths;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -17,9 +20,14 @@ import 'package:user_repository/user_repository.dart';
 
 /// The diet step: use the recommended plan or answer the diet,
 /// distribution and protein questions, then review and save the plan,
-/// which finishes onboarding.
+/// which finishes onboarding. [isFromSettings] (Settings and the target
+/// chart), the diet questions and the floor rebuild the plan and the flow
+/// closes.
 class DietSetupPage extends StatelessWidget {
-  const new({super.key});
+  const new({this.isFromSettings = false, super.key});
+
+  /// Opened after onboarding, to create or rebuild the plan.
+  final bool isFromSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +44,7 @@ class DietSetupPage extends StatelessWidget {
           userRepository: context.read<UserRepository>(),
           analyticsRepository: context.read<AnalyticsRepository>(),
           profile: profile,
+          isFromSettings: isFromSettings,
         );
         unawaited(cubit.load());
         return cubit;
@@ -54,7 +63,7 @@ class DietSetupView extends StatelessWidget {
     final cubit = context.read<DietSetupCubit>();
     final state = context.watch<DietSetupCubit>().state;
     final onBack = state.question == DietQuestion.intro ? null : cubit.back;
-    const step = OnboardingStep.customiseProgram;
+    final step = state.isFromSettings ? null : OnboardingStep.customiseProgram;
 
     final question = state.status == DietSetupStatus.loading
         ? const Scaffold(
@@ -87,13 +96,38 @@ class DietSetupView extends StatelessWidget {
               onBack: onBack,
               onContinue: cubit.dietContinued,
               children: [
+                MethodInfoHeader(
+                  title: l10n.onboardingDietHeader,
+                  info: MethodInfo.macroSplit(l10n),
+                ),
                 OnboardingOptions<maths.PreferredDiet>(
-                  header: l10n.onboardingDietHeader,
                   options: maths.PreferredDiet.values,
                   selected: state.diet,
                   title: (diet) => diet.label(l10n),
                   subtitle: (diet) => diet.detail(l10n),
                   onSelected: cubit.dietSelected,
+                ),
+              ],
+            ),
+            DietQuestion.calorieFloor => OnboardingQuestion(
+              step: step,
+              title: l10n.dietFloorTitle,
+              onBack: onBack,
+              onContinue: state.calorieFloor == null
+                  ? null
+                  : cubit.calorieFloorContinued,
+              children: [
+                MethodInfoHeader(
+                  title: l10n.calorieFloorMethodTitle,
+                  info: MethodInfo.calorieFloor(l10n),
+                ),
+                OnboardingOptions<String>(
+                  footer: l10n.dietFloorFooter,
+                  options: const [standardCalorieFloor],
+                  selected: state.calorieFloor,
+                  title: (_) => l10n.dietStandardFloor,
+                  subtitle: (_) => l10n.dietStandardFloorDetail,
+                  onSelected: cubit.calorieFloorSelected,
                 ),
               ],
             ),
@@ -105,8 +139,11 @@ class DietSetupView extends StatelessWidget {
                   ? null
                   : cubit.distributionContinued,
               children: [
+                MethodInfoHeader(
+                  title: l10n.onboardingDistributionHeader,
+                  info: MethodInfo.calorieCycling(l10n),
+                ),
                 OnboardingOptions<maths.CalorieDistribution>(
-                  header: l10n.onboardingDistributionHeader,
                   options: maths.CalorieDistribution.values,
                   selected: state.distribution,
                   title: (distribution) => distribution.label(l10n),
@@ -121,8 +158,11 @@ class DietSetupView extends StatelessWidget {
               onBack: onBack,
               onContinue: cubit.proteinContinued,
               children: [
+                MethodInfoHeader(
+                  title: l10n.onboardingProteinHeader,
+                  info: MethodInfo.proteinTarget(l10n),
+                ),
                 OnboardingOptions<maths.ProteinIntake>(
-                  header: l10n.onboardingProteinHeader,
                   footer: l10n.onboardingProteinFooter,
                   options: maths.ProteinIntake.values,
                   selected: state.protein,
@@ -147,7 +187,15 @@ class DietSetupView extends StatelessWidget {
     return BlocListener<DietSetupCubit, DietSetupState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, current) {
-        if (current.status == DietSetupStatus.saved) onboardingSaved();
+        if (current.status == DietSetupStatus.saved) {
+          // From Settings the flow closes; Swift's success haptic is
+          // onboarding's.
+          if (current.isFromSettings) {
+            Navigator.of(context).pop();
+          } else {
+            onboardingSaved();
+          }
+        }
         if (current.status == DietSetupStatus.failure) {
           unawaited(
             showOnboardingFailure(
@@ -183,8 +231,11 @@ class DietSetupView extends StatelessWidget {
     final days = state.trainingDaysPerWeek;
     final resting = state.restingKcalAboveTarget;
     return [
+      MethodInfoHeader(
+        title: l10n.onboardingOverview,
+        info: MethodInfo.formulaExpenditure(l10n),
+      ),
       AppSection(
-        header: l10n.onboardingOverview,
         footer: l10n.onboardingPlanFooter,
         children: [
           if (mesocycleName != null && days != null)
@@ -215,8 +266,11 @@ class DietSetupView extends StatelessWidget {
           text: l10n.onboardingBelowResting(kcal(resting)),
           kindLabel: l10n.warningLabel,
         ),
+      MethodInfoHeader(
+        title: l10n.onboardingSevenDayTargets,
+        info: MethodInfo.calorieCycling(l10n),
+      ),
       AppSection(
-        header: l10n.onboardingSevenDayTargets,
         children: [
           for (final (index, day) in plan.days.indexed)
             AppListRow(

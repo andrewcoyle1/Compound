@@ -481,6 +481,36 @@ t("flutter: saveGoal, abandonGoal, and the frozen start", async () => {
     }
 });
 
+// body_repository's editGoal: one update of the objective (its chosen case set and the others
+// deleted, key by key), the target and the rate. A merge of the whole goal would keep the old
+// case beside the new one, which neither app can decode.
+t("flutter: editGoal changes the objective, target and rate, and nothing frozen", async () => {
+    const goal = contractFixture("weight_goal");
+    const uid = goal.user_id;
+    const ref = (as) => doc(db(as), `users/${uid}/goals/${goal.goal_id}`);
+    await seed(`users/${uid}/goals/${goal.goal_id}`, goal);
+    const edit = {
+        "objective.loseWeight": {}, "objective.maintain": deleteField(), "objective.gainWeight": deleteField(),
+        target_weight_kg: 60.5, weekly_change_kg: 0.35,
+    };
+    await assertFails(updateDoc(ref(BOB), edit));
+    await assertSucceeds(updateDoc(ref(uid), edit));
+    let stored;
+    await env.withSecurityRulesDisabled(async (ctx) => {
+        stored = (await getDoc(doc(ctx.firestore(), `users/${uid}/goals/${goal.goal_id}`))).data();
+    });
+    assert.deepEqual(stored.objective, { loseWeight: {} });
+    assert.equal(stored.target_weight_kg, 60.5);
+    assert.equal(stored.weekly_change_kg, 0.35);
+    assert.equal(stored.starting_weight_kg, goal.starting_weight_kg);
+    for (const frozen of [
+        { starting_weight_kg: goal.starting_weight_kg + 1 }, { created_at: now() },
+        { goal_id: "other" }, { user_id: BOB },
+    ]) {
+        await assertFails(updateDoc(ref(uid), { ...edit, ...frozen }));
+    }
+});
+
 t("flutter: saveMeal and saveDietPlan merge", async () => {
     const meal = contractFixture("meal_log");
     const uid = meal.author_id;

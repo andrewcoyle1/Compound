@@ -261,6 +261,120 @@ void main() {
     expect(plan.createdAt, stagingNow);
   });
 
+  // GoalSummaryPresenter's applyToDietPlan (`CoreInteractor
+  // .applyGoalToDietPlan`): the goal moves today's targets.
+  group('goalAppliedPlan', () {
+    late ExpenditureSnapshot snapshot;
+    late maths.ExpenditureEstimate estimate;
+
+    setUp(() async {
+      snapshot = await watch(StagingData()).first;
+      estimate = ExpenditureFigures.of(snapshot, stagingNow).current;
+    });
+
+    DietPlan applied(
+      WeightGoal goal, {
+      maths.ExpenditureEstimate? at,
+      ExpenditureCalculationMode mode = ExpenditureCalculationMode.dynamic,
+    }) => goalAppliedPlan(
+      plan: snapshot.dietPlan!,
+      user: snapshot.user!,
+      goal: goal,
+      estimate: at ?? estimate,
+      calculationMode: mode,
+      now: stagingNow,
+    );
+
+    double mean(DietPlan plan) =>
+        plan.days.map((day) => day.calories).reduce((a, b) => a + b) / 7;
+
+    test("builds on the engine's estimate and keeps the plan's answers", () {
+      expect(estimate.isProvisional, isFalse);
+      final plan = applied(snapshot.goal!);
+      expect(plan.tdeeEstimate, estimate.kcal.roundToDouble());
+      expect(plan.preferredDiet, snapshot.dietPlan!.preferredDiet);
+      expect(plan.proteinIntake, snapshot.dietPlan!.proteinIntake);
+      expect(plan.createdAt, stagingNow);
+      // A faster rate eats less.
+      final faster = applied(_goal(snapshot.goal!, weeklyChangeKg: 0.75));
+      expect(mean(faster), lessThan(mean(plan)));
+    });
+
+    test(
+      "a provisional estimate or fixed mode keeps the plan's expenditure",
+      () {
+        final provisional = maths.ExpenditureEstimate(
+          day: estimate.day,
+          kcal: estimate.kcal + 400,
+          source: estimate.source,
+          isProvisional: true,
+          trendWeightKg: estimate.trendWeightKg,
+          weeklyTrendChangeKg: estimate.weeklyTrendChangeKg,
+          loggedDays: estimate.loggedDays,
+          weighInCount: estimate.weighInCount,
+          windowDays: estimate.windowDays,
+          stepAdjustmentKcal: estimate.stepAdjustmentKcal,
+          sdKcal: estimate.sdKcal,
+          weeklyTrendChangeSDKg: estimate.weeklyTrendChangeSDKg,
+          recentIntakeKcal: estimate.recentIntakeKcal,
+        );
+        final kept = snapshot.dietPlan!.tdeeEstimate;
+        expect(applied(snapshot.goal!, at: provisional).tdeeEstimate, kept);
+        expect(
+          applied(
+            snapshot.goal!,
+            mode: ExpenditureCalculationMode.fixed,
+          ).tdeeEstimate,
+          kept,
+        );
+      },
+    );
+
+    test(
+      'applyGoalToDietPlan saves it and forgets a dismissed proposal',
+      () async {
+        final data = StagingData();
+        final dismissals = ProposalDismissals()..dismiss(uid, 2000);
+        final goal = _goal(snapshot.goal!, weeklyChangeKg: 0.75);
+        await applyGoalToDietPlan(
+          goal,
+          uid: uid,
+          users: data.users,
+          nutrition: data.nutrition,
+          body: data.body,
+          checkIns: data.checkIns,
+          programs: data.programs,
+          dismissals: dismissals,
+          now: () => stagingNow,
+        );
+        final saved = await data.nutrition.watchDietPlan(uid).first;
+        expect(saved!.createdAt, stagingNow);
+        // The same week's calories, spread over the active program's
+        // training days.
+        expect(mean(saved), closeTo(mean(applied(goal)), 1));
+        expect(saved.days.map((d) => d.calories).toSet().length, 2);
+        expect(dismissals.of(uid), isNull);
+      },
+    );
+
+    test('without a plan nothing is saved', () async {
+      final data = StagingData(withPlan: false);
+      final dismissals = ProposalDismissals()..dismiss(uid, 2000);
+      await applyGoalToDietPlan(
+        snapshot.goal!,
+        uid: uid,
+        users: data.users,
+        nutrition: data.nutrition,
+        body: data.body,
+        checkIns: data.checkIns,
+        programs: data.programs,
+        dismissals: dismissals,
+      );
+      expect(await data.nutrition.watchDietPlan(uid).first, isNull);
+      expect(dismissals.of(uid), 2000);
+    });
+  });
+
   test('proposalParameters names the proposal as Swift does', () {
     const proposal = maths.TargetProposal(
       expenditureKcal: 2500,

@@ -277,9 +277,15 @@ void main() {
       expect(today, 3);
     });
 
-    testWidgets('without a plan says so', (tester) async {
+    testWidgets('without a plan says so, and offers to create one', (
+      tester,
+    ) async {
+      when(() => router.pushNamed<void>(any())).thenAnswer((_) async {});
       await pumpView(tester, empty: true);
       expect(find.text('No Diet Plan'), findsOneWidget);
+      await tester.tap(find.text('Create Diet Plan'));
+      await tester.pump();
+      verify(() => router.pushNamed<void>('dietPlan')).called(1);
     });
 
     testWidgets('pages through nutrition, energy, training and records', (

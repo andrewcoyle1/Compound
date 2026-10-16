@@ -516,10 +516,67 @@ void main() {
       expect(find.textContaining('kg ('), findsWidgets);
     });
 
-    testWidgets('without a goal says so', (tester) async {
+    testWidgets('without a goal says so, and Set Goal sets one', (
+      tester,
+    ) async {
       await pumpAt(tester, '/progress/goal-progress', noGoal: true);
       expect(find.text('No Active Weight Goal'), findsOneWidget);
       expect(find.byTooltip('Log Weight'), findsNothing);
+      expect(find.byTooltip('Change Goal'), findsNothing);
+
+      await tapText(tester, 'Set Goal');
+      expect(find.text('weightGoal screen'), findsOneWidget);
+    });
+
+    // GoalProgressPresenter.onChangeGoalPressed and WeightGoalChoices.
+    testWidgets('Change Goal offers editing the running goal or a fresh '
+        'start', (tester) async {
+      await pumpAt(tester, '/progress/goal-progress');
+      await tester.tap(find.byTooltip('Change Goal'));
+      await tester.pumpAndSettle();
+      expect(find.text('Weight Goal'), findsOneWidget);
+      expect(
+        find.text(
+          "Edit your target and pace, or start a new goal from today's "
+          'weight.',
+        ),
+        findsOneWidget,
+      );
+
+      await tapText(tester, 'Cancel');
+      expect(find.text('Weight Goal'), findsNothing);
+
+      await tester.tap(find.byTooltip('Change Goal'));
+      await tester.pumpAndSettle();
+      await tapText(tester, 'Edit Goal');
+      expect(find.text('weightGoal screen edit=1'), findsOneWidget);
+    });
+
+    testWidgets('Start a New Goal starts one; a finished goal is replaced '
+        'without asking', (tester) async {
+      await pumpAt(tester, '/progress/goal-progress');
+      await tester.tap(find.byTooltip('Change Goal'));
+      await tester.pumpAndSettle();
+      await tapText(tester, 'Start a New Goal');
+      expect(find.text('weightGoal screen'), findsOneWidget);
+
+      final done = sampleWeightGoal(uid: uid, now: now);
+      await pumpAt(
+        tester,
+        '/progress/goal-progress',
+        body: InMemoryBodyRepository(
+          measurements: sampleBodyMeasurements(uid: uid, now: now),
+          goals: [
+            WeightGoal.fromFirestore({
+              ...done.toFirestore(),
+              'status': 'completed',
+            }),
+          ],
+        ),
+      );
+      await tester.tap(find.byTooltip('Change Goal'));
+      await tester.pumpAndSettle();
+      expect(find.text('weightGoal screen'), findsOneWidget);
     });
   });
 

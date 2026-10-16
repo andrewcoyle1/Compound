@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
@@ -6,6 +8,7 @@ import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/notifications/notifications.dart';
 import 'package:compound/nutrition/nutrition.dart';
+import 'package:compound/nutrition/recipes/view/recipes_page.dart';
 import 'package:compound/onboarding/account_setup/account_setup_cubit.dart';
 import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/profile/profile.dart';
@@ -14,6 +17,7 @@ import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
+import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -260,6 +264,115 @@ void main() {
       await auth.signOut();
       await tester.pumpAndSettle();
       expect(widgets.snapshot, isNull);
+    });
+
+    testWidgets('answers Siri: workouts, starting one, weigh-ins, the week, '
+        "today's workout and the recipes", (tester) async {
+      final intents = FakeAppIntentsRepository();
+      final body = InMemoryBodyRepository();
+      await tester.pumpWidget(
+        App(
+          deviceStore: offersShownDevice(),
+          purchasesRepository: FakePurchasesRepository(),
+          programRepository: InMemoryProgramRepository(
+            mesocycles: sampleMesocycles(now: now),
+          ),
+          trainingLibraryRepository: InMemoryTrainingLibraryRepository(
+            workoutTemplates: sampleUserWorkoutTemplates,
+          ),
+          authRepository: InMemoryAuthRepository(
+            user: InMemoryAuthRepository.sampleUser,
+          ),
+          userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: body,
+          appIntentsRepository: intents,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final siri = intents.handler!;
+
+      final workouts = (await tester.runAsync(siri.workouts))!;
+      expect(workouts, isNotEmpty);
+      expect(workouts.map((w) => w.id).toSet(), hasLength(workouts.length));
+
+      final week = (await tester.runAsync(siri.workoutsThisWeek))!;
+      expect(week.sentence, isNotEmpty);
+      final today = (await tester.runAsync(siri.todaysWorkout))!;
+      expect(today.sentence, isNotEmpty);
+
+      expect(
+        await tester.runAsync(() => siri.logWeight(150, pounds: true)),
+        'Logged 150.0 lb.',
+      );
+      expect(
+        await tester.runAsync(() => siri.logWeight(70.4, pounds: false)),
+        'Logged 70.4 kg.',
+      );
+      Future<String?> refusal(Future<Object?> Function() ask) =>
+          tester.runAsync<String?>(() async {
+            try {
+              await ask();
+              return null;
+            } on AppIntentRefusal catch (refusal) {
+              return refusal.sentence;
+            }
+          });
+      expect(await refusal(() => siri.logWeight(5)), contains('20 and 400'));
+      expect(
+        await refusal(() => siri.startWorkout('gone')),
+        "That workout isn't in your library any more.",
+      );
+
+      await tester.runAsync(siri.browseRecipes);
+      await tester.pumpAndSettle();
+      expect(find.byType(RecipesPage), findsOneWidget);
+
+      final first = workouts.first;
+      expect(
+        await tester.runAsync(() => siri.startWorkout(first.id)),
+        'Starting ${first.name}.',
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(WorkoutTrackerPage), findsOneWidget);
+      expect(
+        await tester.runAsync(() => siri.startWorkout(first.id)),
+        contains('already have'),
+      );
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('Siri says to sign in first when no one is', (tester) async {
+      final intents = FakeAppIntentsRepository();
+      await tester.pumpWidget(
+        App(
+          deviceStore: offersShownDevice(),
+          purchasesRepository: FakePurchasesRepository(),
+          programRepository: InMemoryProgramRepository(),
+          trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
+          authRepository: InMemoryAuthRepository(),
+          userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
+          appIntentsRepository: intents,
+        ),
+      );
+      await tester.pumpAndSettle();
+      Object? refusal;
+      unawaited(
+        intents.handler!.browseRecipes().catchError((Object e) => refusal = e),
+      );
+      await tester.pump(const Duration(seconds: 11));
+      expect(
+        refusal,
+        isA<AppIntentRefusal>().having(
+          (r) => r.sentence,
+          'sentence',
+          'Open Compound and sign in first.',
+        ),
+      );
     });
 
     testWidgets('starts signed in as the sample user, as staging does, and '

@@ -24,12 +24,14 @@ import 'package:compound/settings/general/view/customise_analytics_page.dart';
 import 'package:compound/settings/general/view/legal_page.dart';
 import 'package:compound/settings/general/view/methods_and_sources_page.dart';
 import 'package:compound/settings/general/view/notification_settings_page.dart';
+import 'package:compound/settings/general/view/siri_page.dart';
 import 'package:compound/settings/general/view/units_page.dart';
 import 'package:compound/settings/nutrition/view/expenditure_settings_page.dart';
 import 'package:compound/settings/nutrition/view/food_log_settings_page.dart';
 import 'package:compound/settings/nutrition/view/strategy_settings_page.dart';
 import 'package:compound/settings/training/view/workout_settings_page.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -156,6 +158,13 @@ class _SettingsViewState extends State<SettingsView> {
                     icon: AppSymbols.analytics,
                     onPressed: () => _open(CustomiseAnalyticsPage.name),
                   ),
+                  // App Intents are iOS's; Android has no Siri.
+                  if (defaultTargetPlatform == TargetPlatform.iOS)
+                    AppListRowButton(
+                      title: l10n.settingsSiri,
+                      icon: AppSymbols.describe,
+                      onPressed: () => _open(SiriPage.name),
+                    ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xl),

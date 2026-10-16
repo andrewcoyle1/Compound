@@ -26,6 +26,7 @@
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
 		7B471ACE3977F00B354753C6 /* WorkoutRestTimerIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD77C867FBE834B26431E2A2 /* WorkoutRestTimerIntents.swift */; };
 		8939EC3A6524EC69760E9B1D /* LiveActivityIntentHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF370262105D0B2E246D932 /* LiveActivityIntentHandling.swift */; };
+		89EE9BBCBBFAED9999F6E4A4 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 62184AF0EE58CD1F236DFE0C /* Localizable.xcstrings */; };
 		8BD6E121367ABA25060198BB /* LiveActivityIntentHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF370262105D0B2E246D932 /* LiveActivityIntentHandling.swift */; };
 		92F19A1B49E1793A71EBE183 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DD8F9F43F1E39F3422E21FB /* WidgetKit.framework */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
@@ -40,6 +41,7 @@
 		B55CDB642EEC9274009268AC /* AppIcon-stg.icon in Resources */ = {isa = PBXBuildFile; fileRef = B55CDB632EEC9274009268AC /* AppIcon-stg.icon */; };
 		C2A864950043CA3756AB4558 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B0817118418213482D122F37 /* Localizable.xcstrings */; };
 		CE01217C5DC18F1F1579CDB3 /* WorkoutActivityChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68B5192B18D79901974E9DD7 /* WorkoutActivityChannel.swift */; };
+		CFF94D92C0225B89595ACD94 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F637F29632BA9F4B8A62AE0C /* AppIntents.swift */; };
 		DB0E8077EA6AC56FFA5A0311 /* WorkoutSessionActivityBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B27B6BEF80EEBF773897151E /* WorkoutSessionActivityBundle.swift */; };
 		F48A624D0BA500FF3F72A66E /* LiveActivityPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F161A1A65EF8AB57C8DF177 /* LiveActivityPhase.swift */; };
 /* End PBXBuildFile section */
@@ -101,6 +103,7 @@
 		41020F1499373D0EBC927816 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		4DD8F9F43F1E39F3422E21FB /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		507026F732DFE97ACA223A54 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		62184AF0EE58CD1F236DFE0C /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		65D878DEDAAE9977D73AB9A2 /* WorkoutSessionActivity-staging.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = "WorkoutSessionActivity-staging.entitlements"; sourceTree = "<group>"; };
 		68B5192B18D79901974E9DD7 /* WorkoutActivityChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutActivityChannel.swift; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -128,6 +131,7 @@
 		D33099E2CA3C52E18CB03FEA /* LiveActivityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityView.swift; sourceTree = "<group>"; };
 		DBA370496F9B05491E77D7C7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EF39D238690B3EC6DDACDE01 /* Runner-staging.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = "Runner-staging.entitlements"; sourceTree = "<group>"; };
+		F637F29632BA9F4B8A62AE0C /* AppIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -252,6 +256,8 @@
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				68B5192B18D79901974E9DD7 /* WorkoutActivityChannel.swift */,
 				EF39D238690B3EC6DDACDE01 /* Runner-staging.entitlements */,
+				F637F29632BA9F4B8A62AE0C /* AppIntents.swift */,
+				62184AF0EE58CD1F236DFE0C /* Localizable.xcstrings */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -400,6 +406,7 @@
 				B55CDB602EEC8CB4009268AC /* AppIcon-dev.icon in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+				89EE9BBCBBFAED9999F6E4A4 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -507,6 +514,7 @@
 				2D596DEC0FC97D6F18254069 /* WidgetSnapshot.swift in Sources */,
 				1411FFB4DB2FCC01BD946EF9 /* WorkoutActivityAttributes.swift in Sources */,
 				5B38365685F4EC5184ECF597 /* WorkoutRestTimerIntents.swift in Sources */,
+				CFF94D92C0225B89595ACD94 /* AppIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

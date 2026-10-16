@@ -10,6 +10,7 @@ import 'package:compound/settings/general/view/legal_page.dart';
 import 'package:compound/settings/general/view/licences_page.dart';
 import 'package:compound/settings/general/view/methods_and_sources_page.dart';
 import 'package:compound/settings/general/view/notification_settings_page.dart';
+import 'package:compound/settings/general/view/siri_page.dart';
 import 'package:compound/settings/general/view/units_page.dart';
 import 'package:compound/settings/nutrition/view/expenditure_settings_page.dart';
 import 'package:compound/settings/nutrition/view/favourite_measurements_page.dart';
@@ -59,6 +60,7 @@ final profileRoutes = <RouteBase>[
       MethodsAndSourcesPage.name,
       (_, _) => const MethodsAndSourcesPage(),
     ),
+    _route(SiriPage.path, SiriPage.name, (_, _) => const SiriPage()),
     _route(LegalPage.path, LegalPage.name, (_, _) => const LegalPage()),
     _route(AboutPage.path, AboutPage.name, (_, _) => const AboutPage(), [
       _route(LicencesPage.path, LicencesPage.name, (_, _) {

@@ -3,12 +3,14 @@ import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/integrations/link_opener.dart';
 import 'package:compound/settings/general/view/about_page.dart';
 import 'package:compound/settings/general/view/customise_analytics_page.dart';
 import 'package:compound/settings/general/view/legal_page.dart';
 import 'package:compound/settings/general/view/licences_page.dart';
 import 'package:compound/settings/general/view/methods_and_sources_page.dart';
 import 'package:compound/settings/general/view/notification_settings_page.dart';
+import 'package:compound/settings/general/view/siri_page.dart';
 import 'package:compound/settings/general/view/units_page.dart';
 import 'package:compound/settings/settings.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -53,6 +55,7 @@ void main() {
     PushPermission permission = PushPermission.authorized,
     FakeNotificationsRepository? notifications,
     AppVersion? version,
+    LinkOpener linkOpener = const LinkOpener(),
   }) async {
     when(() => appBloc.state).thenReturn(
       AppAuthenticated(
@@ -70,6 +73,7 @@ void main() {
       bodyRepository: body,
       analyticsRepository: analytics,
       appVersion: version,
+      linkOpener: linkOpener,
       notificationsRepository:
           notifications ??
           FakeNotificationsRepository(permissionState: permission),
@@ -86,6 +90,18 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  group(SiriPage, () {
+    testWidgets('says what to say, and opens Shortcuts', (tester) async {
+      final links = LinkRecorder();
+      await pump(tester, '/profile/settings/siri', linkOpener: links);
+      expect(find.text('Ask Siri'), findsOneWidget);
+      expect(find.text('“Show my recipes in Compound”'), findsOneWidget);
+      await tester.tap(find.text('Open Shortcuts'));
+      expect(links.opened, [Uri.parse('shortcuts://')]);
+      expect(analytics.screenViews.last, 'SiriView_Appear');
+    });
+  });
 
   group(UnitsPage, () {
     testWidgets('shows the stored units and saves a change', (tester) async {

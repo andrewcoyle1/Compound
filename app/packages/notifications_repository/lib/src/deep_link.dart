@@ -40,7 +40,8 @@ sealed class DeepLink extends Equatable {
   const new();
 
   /// Parses `compound://tab/nutrition`, tolerating `compound://tab?name=…`
-  /// (or `?tab=…`), plus `compound://join/<code>` and `compound://workout`.
+  /// (or `?tab=…`), plus `compound://join/<code>`, `compound://workout` and
+  /// `compound://recipes`.
   /// Anything unrecognised is `null`: an unknown link does nothing visible
   /// rather than landing somewhere arbitrary. Like Swift, the scheme is not
   /// checked; the host decides.
@@ -53,6 +54,7 @@ sealed class DeepLink extends Equatable {
       return code == null ? null : JoinLink(code);
     }
     if (host == 'workout') return const WorkoutLink();
+    if (host == 'recipes') return const RecipesLink();
     if (host != 'tab') return null;
     final queryName = uri.queryParameters.entries
         .where((e) => const {'name', 'tab'}.contains(e.key.toLowerCase()))
@@ -178,6 +180,20 @@ class const WorkoutLink() extends DeepLink {
 
   @override
   String toLocation({String? currentUserId}) => DeepLinkTab.today.path;
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// `compound://recipes`, from the Browse Recipes shortcut (Swift's
+/// `browse_recipes` quick action): the recipe library under Nutrition.
+class const RecipesLink() extends DeepLink {
+  /// A link to the recipes.
+  this;
+
+  @override
+  String toLocation({String? currentUserId}) =>
+      '${DeepLinkTab.nutrition.path}/recipes';
 
   @override
   List<Object?> get props => [];

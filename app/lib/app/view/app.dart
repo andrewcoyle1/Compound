@@ -8,6 +8,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:coach_repository/coach_repository.dart';
+import 'package:compound/app/app_intents_handler.dart';
 import 'package:compound/app/app_version.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/app/widget_snapshot.dart';
@@ -117,6 +118,9 @@ class const App({
 
   /// The home-screen widgets (iOS); in memory when left out.
   final HomeWidgetRepository? homeWidgetRepository,
+
+  /// Siri and Shortcuts (iOS); none when left out.
+  final AppIntentsRepository? appIntentsRepository,
 
   /// Follows, the feed, likes and comments; an empty in-memory world when
   /// left out, for tests that never open Social.
@@ -243,6 +247,9 @@ class const App({
         ),
         RepositoryProvider<HomeWidgetRepository>(
           create: (_) => homeWidgetRepository ?? FakeHomeWidgetRepository(),
+        ),
+        RepositoryProvider<AppIntentsRepository>(
+          create: (_) => appIntentsRepository ?? FakeAppIntentsRepository(),
         ),
         RepositoryProvider<SocialRepository>(
           create: (_) =>
@@ -712,6 +719,19 @@ class _AppViewState extends State<AppView> {
     );
     context.read<LiveActivityRepository>().setActionHandler(
       _onLiveActivityAction,
+    );
+    context.read<AppIntentsRepository>().setHandler(
+      AppIntents(
+        app: context.read(),
+        programs: context.read(),
+        workouts: context.read(),
+        library: context.read(),
+        users: context.read(),
+        saveMeasurement: context.read<HealthRepository>().saveMeasurement,
+        links: context.read<NotificationsRepository>().deepLinks,
+        l10n: () => AppNotificationCopy().l10n,
+        firstWeekday: () => _firstWeekday,
+      ),
     );
     _followUser(context.read<AppBloc>().state);
   }

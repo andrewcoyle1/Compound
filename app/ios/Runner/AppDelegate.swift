@@ -35,5 +35,26 @@ import UserNotifications
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "WorkoutActivity") {
       workoutActivity = WorkoutActivityChannel(messenger: registrar.messenger())
     }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "AppIntents") {
+      AppIntentsChannel.shared = AppIntentsChannel(messenger: registrar.messenger())
+    }
+    // Pushes the system displayed while the app was in the background have no integer id for
+    // flutter_local_notifications, so they are cleared here by identifier, all but `keep` (the
+    // app's own reminders and the ongoing workout), as Swift's `clearAllDeliveredNotifications`.
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "DeliveredPushes") {
+      FlutterMethodChannel(
+        name: "com.andrewcoyle.compound/notifications",
+        binaryMessenger: registrar.messenger()
+      ).setMethodCallHandler { call, result in
+        guard call.method == "clearDelivered" else { return result(FlutterMethodNotImplemented) }
+        let keep = Set((call.arguments as? [String: Any])?["keep"] as? [String] ?? [])
+        let center = UNUserNotificationCenter.current()
+        center.getDeliveredNotifications { delivered in
+          let gone = delivered.map(\.request.identifier).filter { !keep.contains($0) }
+          center.removeDeliveredNotifications(withIdentifiers: gone)
+          DispatchQueue.main.async { result(nil) }
+        }
+      }
+    }
   }
 }

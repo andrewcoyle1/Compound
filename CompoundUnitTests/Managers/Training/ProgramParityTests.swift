@@ -228,41 +228,8 @@ struct ProgramParityTests {
     }
 
     private static func schedule(_ input: [String: Any]) -> [String: Any] {
-        let days = (input["days"] as? [[String: Any]] ?? []).map { day in
-            WorkoutTemplateModel(
-                id: day["id"] as? String ?? "",
-                authorId: "me",
-                name: day["name"] as? String ?? "",
-                exercises: (day["rest"] as? Bool ?? false) ? [] : [WorkoutTemplateExercise(exercise: .mock, setRestTimers: false)]
-            )
-        }
-        let mesocycle = Mesocycle(
-            id: "program-1", authorId: "me", name: "Block", icon: "dumbbell", colour: "#FF0000",
-            numMicrocycles: input["cycles"] as? Int ?? 1,
-            deload: DeloadType(rawValue: input["deload"] as? String ?? "none") ?? .none,
-            periodisation: input["periodisation"] as? Bool ?? false,
-            workoutTemplates: days, dateCreated: Date(timeIntervalSince1970: wednesday / 1000)
-        )
-        let sessions = (input["sessions"] as? [[String: Any]] ?? []).map { session in
-            WorkoutSessionModel(
-                id: session["id"] as? String ?? "",
-                authorId: "me",
-                name: session["name"] as? String ?? "",
-                workoutTemplateId: session["templateId"] as? String,
-                mesocycleId: session["mesocycleId"] as? String,
-                dateCreated: date(session["createdAt"]) ?? Date(),
-                endedAt: date(session["endedAt"]),
-                exercises: [],
-                deletedAt: (session["deleted"] as? Bool ?? false) ? date(session["createdAt"]) : nil,
-                isRestDay: session["rest"] as? Bool ?? false
-            )
-        }
-        let skips = (input["skips"] as? [[String: Any]] ?? []).map { skip in
-            CycleSkip(
-                mesocycleIndex: 0, cycleIndex: skip["cycleIndex"] as? Int ?? 0, position: skip["position"] as? Int ?? 0,
-                templateId: skip["templateId"] as? String ?? "", date: Date(timeIntervalSince1970: wednesday / 1000)
-            )
-        }
+        let mesocycle = scheduleMesocycle(input)
+        let sessions = scheduleSessions(input)
         var expected: [String: Any] = [:]
         var run: MesocycleSchedule.Run
         if let startedAt = date(input["startedAt"]) {
@@ -271,21 +238,12 @@ struct ProgramParityTests {
             run = MesocycleSchedule.legacyRun(mesocycle: mesocycle, sessions: sessions)
             expected["legacyStartedAt"] = millis(run.startedAt)
         }
-        run.skips = skips
+        run.skips = scheduleSkips(input)
         run.firstMicrocycleIndex = input["firstMicrocycleIndex"] as? Int ?? 0
         let now = date(input["now"]) ?? Date()
 
         let progress = MesocycleSchedule.progress(of: run, sessions: sessions, now: now)
-        expected["slots"] = progress.cycles.map { cycle in
-            cycle.map { slot -> String in
-                switch slot.state {
-                case .open: return "open"
-                case .done(let sessionId, let completedAt): return "done:\(sessionId)@\(Int(millis(completedAt)))"
-                case .skipped: return "skipped"
-                case .beforeStart: return "beforeStart"
-                }
-            }
-        }
+        expected["slots"] = progress.cycles.map { cycle in cycle.map { slotState($0.state) } }
         expected["current"] = progress.currentCycleIndex
         expected["next"] = progress.next?.id ?? NSNull()
         expected["complete"] = progress.isMesocycleComplete
@@ -310,6 +268,59 @@ struct ProgramParityTests {
             }
         }
         return expected
+    }
+
+    private static func scheduleMesocycle(_ input: [String: Any]) -> Mesocycle {
+        let days = (input["days"] as? [[String: Any]] ?? []).map { day in
+            WorkoutTemplateModel(
+                id: day["id"] as? String ?? "",
+                authorId: "me",
+                name: day["name"] as? String ?? "",
+                exercises: (day["rest"] as? Bool ?? false) ? [] : [WorkoutTemplateExercise(exercise: .mock, setRestTimers: false)]
+            )
+        }
+        return Mesocycle(
+            id: "program-1", authorId: "me", name: "Block", icon: "dumbbell", colour: "#FF0000",
+            numMicrocycles: input["cycles"] as? Int ?? 1,
+            deload: DeloadType(rawValue: input["deload"] as? String ?? "none") ?? .none,
+            periodisation: input["periodisation"] as? Bool ?? false,
+            workoutTemplates: days, dateCreated: Date(timeIntervalSince1970: wednesday / 1000)
+        )
+    }
+
+    private static func scheduleSessions(_ input: [String: Any]) -> [WorkoutSessionModel] {
+        (input["sessions"] as? [[String: Any]] ?? []).map { session in
+            WorkoutSessionModel(
+                id: session["id"] as? String ?? "",
+                authorId: "me",
+                name: session["name"] as? String ?? "",
+                workoutTemplateId: session["templateId"] as? String,
+                mesocycleId: session["mesocycleId"] as? String,
+                dateCreated: date(session["createdAt"]) ?? Date(),
+                endedAt: date(session["endedAt"]),
+                exercises: [],
+                deletedAt: (session["deleted"] as? Bool ?? false) ? date(session["createdAt"]) : nil,
+                isRestDay: session["rest"] as? Bool ?? false
+            )
+        }
+    }
+
+    private static func scheduleSkips(_ input: [String: Any]) -> [CycleSkip] {
+        (input["skips"] as? [[String: Any]] ?? []).map { skip in
+            CycleSkip(
+                mesocycleIndex: 0, cycleIndex: skip["cycleIndex"] as? Int ?? 0, position: skip["position"] as? Int ?? 0,
+                templateId: skip["templateId"] as? String ?? "", date: Date(timeIntervalSince1970: wednesday / 1000)
+            )
+        }
+    }
+
+    private static func slotState(_ state: MesocycleSchedule.SlotState) -> String {
+        switch state {
+        case .open: return "open"
+        case .done(let sessionId, let completedAt): return "done:\(sessionId)@\(Int(millis(completedAt)))"
+        case .skipped: return "skipped"
+        case .beforeStart: return "beforeStart"
+        }
     }
 
     // MARK: - Macrocycles

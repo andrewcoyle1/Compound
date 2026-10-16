@@ -5,7 +5,6 @@ import 'package:compound/workout_editor/view/set_target_page.dart';
 import 'package:compound/workout_tracker/view/equipment_sheet.dart';
 import 'package:compound/workout_tracker/view/exercise_settings_page.dart';
 import 'package:compound/workout_tracker/view/swap_exercise_picker.dart';
-import 'package:compound_models/compound_models.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';

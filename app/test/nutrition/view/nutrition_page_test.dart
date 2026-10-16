@@ -10,6 +10,7 @@ import 'package:compound/nutrition/search/nutrition_search_cubit.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
+import 'package:compound/settings/nutrition/view/food_log_settings_page.dart';
 import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -442,6 +443,11 @@ void main() {
             },
           ),
           GoRoute(
+            path: '/food-log',
+            name: FoodLogSettingsPage.name,
+            builder: (_, _) => const Text('food log settings'),
+          ),
+          GoRoute(
             path: '/overview',
             name: NutritionOverviewPage.name,
             builder: (_, state) =>
@@ -524,15 +530,22 @@ void main() {
       expect(opened, hasLength(1));
     });
 
-    testWidgets('an unlogged meal is one tap from being reopened', (
+    // Swift `NutritionPresenterTests`' "navigation opens the expected
+    // screens": Customize Food Log.
+    testWidgets('Customize Food Log opens the food log settings', (
       tester,
     ) async {
-      final drafts = MealDraftCubit()..keep(sampleMeals.first);
-      final opened = await pumpRouted(tester, drafts: drafts);
-      expect(find.textContaining('Unlogged meal'), findsOneWidget);
-      await tester.tap(find.textContaining('Unlogged meal'));
+      await pumpRouted(tester);
+      await tester.dragUntilVisible(
+        find.text('Customize Food Log'),
+        find.byType(ListView).last,
+        const Offset(0, -200),
+      );
+      await tester.ensureVisible(find.text('Customize Food Log'));
       await tester.pumpAndSettle();
-      expect(opened.single.mealId, sampleMeals.first.mealId);
+      await tester.tap(find.text('Customize Food Log'));
+      await tester.pumpAndSettle();
+      expect(find.text('food log settings'), findsOneWidget);
     });
 
     testWidgets('a food swipes away, and a failure says so', (tester) async {

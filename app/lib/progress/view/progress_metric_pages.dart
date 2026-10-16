@@ -142,6 +142,7 @@ class WeighInConsistencyPage extends StatelessWidget {
                   firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
                   color: context.appColors.habits,
                   semanticsLabel: l10n.weighInGridLabel(readings.length),
+                  countText: l10n.weighInGridLabel,
                 ),
         );
       },

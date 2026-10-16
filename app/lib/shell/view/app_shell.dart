@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/inbox/inbox_bloc.dart';
+import 'package:compound/nutrition/view/widgets/meal_draft_bar.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/workout_tracker/view/start_workout.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,6 +24,8 @@ class AppShell extends StatelessWidget {
         children: [
           // The workout under way, while its tracker is minimised.
           const ActiveWorkoutBar(),
+          // The unlogged meal, when no workout is under way.
+          const MealDraftBar(),
           NavigationBar(
             selectedIndex: navigationShell.currentIndex,
             // Tapping the current tab again returns it to its root, as on

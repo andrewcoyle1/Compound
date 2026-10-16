@@ -1,6 +1,9 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
+import 'package:flutter/gestures.dart' show kLongPressTimeout;
+import 'package:flutter/semantics.dart'
+    show CustomSemanticsAction, SemanticsAction;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -164,6 +167,183 @@ void main() {
         await pumpDetail(tester, [scale], range: range);
         expect(find.byType(MetricChart), findsOneWidget, reason: range.name);
       }
+    });
+
+    // Swift QuickCharts' scrolling: a week back at a time, as #98's rolling
+    // windows page.
+    testWidgets('swipes back a window and forward again', (tester) async {
+      final weeks = MetricChartSeries(
+        label: 'Scale',
+        points: [at(16, 80), at(9, 79), at(2, 78)],
+        color: const Color(0xFF000000),
+      );
+      await pumpDetail(tester, [weeks]);
+      expect(find.text('Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
+      expect(find.text('78 kg'), findsWidgets);
+
+      await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
+      await tester.pumpAndSettle();
+      expect(find.text('Oct 2, 2026 – Oct 8, 2026'), findsOneWidget);
+      expect(find.text('79 kg'), findsWidgets);
+
+      await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
+      await tester.pumpAndSettle();
+      expect(find.text('Sep 25, 2026 – Oct 1, 2026'), findsOneWidget);
+
+      // Nothing older: it stays.
+      await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
+      await tester.pumpAndSettle();
+      expect(find.text('Sep 25, 2026 – Oct 1, 2026'), findsOneWidget);
+
+      await tester.fling(find.byType(MetricChart), const Offset(-300, 0), 800);
+      await tester.pumpAndSettle();
+      await tester.fling(find.byType(MetricChart), const Offset(-300, 0), 800);
+      await tester.pumpAndSettle();
+      expect(find.text('Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
+
+      // Nothing newer than today.
+      await tester.fling(find.byType(MetricChart), const Offset(-300, 0), 800);
+      await tester.pumpAndSettle();
+      expect(find.text('Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
+
+      // A new range starts again at today.
+      await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
+      await tester.pumpAndSettle();
+      await pumpDetail(tester, [weeks], range: MetricRange.month);
+      expect(find.text('Sep 16, 2026 – Oct 15, 2026'), findsOneWidget);
+    });
+
+    void perform(WidgetTester tester, Finder finder, String label) {
+      final node = tester.getSemantics(finder);
+      tester.binding.renderViews.first.owner!.semanticsOwner!.performAction(
+        node.id,
+        SemanticsAction.customAction,
+        CustomSemanticsAction.getIdentifier(
+          CustomSemanticsAction(label: label),
+        ),
+      );
+    }
+
+    testWidgets('screen readers page with actions', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpDetail(tester, [
+        MetricChartSeries(
+          label: 'Scale',
+          points: [at(9, 79), at(2, 78)],
+          color: const Color(0xFF000000),
+        ),
+      ]);
+      final chart = find.bySemanticsLabel(RegExp('^Weight chart, '));
+      expect(
+        tester.getSemantics(chart).getSemanticsData().customSemanticsActionIds,
+        hasLength(1),
+      );
+      perform(tester, chart, 'Previous period');
+      await tester.pumpAndSettle();
+      expect(find.text('Oct 2, 2026 – Oct 8, 2026'), findsOneWidget);
+      perform(tester, chart, 'Next period');
+      await tester.pumpAndSettle();
+      expect(find.text('Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
+      handle.dispose();
+    });
+
+    // Swift QuickCharts' `chartXSelection`.
+    testWidgets('holding the chart reads out the bucket under it', (
+      tester,
+    ) async {
+      await pumpDetail(tester, [
+        MetricChartSeries(
+          label: 'Scale',
+          points: [at(6, 80), at(0, 78)],
+          color: const Color(0xFF000000),
+        ),
+      ]);
+      final chart = tester.getRect(find.byType(MetricChart));
+      final gesture = await tester.startGesture(
+        chart.centerLeft + const Offset(4, 0),
+      );
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      expect(find.text('Fri, Oct 9'), findsOneWidget);
+      expect(find.text('AVERAGE'), findsNothing);
+      expect(find.text('80 kg'), findsWidgets);
+
+      await gesture.moveTo(chart.centerRight - const Offset(60, 0));
+      await tester.pump();
+      expect(find.text('Thu, Oct 15'), findsOneWidget);
+
+      await gesture.up();
+      await tester.pump();
+      expect(find.text('AVERAGE'), findsOneWidget);
+      expect(find.text('Thu, Oct 15'), findsNothing);
+    });
+
+    testWidgets('bars that are not totals average like readings', (
+      tester,
+    ) async {
+      await pumpDetail(tester, [
+        MetricChartSeries(
+          label: 'Intake',
+          points: [at(1, 2000), at(0, 2500)],
+          color: const Color(0xFF000000),
+          isBar: true,
+          total: false,
+        ),
+        MetricChartSeries(
+          label: 'Expenditure',
+          points: [at(1, 2400), at(0, 2400)],
+          color: const Color(0xFF000000),
+          isLine: true,
+        ),
+      ], unit: 'kcal');
+      expect(find.text('AVERAGE'), findsOneWidget);
+      expect(find.text('DAILY AVERAGE'), findsNothing);
+      expect(find.text('2,250 kcal'), findsWidgets);
+      expect(find.byType(MetricChart), findsOneWidget);
+    });
+  });
+
+  group('bucketText', () {
+    test('a day, a week or a month', () {
+      final bucket = DateTime(2026, 9, 14);
+      expect(bucketText(MetricRange.week, bucket, 'en'), 'Mon, Sep 14');
+      expect(bucketText(MetricRange.month, bucket, 'en'), 'Mon, Sep 14');
+      expect(
+        bucketText(MetricRange.sixMonths, bucket, 'en'),
+        'Sep 14 – Sep 20',
+      );
+      expect(
+        bucketText(MetricRange.year, DateTime(2026, 9), 'en'),
+        'September 2026',
+      );
+    });
+  });
+
+  group(MetricChartSeries, () {
+    test('bars are totals unless told otherwise', () {
+      const black = Color(0xFF000000);
+      expect(
+        const MetricChartSeries(
+          label: 'a',
+          points: [],
+          color: black,
+          isBar: true,
+        ).isTotal,
+        isTrue,
+      );
+      expect(
+        const MetricChartSeries(
+          label: 'a',
+          points: [],
+          color: black,
+          isBar: true,
+          total: false,
+        ).withPoints(const []).isTotal,
+        isFalse,
+      );
+      expect(
+        const MetricChartSeries(label: 'a', points: [], color: black).isTotal,
+        isFalse,
+      );
     });
   });
 }

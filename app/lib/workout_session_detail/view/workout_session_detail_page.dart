@@ -17,8 +17,7 @@ import 'package:compound/workout_session_detail/cubit/session_strava_cubit.dart'
 import 'package:compound/workout_session_detail/view/session_exercise_editor.dart';
 import 'package:compound/workout_session_detail/view/session_timing_sheets.dart';
 import 'package:compound/workout_session_detail/view/set_detail_row.dart';
-import 'package:compound/workout_tracker/logic/set_keypad.dart'
-    show SetKeypad;
+import 'package:compound/workout_tracker/logic/set_keypad.dart' show SetKeypad;
 import 'package:compound/workout_tracker/view/set_keypad_view.dart';
 import 'package:compound/workout_tracker/view/set_row_parts.dart'
     show confirmDestructive;

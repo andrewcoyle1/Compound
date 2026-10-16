@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
 import 'package:compound/metric_detail/view/metric_chart.dart';
+import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:intl/intl.dart' show DateFormat;
 
 /// A metric's screen body (Swift `MetricDetailView`): the range picker, the
@@ -57,14 +58,14 @@ class MetricDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final total = series.first.isBar;
+    final total = series.first.isTotal;
     // Stacked bars (Macros) total every series a day, as Swift's readings
     // do; a single series is just its own.
     final readings = MetricReadings(
       total
           ? [
               for (final s in series)
-                if (s.isBar) ...s.points,
+                if (s.isTotal) ...s.points,
             ]
           : series.first.points,
       total: total,
@@ -86,14 +87,13 @@ class MetricDetailView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
-        _RangePicker(range: range, onSelected: onRangeSelected),
-        const SizedBox(height: AppSpacing.l),
-        _Chart(
+        MetricChartPanel(
           title: title,
           series: series,
           range: range,
           today: today,
           value: value,
+          onRangeSelected: onRangeSelected,
         ),
         const SizedBox(height: AppSpacing.xl),
         AppSection(
@@ -157,10 +157,70 @@ String metricDayText(
       : DateFormat.yMMMd(locale).format(date);
 }
 
+/// The range picker over a metric's chart, with its header: what a
+/// metric screen and an exercise's Charts tab share (Swift `ChartScreen`'s
+/// chart).
+class MetricChartPanel extends StatelessWidget {
+  const new({
+    required this.title,
+    required this.series,
+    required this.range,
+    required this.today,
+    required this.value,
+    required this.onRangeSelected,
+    this.ranges = MetricRange.values,
+    super.key,
+  });
+
+  /// The chart's name, for its accessibility summary.
+  final String title;
+
+  /// Every reading of each series.
+  final List<MetricChartSeries> series;
+
+  /// The range shown, one of [ranges].
+  final MetricRange range;
+
+  /// Today, at midnight: the chart's window ends on it.
+  final DateTime today;
+
+  /// A value as shown, with its unit.
+  final String Function(double) value;
+
+  /// Called with the range the user picks.
+  final ValueChanged<MetricRange> onRangeSelected;
+
+  /// The ranges offered.
+  final List<MetricRange> ranges;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _RangePicker(range: range, ranges: ranges, onSelected: onRangeSelected),
+        const SizedBox(height: AppSpacing.l),
+        _Chart(
+          title: title,
+          series: series,
+          range: range,
+          today: today,
+          value: value,
+        ),
+      ],
+    );
+  }
+}
+
 class _RangePicker extends StatelessWidget {
-  const new({required this.range, required this.onSelected});
+  const new({
+    required this.range,
+    required this.ranges,
+    required this.onSelected,
+  });
 
   final MetricRange range;
+  final List<MetricRange> ranges;
   final ValueChanged<MetricRange> onSelected;
 
   @override
@@ -169,7 +229,7 @@ class _RangePicker extends StatelessWidget {
     return SegmentedButton<MetricRange>(
       showSelectedIcon: false,
       segments: [
-        for (final range in MetricRange.values)
+        for (final range in ranges)
           ButtonSegment(
             value: range,
             label: Text(switch (range) {
@@ -192,9 +252,13 @@ class _RangePicker extends StatelessWidget {
   }
 }
 
-/// The header (each series' average over the range, and the dates) and
-/// the plot, read to a screen reader as one summary.
-class _Chart extends StatelessWidget {
+/// The header (each series' average over the window, and its dates) and
+/// the plot, read to a screen reader as one summary. Swiping pages to the
+/// window before or after, which screen readers get as actions; pressing
+/// and holding swaps the header for the bucket under the finger (Swift
+/// QuickCharts' scrolling and selection). Windows stay rolling, as #98 set
+/// them: a page is the range's length earlier.
+class _Chart extends StatefulWidget {
   const new({
     required this.title,
     required this.series,
@@ -210,26 +274,74 @@ class _Chart extends StatelessWidget {
   final String Function(double) value;
 
   @override
+  State<_Chart> createState() => _ChartState();
+}
+
+class _ChartState extends State<_Chart> {
+  /// How many windows back from today's.
+  int _page = 0;
+
+  /// The bucket under a held finger.
+  DateTime? _selected;
+
+  @override
+  void didUpdateWidget(_Chart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.range != widget.range) {
+      _page = 0;
+      _selected = null;
+    }
+  }
+
+  /// The last day of the window [page] windows back.
+  DateTime _endOf(int page) => DateTime(
+    widget.today.year,
+    widget.today.month,
+    widget.today.day - page * widget.range.days,
+  );
+
+  /// Whether a window further back holds anything.
+  bool get _hasOlder {
+    final start = widget.range.start(_endOf(_page));
+    return widget.series.any(
+      (s) => s.points.any((p) => p.date.isBefore(start)),
+    );
+  }
+
+  void _move(int pages) {
+    final page = _page + pages;
+    if (page < 0 || (pages > 0 && !_hasOlder)) return;
+    setState(() {
+      _page = page;
+      _selected = null;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final start = range.start(today);
-    final end = DateTime(today.year, today.month, today.day + 1);
+    final series = widget.series;
+    final range = widget.range;
+    final value = widget.value;
+    final shownEnd = _endOf(_page);
+    final start = range.start(shownEnd);
+    final end = DateTime(shownEnd.year, shownEnd.month, shownEnd.day + 1);
     final visible = [
       for (final s in series)
         if (s.points.isNotEmpty)
-          s.withPoints(range.visible(s.points, today, total: s.isBar)),
+          s.withPoints(range.visible(s.points, shownEnd, total: s.isTotal)),
     ];
-    // A total's header is its daily average, over the days in the range
+    // A total's header is its daily average, over the days in the window
     // that have one; a reading's, the average of what is plotted.
     final averages = [
       for (final s in series)
-        if (range.visible(s.points, today) case final shown
+        if (range.visible(s.points, shownEnd) case final shown
             when shown.isNotEmpty)
           (
             series: s,
-            average: s.isBar
+            average: s.isTotal
                 ? MetricReadings([
                     for (final p in s.points)
                       if (!p.date.isBefore(start) && p.date.isBefore(end)) p,
@@ -239,9 +351,9 @@ class _Chart extends StatelessWidget {
     ];
     final dates = DateFormat.yMMMd(locale);
     final from = dates.format(start);
-    final to = dates.format(today);
+    final to = dates.format(shownEnd);
     final summary = l10n.chartSemanticSummary(
-      title,
+      widget.title,
       from,
       to,
       averages.isEmpty
@@ -254,16 +366,12 @@ class _Chart extends StatelessWidget {
     final secondary = AppTextStyles.rowDetail.copyWith(
       color: scheme.onSurfaceVariant,
     );
-    return Semantics(
-      container: true,
-      label: summary,
-      child: ExcludeSemantics(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: AppSpacing.xs,
-          children: [
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final selected = _selected;
+    final header = selected == null
+        ? [
             Text(
-              (series.first.isBar
+              (series.first.isTotal
                       ? l10n.metricDailyAverage
                       : l10n.metricAverage)
                   .toUpperCase(),
@@ -272,37 +380,102 @@ class _Chart extends StatelessWidget {
               ),
             ),
             for (final a in averages)
-              Row(
-                spacing: AppSpacing.s,
-                children: [
-                  Text(value(a.average), style: AppTextStyles.metric),
-                  _Swatch(series: a.series),
-                  Flexible(child: Text(a.series.label, style: secondary)),
-                ],
-              ),
+              _SeriesLine(series: a.series, value: value(a.average)),
             Text('$from – $to', style: secondary),
-            const SizedBox(height: AppSpacing.s),
-            if (averages.isEmpty)
-              SizedBox(
-                height: AppChartHeight.regular,
-                child: Center(
-                  child: Text(l10n.chartNoDataInRange, style: secondary),
+          ]
+        : [
+            for (final s in visible)
+              if (s.points.where((p) => p.date == selected).firstOrNull
+                  case final point?)
+                _SeriesLine(series: s, value: value(point.value)),
+            Text(bucketText(range, selected, locale), style: secondary),
+          ];
+    return Semantics(
+      container: true,
+      label: summary,
+      customSemanticsActions: {
+        if (_hasOlder)
+          CustomSemanticsAction(label: l10n.chartPreviousPeriod): () =>
+              _move(1),
+        if (_page > 0)
+          CustomSemanticsAction(label: l10n.chartNextPeriod): () => _move(-1),
+      },
+      child: ExcludeSemantics(
+        child: GestureDetector(
+          onHorizontalDragEnd: (details) {
+            final velocity = details.primaryVelocity ?? 0;
+            if (velocity == 0) return;
+            // A swipe towards the end of the line shows the window before.
+            _move((velocity > 0) != rtl ? 1 : -1);
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.xs,
+            children: [
+              ...header,
+              const SizedBox(height: AppSpacing.s),
+              if (averages.isEmpty)
+                SizedBox(
+                  height: AppChartHeight.regular,
+                  child: Center(
+                    child: Text(l10n.chartNoDataInRange, style: secondary),
+                  ),
+                )
+              else
+                MetricChart(
+                  series: visible,
+                  start: start,
+                  end: end,
+                  bucketDays: switch (range) {
+                    MetricRange.week || MetricRange.month => 1,
+                    MetricRange.sixMonths => 7,
+                    MetricRange.year => 365 / 12,
+                  },
+                  selected: selected,
+                  onSelected: (date) => setState(() => _selected = date),
                 ),
-              )
-            else
-              MetricChart(
-                series: visible,
-                start: start,
-                end: end,
-                bucketDays: switch (range) {
-                  MetricRange.week || MetricRange.month => 1,
-                  MetricRange.sixMonths => 7,
-                  MetricRange.year => 365 / 12,
-                },
-              ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// A bucket's dates under the readout (QuickCharts' `bucketDescription`):
+/// "Sat, Sep 19" for a day, "Sep 14 – 20" for a week, "September 2026" for
+/// a month.
+String bucketText(MetricRange range, DateTime bucket, String locale) {
+  final day = DateFormat.MMMd(locale);
+  return switch (range) {
+    MetricRange.week ||
+    MetricRange.month => DateFormat.MMMEd(locale).format(bucket),
+    MetricRange.sixMonths =>
+      '${day.format(bucket)} – '
+          '${day.format(DateTime(bucket.year, bucket.month, bucket.day + 6))}',
+    MetricRange.year => DateFormat.yMMMM(locale).format(bucket),
+  };
+}
+
+/// One series in the header: its figure, its key and its name.
+class _SeriesLine extends StatelessWidget {
+  const new({required this.series, required this.value});
+
+  final MetricChartSeries series;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = AppTextStyles.rowDetail.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+    return Row(
+      spacing: AppSpacing.s,
+      children: [
+        Text(value, style: AppTextStyles.metric),
+        _Swatch(series: series),
+        Flexible(child: Text(series.label, style: secondary)),
+      ],
     );
   }
 }

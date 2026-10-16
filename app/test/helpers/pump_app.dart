@@ -84,6 +84,7 @@ extension PumpApp on WidgetTester {
     SessionWebLink? sessionWebLink,
     ImageRepository? imageRepository,
     PhotoPicker? photoPicker,
+    LabelTextReader? labelTextReader,
     AiRepository? aiRepository,
     NotificationsRepository? notificationsRepository,
     ProgramsCubit? programsCubit,
@@ -191,6 +192,9 @@ extension PumpApp on WidgetTester {
           ),
           RepositoryProvider<PhotoPicker>.value(
             value: photoPicker ?? SamplePhotoPicker(() async => Uint8List(0)),
+          ),
+          RepositoryProvider<LabelTextReader>.value(
+            value: labelTextReader ?? const SampleLabelTextReader(),
           ),
           RepositoryProvider<AiRepository>.value(
             value: aiRepository ?? AiRepository(callFunction: stagingAiCall),

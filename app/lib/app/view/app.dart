@@ -35,10 +35,12 @@ import 'package:compound/progress/progress.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
 import 'package:compound/review/review_moment.dart';
 import 'package:compound/settings/settings.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/sharing/sharing_routes.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:compound/social/comments/comments_page.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/social/profile/social_profile_page.dart';
 import 'package:compound/social/social.dart';
@@ -143,6 +145,11 @@ class const App({
 
   /// The system share sheet; tests pass one that records what is shared.
   final ShareSheet shareSheet = const ShareSheet(),
+
+  /// Workouts' public web pages on the flavor's Firebase Hosting site, for
+  /// the feed's Share and the detail's Copy Link, and to open such a link;
+  /// none (no links) when left out.
+  final SessionWebLink? sessionWebLink,
   final TrackerClock trackerClock = const TrackerClock(),
 
   /// This install's version, for About and a new profile; unknown in tests
@@ -201,6 +208,7 @@ class const App({
         ),
         RepositoryProvider.value(value: trackerClock),
         RepositoryProvider.value(value: shareSheet),
+        RepositoryProvider<SessionWebLink?>.value(value: sessionWebLink),
         RepositoryProvider.value(value: linkOpener),
         RepositoryProvider<AppVersion?>.value(value: appVersion),
         RepositoryProvider(
@@ -272,6 +280,7 @@ class const App({
             create: (context) => NotificationsCubit(
               notifications: context.read(),
               users: userRepository,
+              webLink: sessionWebLink,
             ),
           ),
           BlocProvider(
@@ -734,6 +743,27 @@ class _AppViewState extends State<AppView> {
         workoutActive: context.read<ActiveWorkoutCubit>().state.isActive,
       ),
     );
+    // Someone else's workout, from a push or its web page, lands on Social,
+    // which opens it, with its comments on top from a comment or mention
+    // (`DeepLink.session`, `SocialPresenter.onOpenWorkoutSessionReceived`).
+    final uid = appState is AppAuthenticated ? appState.user.uid : null;
+    if (link is SessionLink && link.authorId != uid) {
+      final session = {
+        SocialNavigation.authorIdParameter: link.authorId,
+        SocialNavigation.sessionIdParameter: link.id,
+      };
+      unawaited(
+        _router.pushNamed(
+          SocialNavigation.sessionName,
+          pathParameters: session,
+        ),
+      );
+      if (link.openComments) {
+        unawaited(
+          _router.pushNamed(CommentsPage.name, pathParameters: session),
+        );
+      }
+    }
     // An invite link lands on Social, which accepts it
     // (`SocialPresenter.onAcceptInviteNotificationReceived`).
     final viewer = appState is AppAuthenticated ? appState.profile : null;

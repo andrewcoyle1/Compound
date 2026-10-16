@@ -164,7 +164,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Social | WeeklyGoal | `CircleGoals/WeeklyGoal` | M5 | done | #131 |
 | Social | SocialProfile | `SocialProfile` | M5 | done | #131; Share Profile (#146); Strava This Year (#151); Report and the Following line (#159) |
 | Social | FollowersList | `SocialProfile/FollowersList` | M5 | done | #131 |
-| Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | partial | #131; Share Image and Share with Friends (#148); Save as Template and Report (#159); no text Share link (waits for the link host) |
+| Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | done | #131; Share Image and Share with Friends (#148); Save as Template and Report (#159); text Share with the web link (#179) |
 | Social | Comments | `WorkoutSessionRow/Comments` | M5 | done | #131; Report (#159) |
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | #90, five tabs, per-tab stacks, deep-link paths |
 | Today | Today | `Compound/Core/Today` | M2 | done | #101, #133, #134, #147, #151; planned and rest-day checklist states, step goal and social pulse (#164); streak-reminder offer at a two-week streak, step goal saved by field (#176) |
@@ -208,7 +208,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Training | WorkoutExerciseEquipmentSheet | `Session/ExerciseTracker/WorkoutExerciseEquipmentSheet` | M3 | done | #156, with #140's scoped gym editor |
 | Training | WorkoutHistory | `Session/WorkoutHistory` | M3 | done | #93, `/training/history` |
 | Training | WorkoutNotes | `Session/WorkoutNotes` | M3 | done | #125 notes sheet |
-| Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | #93, #125, #147, #148, #151; editing, start time, duration and Delete (#162), Swift's full edit mode (#171); only Copy Link is missing (link host) |
+| Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | #93, #125, #147, #148, #151; editing, start time, duration and Delete (#162), Swift's full edit mode (#171); Copy Link (#179) |
 | Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | partial | #125, #127 (`/workout`, Finish at); Gym Settings (#140); Workout Settings (#165); rest-complete sound (#172); no iPad toolbar (M6) |
 | Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | done | #138; Create Gym Profile (#140) |
 | Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | done | #138 |
@@ -232,7 +232,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Device-local preferences | `UserDefaults` | M5 | done | `device_store` on shared_preferences under Swift's keys (#170); review date and the editor's plates switch (#172) |
 | Per-exercise unit preferences | `ExerciseUnitPreferenceManager` | M3 | done | #163, on the device store (#170) |
 | Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |
-| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed aren't cleared (M6); no https share links (link host) |
+| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed aren't cleared (M6); https workout pages routed in Dart, others' sessions opened over Social (#179; no Associated Domains or App Links, as Swift) |
 | Local reminders | `PushManager` (local) | M4 | done | come-back and meal reminders, rest-over, "Still training?" (#127, last asked on the device #170); permission prompt (#144); in-app reminder offers (`ReminderOfferFlow`, #176) |
 | Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); paywall, gate, RevenueCat logIn/logOut (#155); development runs the fake until the owner's keys; production not wired; logIn sends the email and the Mixpanel and Firebase Analytics ids (#177) |
 | A/B tests (Remote Config) | `ABTestManager` | M5 | todo | Swift runs `notificationsTest` and `paywallTest` |
@@ -290,8 +290,9 @@ Ordered by user value. Each is meant to be one PR into `feature/flutter`.
   `compound-development` Auth (#150).
 - **Firestore rules:** user exercises in `exercise_templates` are readable by every signed-in user
   (`swift-findings.md`).
-- **Share-link host:** a dev-safe host for https links. It blocks the feed card's text Share link
-  (WorkoutSessionRow), Copy Link (WorkoutSessionDetail) and https deep links (#148, #159, #162, #171).
+- **Share links opening the app:** links are built and routed (#179), but neither app claims the
+  host, as Swift doesn't: an App Links intent filter, the Associated Domains capability and
+  entitlement, and for prod the association files on `dialed-c3cb5` Hosting (#179 lists the steps).
 - **Legal URLs and store ids:** publish the Terms of Service and Privacy Policy (the stores need
   working links on the paywall, #155) and the disclaimer's links (#116, #128); store ids for Rate to
   open the listing (#166).

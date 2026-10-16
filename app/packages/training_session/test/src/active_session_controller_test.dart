@@ -1649,4 +1649,59 @@ void main() {
       expect(c.state.acknowledgedNoteTemplateIds, {'t'});
     });
   });
+
+  // SetTrackerPresenterTests' unit cases and the session's Targets.
+  group('units and targets', () {
+    m.WorkoutSessionModel withDistance() => session([
+      exercise(
+        'e1',
+        mode: m.TrackingMode.distanceTime,
+        sets: [
+          set('s1', done: true).copyWith(distanceMeters: 5432),
+          set('s2', index: 2).copyWith(distanceMeters: 5432),
+          set('s3', index: 3, weightKg: null),
+        ],
+      ),
+    ]);
+
+    test('display only changes the unit and leaves the weights', () {
+      final c = controller(withDistance())
+        ..setWeightUnit('e1', m.ExerciseWeightUnit.pounds, convert: false);
+      final e = c.session.exercises.single;
+      expect(e.weightUnit, m.ExerciseWeightUnit.pounds);
+      expect(e.sets.map((s) => s.weightKg), [80, 80, null]);
+    });
+
+    test('converting rounds open weights in the new unit only', () {
+      final c = controller(withDistance())
+        ..setWeightUnit('e1', m.ExerciseWeightUnit.pounds, convert: true);
+      final sets = c.session.exercises.single.sets;
+      expect(sets[0].weightKg, 80);
+      final pounds = sets[1].weightKg! / 0.45359237;
+      expect(sets[1].weightKg, isNot(80));
+      expect(pounds, closeTo(pounds.roundToDouble(), 0.001));
+      expect(sets[2].weightKg, isNull);
+    });
+
+    test('converting distances rounds open ones to the hundredth mile', () {
+      final c = controller(withDistance())
+        ..convertDistances('e1', DistanceUnit.miles);
+      final sets = c.session.exercises.single.sets;
+      expect(sets[0].distanceMeters, 5432);
+      final miles = DistanceUnit.miles.fromMeters(sets[1].distanceMeters!);
+      expect(miles, closeTo(3.38, 1e-9));
+      expect(sets[2].distanceMeters, isNull);
+      c.convertDistances('e1', DistanceUnit.meters);
+      expect(c.session.exercises.single.sets[1].distanceMeters, 5440);
+    });
+
+    test('targets are set for this workout; a missing exercise is no-op', () {
+      final c = controller(withDistance())
+        ..setTargets('e1', [target(1, min: 5, max: 5)])
+        ..setTargets('missing', const [])
+        ..setWeightUnit('missing', m.ExerciseWeightUnit.pounds, convert: true)
+        ..convertDistances('missing', DistanceUnit.miles);
+      expect(c.session.exercises.single.setTargets.single.maxReps, 5);
+    });
+  });
 }

@@ -13,6 +13,13 @@ sealed class SetTargetScope extends Equatable {
   List<Object> get props => [];
 }
 
+/// A session's exercise, from the tracker's Targets: its targets only.
+/// Swift shows the rest-timers switch here too but its binding drops the
+/// change, so it is left out.
+final class SessionScope extends SetTargetScope {
+  const new();
+}
+
 /// A template exercise: its targets and its plan (warm-ups, rest, notes,
 /// link, substitutions, weekly variation).
 final class TemplateScope extends SetTargetScope {
@@ -45,8 +52,8 @@ final class const SetTargetState({
   /// The plan is offered for a template exercise only.
   bool get showsPlan => scope is TemplateScope;
 
-  /// A week's variation carries targets only.
-  bool get showsRestTimers => scope is! WeekScope;
+  /// A week's variation and a session's exercise carry targets only.
+  bool get showsRestTimers => scope is TemplateScope;
 
   /// Off, the editor is as it was before the set plan.
   bool get plansSets => settings.setPlanning ?? false;

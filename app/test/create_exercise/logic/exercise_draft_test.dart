@@ -169,6 +169,18 @@ void main() {
       expect(one.metrics, [TrackableExerciseMetric.duration]);
     });
 
+    test('a duplicate copies the exercise into the flow', () {
+      final stored = draft.toModel(id: 'e1', authorId: 'u', now: now);
+      expect(ExerciseDraft.duplicating(stored), draft);
+      final bare = ExerciseModel.fromFirestore(
+        {...stored.toFirestore(), 'trackable_metrics': <String>[]}
+          ..remove('description'),
+      );
+      final copy = ExerciseDraft.duplicating(bare);
+      expect(copy.metrics, [TrackableExerciseMetric.reps]);
+      expect(copy.description, '');
+    });
+
     test('copyWith keeps what it is not given', () {
       expect(draft.copyWith(), draft);
       expect(draft.copyWith(stability: 5).stability, 5);

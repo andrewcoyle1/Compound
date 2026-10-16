@@ -148,4 +148,17 @@ void main() {
       'FinalExerciseDetailsView_Disappear',
     ]);
   });
+
+  test('a duplicate opens with its other names', () {
+    final cubit = FinalExerciseDetailsCubit(
+      draft: const ExerciseDraft(
+        name: 'Row',
+        metricA: TrackableExerciseMetric.reps,
+        alternateNames: ['One-Arm Row', 'DB Row'],
+      ),
+      analytics: AnalyticsRecorder(),
+    );
+    addTearDown(cubit.close);
+    expect(cubit.state.alternateNames, 'One-Arm Row, DB Row');
+  });
 }

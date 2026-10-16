@@ -129,7 +129,7 @@ class SetTargetView extends StatelessWidget {
           title: EditorTitle(
             title: switch (state.scope) {
               WeekScope(:final week) => l10n.editorFromWeek(week),
-              TemplateScope() => l10n.editorTargets,
+              TemplateScope() || SessionScope() => l10n.editorTargets,
             },
             subtitle: state.exercise.exercise.name,
           ),

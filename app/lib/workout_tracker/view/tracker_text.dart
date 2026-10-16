@@ -31,6 +31,7 @@ abstract final class TrackerText {
     TrackingMode mode,
     ExerciseWeightUnit unit, {
     String? locale,
+    DistanceUnit distanceUnit = DistanceUnit.meters,
   }) {
     final duration = set.durationSec == null
         ? null
@@ -55,13 +56,25 @@ abstract final class TrackerText {
       case TrackingMode.distanceTime:
         final meters = set.distanceMeters;
         if (meters == null || duration == null) return null;
-        return '${metersText(meters, locale)} · $duration';
+        return '${distanceText(meters, distanceUnit, locale)} · $duration';
     }
   }
 
-  /// "400 m".
-  static String metersText(double meters, String? locale) =>
-      '${AppFormat.number(meters, maxFractionDigits: 2, locale: locale)} m';
+  /// "400 m", "3.38 mi": [meters] in [unit].
+  static String distanceText(double meters, DistanceUnit unit, String? locale) {
+    final value = AppFormat.number(
+      unit.fromMeters(meters),
+      maxFractionDigits: 2,
+      locale: locale,
+    );
+    return '$value ${distanceSymbol(unit)}';
+  }
+
+  /// "m", "mi".
+  static String distanceSymbol(DistanceUnit unit) => switch (unit) {
+    DistanceUnit.meters => 'm',
+    DistanceUnit.miles => 'mi',
+  };
 
   /// The log button's words for [set]: "Log set 2 · 100 kg × 8".
   static String logTitle(

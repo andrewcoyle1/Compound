@@ -53,6 +53,10 @@ final class const TrainingAnalyticsState({
 
   /// Whether reading the sessions failed.
   final bool failed = false,
+
+  /// The weight unit chosen for each exercise, by id (Swift's per-exercise
+  /// unit, kept on the device).
+  final Map<String, ExerciseWeightUnit> weightUnits = const {},
 }) extends Equatable {
   /// Where the data has got to.
   TrainingAnalyticsStatus get status => failed
@@ -66,10 +70,17 @@ final class const TrainingAnalyticsState({
 
   String get _todayKey => dayKeyOf(now.toLocal());
 
-  /// Whether weights show in pounds: the profile's unit, which stands in
-  /// for Swift's per-exercise unit (kept on the device, not ported).
+  /// Whether weights show in pounds: the profile's unit, for figures that
+  /// are not one exercise's.
   bool get usesPounds =>
       user?.submittedWeightUnitPreference == WeightUnitPreference.pounds;
+
+  /// Whether exercise [id]'s weights show in pounds: its own unit, else the
+  /// profile's.
+  bool usesPoundsFor(String id) => switch (weightUnits[id]) {
+    final unit? => unit == ExerciseWeightUnit.pounds,
+    null => usesPounds,
+  };
 
   /// [kilograms] in the unit shown.
   double inUnit(double kilograms) =>
@@ -111,7 +122,12 @@ final class const TrainingAnalyticsState({
   /// shown, oldest first.
   List<MetricPoint> oneRepMaxPoints(String id) => [
     for (final point in oneRepMaxByDay(_maths, id))
-      (date: point.date, value: inUnit(point.kg)),
+      (
+        date: point.date,
+        value: usesPoundsFor(id)
+            ? point.kg * AppFormat.poundsPerKilogram
+            : point.kg,
+      ),
   ];
 
   // MARK: Muscles
@@ -180,6 +196,7 @@ final class const TrainingAnalyticsState({
     MetricRange? range,
     Muscles? Function()? selectedMuscle,
     bool? failed,
+    Map<String, ExerciseWeightUnit>? weightUnits,
   }) => TrainingAnalyticsState(
     uid: uid,
     now: now,
@@ -191,6 +208,7 @@ final class const TrainingAnalyticsState({
         ? this.selectedMuscle
         : selectedMuscle(),
     failed: failed ?? this.failed,
+    weightUnits: weightUnits ?? this.weightUnits,
   );
 
   @override
@@ -203,5 +221,6 @@ final class const TrainingAnalyticsState({
     range,
     selectedMuscle,
     failed,
+    weightUnits,
   ];
 }

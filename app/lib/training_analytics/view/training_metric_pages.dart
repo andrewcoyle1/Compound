@@ -44,7 +44,7 @@ class ExerciseOneRepMaxPage extends StatelessWidget {
         final name = state.exerciseName(exerciseId);
         return TrainingMetric(
           title: name,
-          unit: state.usesPounds
+          unit: state.usesPoundsFor(exerciseId)
               ? AppWeightUnit.pounds.symbol
               : AppWeightUnit.kilograms.symbol,
           points: state.oneRepMaxPoints(exerciseId),

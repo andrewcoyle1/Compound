@@ -28,8 +28,104 @@ double convertWeightBetween(double value, WeightUnit from, WeightUnit into) =>
 
 double _thousandths(double value) => (value * 1000).roundToDouble() / 1000;
 
-/// One weight of plate a gym has. [perSleeve] `null` is as many as needed.
-class const Plate(final double weight, {final int? perSleeve});
+/// One weight of plate a gym has. [perSleeve] `null` is as many as needed;
+/// [colour] is the gym's hex for drawing it, `null` drawing it plain.
+class const Plate(
+  final double weight, {
+  final int? perSleeve,
+  final String? colour,
+});
+
+/// How a weight goes on a bar or plate-loaded machine: one sleeve's plates
+/// and the sum they make (`PlateLoading`; its words are the app's).
+final class const PlateLoading({
+  /// One sleeve's plates, heaviest first; empty is the bare bar.
+  required final List<double> perSide,
+  required final double base,
+  final int sleeves = 2,
+}) extends Equatable {
+  /// The loading of [total] on [step]'s bar, the bare bar when no weight is
+  /// entered; `null` when [step] has no bar or the plates cannot make
+  /// [total] (`PlateCalculatorPresenter.loading`).
+  static PlateLoading? of(WeightStep step, double? total) {
+    final base = step.baseWeight;
+    if (base == null) return null;
+    if (total == null) {
+      return PlateLoading(perSide: const [], base: base, sleeves: step.sleeves);
+    }
+    return switch (PlateCalculator.load(
+      total: total,
+      bar: base,
+      plates: step.plates,
+      sleeves: step.sleeves,
+    )) {
+      Loadable(:final perSide) => PlateLoading(
+        perSide: perSide,
+        base: base,
+        sleeves: step.sleeves,
+      ),
+      NotLoadable() => null,
+    };
+  }
+
+  /// The plates on one sleeve together.
+  double get plates => perSide.fold(0, (sum, plate) => sum + plate);
+
+  double get total => base + plates * sleeves;
+
+  /// Each weight with how many of it, heaviest first: 25 ×1, 10 ×2.
+  List<(double weight, int count)> get counts {
+    final groups = <(double, int)>[];
+    for (final plate in perSide) {
+      if (groups.lastOrNull case (final weight, final count)
+          when (weight - plate).abs() < 0.001) {
+        groups.last = (weight, count + 1);
+      } else {
+        groups.add((plate, 1));
+      }
+    }
+    return groups;
+  }
+
+  @override
+  List<Object?> get props => [perSide, base, sleeves];
+}
+
+/// A weight stack with add-ons, in the display unit (`PinStack`): which pin
+/// and which add-ons make a weight.
+final class const PinStack({
+  /// Where the pin can go, ascending.
+  required final List<double> pins,
+
+  /// Each add-on's weight, as the gym lists them.
+  required final List<double> addOns,
+}) {
+  /// The pin and add-ons that make [total], or `null`. As few add-ons as
+  /// possible, and among as few the ones listed first, so the answer never
+  /// changes between two looks: 16 on 7 kg pins with [2, 2] is pin 14 and
+  /// the first 2.
+  ({double pin, List<double> addOns})? breakdown(double total) {
+    int bits(int mask) => mask.toRadixString(2).replaceAll('0', '').length;
+    final masks = [for (var mask = 0; mask < 1 << addOns.length; mask++) mask]
+      ..sort((a, b) {
+        final order = bits(a).compareTo(bits(b));
+        return order != 0 ? order : a.compareTo(b);
+      });
+    for (final mask in masks) {
+      final engaged = [
+        for (var i = 0; i < addOns.length; i++)
+          if (mask & (1 << i) != 0) addOns[i],
+      ];
+      final pin = total - engaged.fold<double>(0, (sum, w) => sum + w);
+      for (final match in pins) {
+        if ((match - pin).abs() < WeightStep.epsilon) {
+          return (pin: match, addOns: engaged);
+        }
+      }
+    }
+    return null;
+  }
+}
 
 /// Which plates go on one sleeve for a total (`PlateCalculator.Result`).
 sealed class PlateLoad extends Equatable {
@@ -231,6 +327,9 @@ class const WeightStep(
   final List<Plate> plates = const [],
   final int sleeves = 2,
   final bool isAssisted = false,
+
+  /// A stack with add-ons, to say how to make a weight; `null` otherwise.
+  final PinStack? stack,
 
   /// Whether the gym's equipment limits what the weight can be.
   final bool constrainsWeight = true,

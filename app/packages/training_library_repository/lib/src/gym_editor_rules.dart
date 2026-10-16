@@ -45,6 +45,21 @@ enum GymEquipmentList {
   /// The gym profile field the list is stored in.
   final String key;
 
+  /// The kind of equipment an exercise names this list's items by.
+  EquipmentKind get kind => switch (this) {
+    freeWeights => EquipmentKind.freeWeight,
+    loadableBars => EquipmentKind.loadableBar,
+    fixedWeightBars => EquipmentKind.fixedWeightBar,
+    bands => EquipmentKind.bands,
+    bodyWeights => EquipmentKind.bodyWeight,
+    supportEquipment => EquipmentKind.supportEquipment,
+    accessoryEquipment => EquipmentKind.accessoryEquipment,
+    loadableAccessoryEquipment => EquipmentKind.loadableAccessoryEquipment,
+    cableMachines => EquipmentKind.cableMachine,
+    plateLoadedMachines => EquipmentKind.plateLoadedMachine,
+    pinLoadedMachines => EquipmentKind.pinLoadedMachine,
+  };
+
   /// The list in [gym].
   List<GymEquipmentItem> of(GymProfileModel gym) => switch (this) {
     freeWeights => gym.freeWeights,
@@ -146,6 +161,13 @@ final class const WeightEntry({
   /// Creates a [WeightEntry].
   this;
 }
+
+/// Equipment as exercises name it: its kind and catalogue type.
+typedef EquipmentScope = Set<(EquipmentKind kind, String typeId)>;
+
+/// One plate weight the plate calculator offers, in the unit it is shown
+/// in, and whether the gym has it switched on (`PlateChoice`).
+typedef PlateChoice = ({double weight, bool isOn});
 
 /// Why a weight cannot be added yet (the Add screens' `validationMessage`).
 enum AddWeightProblem {
@@ -250,17 +272,21 @@ abstract final class GymEditorRules {
 
   /// [list]'s items that match [query] (trimmed, any case) and, with
   /// [selectedOnly], are switched on, by name and then as stored.
+  /// With [scope], only the items it names: one exercise variation's
+  /// equipment, edited from inside a workout.
   static List<GymEquipmentItem> visibleItems(
     GymProfileModel gym,
     GymEquipmentList list, {
     String query = '',
     bool selectedOnly = false,
+    EquipmentScope? scope,
   }) {
     final needle = query.trim().toLowerCase();
     final items = [
       for (final item in list.of(gym))
         if ((needle.isEmpty || _name(item).toLowerCase().contains(needle)) &&
-            (!selectedOnly || item.isActive))
+            (!selectedOnly || item.isActive) &&
+            (scope?.contains((list.kind, item.typeId)) ?? true))
           item,
     ];
     return _stableSorted(
@@ -275,6 +301,7 @@ abstract final class GymEditorRules {
     GymProfileModel gym, {
     required String query,
     required bool selectedOnly,
+    EquipmentScope? scope,
   }) =>
       query.trim().isNotEmpty &&
       GymEquipmentList.values.every(
@@ -283,6 +310,7 @@ abstract final class GymEditorRules {
           list,
           query: query,
           selectedOnly: selectedOnly,
+          scope: scope,
         ).isEmpty,
       );
 
@@ -794,5 +822,150 @@ abstract final class GymEditorRules {
     return updatingItem(gym, list, id, (data) {
       return {...data, GymEquipmentKeys.name: original};
     });
+  }
+
+  // MARK: - Loading (`GymProfileModel+Loading`)
+
+  /// The bar loaded for exercises naming [typeId]: the first switched on.
+  static LoadableBars? loadedBar(GymProfileModel gym, String typeId) => gym
+      .loadableBars
+      .where((bar) => bar.typeId == typeId && bar.isActive)
+      .firstOrNull;
+
+  /// The bars switched on for exercises naming [typeId], lightest first:
+  /// what the plate calculator offers to choose between.
+  static List<BarBaseWeight> barChoices(GymProfileModel gym, String typeId) {
+    final bar = loadedBar(gym, typeId);
+    if (bar == null) return const [];
+    return _stableSorted(
+      [
+        for (final weight in bar.baseWeights)
+          if (weight.isActive) weight,
+      ],
+      (a, b) => _kilograms(
+        a.baseWeight,
+        a.unit,
+      ).compareTo(_kilograms(b.baseWeight, b.unit)),
+    );
+  }
+
+  /// [gym] loading bar [baseWeightId] under exercises naming [typeId].
+  static GymProfileModel choosingBar(
+    GymProfileModel gym,
+    String baseWeightId, {
+    required String typeId,
+  }) {
+    final bar = loadedBar(gym, typeId);
+    if (bar == null) return gym;
+    return updatingItem(gym, GymEquipmentList.loadableBars, bar.id, (data) {
+      return {...data, GymEquipmentKeys.chosenBaseWeightId: baseWeightId};
+    });
+  }
+
+  /// Every plate weight the gym lists, in [unit], heaviest first, with
+  /// whether any plate of it is on. Only plates labelled in [unit] when there
+  /// are any, the rule the weight keyboard loads by.
+  static List<PlateChoice> plateChoices(
+    GymProfileModel gym,
+    ExerciseWeightUnit unit,
+  ) {
+    final labelled = _hasPlatesIn(gym, unit);
+    final byWeight = <double, bool>{};
+    for (final item in gym.freeWeights) {
+      if (!item.isActive || !item.isPlates) continue;
+      for (final plate in item.range) {
+        if (labelled && plate.unit != unit) continue;
+        final weight = _plateWeight(plate, unit);
+        byWeight[weight] = (byWeight[weight] ?? false) || plate.isActive;
+      }
+    }
+    return [
+      for (final MapEntry(key: weight, value: isOn) in byWeight.entries)
+        (weight: weight, isOn: isOn),
+    ]..sort((a, b) => b.weight.compareTo(a.weight));
+  }
+
+  /// [gym] with every plate of [weight] (in [unit]) switched on or off,
+  /// iron and bumper alike.
+  static GymProfileModel settingPlate(
+    GymProfileModel gym,
+    double weight,
+    ExerciseWeightUnit unit, {
+    required bool isOn,
+  }) {
+    final labelled = _hasPlatesIn(gym, unit);
+    return withItems(gym, GymEquipmentList.freeWeights, [
+      for (final item in gym.freeWeights)
+        if (!item.isActive || !item.isPlates)
+          item
+        else
+          FreeWeights.fromFirestore({
+            ...item.toFirestore(),
+            GymEquipmentKeys.range: [
+              for (final plate in item.range)
+                if ((!labelled || plate.unit == unit) &&
+                    (_plateWeight(plate, unit) - weight).abs() < 0.001)
+                  {...plate.toFirestore(), GymEquipmentKeys.isActive: isOn}
+                else
+                  plate.toFirestore(),
+            ],
+          }),
+    ]);
+  }
+
+  /// [current] with [edited]'s bar choices and plates, and nothing else of
+  /// it: what the plate calculator changed, laid onto the gym as it now is.
+  static GymProfileModel takingLoading(
+    GymProfileModel current,
+    GymProfileModel edited,
+  ) {
+    final bars = {for (final bar in edited.loadableBars) bar.id: bar};
+    final plates = {for (final item in edited.freeWeights) item.id: item};
+    return _with(current, {
+      GymProfileModelKeys.loadableBars: [
+        for (final bar in current.loadableBars)
+          if (bars[bar.id] case final chosen?)
+            {
+              ...bar.toFirestore()..remove(GymEquipmentKeys.chosenBaseWeightId),
+              GymEquipmentKeys.chosenBaseWeightId: ?chosen.chosenBaseWeightId,
+            }
+          else
+            bar.toFirestore(),
+      ],
+      GymProfileModelKeys.freeWeights: [
+        for (final item in current.freeWeights)
+          if (item.isPlates && plates[item.id] != null)
+            {
+              ...item.toFirestore(),
+              GymEquipmentKeys.range: plates[item.id]!
+                  .toFirestore()[GymEquipmentKeys.range],
+            }
+          else
+            item.toFirestore(),
+      ],
+    });
+  }
+
+  static bool _hasPlatesIn(GymProfileModel gym, ExerciseWeightUnit unit) =>
+      gym.freeWeights.any(
+        (item) =>
+            item.isActive &&
+            item.isPlates &&
+            item.range.any((plate) => plate.unit == unit),
+      );
+
+  static double _kilograms(double value, ExerciseWeightUnit unit) =>
+      unit == ExerciseWeightUnit.pounds ? value / _poundsPerKilogram : value;
+
+  /// [plate]'s weight in [unit], to the gram.
+  static double _plateWeight(
+    FreeWeightsAvailable plate,
+    ExerciseWeightUnit unit,
+  ) {
+    final kilograms = _kilograms(plate.availableWeights, plate.unit);
+    final value = unit == ExerciseWeightUnit.pounds
+        ? kilograms * _poundsPerKilogram
+        : kilograms;
+    return (value * 1000).roundToDouble() / 1000;
   }
 }

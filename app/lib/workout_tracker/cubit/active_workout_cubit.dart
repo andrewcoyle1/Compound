@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/notifications/notification_copy.dart';
+import 'package:compound/workout_tracker/cubit/equipment_sheet_cubit.dart';
+import 'package:compound/workout_tracker/cubit/plate_calculator_cubit.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
@@ -13,7 +15,7 @@ import 'package:notifications_repository/notifications_repository.dart';
 import 'package:program_repository/program_repository.dart' show ProgramService;
 import 'package:strava_repository/strava_repository.dart' show StravaRepository;
 import 'package:training_library_repository/training_library_repository.dart'
-    show PrebuiltCatalogue, TrainingLibraryRepository;
+    show GymEditorRules, PrebuiltCatalogue, TrainingLibraryRepository;
 import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart' show UserRepository;
@@ -634,6 +636,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         field: field,
         fields: SetField.of(set, exercise.trackingMode),
         unit: _unit(exercise),
+        isAssisted: controller.weightStep(exercise.id).isAssisted,
       ),
     );
   }
@@ -659,10 +662,55 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       final kg? => r.convertWeight(kg, unit),
       null => null,
     };
+    // Bands alone have no weight to step: ± moves through them one at a
+    // time, choosing just that band.
+    if (step.kind is r.StepBands) {
+      final last = set.bands?.lastOrNull;
+      final index = last == null ? -1 : step.bands.indexOf(last);
+      final next = step.band(index < 0 ? null : index, forward: up);
+      return _keypadSet(
+        set.copyWith(
+          bands: next == null ? null : [step.bands[next]],
+          weightKg: null,
+        ),
+      );
+    }
     final value = up ? step.next(current) : step.previous(current);
     if (value == null) return;
     _keypadSet(set.copyWith(weightKg: r.convertWeightToKg(value, unit)));
   }
+
+  /// ± on an assisted weight: load and assistance swap.
+  void keypadSign() =>
+      _keypadEdit((keypad, set, unit) => keypad.toggleSign(set, unit));
+
+  /// A weight from the loading bar ("Use 67.5 kg"), in the display unit.
+  void keypadWeight(double value) {
+    final keypad = state.keypad;
+    final exercise = keypad == null ? null : state.exercise(keypad.exerciseId);
+    final set = keypad == null ? null : state.set(keypad.setId);
+    if (exercise == null || set == null) return;
+    _keypadSet(
+      set.copyWith(weightKg: r.convertWeightToKg(value, _unit(exercise).rules)),
+    );
+  }
+
+  /// A band chip: on the set, or off it; the last one off leaves none.
+  /// Beside any weight, so a bar with bands keeps both.
+  void keypadBand(String name) {
+    final keypad = state.keypad;
+    final controller = _controller;
+    final set = keypad == null ? null : state.set(keypad.setId);
+    if (controller == null || set == null) return;
+    final bands = [...?set.bands];
+    if (!bands.remove(name)) bands.add(name);
+    controller.editSet(set.copyWith(bands: bands.isEmpty ? null : bands));
+    _emitTracker(effect: const SelectionEffect());
+  }
+
+  /// The plates key: the loading bar over the weight keypad shown or put
+  /// away, for the rest of the app's life.
+  void togglePlates() => emit(_copy(showsPlates: !state.showsPlates));
 
   /// A reps chip: last set's, the target's least or most.
   void keypadReps(int reps) {
@@ -754,6 +802,66 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   ExerciseWeightUnit _unit(WorkoutExerciseModel exercise) =>
       exercise.weightUnit ?? ExerciseWeightUnit.kilograms;
+
+  // MARK: - Loading and equipment
+
+  /// The loading bar opened the plate calculator.
+  void plateCalculatorOpened() =>
+      _track('SetTrackerRow_PlateCalculator_Opened');
+
+  /// Done in the plate calculator: only what it changes, the bar chosen
+  /// and the plates on, goes onto the gym as it now is, which the keypad
+  /// steps on at once while the save runs.
+  Future<void> saveGymLoading(GymProfileModel edited) async {
+    final current = state.gym;
+    final gym = current != null && current.id == edited.id
+        ? GymEditorRules.takingLoading(current, edited)
+        : edited;
+    _gymChanged(gym);
+    _emitTracker();
+    try {
+      await _library.saveGymProfile(gym);
+    } on Object {
+      return _emitTracker(effect: const GymSaveFailedEffect());
+    }
+    _emitTracker(effect: const SavedEffect());
+  }
+
+  /// The exercise menu's Equipment opened its sheet.
+  void equipmentOpened() => _track('SetTracker_Equipment_Opened');
+
+  /// Another variation chosen in the equipment sheet: the exercise's unit
+  /// and open sets refitted to it.
+  void chooseVariation(String exerciseId, String variationId) {
+    final controller = _controller;
+    if (controller == null) return;
+    controller.chooseVariation(exerciseId, variationId);
+    _emitTracker(effect: const SelectionEffect());
+  }
+
+  /// A variation's equipment was edited and the gym saved as [gym]: the
+  /// exercise refitted on it straight away.
+  void gymEdited(String exerciseId, GymProfileModel gym) {
+    final controller = _controller;
+    if (controller == null) return;
+    _gymChanged(gym);
+    controller.refit(exerciseId);
+    _emitTracker();
+  }
+
+  /// [gym] in place of the one held, ahead of the stream that will bring
+  /// it, so the tracker reads it now.
+  void _gymChanged(GymProfileModel gym) {
+    _gyms = [
+      for (final held in _gyms)
+        if (held.id == gym.id) gym else held,
+      if (!_gyms.any((held) => held.id == gym.id)) gym,
+    ];
+    final controller = _controller;
+    if (controller != null) {
+      controller.environment = _environment(controller.session);
+    }
+  }
 
   // MARK: - Finishing
 
@@ -949,6 +1057,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     SaveProgress? saveNotice,
     int? saveNoticeId,
     bool clearFinished = false,
+    bool? showsPlates,
   }) => ActiveWorkoutState(
     status: state.status,
     session: state.session,
@@ -973,6 +1082,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     saveNotice: saveNotice ?? state.saveNotice,
     saveNoticeId: saveNoticeId ?? state.saveNoticeId,
     gym: state.gym,
+    showsPlates: showsPlates ?? state.showsPlates,
+    library: state.library,
+    gyms: state.gyms,
   );
 
   /// The tracker as the controller now has it; [keypad] replaces the open
@@ -1050,6 +1162,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       saveNotice: state.saveNotice,
       saveNoticeId: state.saveNoticeId,
       gym: _gym(session.gymProfileId) ?? _favouriteGym,
+      showsPlates: state.showsPlates,
+      library: _allExercises,
+      gyms: _activeGyms,
     );
     final now = _clock();
     final slot = next.slotAt(now);

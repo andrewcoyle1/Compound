@@ -207,6 +207,21 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
         if (state.settings?.restTimerVibrate ?? true) {
           unawaited(HapticFeedback.warningNotification());
         }
+      case GymSaveFailedEffect():
+        unawaited(HapticFeedback.errorNotification());
+        showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.trackerUnableToSaveGym),
+            content: Text(l10n.gymCheckConnection),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.keypadDone),
+              ),
+            ],
+          ),
+        );
       case StillTrainingEffect(:final lastSet):
         unawaited(_askStillTraining(context, lastSet));
       case StartFailedEffect() || null:

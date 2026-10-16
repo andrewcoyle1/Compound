@@ -856,6 +856,22 @@ class ActiveSessionController {
     _loadHistory([refitted]);
   }
 
+  /// [exerciseId] on the workout's gym as it now is, after its equipment
+  /// was edited (`onGymEdited`): its unit again and its open sets on
+  /// weights the edited equipment makes.
+  void refit(String exerciseId) {
+    final exercise = _exercise(exerciseId);
+    if (exercise == null) return;
+    final refitted = refittingLoad(
+      exercise,
+      library: _library(exercise),
+      gym: _environment.gym,
+      preference: _environment.unitPreferences[exercise.templateId],
+    );
+    _replaceExercise(refitted);
+    _loadHistory([refitted]);
+  }
+
   List<m.WorkoutExerciseModel> _movingGroup(String exerciseId) {
     final exercise = _exercise(exerciseId);
     if (exercise == null) return [];

@@ -100,6 +100,12 @@ final class StartFailedEffect extends TrackerEffect {
   const new();
 }
 
+/// The bar or plates chosen in the plate calculator could not be saved to
+/// the gym: the error haptic and an alert.
+final class GymSaveFailedEffect extends TrackerEffect {
+  const new();
+}
+
 /// The workout under way, as the tracker shows it.
 final class const ActiveWorkoutState({
   final ActiveWorkoutStatus status = ActiveWorkoutStatus.none,
@@ -146,7 +152,58 @@ final class const ActiveWorkoutState({
   /// The gym the workout loads from, which Gym Settings opens: the
   /// session's, else the usual one.
   final GymProfileModel? gym,
+
+  /// Whether the weight keypad shows the bar and plates being loaded; its
+  /// plates key switches it (`setKeyboard.showsPlates`).
+  final bool showsPlates = true,
+
+  /// The exercises and gyms the equipment sheet names equipment from.
+  final List<ExerciseModel> library = const [],
+  final List<GymProfileModel> gyms = const [],
 }) extends Equatable {
+  /// The plate calculator for the keypad's set, on its exercise's bar or
+  /// plate-loaded machine in the workout's gym, plates on or not. `null`
+  /// with no gym, no keypad or no such equipment.
+  PlateCalculatorSetup? get plateCalculatorSetup {
+    final keypad = this.keypad;
+    final gym = this.gym;
+    final exercise = keypad == null ? null : this.exercise(keypad.exerciseId);
+    final set = keypad == null ? null : this.set(keypad.setId);
+    if (gym == null || exercise == null || set == null) return null;
+    final unit = exercise.weightUnit ?? ExerciseWeightUnit.kilograms;
+    final equipment = exercise.activeVariation?.resistanceEquipment
+        .where(
+          (ref) =>
+              WeightStepper.steps([ref], gym, unit.rules).baseWeight != null,
+        )
+        .firstOrNull;
+    if (equipment == null) return null;
+    double inUnit(double kg) => r.convertWeight(kg, unit.rules);
+    return PlateCalculatorSetup(
+      gym: gym,
+      equipment: equipment,
+      unit: unit,
+      total: switch (set.weightKg) {
+        final kg? => (inUnit(kg) * 1000).roundToDouble() / 1000,
+        null => null,
+      },
+      machineBase: inUnit(set.machineBaseKg ?? 0),
+    );
+  }
+
+  /// The equipment sheet for [exerciseId]: its variations and the workout's
+  /// gym.
+  EquipmentSheetSetup? equipmentSetup(String exerciseId) =>
+      switch (exercise(exerciseId)) {
+        final exercise? => EquipmentSheetSetup(
+          exercise: exercise,
+          library: library,
+          gyms: gyms,
+          gym: gym,
+        ),
+        null => null,
+      };
+
   bool get isActive => status == ActiveWorkoutStatus.active && session != null;
 
   bool get isPaused => pausedAt != null;
@@ -221,5 +278,8 @@ final class const ActiveWorkoutState({
     saveNotice,
     saveNoticeId,
     gym,
+    showsPlates,
+    library,
+    gyms,
   ];
 }

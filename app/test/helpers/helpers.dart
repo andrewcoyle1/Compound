@@ -1,4 +1,5 @@
 export 'analytics_recorder.dart';
+export 'display_size.dart';
 export 'expenditure_fixtures.dart';
 export 'fake_store_review.dart';
 export 'library_fixtures.dart';

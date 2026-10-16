@@ -383,6 +383,20 @@ class AppView extends StatefulWidget {
 }
 
 class _AppViewState extends State<AppView> {
+  /// Every screen centres on a readable column at tablet widths (Swift's
+  /// `readableContentWidth`, set once at the root). Today's dashboard and
+  /// Progress's grids take a wider one, and the tab bar the whole window.
+  static final _transitions = AppPageTransitionsTheme(
+    maxWidths: {
+      _shell: double.infinity,
+      AppTab.today.name: AppContentWidth.dashboard,
+      AppTab.progress.name: AppContentWidth.dashboard,
+    },
+  );
+
+  /// The tab bar's page, named so it can span the window.
+  static const _shell = 'shell';
+
   late final GoRouter _router = GoRouter(
     // A debug hook for screenshots and manual checks, e.g.
     // `--dart-define=INITIAL_LOCATION=/profile`.
@@ -392,8 +406,11 @@ class _AppViewState extends State<AppView> {
     ),
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (_, _, navigationShell) =>
-            AppShell(navigationShell: navigationShell),
+        pageBuilder: (_, state, navigationShell) => MaterialPage(
+          key: state.pageKey,
+          name: _shell,
+          child: AppShell(navigationShell: navigationShell),
+        ),
         branches: [
           for (final tab in AppTab.values)
             StatefulShellBranch(
@@ -871,8 +888,8 @@ class _AppViewState extends State<AppView> {
         ),
       ],
       child: MaterialApp.router(
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
+        theme: AppTheme.light.copyWith(pageTransitionsTheme: _transitions),
+        darkTheme: AppTheme.dark.copyWith(pageTransitionsTheme: _transitions),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: _router,

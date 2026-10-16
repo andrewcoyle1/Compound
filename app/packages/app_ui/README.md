@@ -25,6 +25,9 @@ MaterialApp(theme: AppTheme.light, darkTheme: AppTheme.dark, …);
 | `.bottomCTA { CallToActionButton … }` | `Scaffold(bottomNavigationBar: AppBottomCta(children: [AppCtaButton(…)]))` |
 | `InlineMessage` | `AppInlineMessage` |
 | `OnboardingStepScaffold` | `AppOnboardingStepScaffold` |
+| `readableContentWidth` (set once at the root) | `AppPageTransitionsTheme` as `ThemeData.pageTransitionsTheme`, which puts each page in an `AppReadableWidth` column |
+| `Dashboard` | `AppDashboard(sections: […])` |
+| `horizontalSizeClass == .regular` | `context.isRegularWidth` |
 
 Every user-facing word is passed in already localized; the package holds no strings.
 

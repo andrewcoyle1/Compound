@@ -5,6 +5,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/expenditure_metric/bloc/expenditure_metric_bloc.dart';
 import 'package:compound/expenditure_metric/models/expenditure_metric.dart';
 import 'package:compound/l10n/l10n.dart';
@@ -86,6 +87,10 @@ class ExpenditureMetricView extends StatelessWidget {
               ),
               ExpenditureMetric.energyBalance => MethodInfo.energyBalance(l10n),
             }),
+          if (!allData)
+            AskCoachButton(
+              CoachContext(kind: CoachContextKind.expenditure, title: title),
+            ),
           if (!allData && metric == ExpenditureMetric.energyBalance)
             IconButton(
               icon: const Icon(AppSymbols.add),

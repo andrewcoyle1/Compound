@@ -21,6 +21,8 @@ dependencies:
     path: packages/checkin_repository
   cloud_firestore: ^6.10.0
   cloud_functions: ^6.5.0
+  coach_repository:
+    path: packages/coach_repository
   compound_maths:
     path: packages/compound_maths
   compound_models:
@@ -59,6 +61,8 @@ dependencies:
   path_provider: ^2.1.5
   program_repository:
     path: packages/program_repository
+  purchases_repository:
+    path: packages/purchases_repository
   share_plus: 13.3.1
   social_repository:
     path: packages/social_repository

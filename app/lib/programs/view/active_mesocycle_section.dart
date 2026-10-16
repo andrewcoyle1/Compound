@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
+import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/logic/microcycle_view.dart';
@@ -20,8 +21,8 @@ import 'package:program_repository/program_repository.dart';
 /// The Training tab's active mesocycle (Swift `ActiveMesocycleView`): its
 /// header, a picker for the microcycle shown, and that microcycle's days.
 /// A day opens its workout, a finished one its session, a rest day ticks;
-/// an open workout can be skipped, and the mesocycle opened (Info) or
-/// deleted.
+/// an open workout can be skipped, and the mesocycle opened (Info), asked
+/// about (Ask Coach) or deleted.
 class const ActiveMesocycleSection({
   required final Mesocycle mesocycle,
   super.key,
@@ -108,6 +109,17 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
                       MesocycleDesignPage.edit(context, mesocycle.id),
                     ),
                     child: Text(l10n.programInfo),
+                  ),
+                  PopupMenuItem(
+                    onTap: () => CoachPage.open(
+                      context,
+                      CoachContext(
+                        kind: CoachContextKind.mesocycle,
+                        id: mesocycle.id,
+                        title: mesocycle.name,
+                      ),
+                    ),
+                    child: Text(l10n.coachAskCoach),
                   ),
                   PopupMenuItem(
                     onTap: () => unawaited(_delete(context)),

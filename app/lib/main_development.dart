@@ -7,6 +7,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/expenditure/expenditure.dart';
@@ -30,6 +31,7 @@ import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:purchases_repository/purchases_repository.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart';
@@ -104,6 +106,20 @@ Future<void> main() async {
     // The workout under way, kept on the device between launches.
     final support = await getApplicationSupportDirectory();
     return App(
+      // Premium for now: RevenueCat's logIn isn't wired yet (the paywall
+      // slice does it), and coachChat on compound-development skips its
+      // premium check as dev builds do. Never copy this to production.
+      purchasesRepository: FakePurchasesRepository(),
+      // coachChat runs in europe-west4, beside the Firestore data it reads,
+      // and enforces App Check.
+      coachRepository: CoachRepository(
+        firestore: FirebaseFirestore.instance,
+        users: userRepository,
+        coachChat: firebaseCoachChat(
+          FirebaseFunctions.instanceFor(region: coachFunctionsRegion),
+        ),
+        onWriteError: onWriteError,
+      ),
       activeSessionStore: FileActiveSessionStore(
         File('${support.path}/active_workout_session.json'),
       ),

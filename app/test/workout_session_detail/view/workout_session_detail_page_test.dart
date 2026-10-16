@@ -131,6 +131,9 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('—'), findsOneWidget);
+      // The author's own finished workout: Ask Coach, above the sets.
+      expect(find.text('Ask Coach About This Workout'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('1:00'), 200);
       expect(find.text('1:00'), findsOneWidget);
     });
 

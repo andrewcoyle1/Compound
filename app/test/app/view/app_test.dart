@@ -21,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:purchases_repository/purchases_repository.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -41,6 +42,7 @@ void main() {
     testWidgets('signs in, then out, through the router', (tester) async {
       await tester.pumpWidget(
         App(
+          purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
           authRepository: InMemoryAuthRepository(),
@@ -88,6 +90,7 @@ void main() {
       final nutrition = InMemoryNutritionRepository();
       await tester.pumpWidget(
         App(
+          purchasesRepository: FakePurchasesRepository(),
           programRepository: programs,
           trainingLibraryRepository: library,
           authRepository: InMemoryAuthRepository(),
@@ -212,6 +215,7 @@ void main() {
         'shows their profile over the tabs', (tester) async {
       await tester.pumpWidget(
         App(
+          purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
           authRepository: InMemoryAuthRepository(
@@ -245,6 +249,7 @@ void main() {
       final notifications = FakeNotificationsRepository();
       await tester.pumpWidget(
         App(
+          purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
           authRepository: InMemoryAuthRepository(
@@ -291,6 +296,7 @@ void main() {
       ))!;
       await tester.pumpWidget(
         App(
+          purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
           authRepository: InMemoryAuthRepository(
@@ -320,6 +326,7 @@ void main() {
     testWidgets('switches between the five tabs', (tester) async {
       await tester.pumpWidget(
         App(
+          purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
           authRepository: InMemoryAuthRepository(
@@ -370,6 +377,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         App(
+          purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
           authRepository: InMemoryAuthRepository(
@@ -412,6 +420,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         App(
+          purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
           authRepository: InMemoryAuthRepository(
@@ -481,6 +490,7 @@ void main() {
       );
       await tester.pumpWidget(
         App(
+          purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
           authRepository: InMemoryAuthRepository(

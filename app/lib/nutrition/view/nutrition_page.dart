@@ -5,6 +5,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/view/check_in_page.dart'
     show showFailureAlert;
+import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/add_meal/view/amount_sheets.dart';
@@ -137,6 +138,15 @@ class NutritionView extends StatelessWidget {
                     state.selectedDay,
                   ),
                 },
+              ),
+            ),
+            AskCoachButton(
+              CoachContext(
+                kind: CoachContextKind.nutritionDay,
+                date: dayKeyOf(state.selectedDay),
+                title: DateFormat.yMMMd(
+                  Localizations.localeOf(context).toLanguageTag(),
+                ).format(state.selectedDay),
               ),
             ),
             const ProfileButton(),

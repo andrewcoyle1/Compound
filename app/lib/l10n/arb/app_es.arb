@@ -974,6 +974,8 @@
     "addMealBarcodeField": "Código de barras",
     "addMealBarcodeLookUp": "Buscar",
     "addMealBarcodeScanAgain": "Escanear de nuevo",
+    "torchTurnOn": "Encender linterna",
+    "torchTurnOff": "Apagar linterna",
     "addMealCameraDenied": "Compound no puede usar la cámara. Permítelo en Ajustes o introduce el código de barras abajo.",
     "addMealCameraUnavailable": "La cámara no está disponible. Introduce el código de barras abajo.",
     "addMealModeAi": "IA",

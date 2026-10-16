@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' show PlatformDispatcher;
 
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
@@ -8,6 +9,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:coach_repository/coach_repository.dart';
+import 'package:compound/app/ab_tests_cubit.dart';
 import 'package:compound/app/app_intents_handler.dart';
 import 'package:compound/app/app_version.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
@@ -39,10 +41,12 @@ import 'package:compound/progress/progress.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
 import 'package:compound/review/review_moment.dart';
 import 'package:compound/settings/settings.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/sharing/sharing_routes.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:compound/social/comments/comments_page.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/social/profile/social_profile_page.dart';
 import 'package:compound/social/social.dart';
@@ -99,6 +103,10 @@ class const App({
   /// cards, today's nudges, the meal draft, units; in memory when left out.
   final DeviceStore? deviceStore,
 
+  /// The A/B tests (Swift `ABTestManager`'s service); Swift's defaults in
+  /// memory when left out.
+  final AbTestRepository? abTestRepository,
+
   /// The target proposals waved away; in [deviceStore] when left out.
   final ProposalDismissals? proposalDismissals,
 
@@ -132,6 +140,10 @@ class const App({
   /// The camera and photo library; the bundled sample photo when left out.
   final PhotoPicker? photoPicker,
 
+  /// Reads a label photo's text on the device; staging's sample label when
+  /// left out.
+  final LabelTextReader? labelTextReader,
+
   /// The AI food scanners' callables; staging's canned answers when left
   /// out.
   final AiRepository? aiRepository,
@@ -156,6 +168,11 @@ class const App({
 
   /// The system share sheet; tests pass one that records what is shared.
   final ShareSheet shareSheet = const ShareSheet(),
+
+  /// Workouts' public web pages on the flavor's Firebase Hosting site, for
+  /// the feed's Share and the detail's Copy Link, and to open such a link;
+  /// none (no links) when left out.
+  final SessionWebLink? sessionWebLink,
   final TrackerClock trackerClock = const TrackerClock(),
 
   /// This install's version, for About and a new profile; unknown in tests
@@ -208,12 +225,16 @@ class const App({
         RepositoryProvider<PhotoPicker>(
           create: (_) => photoPicker ?? samplePhotoPicker(),
         ),
+        RepositoryProvider<LabelTextReader>(
+          create: (_) => labelTextReader ?? const SampleLabelTextReader(),
+        ),
         RepositoryProvider<AiRepository>(
           create: (_) =>
               aiRepository ?? AiRepository(callFunction: stagingAiCall),
         ),
         RepositoryProvider.value(value: trackerClock),
         RepositoryProvider.value(value: shareSheet),
+        RepositoryProvider<SessionWebLink?>.value(value: sessionWebLink),
         RepositoryProvider.value(value: linkOpener),
         RepositoryProvider<AppVersion?>.value(value: appVersion),
         RepositoryProvider(
@@ -278,6 +299,18 @@ class const App({
       ],
       child: MultiBlocProvider(
         providers: [
+          // At launch, as Swift's manager: it sets the user properties.
+          BlocProvider(
+            lazy: false,
+            create: (_) {
+              final cubit = AbTestsCubit(
+                repository: abTestRepository ?? InMemoryAbTestRepository(),
+                analytics: analyticsRepository,
+              );
+              unawaited(cubit.started());
+              return cubit;
+            },
+          ),
           BlocProvider(
             create: (_) => AppBloc(
               authRepository: authRepository,
@@ -294,6 +327,7 @@ class const App({
             create: (context) => NotificationsCubit(
               notifications: context.read(),
               users: userRepository,
+              webLink: sessionWebLink,
             ),
           ),
           BlocProvider(
@@ -379,6 +413,20 @@ class AppView extends StatefulWidget {
 }
 
 class _AppViewState extends State<AppView> {
+  /// Every screen centres on a readable column at tablet widths (Swift's
+  /// `readableContentWidth`, set once at the root). Today's dashboard and
+  /// Progress's grids take a wider one, and the tab bar the whole window.
+  static final _transitions = AppPageTransitionsTheme(
+    maxWidths: {
+      _shell: double.infinity,
+      AppTab.today.name: AppContentWidth.dashboard,
+      AppTab.progress.name: AppContentWidth.dashboard,
+    },
+  );
+
+  /// The tab bar's page, named so it can span the window.
+  static const _shell = 'shell';
+
   late final GoRouter _router = GoRouter(
     // A debug hook for screenshots and manual checks, e.g.
     // `--dart-define=INITIAL_LOCATION=/profile`.
@@ -388,8 +436,11 @@ class _AppViewState extends State<AppView> {
     ),
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (_, _, navigationShell) =>
-            AppShell(navigationShell: navigationShell),
+        pageBuilder: (_, state, navigationShell) => MaterialPage(
+          key: state.pageKey,
+          name: _shell,
+          child: AppShell(navigationShell: navigationShell),
+        ),
         branches: [
           for (final tab in AppTab.values)
             StatefulShellBranch(
@@ -826,6 +877,27 @@ class _AppViewState extends State<AppView> {
         workoutActive: context.read<ActiveWorkoutCubit>().state.isActive,
       ),
     );
+    // Someone else's workout, from a push or its web page, lands on Social,
+    // which opens it, with its comments on top from a comment or mention
+    // (`DeepLink.session`, `SocialPresenter.onOpenWorkoutSessionReceived`).
+    final uid = appState is AppAuthenticated ? appState.user.uid : null;
+    if (link is SessionLink && link.authorId != uid) {
+      final session = {
+        SocialNavigation.authorIdParameter: link.authorId,
+        SocialNavigation.sessionIdParameter: link.id,
+      };
+      unawaited(
+        _router.pushNamed(
+          SocialNavigation.sessionName,
+          pathParameters: session,
+        ),
+      );
+      if (link.openComments) {
+        unawaited(
+          _router.pushNamed(CommentsPage.name, pathParameters: session),
+        );
+      }
+    }
     // An invite link lands on Social, which accepts it
     // (`SocialPresenter.onAcceptInviteNotificationReceived`).
     final viewer = appState is AppAuthenticated ? appState.profile : null;
@@ -915,8 +987,8 @@ class _AppViewState extends State<AppView> {
         ),
       ],
       child: MaterialApp.router(
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
+        theme: AppTheme.light.copyWith(pageTransitionsTheme: _transitions),
+        darkTheme: AppTheme.dark.copyWith(pageTransitionsTheme: _transitions),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: _router,

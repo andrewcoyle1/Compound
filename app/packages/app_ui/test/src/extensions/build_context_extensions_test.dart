@@ -17,4 +17,31 @@ void main() {
     );
     expect(colors, same(AppColors.dark));
   });
+
+  group('isRegularWidth', () {
+    Future<bool> regularAt(WidgetTester tester, Size size) async {
+      tester.view
+        ..physicalSize = size
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      late bool regular;
+      await tester.pumpApp(
+        Builder(
+          builder: (context) {
+            regular = context.isRegularWidth;
+            return const SizedBox();
+          },
+        ),
+      );
+      return regular;
+    }
+
+    testWidgets('is false on a phone', (tester) async {
+      expect(await regularAt(tester, const Size(390, 844)), isFalse);
+    });
+
+    testWidgets('is true on an iPad', (tester) async {
+      expect(await regularAt(tester, const Size(820, 1180)), isTrue);
+    });
+  });
 }

@@ -14,8 +14,8 @@ had listed, Swift's `ReminderOfferFlow`, which reopens Today, Nutrition and Loca
 
 | | done | partial | todo | dropped | total |
 |---|---|---|---|---|---|
-| Screen modules | 183 | 9 | 3 | 3 | 198 |
-| Platform features | 13 | 7 | 5 | 0 | 25 |
+| Screen modules | 190 | 4 | 1 | 3 | 198 |
+| Platform features | 19 | 5 | 0 | 1 | 25 |
 
 The open work is grouped under [Remaining work](#remaining-work) at the end: follow-up slices, what waits on the owner, and M6.
 
@@ -54,7 +54,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Challenges | ChallengeDetail | `ChallengeDetail` | M5 | done | #146, `/challenges/:challengeId` |
 | Challenges | CreateChallenge | `CreateChallenge` | M5 | done | #146, `/challenges/new` |
 | Coach | Coach | `Compound/Core/Coach` | M5 | done | #147, `/coach` and `/coach-chats`; See Plans opens the paywall (#155) |
-| DevSettings | DevSettings | `Compound/Core/DevSettings` | M5 | partial | #166, a Settings row outside production; no A/B overrides (wait for the A/B tests); seeding resets not needed (#166); share-card export through the share sheet (#177) |
+| DevSettings | DevSettings | `Compound/Core/DevSettings` | M5 | done | #166, a Settings row outside production; A/B overrides, kept on the device (#186); seeding resets not needed (#166); share-card export through the share sheet (#177) |
 | Notifications | Notifications | `Compound/Core/Notifications` | M5 | done | #144, `/social/notifications`; share and challenge rows open (#146, #148); delivered pushes cleared on opening (#172) |
 | Notifications | NotificationSettings | `NotificationSettings` | M5 | done | #128; permission prompt (#144); reminders applied by #127 |
 | Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | done | #95, #126, #130, #142, #145, #147, #151; calendar header (#164); Customize Food Log row (#167); meal-reminder offer on the first visit (#176) |
@@ -74,7 +74,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Nutrition | MealDetail | `MealLog/MealDetail` | M3 | done | #142, `/nutrition/meal/:mealId` |
 | Nutrition | MealItemAmountView | `MealLog/MealItemAmountView` | M3 | done | #126 (plate); #142 (timeline) |
 | Nutrition | NutritionLibraryPicker | `MealLog/NutritionLibraryPicker` | M3 | done | #126, #145, #152: Swift's six tabs in order |
-| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | partial | #126 barcode mode; label mode (#152) takes typed or pasted text, no on-device OCR; no torch |
+| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | done | #126 barcode mode; label mode (#152); torch (#180); on-device label OCR from a photo (#185): Vision on iOS, ML Kit on Android, not Swift's live scanner |
 | Nutrition | FoodItemQuickAdd | `MealLog/NutritionLibraryPicker/FoodItemQuickAdd` | M3 | done | #126 |
 | Nutrition | FoodItemSearch | `MealLog/NutritionLibraryPicker/FoodItemSearch` | M3 | done | #126; recipes (#145) |
 | Nutrition | FoodLibrary | `MealLog/NutritionLibraryPicker/FoodLibrary` | M3 | done | #126; Recipes / Foods / Favorites (#145) |
@@ -112,11 +112,11 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Onboarding | ProteinIntake | `8 - OnboardingDiet/5 - ProteinIntake` | M3 | done | #116 |
 | Onboarding | DietPlan | `8 - OnboardingDiet/6 - DietPlan` | M3 | done | #116 |
 | Onboarding | OnboardingCompleted | `9 - OnboardingCompleted` | M3 | dropped | decisions.md (#116): unreachable, because `.complete` only arises once onboarding is done |
-| Paywalls | Paywall | `Paywall` | M4 | partial | #155, `/paywall`: Swift's default `custom` variant; the `storeKit` and `revenueCat` variants wait for the A/B tests; real purchases wait for the owner's RevenueCat setup |
-| Profile | Settings | `Compound/Core/Profile` | M5 | partial | #128, `/profile/settings`; Weight Goal and Nutrition Plan (#154), Subscription (#155), Save Account, Rate and Developer Settings (#166); Siri row, iOS only (#187) |
+| Paywalls | Paywall | `Paywall` | M4 | partial | #155, `/paywall`: the `paywallTest` arm (#186): `custom`; `revenueCat` is RevenueCat's paywall (`purchases_ui_flutter`), `custom` while RevenueCat isn't running; `storeKit` is a Flutter drawing of StoreKit's layout (no free Flutter equivalent, none on Play); real purchases and the RevenueCat paywall wait for the owner's RevenueCat setup |
+| Profile | Settings | `Compound/Core/Profile` | M5 | done | #128, `/profile/settings`; Weight Goal and Nutrition Plan (#154), Subscription (#155), Save Account, Rate and Developer Settings (#166); Siri row, iOS only (#187) |
 | Profile | About | `Subviews/About` | M5 | done | #128; version and build (#166) |
 | Profile | Licences | `Subviews/About/Licences` | M5 | done | #128 (`LicensePage`) |
-| Profile | AppIcon | `Subviews/AppIcon` | M6 | todo | iOS alternate icons, M6; Swift hides the row (one icon) |
+| Profile | AppIcon | `Subviews/AppIcon` | M6 | done | #181: Compound's icon on iOS (light and dark) and Android (adaptive); no alternate-icon row, as Swift hides it (one icon) |
 | Profile | EditProfile | `Subviews/EditProfile` | M5 | done | #128; photo (#150) |
 | Profile | DeleteAccount | `Subviews/EditProfile/DeleteAccount` | M5 | done | #128 ("Account Deleted" is a snack bar) |
 | Profile | EditUsername | `Subviews/EditProfile/EditUsername` | M5 | done | #131, `/username` |
@@ -164,7 +164,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Social | WeeklyGoal | `CircleGoals/WeeklyGoal` | M5 | done | #131 |
 | Social | SocialProfile | `SocialProfile` | M5 | done | #131; Share Profile (#146); Strava This Year (#151); Report and the Following line (#159) |
 | Social | FollowersList | `SocialProfile/FollowersList` | M5 | done | #131 |
-| Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | partial | #131; Share Image and Share with Friends (#148); Save as Template and Report (#159); no text Share link (waits for the link host) |
+| Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | done | #131; Share Image and Share with Friends (#148); Save as Template and Report (#159); text Share with the web link (#179) |
 | Social | Comments | `WorkoutSessionRow/Comments` | M5 | done | #131; Report (#159) |
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | #90, five tabs, per-tab stacks, deep-link paths |
 | Today | Today | `Compound/Core/Today` | M2 | done | #101, #133, #134, #147, #151; planned and rest-day checklist states, step goal and social pulse (#164); streak-reminder offer at a two-week streak, step goal saved by field (#176) |
@@ -208,8 +208,8 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Training | WorkoutExerciseEquipmentSheet | `Session/ExerciseTracker/WorkoutExerciseEquipmentSheet` | M3 | done | #156, with #140's scoped gym editor |
 | Training | WorkoutHistory | `Session/WorkoutHistory` | M3 | done | #93, `/training/history` |
 | Training | WorkoutNotes | `Session/WorkoutNotes` | M3 | done | #125 notes sheet |
-| Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | #93, #125, #147, #148, #151; editing, start time, duration and Delete (#162), Swift's full edit mode (#171); only Copy Link is missing (link host) |
-| Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | partial | #125, #127 (`/workout`, Finish at); Gym Settings (#140); Workout Settings (#165); rest-complete sound (#172); no iPad toolbar (M6) |
+| Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | #93, #125, #147, #148, #151; editing, start time, duration and Delete (#162), Swift's full edit mode (#171); Copy Link (#179) |
+| Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | done | #125, #127 (`/workout`, Finish at); Gym Settings (#140); Workout Settings (#165); rest-complete sound (#172); iPad toolbar: pause, finish and notes on the bar from `AppContentWidth.twoColumns` (#181) |
 | Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | done | #138; Create Gym Profile (#140) |
 | Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | done | #138 |
 | Training | DefineWorkoutWrapper | `Workouts/CreateWorkout/DefineWorkoutWrapper` | M3 | done | #138 |
@@ -232,24 +232,24 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Device-local preferences | `UserDefaults` | M5 | done | `device_store` on shared_preferences under Swift's keys (#170); review date and the editor's plates switch (#172) |
 | Per-exercise unit preferences | `ExerciseUnitPreferenceManager` | M3 | done | #163, on the device store (#170) |
 | Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |
-| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed cleared by identifier (#187); no https share links (link host) |
+| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed cleared by identifier (#187); https workout pages routed in Dart, others' sessions opened over Social (#179; no Associated Domains or App Links, as Swift) |
 | Local reminders | `PushManager` (local) | M4 | done | come-back and meal reminders, rest-over, "Still training?" (#127, last asked on the device #170); permission prompt (#144); in-app reminder offers (`ReminderOfferFlow`, #176) |
 | Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); paywall, gate, RevenueCat logIn/logOut (#155); development runs the fake until the owner's keys; production not wired; logIn sends the email and the Mixpanel and Firebase Analytics ids (#177) |
-| A/B tests (Remote Config) | `ABTestManager` | M5 | todo | Swift runs `notificationsTest` and `paywallTest` |
+| A/B tests (Remote Config) | `ABTestManager` | M5 | done | `ab_test_repository` (#186): `notificationsTest` and `paywallTest` under Swift's keys and defaults, sent as Swift's user properties; development draws locally as Swift's dev, staging in memory, Remote Config for production (the production flavor isn't configured); `notificationsTest` drives nothing, as in Swift |
 | App rating prompt | `ReviewMoment` | M5 | done | `ReviewMoment`, Rate row and food moments (#166); workout-finish moment and stored date (#172) |
 | HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | partial | `health_repository` (#121), UI and native setup (#151); no live workout session (heart rate, active energy; iOS, M6); HealthKit capability is an owner TODO |
 | Live Activity and Dynamic Island (iOS); ongoing notification (Android) | `LiveActivityManager`, `WorkoutSessionActivity/` | M3 (Android), M6 (iOS) | done | Android ongoing notification (#127); no foreground service, by decision (#172); iOS (#184): `WorkoutSessionActivity` copied into `app/ios`, driven over `com.andrewcoyle.compound/live_activity`, buttons answered by `ActiveWorkoutCubit`; a button tapped after iOS has killed the app waits 10 s for Dart, then only clears its loading state |
 | Home screen widgets | `WorkoutSessionActivity/HomeWidgets.swift` | M6 | done | #184: Today's Workout, Streak, Weekly Goal; snapshot in the flavor's App Group, written on backgrounding and after Finish on the Live Activity, cleared on sign-out |
 | Siri and Shortcuts (App Intents) | `Managers/AppIntents` | M6 | done | #187: Start Workout, Log Weight, Workouts This Week, Today's Workout, and Recipes (the `browse_recipes` quick action, #145) via `compound://recipes`; answered in Dart (`AppIntents`) over `com.andrewcoyle.compound/app_intents`. App Shortcuts need a team-signed build to run |
 | Strava upload and import | `StravaManager` | M5 | partial | `strava_repository` (#122), UI (#151), `pushEdit` (#162); needs the owner's `STRAVA_CLIENT_ID`; Keychain-token migration is M6 |
-| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | partial | `ai_repository` (#118), scanners (#152); no on-device label OCR; image generation has no caller in Swift's screens |
+| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | done | `ai_repository` (#118), scanners (#152); on-device label OCR (#185); image generation has no caller in Swift's screens |
 | AI coach (streaming) | `CoachManager` | M5 | done | `coach_repository` (#118), UI (#147) |
 | Image upload and progress photos | `ImageUploadManager` | M5 | done | `image_repository` (#150): progress and profile photos; food, recipe, gym, equipment and NamePhoto (#161) |
 | Reporting and moderation | `ReportManager` | M5 | done | #159: comments, feed cards and profiles |
 | Haptics and sound effects | `HapticManager`, `SoundEffectManager` | M3 | done | haptics across slices; check-in weigh-in (#172); rest-complete sound over a method channel (#172) |
 | Spanish localisation, 100% | `Localizable.xcstrings` | M1 | done | `scripts/arb-spanish.py`, CI check |
-| iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | todo | only Progress's grid widens (2–4 columns, #103); no readable width or `Dashboard` |
-| Mac (Catalyst) | Catalyst | M6 | todo | decided at M6; the macOS folder was removed (#82) |
+| iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | done | #181: every page route in a 700 pt column (`AppPageTransitionsTheme`), Today an `AppDashboard` (two columns from 740 pt), Today and Progress 1,100 pt (#103's grids kept) |
+| Mac (Catalyst) | Catalyst | M6 | dropped | the owner dropped Mac for now (16 Oct 2026); a Flutter macOS build can be revisited later. The macOS folder was removed (#82) |
 | Methods & Sources (citations) | `Components/Science` | M4 | done | `science/method_info.dart`: all 31 (#154, #166) |
 
 ## Remaining work
@@ -260,13 +260,7 @@ groups. The proposed slices from the #151 sweep are finished, apart from what is
 ### (a) Follow-up slices an agent can build without the owner
 Ordered by user value. Each is meant to be one PR into `feature/flutter`.
 
-1. **Label OCR and the torch.** On-device OCR of a nutrition label photo with
-   `google_mlkit_text_recognition` (free; needs Podfile and architecture changes, #152), and the
-   barcode scanner's torch. Closes BarcodeScanner and the AI platform row.
-2. **A/B tests** (Remote Config, Swift `ABTestManager`): `paywallTest` and `notificationsTest`, then
-   the paywall's `storeKit` and `revenueCat` variants (RevenueCatUI, a new free dependency, #155) and
-   Developer Settings' A/B overrides (#166). The in-app defaults can ship first; the parameters in
-   `compound-development` are the owner's (below).
+None left: label OCR (#185) and A/B tests (#186) closed the last two.
 
 ### (b) Waiting on the owner
 - **RevenueCat:** apps for iOS `com.andrewcoyle.compound.flutter.dev` and Play
@@ -283,15 +277,18 @@ Ordered by user value. Each is meant to be one PR into `feature/flutter`.
 - **Strava:** `STRAVA_CLIENT_ID` in `app/dart_defines.json`; confirm the dev Strava app's callback
   domain is `localhost` (#122, #151).
 - **Mixpanel:** `MIXPANEL_TOKEN` in `app/dart_defines.json` (#96).
-- **Remote Config:** the A/B test parameters in `compound-development`, for slice 2.
+- **RevenueCat paywall:** a paywall designed in RevenueCat's dashboard on the current offering, for
+  the `revenueCat` arm of `paywallTest` (#186); without one RevenueCat shows its default template, and
+  while RevenueCat isn't running (no keys) that arm shows the custom paywall.
 - **Storage rules (dev):** any signed-in user can write and delete another user's photos (#150); food
   and recipe photos sit at the Storage root (`ingredient_templates/{id}`, `recipe_templates/{id}`),
   Swift's paths, so per-user rules can't cover them (#161); one leftover anonymous account in
   `compound-development` Auth (#150).
 - **Firestore rules:** user exercises in `exercise_templates` are readable by every signed-in user
   (`swift-findings.md`).
-- **Share-link host:** a dev-safe host for https links. It blocks the feed card's text Share link
-  (WorkoutSessionRow), Copy Link (WorkoutSessionDetail) and https deep links (#148, #159, #162, #171).
+- **Share links opening the app:** links are built and routed (#179), but neither app claims the
+  host, as Swift doesn't: an App Links intent filter, the Associated Domains capability and
+  entitlement, and for prod the association files on `dialed-c3cb5` Hosting (#179 lists the steps).
 - **Legal URLs and store ids:** publish the Terms of Service and Privacy Policy (the stores need
   working links on the paywall, #155) and the disclaimer's links (#116, #128); store ids for Rate to
   open the listing (#166).
@@ -304,7 +301,7 @@ Ordered by user value. Each is meant to be one PR into `feature/flutter`.
   - Spanish written by hand: the label error and hint, "Describe your meal", "per 100ml" (#152);
     "{first} o {second}" (#156); the plural set confirmations (#158); "Siguiendo {name}" and the
     per-kind report wording (#159); "Acciones de la serie", "Hora" (#162); the plan note's lists
-    (#165).
+    (#165); the label scan hint, Scan Label, "Reading label…" and the two camera messages (#185).
   - Native strings: the camera usage text and its Spanish `InfoPlist.strings`, and a try of the
     barcode scanner on a device (#126); `NSPhotoLibraryUsageDescription` is English only (#150).
   - Edit Duplicate keeps the original's name; Swift has no "(Copy)" wording (#163).
@@ -321,15 +318,12 @@ Ordered by user value. Each is meant to be one PR into `feature/flutter`.
   apps. Fix in Swift before Android 1.0 shares accounts. The other findings in `swift-findings.md`
   each need a decision too.
 
-### (c) M6: iOS only, needs the owner's go-ahead
+### (c) M6: iOS only (go-ahead given 16 Oct 2026)
 - Live Activity and Dynamic Island: keep `WorkoutSessionActivity`, driven over a platform channel and
   an App Group; the Lock Screen set receipt in the progression note's slot (#165).
 - Home screen widgets, and the widget snapshot on backgrounding (App).
 - Siri and Shortcuts (App Intents): the Siri settings row and the `browse_recipes` shortcut (#145).
-- AppIcon (alternate icons; Swift hides the row).
 - HealthKit's live workout session (heart rate, active energy).
-- iPad and wide layouts (readable width, `Dashboard`), including the tracker's iPad toolbar (#165);
-  the Mac Catalyst decision.
 - Clearing pushes iOS displayed while the app was in the background, by identifier (#172).
 - iOS flavors under the existing bundle ids; the Strava Keychain-token migration (#122, #151); the
   final Swift release that flushes pending writes. At the switch, Swift's Monday-recap week id and its

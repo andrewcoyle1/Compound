@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:compound/app/ab_tests_cubit.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/paywall/cubit/paywall_cubit.dart';
 import 'package:compound/paywall/view/subscribe_page.dart';
@@ -10,9 +12,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:purchases_repository/purchases_repository.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart' as rc;
 
-/// The paywall (Swift `PaywallView`, its own `custom` variant): the plans,
-/// Subscribe, Restore, the renewal terms and the legal links.
+/// The paywall (Swift `PaywallView`): the plans, Subscribe, Restore, the
+/// renewal terms and the legal links, in the paywall test's variant
+/// ([paywallVariant]).
 ///
 /// Off onboarding ([isOnboarding] false) it is a full-screen dialog with a
 /// close button, and a purchase closes it with `true`. During onboarding
@@ -31,11 +35,32 @@ class PaywallPage extends StatelessWidget {
 
   final bool isOnboarding;
 
+  /// The variant this user sees: the paywall test's arm, except that
+  /// RevenueCat's paywall needs RevenueCat running, so without it (the
+  /// premium fake, or no key) the user sees `custom`.
+  static PaywallTestOption paywallVariant(
+    PaywallTestOption test,
+    PurchasesRepository purchases,
+  ) => switch ((test, purchases)) {
+    (
+      PaywallTestOption.revenueCat,
+      RevenueCatPurchasesRepository(isConfigured: true),
+    ) =>
+      PaywallTestOption.revenueCat,
+    (PaywallTestOption.revenueCat, _) => PaywallTestOption.custom,
+    _ => test,
+  };
+
   @override
   Widget build(BuildContext context) {
+    final purchases = context.read<PurchasesRepository>();
     return BlocProvider(
       create: (context) => PaywallCubit(
-        purchases: context.read<PurchasesRepository>(),
+        purchases: purchases,
+        variant: paywallVariant(
+          context.read<AbTestsCubit>().state.paywallTest,
+          purchases,
+        ),
         auth: context.read<AuthRepository>(),
         analytics: context.read<AnalyticsRepository>(),
         // The `.dev.` products everywhere but production, as Swift's DEBUG.
@@ -64,7 +89,10 @@ class _PaywallViewState extends State<PaywallView> {
   void initState() {
     super.initState();
     _cubit = context.read<PaywallCubit>();
-    unawaited(_cubit.loadProducts());
+    // RevenueCat's paywall loads its own products.
+    if (_cubit.state.variant != PaywallTestOption.revenueCat) {
+      unawaited(_cubit.loadProducts());
+    }
   }
 
   @override
@@ -178,10 +206,14 @@ class _PaywallViewState extends State<PaywallView> {
               ),
           ],
         ),
-        bottomNavigationBar: state.load == PaywallLoad.loaded
+        bottomNavigationBar:
+            state.load == PaywallLoad.loaded &&
+                _cubit.state.variant != PaywallTestOption.revenueCat
             ? _PurchaseBar(state: state, onLegalPressed: _openLegal)
             : null,
         body: switch (state.load) {
+          _ when _cubit.state.variant == PaywallTestOption.revenueCat =>
+            const _RevenueCatPaywall(),
           PaywallLoad.loading => const Center(
             child: CircularProgressIndicator.adaptive(),
           ),
@@ -190,6 +222,9 @@ class _PaywallViewState extends State<PaywallView> {
                 ? l10n.paywallNoProducts
                 : l10n.paywallLoadFailedMessage,
           ),
+          PaywallLoad.loaded
+              when _cubit.state.variant == PaywallTestOption.storeKit =>
+            _StorePlans(state: state),
           PaywallLoad.loaded => _Plans(state: state),
         },
       ),
@@ -303,6 +338,98 @@ class _Plans extends StatelessWidget {
           children: subscriptionFeatureRows(context),
         ),
       ],
+    );
+  }
+}
+
+/// The `storeKit` variant. Swift shows StoreKit's own subscription screen,
+/// which Flutter has no free equivalent for (and Google Play none at all),
+/// so this draws its layout: the name and a line on the accent, then the
+/// plans to pick from, with Subscribe, Restore and the policies below.
+class _StorePlans extends StatelessWidget {
+  const new({required this.state});
+
+  final PaywallState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cubit = context.read<PaywallCubit>();
+    final colors = Theme.of(context).colorScheme;
+    return ListView(
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [colors.primary, colors.primary.withValues(alpha: 0.7)],
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              spacing: AppSpacing.s,
+              children: [
+                Text(
+                  l10n.paywallTitle,
+                  style: AppTextStyles.display.copyWith(
+                    color: colors.onPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  l10n.paywallSubtitle,
+                  style: AppTextStyles.rowDetail.copyWith(
+                    color: colors.onPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.l),
+          child: AppSection(
+            children: [
+              for (final product in state.products)
+                AppSelectableRow(
+                  title: product.title,
+                  subtitle: priceWithPeriod(l10n, product),
+                  selected: product == state.selected,
+                  onPressed: () {
+                    unawaited(HapticFeedback.selectionClick());
+                    cubit.productSelected(product);
+                  },
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The `revenueCat` variant: RevenueCat's paywall, designed in its
+/// dashboard, which buys and restores by itself. It never closes itself;
+/// the page's own close button and the cubit decide where a purchase lands,
+/// as Swift's `onRequestedDismissal` does.
+class _RevenueCatPaywall extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<PaywallCubit>();
+    return rc.PaywallView(
+      displayCloseButton: false,
+      onPurchaseCompleted: (info, _) => cubit.revenueCatPurchaseCompleted(
+        hasActiveEntitlement: info.entitlements.active.isNotEmpty,
+      ),
+      onRestoreCompleted: (info) => cubit.revenueCatRestoreCompleted(
+        hasActiveEntitlement: info.entitlements.active.isNotEmpty,
+      ),
+      onDismiss: () {},
     );
   }
 }

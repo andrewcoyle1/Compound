@@ -122,6 +122,7 @@ void main() {
 
       test('configures nothing and is not premium', () async {
         expect(calls, isEmpty);
+        expect(repository.isConfigured, isFalse);
         expect(repository.state.isResolved, isTrue);
         expect(repository.state.isPremiumWith(), isFalse);
         expect(await repository.logIn('uid'), isEmpty);
@@ -166,6 +167,7 @@ void main() {
         final arguments = setup.arguments as Map<Object?, Object?>;
         expect(arguments['apiKey'], 'goog_test');
         expect(arguments['appUserId'], isNull);
+        expect(repository.isConfigured, isTrue);
         expect(repository.state.isResolved, isFalse);
       });
 

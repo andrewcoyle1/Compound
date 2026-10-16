@@ -32,6 +32,9 @@ enum PaywallNotice {
 
 /// The paywall (Swift `PaywallPresenter`'s state).
 final class const PaywallState({
+  /// The paywall test's arm shown (Swift `paywallTest`), logged as
+  /// `paywallVariant`.
+  final PaywallTestOption variant = PaywallTestOption.custom,
   final PaywallLoad load = PaywallLoad.loading,
   final List<SubscriptionProduct> products = const [],
 
@@ -57,6 +60,7 @@ final class const PaywallState({
     PaywallNotice? notice,
     bool? isComplete,
   }) => PaywallState(
+    variant: variant,
     load: load ?? this.load,
     products: products ?? this.products,
     selected: selected == null ? this.selected : selected(),
@@ -68,6 +72,7 @@ final class const PaywallState({
 
   @override
   List<Object?> get props => [
+    variant,
     load,
     products,
     selected,

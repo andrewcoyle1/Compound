@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -90,6 +91,8 @@ class DevSettingsView extends StatelessWidget {
                 ),
                 gap,
               ],
+              const _AbTests(),
+              gap,
               AppSection(
                 header: l10n.devSettingsDebugActions,
                 footer: l10n.devSettingsSignOutFooter,
@@ -234,6 +237,45 @@ List<Widget> _sessionRows(WorkoutSessionModel session) {
     ])
       AppListRow(title: key, subtitle: value),
   ];
+}
+
+/// Overrides this device's A/B tests (Swift's AB Tests section). The
+/// variant names are Swift's raw values, untranslated as in Swift.
+class _AbTests extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cubit = context.read<AbTestsCubit>();
+    final tests = context.watch<AbTestsCubit>().state;
+    return AppSection(
+      header: l10n.devSettingsAbTests,
+      children: [
+        AppListRowToggle(
+          title: l10n.devSettingsNotificationsTest,
+          value: tests.notificationsTest,
+          onChanged: (value) =>
+              cubit.override(tests.copyWith(notificationsTest: value)),
+        ),
+        AppListRow(
+          title: l10n.devSettingsPaywallTest,
+          accessory: AppListRowCustom(
+            DropdownButton<PaywallTestOption>(
+              value: tests.paywallTest,
+              underline: const SizedBox.shrink(),
+              items: [
+                for (final option in PaywallTestOption.values)
+                  DropdownMenuItem(value: option, child: Text(option.name)),
+              ],
+              onChanged: (option) =>
+                  cubit.override(tests.copyWith(paywallTest: option)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _Values extends StatelessWidget {

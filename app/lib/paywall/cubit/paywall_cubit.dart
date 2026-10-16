@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:bloc/bloc.dart';
@@ -14,8 +15,10 @@ part 'paywall_state.dart';
 /// restoring, and, during onboarding, the way out for someone who will not
 /// subscribe. Swift's event names throughout.
 ///
-/// Only Swift's default A/B variant, its own (`custom`) paywall, is built;
-/// `paywallVariant` is always `custom`.
+/// [PaywallState.variant] is the paywall test's arm the page shows: the
+/// plans load for `custom` and `storeKit`, while `revenueCat` is
+/// RevenueCat's own paywall, which loads and buys by itself and reports
+/// back here.
 ///
 /// It never navigates. A purchase or restore that grants an entitlement sets
 /// [PaywallState.isComplete]: outside onboarding the page then closes, and
@@ -27,7 +30,8 @@ class PaywallCubit extends Cubit<PaywallState> {
     required this._auth,
     required this._analytics,
     required this._productIds,
-  }) : super(const PaywallState());
+    PaywallTestOption variant = PaywallTestOption.custom,
+  }) : super(PaywallState(variant: variant));
 
   final PurchasesRepository _purchases;
   final AuthRepository _auth;
@@ -37,7 +41,7 @@ class PaywallCubit extends Cubit<PaywallState> {
   final List<String> _productIds;
 
   static const _screen = 'PaywallView';
-  static const _variant = {'paywallVariant': 'custom'};
+  Map<String, Object?> get _variant => {'paywallVariant': state.variant.name};
 
   /// `PaywallView_Appear`.
   void appeared() => _analytics.appear(_screen);
@@ -119,6 +123,28 @@ class PaywallCubit extends Cubit<PaywallState> {
     } on Object catch (error) {
       _analytics.severe('${_screen}_Purchase_Fail', error);
       _notify(PaywallNotice.purchaseFailed);
+    }
+  }
+
+  /// RevenueCat's paywall bought something; [hasActiveEntitlement] is
+  /// whether the user now has an active entitlement.
+  void revenueCatPurchaseCompleted({required bool hasActiveEntitlement}) {
+    _analytics.analytic('${_screen}_RevenueCat_Purchase_Complete', {
+      'hasActiveEntitlement': hasActiveEntitlement,
+    });
+    if (hasActiveEntitlement && !isClosed) {
+      emit(state.copyWith(isComplete: true));
+    }
+  }
+
+  /// RevenueCat's paywall restored; it says itself when nothing was found,
+  /// so only a restore that grants something moves on.
+  void revenueCatRestoreCompleted({required bool hasActiveEntitlement}) {
+    _analytics.analytic('${_screen}_RevenueCat_Restore_Complete', {
+      'hasActiveEntitlement': hasActiveEntitlement,
+    });
+    if (hasActiveEntitlement && !isClosed) {
+      emit(state.copyWith(isComplete: true));
     }
   }
 

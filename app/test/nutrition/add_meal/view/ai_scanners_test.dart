@@ -50,6 +50,7 @@ void main() {
   Future<void> pumpLogger(
     WidgetTester tester, {
     AiRepository? aiRepository,
+    LabelTextReader? labelTextReader,
   }) async {
     final router = GoRouter(
       initialLocation: '/log',
@@ -78,6 +79,7 @@ void main() {
       mealDraftCubit: drafts,
       photoPicker: picker,
       aiRepository: aiRepository,
+      labelTextReader: labelTextReader,
       analyticsRepository: analytics,
     );
     await tester.pumpAndSettle();
@@ -341,6 +343,73 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Oat Milk'), findsNothing);
       expect(find.widgetWithText(AppCtaButton, 'Parse Label'), findsOneWidget);
+    });
+
+    testWidgets("a scanned label's text fills the field, ready to "
+        'parse', (tester) async {
+      await pumpLogger(tester);
+      await openLabel(tester);
+      expect(
+        find.text('Scan a nutrition label, or type or paste its text.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const Key('FoodPicker.scanLabel')));
+      await tester.pumpAndSettle();
+      expect(picker.picks.single.$1, PhotoSource.camera);
+      expect(find.text(SampleLabelTextReader.sampleLabel), findsOneWidget);
+      expect(find.text('Label text captured'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(AppCtaButton, 'Parse Label'));
+      await tester.pumpAndSettle();
+      expect(find.text('Protein Shake Mix'), findsOneWidget);
+    });
+
+    testWidgets('a photo with no text says so; the library is offered '
+        'too', (tester) async {
+      await pumpLogger(
+        tester,
+        labelTextReader: const SampleLabelTextReader(text: ''),
+      );
+      await openLabel(tester);
+
+      await tester.tap(find.text('Choose from Library'));
+      await tester.pumpAndSettle();
+      expect(picker.picks.single.$1, PhotoSource.library);
+      expect(find.textContaining('Hold the camera steady'), findsOneWidget);
+      expect(
+        tester
+            .widget<AppCtaButton>(
+              find.widgetWithText(AppCtaButton, 'Parse Label'),
+            )
+            .onPressed,
+        isNull,
+      );
+    });
+
+    testWidgets('a refused camera offers Settings; a missing one says '
+        'so', (tester) async {
+      picker.error = const PhotoAccessDeniedException();
+      await pumpLogger(tester);
+      await openLabel(tester);
+
+      await tester.tap(find.byKey(const Key('FoodPicker.scanLabel')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'Allow camera access in Settings to scan a label, or type its '
+          'text.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Open Settings'));
+      expect(picker.settingsOpened, 1);
+
+      picker.error = Exception('no camera');
+      await tester.tap(find.byKey(const Key('FoodPicker.scanLabel')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining("The camera isn't available"), findsOneWidget);
+      expect(find.text('Open Settings'), findsNothing);
     });
 
     testWidgets('changing mode starts over', (tester) async {

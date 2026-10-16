@@ -1030,6 +1030,8 @@ class _BarcodeTabState extends State<_BarcodeTab> {
                     ai: context.read<AiRepository>(),
                     foodRepository: context.read<FoodRepository>(),
                     analytics: context.read<AnalyticsRepository>(),
+                    picker: context.read<PhotoPicker>(),
+                    reader: context.read<LabelTextReader>(),
                   ),
                   child: const _LabelView(),
                 )

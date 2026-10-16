@@ -4839,6 +4839,14 @@
     "@addMealBarcodeScanAgain": {
         "description": "Starts a new scan"
     },
+    "torchTurnOn": "Turn on flashlight",
+    "@torchTurnOn": {
+        "description": "The barcode camera's torch button, while the torch is off (Swift BarcodeScannerView)."
+    },
+    "torchTurnOff": "Turn off flashlight",
+    "@torchTurnOff": {
+        "description": "The barcode camera's torch button, while the torch is on (Swift BarcodeScannerView)."
+    },
     "addMealCameraDenied": "Compound can't use the camera. Allow it in Settings, or enter the barcode below.",
     "@addMealCameraDenied": {
         "description": "Camera permission denied"
@@ -4951,9 +4959,41 @@
     "@labelField": {
         "description": "The label text field's placeholder"
     },
-    "labelHint": "Type or paste the text from a nutrition label.",
-    "@labelHint": {
-        "description": "Under the label text field"
+    "labelScanHint": "Scan a nutrition label, or type or paste its text.",
+    "@labelScanHint": {
+        "description": "Under the label field, before a scan"
+    },
+    "labelCaptured": "Label text captured",
+    "@labelCaptured": {
+        "description": "Under the label field once a photo's text has been read into it (Swift BarcodeScannerView)"
+    },
+    "labelScan": "Scan Label",
+    "@labelScan": {
+        "description": "Opens the camera to photograph a nutrition label"
+    },
+    "labelChooseFromLibrary": "Choose from Library",
+    "@labelChooseFromLibrary": {
+        "description": "Picks a photo of a nutrition label from the library"
+    },
+    "labelReading": "Reading label…",
+    "@labelReading": {
+        "description": "While a label photo's text is read on the device"
+    },
+    "labelUnreadable": "Couldn't read this label. Hold the camera steady and try again, or enter it manually.",
+    "@labelUnreadable": {
+        "description": "No text was read from a label photo (Swift BarcodeScannerPresenter)"
+    },
+    "labelCameraOff": "Allow camera access in Settings to scan a label, or type its text.",
+    "@labelCameraOff": {
+        "description": "The camera was refused, in Label mode"
+    },
+    "labelCameraUnavailable": "The camera isn't available. Choose a photo of the label, or type its text.",
+    "@labelCameraUnavailable": {
+        "description": "The camera could not open, in Label mode"
+    },
+    "labelOpenSettings": "Open Settings",
+    "@labelOpenSettings": {
+        "description": "Opens Settings, where a refused camera can be allowed"
     },
     "labelParse": "Parse Label",
     "@labelParse": {
@@ -10086,6 +10126,23 @@
     "@shareImageSquare": {
         "description": "Share image format: 1:1"
     },
+    "copyLink": "Copy Link",
+    "@copyLink": {
+        "description": "Workout detail share menu: copy the workout's web page link"
+    },
+    "shareWorkout": "Share workout",
+    "@shareWorkout": {
+        "description": "Feed card: accessibility label of the button sharing the workout's summary and link"
+    },
+    "shareWorkoutLifted": "{weight} lifted",
+    "@shareWorkoutLifted": {
+        "description": "Shared workout summary: the total weight lifted, e.g. 5,040 kg lifted",
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            }
+        }
+    },
     "shareImageFailed": "Unable to Create Image",
     "@shareImageFailed": {
         "description": "Rendering a share image failed"
@@ -12168,6 +12225,18 @@
     "devSettingsExportShareCardsFooter": "Renders the Story and Square cards for a sample session and opens the share sheet with both, to save to Photos or send.",
     "@devSettingsExportShareCardsFooter": {
         "description": "Developer tools: footer under Export Share Cards"
+    },
+    "devSettingsAbTests": "AB Tests",
+    "@devSettingsAbTests": {
+        "description": "Developer tools: header of the A/B test overrides"
+    },
+    "devSettingsNotificationsTest": "Notifications Test",
+    "@devSettingsNotificationsTest": {
+        "description": "Developer tools: switch that puts this device in the notifications A/B test"
+    },
+    "devSettingsPaywallTest": "Paywall Test",
+    "@devSettingsPaywallTest": {
+        "description": "Developer tools: the paywall A/B test's variant for this device"
     },
     "accessoryResumeLabel": "{minutes, plural, =1{Resume workout, {name}, 1 minute} other{Resume workout, {name}, {minutes} minutes}}",
     "@accessoryResumeLabel": {

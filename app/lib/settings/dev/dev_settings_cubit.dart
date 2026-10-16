@@ -48,9 +48,9 @@ final class const DevSettingsState({
 /// staging builds only: Simulate Premium, signing out, the signed-in
 /// user's details, the library's size and a session lookup.
 ///
-/// Swift's A/B test overrides wait for Flutter's A/B tests, and its seeding
-/// resets have nothing to reset: Flutter reads the prebuilt catalogue from
-/// the app, never from the device.
+/// The A/B test overrides go through the app's `AbTestsCubit`. Swift's
+/// seeding resets have nothing to reset: Flutter reads the prebuilt
+/// catalogue from the app, never from the device.
 class DevSettingsCubit extends Cubit<DevSettingsState> {
   new({
     required this._auth,

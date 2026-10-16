@@ -182,5 +182,28 @@ void main() {
         isNull,
       );
     });
+
+    test("lists each equipment type once, the catalogue's then a gym's", () {
+      final custom = gym([
+        latPulldown,
+        {
+          ...latPulldown,
+          GymEquipmentKeys.id: 'mine',
+          GymEquipmentKeys.typeId: 'my-machine',
+          GymEquipmentKeys.name: 'My Machine',
+        },
+      ]);
+      final types = TrainingLibrary(gymProfiles: [custom]).equipmentTypes;
+      final keys = [for (final (key, _) in types) key];
+      expect(keys.toSet(), hasLength(keys.length));
+      expect(types.last, (
+        (EquipmentKind.cableMachine, 'my-machine'),
+        'My Machine',
+      ));
+      expect(
+        types,
+        contains(((EquipmentKind.loadableBar, 'barbell'), 'Barbell')),
+      );
+    });
   });
 }

@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/programs/view/program_widgets.dart'
+    show confirmDestructive;
 import 'package:compound/training_library/bloc/exercise_history_bloc.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
+import 'package:compound/training_library/cubit/delete_exercise_cubit.dart';
 import 'package:compound/training_library/logic/exercise_detail_stats.dart';
 import 'package:compound/training_library/logic/template_summary.dart';
 import 'package:compound/training_library/models/training_library.dart';
@@ -12,14 +18,17 @@ import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:training_library_repository/training_library_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// One exercise from the library (Swift `ExerciseModelDetailView`): what
-/// it is and how it is done, and the sessions it was logged in. Read-only.
-/// The Charts and Records tabs wait for the estimated one-rep max's method
-/// info; deleting an exercise waits for M5.
+/// it is and how it is done, and the sessions it was logged in. The user's
+/// own exercise can be deleted. The Charts and Records tabs wait for the
+/// estimated one-rep max's method info.
 class ExerciseDetailPage extends StatelessWidget {
   const new({required this.exerciseId, super.key});
 
@@ -40,13 +49,23 @@ class ExerciseDetailPage extends StatelessWidget {
     if (state is! AppAuthenticated) return const SizedBox.shrink();
     return TrainingLibraryProvider(
       uid: state.user.uid,
-      child: BlocProvider(
-        create: (context) => ExerciseHistoryBloc(
-          repository: context.read<WorkoutSessionRepository>(),
-          uid: state.user.uid,
-          exerciseId: exerciseId,
-          analytics: context.read<AnalyticsRepository>(),
-        )..add(const ExerciseHistorySubscriptionRequested()),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => ExerciseHistoryBloc(
+              repository: context.read<WorkoutSessionRepository>(),
+              uid: state.user.uid,
+              exerciseId: exerciseId,
+              analytics: context.read<AnalyticsRepository>(),
+            )..add(const ExerciseHistorySubscriptionRequested()),
+          ),
+          BlocProvider(
+            create: (context) => DeleteExerciseCubit(
+              library: context.read<TrainingLibraryRepository>(),
+              analytics: context.read<AnalyticsRepository>(),
+            ),
+          ),
+        ],
         child: ExerciseDetailView(
           exerciseId: exerciseId,
           weightUnit: WorkoutText.preferredWeightUnit(
@@ -86,7 +105,7 @@ class ExerciseDetailView extends StatelessWidget {
       ),
       TrainingLibraryLoaded(:final library) when exercise != null => TabBarView(
         children: [
-          _About(exercise: exercise, library: library),
+          ExerciseAbout(exercise: exercise, library: library),
           _History(weightUnit: weightUnit),
         ],
       ),
@@ -97,10 +116,40 @@ class ExerciseDetailView extends StatelessWidget {
         ),
       ),
     };
-    return DefaultTabController(
+    final app = context.read<AppBloc>().state;
+    // Only the author's own exercises can go; the bundled library is
+    // everyone's.
+    final canDelete =
+        exercise != null &&
+        !exercise.isSystemExercise &&
+        app is AppAuthenticated &&
+        exercise.authorId == app.user.uid;
+    final deleting =
+        context.watch<DeleteExerciseCubit>().state ==
+        DeleteExerciseStatus.deleting;
+    final scaffold = DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          actions: [
+            if (canDelete)
+              PopupMenuButton<VoidCallback>(
+                key: const Key('ExerciseDetail.options'),
+                icon: Icon(AppSymbols.more),
+                tooltip: l10n.exerciseOptions,
+                enabled: !deleting,
+                onSelected: (action) => action(),
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: () => unawaited(_delete(context, exercise)),
+                    child: Text(
+                      l10n.exerciseDeleteTitle,
+                      style: TextStyle(color: context.appColors.danger),
+                    ),
+                  ),
+                ],
+              ),
+          ],
           title: exercise == null
               ? null
               : Column(
@@ -119,6 +168,42 @@ class ExerciseDetailView extends StatelessWidget {
         body: SafeArea(bottom: false, child: body),
       ),
     );
+    return BlocListener<DeleteExerciseCubit, DeleteExerciseStatus>(
+      listener: (context, status) => unawaited(_deleted(context, status)),
+      child: scaffold,
+    );
+  }
+}
+
+/// Asks, then deletes the user's [exercise] (Swift
+/// `showDeleteConfirmation`).
+Future<void> _delete(BuildContext context, ExerciseModel exercise) async {
+  final l10n = context.l10n;
+  final cubit = context.read<DeleteExerciseCubit>();
+  final confirmed = await confirmDestructive(
+    context,
+    title: l10n.exerciseDeleteTitle,
+    message: l10n.exerciseDeleteMessage(exercise.name),
+    confirmLabel: l10n.editorDelete,
+  );
+  if (confirmed) await cubit.delete(exercise.id);
+}
+
+/// Leaves once the exercise is deleted, or says it could not be.
+Future<void> _deleted(BuildContext context, DeleteExerciseStatus status) async {
+  final l10n = context.l10n;
+  switch (status) {
+    case DeleteExerciseStatus.deleted:
+      if (context.canPop()) context.pop();
+    case DeleteExerciseStatus.failed:
+      unawaited(HapticFeedback.errorNotification());
+      await showFailureAlert(
+        context,
+        l10n.exerciseDeleteFailed,
+        l10n.exerciseDeleteTryLater,
+      );
+    case DeleteExerciseStatus.idle || DeleteExerciseStatus.deleting:
+      break;
   }
 }
 
@@ -147,8 +232,10 @@ class _PerformedSubtitle extends StatelessWidget {
   }
 }
 
-class _About extends StatelessWidget {
-  const new({required this.exercise, required this.library});
+/// What [exercise] is and how it is done: the detail's About tab, and the
+/// create flow's review.
+class ExerciseAbout extends StatelessWidget {
+  const new({required this.exercise, required this.library, super.key});
 
   final ExerciseModel exercise;
   final TrainingLibrary library;
@@ -221,11 +308,14 @@ class _About extends StatelessWidget {
       AppSection(
         header: l10n.exerciseMovementQualityHeader,
         children: [
-          _RatingRow(
+          ExerciseRatingRow(
             title: l10n.filterRangeOfMotion,
             rating: exercise.rangeOfMotion,
           ),
-          _RatingRow(title: l10n.filterStability, rating: exercise.stability),
+          ExerciseRatingRow(
+            title: l10n.filterStability,
+            rating: exercise.stability,
+          ),
         ],
       ),
       if (variations.isEmpty)
@@ -274,7 +364,10 @@ class _About extends StatelessWidget {
           ),
           _TextRow(
             title: l10n.exerciseDescriptionRow,
-            text: exercise.description ?? none,
+            text: switch (exercise.description) {
+              final String text when text.isNotEmpty => text,
+              _ => none,
+            },
           ),
         ],
       ),
@@ -283,44 +376,55 @@ class _About extends StatelessWidget {
   }
 }
 
-/// A rating out of five as five bars, read out as "3 of 5".
-class _RatingRow extends StatelessWidget {
-  const new({required this.title, required this.rating});
+/// A rating out of five as five bars, read out as "3 of 5", with
+/// [trailing] controls after the bars.
+class ExerciseRatingRow extends StatelessWidget {
+  const new({
+    required this.title,
+    required this.rating,
+    this.trailing = const [],
+    super.key,
+  });
 
   final String title;
   final int rating;
 
+  /// Such as buttons that change the rating; shown outside the merged
+  /// label so each stays reachable.
+  final List<Widget> trailing;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Semantics(
+    final bars = Semantics(
       label: title,
       value: context.l10n.ratingOutOfFive(rating),
       excludeSemantics: true,
-      child: AppListRow(
-        title: title,
-        accessory: AppListRowCustom(
-          SizedBox(
-            width: 120,
-            child: Row(
-              spacing: AppSpacing.xs,
-              children: [
-                for (var value = 1; value <= 5; value++)
-                  Expanded(
-                    child: Container(
-                      height: AppSpacing.s,
-                      decoration: ShapeDecoration(
-                        shape: const StadiumBorder(),
-                        color: value <= rating
-                            ? scheme.primary
-                            : scheme.surfaceContainerHighest,
-                      ),
-                    ),
+      child: SizedBox(
+        width: 120,
+        child: Row(
+          spacing: AppSpacing.xs,
+          children: [
+            for (var value = 1; value <= 5; value++)
+              Expanded(
+                child: Container(
+                  height: AppSpacing.s,
+                  decoration: ShapeDecoration(
+                    shape: const StadiumBorder(),
+                    color: value <= rating
+                        ? scheme.primary
+                        : scheme.surfaceContainerHighest,
                   ),
-              ],
-            ),
-          ),
+                ),
+              ),
+          ],
         ),
+      ),
+    );
+    return AppListRow(
+      title: title,
+      accessory: AppListRowCustom(
+        Row(mainAxisSize: MainAxisSize.min, children: [bars, ...trailing]),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:compound/create_exercise/create_exercise.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound_models/compound_models.dart';
@@ -62,6 +63,14 @@ GoRouter libraryRouter(
           final ExercisePickerRequest request => request,
           _ => const ExercisePickerRequest(),
         },
+      ),
+    ),
+    GoRoute(
+      path: CreateExercisePage.path,
+      name: CreateExercisePage.name,
+      pageBuilder: (_, state) => MaterialPage(
+        key: state.pageKey,
+        child: const CreateExercisePage(),
       ),
     ),
     GoRoute(

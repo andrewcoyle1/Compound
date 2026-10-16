@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/create_exercise/view/create_exercise_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/cubit/exercise_list_cubit.dart';
 import 'package:compound/training_library/view/exercise_detail_page.dart';
@@ -12,7 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 /// The exercise library, pushed from the Training tab's Library (Swift
-/// `ExercisesView`). Read-only: creating an exercise waits for M5.
+/// `ExercisesView`), with Create Exercise atop the user's own.
 class ExercisesPage extends StatelessWidget {
   const new({super.key});
 
@@ -55,6 +56,7 @@ class ExercisesView extends StatelessWidget {
               pathParameters: {ExerciseDetailPage.idParameter: exercise.id},
             ),
           ),
+          onCreateExercise: () => unawaited(CreateExercisePage.open(context)),
         ),
       ),
     );

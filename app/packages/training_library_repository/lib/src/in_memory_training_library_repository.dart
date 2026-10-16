@@ -72,6 +72,12 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
     _libraryChanges.add(null);
   }
 
+  @override
+  Future<void> deleteUserExercise(String exerciseId) async {
+    _exercises.removeWhere((stored) => stored.id == exerciseId);
+    _libraryChanges.add(null);
+  }
+
   /// Replaces the author's stored workout with the same id, else adds it.
   @override
   Future<void> saveWorkoutTemplate(WorkoutTemplateModel template) async {

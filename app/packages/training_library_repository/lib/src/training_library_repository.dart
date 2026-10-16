@@ -18,6 +18,11 @@ abstract interface class TrainingLibraryRepository {
   /// `ExerciseModelManager.saveExerciseModel` does without a picture.
   Future<void> saveUserExercise(ExerciseModel exercise);
 
+  /// Deletes `exercise_templates/{exerciseId}`
+  /// (`ExerciseModelManager.deleteExerciseModel`). The rules allow only its
+  /// author.
+  Future<void> deleteUserExercise(String exerciseId);
+
   /// Saves [template] to `users/{template.authorId}/workout_templates/
   /// {template.workoutId}`, merged, as `WorkoutTemplateManager
   /// .saveWorkoutTemplate` does without a picture. Every field the model

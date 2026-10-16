@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
 import 'package:checkin_repository/checkin_repository.dart' show localMidnight;
+import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/progress/bloc/progress_bloc.dart';
 import 'package:compound/progress/bloc/progress_figures.dart';
@@ -294,6 +295,15 @@ class NutritionTargetChart extends StatelessWidget {
                       l10n.targetChartNoPlanMessage,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.rowDetail,
+                    ),
+                    FilledButton(
+                      onPressed: () {
+                        context.read<ProgressBloc>().add(
+                          const ProgressCreatePlanPressed(),
+                        );
+                        openDietPlan(context);
+                      },
+                      child: Text(l10n.targetChartCreatePlan),
                     ),
                   ],
                 ),

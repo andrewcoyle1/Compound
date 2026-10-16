@@ -109,6 +109,21 @@ void main() {
 
       expect(refused, [('users/u/goals/g', 'not-found')]);
     });
+    test('editGoal completes offline; not-found is reported', () async {
+      await subject.editGoal(
+        'u',
+        'g',
+        objective: OverarchingObjective.loseWeight,
+        targetWeightKg: 70,
+        weeklyChangeKg: 0.5,
+      );
+      expect(refused, isEmpty);
+
+      firestore.refuse('not-found');
+      await pumpEventQueue();
+
+      expect(refused, [('users/u/goals/g', 'not-found')]);
+    });
     test('saveProgressPhoto and deleteProgressPhoto complete offline; a '
         'refusal is reported', () async {
       final photo = ProgressPhotoModel.fromFirestore(

@@ -131,12 +131,41 @@ class FirestoreBodyRepository implements BodyRepository {
   /// An `update`: the server refuses a missing goal with `not-found`, which
   /// reaches `onWriteError`.
   @override
-  Future<void> abandonGoal(String uid, String goalId) {
+  Future<void> abandonGoal(String uid, String goalId) => _updateGoal(
+    uid,
+    goalId,
+    {WeightGoalKeys.status: GoalStatus.abandoned.value},
+  );
+
+  /// An `update`; a missing goal is refused with `not-found`. The objective
+  /// is written key by key, the chosen case set and the others deleted, so
+  /// the map is left with one case whatever the store does with a nested
+  /// map (fake_cloud_firestore merges one given whole).
+  @override
+  Future<void> editGoal(
+    String uid,
+    String goalId, {
+    required OverarchingObjective objective,
+    required double targetWeightKg,
+    required double weeklyChangeKg,
+  }) => _updateGoal(uid, goalId, {
+    for (final option in OverarchingObjective.values)
+      '${WeightGoalKeys.objective}.${option.value}': option == objective
+          ? <String, Object?>{}
+          : FieldValue.delete(),
+    WeightGoalKeys.targetWeightKg: targetWeightKg,
+    WeightGoalKeys.weeklyChangeKg: weeklyChangeKg,
+  });
+
+  Future<void> _updateGoal(
+    String uid,
+    String goalId,
+    Map<String, Object?> fields,
+  ) {
     final document = _goal(uid, goalId);
     return writeLocally(
       document.path,
-      () =>
-          document.update({WeightGoalKeys.status: GoalStatus.abandoned.value}),
+      () => document.update(fields),
       _onWriteError,
     );
   }

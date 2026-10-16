@@ -11,10 +11,12 @@ import 'package:user_repository/user_repository.dart';
 
 /// The diet questions (Swift folder `8 - OnboardingDiet`). The calorie
 /// floor isn't asked in onboarding (Swift decision 3b): there is only the
-/// standard one.
+/// standard one. From Settings it is shown, to explain the floor, and the
+/// intro is not.
 enum DietQuestion {
   intro('CustomisingDietProgramView'),
   preferredDiet('PreferredDietView'),
+  calorieFloor('CalorieFloorView'),
   distribution('CalorieDistributionView'),
   protein('ProteinIntakeView'),
   plan('DietPlanView');
@@ -22,10 +24,6 @@ enum DietQuestion {
   new(this.screen);
 
   final String screen;
-
-  /// The intro logs no parameters; the rest say they are onboarding.
-  Map<String, Object?>? get parameters =>
-      this == intro ? null : onboardingParameters;
 }
 
 enum DietSetupStatus { loading, ready, saving, saved, failure }
@@ -47,6 +45,13 @@ final class const DietSetupState({
   /// The formula's resting calories, when a day's target is below them.
   final double? restingKcalAboveTarget,
   final Gender? gender,
+
+  /// The calorie floor picked on its screen; there is only the standard one.
+  final String? calorieFloor,
+
+  /// Opened from Settings or the target chart (Swift `isFromSettings`): the
+  /// plan is rebuilt and the flow closes, with onboarding left alone.
+  final bool isFromSettings = false,
 }) extends Equatable {
   DietSetupState copyWith({
     DietQuestion? question,
@@ -59,6 +64,7 @@ final class const DietSetupState({
     DietPlan? plan,
     double? Function()? restingKcalAboveTarget,
     Gender? gender,
+    String? calorieFloor,
   }) => DietSetupState(
     question: question ?? this.question,
     status: status ?? this.status,
@@ -72,6 +78,8 @@ final class const DietSetupState({
         ? this.restingKcalAboveTarget
         : restingKcalAboveTarget(),
     gender: gender ?? this.gender,
+    calorieFloor: calorieFloor ?? this.calorieFloor,
+    isFromSettings: isFromSettings,
   );
 
   @override
@@ -86,6 +94,8 @@ final class const DietSetupState({
     plan,
     restingKcalAboveTarget,
     gender,
+    calorieFloor,
+    isFromSettings,
   ];
 }
 
@@ -93,6 +103,9 @@ final class const DietSetupState({
 /// `DietPlanPresenter`): use the recommended answers, or answer the diet,
 /// distribution and protein questions; then the plan is saved and
 /// onboarding marked complete, which the AppBloc follows to the tabs.
+///
+/// From Settings it starts at the diet, asks the floor too, and only saves
+/// the plan.
 class DietSetupCubit extends Cubit<DietSetupState> {
   new({
     required this._nutritionRepository,
@@ -101,11 +114,20 @@ class DietSetupCubit extends Cubit<DietSetupState> {
     required this._userRepository,
     required this._analyticsRepository,
     required this._profile,
+    bool isFromSettings = false,
     this._now = DateTime.now,
-  }) : super(DietSetupState(gender: _profile.submittedGender)) {
+  }) : super(
+         DietSetupState(
+           gender: _profile.submittedGender,
+           isFromSettings: isFromSettings,
+           question: isFromSettings
+               ? DietQuestion.preferredDiet
+               : DietQuestion.intro,
+         ),
+       ) {
     _analyticsRepository.appear(
       state.question.screen,
-      state.question.parameters,
+      _parameters(state.question),
     );
   }
 
@@ -122,6 +144,13 @@ class DietSetupCubit extends Cubit<DietSetupState> {
   DietPlan? _currentPlan;
 
   String get _uid => _profile.userId;
+
+  /// The intro logs no parameters; the rest say whether they are part of
+  /// onboarding.
+  Map<String, Object?>? _parameters(DietQuestion question) =>
+      question == DietQuestion.intro
+      ? null
+      : {'is_onboarding': !state.isFromSettings};
 
   /// Reads the active mesocycle, the goal and any plan already saved, whose
   /// answers the questions open on, as when Swift rebuilds a plan.
@@ -158,20 +187,28 @@ class DietSetupCubit extends Cubit<DietSetupState> {
 
   void _go(DietQuestion question) {
     _analyticsRepository
-      ..disappear(state.question.screen, state.question.parameters)
-      ..appear(question.screen, question.parameters);
+      ..disappear(state.question.screen, _parameters(state.question))
+      ..appear(question.screen, _parameters(question));
     emit(state.copyWith(question: question, status: DietSetupStatus.ready));
   }
 
   /// Back one question; the plan reached by "Use Recommended Plan" goes back
-  /// to the intro. False on the intro.
+  /// to the intro, and onboarding's distribution to the diet. False on the
+  /// first question.
   bool back() {
-    if (state.question == DietQuestion.intro) return false;
-    _go(
-      state.question == DietQuestion.plan && _usedRecommended
-          ? DietQuestion.intro
-          : DietQuestion.values[state.question.index - 1],
-    );
+    final previous = switch (state.question) {
+      DietQuestion.intro => null,
+      DietQuestion.preferredDiet =>
+        state.isFromSettings ? null : DietQuestion.intro,
+      DietQuestion.distribution =>
+        state.isFromSettings
+            ? DietQuestion.calorieFloor
+            : DietQuestion.preferredDiet,
+      DietQuestion.plan when _usedRecommended => DietQuestion.intro,
+      final question => DietQuestion.values[question.index - 1],
+    };
+    if (previous == null) return false;
+    _go(previous);
     return true;
   }
 
@@ -194,10 +231,36 @@ class DietSetupCubit extends Cubit<DietSetupState> {
   void dietSelected(maths.PreferredDiet diet) =>
       emit(state.copyWith(diet: diet));
 
-  /// On to the distribution, opening on the plan's own answer, else the
-  /// one the mesocycle suggests (`CalorieDistributionPresenter.init`).
+  /// On to the floor from Settings, which opens on the plan's floor, else
+  /// the standard one (`CalorieFloorPresenter.prefillCalorieFloor`); in
+  /// onboarding straight to the distribution, at the standard floor.
   void dietContinued() {
     _analyticsRepository.info('Onboarding_PrefDiet_Navigate');
+    if (!state.isFromSettings) {
+      _toDistribution();
+      return;
+    }
+    final fromPlan = _currentPlan?.calorieFloor == standardCalorieFloor;
+    _analyticsRepository.info('Onboarding_CalFloor_Prefilled', {
+      'floor': standardCalorieFloor,
+      'reason': fromPlan ? 'current_plan' : 'default',
+    });
+    emit(state.copyWith(calorieFloor: standardCalorieFloor));
+    _go(DietQuestion.calorieFloor);
+  }
+
+  void calorieFloorSelected(String floor) =>
+      emit(state.copyWith(calorieFloor: floor));
+
+  void calorieFloorContinued() {
+    if (state.calorieFloor == null) return;
+    _analyticsRepository.info('Onboarding_CalFloor_Navigate', const {});
+    _toDistribution();
+  }
+
+  /// On to the distribution, opening on the plan's own answer, else the
+  /// one the mesocycle suggests (`CalorieDistributionPresenter.init`).
+  void _toDistribution() {
     _go(DietQuestion.distribution);
     final mesocycle = _mesocycle;
     if (mesocycle == null) return;
@@ -267,7 +330,8 @@ class DietSetupCubit extends Cubit<DietSetupState> {
   }
 
   /// Saves the plan, then marks onboarding complete, as
-  /// `DietPlanPresenter.navigate` does for onboarding.
+  /// `DietPlanPresenter.navigate` does for onboarding; from Settings, only
+  /// the plan.
   Future<void> save() async {
     final plan = state.plan;
     if (plan == null ||
@@ -280,9 +344,11 @@ class DietSetupCubit extends Cubit<DietSetupState> {
     try {
       await _nutritionRepository.saveDietPlan(plan);
       _analyticsRepository.analytic('DietView_SaveDietPlan_Success');
-      await _userRepository.updateUserFields(_uid, [
-        UserField.didCompleteOnboarding(true),
-      ]);
+      if (!state.isFromSettings) {
+        await _userRepository.updateUserFields(_uid, [
+          UserField.didCompleteOnboarding(true),
+        ]);
+      }
       _analyticsRepository.info('DietView_Navigate');
       emit(state.copyWith(status: DietSetupStatus.saved));
     } on Object catch (error) {
@@ -295,7 +361,7 @@ class DietSetupCubit extends Cubit<DietSetupState> {
   Future<void> close() {
     _analyticsRepository.disappear(
       state.question.screen,
-      state.question.parameters,
+      _parameters(state.question),
     );
     return super.close();
   }

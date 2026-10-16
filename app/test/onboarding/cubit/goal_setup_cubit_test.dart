@@ -43,6 +43,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(<UserFieldValue>[]);
     registerFallbackValue(replaced(GoalStatus.active));
+    registerFallbackValue(OverarchingObjective.maintain);
   });
 
   setUp(() {
@@ -68,11 +69,19 @@ void main() {
     ).thenAnswer((_) => Stream.value(null));
   });
 
-  GoalSetupCubit build({UserModel? user}) => GoalSetupCubit(
+  GoalSetupCubit build({
+    UserModel? user,
+    bool isStandalone = false,
+    bool editsCurrentGoal = false,
+    GoalPlanApplier? applyToDietPlan,
+  }) => GoalSetupCubit(
     userRepository: users,
     bodyRepository: body,
     analyticsRepository: analytics.repository,
     profile: user ?? profile,
+    isStandalone: isStandalone,
+    editsCurrentGoal: editsCurrentGoal,
+    applyToDietPlan: applyToDietPlan,
     now: () => now,
     newId: () => 'GOAL-1',
   );
@@ -315,6 +324,203 @@ void main() {
       await none.save();
       verifyNever(() => body.saveGoal(any()));
     });
+  });
+
+  // OnboardingGoalSummaryPresenterTests' standalone, starting-fresh and
+  // editing cases, OnboardingSelectionHapticsTests' is_onboarding case, and
+  // the target and rate presenters' editing starts.
+  group('standalone', () {
+    late List<WeightGoal> applied;
+
+    setUp(() {
+      applied = [];
+      when(
+        () => body.editGoal(
+          any(),
+          any(),
+          objective: any(named: 'objective'),
+          targetWeightKg: any(named: 'targetWeightKg'),
+          weeklyChangeKg: any(named: 'weeklyChangeKg'),
+        ),
+      ).thenAnswer((_) async => calls.add('editGoal'));
+    });
+
+    // A goal running toward 72 kg from 85 at half a kilo a week.
+    WeightGoal goal(GoalStatus status) => WeightGoal(
+      goalId: 'G',
+      userId: 'uid',
+      objective: OverarchingObjective.loseWeight,
+      startingWeightKg: 85,
+      targetWeightKg: 72,
+      weeklyChangeKg: 0.5,
+      createdAt: DateTime.utc(2025),
+      status: status,
+    );
+
+    void running(GoalStatus status) => when(
+      () => body.watchCurrentGoal(
+        'uid',
+        currentGoalId: any(named: 'currentGoalId'),
+      ),
+    ).thenAnswer((_) => Stream.value(goal(status)));
+
+    GoalSetupCubit standalone({bool edit = false}) => build(
+      isStandalone: true,
+      editsCurrentGoal: edit,
+      applyToDietPlan: (goal) async => applied.add(goal),
+    );
+
+    test('goal steps report whether they are part of onboarding', () async {
+      final cubit = standalone();
+      await cubit.load();
+      cubit
+        ..objectiveSelected(OverarchingObjective.gainWeight)
+        ..objectiveContinued();
+      await cubit.close();
+      for (final name in [
+        'OverarchingObjectiveView_Appear',
+        'OverarchingObjectiveView_Disappear',
+        'TargetWeightView_Appear',
+        'TargetWeightView_Disappear',
+      ]) {
+        expect(analytics.last(name).parameters, {'is_onboarding': false});
+      }
+      expect(cubit.state.isStandalone, isTrue);
+    });
+
+    test('a new goal gets its own id, becomes the current one and sets the '
+        'diet plan; the flow closes rather than going on', () async {
+      running(GoalStatus.active);
+      final cubit = standalone();
+      await cubit.load();
+      expect(cubit.state.editing, isNull);
+      expect(cubit.state.objective, isNull);
+      cubit
+        ..objectiveSelected(OverarchingObjective.maintain)
+        ..objectiveContinued();
+      await cubit.save();
+
+      expect(calls, ['saveGoal', 'abandonGoal G', 'updateUserFields']);
+      expect(applied.single.goalId, 'GOAL-1');
+      expect(applied.single.startingWeightKg, 80);
+      expect(cubit.state.status, GoalSetupStatus.saved);
+      expect(analytics.names, isNot(contains('Onboarding_Goal_Navigation')));
+      expect(analytics.names.last, 'Onboarding_Goal_Save_Success');
+    });
+
+    test('editing opens on the goal, at its target and rate toward the same '
+        'objective', () async {
+      running(GoalStatus.active);
+      final cubit = standalone(edit: true);
+      await cubit.load();
+      expect(
+        cubit.state.editing?.toFirestore(),
+        goal(GoalStatus.active).toFirestore(),
+      );
+      expect(cubit.state.objective, OverarchingObjective.loseWeight);
+      cubit.objectiveContinued();
+      expect((cubit.state.targetWheel, cubit.state.targetKg), (72, 72.0));
+      cubit.targetContinued();
+      expect(cubit.state.rateKg, 0.5);
+    });
+
+    test('editing toward another objective opens on the defaults', () async {
+      running(GoalStatus.active);
+      final cubit = standalone(edit: true);
+      await cubit.load();
+      cubit
+        ..objectiveSelected(OverarchingObjective.gainWeight)
+        ..objectiveContinued();
+      expect(cubit.state.targetWheel, 80);
+      cubit
+        ..targetWheelChanged(85)
+        ..targetContinued();
+      expect(cubit.state.rateKg, closeTo(0.2, 1e-9));
+    });
+
+    test('editing a goal updates it instead of starting a new one', () async {
+      running(GoalStatus.active);
+      final cubit = standalone(edit: true);
+      await cubit.load();
+      cubit
+        ..objectiveContinued()
+        ..targetWheelChanged(75)
+        ..targetContinued()
+        ..rateChanged(0.25)
+        ..rateContinued();
+      await cubit.save();
+
+      expect(calls, ['editGoal']);
+      verify(
+        () => body.editGoal(
+          'uid',
+          'G',
+          objective: OverarchingObjective.loseWeight,
+          targetWeightKg: 75,
+          weeklyChangeKg: 0.25,
+        ),
+      ).called(1);
+      verifyNever(() => body.saveGoal(any()));
+      verifyNever(() => users.updateUserFields(any(), any()));
+      // Where it started stays; the diet plan follows the edited aim.
+      final edited = applied.single;
+      expect(edited.goalId, 'G');
+      expect(edited.startingWeightKg, 85);
+      expect(edited.createdAt, DateTime.utc(2025));
+      expect(edited.status, GoalStatus.active);
+      expect((edited.targetWeightKg, edited.weeklyChangeKg), (75.0, 0.25));
+      expect(cubit.state.status, GoalSetupStatus.saved);
+    });
+
+    test('a goal that is no longer running is not edited', () async {
+      running(GoalStatus.completed);
+      final cubit = standalone(edit: true);
+      await cubit.load();
+      expect(cubit.state.editing, isNull);
+    });
+
+    test('a failed save keeps the flow open to show the alert', () async {
+      running(GoalStatus.active);
+      when(
+        () => body.editGoal(
+          any(),
+          any(),
+          objective: any(named: 'objective'),
+          targetWeightKg: any(named: 'targetWeightKg'),
+          weeklyChangeKg: any(named: 'weeklyChangeKg'),
+        ),
+      ).thenThrow(Exception('offline'));
+      final cubit = standalone(edit: true);
+      await cubit.load();
+      cubit
+        ..objectiveSelected(OverarchingObjective.maintain)
+        ..objectiveContinued();
+      await cubit.save();
+      expect(cubit.state.status, GoalSetupStatus.failure);
+      expect(applied, isEmpty);
+    });
+
+    test(
+      'a diet plan that fails to follow is logged; the goal stands',
+      () async {
+        final cubit = build(
+          isStandalone: true,
+          applyToDietPlan: (_) async => throw Exception('plan'),
+        );
+        await cubit.load();
+        cubit
+          ..objectiveSelected(OverarchingObjective.maintain)
+          ..objectiveContinued();
+        await cubit.save();
+        expect(cubit.state.status, GoalSetupStatus.saved);
+        final fail = analytics.last('Onboarding_Goal_ApplyToDietPlan_Fail');
+        expect(fail.type, LogType.severe);
+        expect(
+          analytics.names.indexOf('Onboarding_Goal_ApplyToDietPlan_Fail'),
+          lessThan(analytics.names.indexOf('Onboarding_Goal_Save_Success')),
+        );
+      },
+    );
   });
 
   test('ranges follow the unit and the objective', () async {

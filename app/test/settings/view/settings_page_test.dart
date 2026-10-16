@@ -1,6 +1,7 @@
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/general/view/about_page.dart';
@@ -45,6 +46,7 @@ void main() {
       userId: 'uid',
       email: 'ada@example.com',
     ),
+    BodyRepository? body,
   }) async {
     when(() => appBloc.state).thenReturn(
       AppAuthenticated(
@@ -61,7 +63,7 @@ void main() {
       authRepository: authRepository,
       // The screens the rows open read these.
       userRepository: InMemoryUserRepository(),
-      bodyRepository: InMemoryBodyRepository(),
+      bodyRepository: body ?? InMemoryBodyRepository(),
       nutritionRepository: InMemoryNutritionRepository(),
       router: GoRouter(
         initialLocation: '/profile/settings',
@@ -71,6 +73,16 @@ void main() {
             builder: (_, _) => const SizedBox(),
             routes: profileRoutes,
           ),
+          for (final (path, name) in [
+            (WeightGoalRoute.path, WeightGoalRoute.name),
+            (DietPlanRoute.path, DietPlanRoute.name),
+          ])
+            GoRoute(
+              path: path,
+              name: name,
+              builder: (_, state) =>
+                  Text('$name screen ${state.uri.query}'.trim()),
+            ),
         ],
       ),
     );
@@ -118,6 +130,43 @@ void main() {
         expect(find.byType(page), findsOneWidget);
       });
     }
+
+    // SettingsPresenterTests' weight goal and nutrition plan rows.
+    testWidgets('Weight Goal says Not Set, and sets one straight away', (
+      tester,
+    ) async {
+      await pumpSettings(tester);
+      expect(find.text('Weight Goal'), findsOneWidget);
+      expect(find.text('Not Set'), findsOneWidget);
+      await tester.tap(find.text('Weight Goal'));
+      await tester.pumpAndSettle();
+      expect(find.text('weightGoal screen'), findsOneWidget);
+    });
+
+    testWidgets("Weight Goal shows the running goal's objective and offers "
+        'to edit it or start a new one', (tester) async {
+      final now = DateTime.now();
+      await pumpSettings(
+        tester,
+        body: InMemoryBodyRepository(
+          goals: [sampleWeightGoal(uid: 'uid', now: now)],
+        ),
+      );
+      expect(find.text('Lose weight'), findsOneWidget);
+      await tester.tap(find.text('Weight Goal'));
+      await tester.pumpAndSettle();
+      expect(find.text('Edit Goal'), findsOneWidget);
+      await tester.tap(find.text('Start a New Goal'));
+      await tester.pumpAndSettle();
+      expect(find.text('weightGoal screen'), findsOneWidget);
+    });
+
+    testWidgets('Nutrition Plan opens the diet questions', (tester) async {
+      await pumpSettings(tester);
+      await tester.tap(find.text('Nutrition Plan'));
+      await tester.pumpAndSettle();
+      expect(find.text('dietPlan screen'), findsOneWidget);
+    });
 
     testWidgets('Support says where to write', (tester) async {
       await pumpSettings(tester);

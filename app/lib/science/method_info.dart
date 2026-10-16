@@ -533,6 +533,237 @@ class const Citation({
         'factors. FAO Food and Nutrition Paper 77. Rome: FAO.',
     url: 'https://www.fao.org/4/y5022e/y5022e00.htm',
   );
+
+  /// R10.
+  static const fao2004 = Citation(
+    reference:
+        'FAO/WHO/UNU (2004). Human energy requirements: report of a joint '
+        'FAO/WHO/UNU expert consultation, Rome, 17–24 October 2001. FAO '
+        'Food and Nutrition Technical Report Series 1. Rome: FAO.',
+    url: 'https://www.fao.org/4/y5686e/y5686e00.htm',
+  );
+
+  /// R11.
+  static const pontzer2016 = Citation(
+    reference:
+        'Pontzer H, et al. (2016). Constrained total energy expenditure '
+        'and metabolic adaptation to physical activity in adult humans. '
+        'Curr Biol 26(3):410–417.',
+    doi: '10.1016/j.cub.2015.12.046',
+  );
+
+  /// R12.
+  static const pontzer2012 = Citation(
+    reference:
+        'Pontzer H, Raichlen DA, Wood BM, Mabulla AZP, Racette SB, Marlowe '
+        'FW (2012). Hunter-gatherer energetics and human obesity. PLoS One '
+        '7(7):e40503.',
+    doi: '10.1371/journal.pone.0040503',
+  );
+
+  /// R13.
+  static const boning2018 = Citation(
+    reference:
+        'Böning D (2018). Fat in spite of exercise? An alleged paradigm '
+        'change results from calculation mistakes (editorial). Dtsch Z '
+        'Sportmed 69(1):3–4.',
+    doi: '10.5960/dzsm.2017.311',
+  );
+
+  /// R19.
+  static const pontzer2021 = Citation(
+    reference:
+        'Pontzer H, et al. (2021). Daily energy expenditure through the '
+        'human life course. Science 373(6556):808–812.',
+    doi: '10.1126/science.abe5017',
+  );
+
+  /// R4.
+  static const frankenfield2005 = Citation(
+    reference:
+        'Frankenfield D, Roth-Yousey L, Compher C (2005). Comparison of '
+        'predictive equations for resting metabolic rate in healthy '
+        'nonobese and obese adults: a systematic review. J Am Diet Assoc '
+        '105(5):775–789.',
+    doi: '10.1016/j.jada.2005.02.005',
+  );
+
+  /// R5.
+  static const madden2016 = Citation(
+    reference:
+        'Madden AM, Mulrooney HM, Shah S (2016). Estimation of energy '
+        'expenditure using prediction equations in overweight and obese '
+        'adults: a systematic review. J Hum Nutr Diet 29(4):458–476.',
+    doi: '10.1111/jhn.12355',
+  );
+
+  /// R47.
+  static const morton2018 = Citation(
+    reference:
+        'Morton RW, et al. (2018). A systematic review, meta-analysis and '
+        'meta-regression of the effect of protein supplementation on '
+        'resistance training-induced gains in muscle mass and strength in '
+        'healthy adults. Br J Sports Med 52(6):376–384.',
+    doi: '10.1136/bjsports-2017-097608',
+  );
+
+  /// R48.
+  static const nunes2022 = Citation(
+    reference:
+        'Nunes EA, et al. (2022). Systematic review and meta-analysis of '
+        'protein intake to support muscle mass and function in healthy '
+        'adults. J Cachexia Sarcopenia Muscle 13(2):795–810.',
+    doi: '10.1002/jcsm.12922',
+  );
+
+  /// R49.
+  static const helms2014 = Citation(
+    reference:
+        'Helms ER, Zinn C, Rowlands DS, Brown SR (2014). A systematic '
+        'review of dietary protein during caloric restriction in '
+        'resistance trained lean athletes: a case for higher intakes. Int '
+        'J Sport Nutr Exerc Metab 24(2):127–138.',
+    doi: '10.1123/ijsnem.2013-0054',
+  );
+
+  /// R50.
+  static const devries2018 = Citation(
+    reference:
+        'Devries MC, Sithamparapillai A, Brimble KS, Banfield L, Morton '
+        'RW, Phillips SM (2018). Changes in kidney function do not differ '
+        'between healthy adults consuming higher- compared with lower- or '
+        'normal-protein diets: a systematic review and meta-analysis. J '
+        'Nutr 148(11):1760–1775.',
+    doi: '10.1093/jn/nxy197',
+  );
+
+  /// R51.
+  static const weijs2025 = Citation(
+    reference:
+        'Weijs PJM (2025). Protein requirement in obesity. Curr Opin Clin '
+        'Nutr Metab Care 28(1).',
+    doi: '10.1097/MCO.0000000000001087',
+  );
+
+  /// R52.
+  static const dekker2022 = Citation(
+    reference:
+        'Dekker IM, van Rijssen NM, Verreijen A, Weijs PJM, de Boer WB, '
+        'Terpstra D, Kruizenga HM (2022). Calculation of protein '
+        'requirements: a comparison of calculations based on bodyweight '
+        'and fat free mass. Clin Nutr ESPEN 48:378–385.',
+    doi: '10.1016/j.clnesp.2022.01.014',
+  );
+
+  /// R53.
+  static const bauer2013 = Citation(
+    reference:
+        'Bauer J, et al. (2013). Evidence-based recommendations for '
+        'optimal dietary protein intake in older people: a position paper '
+        'from the PROT-AGE Study Group. J Am Med Dir Assoc 14(8):542–559.',
+    doi: '10.1016/j.jamda.2013.05.021',
+  );
+
+  /// R69.
+  static const jensen2014 = Citation(
+    reference:
+        'Jensen MD, et al. (2014; online 2013). 2013 AHA/ACC/TOS guideline '
+        'for the management of overweight and obesity in adults. '
+        'Circulation 129(25 Suppl 2):S102–S138.',
+    doi: '10.1161/01.cir.0000437739.71477.ee',
+  );
+
+  /// R67.
+  static const niddk = Citation(
+    reference:
+        'National Institute of Diabetes and Digestive and Kidney Diseases. '
+        '"Very-low-calorie diet" (health dictionary).',
+    url: 'https://www.niddk.nih.gov/Dictionary/V/very-low-calorie-diet',
+  );
+
+  /// R61.
+  static const campbell2020 = Citation(
+    reference:
+        'Campbell BI, et al. (2020). Intermittent energy restriction '
+        'attenuates the loss of fat free mass in resistance trained '
+        'individuals: a randomized controlled trial. J Funct Morphol '
+        'Kinesiol 5(1):19.',
+    doi: '10.3390/jfmk5010019',
+  );
+
+  /// R62.
+  static const peos2021 = Citation(
+    reference:
+        'Peos JJ, Helms ER, Fournier PA, Krieger J, Sainsbury A (2021). A '
+        '1-week diet break improves muscle endurance during an '
+        'intermittent dieting regime in adult athletes: a pre-specified '
+        'secondary analysis of the ICECAP trial. PLoS One 16(2):e0247292.',
+    doi: '10.1371/journal.pone.0247292',
+  );
+
+  /// R63.
+  static const helms2014b = Citation(
+    reference:
+        'Helms ER, Aragon AA, Fitschen PJ (2014). Evidence-based '
+        'recommendations for natural bodybuilding contest preparation: '
+        'nutrition and supplementation. J Int Soc Sports Nutr 11:20.',
+    doi: '10.1186/1550-2783-11-20',
+  );
+
+  /// R64.
+  static const garthe2011 = Citation(
+    reference:
+        'Garthe I, Raastad T, Refsnes PE, Koivisto A, Sundgot-Borgen J '
+        '(2011). Effect of two different weight-loss rates on body '
+        'composition and strength and power-related performance in elite '
+        'athletes. Int J Sport Nutr Exerc Metab 21(2):97–104.',
+    doi: '10.1123/ijsnem.21.2.97',
+  );
+
+  /// R65.
+  static const purcell2014 = Citation(
+    reference:
+        'Purcell K, Sumithran P, Prendergast LA, Bouniu CJ, Delbridge E, '
+        'Proietto J (2014). The effect of rate of weight loss on long-term '
+        'weight management: a randomised controlled trial. Lancet Diabetes '
+        'Endocrinol 2(12):954–962.',
+    doi: '10.1016/S2213-8587(14)70200-1',
+  );
+
+  /// R66.
+  static const helms2023 = Citation(
+    reference:
+        'Helms ER, et al. (2023). Effect of small and large energy '
+        'surpluses on strength, muscle, and skinfold thickness in '
+        'resistance-trained individuals: a parallel groups design. Sports '
+        'Med Open 9:102.',
+    doi: '10.1186/s40798-023-00651-y',
+  );
+
+  /// R23.
+  static const wishnofsky1958 = Citation(
+    reference:
+        'Wishnofsky M (1958). Caloric equivalents of gained or lost '
+        'weight. Am J Clin Nutr 6(5):542–546.',
+    doi: '10.1093/ajcn/6.5.542',
+  );
+
+  /// R24.
+  static const hall2008 = Citation(
+    reference:
+        'Hall KD (2008). What is the required energy deficit per unit '
+        'weight loss? Int J Obes 32(3):573–576.',
+    doi: '10.1038/sj.ijo.0803720',
+  );
+
+  /// R45.
+  static const guo2018 = Citation(
+    reference:
+        'Guo J, Brager DC, Hall KD (2018). Simulating long-term human '
+        'weight-loss dynamics in response to calorie restriction. Am J '
+        'Clin Nutr 107(4):558–565.',
+    doi: '10.1093/ajcn/nqx080',
+  );
 }
 
 /// What one calculation does and what it rests on, for the info button
@@ -898,6 +1129,121 @@ class const MethodInfo({
     citations: const [Citation.ebben2011, Citation.suprak2011],
   );
 
+  /// Formula Expenditure Estimate (Swift `MethodInfo.formulaExpenditure`).
+  factory formulaExpenditure(AppLocalizations l10n) => MethodInfo(
+    title: l10n.formulaExpenditureMethodTitle,
+    summary: l10n.formulaExpenditureMethodSummary,
+    formula:
+        'TDEE = RMR × PAL\n'
+        'PAL: sedentary 1.40, light 1.55, moderate 1.70, active 1.85, '
+        'very active 2.00\n'
+        'TDEE ≥ 1,000 kcal\n'
+        '(FAO/WHO/UNU bands: sedentary or light 1.40–1.69, active '
+        '1.70–1.99, vigorous 2.00–2.40)',
+    limitations: l10n.formulaExpenditureMethodLimitations,
+    ownChoices: l10n.formulaExpenditureMethodOwnChoices,
+    citations: const [
+      Citation.fao2004,
+      Citation.pontzer2016,
+      Citation.pontzer2012,
+      Citation.boning2018,
+      Citation.pontzer2021,
+      Citation.frankenfield2005,
+      Citation.madden2016,
+    ],
+  );
+
+  /// Protein Target (Swift `MethodInfo.proteinTarget`).
+  factory proteinTarget(AppLocalizations l10n) => MethodInfo(
+    title: l10n.proteinTargetMethodTitle,
+    summary: l10n.proteinTargetMethodSummary,
+    formula:
+        'g/kg: low 1.6, moderate 2.0, high 2.2, very high 2.6\n'
+        'protein = g/kg × reference weight\n'
+        'reference weight = weight, if BMI < 30\n'
+        '  otherwise min(weight, max(30 × height(m)², goal weight))\n'
+        'age ≥ 65: g/kg ≥ 1.2',
+    limitations: l10n.proteinTargetMethodLimitations,
+    ownChoices: l10n.proteinTargetMethodOwnChoices,
+    citations: const [
+      Citation.morton2018,
+      Citation.nunes2022,
+      Citation.helms2014,
+      Citation.devries2018,
+      Citation.weijs2025,
+      Citation.dekker2022,
+      Citation.bauer2013,
+      Citation.thomas2016,
+    ],
+  );
+
+  /// Calorie Floor (Swift `MethodInfo.calorieFloor`).
+  factory calorieFloor(AppLocalizations l10n) => MethodInfo(
+    title: l10n.calorieFloorMethodTitle,
+    summary: l10n.calorieFloorMethodSummary,
+    formula:
+        'floor = 1,200 (female), 1,500 (male), 1,350 (not stated)\n'
+        'target = max(floor, expenditure − min(goal deficit, '
+        '0.25 × expenditure))',
+    limitations: l10n.calorieFloorMethodLimitations,
+    ownChoices: l10n.calorieFloorMethodOwnChoices,
+    citations: const [Citation.jensen2014, Citation.niddk, Citation.niddk2025],
+  );
+
+  /// Calorie Distribution (Swift `MethodInfo.calorieCycling`).
+  factory calorieCycling(AppLocalizations l10n) => MethodInfo(
+    title: l10n.calorieCyclingMethodTitle,
+    summary: l10n.calorieCyclingMethodSummary,
+    formula:
+        'N = training days in the program (1–6)\n'
+        'bonus = min(0.10, 0.15 × (7 − N) ÷ N)\n'
+        'high day = target × (1 + bonus)\n'
+        'other days = target × (1 − bonus × N ÷ (7 − N))\n'
+        'weekly total = 7 × target',
+    limitations: l10n.calorieCyclingMethodLimitations,
+    ownChoices: l10n.calorieCyclingMethodOwnChoices,
+    citations: const [Citation.campbell2020, Citation.peos2021],
+  );
+
+  /// Weekly Rate (Swift `MethodInfo.weightChangeRate`).
+  factory weightChangeRate(AppLocalizations l10n) => MethodInfo(
+    title: l10n.weightChangeRateMethodTitle,
+    summary: l10n.weightChangeRateMethodSummary,
+    formula:
+        'lose: 0.25% to min(1% × weight, 1.5 kg) a week\n'
+        '  default 0.5% (BMI < 25) or 0.75%; warning above 0.75% if BMI < 25\n'
+        'gain: 0.1% to min(1% × weight, 1.5 kg) a week\n'
+        '  default 0.25%; warning above 0.5%\n'
+        'daily kcal = weekly kg × 7,700 ÷ 7',
+    limitations: l10n.weightChangeRateMethodLimitations,
+    ownChoices: l10n.weightChangeRateMethodOwnChoices,
+    citations: const [
+      Citation.helms2014b,
+      Citation.garthe2011,
+      Citation.purcell2014,
+      Citation.iraki2019,
+      Citation.helms2023,
+      Citation.wishnofsky1958,
+      Citation.hall2008,
+    ],
+  );
+
+  /// Goal Timeline (Swift `MethodInfo.goalTimeline`).
+  factory goalTimeline(AppLocalizations l10n) => MethodInfo(
+    title: l10n.goalTimelineMethodTitle,
+    summary: l10n.goalTimelineMethodSummary,
+    formula:
+        'weeks = ⌈|target weight − current weight| ÷ weekly rate⌉\n'
+        'target change by goal ≈ 24 kcal/day × kg to go',
+    limitations: l10n.goalTimelineMethodLimitations,
+    citations: const [
+      Citation.hall2011,
+      Citation.guo2018,
+      Citation.martins2020,
+      Citation.thomas2014,
+    ],
+  );
+
   /// Every method ported so far, keyed by its Swift `MethodInfo.id`, in
   /// Swift's order (`MethodInfo.all`: energy, nutrition, training, volume,
   /// habits), for Settings › Methods & Sources. Add each new method here.
@@ -910,7 +1256,13 @@ class const MethodInfo({
     'energy-balance': MethodInfo.energyBalance(l10n),
     'target-proposal': MethodInfo.targetProposal(l10n),
     'check-in-rules': MethodInfo.checkInRules(l10n),
+    'formula-expenditure': MethodInfo.formulaExpenditure(l10n),
+    'protein-target': MethodInfo.proteinTarget(l10n),
     'macro-split': MethodInfo.macroSplit(l10n),
+    'calorie-floor': MethodInfo.calorieFloor(l10n),
+    'calorie-cycling': MethodInfo.calorieCycling(l10n),
+    'weight-change-rate': MethodInfo.weightChangeRate(l10n),
+    'goal-timeline': MethodInfo.goalTimeline(l10n),
     'volume.plannedSets': MethodInfo.plannedSetsPerMuscle(l10n),
     'volume.recommendation': MethodInfo.volumeRecommendation(l10n),
     'habits.weeklyGoal': MethodInfo.weeklySessionGoal(l10n),

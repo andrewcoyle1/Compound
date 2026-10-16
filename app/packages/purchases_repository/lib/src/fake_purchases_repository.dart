@@ -122,9 +122,7 @@ class FakePurchasesRepository implements PurchasesRepository {
   }
 
   @override
-  Future<List<SubscriptionProduct>> getProducts(
-    List<String> productIds,
-  ) async {
+  Future<List<SubscriptionProduct>> getProducts(List<String> productIds) async {
     if (failedLoads > 0) {
       failedLoads--;
       throw const PurchasesFailure('The store did not answer.');

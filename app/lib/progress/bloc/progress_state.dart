@@ -73,6 +73,10 @@ final class const ProgressState({
   /// The weekly target grid's selected day (0 = the week's first), or null
   /// for the whole week.
   final int? targetDay,
+
+  /// The weight unit chosen for each exercise, by id (Swift's per-exercise
+  /// unit, kept on the device).
+  final Map<String, ExerciseWeightUnit> weightUnits = const {},
 }) extends Equatable {
   /// Today, at local midnight, when the screen opened.
   DateTime get today => startOfDay(now);
@@ -89,6 +93,13 @@ final class const ProgressState({
       user?.submittedWeightUnitPreference == WeightUnitPreference.pounds
       ? AppWeightUnit.pounds
       : AppWeightUnit.kilograms;
+
+  /// The unit exercise [id]'s weights show in: its own, else [unit].
+  AppWeightUnit unitFor(String id) => switch (weightUnits[id]) {
+    ExerciseWeightUnit.pounds => AppWeightUnit.pounds,
+    ExerciseWeightUnit.kilograms => AppWeightUnit.kilograms,
+    null => unit,
+  };
 
   double _inUnit(double kilograms) => unit == AppWeightUnit.pounds
       ? kilograms * AppFormat.poundsPerKilogram
@@ -256,6 +267,7 @@ final class const ProgressState({
     MetricRange? range,
     int? deleteFailures,
     int? Function()? targetDay,
+    Map<String, ExerciseWeightUnit>? weightUnits,
   }) => ProgressState(
     uid: uid,
     now: now,
@@ -278,6 +290,7 @@ final class const ProgressState({
     range: range ?? this.range,
     deleteFailures: deleteFailures ?? this.deleteFailures,
     targetDay: targetDay == null ? this.targetDay : targetDay(),
+    weightUnits: weightUnits ?? this.weightUnits,
   );
 
   @override
@@ -301,5 +314,6 @@ final class const ProgressState({
     range,
     deleteFailures,
     targetDay,
+    weightUnits,
   ];
 }

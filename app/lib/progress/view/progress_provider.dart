@@ -9,6 +9,8 @@ import 'package:compound/settings/general/view/on_dispose.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart'
+    show UnitPreferenceStore;
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -50,6 +52,7 @@ class ProgressProvider extends StatelessWidget {
         checkInRepository: context.read<CheckInRepository>(),
         uid: state.user.uid,
         firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
+        units: context.read<UnitPreferenceStore>(),
         screen: screen,
         parameters: parameters,
       )..add(const ProgressSubscriptionRequested()),

@@ -1130,8 +1130,8 @@ class _Ring extends StatelessWidget {
 // MARK: - Recent records
 
 /// Each exercise's best, the most recently set first, as bars against the
-/// largest (Swift `RecentRecordsCard`). Weights show in the profile's unit
-/// (Swift uses each exercise's own, kept on the device).
+/// largest (Swift `RecentRecordsCard`). Weights show in each exercise's
+/// own unit, else the profile's.
 class _RecentRecords extends StatelessWidget {
   const new({required this.state, required this.kind, required this.onChanged});
 
@@ -1150,7 +1150,7 @@ class _RecentRecords extends StatelessWidget {
       RecordKind.reps => l10n.repCount(record.value.round()),
       RecordKind.volume || RecordKind.oneRepMax => AppFormat.weight(
         record.value,
-        state.unit,
+        state.unitFor(record.templateId),
         locale: locale,
       ),
     };

@@ -32,9 +32,22 @@ final class const CreateExerciseState({
 }
 
 /// The create-exercise flow's first step (Swift `CreateExercisePresenter`):
-/// nothing is saved here.
+/// nothing is saved here. Opened on a prefill (Exercise Settings' Edit
+/// Duplicate), every step starts from the copy.
 class CreateExerciseCubit extends Cubit<CreateExerciseState> {
-  new({required this._analytics}) : super(const CreateExerciseState());
+  new({required this._analytics, ExerciseDraft? prefill})
+    : _prefill = prefill,
+      super(
+        CreateExerciseState(
+          name: prefill?.name ?? '',
+          metricA: prefill?.metricA,
+          metricB: prefill?.metricB,
+          type: prefill?.type,
+          laterality: prefill?.laterality,
+        ),
+      );
+
+  final ExerciseDraft? _prefill;
 
   static const _screen = 'CreateExerciseView';
 
@@ -111,12 +124,21 @@ class CreateExerciseCubit extends Cubit<CreateExerciseState> {
         metricB: metricB,
       ),
     );
+    final prefill = _prefill;
     return ExerciseDraft(
       name: state.name.trim(),
       metricA: metricA,
       metricB: metricB,
       type: state.type,
       laterality: state.laterality,
+      muscleGroups: prefill?.muscleGroups ?? const {},
+      isBodyweight: prefill?.isBodyweight ?? false,
+      variations: prefill?.variations ?? const [],
+      rangeOfMotion: prefill?.rangeOfMotion ?? 0,
+      stability: prefill?.stability ?? 0,
+      bodyweightContribution: prefill?.bodyweightContribution ?? 0,
+      alternateNames: prefill?.alternateNames ?? const [],
+      description: prefill?.description ?? '',
     );
   }
 }

@@ -13,6 +13,8 @@ import 'package:compound/training_library/training_library.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart'
+    show UnitPreferenceStore;
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -51,6 +53,7 @@ class TrainingAnalyticsProvider extends StatelessWidget {
         uid: state.user.uid,
         screen: screen,
         parameters: parameters,
+        units: context.read<UnitPreferenceStore>(),
       )..add(const TrainingAnalyticsSubscriptionRequested()),
       child: OnDispose(
         onDispose: () => analytics.disappear(screen.analyticsName, parameters),

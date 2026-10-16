@@ -177,6 +177,132 @@ void main() {
     });
   });
 
+  group('copySharedItem', () {
+    final now = DateTime.utc(2026, 10, 15, 9, 30);
+    late int count;
+    String newId() => 'new-${++count}';
+
+    setUp(() => count = 0);
+
+    final shared = Mesocycle.fromFirestore(modelFixture('mesocycle', 'full'));
+    final day = shared.workoutTemplates.first;
+    final custom = day.exercises.first.exercise;
+    final system = PrebuiltCatalogue
+        .instance
+        .mesocycles
+        .first
+        .workoutTemplates
+        .first
+        .exercises
+        .first
+        .exercise;
+    // Push Day: a system exercise, then the sender's custom one twice.
+    final pushDay = WorkoutTemplateModel.fromFirestore({
+      ...day.toFirestore(),
+      WorkoutTemplateModelKeys.exercises: [
+        for (final exercise in [system, custom, custom])
+          {
+            ...day.exercises.first.toFirestore(),
+            WorkoutTemplateExerciseKeys.exercise: exercise.toFirestore(),
+          },
+      ],
+    });
+
+    // MesocycleSharingTests
+    // .testAcceptingATemplateCopiesItUnderTheRecipientWithNewIds
+    test('copies a template under the recipient, the custom exercise once', () {
+      final copy = copySharedItem(
+        TemplateSharePayload(pushDay),
+        recipientId: 'me',
+        libraryExerciseIds: const [],
+        now: now,
+        newId: newId,
+      );
+      final template = (copy.payload as TemplateSharePayload).template;
+      expect(template.workoutId, startsWith('new-'));
+      expect(template.authorId, 'me');
+      expect(template.name, pushDay.name);
+      expect(pushDay.gymProfileId, isNotNull);
+      expect(template.gymProfileId, isNull);
+      expect(copy.newExercises, hasLength(1));
+      final added = copy.newExercises.single;
+      expect(added.id, startsWith('new-'));
+      expect(added.authorId, 'me');
+      expect(
+        [for (final item in template.exercises) item.exercise.id],
+        [system.id, added.id, added.id],
+      );
+      expect(
+        [for (final item in template.exercises) item.id]
+            .every((id) => id.startsWith('new-')),
+        isTrue,
+      );
+    });
+
+    test("keeps an exercise already in the recipient's library", () {
+      final copy = copySharedItem(
+        TemplateSharePayload(pushDay),
+        recipientId: 'me',
+        libraryExerciseIds: [custom.id],
+        now: now,
+        newId: newId,
+      );
+      expect(copy.newExercises, isEmpty);
+      expect(
+        (copy.payload as TemplateSharePayload)
+            .template
+            .exercises[1]
+            .exercise
+            .id,
+        custom.id,
+      );
+    });
+
+    // MesocycleSharingTests.testAcceptingAMesocycleCopiesEveryDay
+    test('copies a mesocycle, every day under the recipient', () {
+      final copy = copySharedItem(
+        MesocycleSharePayload(shared),
+        recipientId: 'me',
+        libraryExerciseIds: const [],
+        now: now,
+        newId: newId,
+      );
+      final mesocycle = (copy.payload as MesocycleSharePayload).mesocycle;
+      expect(mesocycle.id, startsWith('new-'));
+      expect(mesocycle.authorId, 'me');
+      expect(
+        mesocycle.workoutTemplates,
+        hasLength(shared.workoutTemplates.length),
+      );
+      expect(
+        mesocycle.workoutTemplates.every(
+          (template) =>
+              template.authorId == 'me' &&
+              template.workoutId.startsWith('new-'),
+        ),
+        isTrue,
+      );
+      expect(copy.newExercises, isNotEmpty);
+      expect(
+        copy.newExercises.every((exercise) => exercise.authorId == 'me'),
+        isTrue,
+      );
+    });
+
+    test('makes Swift-style ids by default', () {
+      final copy = copySharedItem(
+        TemplateSharePayload(pushDay),
+        recipientId: 'me',
+        libraryExerciseIds: const [],
+        now: now,
+      );
+      expect(
+        (copy.payload as TemplateSharePayload).template.workoutId,
+        hasLength(36),
+      );
+    });
+  });
+
   group('runningMacrocycle', () {
     Macrocycle macrocycle(String id, MacrocycleStatus status, int day) =>
         Macrocycle(

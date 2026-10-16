@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
@@ -7,10 +9,14 @@ import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/settings/general/view/on_dispose.dart';
+import 'package:compound/sharing/share_card/share_card_content.dart';
+import 'package:compound/sharing/share_card/share_card_renderer.dart';
+import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/training_analytics/view/training_analytics_widgets.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/weekly_review/bloc/weekly_review_bloc.dart';
 import 'package:compound/weekly_review/logic/weekly_review.dart';
+import 'package:compound/weekly_review/view/weekly_review_share_card.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -88,7 +94,13 @@ class WeeklyReviewView extends StatelessWidget {
     final l10n = context.l10n;
     final state = context.watch<WeeklyReviewBloc>().state;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.weeklyReviewTitle)),
+      appBar: AppBar(
+        title: Text(l10n.weeklyReviewTitle),
+        actions: [
+          if (state.status == WeeklyReviewStatus.loaded)
+            _ShareButton(state: state),
+        ],
+      ),
       body: switch (state.status) {
         WeeklyReviewStatus.loading => const Center(
           child: CircularProgressIndicator.adaptive(),
@@ -321,4 +333,82 @@ class _WeekHeader extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Share: the week as a Stories image (`WeeklyReviewPresenter.onSharePressed`).
+class _ShareButton extends StatefulWidget {
+  const new({required this.state});
+
+  final WeeklyReviewState state;
+
+  @override
+  State<_ShareButton> createState() => _ShareButtonState();
+}
+
+class _ShareButtonState extends State<_ShareButton> {
+  bool _sharing = false;
+
+  Future<void> _share() async {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final review = widget.state.review(l10n.muscleName);
+    final days = DateFormat.MMMd(locale);
+    final end = review.weekEnd;
+    final last = DateTime(end.year, end.month, end.day - 1);
+    final shareSheet = context.read<ShareSheet>();
+    final messenger = ScaffoldMessenger.of(context);
+    context.read<WeeklyReviewBloc>().add(const WeeklyReviewSharePressed());
+    setState(() => _sharing = true);
+    final png = await renderShareCard(
+      context,
+      WeeklyReviewShareCard(
+        l10n: l10n,
+        accent: Theme.of(context).colorScheme.primary,
+        dateRange: '${days.format(review.weekStart)} – ${days.format(last)}',
+        takeaway: WeeklyReviewView.takeawayText(l10n, review.takeaway, locale),
+        sessions: l10n.weeklyReviewOfGoal(review.sessionCount, review.goal),
+        volume:
+            ShareCardContent.formatVolume(
+              review.volumeKg,
+              unit: review.volumeUnit,
+              locale: locale,
+            ) ??
+            AppFormat.weight(
+              0,
+              WorkoutText.weightUnit(review.volumeUnit),
+              locale: locale,
+            ),
+        records: [
+          for (final record in review.personalRecords)
+            [
+              record.exerciseName,
+              WorkoutText.recordDetail(l10n, record, locale: locale),
+            ].join(' '),
+        ],
+      ),
+      size: WeeklyReviewShareCard.size,
+    );
+    if (!mounted) return;
+    setState(() => _sharing = false);
+    if (png == null) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              '${l10n.weeklyReviewShareFailed}. ${l10n.socialTryAgain}',
+            ),
+          ),
+        );
+      return;
+    }
+    await shareSheet.shareImage(context, png, name: 'compound-week.png');
+  }
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    icon: Icon(AppSymbols.share),
+    tooltip: context.l10n.weeklyReviewShare,
+    onPressed: _sharing ? null : () => unawaited(_share()),
+  );
 }

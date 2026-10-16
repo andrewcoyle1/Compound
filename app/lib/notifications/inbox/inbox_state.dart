@@ -40,6 +40,15 @@ final class const InboxSessionDestination(
   List<Object?> get props => [session, openComments];
 }
 
+/// A shared template or mesocycle, and who sent it.
+final class const InboxShareDestination(
+  final ShareModel share, {
+  required final String senderName,
+}) extends InboxDestination {
+  @override
+  List<Object?> get props => [share.id, senderName];
+}
+
 /// A challenge's standings: a finished challenge.
 final class const InboxChallengeDestination(final ChallengeModel challenge)
     extends InboxDestination {

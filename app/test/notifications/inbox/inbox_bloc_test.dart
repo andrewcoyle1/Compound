@@ -481,22 +481,61 @@ void main() {
       },
     );
 
-    for (final type in [ActivityType.share]) {
-      blocTest<InboxBloc, InboxState>(
-        'a ${type.value} only marks itself read until Social part 2b',
-        build: build,
-        seed: () => seeded([item('a', type: type, session: '')]),
-        act: (bloc) => bloc.add(
-          InboxGroupPressed(
-            groupNotifications([item('a', type: type, session: '')]).single,
-          ),
+    final shared = ActivityNotificationModel(
+      id: 'share_s1',
+      type: ActivityType.share,
+      actorId: 'user1',
+      actorName: 'Maya Chen',
+      sessionId: '',
+      sessionAuthorId: uid,
+      commentText: 'Push Day',
+      dateCreated: now,
+      shareId: 's1',
+    );
+    final share = ShareModel(
+      id: 's1',
+      fromUserId: 'user1',
+      toUserId: uid,
+      payload: TemplateSharePayload(
+        WorkoutTemplateModel(
+          workoutId: 't1',
+          authorId: 'user1',
+          name: 'Push Day',
+          dateCreated: now,
+          dateModified: now,
+          exercises: const [],
         ),
-        verify: (bloc) {
-          expect(bloc.state.destination, isNull);
-          expect(bloc.state.notifications.single.isRead, isTrue);
-        },
-      );
-    }
+      ),
+      dateCreated: now,
+    );
+
+    // NotificationTapThroughTests: a share opens the shared item.
+    blocTest<InboxBloc, InboxState>(
+      'a share opens the shared item, with who sent it',
+      setUp: () =>
+          when(() => social.share('s1')).thenAnswer((_) async => share),
+      build: build,
+      seed: () => seeded([shared]),
+      act: (bloc) =>
+          bloc.add(InboxGroupPressed(groupNotifications([shared]).single)),
+      verify: (bloc) {
+        expect(
+          bloc.state.destination,
+          InboxShareDestination(share, senderName: 'Maya Chen'),
+        );
+        expect(bloc.state.notifications.single.isRead, isTrue);
+      },
+    );
+
+    blocTest<InboxBloc, InboxState>(
+      'a share that cannot be read alerts',
+      setUp: () => when(() => social.share('s1')).thenAnswer((_) async => null),
+      build: build,
+      seed: () => seeded([shared]),
+      act: (bloc) =>
+          bloc.add(InboxGroupPressed(groupNotifications([shared]).single)),
+      verify: (bloc) => expect(bloc.state.notice, InboxNotice.openFailed),
+    );
 
     blocTest<InboxBloc, InboxState>(
       'a session that cannot be found alerts and routes nowhere',

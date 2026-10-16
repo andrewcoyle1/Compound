@@ -27,6 +27,7 @@ import 'package:compound/programs/programs.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/settings/settings.dart';
 import 'package:compound/sharing/share_sheet.dart';
+import 'package:compound/sharing/sharing_routes.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
@@ -399,6 +400,7 @@ class _AppViewState extends State<AppView> {
       // over the tabs, from Social and from the profile cover alike.
       ...socialRoutes,
       ...challengeRoutes,
+      ...sharingRoutes,
       ...progressRootRoutes,
       // Over the tabs, as the Swift app's sheet.
       GoRoute(

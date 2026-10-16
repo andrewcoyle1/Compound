@@ -633,6 +633,33 @@ t("flutter: saveSession merges a workout session, updateWeekStreakCount sets the
     await assertFails(merge(ref(uid), { ...session, hidden: true }));
 });
 
+t("flutter: updateEditedSession writes only the edited fields; the owner deletes", async () => {
+    const session = contractFixture("workout_session");
+    const uid = session.author_id;
+    const ref = (as) => doc(db(as), `users/${uid}/workout_sessions/${session.id}`);
+    await assertSucceeds(merge(ref(uid), session));
+    // A like made while the author edits.
+    await assertSucceeds(updateDoc(ref(BOB), { liked_by_user_ids: arrayUnion(BOB) }));
+    const start = Timestamp.fromDate(new Date("2026-10-02T07:00:00Z"));
+    const edit = {
+        exercises: [],
+        notes: deleteField(),
+        date_created: start,
+        ended_at: Timestamp.fromDate(new Date("2026-10-02T08:00:00Z")),
+        date_modified: now(),
+    };
+    await assertFails(updateDoc(ref(BOB), edit));
+    await assertSucceeds(updateDoc(ref(uid), edit));
+    const stored = (await getDoc(ref(uid))).data();
+    assert.equal(stored.notes, undefined);
+    assert.ok(stored.liked_by_user_ids.includes(BOB));
+    assert.equal(stored.week_streak_count, session.week_streak_count);
+    // Swift's edit: the whole session merged, notes included.
+    await assertSucceeds(merge(ref(uid), { ...session, notes: "Edited", exercises: [] }));
+    await assertFails(deleteDoc(ref(BOB)));
+    await assertSucceeds(deleteDoc(ref(uid)));
+});
+
 t("flutter: finishing copies the streak to the private settings", async () => {
     const uid = contractFixture("workout_session").author_id;
     const ref = (as) => doc(db(as), `users/${uid}/private/settings`);

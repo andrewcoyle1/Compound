@@ -32,3 +32,27 @@ final class TodayCheckInStarted extends TodayEvent {
 final class TodayCheckInSkipped extends TodayEvent {
   const new();
 }
+
+/// A checklist item was tapped; the view opens what is behind it.
+final class const TodayChecklistItemPressed(final ChecklistItem item)
+    extends TodayEvent {
+  @override
+  List<Object?> get props => [item];
+}
+
+/// The checklist showed every item done, with [itemCount] items.
+final class const TodayDayCompleted(final int itemCount) extends TodayEvent {
+  @override
+  List<Object?> get props => [itemCount];
+}
+
+/// A step goal was chosen on the Steps item.
+final class const TodayStepGoalSelected(final int goal) extends TodayEvent {
+  @override
+  List<Object?> get props => [goal];
+}
+
+/// The friends-trained-today row was tapped; the view opens Social.
+final class TodaySocialPulsePressed extends TodayEvent {
+  const new();
+}

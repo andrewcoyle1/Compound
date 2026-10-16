@@ -21,12 +21,12 @@ import 'package:compound/nutrition/recipes/view/recipe_detail_page.dart';
 import 'package:compound/nutrition/recipes/view/recipes_page.dart';
 import 'package:compound/nutrition/search/nutrition_search_cubit.dart';
 import 'package:compound/nutrition/timeline_actions/timeline_actions_sheet.dart';
-import 'package:compound/nutrition/view/widgets/calendar_strip.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -54,6 +54,12 @@ class NutritionPage extends StatelessWidget {
             analyticsRepository: context.read<AnalyticsRepository>(),
             uid: state.user.uid,
           )..add(const NutritionDaySubscriptionRequested()),
+        ),
+        BlocProvider(
+          create: (context) => CalendarHeaderCubit(
+            analytics: context.read<AnalyticsRepository>(),
+            today: startOfDay(DateTime.now()),
+          ),
         ),
         BlocProvider(
           create: (context) => NutritionSearchCubit(
@@ -123,6 +129,21 @@ class NutritionView extends StatelessWidget {
         appBar: AppBar(
           title: Text(l10n.tabNutrition),
           actions: [
+            IconButton(
+              icon: const Icon(AppSymbols.calendar),
+              tooltip: l10n.calendarShow,
+              onPressed: () => unawaited(
+                CalendarHeader.showCalendar(
+                  context,
+                  today: state.today,
+                  markers: state.markers,
+                  selectedDay: state.selectedDay,
+                  onDaySelected: (day) => context.read<NutritionDayBloc>().add(
+                    NutritionDayDateSelected(day),
+                  ),
+                ),
+              ),
+            ),
             IconButton(
               icon: const Icon(AppSymbols.add),
               tooltip: l10n.nutritionLogMeal,
@@ -261,7 +282,7 @@ class _Day extends StatelessWidget {
           ),
         ),
         if (settings.showCalendarWeekBanner)
-          CalendarStrip(
+          CalendarHeader(
             selectedDay: state.selectedDay,
             today: state.today,
             markers: state.markers,

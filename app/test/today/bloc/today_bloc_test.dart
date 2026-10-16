@@ -305,6 +305,158 @@ void main() {
     });
   });
 
+  group('Swift TodayPresenterTests', () {
+    List<LoggableEvent> tracked() =>
+        verify(() => analyticsRepository.trackEvent(captureAny())).captured
+            .cast<LoggableEvent>();
+
+    setUp(() {
+      TodayBloc.resetCompletedDays();
+      when(() => bodyRepository.saveAnalyticsSettings(any()))
+          .thenAnswer((_) async {});
+    });
+
+    setUpAll(
+      () => registerFallbackValue(const AnalyticsSettings(authorId: uid)),
+    );
+
+    // `testStepGoal`.
+    blocTest<TodayBloc, TodayState>(
+      'choosing a step goal saves it and shows it',
+      build: build,
+      act: (bloc) async {
+        bloc.add(const TodaySubscriptionRequested());
+        await Future<void>.delayed(Duration.zero);
+        expect(bloc.state.stepGoal, 8000);
+        bloc.add(const TodayStepGoalSelected(10000));
+      },
+      verify: (bloc) {
+        expect(bloc.state.stepGoal, 10000);
+        expect(bloc.state.stepGoalSaves, 1);
+        final saved =
+            verify(() => bodyRepository.saveAnalyticsSettings(captureAny()))
+                    .captured
+                    .single
+                as AnalyticsSettings;
+        expect(saved.dailyStepGoal, 10000);
+        expect(saved.authorId, uid);
+        final start = tracked().singleWhere(
+          (e) => e.eventName == 'TodayView_StepGoal_Start',
+        );
+        expect(start.parameters, {'goal': 10000});
+      },
+    );
+
+    // `testAnOlderUsersChosenStepGoalIsKept`: 8,000 is saved although the
+    // age default shows 7,000.
+    blocTest<TodayBloc, TodayState>(
+      "an older user's chosen goal is kept",
+      setUp: () => when(() => userRepository.watchUser(uid)).thenAnswer(
+        (_) => Stream.value(
+          UserModel(userId: uid, submittedDateOfBirth: DateTime(1956)),
+        ),
+      ),
+      build: build,
+      act: (bloc) async {
+        bloc.add(const TodaySubscriptionRequested());
+        await Future<void>.delayed(Duration.zero);
+        expect(bloc.state.stepGoal, 7000);
+        bloc.add(const TodayStepGoalSelected(8000));
+      },
+      verify: (bloc) {
+        expect(bloc.state.stepGoal, 8000);
+        verify(() => bodyRepository.saveAnalyticsSettings(any())).called(1);
+      },
+    );
+
+    blocTest<TodayBloc, TodayState>(
+      'choosing the goal already stored saves nothing',
+      setUp: () => when(() => bodyRepository.watchAnalyticsSettings(uid))
+          .thenAnswer(
+            (_) => Stream.value(
+              const AnalyticsSettings(authorId: uid, dailyStepGoal: 6000),
+            ),
+          ),
+      build: build,
+      act: (bloc) async {
+        bloc.add(const TodaySubscriptionRequested());
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(const TodayStepGoalSelected(6000));
+      },
+      verify: (_) =>
+          verifyNever(() => bodyRepository.saveAnalyticsSettings(any())),
+    );
+
+    blocTest<TodayBloc, TodayState>(
+      'a goal that fails to save goes back and says so',
+      setUp: () =>
+          when(() => bodyRepository.saveAnalyticsSettings(any()))
+              .thenThrow(Exception('denied')),
+      build: build,
+      act: (bloc) async {
+        bloc.add(const TodaySubscriptionRequested());
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(const TodayStepGoalSelected(12000));
+      },
+      verify: (bloc) {
+        expect(bloc.state.stepGoal, 8000);
+        expect(bloc.state.stepGoalFailures, 1);
+        expect(bloc.state.stepGoalSaves, 0);
+        final fail = tracked().singleWhere(
+          (e) => e.eventName == 'TodayView_StepGoal_Fail',
+        );
+        expect(fail.type, LogType.severe);
+      },
+    );
+
+    // `testDayCompleteOnce`.
+    blocTest<TodayBloc, TodayState>(
+      'the day is marked complete once',
+      build: build,
+      act: (bloc) => bloc
+        ..add(const TodayDayCompleted(3))
+        ..add(const TodayDayCompleted(3)),
+      expect: () => [
+        isA<TodayState>().having((s) => s.dayCompletions, 'completions', 1),
+      ],
+      verify: (_) {
+        final complete = tracked().where(
+          (e) => e.eventName == 'TodayView_DayComplete',
+        );
+        expect(complete, hasLength(1));
+        expect(complete.single.parameters, {'item_count': 3});
+      },
+    );
+
+    // `testTrainingItemRoutes`, `testSocialPulseTracked`: the bloc's part.
+    blocTest<TodayBloc, TodayState>(
+      'checklist taps and the social row are tracked',
+      build: build,
+      act: (bloc) => bloc
+        ..add(const TodayChecklistItemPressed(TrainingItem()))
+        ..add(
+          const TodayChecklistItemPressed(
+            NutritionItem(calories: 0, proteinGrams: 0, mealsLogged: 0),
+          ),
+        )
+        ..add(const TodayChecklistItemPressed(WeighInItem(isToday: false)))
+        ..add(const TodayChecklistItemPressed(StepsItem(today: 0, goal: 1)))
+        ..add(const TodaySocialPulsePressed()),
+      verify: (_) {
+        final events = tracked();
+        expect(
+          [
+            for (final e in events)
+              if (e.eventName == 'TodayView_ChecklistItem_Press')
+                e.parameters?['item'],
+          ],
+          ['training', 'nutrition', 'weighIn', 'steps'],
+        );
+        expect(events.last.eventName, 'TodayView_SocialPulse_Press');
+      },
+    );
+  });
+
   test('a user without a step goal of their own gets the age default', () {
     final state = TodayState(
       uid: uid,

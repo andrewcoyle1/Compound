@@ -116,7 +116,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Profile | Settings | `Compound/Core/Profile` | M5 | partial | #128, `/profile/settings`; Weight Goal and Nutrition Plan (#154), Subscription (#155), Save Account, Rate and Developer Settings (#166); only the Siri row is missing (M6) |
 | Profile | About | `Subviews/About` | M5 | done | #128; version and build (#166) |
 | Profile | Licences | `Subviews/About/Licences` | M5 | done | #128 (`LicensePage`) |
-| Profile | AppIcon | `Subviews/AppIcon` | M6 | done | #PR: Compound's icon on iOS (light and dark) and Android (adaptive); no alternate-icon row, as Swift hides it (one icon) |
+| Profile | AppIcon | `Subviews/AppIcon` | M6 | done | #181: Compound's icon on iOS (light and dark) and Android (adaptive); no alternate-icon row, as Swift hides it (one icon) |
 | Profile | EditProfile | `Subviews/EditProfile` | M5 | done | #128; photo (#150) |
 | Profile | DeleteAccount | `Subviews/EditProfile/DeleteAccount` | M5 | done | #128 ("Account Deleted" is a snack bar) |
 | Profile | EditUsername | `Subviews/EditProfile/EditUsername` | M5 | done | #131, `/username` |
@@ -209,7 +209,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Training | WorkoutHistory | `Session/WorkoutHistory` | M3 | done | #93, `/training/history` |
 | Training | WorkoutNotes | `Session/WorkoutNotes` | M3 | done | #125 notes sheet |
 | Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | #93, #125, #147, #148, #151; editing, start time, duration and Delete (#162), Swift's full edit mode (#171); only Copy Link is missing (link host) |
-| Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | done | #125, #127 (`/workout`, Finish at); Gym Settings (#140); Workout Settings (#165); rest-complete sound (#172); iPad toolbar: pause, finish and notes on the bar from `AppContentWidth.twoColumns` (#PR) |
+| Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | done | #125, #127 (`/workout`, Finish at); Gym Settings (#140); Workout Settings (#165); rest-complete sound (#172); iPad toolbar: pause, finish and notes on the bar from `AppContentWidth.twoColumns` (#181) |
 | Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | done | #138; Create Gym Profile (#140) |
 | Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | done | #138 |
 | Training | DefineWorkoutWrapper | `Workouts/CreateWorkout/DefineWorkoutWrapper` | M3 | done | #138 |
@@ -248,7 +248,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Reporting and moderation | `ReportManager` | M5 | done | #159: comments, feed cards and profiles |
 | Haptics and sound effects | `HapticManager`, `SoundEffectManager` | M3 | done | haptics across slices; check-in weigh-in (#172); rest-complete sound over a method channel (#172) |
 | Spanish localisation, 100% | `Localizable.xcstrings` | M1 | done | `scripts/arb-spanish.py`, CI check |
-| iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | done | #PR: every page route in a 700 pt column (`AppPageTransitionsTheme`), Today an `AppDashboard` (two columns from 740 pt), Today and Progress 1,100 pt (#103's grids kept) |
+| iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | done | #181: every page route in a 700 pt column (`AppPageTransitionsTheme`), Today an `AppDashboard` (two columns from 740 pt), Today and Progress 1,100 pt (#103's grids kept) |
 | Mac (Catalyst) | Catalyst | M6 | todo | decided at M6; the macOS folder was removed (#82) |
 | Methods & Sources (citations) | `Components/Science` | M4 | done | `science/method_info.dart`: all 31 (#154, #166) |
 

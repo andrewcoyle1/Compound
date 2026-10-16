@@ -56,4 +56,8 @@ class FirebaseAnalyticsService implements AnalyticsService {
   /// Nothing to delete: as in the Swift service.
   @override
   Future<void> deleteUserProfile() async {}
+
+  /// This install's app instance id, or null when analytics collection is
+  /// off (Swift `FirebaseAnalyticsService.appInstanceID`).
+  Future<String?> appInstanceId() => _analytics.appInstanceId;
 }

@@ -65,4 +65,7 @@ class MixpanelService implements AnalyticsService {
 
   @override
   Future<void> deleteUserProfile() async => _mixpanel.getPeople().deleteUser();
+
+  /// This device's distinct id (Swift `MixpanelService.distinctId`).
+  Future<String> distinctId() => _mixpanel.getDistinctId();
 }

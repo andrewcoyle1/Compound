@@ -125,9 +125,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     );
   }
 
-  /// Identifies the store account as [user]'s Firebase uid, or forgets it
-  /// once nobody is signed in. A failure (offline, most often) leaves the
-  /// store unanswered, so the gate stays optimistic until the next sign-in.
+  /// Identifies the store account as [user]'s Firebase uid, with their
+  /// email and the Mixpanel and Firebase Analytics ids as Swift's `logIn`
+  /// sends them, or forgets it once nobody is signed in. A failure (offline,
+  /// most often) leaves the store unanswered, so the gate stays optimistic
+  /// until the next sign-in.
   Future<void> _followStoreAccount(
     AuthUser? user, {
     required bool wasSignedIn,
@@ -136,7 +138,13 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     if (purchases == null) return;
     try {
       if (user != null) {
-        await purchases.logIn(user.uid, email: user.email);
+        final analytics = _analyticsRepository;
+        await purchases.logIn(
+          user.uid,
+          email: user.email,
+          mixpanelDistinctId: await analytics.mixpanelDistinctId(),
+          firebaseAppInstanceId: await analytics.firebaseAppInstanceId(),
+        );
       } else if (wasSignedIn) {
         await purchases.logOut();
       }

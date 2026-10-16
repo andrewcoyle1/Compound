@@ -12157,6 +12157,18 @@
     "@devSettingsWorkoutTemplates": {
         "description": "Developer tools: how many workout templates, system and your own"
     },
+    "devSettingsShareCard": "Share Card",
+    "@devSettingsShareCard": {
+        "description": "Developer tools: header of the share-card export"
+    },
+    "devSettingsExportShareCards": "Export Share Cards",
+    "@devSettingsExportShareCards": {
+        "description": "Developer tools: button that draws both share-card formats and opens the share sheet"
+    },
+    "devSettingsExportShareCardsFooter": "Renders the Story and Square cards for a sample session and opens the share sheet with both, to save to Photos or send.",
+    "@devSettingsExportShareCardsFooter": {
+        "description": "Developer tools: footer under Export Share Cards"
+    },
     "accessoryResumeLabel": "{minutes, plural, =1{Resume workout, {name}, 1 minute} other{Resume workout, {name}, {minutes} minutes}}",
     "@accessoryResumeLabel": {
         "description": "Spoken label of the workout bar over the tabs",

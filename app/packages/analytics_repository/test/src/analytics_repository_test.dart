@@ -1,8 +1,14 @@
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockAnalyticsService extends Mock implements AnalyticsService;
+
+class _MockMixpanel extends Mock implements Mixpanel;
+
+class _MockFirebaseAnalytics extends Mock implements FirebaseAnalytics;
 
 void main() {
   const event = AnalyticsEvent('TodayView_Appear');
@@ -101,6 +107,53 @@ void main() {
 
       verify(() => second.trackEvent(event)).called(1);
       verify(() => first.trackScreenView(event)).called(1);
+    });
+
+    group('the ids RevenueCat is given (Swift Constants)', () {
+      late _MockMixpanel mixpanel;
+      late _MockFirebaseAnalytics firebase;
+
+      setUp(() {
+        mixpanel = _MockMixpanel();
+        firebase = _MockFirebaseAnalytics();
+      });
+
+      test(
+        "are Mixpanel's distinct id and Firebase's app instance id",
+        () async {
+          when(mixpanel.getDistinctId).thenAnswer((_) async => 'distinct');
+          when(() => firebase.appInstanceId)
+              .thenAnswer((_) async => 'instance');
+          repository = AnalyticsRepository(
+            services: [
+              first,
+              MixpanelService(mixpanel: mixpanel),
+              FirebaseAnalyticsService(analytics: firebase),
+            ],
+          );
+          expect(await repository.mixpanelDistinctId(), 'distinct');
+          expect(await repository.firebaseAppInstanceId(), 'instance');
+        },
+      );
+
+      test('are null without those services', () async {
+        expect(await repository.mixpanelDistinctId(), isNull);
+        expect(await repository.firebaseAppInstanceId(), isNull);
+      });
+
+      test('are null when a service fails', () async {
+        when(mixpanel.getDistinctId).thenThrow(StateError('sync'));
+        when(() => firebase.appInstanceId)
+            .thenAnswer((_) => Future.error(StateError('async')));
+        repository = AnalyticsRepository(
+          services: [
+            MixpanelService(mixpanel: mixpanel),
+            FirebaseAnalyticsService(analytics: firebase),
+          ],
+        );
+        expect(await repository.mixpanelDistinctId(), isNull);
+        expect(await repository.firebaseAppInstanceId(), isNull);
+      });
     });
   });
 

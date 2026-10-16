@@ -4,14 +4,20 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/dev/dev_settings_cubit.dart';
 import 'package:compound/settings/general/view/on_dispose.dart';
+import 'package:compound/sharing/share_card/share_card_content.dart';
+import 'package:compound/sharing/share_card/share_card_renderer.dart';
+import 'package:compound/sharing/share_card/workout_share_card.dart';
+import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:purchases_repository/purchases_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// Developer tools (Swift `DevSettingsView`), behind a Settings row in the
@@ -97,6 +103,18 @@ class DevSettingsView extends StatelessWidget {
                 ],
               ),
               gap,
+              AppSection(
+                header: l10n.devSettingsShareCard,
+                footer: l10n.devSettingsExportShareCardsFooter,
+                children: [
+                  AppListRowButton(
+                    title: l10n.devSettingsExportShareCards,
+                    accessory: null,
+                    onPressed: () => unawaited(_exportShareCards(context)),
+                  ),
+                ],
+              ),
+              gap,
               _Values(l10n.devSettingsAuthInfo, devAuthParameters(user)),
               gap,
               _Values(l10n.devSettingsUserInfo, devUserParameters(profile)),
@@ -147,6 +165,55 @@ class DevSettingsView extends StatelessWidget {
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(l10n.settingsSignOutFailed)));
   }
+}
+
+/// Draws the sample session's card in both formats and opens the share
+/// sheet with them (Swift's `onSaveShareCardsPressed`, which saves them to
+/// Photos; the sheet offers that). The session is read against the rest of
+/// the sample history, so the card carries records and a weekly count.
+Future<void> _exportShareCards(BuildContext context) async {
+  final l10n = context.l10n;
+  final shareSheet = context.read<ShareSheet>();
+  final messenger = ScaffoldMessenger.of(context);
+  final now = DateTime.now();
+  final week = sampleWorkoutSessions(uid: sampleUserId, now: now);
+  final content = ShareCardContent.fromHistory(
+    l10n,
+    week.first,
+    author: sampleUser(now: now),
+    history: [
+      ...sampleEarlierWorkoutSessions(uid: sampleUserId, now: now),
+      ...week,
+    ],
+    firstDayOfWeek: firstDayOfWeekIndex(context),
+    locale: Localizations.localeOf(context).toLanguageTag(),
+  );
+  final accent = Theme.of(context).colorScheme.primary;
+  final avatar = await loadShareCardImage(context, content.avatarUrl);
+  final images = <(String, Uint8List)>[];
+  for (final format in ShareCardFormat.values) {
+    if (!context.mounted) return;
+    final png = await renderShareCard(
+      context,
+      WorkoutShareCard(
+        content: content,
+        format: format,
+        accent: accent,
+        l10n: l10n,
+        avatar: avatar,
+      ),
+      size: format.size,
+    );
+    if (png != null) images.add(('compound-${format.name}.png', png));
+  }
+  if (!context.mounted) return;
+  if (images.isEmpty) {
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.shareImageFailed)));
+    return;
+  }
+  await shareSheet.shareImages(context, images);
 }
 
 /// A session's ids, dates and progress, as Swift's debug rows. The labels

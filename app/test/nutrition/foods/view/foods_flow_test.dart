@@ -279,6 +279,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Library'));
       await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('FoodPicker.segments')),
+          matching: find.text('Foods'),
+        ),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('FoodPicker.createFood')));
       await tester.pumpAndSettle();
 

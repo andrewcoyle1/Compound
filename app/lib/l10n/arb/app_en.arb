@@ -9106,5 +9106,200 @@
     "timelineSaveFailed": "Unable to Save Settings",
     "@timelineSaveFailed": {},
     "timelineTryAgain": "Please try again.",
-    "@timelineTryAgain": {}
+    "@timelineTryAgain": {},
+    "nutritionRecipes": "Recipes",
+    "@nutritionRecipes": {},
+    "nutritionSearchPrompt": "Foods and recipes",
+    "@nutritionSearchPrompt": {},
+    "nutritionSearchRecipes": "Recipes",
+    "@nutritionSearchRecipes": {},
+    "nutritionSearchFoods": "Foods",
+    "@nutritionSearchFoods": {},
+    "recipesTitle": "Recipes",
+    "@recipesTitle": {},
+    "recipesFilter": "Filter Recipes",
+    "@recipesFilter": {},
+    "recipesCustom": "Custom Recipes",
+    "@recipesCustom": {},
+    "recipesAdd": "Add recipe",
+    "@recipesAdd": {},
+    "recipesEmptyTitle": "No Recipes",
+    "@recipesEmptyTitle": {},
+    "recipesEmptyMessage": "Recipes you create appear here.",
+    "@recipesEmptyMessage": {},
+    "recipesCreate": "Create a Recipe",
+    "@recipesCreate": {},
+    "recipesNoResults": "No Results for “{query}”",
+    "@recipesNoResults": {
+        "placeholders": {
+            "query": {
+                "type": "String"
+            }
+        }
+    },
+    "createRecipeTitle": "Create Recipe",
+    "@createRecipeTitle": {},
+    "createRecipeName": "Recipe name",
+    "@createRecipeName": {},
+    "createRecipeNamePrompt": "Enter recipe name",
+    "@createRecipeNamePrompt": {},
+    "createRecipeRequired": "Required",
+    "@createRecipeRequired": {},
+    "createRecipeServings": "Serving Quantity",
+    "@createRecipeServings": {},
+    "createRecipeServingsPrompt": "Enter serving quantity",
+    "@createRecipeServingsPrompt": {},
+    "createRecipeTotalWeight": "Total Weight",
+    "@createRecipeTotalWeight": {},
+    "createRecipeTotalWeightPrompt": "Enter weight after preparation",
+    "@createRecipeTotalWeightPrompt": {},
+    "createRecipeIngredients": "Ingredients",
+    "@createRecipeIngredients": {},
+    "createRecipeIngredientsWeight": "Weight of ingredients is {weight}",
+    "@createRecipeIngredientsWeight": {
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            }
+        }
+    },
+    "createRecipeAddIngredient": "Add ingredient",
+    "@createRecipeAddIngredient": {},
+    "createRecipeAmount": "Amount",
+    "@createRecipeAmount": {},
+    "createRecipeUnit": "Unit",
+    "@createRecipeUnit": {},
+    "createRecipeUnits": "units",
+    "@createRecipeUnits": {},
+    "createRecipeRemoveIngredient": "Remove {name}",
+    "@createRecipeRemoveIngredient": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "createRecipeNext": "Next",
+    "@createRecipeNext": {},
+    "createRecipeDiscardTitle": "Discard this recipe?",
+    "@createRecipeDiscardTitle": {},
+    "createRecipeDiscard": "Discard Recipe",
+    "@createRecipeDiscard": {},
+    "recipePreparationTiming": "Timing",
+    "@recipePreparationTiming": {},
+    "recipePreparationPrepTime": "Preparation Time",
+    "@recipePreparationPrepTime": {},
+    "recipePreparationPrepTimePrompt": "Enter preparation time",
+    "@recipePreparationPrepTimePrompt": {},
+    "recipePreparationCookTime": "Cooking Time",
+    "@recipePreparationCookTime": {},
+    "recipePreparationCookTimePrompt": "Enter cooking time",
+    "@recipePreparationCookTimePrompt": {},
+    "recipePreparationMinutes": "min",
+    "@recipePreparationMinutes": {},
+    "recipePreparationLink": "Link",
+    "@recipePreparationLink": {},
+    "recipePreparationLinkPrompt": "Enter link to the recipe",
+    "@recipePreparationLinkPrompt": {},
+    "recipePreparationSteps": "Preparation Steps",
+    "@recipePreparationSteps": {},
+    "recipePreparationStep": "Step {number}",
+    "@recipePreparationStep": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "recipePreparationAddStep": "Add Step",
+    "@recipePreparationAddStep": {},
+    "recipePreparationRemoveStep": "Remove step {number}",
+    "@recipePreparationRemoveStep": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "recipePreparationCreate": "Create",
+    "@recipePreparationCreate": {},
+    "recipePreparationFailed": "Unable to Save Recipe",
+    "@recipePreparationFailed": {},
+    "recipePreparationFailedMessage": "Please check your internet connection and try again.",
+    "@recipePreparationFailedMessage": {},
+    "recipeIngredientAdd": "Add",
+    "@recipeIngredientAdd": {},
+    "recipeAmountServings": "Servings",
+    "@recipeAmountServings": {},
+    "recipeDetailServings": "Servings",
+    "@recipeDetailServings": {},
+    "recipeDetailServingCount": "{servings} {count, plural, =1{serving} other{servings}}",
+    "@recipeDetailServingCount": {
+        "placeholders": {
+            "servings": {
+                "type": "String"
+            },
+            "count": {
+                "type": "num"
+            }
+        }
+    },
+    "recipeDetailCalories": "Calories",
+    "@recipeDetailCalories": {},
+    "recipeDetailIngredients": "Ingredients",
+    "@recipeDetailIngredients": {},
+    "recipeDetailStart": "Start",
+    "@recipeDetailStart": {},
+    "recipeDetailOptions": "Recipe options",
+    "@recipeDetailOptions": {},
+    "recipeDetailDelete": "Delete Recipe",
+    "@recipeDetailDelete": {},
+    "recipeDetailDeleteTitle": "Delete Recipe",
+    "@recipeDetailDeleteTitle": {},
+    "recipeDetailDeleteMessage": "Are you sure you want to delete '{name}'? This action cannot be undone.",
+    "@recipeDetailDeleteMessage": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "recipeDetailDeleteConfirm": "Delete",
+    "@recipeDetailDeleteConfirm": {},
+    "recipeDetailDeleteFailed": "Failed to delete recipe",
+    "@recipeDetailDeleteFailed": {},
+    "recipeDetailDeleteTryLater": "Please try again later",
+    "@recipeDetailDeleteTryLater": {},
+    "recipeDetailFavouriteFailed": "Unable to Update Favorites",
+    "@recipeDetailFavouriteFailed": {},
+    "recipeDetailAddFavourite": "Add to favorites",
+    "@recipeDetailAddFavourite": {},
+    "recipeDetailRemoveFavourite": "Remove from favorites",
+    "@recipeDetailRemoveFavourite": {},
+    "recipeDetailNotFound": "This recipe has been deleted.",
+    "@recipeDetailNotFound": {},
+    "addMealLibraryRecipes": "Recipes",
+    "@addMealLibraryRecipes": {},
+    "addMealLibraryFoods": "Foods",
+    "@addMealLibraryFoods": {},
+    "addMealLibraryFavorites": "Favorites",
+    "@addMealLibraryFavorites": {},
+    "addMealFilterRecipes": "Filter Recipes",
+    "@addMealFilterRecipes": {},
+    "addMealFilterFavorites": "Filter Favorites",
+    "@addMealFilterFavorites": {},
+    "addMealNoFavoritesTitle": "No Favorites",
+    "@addMealNoFavoritesTitle": {},
+    "addMealNoFavoritesMessage": "Tap the heart on a food or recipe to keep it here.",
+    "@addMealNoFavoritesMessage": {},
+    "addMealMyRecipes": "My Recipes",
+    "@addMealMyRecipes": {},
+    "addMealQuickAddRecipe": "Quick add {name}",
+    "@addMealQuickAddRecipe": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    }
 }

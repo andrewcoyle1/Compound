@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 
-class _FailingFoods implements FoodRepository {
+class _FailingFoods extends Fake implements FoodRepository {
   @override
   Future<void> saveFood(FoodModel food) async => throw StateError('offline');
 

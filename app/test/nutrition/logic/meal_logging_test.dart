@@ -266,37 +266,6 @@ void main() {
     );
   });
 
-  group('recentFoods', () {
-    final foods = [food('oats'), food('rice', name: 'Rice'), food('egg')];
-
-    test('lists the foods eaten, newest first, each once', () {
-      final meals = [
-        meal('old', DateTime(2026, 9, 3), [item('1', sourceId: 'egg')]),
-        meal('new', DateTime(2026, 9, 4), [
-          item('2', sourceId: 'oats'),
-          item('3', sourceId: 'rice'),
-          item('4', sourceId: 'gone'),
-          item('5', sourceId: 'q', type: MealItemSourceType.quickAdd),
-        ]),
-        meal('older', DateTime(2026, 8, 5), [item('6', sourceId: 'rice')]),
-      ];
-      expect(
-        [for (final food in recentFoods(meals, foods)) food.ingredientId],
-        ['rice', 'oats', 'egg'],
-      );
-    });
-
-    test('stops at the limit', () {
-      final meals = [
-        meal('m', DateTime(2026, 9, 2), [
-          item('2', sourceId: 'oats'),
-          item('3', sourceId: 'rice'),
-        ]),
-      ];
-      expect(recentFoods(meals, foods, limit: 1), hasLength(1));
-    });
-  });
-
   group('libraryMatches', () {
     final foods = [
       food('oats', name: 'Rolled Oats', brand: 'Flahavan'),

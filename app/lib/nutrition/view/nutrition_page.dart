@@ -10,18 +10,24 @@ import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/add_meal/view/amount_sheets.dart';
 import 'package:compound/nutrition/bloc/nutrition_day_bloc.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
+import 'package:compound/nutrition/foods/view/food_detail_page.dart';
 import 'package:compound/nutrition/foods/view/foods_page.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/meal_detail/meal_detail_page.dart';
+import 'package:compound/nutrition/recipes/view/recipe_detail_page.dart';
+import 'package:compound/nutrition/recipes/view/recipes_page.dart';
+import 'package:compound/nutrition/search/nutrition_search_cubit.dart';
 import 'package:compound/nutrition/timeline_actions/timeline_actions_sheet.dart';
 import 'package:compound/nutrition/view/widgets/calendar_strip.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -38,12 +44,22 @@ class NutritionPage extends StatelessWidget {
     // The router only shows the tabs while someone is signed in.
     final state = context.read<AppBloc>().state;
     if (state is! AppAuthenticated) return const SizedBox.shrink();
-    return BlocProvider(
-      create: (context) => NutritionDayBloc(
-        nutritionRepository: context.read<NutritionRepository>(),
-        analyticsRepository: context.read<AnalyticsRepository>(),
-        uid: state.user.uid,
-      )..add(const NutritionDaySubscriptionRequested()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => NutritionDayBloc(
+            nutritionRepository: context.read<NutritionRepository>(),
+            analyticsRepository: context.read<AnalyticsRepository>(),
+            uid: state.user.uid,
+          )..add(const NutritionDaySubscriptionRequested()),
+        ),
+        BlocProvider(
+          create: (context) => NutritionSearchCubit(
+            uid: state.user.uid,
+            foods: context.read<FoodRepository>(),
+          ),
+        ),
+      ],
       child: const NutritionView(),
     );
   }
@@ -57,6 +73,7 @@ class NutritionView extends StatelessWidget {
     final l10n = context.l10n;
     final state = context.watch<NutritionDayBloc>().state;
     final draft = context.watch<MealDraftCubit>().state;
+    final search = context.watch<NutritionSearchCubit>().state;
     return MultiBlocListener(
       listeners: [
         BlocListener<NutritionDayBloc, NutritionDayState>(
@@ -149,15 +166,39 @@ class NutritionView extends StatelessWidget {
                   ),
                 ),
               ),
-        body: switch (state.status) {
-          NutritionDayStatus.loading => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
-          NutritionDayStatus.failure => _Message(
-            title: l10n.nutritionDayLoadFailed,
-          ),
-          NutritionDayStatus.loaded => _Day(state: state),
-        },
+        // The search over the user's foods and recipes sits above the day,
+        // and its results replace the day while it has a query.
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.l,
+                AppSpacing.s,
+                AppSpacing.l,
+                0,
+              ),
+              child: LibrarySearchField(
+                key: const Key('Nutrition.search'),
+                hint: l10n.nutritionSearchPrompt,
+                onChanged: context.read<NutritionSearchCubit>().queryChanged,
+              ),
+            ),
+            Expanded(
+              child: search.isSearching
+                  ? _SearchResults(state: search)
+                  : switch (state.status) {
+                      NutritionDayStatus.loading => const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      ),
+                      NutritionDayStatus.failure => _Message(
+                        title: l10n.nutritionDayLoadFailed,
+                      ),
+                      NutritionDayStatus.loaded => _Day(state: state),
+                    },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -275,9 +316,9 @@ class _Day extends StatelessWidget {
                     ),
                   ),
               ],
-              // The foods the user has made, otherwise reachable only from
-              // inside the meal logger (Swift's Library section; Recipes
-              // come with their own slice).
+              // The foods and recipes the user has made, otherwise
+              // reachable only from inside the meal logger (Swift's Library
+              // section).
               const SizedBox(height: AppSpacing.l),
               AppSection(
                 header: l10n.nutritionLibraryHeader,
@@ -287,6 +328,12 @@ class _Day extends StatelessWidget {
                     title: l10n.nutritionFoods,
                     icon: AppSymbols.food,
                     onPressed: () => unawaited(showFoods(context)),
+                  ),
+                  AppListRowButton(
+                    key: const Key('Nutrition.recipes'),
+                    title: l10n.nutritionRecipes,
+                    icon: AppSymbols.recipe,
+                    onPressed: () => unawaited(RecipesPage.show(context)),
                   ),
                 ],
               ),
@@ -322,6 +369,58 @@ class _Day extends StatelessWidget {
     if (edited == null) return;
     unawaited(HapticFeedback.successNotification());
     bloc.add(NutritionDayItemEdited(meal, edited));
+  }
+}
+
+/// The search's results (Swift `NutritionView.searchResults`): recipes,
+/// then foods, each opening its detail.
+class _SearchResults extends StatelessWidget {
+  const new({required this.state});
+
+  final NutritionSearchState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final recipes = state.matchingRecipes;
+    final foods = state.matchingFoods;
+    if (recipes.isEmpty && foods.isEmpty) {
+      return LibraryEmptyState(
+        icon: AppSymbols.search,
+        title: l10n.searchNoResults(state.query.trim()),
+        message: l10n.searchNoResultsMessage,
+      );
+    }
+    return LibrarySections(
+      children: [
+        if (recipes.isNotEmpty)
+          AppSection(
+            header: l10n.nutritionSearchRecipes,
+            children: [
+              for (final recipe in recipes)
+                AppListRowButton(
+                  title: recipe.name,
+                  subtitle: recipe.description,
+                  onPressed: () =>
+                      unawaited(RecipeDetailPage.show(context, recipe)),
+                ),
+            ],
+          ),
+        if (foods.isNotEmpty)
+          AppSection(
+            header: l10n.nutritionSearchFoods,
+            children: [
+              for (final food in foods)
+                AppListRowButton(
+                  title: food.name,
+                  subtitle: food.description,
+                  onPressed: () =>
+                      unawaited(FoodDetailPage.show(context, food)),
+                ),
+            ],
+          ),
+      ],
+    );
   }
 }
 

@@ -163,3 +163,81 @@ const List<_Sample> _samples = [
     barcode: null,
   ),
 ];
+
+/// Three recipes in [uid]'s library made from [foods] (`sampleFoods`), for
+/// the staging flavor, made at [now]. Their ids are `sample-recipe-…`.
+List<RecipeTemplateModel> sampleRecipes({
+  required String uid,
+  required DateTime now,
+  required List<FoodModel> foods,
+}) {
+  final byName = {for (final food in foods) food.name: food};
+  RecipeIngredientModel use(String name, double amount) =>
+      RecipeIngredientModel.forFood(byName[name]!, amount);
+  RecipeTemplateModel recipe(
+    String id,
+    String name, {
+    required List<RecipeIngredientModel> ingredients,
+    required double servings,
+    String? description,
+    List<String> steps = const [],
+    double? prep,
+    double? cook,
+  }) => RecipeTemplateModel(
+    recipeId: 'sample-recipe-$id',
+    authorId: uid,
+    name: name,
+    description: description,
+    dateCreated: now,
+    dateModified: now,
+    ingredients: ingredients,
+    servingQuantity: servings,
+    preparationSteps: steps,
+    prepTimeMins: prep,
+    cookTimeMins: cook,
+  );
+  return [
+    recipe(
+      'overnight-oats',
+      'Overnight Oats',
+      description: 'Oats soaked in milk with banana and yogurt.',
+      ingredients: [
+        use('Rolled Oats', 80),
+        use('Semi-Skimmed Milk', 300),
+        use('Greek Yogurt (0%)', 170),
+        use('Banana', 118),
+      ],
+      servings: 2,
+      steps: ['Stir everything together in a jar.', 'Chill overnight.'],
+      prep: 5,
+    ),
+    recipe(
+      'chicken-rice-bowl',
+      'Chicken Rice Bowl',
+      description: 'Meal-prep chicken with rice and broccoli.',
+      ingredients: [
+        use('Chicken Breast', 600),
+        use('Basmati Rice (cooked)', 800),
+        use('Broccoli', 400),
+      ],
+      servings: 4,
+      steps: [
+        'Cook the rice.',
+        'Grill the chicken and slice it.',
+        'Steam the broccoli and divide everything between four boxes.',
+      ],
+      prep: 10,
+      cook: 25,
+    ),
+    recipe(
+      'salmon-avocado-toast',
+      'Salmon Avocado Toast',
+      ingredients: [
+        use('Wholemeal Bread', 80),
+        use('Avocado', 75),
+        use('Atlantic Salmon', 125),
+      ],
+      servings: 1,
+    ),
+  ];
+}

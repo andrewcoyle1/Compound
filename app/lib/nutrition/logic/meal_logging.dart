@@ -1,8 +1,8 @@
 /// Logging a meal, ported from the Swift `AddMealPresenter`,
 /// `IngredientAmountPresenter`, `MealItemAmountViewPresenter`,
-/// `FoodItemQuickAddPresenter`, `MealHourHeaderPresenter`, `NutritionScaling`
-/// and `RecentPick`: the new meal's time, amounts typed in, the plate's
-/// totals, quick add and recent foods. Pure, so the blocs and sheets only
+/// `FoodItemQuickAddPresenter`, `MealHourHeaderPresenter` and
+/// `NutritionScaling`: the new meal's time, amounts typed in, the plate's
+/// totals and quick add. Pure, so the blocs and sheets only
 /// read it.
 library;
 
@@ -237,33 +237,6 @@ int addedCount(List<MealItemModel> items, String ingredientId) => items
     .length;
 
 // MARK: - Finding foods
-
-/// The foods most recently eaten, newest first and each once, as the search
-/// screen's "Recent" (`[MealLogModel].recentPicks`, foods only until
-/// recipes arrive). By the meals' dates, then the last item first.
-List<FoodModel> recentFoods(
-  List<MealLogModel> meals,
-  List<FoodModel> foods, {
-  int limit = 20,
-}) {
-  final byId = <String, FoodModel>{};
-  for (final food in foods) {
-    byId.putIfAbsent(food.ingredientId, () => food);
-  }
-  final seen = <String>{};
-  final result = <FoodModel>[];
-  final sorted = [...meals]..sort((a, b) => b.date.compareTo(a.date));
-  for (final meal in sorted) {
-    for (final item in meal.items.reversed) {
-      if (item.sourceType != MealItemSourceType.ingredient) continue;
-      final food = byId[item.sourceId];
-      if (food == null || !seen.add(food.ingredientId)) continue;
-      result.add(food);
-      if (result.length == limit) return result;
-    }
-  }
-  return result;
-}
 
 /// The user's foods matching [query] by name or brand, ignoring case, at
 /// most 20 (`FoodItemSearchPresenter.libraryResults`). A blank query finds

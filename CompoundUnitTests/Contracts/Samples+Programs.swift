@@ -2,7 +2,7 @@
 //  Samples+Programs.swift
 //  CompoundUnitTests
 //
-//  The fixed samples behind contracts/firestore/{mesocycle,macrocycle,food_model}. See
+//  The fixed samples behind contracts/firestore/{mesocycle,macrocycle,food_model,recipe_template}. See
 //  FirestoreContractTests.swift.
 //
 
@@ -104,5 +104,46 @@ extension Samples {
         name: "Water",
         dateCreated: date("2026-07-02T08:00:00.000Z"),
         dateModified: date("2026-07-02T08:00:00.000Z")
+    )
+
+    /// One ingredient per unit, the first carrying the full food, so the nested food is under
+    /// the contract too.
+    static let fullRecipe = RecipeTemplateModel(
+        id: "recipe_contract_full",
+        authorId: "user_contract_full",
+        name: "Overnight Oats",
+        description: "Soaked overnight",
+        imageURL: "https://example.com/overnight-oats.jpg",
+        dateCreated: date("2026-07-03T08:00:00.250Z"),
+        dateModified: date("2026-10-06T12:30:00.750Z"),
+        ingredients: [
+            RecipeIngredientModel(ingredient: fullFood, amount: 250.5, unit: .milliliters),
+            RecipeIngredientModel(ingredient: minimalFood, amount: 80.25, unit: .grams),
+            RecipeIngredientModel(ingredient: minimalFood, amount: 1.5, unit: .units)
+        ],
+        clickCount: 4,
+        bookmarkCount: 2,
+        favouriteCount: 1,
+        servingQuantity: 2.5,
+        totalWeight: 412.75,
+        preparationSteps: ["Mix the oats and milk.", "Chill overnight."],
+        prepTimeMins: 5.5,
+        cookTimeMins: 0.5,
+        sourceURL: "https://example.com/recipes/overnight-oats"
+    )
+
+    /// `click_count`, `bookmark_count` and `favourite_count` default to 0 in the initialiser, so
+    /// they are cleared here to leave only what a document must hold. The serving count is always
+    /// written; it is not a whole number so the fixture keeps it a double.
+    static let minimalRecipe = RecipeTemplateModel(
+        id: "recipe_contract_minimal",
+        authorId: "user_contract_minimal",
+        name: "Toast",
+        dateCreated: date("2026-07-04T08:00:00.000Z"),
+        dateModified: date("2026-07-04T08:00:00.000Z"),
+        clickCount: nil,
+        bookmarkCount: nil,
+        favouriteCount: nil,
+        servingQuantity: 1.5
     )
 }

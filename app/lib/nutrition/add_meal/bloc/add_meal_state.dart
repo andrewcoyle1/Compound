@@ -12,7 +12,7 @@ enum FoodPickerMode {
   /// Energy and macros typed straight in.
   quickAdd,
 
-  /// The user's saved and favourite foods.
+  /// The user's recipes, foods and favourites.
   library,
 }
 
@@ -61,6 +61,9 @@ final class const AddMealState({
 
   /// The user's food library.
   final List<FoodModel> foods = const [],
+
+  /// The user's recipes.
+  final List<RecipeTemplateModel> recipes = const [],
 }) extends Equatable {
   /// The settings, or Swift's defaults until they arrive.
   FoodLogSettings get effectiveSettings =>
@@ -82,6 +85,7 @@ final class const AddMealState({
     DietPlan? Function()? dietPlan,
     FoodLogSettings? settings,
     List<FoodModel>? foods,
+    List<RecipeTemplateModel>? recipes,
   }) => AddMealState(
     meal: meal ?? this.meal,
     pickerOpen: pickerOpen ?? this.pickerOpen,
@@ -97,6 +101,7 @@ final class const AddMealState({
     dietPlan: dietPlan == null ? this.dietPlan : dietPlan(),
     settings: settings ?? this.settings,
     foods: foods ?? this.foods,
+    recipes: recipes ?? this.recipes,
   );
 
   @override
@@ -110,5 +115,6 @@ final class const AddMealState({
     dietPlan,
     settings,
     foods,
+    [for (final recipe in recipes) recipe.toFirestore()],
   ];
 }

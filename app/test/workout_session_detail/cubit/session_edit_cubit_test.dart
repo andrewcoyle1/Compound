@@ -37,8 +37,8 @@ class _Sessions extends InMemoryWorkoutSessionRepository {
 /// `+Timing` extension), `WorkoutSessionDeleteFailureTests` and the saved
 /// edit's side of `WorkoutSessionStravaLinkTests`. The summary figures,
 /// the Strava link and offer, and the exercise line are the read-only
-/// screen's and tested with it; supersets, swap and per-exercise units are
-/// not in the Flutter editor.
+/// screen's and tested with it; supersets, swap, per-exercise units and
+/// the set table are in `session_edit_set_table_test.dart`.
 void main() {
   // A Tuesday, so the streak's week is the same whichever day starts it.
   final today = DateTime(2026, 3, 10, 18);

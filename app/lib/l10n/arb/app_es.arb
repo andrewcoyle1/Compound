@@ -2921,5 +2921,20 @@
     "chartPreviousPeriod": "Periodo anterior",
     "chartNextPeriod": "Periodo siguiente",
     "contributionOfDays": "{count, plural, =1{de 1 día} other{de {count} días}}",
-    "contributionDaysLogged": "Días registrados, {range}"
+    "contributionDaysLogged": "Días registrados, {range}",
+    "sessionSuperset": "Superserie…",
+    "sessionRemoveSuperset": "Quitar superserie",
+    "sessionRemoveCircuit": "Quitar circuito",
+    "sessionAddToGroup": "Añadir al grupo",
+    "sessionPairWith": "Emparejar «{name}» con:",
+    "sessionNoExercisesAvailable": "No hay ejercicios disponibles",
+    "sessionNoExercisesAvailableMessage": "Añade más ejercicios para crear una superserie o un circuito.",
+    "sessionDiscardLoggedSetsTitle": "¿Descartar las series registradas?",
+    "sessionMeasuredDifferently": "{replacement} se mide de otra forma, así que las series registradas de {current} no se pueden trasladar.",
+    "sessionSwapAndDiscard": "Cambiar y descartar series",
+    "sessionAddNote": "Añadir nota",
+    "sessionEditNote": "Editar nota",
+    "sessionAllSetsDone": "Todas las series hechas",
+    "sessionSetProgress": "Serie {done}/{total}",
+    "trackerNoteSaveFailed": "No se pudo guardar la nota"
 }

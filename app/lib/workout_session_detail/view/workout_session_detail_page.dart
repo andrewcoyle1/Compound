@@ -18,6 +18,8 @@ import 'package:compound/workout_session_detail/cubit/session_strava_cubit.dart'
 import 'package:compound/workout_session_detail/view/session_exercise_editor.dart';
 import 'package:compound/workout_session_detail/view/session_timing_sheets.dart';
 import 'package:compound/workout_session_detail/view/set_detail_row.dart';
+import 'package:compound/workout_tracker/logic/set_keypad.dart' show SetKeypad;
+import 'package:compound/workout_tracker/view/set_keypad_view.dart';
 import 'package:compound/workout_tracker/view/set_row_parts.dart'
     show confirmDestructive;
 import 'package:compound/workout_tracker/view/tracker_text.dart';
@@ -29,6 +31,8 @@ import 'package:intl/intl.dart';
 import 'package:strava_repository/strava_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart'
     show TrainingLibraryRepository;
+import 'package:training_session/training_session.dart'
+    show UnitPreferenceStore;
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -140,6 +144,7 @@ class WorkoutSessionDetailView extends StatelessWidget {
             analytics: context.read(),
             library: context.read<TrainingLibraryRepository>(),
             strava: context.read<StravaRepository?>(),
+            units: context.read<UnitPreferenceStore>(),
             uid: switch (context.read<AppBloc>().state) {
               AppAuthenticated(:final user) => user.uid,
               _ => null,
@@ -297,6 +302,9 @@ class _LoadedView extends StatelessWidget {
             ],
           ),
           body: _Detail(state: state),
+          bottomNavigationBar: edit.keypad == null
+              ? null
+              : _Keypad(state: edit, keypad: edit.keypad!),
         ),
       ),
     );
@@ -344,6 +352,14 @@ class _LoadedView extends StatelessWidget {
       SessionEditNotice.deleteFailed => (
         l10n.editorDeleteFailed,
         l10n.editorTryAgain,
+      ),
+      SessionEditNotice.exerciseNoteFailed => (
+        l10n.trackerNoteSaveFailed,
+        l10n.editorTryAgain,
+      ),
+      SessionEditNotice.gymSaveFailed => (
+        l10n.trackerUnableToSaveGym,
+        l10n.gymCheckConnection,
       ),
       SessionEditNotice.logProblem || null => (
         l10n.trackerLogRefusedTitle,
@@ -554,12 +570,11 @@ class _Detail extends StatelessWidget {
                 ),
               ],
             ),
-            for (final exercise in session.exercises) ...[
+            for (final member in edit.members) ...[
               const SizedBox(height: AppSpacing.l),
               SessionExerciseEditor(
-                key: ValueKey(exercise.id),
-                exercise: exercise,
-                distanceUnit: distanceUnit,
+                key: ValueKey(member.exercise.id),
+                member: member,
               ),
             ],
           ] else
@@ -628,6 +643,34 @@ class _Detail extends StatelessWidget {
     final cubit = context.read<SessionEditCubit>();
     final picked = await ExercisePickerPage.show(context);
     if (picked != null) cubit.addExercises(picked);
+  }
+}
+
+/// The tracker's keypad, docked at the foot while it types into a set.
+class _Keypad extends StatelessWidget {
+  const new({required this.state, required this.keypad});
+
+  final SessionEditState state;
+  final SetKeypad keypad;
+
+  @override
+  Widget build(BuildContext context) {
+    final member = state.member(keypad.exerciseId);
+    return Material(
+      color: Theme.of(context).colorScheme.surface,
+      child: SafeArea(
+        top: false,
+        child: SetKeypadView(
+          keypad: keypad,
+          exercise: member?.exercise,
+          member: member,
+          actions: context.read<SessionEditCubit>(),
+          rirTracking: state.settings?.rirTracking ?? false,
+          showsPlates: state.showsPlates,
+          plateCalculator: state.plateCalculatorSetup,
+        ),
+      ),
+    );
   }
 }
 

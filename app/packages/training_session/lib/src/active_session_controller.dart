@@ -863,6 +863,31 @@ class ActiveSessionController {
     _loadHistory(null);
   }
 
+  /// [exerciseId] swapped in place for [replacement], as a finished workout
+  /// is corrected ([swappingInPlace]); its logged sets stay when
+  /// [keepLoggedSets].
+  void swapInPlace(
+    String exerciseId,
+    m.ExerciseModel replacement, {
+    required bool keepLoggedSets,
+  }) {
+    final exercise = _exercise(exerciseId);
+    if (exercise == null) return;
+    _replaceExercise(
+      swappingInPlace(
+        exercise,
+        replacement: replacement,
+        keepLoggedSets: keepLoggedSets,
+        authorId: _environment.authorId,
+        now: _clock(),
+        gym: _environment.gym,
+        preference: _environment.unitPreferences[replacement.id],
+        newId: _newId,
+      ),
+    );
+    _loadHistory(null);
+  }
+
   /// [exerciseId] on another of its variations: its unit again, its open
   /// sets on weights the new equipment makes, and last time and the
   /// suggestion read on the new kind of load.

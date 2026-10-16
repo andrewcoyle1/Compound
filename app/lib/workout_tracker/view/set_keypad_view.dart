@@ -2,14 +2,16 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart';
+import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart'
+    show TrackerExercise;
+import 'package:compound/workout_tracker/cubit/plate_calculator_cubit.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/plate_calculator_sheet.dart';
 import 'package:compound/workout_tracker/view/plate_loading_view.dart';
+import 'package:compound/workout_tracker/view/set_table.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
@@ -23,18 +25,45 @@ import 'package:training_session/training_session.dart';
 /// assisted weight; − and + on a weight; and Next → to the row's next field,
 /// or ✓ on its last, which logs the set. Over a weight: the bar and plates
 /// being loaded, the gym's bands and how to make a stack's weight.
+///
+/// It works for whichever screen holds the set table: the live tracker or
+/// a finished workout's editor, through [actions].
 class SetKeypadView extends StatelessWidget {
-  const new({required this.state, required this.keypad, super.key});
+  const new({
+    required this.keypad,
+    required this.exercise,
+    required this.member,
+    required this.actions,
+    this.rirTracking = false,
+    this.showsPlates = true,
+    this.plateCalculator,
+    super.key,
+  });
 
-  final ActiveWorkoutState state;
   final SetKeypad keypad;
+
+  /// The exercise holding the keypad's set.
+  final WorkoutExerciseModel? exercise;
+
+  /// The exercise's units and steps.
+  final TrackerExercise? member;
+  final SetTableActions actions;
+
+  /// The effort chips show for every set, not only those with a target.
+  final bool rirTracking;
+
+  /// The loading bar is shown over a bar's weight.
+  final bool showsPlates;
+
+  /// What the loading bar's plate calculator opens on.
+  final PlateCalculatorSetup? plateCalculator;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cubit = context.read<ActiveWorkoutCubit>();
-    final exercise = state.exercise(keypad.exerciseId);
-    final set = state.set(keypad.setId);
+    final cubit = actions;
+    final exercise = this.exercise;
+    final set = exercise?.sets.where((s) => s.id == keypad.setId).firstOrNull;
     if (exercise == null || set == null) return const SizedBox.shrink();
     final locale = Localizations.localeOf(context).toLanguageTag();
     final separator = NumberFormat.decimalPattern(locale).symbols.DECIMAL_SEP;
@@ -54,16 +83,13 @@ class SetKeypadView extends StatelessWidget {
         .where((s) => s.completedAt != null && !s.isWarmup && s.id != set.id)
         .lastOrNull
         ?.reps;
-    final showsEffort =
-        (state.settings?.rirTracking ?? false) || target?.rirTarget != null;
+    final showsEffort = rirTracking || target?.rirTarget != null;
     final selectedRir = set.rpe == null
         ? null
         : r.EffortScale.rirChoice(set.rpe!);
 
     // The exercise's equipment, for the loading bar, the bands and ±.
-    final member = state.card
-        .where((member) => member.exercise.id == exercise.id)
-        .firstOrNull;
+    final member = this.member;
     final unit = member?.weightUnit ?? ExerciseWeightUnit.kilograms;
     final step = member?.weightStep ?? r.WeightStep.fallback(unit.rules);
     final isWeight = keypad.field == SetField.weight;
@@ -102,7 +128,7 @@ class SetKeypadView extends StatelessWidget {
         digit('6'),
         if (showsLoadingBar)
           Semantics(
-            selected: state.showsPlates,
+            selected: showsPlates,
             child: _Key(
               key: const ValueKey('keypad-plates'),
               label: l10n.keypadShowPlates,
@@ -217,8 +243,10 @@ class SetKeypadView extends StatelessWidget {
             children: [
               // A weight the bar cannot carry keeps the bar up, as it holds
               // the nearest that can.
-              if (showsLoadingBar && (state.showsPlates || loading == null))
+              if (showsLoadingBar && (showsPlates || loading == null))
                 _LoadingBar(
+                  actions: actions,
+                  plateCalculator: plateCalculator,
                   loading: loading,
                   step: step,
                   shown: shown,
@@ -468,6 +496,8 @@ class _Heading extends StatelessWidget {
 /// that they can.
 class _LoadingBar extends StatelessWidget {
   const new({
+    required this.actions,
+    required this.plateCalculator,
     required this.loading,
     required this.step,
     required this.shown,
@@ -475,6 +505,8 @@ class _LoadingBar extends StatelessWidget {
     required this.machineBase,
   });
 
+  final SetTableActions actions;
+  final PlateCalculatorSetup? plateCalculator;
   final r.PlateLoading? loading;
   final r.WeightStep step;
   final double? shown;
@@ -487,7 +519,7 @@ class _LoadingBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final cubit = context.read<ActiveWorkoutCubit>();
+    final cubit = actions;
     final loading = this.loading;
     final shown = this.shown;
     final scheme = Theme.of(context).colorScheme;
@@ -574,13 +606,12 @@ class _LoadingBar extends StatelessWidget {
 
   /// The plate calculator for the set; Done saves the bar and plates to
   /// the gym, and the keypad steps on them from then on.
-  static Future<void> _openPlateCalculator(BuildContext context) async {
-    final cubit = context.read<ActiveWorkoutCubit>();
-    final setup = cubit.state.plateCalculatorSetup;
+  Future<void> _openPlateCalculator(BuildContext context) async {
+    final setup = plateCalculator;
     if (setup == null) return;
-    cubit.plateCalculatorOpened();
+    actions.plateCalculatorOpened();
     final edited = await showPlateCalculator(context, setup);
-    if (edited != null) await cubit.saveGymLoading(edited);
+    if (edited != null) await actions.saveGymLoading(edited);
   }
 
   static String _weight(double value, String symbol, String locale) =>

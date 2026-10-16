@@ -707,7 +707,18 @@ class _Foot extends StatelessWidget {
                   CorrectionBar(state: state, correction: correction),
                 if (slot != null)
                   _PrimaryButton(state: state, slot: slot, now: now),
-                if (keypad != null) SetKeypadView(state: state, keypad: keypad),
+                if (keypad != null)
+                  SetKeypadView(
+                    keypad: keypad,
+                    exercise: state.exercise(keypad.exerciseId),
+                    member: state.card
+                        .where((m) => m.exercise.id == keypad.exerciseId)
+                        .firstOrNull,
+                    actions: context.read<ActiveWorkoutCubit>(),
+                    rirTracking: state.settings?.rirTracking ?? false,
+                    showsPlates: state.showsPlates,
+                    plateCalculator: state.plateCalculatorSetup,
+                  ),
               ],
             );
           },

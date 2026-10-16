@@ -4,8 +4,8 @@
 /// calorie markers. Pure, so the bloc and the widgets only read it.
 library;
 
+import 'package:compound/widgets/calendar/calendar_day_marker.dart';
 import 'package:compound_maths/compound_maths.dart';
-import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// The four figures the header and the hour rows show, in the Swift
@@ -124,51 +124,15 @@ DateTime? itemTimestamp(MealItemModel item, MealLogModel meal) =>
     ? meal.date
     : null;
 
-/// A day's mark on the calendar strip (Swift `CalendarDayMarker`): the
-/// calories logged, against the plan's goal for that day when it has one.
-/// Without a goal the day is simply marked as logged.
-class const CalorieMarker({
-  /// The calories logged that day.
-  required final double calories,
+/// How far past the calorie goal still counts as on target: going over by
+/// a little is not worth flagging (`NutritionPresenter.calorieGrace`).
+const calorieGrace = 100.0;
 
-  /// The plan's calorie goal for the day, or null when there is none.
-  final double? goal,
-}) extends Equatable {
-  /// How far past the goal still counts as on target: going over by a
-  /// little is not worth flagging (`NutritionPresenter.calorieGrace`).
-  static const grace = 100.0;
-
-  /// How much of the ring is drawn, 0–1. A day without a goal draws it all.
-  double get fraction {
-    final goal = this.goal;
-    return goal == null ? 1 : (calories / goal).clamp(0, 1).toDouble();
-  }
-
-  /// Whether the goal has been reached.
-  bool get isGoalMet {
-    final goal = this.goal;
-    return goal != null && calories >= goal;
-  }
-
-  /// Whether the goal and its [grace] have both been passed. The ring is
-  /// then dashed as well as recoloured, so the state is not hue alone.
-  bool get isOverGoal {
-    final goal = this.goal;
-    return goal != null && calories > goal + grace;
-  }
-
-  /// Whether a day with a goal has nothing toward it, so no ring is drawn.
-  bool get isEmpty => goal != null && calories <= 0;
-
-  @override
-  List<Object?> get props => [calories, goal];
-}
-
-/// Every logged day's [CalorieMarker], by day key, in one pass (Swift
-/// `NutritionPresenter.calorieMarkersByDay`). A day whose plan target has
-/// no calories gets a plain logged mark, since a ring with nothing to fill
-/// toward would read as a missed day.
-Map<String, CalorieMarker> calorieMarkersByDay(
+/// Every logged day's calendar marker, by day key, in one pass (Swift
+/// `NutritionPresenter.calorieMarkersByDay`): the calories against the
+/// day's goal, or, when the plan gives no calorie goal, a plain logged mark,
+/// since a ring with nothing to fill toward would read as a missed day.
+Map<String, CalendarDayMarker> calorieMarkersByDay(
   Iterable<MealLogModel> meals,
   DietPlan? plan,
 ) {
@@ -184,10 +148,9 @@ Map<String, CalorieMarker> calorieMarkersByDay(
     final goal = dailyTarget(plan, dayKey)?.calories;
     return MapEntry(
       dayKey,
-      CalorieMarker(
-        calories: calories,
-        goal: goal != null && goal > 0 ? goal : null,
-      ),
+      goal != null && goal > 0
+          ? GoalProgressMarker(value: calories, goal: goal, grace: calorieGrace)
+          : const CountMarker(1),
     );
   });
 }

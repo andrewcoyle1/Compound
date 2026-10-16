@@ -12,13 +12,17 @@ import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/programs/logic/todays_workout.dart';
 import 'package:compound/programs/programs.dart';
+import 'package:compound/shell/app_tab.dart';
+import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/today/bloc/today_bloc.dart';
 import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound/today/view/day_checklist_card.dart';
 import 'package:compound/today/view/streak_card.dart';
 import 'package:compound/today/view/today_text.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -28,8 +32,8 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 /// The Today tab (Swift `TodayView`): getting started, the day's
 /// checklist, the weekly check-in's card, the evening protein reminder,
 /// today's workout from the active mesocycle, last week's review and the
-/// weekly streak. Weigh-ins can be logged from it. Logging meals and
-/// friends who trained come with the milestones that build them.
+/// weekly streak, and the people followed who trained today. Weigh-ins can
+/// be logged from it, and the step goal chosen.
 class TodayPage extends StatelessWidget {
   const new({super.key});
 
@@ -75,6 +79,19 @@ class TodayView extends StatelessWidget {
               previous.skipFailures != current.skipFailures,
           listener: (context, _) =>
               unawaited(showFailureAlert(context, l10n.checkInSkipFailed)),
+        ),
+        BlocListener<TodayBloc, TodayState>(
+          listenWhen: (previous, current) =>
+              previous.stepGoalSaves != current.stepGoalSaves ||
+              previous.dayCompletions != current.dayCompletions,
+          listener: (context, _) =>
+              unawaited(HapticFeedback.successNotification()),
+        ),
+        BlocListener<TodayBloc, TodayState>(
+          listenWhen: (previous, current) =>
+              previous.stepGoalFailures != current.stepGoalFailures,
+          listener: (context, _) =>
+              unawaited(showFailureAlert(context, l10n.todayStepGoalFailed)),
         ),
         BlocListener<HealthCubit, HealthState>(
           listenWhen: (previous, current) =>
@@ -133,6 +150,20 @@ class _Day extends StatelessWidget {
     ];
     final starterTotal = StarterStep.values.length - (stravaAvailable ? 0 : 1);
     final gap = state.proteinGapGrams;
+    final programs = context.watch<ProgramsCubit>().state;
+    final workout = programs.status == ProgramsStatus.loaded
+        ? TodaysWorkout.of(programs, state.now)
+        : null;
+    final checklist = state.checklistWith(planned: workout?.today?.dayPlan);
+    final circle = context.watch<CircleBloc>().state;
+    final pulse = TodayText.socialPulse(
+      l10n,
+      namesTrainedToday(
+        sessions: circle.followingSessions,
+        following: circle.visibleFollowing,
+        now: state.now,
+      ),
+    );
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
@@ -168,12 +199,25 @@ class _Day extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
           ],
+          // Complete only once the schedule is known, so a planned workout
+          // still to come can't be missed.
+          _DayCompleteWatcher(
+            itemCount: checklist.items.length,
+            isComplete:
+                checklist.isComplete &&
+                programs.status != ProgramsStatus.loading,
+          ),
           DayChecklistCard(
-            checklist: state.checklist,
+            checklist: checklist,
             stepGoal: state.stepGoal,
             unit: state.usesPounds
                 ? AppWeightUnit.pounds
                 : AppWeightUnit.kilograms,
+            workout: workout,
+            onItemPressed: (item) =>
+                context.read<TodayBloc>().add(TodayChecklistItemPressed(item)),
+            onStepGoalSelected: (goal) =>
+                context.read<TodayBloc>().add(TodayStepGoalSelected(goal)),
           ),
           if (state.dueCheckInWeekStart case final weekStart?) ...[
             const SizedBox(height: AppSpacing.xl),
@@ -239,10 +283,63 @@ class _Day extends StatelessWidget {
             totalWorkouts: state.totalWorkouts,
             today: state.now,
           ),
+          if (pulse != null) ...[
+            const SizedBox(height: AppSpacing.xl),
+            AppSection(
+              children: [
+                AppListRowButton(
+                  title: pulse,
+                  icon: AppSymbols.friends,
+                  onPressed: () {
+                    context.read<TodayBloc>().add(
+                      const TodaySocialPulsePressed(),
+                    );
+                    context.go(AppTab.social.path);
+                  },
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
   }
+}
+
+/// Tells the bloc each time the checklist turns complete, and on arrival
+/// when it already is; the bloc marks the day once
+/// (`TodayView.onChange(of: checklist.isComplete, initial: true)`).
+class _DayCompleteWatcher extends StatefulWidget {
+  const new({required this.itemCount, required this.isComplete});
+
+  final int itemCount;
+  final bool isComplete;
+
+  @override
+  State<_DayCompleteWatcher> createState() => _DayCompleteWatcherState();
+}
+
+class _DayCompleteWatcherState extends State<_DayCompleteWatcher> {
+  @override
+  void initState() {
+    super.initState();
+    _tell();
+  }
+
+  @override
+  void didUpdateWidget(_DayCompleteWatcher oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isComplete) _tell();
+  }
+
+  void _tell() {
+    if (widget.isComplete) {
+      context.read<TodayBloc>().add(TodayDayCompleted(widget.itemCount));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }
 
 /// The day could not be read: the Today glyph and a line saying so.

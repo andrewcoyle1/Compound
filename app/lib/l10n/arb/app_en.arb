@@ -1028,35 +1028,6 @@
     "@nutritionToday": {
         "description": "Nutrition tab: button that returns the day shown to today; also read out on today's calendar cell"
     },
-    "nutritionCalendarLogged": "Logged",
-    "@nutritionCalendarLogged": {
-        "description": "Calendar strip: accessibility value for a day with food logged"
-    },
-    "nutritionCalendarProgress": "{percent} of goal",
-    "@nutritionCalendarProgress": {
-        "description": "Calendar strip: accessibility value, the day's calories as a share of the goal",
-        "placeholders": {
-            "percent": {
-                "type": "String"
-            }
-        }
-    },
-    "nutritionCalendarGoalMet": "Goal met",
-    "@nutritionCalendarGoalMet": {
-        "description": "Calendar strip: accessibility value once the day's calorie goal is reached"
-    },
-    "nutritionCalendarOverGoal": "Over goal",
-    "@nutritionCalendarOverGoal": {
-        "description": "Calendar strip: accessibility value once the day is over its calorie goal"
-    },
-    "nutritionCalendarPreviousWeek": "Previous week",
-    "@nutritionCalendarPreviousWeek": {
-        "description": "Calendar strip: accessibility action showing the week before"
-    },
-    "nutritionCalendarNextWeek": "Next week",
-    "@nutritionCalendarNextWeek": {
-        "description": "Calendar strip: accessibility action showing the week after"
-    },
     "scaleWeightTitle": "Scale Weight",
     "@scaleWeightTitle": {
         "description": "Title of the Scale Weight screen and its row on Progress; also the chart series of weigh-ins"
@@ -12006,6 +11977,142 @@
         "description": "Duration sheet: a row of the hours wheel",
         "placeholders": {
             "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "calendarLogged": "Logged",
+    "@calendarLogged": {
+        "description": "Calendar strip: accessibility value for a day with food logged"
+    },
+    "calendarProgress": "{percent} of goal",
+    "@calendarProgress": {
+        "description": "Calendar strip: accessibility value, the day's calories as a share of the goal",
+        "placeholders": {
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "calendarGoalMet": "Goal met",
+    "@calendarGoalMet": {
+        "description": "Calendar strip: accessibility value once the day's calorie goal is reached"
+    },
+    "calendarOverGoal": "Over goal",
+    "@calendarOverGoal": {
+        "description": "Calendar strip: accessibility value once the day is over its calorie goal"
+    },
+    "calendarPreviousWeek": "Previous week",
+    "@calendarPreviousWeek": {
+        "description": "Calendar strip: accessibility action showing the week before"
+    },
+    "calendarNextWeek": "Next week",
+    "@calendarNextWeek": {
+        "description": "Calendar strip: accessibility action showing the week after"
+    },
+    "calendarLoggedCount": "{count} logged",
+    "@calendarLoggedCount": {
+        "description": "Calendar day: accessibility value, the number of things logged that day",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "calendarToday": "Today",
+    "@calendarToday": {
+        "description": "Calendar: the Return to Today button's label, the Today button in the month picker, and a day's accessibility value when it is today"
+    },
+    "calendarTitle": "Calendar",
+    "@calendarTitle": {
+        "description": "Title of the month picker"
+    },
+    "calendarShow": "Show calendar",
+    "@calendarShow": {
+        "description": "Toolbar button opening the month picker"
+    },
+    "trainingMultipleWorkouts": "Multiple Workouts",
+    "@trainingMultipleWorkouts": {
+        "description": "Title of the choice shown when a calendar day has more than one workout"
+    },
+    "trainingWhichWorkout": "Which workout would you like to open?",
+    "@trainingWhichWorkout": {
+        "description": "Message of the choice shown when a calendar day has more than one workout"
+    },
+    "trainingSessionChoice": "{name} · {time}",
+    "@trainingSessionChoice": {
+        "description": "A workout in the Multiple Workouts choice: its name and time, e.g. 'Push Day · 07:30'",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "todayRestDay": "Rest day",
+    "@todayRestDay": {
+        "description": "Today checklist: the training item's detail on a planned rest day"
+    },
+    "todayStepGoal": "Step Goal",
+    "@todayStepGoal": {
+        "description": "Title of the step goal picker, held on Today's Steps item"
+    },
+    "todayStepGoalChoice": "{steps} steps",
+    "@todayStepGoalChoice": {
+        "description": "A step goal choice, e.g. '8,000 steps'",
+        "placeholders": {
+            "steps": {
+                "type": "String"
+            }
+        }
+    },
+    "todayStepGoalFailed": "Unable to Save Step Goal",
+    "@todayStepGoalFailed": {
+        "description": "Alert title when saving the step goal fails"
+    },
+    "todayTrainedOne": "{name} trained today",
+    "@todayTrainedOne": {
+        "description": "Today's social row: one person followed finished a workout today",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "todayTrainedTwo": "{first} and {second} trained today",
+    "@todayTrainedTwo": {
+        "description": "Today's social row: two people followed trained today",
+        "placeholders": {
+            "first": {
+                "type": "String"
+            },
+            "second": {
+                "type": "String"
+            }
+        }
+    },
+    "todayTrainedMany": "{first}, {second} and {others} trained today",
+    "@todayTrainedMany": {
+        "description": "Today's social row: three or more people followed trained today; others is todayOthers",
+        "placeholders": {
+            "first": {
+                "type": "String"
+            },
+            "second": {
+                "type": "String"
+            },
+            "others": {
+                "type": "String"
+            }
+        }
+    },
+    "todayOthers": "{count, plural, =1{{count} other} other{{count} others}}",
+    "@todayOthers": {
+        "description": "Today's social row: how many more people trained today, after the first two names",
+        "placeholders": {
+            "count": {
                 "type": "int"
             }
         }

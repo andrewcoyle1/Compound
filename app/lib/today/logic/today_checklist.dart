@@ -143,17 +143,25 @@ sealed class ChecklistItem extends Equatable {
   bool get isDone;
 }
 
-/// A workout finished today. Without one the item is left out: the planned
-/// and rest-day states need the mesocycle schedule (programs, M5).
-final class const TrainingItem(
-  /// The finished workout.
-  final WorkoutSessionModel session,
-) extends ChecklistItem {
-  @override
-  bool get isDone => true;
+/// Training today (`TodayChecklist.Training`): a workout finished today,
+/// else the active mesocycle's day, a rest day or a workout to do. With
+/// neither, the item is left out.
+final class const TrainingItem({
+  /// The workout finished today.
+  final WorkoutSessionModel? session,
+
+  /// Today's day plan in the active mesocycle; no exercises is a rest day.
+  final WorkoutTemplateModel? planned,
+}) extends ChecklistItem {
+  /// Whether today is a planned rest day, with no workout finished.
+  bool get isRestDay =>
+      session == null && (planned?.exercises.isEmpty ?? false);
 
   @override
-  List<Object?> get props => [session.id];
+  bool get isDone => session != null || isRestDay;
+
+  @override
+  List<Object?> get props => [session?.id, planned?.workoutId, isRestDay];
 }
 
 /// Eating to target: calories inside the band and protein reached; without
@@ -234,14 +242,17 @@ final class const StepsItem({required final int today, required final int goal})
 /// complete when every item that applies is.
 class const TodayChecklist(final List<ChecklistItem> items) extends Equatable {
   /// Builds the checklist from its inputs (`TodayChecklist.build`): training
-  /// only with a workout finished today, steps only with step data.
+  /// with a workout finished today or one planned, steps only with step
+  /// data.
   factory build({
     required WorkoutSessionModel? finishedToday,
+    required WorkoutTemplateModel? planned,
     required NutritionItem nutrition,
     required WeighInItem weighIn,
     required StepsItem? steps,
   }) => TodayChecklist([
-    if (finishedToday != null) TrainingItem(finishedToday),
+    if (finishedToday != null || planned != null)
+      TrainingItem(session: finishedToday, planned: planned),
     nutrition,
     weighIn,
     ?steps,
@@ -256,6 +267,52 @@ class const TodayChecklist(final List<ChecklistItem> items) extends Equatable {
   @override
   List<Object?> get props => [items];
 }
+
+// MARK: - Step goal
+
+/// The step goals offered on the Steps item
+/// (`TodayPresenter.stepGoalChoices`).
+const stepGoalChoices = [5000, 6000, 8000, 10000, 12000, 15000];
+
+// MARK: - Social pulse
+
+/// The first names of the people followed who finished a workout today, in
+/// the order they finished, each once (`TodayChecklist.namesTrainedToday`).
+/// A person's first name, else their display name; anyone unnamed is left
+/// out.
+List<String> namesTrainedToday({
+  required Iterable<WorkoutSessionModel> sessions,
+  required Iterable<UserModel> following,
+  required DateTime now,
+}) {
+  final users = <String, UserModel>{};
+  for (final user in following) {
+    users.putIfAbsent(user.userId, () => user);
+  }
+  final finished = [
+    for (final session in sessions)
+      if (session.endedAt case final ended?
+          when !session.isRestDay &&
+              session.deletedAt == null &&
+              isSameDay(ended, now))
+        session,
+  ]..sort((a, b) => a.endedAt!.compareTo(b.endedAt!));
+  final seen = <String>{};
+  return [
+    for (final session in finished)
+      if (seen.add(session.authorId))
+        if (users[session.authorId] case final user?) ?_shortName(user),
+  ];
+}
+
+/// Swift's `firstNameCalculated ?? displayNameCalculated`: the first name
+/// the user gave, else the account's, else the display name; empty counts
+/// as none.
+String? _shortName(UserModel user) => [
+  user.submittedFirstName,
+  user.firstName,
+  user.displayName,
+].firstWhere((name) => name != null && name.isNotEmpty, orElse: () => null);
 
 // MARK: - Getting started
 

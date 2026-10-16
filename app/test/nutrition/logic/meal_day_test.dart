@@ -1,4 +1,5 @@
 import 'package:compound/nutrition/logic/meal_day.dart';
+import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
@@ -277,21 +278,25 @@ void main() {
     });
   });
 
-  group(CalorieMarker, () {
+  group('calorieMarkersByDay', () {
     test('a day with a goal is marked with progress', () {
       final markers = calorieMarkersByDay([
         meal('m1', calories: 500),
         meal('m2', hour: 13, calories: 300),
       ], plan(List.filled(7, target(0))));
       expect(markers, {
-        mondayKey: const CalorieMarker(calories: 800, goal: 2000),
+        mondayKey: const GoalProgressMarker(
+          value: 800,
+          goal: 2000,
+          grace: calorieGrace,
+        ),
       });
       expect(markers[mondayKey]!.fraction, 0.4);
     });
 
     test('a day without a goal falls back to a plain mark', () {
       final markers = calorieMarkersByDay([meal('m1', calories: 500)], null);
-      expect(markers[mondayKey], const CalorieMarker(calories: 500));
+      expect(markers[mondayKey], const CountMarker(1));
       expect(markers[mondayKey]!.fraction, 1);
       expect(markers[mondayKey]!.isEmpty, isFalse);
     });
@@ -306,31 +311,11 @@ void main() {
       final markers = calorieMarkersByDay([
         meal('m1'),
       ], plan(List.filled(7, zero)));
-      expect(markers[mondayKey]!.goal, isNull);
+      expect(markers[mondayKey], const CountMarker(1));
     });
 
     test('unlogged days carry no marker', () {
       expect(calorieMarkersByDay([meal('m1')], null), hasLength(1));
-    });
-
-    test('met, within grace and over goal', () {
-      const met = CalorieMarker(calories: 2250, goal: 2200);
-      const withinGrace = CalorieMarker(calories: 2290, goal: 2200);
-      const over = CalorieMarker(calories: 2650, goal: 2200);
-      const half = CalorieMarker(calories: 1100, goal: 2200);
-      expect(met.isGoalMet, isTrue);
-      expect(met.isOverGoal, isFalse);
-      expect(withinGrace.isOverGoal, isFalse);
-      expect(over.isOverGoal, isTrue);
-      expect(over.fraction, 1);
-      expect(half.isGoalMet, isFalse);
-      expect(half.fraction, 0.5);
-      expect(const CalorieMarker(calories: 900).isGoalMet, isFalse);
-      expect(const CalorieMarker(calories: 900).isOverGoal, isFalse);
-    });
-
-    test('a day with a goal and nothing toward it is empty', () {
-      expect(const CalorieMarker(calories: 0, goal: 2200).isEmpty, isTrue);
     });
   });
 

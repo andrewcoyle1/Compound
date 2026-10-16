@@ -77,7 +77,39 @@ void main() {
       detail(const StepsItem(today: 6000, goal: 8000)),
       '6,000 / 8,000 steps',
     );
-    expect(detail(TrainingItem(fixtureSession('a'))), 'Session a');
+    expect(detail(TrainingItem(session: fixtureSession('a'))), 'Session a');
+    expect(detail(TrainingItem(planned: fixtureTemplate('rest'))), 'Rest day');
+    expect(
+      detail(
+        TrainingItem(
+          planned: fixtureTemplate(
+            'push',
+            name: 'Push Day',
+            exercises: [fixtureSlot(fixtureLibraryExercise('bench'))],
+          ),
+        ),
+      ),
+      'Push Day',
+    );
+    expect(detail(const TrainingItem()), '');
+  });
+
+  // Swift `testSocialPulse`'s text.
+  test('who trained today', () {
+    expect(TodayText.socialPulse(l10n, const []), isNull);
+    expect(TodayText.socialPulse(l10n, const ['Sam']), 'Sam trained today');
+    expect(
+      TodayText.socialPulse(l10n, const ['Sam', 'Alex']),
+      'Sam and Alex trained today',
+    );
+    expect(
+      TodayText.socialPulse(l10n, const ['Sam', 'Alex', 'Jo']),
+      'Sam, Alex and 1 other trained today',
+    );
+    expect(
+      TodayText.socialPulse(l10n, const ['Sam', 'Alex', 'Jo', 'Kim']),
+      'Sam, Alex and 2 others trained today',
+    );
   });
 
   test('signed weights', () {
@@ -88,7 +120,7 @@ void main() {
 
   test('every item and starter step has a title and a glyph', () {
     final items = <ChecklistItem>[
-      TrainingItem(fixtureSession('a')),
+      TrainingItem(session: fixtureSession('a')),
       const NutritionItem(calories: 0, proteinGrams: 0, mealsLogged: 0),
       const WeighInItem(isToday: false),
       const StepsItem(today: 0, goal: 1),

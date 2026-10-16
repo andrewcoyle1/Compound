@@ -5,9 +5,11 @@ import 'package:bloc/bloc.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
+import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound_maths/compound_maths.dart'
     hide CheckInState, LoggingBreak;
+import 'package:compound_models/compound_models.dart' show WorkoutTemplateModel;
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -47,6 +49,82 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
       ),
     );
     on<TodayCheckInSkipped>(_onCheckInSkipped);
+    on<TodayChecklistItemPressed>(
+      (event, emit) => _analyticsRepository.analytic(
+        'TodayView_ChecklistItem_Press',
+        {'item': _kind(event.item)},
+      ),
+    );
+    on<TodayDayCompleted>(_onDayCompleted);
+    on<TodayStepGoalSelected>(_onStepGoalSelected);
+    on<TodaySocialPulsePressed>(
+      (event, emit) =>
+          _analyticsRepository.analytic('TodayView_SocialPulse_Press'),
+    );
+  }
+
+  /// The days, by user and day key, whose completion has been marked.
+  ///
+  /// ponytail: in memory, so a restart marks the day again (Swift keeps
+  /// it in `UserDefaults`); persist with the device key-value store.
+  static final _completedDays = <String>{};
+
+  /// Forgets which days were marked complete: for tests only.
+  static void resetCompletedDays() => _completedDays.clear();
+
+  /// Swift's `ChecklistItem.Kind` raw values.
+  static String _kind(ChecklistItem item) => switch (item) {
+    TrainingItem() => 'training',
+    NutritionItem() => 'nutrition',
+    WeighInItem() => 'weighIn',
+    StepsItem() => 'steps',
+  };
+
+  /// Marks the day complete once per user and day
+  /// (`onChecklistCompletionChanged`): `TodayView_DayComplete`, and the
+  /// view's success haptic.
+  void _onDayCompleted(TodayDayCompleted event, Emitter<TodayState> emit) {
+    if (!_completedDays.add('$_uid/${state.todayKey}')) return;
+    _analyticsRepository.analytic('TodayView_DayComplete', {
+      'item_count': event.itemCount,
+    });
+    emit(state.copyWith(dayCompletions: state.dayCompletions + 1));
+  }
+
+  /// Saves the chosen step goal (`onStepGoalSelected`). Choosing the goal
+  /// already stored does nothing; choosing the age default when none is
+  /// stored saves it, so it stays when the default changes. The goal shows
+  /// at once and goes back if the write fails. A merge is safe here: the
+  /// goal is set, never cleared.
+  Future<void> _onStepGoalSelected(
+    TodayStepGoalSelected event,
+    Emitter<TodayState> emit,
+  ) async {
+    final previous =
+        state.analyticsSettings ?? AnalyticsSettings(authorId: _uid);
+    if (previous.dailyStepGoal == event.goal) return;
+    final settings = AnalyticsSettings(
+      authorId: previous.authorId,
+      id: previous.id,
+      hiddenSectionIds: previous.hiddenSectionIds,
+      dailyStepGoal: event.goal,
+    );
+    _analyticsRepository.analytic('TodayView_StepGoal_Start', {
+      'goal': event.goal,
+    });
+    emit(state.copyWith(analyticsSettings: () => settings));
+    try {
+      await _bodyRepository.saveAnalyticsSettings(settings);
+      emit(state.copyWith(stepGoalSaves: state.stepGoalSaves + 1));
+    } on Object catch (error) {
+      _analyticsRepository.severe('TodayView_StepGoal_Fail', error);
+      emit(
+        state.copyWith(
+          analyticsSettings: () => previous,
+          stepGoalFailures: state.stepGoalFailures + 1,
+        ),
+      );
+    }
   }
 
   final WorkoutSessionRepository _workoutSessionRepository;

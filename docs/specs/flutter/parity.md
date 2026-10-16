@@ -74,7 +74,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Nutrition | MealDetail | `MealLog/MealDetail` | M3 | done | #142, `/nutrition/meal/:mealId` |
 | Nutrition | MealItemAmountView | `MealLog/MealItemAmountView` | M3 | done | #126 (plate); #142 (timeline) |
 | Nutrition | NutritionLibraryPicker | `MealLog/NutritionLibraryPicker` | M3 | done | #126, #145, #152: Swift's six tabs in order |
-| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | partial | #126 barcode mode; label mode (#152) takes typed or pasted text, no on-device OCR; torch (#PR) |
+| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | partial | #126 barcode mode; label mode (#152) takes typed or pasted text, no on-device OCR; torch (#180) |
 | Nutrition | FoodItemQuickAdd | `MealLog/NutritionLibraryPicker/FoodItemQuickAdd` | M3 | done | #126 |
 | Nutrition | FoodItemSearch | `MealLog/NutritionLibraryPicker/FoodItemSearch` | M3 | done | #126; recipes (#145) |
 | Nutrition | FoodLibrary | `MealLog/NutritionLibraryPicker/FoodLibrary` | M3 | done | #126; Recipes / Foods / Favorites (#145) |
@@ -260,7 +260,7 @@ groups. The proposed slices from the #151 sweep are finished, apart from what is
 ### (a) Follow-up slices an agent can build without the owner
 Ordered by user value. Each is meant to be one PR into `feature/flutter`.
 
-1. **Label OCR.** On-device OCR of a nutrition label photo. The torch is done (#PR).
+1. **Label OCR.** On-device OCR of a nutrition label photo. The torch is done (#180).
    `google_mlkit_text_recognition` 0.17.1 was tried and rejected: its iOS pods (MLKit 9) ship fat
    x86_64 + arm64-device binaries with no arm64-simulator slice and set
    `EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64`, so simulators would need Rosetta. It would also

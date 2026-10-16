@@ -81,6 +81,21 @@ class FakePurchasesRepository implements PurchasesRepository {
     return entitlements;
   }
 
+  /// Whether the account owns anything. Setting it buys the yearly plan or
+  /// forgets every purchase, for the development tools' "Simulate Premium"
+  /// (Swift `PremiumOverride`).
+  bool get premium => _owned.isNotEmpty;
+
+  set premium(bool value) {
+    if (value == premium) return;
+    if (value) {
+      _buy(sampleProducts.first.id);
+    } else {
+      _owned.clear();
+    }
+    _emit();
+  }
+
   void _buy(String productId) {
     final now = DateTime.now();
     final yearly = productId.endsWith('yearly');

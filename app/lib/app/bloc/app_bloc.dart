@@ -31,6 +31,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     this._analyticsRepository = const AnalyticsRepository(),
     this._purchasesRepository,
     this._now = DateTime.now,
+    this._appVersion,
   }) : _launchUid = _authRepository.currentUser?.uid,
        super(AppState.from(_authRepository.currentUser)) {
     on<AppUserSubscriptionRequested>(_onUserSubscriptionRequested);
@@ -49,6 +50,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   /// a subscription) there is no store and nobody is sent to Subscription.
   final PurchasesRepository? _purchasesRepository;
   final DateTime Function() _now;
+
+  /// The app's version (`CFBundleShortVersionString`, Android's
+  /// `versionName`), stamped on a new profile as `creation_version`.
+  final String? _appVersion;
 
   /// Who was signed in when the app started, until they sign out: anyone
   /// else signed in during this run (Swift's sign-in screen).
@@ -212,8 +217,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           userId: user.uid,
           email: user.email,
           isAnonymous: user.isAnonymous,
+          // Swift writes `AuthProviderOption.rawValue`: "apple", "google".
+          authProviders: [for (final provider in user.providers) provider.name],
           displayName: user.displayName,
           creationDate: now,
+          creationVersion: _appVersion,
           lastSignInDate: now,
         ),
       );

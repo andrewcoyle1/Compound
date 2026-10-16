@@ -764,6 +764,176 @@ class const Citation({
         'Clin Nutr 107(4):558–565.',
     doi: '10.1093/ajcn/nqx080',
   );
+
+  /// R26.
+  static const hall2007 = Citation(
+    reference:
+        'Hall KD (2007). Body fat and fat-free mass inter-relationships: '
+        "Forbes's theory revisited. Br J Nutr 97(6):1059–1063.",
+    doi: '10.1017/S0007114507691946',
+  );
+
+  /// R27.
+  static const forbes1987 = Citation(
+    reference:
+        'Forbes GB (1987). Lean body mass–body fat interrelationships in '
+        'humans. Nutr Rev 45(8):225–231.',
+    doi: '10.1111/j.1753-4887.1987.tb02684.x',
+  );
+
+  /// R28.
+  static const heymsfield2012 = Citation(
+    reference:
+        'Heymsfield SB, et al. (2012). Energy content of weight loss: '
+        'kinetic features during voluntary caloric restriction. Metabolism '
+        '61(7):937–943.',
+    doi: '10.1016/j.metabol.2011.11.012',
+  );
+
+  /// R29.
+  static const kreitzman1992 = Citation(
+    reference:
+        'Kreitzman SN, Coxon AY, Szaz KF (1992). Glycogen storage: '
+        'illusions of easy weight loss, excessive weight regain, and '
+        'distortions in estimates of body composition. Am J Clin Nutr 56(1 '
+        'Suppl):292S–293S.',
+    doi: '10.1093/ajcn/56.1.292S',
+  );
+
+  /// R83.
+  static const acsm2009 = Citation(
+    reference:
+        'American College of Sports Medicine (2009). Progression models in '
+        'resistance training for healthy adults (position stand). Med Sci '
+        'Sports Exerc 41(3):687–708.',
+    doi: '10.1249/MSS.0b013e3181915670',
+  );
+
+  /// R79.
+  static const plotkin2022 = Citation(
+    reference:
+        'Plotkin D, et al. (2022). Progressive overload without progressing '
+        'load? The effects of load or repetition progression on muscular '
+        'adaptations. PeerJ 10:e14142.',
+    doi: '10.7717/peerj.14142',
+  );
+
+  /// R80.
+  static const helms2018 = Citation(
+    reference:
+        'Helms ER, et al. (2018). RPE vs. percentage 1RM loading in '
+        'periodized programs matched for sets and repetitions. Front '
+        'Physiol 9:247.',
+    doi: '10.3389/fphys.2018.00247',
+  );
+
+  /// R88.
+  static const rippetoe2011 = Citation(
+    reference:
+        'Rippetoe M. Starting Strength: Basic Barbell Training, 3rd ed. '
+        'Wichita Falls, TX: Aasgaard, 2011. No DOI; Unreviewed '
+        '(practitioner book).',
+    isPeerReviewed: false,
+  );
+
+  /// R89.
+  static const wendler2009 = Citation(
+    reference:
+        'Wendler J. 5/3/1: The Simplest and Most Effective Training System '
+        'for Raw Strength. Jim Wendler LLC, 2009. No DOI; Unreviewed '
+        '(practitioner book).',
+    isPeerReviewed: false,
+  );
+
+  /// R90.
+  static const ribeiro2020 = Citation(
+    reference:
+        'Ribeiro B, et al. (2020). [Specific warm-up load and squat/bench '
+        'press velocity; title to confirm]. Int J Environ Res Public Health '
+        '17(18):6882.',
+    doi: '10.3390/ijerph17186882',
+  );
+
+  /// R91.
+  static const ribeiro2021 = Citation(
+    reference:
+        'Ribeiro B, et al. (2021). [Specific warm-up and first-set '
+        'velocity; title to confirm]. J Mens Health 17(4):226–233.',
+    doi: '10.31083/jomh.2021.069',
+  );
+
+  /// R92.
+  static const singer2024 = Citation(
+    reference:
+        'Singer A, et al. (2024). Give it a rest: a systematic review with '
+        'Bayesian meta-analysis on the effect of inter-set rest interval '
+        'duration on muscle hypertrophy. Front Sports Act Living 6:1429789.',
+    doi: '10.3389/fspor.2024.1429789',
+  );
+
+  /// R1.
+  static const mifflin1990 = Citation(
+    reference:
+        'Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO '
+        '(1990). A new predictive equation for resting energy expenditure '
+        'in healthy individuals. Am J Clin Nutr 51(2):241–247.',
+    doi: '10.1093/ajcn/51.2.241',
+  );
+
+  /// R2.
+  static const roza1984 = Citation(
+    reference:
+        'Roza AM, Shizgal HM (1984). The Harris Benedict equation '
+        'reevaluated: resting energy requirements and the body cell mass. '
+        'Am J Clin Nutr 40(1):168–182.',
+    doi: '10.1093/ajcn/40.1.168',
+  );
+
+  /// R8.
+  static const cunningham1980 = Citation(
+    reference:
+        'Cunningham JJ (1980). A reanalysis of the factors influencing '
+        'basal metabolic rate in normal adults. Am J Clin Nutr '
+        '33(11):2372–2374.',
+    doi: '10.1093/ajcn/33.11.2372',
+  );
+
+  /// R6.
+  static const oneill2023 = Citation(
+    reference:
+        "O'Neill JER, Corish CA, Horner K (2023). Accuracy of resting "
+        'metabolic rate prediction equations in athletes: a systematic '
+        'review with meta-analysis. Sports Med 53(12):2373–2398.',
+    doi: '10.1007/s40279-023-01896-z',
+  );
+
+  /// R7.
+  static const tinsley2019 = Citation(
+    reference:
+        'Tinsley GM, Graybeal AJ, Moore ML (2019). Resting metabolic rate '
+        'in muscular physique athletes: validity of existing methods and '
+        'development of new prediction equations. Appl Physiol Nutr Metab '
+        '44(4):397–406.',
+    doi: '10.1139/apnm-2018-0412',
+  );
+
+  /// R9.
+  static const tenHaaf2014 = Citation(
+    reference:
+        'ten Haaf T, Weijs PJM (2014). Resting energy expenditure '
+        'prediction in recreational athletes of 18–35 years: confirmation '
+        'of Cunningham equation and an improved weight-based alternative. '
+        'PLoS One 9(10):e108460.',
+    doi: '10.1371/journal.pone.0108460',
+  );
+
+  /// R20.
+  static const westerterp2004 = Citation(
+    reference:
+        'Westerterp KR (2004). Diet induced thermogenesis. Nutr Metab '
+        '(Lond) 1:5.',
+    doi: '10.1186/1743-7075-1-5',
+  );
 }
 
 /// What one calculation does and what it rests on, for the info button
@@ -1244,25 +1414,167 @@ class const MethodInfo({
     ],
   );
 
-  /// Every method ported so far, keyed by its Swift `MethodInfo.id`, in
+  /// The energy in a kilogram of body weight (Swift
+  /// `MethodInfo.energyDensity`), computed by `compound_maths`'
+  /// `energyDensityKcalPerKg`.
+  factory energyDensity(AppLocalizations l10n) => MethodInfo(
+    title: l10n.energyDensityMethodTitle,
+    summary: l10n.energyDensityMethodSummary,
+    formula:
+        'F = weight × body fat % / 100   (kg of fat)\n'
+        'p = F / (F + 10.4)              share of a change that is fat (Forbes)\n'
+        'ρ = p·9,440 + (1 − p)·1,816     kcal per kg\n'
+        'No body fat reading: ρ = 7,700\n'
+        'F = 15 kg → ρ ≈ 6,300;  25 kg → ≈ 7,200;  35 kg → ≈ 7,700',
+    limitations: l10n.energyDensityMethodLimitations,
+    ownChoices: l10n.energyDensityMethodOwnChoices,
+    citations: const [
+      Citation.hall2008,
+      Citation.hall2011,
+      Citation.hall2007,
+      Citation.forbes1987,
+      Citation.wishnofsky1958,
+      Citation.heymsfield2012,
+      Citation.kreitzman1992,
+    ],
+  );
+
+  /// Smart Progression (Swift `MethodInfo.smartProgression`), applied by
+  /// `training_rules`' progression.
+  factory smartProgression(AppLocalizations l10n) => MethodInfo(
+    title: l10n.smartProgressionMethodTitle,
+    summary: l10n.smartProgressionMethodSummary,
+    formula:
+        'step = max(weight × p, smallest increment), rounded to equipment\n'
+        '  p = 5% lower compound, 2.5% upper compound or untyped, 5% isolation/core\n'
+        'if step > 10% of weight and weight × (1 + reps/30) < (weight + step) × (1 + min/30):\n'
+        '  reps + 1 instead\n'
+        'reset weight = e1RM ÷ (1 + (min reps + RIR target)/30)\n'
+        '  clamped to 85–95% of the weight missed; 90% when there is no '
+        'estimate\n'
+        'nothing heavier, no weight, or body weight → reps + 1\n'
+        'no range → 8–12, and reps under 8 are not a miss\n'
+        'time → max(round5(s × 1.1), s + 5); '
+        'distance → max(round(m × 1.05), m + step)\n'
+        '  step = 1 m under 200 m, 10 m under 2 km, else 50 m\n'
+        'live: missed by 2+ → 5% lighter, rounded down; '
+        'beat max by 2 at RPE ≤ 8 → + step\n'
+        '  only sets asked for the same as the one logged; '
+        'drops and pieces are left alone',
+    limitations: l10n.smartProgressionMethodLimitations,
+    ownChoices: l10n.smartProgressionMethodOwnChoices,
+    citations: const [
+      Citation.acsm2009,
+      Citation.plotkin2022,
+      Citation.helms2018,
+      Citation.robinson2024,
+      Citation.epley1985,
+      Citation.zourdos2016,
+      Citation.halperin2022,
+      Citation.rippetoe2011,
+      Citation.wendler2009,
+    ],
+  );
+
+  /// Warm-up sets (Swift `MethodInfo.warmupSets`), built by
+  /// `training_rules`' `warm_ups.dart`.
+  factory warmupSets(AppLocalizations l10n) => MethodInfo(
+    title: l10n.warmupSetsMethodTitle,
+    summary: l10n.warmupSetsMethodSummary,
+    formula:
+        'count: isolation/core 1; compound reps ≤ 6 → 3, 7–12 → 2, > 12 → 1, unknown → 2\n'
+        'loads: 1 → 60%; 2 → 50, 75%; 3 → 45, 65, 82%; '
+        '4+ → 45, 60, 75, 85, 90…%\n'
+        'reps: ≤ 50% → 8, ≤ 70% → 5, ≤ 85% → 3, above → 2\n'
+        'no plan count: a warm-up rounded up to the working weight is dropped\n'
+        'no plan count and no load (bodyweight, assistance): no warm-ups\n'
+        'assisted, planned: assistance × (2 − share)',
+    limitations: l10n.warmupSetsMethodLimitations,
+    ownChoices: l10n.warmupSetsMethodOwnChoices,
+    citations: const [Citation.ribeiro2020, Citation.ribeiro2021],
+  );
+
+  /// The default rest timers (Swift `MethodInfo.restIntervals`), from
+  /// `training_rules`' `rest.dart`.
+  factory restIntervals(AppLocalizations l10n) => MethodInfo(
+    title: l10n.restIntervalsMethodTitle,
+    summary: l10n.restIntervalsMethodSummary,
+    formula:
+        'compound, reps ≤ 6 → 180 s; compound otherwise → 120 s\n'
+        'isolation → 90 s; core → 60 s; no type → your default (90 s)',
+    limitations: l10n.restIntervalsMethodLimitations,
+    ownChoices: l10n.restIntervalsMethodOwnChoices,
+    citations: const [Citation.acsm2009, Citation.singer2024],
+  );
+
+  /// Resting calories (Swift `MethodInfo.restingMetabolicRate`), computed by
+  /// `compound_maths`' resting energy equations.
+  factory restingMetabolicRate(AppLocalizations l10n) => MethodInfo(
+    title: l10n.restingCaloriesMethodTitle,
+    summary: l10n.restingCaloriesMethodSummary,
+    formula:
+        'Mifflin-St Jeor: 10 × kg + 6.25 × cm − 5 × age + s\n'
+        '  s = +5 (male), −161 (female), −78 (not stated)\n'
+        'Harris-Benedict (revised):\n'
+        '  male 88.362 + 13.397 × kg + 4.799 × cm − 5.677 × age\n'
+        '  female 447.593 + 9.247 × kg + 3.098 × cm − 4.330 × age\n'
+        'Cunningham: 500 + 22 × fat-free kg\n'
+        '  fat-free kg = kg × (1 − body fat % ÷ 100)',
+    limitations: l10n.restingCaloriesMethodLimitations,
+    ownChoices: l10n.restingCaloriesMethodOwnChoices,
+    citations: const [
+      Citation.mifflin1990,
+      Citation.frankenfield2005,
+      Citation.madden2016,
+      Citation.roza1984,
+      Citation.cunningham1980,
+      Citation.oneill2023,
+      Citation.tinsley2019,
+      Citation.tenHaaf2014,
+    ],
+  );
+
+  /// The calories spent digesting food (Swift
+  /// `MethodInfo.thermicEffectOfFood`).
+  factory thermicEffectOfFood(AppLocalizations l10n) => MethodInfo(
+    title: l10n.digestionMethodTitle,
+    summary: l10n.digestionMethodSummary,
+    formula:
+        'Digestion = 0.10 × TDEE\n'
+        'Activity = TDEE − resting − digestion',
+    limitations: l10n.digestionMethodLimitations,
+    citations: const [Citation.westerterp2004],
+  );
+
+  /// Every method, keyed by its Swift `MethodInfo.id`, in
   /// Swift's order (`MethodInfo.all`: energy, nutrition, training, volume,
-  /// habits), for Settings › Methods & Sources. Add each new method here.
+  /// habits), for Settings › Methods & Sources: all 31 of
+  /// Swift's. Add each new method here.
   static Map<String, MethodInfo> all(AppLocalizations l10n) => {
     'weight-trend': MethodInfo.weightTrend(l10n),
-    'training.e1rm': MethodInfo.estimatedOneRepMax(l10n),
-    'volume.hardSets': MethodInfo.weeklyHardSets(l10n),
-    'volume.tiers': MethodInfo.weeklyVolumeTiers(l10n),
     'adaptive-expenditure': MethodInfo.adaptiveExpenditure(l10n),
+    'energy-density': MethodInfo.energyDensity(l10n),
     'energy-balance': MethodInfo.energyBalance(l10n),
     'target-proposal': MethodInfo.targetProposal(l10n),
     'check-in-rules': MethodInfo.checkInRules(l10n),
     'formula-expenditure': MethodInfo.formulaExpenditure(l10n),
+    'resting-metabolic-rate': MethodInfo.restingMetabolicRate(l10n),
+    'thermic-effect-of-food': MethodInfo.thermicEffectOfFood(l10n),
     'protein-target': MethodInfo.proteinTarget(l10n),
     'macro-split': MethodInfo.macroSplit(l10n),
     'calorie-floor': MethodInfo.calorieFloor(l10n),
     'calorie-cycling': MethodInfo.calorieCycling(l10n),
     'weight-change-rate': MethodInfo.weightChangeRate(l10n),
     'goal-timeline': MethodInfo.goalTimeline(l10n),
+    'goal-progress': MethodInfo.goalProgress(l10n),
+    'training.e1rm': MethodInfo.estimatedOneRepMax(l10n),
+    'training.smartProgression': MethodInfo.smartProgression(l10n),
+    'training.deload': MethodInfo.mesocycleDeload(l10n),
+    'training.warmups': MethodInfo.warmupSets(l10n),
+    'training.rest': MethodInfo.restIntervals(l10n),
+    'training.tonnage': MethodInfo.tonnage(l10n),
+    'volume.hardSets': MethodInfo.weeklyHardSets(l10n),
+    'volume.tiers': MethodInfo.weeklyVolumeTiers(l10n),
     'volume.plannedSets': MethodInfo.plannedSetsPerMuscle(l10n),
     'volume.recommendation': MethodInfo.volumeRecommendation(l10n),
     'habits.weeklyGoal': MethodInfo.weeklySessionGoal(l10n),
@@ -1270,8 +1582,6 @@ class const MethodInfo({
     'habits.adherenceBand': MethodInfo.calorieAdherenceBand(l10n),
     'habits.waistToHeight': MethodInfo.waistToHeightRatio(l10n),
     'habits.waistToHip': MethodInfo.waistToHipRatio(l10n),
-    'goal-progress': MethodInfo.goalProgress(l10n),
-    'training.tonnage': MethodInfo.tonnage(l10n),
   };
 
   static const _adaptiveExpenditureFormula = '''

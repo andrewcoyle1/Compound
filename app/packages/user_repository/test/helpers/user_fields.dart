@@ -35,6 +35,9 @@ final everyFieldUpdate = <UserFieldValue>[
   UserField.followingIds([]),
   UserField.username('grace'),
   UserField.weeklySessionGoal(5),
+  UserField.isAnonymous(false),
+  UserField.email('grace@example.com'),
+  UserField.authProviders(['google']),
 ];
 
 /// [everyFieldUpdate] as Firestore stores it, as tagged JSON.
@@ -70,4 +73,7 @@ const taggedUpdates = <String, Object?>{
   'following_ids': <Object?>[],
   'username': 'grace',
   'weekly_session_goal': 5,
+  'is_anonymous': false,
+  'email': 'grace@example.com',
+  'auth_providers': ['google'],
 };

@@ -11981,6 +11981,190 @@
             }
         }
     },
+    "energyDensityMethodTitle": "Energy in a Kilogram",
+    "@energyDensityMethodTitle": {
+        "description": "Methods & Sources: the title of a calculation's explanation (Swift MethodInfo)"
+    },
+    "energyDensityMethodSummary": "Turning a change in weight into calories needs the energy in a kilogram of body weight. That depends on how much of the change is fat: the leaner you are, the more of each kilogram is lean tissue, which holds far less energy. With a body fat reading from the last 90 days, Compound splits the change between fat and lean tissue by Forbes' curve; without one it uses the conventional 7,700 kcal per kilogram, which fits someone carrying roughly 35 kg of fat. The same figure is used for your expenditure estimate and your targets.",
+    "@energyDensityMethodSummary": {
+        "description": "Methods & Sources: the summary of a calculation's explanation (Swift MethodInfo)"
+    },
+    "energyDensityMethodLimitations": "For a lean lifter the conventional 7,700 overstates the energy in a kilogram by roughly 20–30%. The first few weeks of a diet lose glycogen and water, which hold much less energy (about 4,900 kcal per kg at four weeks), so early weight change looks bigger than the energy behind it. Home body fat scales can be several percentage points out. Inside the feedback loop the figure largely cancels out of your targets; it matters most for the expenditure number shown.",
+    "@energyDensityMethodLimitations": {
+        "description": "Methods & Sources: the limitations of a calculation's explanation (Swift MethodInfo)"
+    },
+    "energyDensityMethodOwnChoices": "Treating a body fat reading from the last 90 days as trustworthy is Compound's own choice: the app cannot tell a DEXA scan from a bathroom scale.",
+    "@energyDensityMethodOwnChoices": {
+        "description": "Methods & Sources: the Compound's own choices of a calculation's explanation (Swift MethodInfo)"
+    },
+    "smartProgressionMethodTitle": "Smart Progression",
+    "@smartProgressionMethodTitle": {
+        "description": "Methods & Sources: the title of a calculation's explanation (Swift MethodInfo)"
+    },
+    "smartProgressionMethodSummary": "Smart Progression uses double progression: it adds reps across your rep range at the same weight, then adds weight and returns to the bottom of the range. Weight goes on when most sets (weight-first) or every set (reps-first) reach the top of the range and no set was logged harder than its reps-in-reserve target. A failure set aims for none in reserve. Without a target, a compound set logged at RPE 10 doesn't earn weight. A set with no rep range is worked through 8–12, and reps under 8 there are not a miss; a range with only one end set reaches four reps to the other. If you don't log RPE, the top of the range has to be reached on two sessions in a row at that weight. The step is a share of the weight, rounded to your equipment: 5% for lower-body compounds, 2.5% for upper-body compounds and 5% for isolation and core work. It is never less than your smallest plate or pin. When even that step is more than 10% of the weight, as with 2 kg on a light dumbbell or 10 kg on a bar with no plates under 5 kg, you add a rep each session until your reps carry the heavier weight for the bottom of the range. With nothing heavier at all, at the top of a stack or a gap in the rack, you add a rep; body-weight work, and a set logged with no weight, does a rep more than last time. History comes from sessions done with the same kind of load, so dumbbell sets never set a barbell weight, and passes over deload weeks. Timed sets grow 10% (at least 5 seconds) and distances 5%. One session below the range repeats the weights. A second in a row, at the same weight and not stopped short (RPE 9.5 or above, or no RPE), resets the weight. The new weight is worked back from that set's estimated one-rep max to the bottom of the range with 2 reps in reserve, or with the template's target.",
+    "@smartProgressionMethodSummary": {
+        "description": "Methods & Sources: the summary of a calculation's explanation (Swift MethodInfo)"
+    },
+    "smartProgressionMethodLimitations": "No trial has compared percentage steps with fixed ones. The rep fallback rests on a trial in which adding reps and adding load built muscle equally. RPE-based loading did at least as well as percentage-based loading, and hypertrophy improves closer to failure while strength responds more to load. RPE is self-reported and tends to underestimate the reps left.",
+    "@smartProgressionMethodLimitations": {
+        "description": "Methods & Sources: the limitations of a calculation's explanation (Swift MethodInfo)"
+    },
+    "smartProgressionMethodOwnChoices": "The step percentages (chosen within the 2–10% range ACSM describes), the 10% limit, the 1-rep-in-reserve default for compounds, the two-session rule without RPE, the RPE 9.5 reset trigger, the 2 reps in reserve and 5–15% limits of a reset, the in-session 5% cut, the 8–12 default range, the time and distance steps and reading history by kind of load are Compound's own choices. The 10% fallback is the practitioner convention it replaces. The rep fallback uses Epley's equation past 10 reps, which the one-rep max does not: it compares two weights at the same reps rather than estimating a max, which is where the equation holds up best.",
+    "@smartProgressionMethodOwnChoices": {
+        "description": "Methods & Sources: the Compound's own choices of a calculation's explanation (Swift MethodInfo)"
+    },
+    "warmupSetsMethodTitle": "Warm-Up Sets",
+    "@warmupSetsMethodTitle": {
+        "description": "Methods & Sources: the title of a calculation's explanation (Swift MethodInfo)"
+    },
+    "warmupSetsMethodSummary": "Warm-up sets are lighter sets before your working sets that prepare your muscles and joints. They don't count toward volume or personal records. Compound ramps them up to the working weight with fewer reps as the load rises, so the last warm-up primes the working weight without becoming an extra working set: 8 reps up to half the weight, 5 up to 70%, 3 up to 85% and 2 above. Heavy compound work of 6 reps or fewer gets 3 warm-ups at about 45, 65 and 82%. Work of 7–12 reps gets 2 at 50 and 75%. Lighter work, isolation and core exercises get 1 at 60%. Work at bodyweight or with assistance gets none, as there is no lighter load to ramp through. A warm-up count set in the plan always wins, and its assisted warm-ups get more assistance than the work.",
+    "@warmupSetsMethodSummary": {
+        "description": "Methods & Sources: the summary of a calculation's explanation (Swift MethodInfo)"
+    },
+    "warmupSetsMethodLimitations": "Studies found that a warm-up at higher loads with few reps, such as 6 reps at 40% then 80% of the training load, made the first working sets faster than lighter or no warm-ups. They tested squat and bench press in trained people, not every exercise.",
+    "@warmupSetsMethodLimitations": {
+        "description": "Methods & Sources: the limitations of a calculation's explanation (Swift MethodInfo)"
+    },
+    "warmupSetsMethodOwnChoices": "The exact percentages, reps and counts, and using working reps as a stand-in for how heavy the work is, are Compound's own choices around the 40% and 80% anchors of the studies.",
+    "@warmupSetsMethodOwnChoices": {
+        "description": "Methods & Sources: the Compound's own choices of a calculation's explanation (Swift MethodInfo)"
+    },
+    "restIntervalsMethodTitle": "Rest Timers",
+    "@restIntervalsMethodTitle": {
+        "description": "Methods & Sources: the title of a calculation's explanation (Swift MethodInfo)"
+    },
+    "restIntervalsMethodSummary": "Until you set a time, the rest after a set depends on the exercise type: 3 minutes after compound sets of 6 reps or fewer, 2 minutes after other compound sets, 90 seconds after isolation sets and 60 seconds after core work. A time set in the plan, on the exercise or for its whole type takes priority, and so does a rest typed on the set. Longer rests help heavy multi-joint lifts keep their reps across sets. For muscle growth, the benefit of resting longer than about 60–90 seconds is small and uncertain.",
+    "@restIntervalsMethodSummary": {
+        "description": "Methods & Sources: the summary of a calculation's explanation (Swift MethodInfo)"
+    },
+    "restIntervalsMethodLimitations": "The guidance comes mostly from studies of trained young adults. The best rest also depends on how you feel and how much time you have.",
+    "@restIntervalsMethodLimitations": {
+        "description": "Methods & Sources: the limitations of a calculation's explanation (Swift MethodInfo)"
+    },
+    "restIntervalsMethodOwnChoices": "The 6-rep cut-off and the exact times, chosen within ACSM's 2–3 minutes for heavy core lifts and 1–2 minutes for assistance work, are Compound's own choices. The 60-second core rest is too.",
+    "@restIntervalsMethodOwnChoices": {
+        "description": "Methods & Sources: the Compound's own choices of a calculation's explanation (Swift MethodInfo)"
+    },
+    "restingCaloriesMethodTitle": "Resting Calories",
+    "@restingCaloriesMethodTitle": {
+        "description": "Methods & Sources: the title of a calculation's explanation (Swift MethodInfo)"
+    },
+    "restingCaloriesMethodSummary": "The calories your body burns at rest, from your weight, height, age and sex. Compound uses the Mifflin-St Jeor equation unless you choose another in Expenditure settings. With a logged body fat percentage and the body-fat aware method (or Cunningham chosen), it uses the Cunningham equation, which works from fat-free mass and suits lean, muscular people better.",
+    "@restingCaloriesMethodSummary": {
+        "description": "Methods & Sources: the summary of a calculation's explanation (Swift MethodInfo)"
+    },
+    "restingCaloriesMethodLimitations": "Mifflin-St Jeor predicts within 10% of measured resting rate for about three people in four, so roughly one in four is further out. Weight-based equations tend to underestimate resting rate in muscular people. Cunningham is only as good as the body fat reading: every kilogram of fat-free mass misjudged moves it by 22 kcal, and home scales can be several percentage points out.",
+    "@restingCaloriesMethodLimitations": {
+        "description": "Methods & Sources: the limitations of a calculation's explanation (Swift MethodInfo)"
+    },
+    "restingCaloriesMethodOwnChoices": "The −78 used when sex is not stated is the midpoint of the male and female terms, not a published constant, and makes the estimate less certain. Age is never read below 14, though the equations were built on adults.",
+    "@restingCaloriesMethodOwnChoices": {
+        "description": "Methods & Sources: the Compound's own choices of a calculation's explanation (Swift MethodInfo)"
+    },
+    "digestionMethodTitle": "Calories Spent Digesting Food",
+    "@digestionMethodTitle": {
+        "description": "Methods & Sources: the title of a calculation's explanation (Swift MethodInfo)"
+    },
+    "digestionMethodSummary": "Digesting and storing food costs about 10% of the energy you take in on a mixed diet. Compound shows it as 10% of your estimated expenditure, then counts the rest above resting as daily activity and exercise.",
+    "@digestionMethodSummary": {
+        "description": "Methods & Sources: the summary of a calculation's explanation (Swift MethodInfo)"
+    },
+    "digestionMethodLimitations": "The share varies from about 5% to 15% between people and diets: protein costs much more to digest than fat. The split is for illustration; only the total is used to set targets.",
+    "@digestionMethodLimitations": {
+        "description": "Methods & Sources: the limitations of a calculation's explanation (Swift MethodInfo)"
+    },
+    "settingsSaveAccount": "Save Account",
+    "@settingsSaveAccount": {
+        "description": "Settings: Security row that links an anonymous account to Apple or Google, and that screen's title"
+    },
+    "saveAccountMessage": "Sign in to back up your training and nutrition, and to sync them across your devices.",
+    "@saveAccountMessage": {
+        "description": "Save Account: what linking does"
+    },
+    "settingsRate": "Rate Compound",
+    "@settingsRate": {
+        "description": "Settings: row that asks the store for a rating"
+    },
+    "aboutBodyVersion": "Compound is your training and nutrition platform. Every session builds on the last. You are currently on version {version} ({build}).",
+    "@aboutBodyVersion": {
+        "description": "About: what the app is, with the installed version and build",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            },
+            "build": {
+                "type": "String"
+            }
+        }
+    },
+    "devSettingsTitle": "Developer Settings",
+    "@devSettingsTitle": {
+        "description": "Developer tools (development and staging builds): title and Settings row"
+    },
+    "devSettingsSimulatePremium": "Simulate Premium",
+    "@devSettingsSimulatePremium": {
+        "description": "Developer tools: switch that makes the simulated store a subscriber"
+    },
+    "devSettingsSimulatePremiumFooter": "Treats this device as a subscriber without a purchase. Development and staging builds only, while the store is simulated.",
+    "@devSettingsSimulatePremiumFooter": {
+        "description": "Developer tools: footer under Simulate Premium"
+    },
+    "devSettingsDebugActions": "Debug Actions",
+    "@devSettingsDebugActions": {
+        "description": "Developer tools: section header"
+    },
+    "devSettingsSignOutFooter": "Signs out, so a new account can go through onboarding. Your Firebase account remains intact.",
+    "@devSettingsSignOutFooter": {
+        "description": "Developer tools: footer under Sign Out"
+    },
+    "devSettingsAuthInfo": "Auth Info",
+    "@devSettingsAuthInfo": {
+        "description": "Developer tools: section header for the signed-in account's details"
+    },
+    "devSettingsUserInfo": "User Info",
+    "@devSettingsUserInfo": {
+        "description": "Developer tools: section header for the stored profile"
+    },
+    "devSettingsDeviceInfo": "Device Info",
+    "@devSettingsDeviceInfo": {
+        "description": "Developer tools: section header for the app and device"
+    },
+    "devSettingsActiveSession": "Active Workout Session",
+    "@devSettingsActiveSession": {
+        "description": "Developer tools: section header"
+    },
+    "devSettingsNoActiveSession": "No active workout session",
+    "@devSettingsNoActiveSession": {
+        "description": "Developer tools: no workout is under way"
+    },
+    "devSettingsFetchSession": "Fetch Session from Firebase",
+    "@devSettingsFetchSession": {
+        "description": "Developer tools: section header for looking up a session by id"
+    },
+    "devSettingsSessionId": "Session ID",
+    "@devSettingsSessionId": {
+        "description": "Developer tools: field for a session's id"
+    },
+    "devSettingsFetch": "Fetch Session",
+    "@devSettingsFetch": {
+        "description": "Developer tools: button that looks the session up"
+    },
+    "devSettingsSessionNotFound": "No session has that ID.",
+    "@devSettingsSessionNotFound": {
+        "description": "Developer tools: the lookup found nothing"
+    },
+    "devSettingsLibrary": "Library",
+    "@devSettingsLibrary": {
+        "description": "Developer tools: section header for the exercise and workout counts"
+    },
+    "devSettingsExercises": "Exercises",
+    "@devSettingsExercises": {
+        "description": "Developer tools: how many exercises, system and your own"
+    },
+    "devSettingsWorkoutTemplates": "Workout Templates",
+    "@devSettingsWorkoutTemplates": {
+        "description": "Developer tools: how many workout templates, system and your own"
+    },
     "accessoryResumeLabel": "{minutes, plural, =1{Resume workout, {name}, 1 minute} other{Resume workout, {name}, {minutes} minutes}}",
     "@accessoryResumeLabel": {
         "description": "Spoken label of the workout bar over the tabs",

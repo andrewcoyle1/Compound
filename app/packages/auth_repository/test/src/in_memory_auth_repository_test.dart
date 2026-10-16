@@ -36,6 +36,34 @@ void main() {
       expect(repository.currentUser, isNull);
     });
 
+    test('links an anonymous account, keeping its uid', () async {
+      for (final (signIn, provider) in [
+        (
+          (InMemoryAuthRepository r) => r.signInWithGoogle(),
+          SignInProvider.google,
+        ),
+        (
+          (InMemoryAuthRepository r) => r.signInWithApple(),
+          SignInProvider.apple,
+        ),
+      ]) {
+        final repository = InMemoryAuthRepository(
+          user: InMemoryAuthRepository.anonymousUser,
+        );
+        await signIn(repository);
+        expect(
+          repository.currentUser,
+          AuthUser(
+            uid: InMemoryAuthRepository.anonymousUser.uid,
+            isAnonymous: false,
+            email: InMemoryAuthRepository.sampleUser.email,
+            displayName: InMemoryAuthRepository.sampleUser.displayName,
+            providers: {provider},
+          ),
+        );
+      }
+    });
+
     test('deletes the account after beforeDelete, signing out', () async {
       final repository = InMemoryAuthRepository(
         user: InMemoryAuthRepository.sampleUser,

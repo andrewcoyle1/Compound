@@ -4,7 +4,8 @@ import 'package:auth_repository/auth_repository.dart';
 
 /// {@template in_memory_auth_repository}
 /// An [AuthRepository] with no backend, for the staging (mock) flavor and
-/// tests. Every sign-in succeeds at once. Pass `user:` to start signed in.
+/// tests. Every sign-in succeeds at once; from an anonymous account, Apple
+/// and Google link to it. Pass `user:` to start signed in.
 /// {@endtemplate}
 class InMemoryAuthRepository implements AuthRepository {
   /// {@macro in_memory_auth_repository}
@@ -43,11 +44,28 @@ class InMemoryAuthRepository implements AuthRepository {
 
   void _set(AuthUser? user) => _controller.add(_user = user);
 
+  /// Signs in as [sampleUser]; from an anonymous account, links the
+  /// provider instead, keeping the uid, as Firebase does.
   @override
-  Future<void> signInWithGoogle() async => _set(sampleUser);
+  Future<void> signInWithGoogle() async => _signInOrLink(SignInProvider.google);
 
+  /// As [signInWithGoogle], with Apple.
   @override
-  Future<void> signInWithApple() async => _set(sampleUser);
+  Future<void> signInWithApple() async => _signInOrLink(SignInProvider.apple);
+
+  void _signInOrLink(SignInProvider provider) {
+    final current = _user;
+    if (current == null || !current.isAnonymous) return _set(sampleUser);
+    _set(
+      AuthUser(
+        uid: current.uid,
+        isAnonymous: false,
+        email: sampleUser.email,
+        displayName: sampleUser.displayName,
+        providers: {provider},
+      ),
+    );
+  }
 
   @override
   Future<void> signInAnonymously() async => _set(anonymousUser);

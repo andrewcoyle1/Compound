@@ -7,6 +7,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:coach_repository/coach_repository.dart';
+import 'package:compound/app/app_version.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/challenges/challenges.dart';
 import 'package:compound/check_in/check_in.dart';
@@ -32,6 +33,7 @@ import 'package:compound/profile/profile.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
+import 'package:compound/review/review_moment.dart';
 import 'package:compound/settings/settings.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/sharing/sharing_routes.dart';
@@ -137,6 +139,13 @@ class const App({
   /// The system share sheet; tests pass one that records what is shared.
   final ShareSheet shareSheet = const ShareSheet(),
   final TrackerClock trackerClock = const TrackerClock(),
+
+  /// This install's version, for About and a new profile; unknown in tests
+  /// that leave it out.
+  final AppVersion? appVersion,
+
+  /// The store's rating prompt; tests pass one that records requests.
+  final StoreReview storeReview = const StoreReview(),
   super.key,
 }) extends StatelessWidget {
   @override
@@ -185,6 +194,8 @@ class const App({
         RepositoryProvider.value(value: trackerClock),
         RepositoryProvider.value(value: shareSheet),
         RepositoryProvider.value(value: linkOpener),
+        RepositoryProvider<AppVersion?>.value(value: appVersion),
+        RepositoryProvider(create: (_) => ReviewPrompter(review: storeReview)),
         RepositoryProvider<StravaRepository?>.value(value: stravaRepository),
         RepositoryProvider<HealthRepository>(
           create: (_) =>
@@ -238,6 +249,7 @@ class const App({
               userRepository: userRepository,
               analyticsRepository: analyticsRepository,
               purchasesRepository: purchasesRepository,
+              appVersion: appVersion?.version,
             )..add(const AppUserSubscriptionRequested()),
           ),
           BlocProvider(create: (_) => MealDraftCubit()),

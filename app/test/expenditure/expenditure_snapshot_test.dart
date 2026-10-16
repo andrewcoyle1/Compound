@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound_maths/compound_maths.dart' as maths;
+import 'package:device_store/device_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -392,12 +392,7 @@ void main() {
   });
 
   group(ProposalDismissals, () {
-    late Directory directory;
-
-    setUp(() => directory = Directory.systemTemp.createTempSync());
-    tearDown(() => directory.deleteSync(recursive: true));
-
-    test('remembers each account in memory', () {
+    test('remembers each account', () {
       final dismissals = ProposalDismissals()..dismiss('a', 2300);
       expect(dismissals.of('a'), 2300);
       expect(dismissals.of('b'), isNull);
@@ -405,31 +400,11 @@ void main() {
       expect(dismissals.of('a'), isNull);
     });
 
-    test('keeps them in a file between launches', () {
-      final file = File('${directory.path}/dismissed.json');
-      ProposalDismissals(file: file).dismiss('a', 2300);
-      expect(
-        file.readAsStringSync(),
-        '{"dismissedTargetProposalKcal.a":2300.0}',
-      );
-      final reopened = ProposalDismissals(file: file);
-      expect(reopened.of('a'), 2300);
-      reopened
-        ..clear('b')
-        ..clear('a');
-      expect(ProposalDismissals(file: file).of('a'), isNull);
-    });
-
-    test('starts empty from a file it cannot read', () {
-      final garbled = File('${directory.path}/garbled.json')
-        ..writeAsStringSync('{');
-      expect(ProposalDismissals(file: garbled).of('a'), isNull);
-      final list = File('${directory.path}/list.json')
-        ..writeAsStringSync('[1]');
-      expect(ProposalDismissals(file: list).of('a'), isNull);
-      final text = File('${directory.path}/text.json')
-        ..writeAsStringSync('{"dismissedTargetProposalKcal.a":"x"}');
-      expect(ProposalDismissals(file: text).of('a'), isNull);
+    test("keeps them under Swift's key in the device store", () {
+      final store = InMemoryDeviceStore();
+      ProposalDismissals(store: store).dismiss('a', 2300);
+      expect(store.getDouble('dismissedTargetProposalKcal.a'), 2300);
+      expect(ProposalDismissals(store: store).of('a'), 2300);
     });
   });
 }

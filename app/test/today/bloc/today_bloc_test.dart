@@ -7,6 +7,7 @@ import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound/today/today.dart';
 import 'package:compound_maths/compound_maths.dart';
+import 'package:device_store/device_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -100,10 +101,12 @@ void main() {
   late BodyRepository bodyRepository;
   late UserRepository userRepository;
   late AnalyticsRepository analyticsRepository;
+  late DeviceStore store;
 
   setUpAll(() => registerFallbackValue(_FakeEvent()));
 
   setUp(() {
+    store = InMemoryDeviceStore();
     workoutSessionRepository = MockWorkoutSessionRepository();
     nutritionRepository = MockNutritionRepository();
     bodyRepository = MockBodyRepository();
@@ -163,6 +166,7 @@ void main() {
     checkInRepository: InMemoryCheckInRepository(),
     uid: uid,
     firstWeekday: DateTime.monday,
+    store: store,
     now: () => now,
   );
 
@@ -311,7 +315,6 @@ void main() {
             .cast<LoggableEvent>();
 
     setUp(() {
-      TodayBloc.resetCompletedDays();
       when(() => bodyRepository.saveAnalyticsSettings(any()))
           .thenAnswer((_) async {});
     });
@@ -427,6 +430,35 @@ void main() {
         expect(complete.single.parameters, {'item_count': 3});
       },
     );
+
+    test(
+      'a day completed is remembered on the device for the account',
+      () async {
+        final first = build()..add(const TodayDayCompleted(3));
+        await Future<void>.delayed(Duration.zero);
+        expect(store.getString(TodayBloc.dayCompleteKey(uid)), '2026-03-14');
+        await first.close();
+        final again = build()..add(const TodayDayCompleted(3));
+        await Future<void>.delayed(Duration.zero);
+        expect(again.state.dayCompletions, 0);
+        await again.close();
+      },
+    );
+
+    test("the review card stays opened all week, under Swift's key", () async {
+      final first = build()..add(const TodayWeeklyReviewOpened());
+      await Future<void>.delayed(Duration.zero);
+      expect(first.state.weeklyReviewOpened, isTrue);
+      // The week starting Monday 9 March.
+      expect(
+        store.getString(TodayBloc.weeklyReviewOpenedKey(uid)),
+        '2026-03-09',
+      );
+      await first.close();
+      expect(build().state.weeklyReviewOpened, isTrue);
+      store.setString(TodayBloc.weeklyReviewOpenedKey(uid), '2026-03-02');
+      expect(build().state.weeklyReviewOpened, isFalse);
+    });
 
     // `testTrainingItemRoutes`, `testSocialPulseTracked`: the bloc's part.
     blocTest<TodayBloc, TodayState>(

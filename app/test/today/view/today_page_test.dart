@@ -45,7 +45,6 @@ void main() {
   late GoRouter router;
 
   setUp(() {
-    TodayBloc.resetCompletedDays();
     appBloc = MockAppBloc();
     when(() => appBloc.stream).thenAnswer((_) => const Stream.empty());
     when(() => appBloc.state).thenReturn(

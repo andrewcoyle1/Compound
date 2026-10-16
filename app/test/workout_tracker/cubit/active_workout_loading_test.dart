@@ -2,6 +2,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/notifications.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:device_store/device_store.dart';
 import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:notifications_repository/notifications_repository.dart';
@@ -67,12 +68,13 @@ void main() {
   final bandWalk = own('band-walk', resistance: [bandsRef]);
   final assistedDip = own('assisted-dip', assisted: true);
 
-  ActiveWorkoutCubit build() => ActiveWorkoutCubit(
+  ActiveWorkoutCubit build({DeviceStore? device}) => ActiveWorkoutCubit(
     sessions: InMemoryWorkoutSessionRepository(sessions: const []),
     users: InMemoryUserRepository(users: {uid: sampleUser(now: now)}),
     library: library,
     analytics: analytics.repository,
     store: InMemoryActiveSessionStore(),
+    device: device,
     notifications: FakeNotificationsRepository(),
     copy: AppNotificationCopy(() => lookupAppLocalizations(const Locale('en'))),
     clock: () => now,
@@ -234,6 +236,19 @@ void main() {
       cubit.togglePlates();
       expect(cubit.state.showsPlates, isFalse);
       cubit.keypadKey('5');
+      expect(cubit.state.showsPlates, isFalse);
+    });
+
+    test('the plates switch is kept on the device', () async {
+      final device = InMemoryDeviceStore();
+      await cubit.close();
+      cubit = build(device: device);
+      await benchWeightOpen();
+      cubit.togglePlates();
+      expect(device.getBool(ActiveWorkoutCubit.showsPlatesKey), isFalse);
+      await cubit.close();
+      cubit = build(device: device);
+      await benchWeightOpen();
       expect(cubit.state.showsPlates, isFalse);
     });
   });

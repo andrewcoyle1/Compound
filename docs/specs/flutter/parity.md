@@ -74,7 +74,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Nutrition | MealDetail | `MealLog/MealDetail` | M3 | done | #142, `/nutrition/meal/:mealId` |
 | Nutrition | MealItemAmountView | `MealLog/MealItemAmountView` | M3 | done | #126 (plate); #142 (timeline) |
 | Nutrition | NutritionLibraryPicker | `MealLog/NutritionLibraryPicker` | M3 | done | #126, #145, #152: Swift's six tabs in order |
-| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | done | #126 barcode mode; label mode (#152); torch (#180); on-device label OCR from a photo (#PR): Vision on iOS, ML Kit on Android, not Swift's live scanner |
+| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | done | #126 barcode mode; label mode (#152); torch (#180); on-device label OCR from a photo (#185): Vision on iOS, ML Kit on Android, not Swift's live scanner |
 | Nutrition | FoodItemQuickAdd | `MealLog/NutritionLibraryPicker/FoodItemQuickAdd` | M3 | done | #126 |
 | Nutrition | FoodItemSearch | `MealLog/NutritionLibraryPicker/FoodItemSearch` | M3 | done | #126; recipes (#145) |
 | Nutrition | FoodLibrary | `MealLog/NutritionLibraryPicker/FoodLibrary` | M3 | done | #126; Recipes / Foods / Favorites (#145) |
@@ -242,7 +242,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Home screen widgets | `WorkoutSessionActivity/HomeWidgets.swift` | M6 | todo | M6 |
 | Siri and Shortcuts (App Intents) | `Managers/AppIntents` | M6 | todo | M6, with the `browse_recipes` shortcut (#145) |
 | Strava upload and import | `StravaManager` | M5 | partial | `strava_repository` (#122), UI (#151), `pushEdit` (#162); needs the owner's `STRAVA_CLIENT_ID`; Keychain-token migration is M6 |
-| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | partial | `ai_repository` (#118), scanners (#152); on-device label OCR (#PR); image generation has no caller in Swift's screens |
+| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | partial | `ai_repository` (#118), scanners (#152); on-device label OCR (#185); image generation has no caller in Swift's screens |
 | AI coach (streaming) | `CoachManager` | M5 | done | `coach_repository` (#118), UI (#147) |
 | Image upload and progress photos | `ImageUploadManager` | M5 | done | `image_repository` (#150): progress and profile photos; food, recipe, gym, equipment and NamePhoto (#161) |
 | Reporting and moderation | `ReportManager` | M5 | done | #159: comments, feed cards and profiles |
@@ -302,7 +302,7 @@ Ordered by user value. Each is meant to be one PR into `feature/flutter`.
   - Spanish written by hand: the label error and hint, "Describe your meal", "per 100ml" (#152);
     "{first} o {second}" (#156); the plural set confirmations (#158); "Siguiendo {name}" and the
     per-kind report wording (#159); "Acciones de la serie", "Hora" (#162); the plan note's lists
-    (#165); the label scan hint, Scan Label, "Reading label…" and the two camera messages (#PR).
+    (#165); the label scan hint, Scan Label, "Reading label…" and the two camera messages (#185).
   - Native strings: the camera usage text and its Spanish `InfoPlist.strings`, and a try of the
     barcode scanner on a device (#126); `NSPhotoLibraryUsageDescription` is English only (#150).
   - Edit Duplicate keeps the original's name; Swift has no "(Copy)" wording (#163).

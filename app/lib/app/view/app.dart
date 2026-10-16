@@ -95,6 +95,9 @@ class const App({
   /// left out.
   final ActiveSessionStore? activeSessionStore,
 
+  /// Each exercise's units, kept on the device; in memory when left out.
+  final UnitPreferenceStore? unitPreferences,
+
   /// Push and local notifications; the fake (nothing reaches the platform)
   /// when left out.
   final NotificationsRepository? notificationsRepository,
@@ -195,6 +198,9 @@ class const App({
         RepositoryProvider<ProposalDismissals>(
           create: (_) => proposalDismissals ?? ProposalDismissals(),
         ),
+        RepositoryProvider<UnitPreferenceStore>(
+          create: (_) => unitPreferences ?? UnitPreferenceStore(),
+        ),
         RepositoryProvider<NotificationsRepository>(
           create: (_) =>
               notificationsRepository ?? FakeNotificationsRepository(),
@@ -262,6 +268,7 @@ class const App({
               library: trainingLibraryRepository,
               analytics: analyticsRepository,
               store: activeSessionStore ?? InMemoryActiveSessionStore(),
+              units: context.read(),
               clock: trackerClock.now,
               programs: context.read(),
               health: context.read(),
@@ -565,7 +572,12 @@ class _AppViewState extends State<AppView> {
         pageBuilder: (_, state) => MaterialPage(
           key: state.pageKey,
           fullscreenDialog: true,
-          child: const CreateExercisePage(),
+          child: CreateExercisePage(
+            prefill: switch (state.extra) {
+              final ExerciseDraft draft => draft,
+              _ => null,
+            },
+          ),
         ),
       ),
       // Over the tabs, as the Swift app's full-screen cover; minimised, the

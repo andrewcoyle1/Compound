@@ -51,7 +51,7 @@ class ExerciseAnalyticsView extends StatelessWidget {
                 for (final card in state.exerciseCardList)
                   ExerciseOneRepMaxCard(
                     card: card,
-                    usesPounds: state.usesPounds,
+                    usesPounds: state.usesPoundsFor(card.id),
                   ),
               ],
             ),

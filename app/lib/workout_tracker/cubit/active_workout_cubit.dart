@@ -42,6 +42,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required this._store,
     required this._notifications,
     AppNotificationCopy? copy,
+    UnitPreferenceStore? units,
     this._clock = DateTime.now,
     this._newId = newUuid,
     this._backoff = RetryBackoff.workoutSave,
@@ -50,6 +51,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     this._health,
     this._strava,
   }) : _strings = copy ?? AppNotificationCopy(),
+       _units = units ?? UnitPreferenceStore(),
        super(const ActiveWorkoutState());
 
   final WorkoutSessionRepository _sessions;
@@ -59,6 +61,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final ActiveSessionStore _store;
   final NotificationsRepository _notifications;
   final AppNotificationCopy _strings;
+
+  /// Each exercise's units, kept on the device.
+  final UnitPreferenceStore _units;
   final DateTime Function() _clock;
   final IdGenerator _newId;
   final RetryBackoff _backoff;
@@ -145,6 +150,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     follow(() => _sessions.watchSessions(uid), (d) => _history = d);
     follow(() => _users.watchUser(uid), (d) => _user = d);
     follow(() => _users.watchPrivateSettings(uid), (d) => _private = d);
+    follow(() => _units.changes, (_) {});
     await _resume(uid);
   }
 
@@ -205,12 +211,31 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         settings: _workoutSettings,
         library: _allExercises,
         gym: _gym(session?.gymProfileId) ?? _favouriteGym,
+        unitPreferences: _unitPreferences(session),
         restOverrides: {
           for (final settings in _exerciseSettings)
             settings.id: ?settings.restDurationOverride,
         },
         history: SessionHistory(_history),
       );
+
+  /// Every exercise's units, the library's and [session]'s, so one never
+  /// chosen reads the profile's units rather than kilograms.
+  ///
+  /// ponytail: a map over the whole library, rebuilt on each change; give
+  /// `TrackerEnvironment` a fallback preference if the library grows large.
+  Map<String, UnitPreference> _unitPreferences(WorkoutSessionModel? session) =>
+      {
+        for (final id in {
+          for (final exercise in _allExercises) exercise.id,
+          for (final exercise in session?.exercises ?? <WorkoutExerciseModel>[])
+            exercise.templateId,
+        })
+          id: _preference(id),
+      };
+
+  UnitPreference _preference(String templateId) =>
+      _units.of(_uid, templateId, user: _user);
 
   String? _exerciseNote(String templateId) {
     final note = _exerciseSettings
@@ -252,6 +277,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       newId: _newId,
       mesocycleId: mesocycleId,
       microcycleIndex: microcycleIndex,
+      unitPreferences: _unitPreferences(null),
     );
     return isDeload
         ? deloadedSession(
@@ -636,6 +662,76 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _emitTracker();
   }
 
+  /// Swap opened from the exercise's menu.
+  void swapOpened() => _track('SetTracker_Swap_Opened');
+
+  /// [exerciseId] swapped for [replacement] (`insertSwappedExercise`): its
+  /// logged sets stay with it, and the replacement follows with the sets
+  /// still open; the card moves to it.
+  void swapExercise(String exerciseId, ExerciseModel replacement) {
+    final controller = _controller;
+    final exercise = state.exercise(exerciseId);
+    if (controller == null || exercise == null) return;
+    if (state.keypad?.exerciseId == exerciseId) _closeKeypad();
+    final kept = exercise.sets.any((s) => s.completedAt != null);
+    controller.swapExercise(exerciseId, replacement);
+    _track(
+      'WorkoutTracker_Exercise_Swapped',
+      parameters: {'kept_logged_sets': kept},
+    );
+    _emitTracker(effect: const SavedEffect());
+  }
+
+  /// Targets opened from the exercise's menu.
+  void targetsOpened() => _track('SetTracker_Targets_Opened');
+
+  /// [exerciseId]'s targets for this workout, from Targets.
+  void setTargets(String exerciseId, List<SetTarget> targets) {
+    _controller?.setTargets(exerciseId, targets);
+    _emitTracker();
+  }
+
+  /// Exercise Settings opened from the exercise's menu.
+  void exerciseSettingsOpened() => _track('SetTracker_ExerciseSettings_Opened');
+
+  /// The weight heading's menu: [unit] for [exerciseId] everywhere from
+  /// now on, its open sets converted when [convert] (`updateWeightUnit`,
+  /// `convertAndRoundWeights`). The keypad closes on the old unit.
+  void changeWeightUnit(
+    String exerciseId,
+    ExerciseWeightUnit unit, {
+    required bool convert,
+  }) {
+    final controller = _controller;
+    final exercise = state.exercise(exerciseId);
+    if (controller == null || exercise == null) return;
+    _closeKeypad();
+    _units.setWeightUnit(_uid, exercise.templateId, unit, user: _user);
+    controller.setWeightUnit(exerciseId, unit, convert: convert);
+    if (!convert) {
+      _track('SetTracker_Unit_Changed', parameters: {'unit': unit.value});
+    }
+    _emitTracker(effect: const SelectionEffect());
+  }
+
+  /// The distance heading's menu: [unit] for [exerciseId] everywhere from
+  /// now on, its open sets converted when [convert]
+  /// (`updateDistanceUnit`, `convertAndRoundDistances`).
+  void changeDistanceUnit(
+    String exerciseId,
+    DistanceUnit unit, {
+    required bool convert,
+  }) {
+    final controller = _controller;
+    final exercise = state.exercise(exerciseId);
+    if (controller == null || exercise == null) return;
+    _closeKeypad();
+    if (convert) controller.convertDistances(exerciseId, unit);
+    _units.setDistanceUnit(_uid, exercise.templateId, unit, user: _user);
+    _track('SetTracker_Unit_Changed', parameters: {'unit': unit.name});
+    _emitTracker(effect: const SelectionEffect());
+  }
+
   // MARK: - Notes
 
   /// The workout's note; blank clears it.
@@ -707,6 +803,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         field: field,
         fields: SetField.of(set, exercise.trackingMode),
         unit: _unit(exercise),
+        distanceUnit: _distanceUnit(exercise),
         isAssisted: controller.weightStep(exercise.id).isAssisted,
       ),
     );
@@ -872,7 +969,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   ExerciseWeightUnit _unit(WorkoutExerciseModel exercise) =>
-      exercise.weightUnit ?? ExerciseWeightUnit.kilograms;
+      exercise.weightUnit ?? _preference(exercise.templateId).weightUnit;
+
+  DistanceUnit _distanceUnit(WorkoutExerciseModel exercise) =>
+      _preference(exercise.templateId).distanceUnit;
 
   // MARK: - Loading and equipment
 
@@ -1199,6 +1299,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             previous: controller.previousExercise(member),
             weightStep: controller.weightStep(member.id),
             weightUnit: _unit(member),
+            distanceUnit: _distanceUnit(member),
             restAnchor: controller.restAnchor(member.id),
             exerciseNote: _exerciseNote(member.templateId),
             restPicker: {
@@ -1331,6 +1432,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         exercise.trackingMode,
         _unit(exercise),
         locale: l10n.localeName,
+        distanceUnit: _distanceUnit(exercise),
       );
       return figures == null
           ? l10n.notifRestOverNext(exercise.name)

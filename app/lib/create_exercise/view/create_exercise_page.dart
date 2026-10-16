@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/create_exercise/cubit/create_exercise_cubit.dart';
+import 'package:compound/create_exercise/logic/exercise_draft.dart';
 import 'package:compound/create_exercise/view/muscle_group_picker_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/view/library_names.dart';
@@ -19,7 +20,7 @@ import 'package:go_router/go_router.dart';
 /// closes the whole flow; the exercise then appears in the library and the
 /// picker.
 class CreateExercisePage extends StatelessWidget {
-  const new({super.key});
+  const new({this.prefill, super.key});
 
   /// The route's path.
   static const path = '/create-exercise';
@@ -27,8 +28,12 @@ class CreateExercisePage extends StatelessWidget {
   /// The route name.
   static const name = 'createExercise';
 
-  /// Opens the flow.
-  static Future<void> open(BuildContext context) => context.pushNamed(name);
+  /// Opens the flow, on a copy of an exercise when given [prefill].
+  static Future<void> open(BuildContext context, {ExerciseDraft? prefill}) =>
+      context.pushNamed(name, extra: prefill);
+
+  /// What every step starts from: Edit Duplicate's copy.
+  final ExerciseDraft? prefill;
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +42,10 @@ class CreateExercisePage extends StatelessWidget {
     return TrainingLibraryProvider(
       uid: app.user.uid,
       child: BlocProvider(
-        create: (context) =>
-            CreateExerciseCubit(analytics: context.read<AnalyticsRepository>()),
+        create: (context) => CreateExerciseCubit(
+          analytics: context.read<AnalyticsRepository>(),
+          prefill: prefill,
+        ),
         child: const CreateExerciseFlow(),
       ),
     );
@@ -156,8 +163,9 @@ class CreateExerciseView extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.l,
                     ),
-                    child: TextField(
+                    child: TextFormField(
                       key: const Key('CreateExercise.name'),
+                      initialValue: state.name,
                       autofocus: true,
                       textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(

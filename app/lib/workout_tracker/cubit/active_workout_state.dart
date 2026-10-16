@@ -28,6 +28,9 @@ final class const TrackerExercise({
   /// The user's standing note on the exercise (every workout).
   required final String? exerciseNote,
 
+  /// What its distances are entered and shown in.
+  final DistanceUnit distanceUnit = DistanceUnit.meters,
+
   /// What each row's rest picker opens on, by set id.
   final Map<String, int> restPicker = const {},
 }) extends Equatable {
@@ -37,6 +40,7 @@ final class const TrackerExercise({
     previous,
     weightStep,
     weightUnit,
+    distanceUnit,
     restAnchor,
     exerciseNote,
     restPicker,

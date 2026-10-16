@@ -39,6 +39,7 @@ class FinalExerciseDetailsCubit extends Cubit<FinalExerciseDetailsState> {
         FinalExerciseDetailsState(
           draft: draft,
           contribution: draft.bodyweightContribution,
+          alternateNames: draft.alternateNames.join(', '),
         ),
       );
 

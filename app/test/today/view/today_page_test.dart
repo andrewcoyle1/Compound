@@ -566,6 +566,6 @@ class _FailingBody extends InMemoryBodyRepository {
   new({super.measurements, super.steps});
 
   @override
-  Future<void> saveAnalyticsSettings(AnalyticsSettings settings) =>
+  Future<void> saveStepGoal(String uid, int goal) =>
       Future.error(Exception('denied'));
 }

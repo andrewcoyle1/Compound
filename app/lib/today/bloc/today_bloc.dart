@@ -119,8 +119,8 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
   /// Saves the chosen step goal (`onStepGoalSelected`). Choosing the goal
   /// already stored does nothing; choosing the age default when none is
   /// stored saves it, so it stays when the default changes. The goal shows
-  /// at once and goes back if the write fails. A merge is safe here: the
-  /// goal is set, never cleared.
+  /// at once and goes back if the write fails. Only the goal is written, so
+  /// hidden sections changed on another device survive.
   Future<void> _onStepGoalSelected(
     TodayStepGoalSelected event,
     Emitter<TodayState> emit,
@@ -139,7 +139,7 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     });
     emit(state.copyWith(analyticsSettings: () => settings));
     try {
-      await _bodyRepository.saveAnalyticsSettings(settings);
+      await _bodyRepository.saveStepGoal(_uid, event.goal);
       emit(state.copyWith(stepGoalSaves: state.stepGoalSaves + 1));
     } on Object catch (error) {
       _analyticsRepository.severe('TodayView_StepGoal_Fail', error);

@@ -19,6 +19,7 @@ import 'package:food_repository/food_repository.dart'
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:user_repository/user_repository.dart';
 
 import '../../helpers/helpers.dart';
 
@@ -143,6 +144,8 @@ void main() {
         const NutritionPage(),
         appBloc: appBloc,
         nutritionRepository: InMemoryNutritionRepository(),
+        // The meal-reminder offer reads the private settings.
+        userRepository: InMemoryUserRepository(),
       );
       await tester.pump();
 

@@ -27,6 +27,8 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/reminder_offers.dart';
+
 void main() {
   final now = DateTime(2026, 10, 14, 12);
   UserRepository seededUsers() => InMemoryUserRepository(
@@ -42,6 +44,7 @@ void main() {
     testWidgets('signs in, then out, through the router', (tester) async {
       await tester.pumpWidget(
         App(
+          deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
@@ -90,6 +93,7 @@ void main() {
       final nutrition = InMemoryNutritionRepository();
       await tester.pumpWidget(
         App(
+          deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: programs,
           trainingLibraryRepository: library,
@@ -215,6 +219,7 @@ void main() {
         'shows their profile over the tabs', (tester) async {
       await tester.pumpWidget(
         App(
+          deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
@@ -249,6 +254,7 @@ void main() {
       final notifications = FakeNotificationsRepository();
       await tester.pumpWidget(
         App(
+          deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
@@ -296,6 +302,7 @@ void main() {
       ))!;
       await tester.pumpWidget(
         App(
+          deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
@@ -326,6 +333,7 @@ void main() {
     testWidgets('switches between the five tabs', (tester) async {
       await tester.pumpWidget(
         App(
+          deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
@@ -377,6 +385,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         App(
+          deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
@@ -420,6 +429,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         App(
+          deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
@@ -490,6 +500,7 @@ void main() {
       );
       await tester.pumpWidget(
         App(
+          deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),

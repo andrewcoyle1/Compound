@@ -20,6 +20,8 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../../helpers/reminder_offers.dart';
+
 // The whole app on the staging flavor's in-memory data, signed in as the
 // sample user: Foods, Create Food, a food's detail, logging it, the meal,
 // correcting an amount, Timeline Actions and the deletes.
@@ -40,6 +42,7 @@ void main() {
     );
     await tester.pumpWidget(
       App(
+        deviceStore: offersShownDevice(),
         purchasesRepository: FakePurchasesRepository(),
         programRepository: InMemoryProgramRepository(),
         trainingLibraryRepository: InMemoryTrainingLibraryRepository(),

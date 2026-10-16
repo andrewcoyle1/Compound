@@ -82,12 +82,36 @@ class FirestoreBodyRepository implements BodyRepository {
           );
 
   @override
-  Future<void> saveAnalyticsSettings(AnalyticsSettings settings) => _merge(
-    _user(settings.authorId)
-        .collection('analytics_settings')
-        .doc('analytics_settings'),
-    settings.toFirestore(),
-  );
+  Future<void> saveStepGoal(String uid, int goal) =>
+      _mergeAnalyticsSettings(uid, {
+        AnalyticsSettingsKeys.dailyStepGoal: goal,
+        // An empty union leaves stored ids as they are, and creates the
+        // list Swift's decoder requires when there is no document yet.
+        AnalyticsSettingsKeys.hiddenSectionIds: FieldValue.arrayUnion([]),
+      });
+
+  @override
+  Future<void> saveHiddenSections(String uid, List<String> hiddenSectionIds) =>
+      _mergeAnalyticsSettings(uid, {
+        AnalyticsSettingsKeys.hiddenSectionIds: hiddenSectionIds,
+      });
+
+  /// Merges [fields], with the document's fixed `id` and `author_id`, so
+  /// that a write creating the document leaves one Swift can decode.
+  Future<void> _mergeAnalyticsSettings(
+    String uid,
+    Map<String, Object?> fields,
+  ) {
+    final defaults = AnalyticsSettings(authorId: uid);
+    return _merge(
+      _user(uid).collection('analytics_settings').doc(defaults.id),
+      {
+        AnalyticsSettingsKeys.id: defaults.id,
+        AnalyticsSettingsKeys.authorId: uid,
+        ...fields,
+      },
+    );
+  }
 
   @override
   Stream<WeightGoal?> watchCurrentGoal(String uid, {String? currentGoalId}) =>

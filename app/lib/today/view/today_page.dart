@@ -12,6 +12,8 @@ import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
+import 'package:compound/notifications/reminder_offer/reminder_offer_cubit.dart';
+import 'package:compound/notifications/reminder_offer/reminder_offer_scope.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/programs/logic/todays_workout.dart';
 import 'package:compound/programs/programs.dart';
@@ -59,10 +61,25 @@ class TodayPage extends StatelessWidget {
         firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
         store: context.read<DeviceStore>(),
       )..add(const TodaySubscriptionRequested()),
-      // Health only hands over new steps when asked: asked on each visit.
-      child: OnAppear(
-        onAppear: () => unawaited(context.read<HealthCubit>().importSteps()),
-        child: const TodayView(),
+      // The streak reminder is offered once the streak reaches two weeks,
+      // on the visit that shows it.
+      child: ReminderOfferScope(
+        uid: state.user.uid,
+        child: BlocListener<TodayBloc, TodayState>(
+          listenWhen: (previous, current) =>
+              current.status == TodayStatus.loaded &&
+              (previous.status != TodayStatus.loaded ||
+                  previous.streak.weeks != current.streak.weeks),
+          listener: (context, today) => context
+              .read<ReminderOfferCubit>()
+              .offerStreakReminderIfNeeded(today.streak.weeks),
+          // Health only hands over new steps when asked: asked on each visit.
+          child: OnAppear(
+            onAppear: () =>
+                unawaited(context.read<HealthCubit>().importSteps()),
+            child: const TodayView(),
+          ),
+        ),
       ),
     );
   }

@@ -19,12 +19,19 @@ abstract interface class BodyRepository {
   /// `AnalyticsSettingsManager` falls back.
   Stream<AnalyticsSettings> watchAnalyticsSettings(String uid);
 
-  /// Saves [settings] whole to
-  /// `users/{settings.authorId}/analytics_settings/analytics_settings`,
-  /// merged, as `AnalyticsSettingsManager.saveSettings` does (`saveDocument`
-  /// is `setData(merge: true)`). A null `dailyStepGoal` keeps the stored
-  /// goal, as in Swift.
-  Future<void> saveAnalyticsSettings(AnalyticsSettings settings);
+  /// Sets [uid]'s daily step goal and nothing else in
+  /// `users/{uid}/analytics_settings/analytics_settings`. Swift's
+  /// `AnalyticsSettingsManager.saveSettings` writes the whole document, so a
+  /// stale copy of the hidden sections could undo a change made on another
+  /// device; this leaves them alone. A missing document is created with the
+  /// fields Swift's decoder requires (`id`, `author_id` and an empty
+  /// `hidden_section_ids`).
+  Future<void> saveStepGoal(String uid, int goal);
+
+  /// Sets [uid]'s hidden Progress sections and nothing else, as
+  /// [saveStepGoal] does for the goal: the stored step goal is never
+  /// rewritten from a stale copy.
+  Future<void> saveHiddenSections(String uid, List<String> hiddenSectionIds);
 
   /// The goal at `users/{uid}/goals/{currentGoalId ?? uid}`, as
   /// `GoalManager.signIn` picks it: pass the user's `currentGoalId`. Goals

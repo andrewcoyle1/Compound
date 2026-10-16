@@ -12802,5 +12802,68 @@
     "trackerNoteSaveFailed": "Unable to Save Note",
     "@trackerNoteSaveFailed": {
         "description": "Exercise note could not be saved"
+    },
+    "reminderOfferMealTitle": "Meal Reminders",
+    "@reminderOfferMealTitle": {
+        "description": "Offer of meal reminders on the first visit to Nutrition: title"
+    },
+    "reminderOfferMealMessage": "Compound can remind you to log breakfast, lunch and dinner each day. You can change this in Notification Settings.",
+    "@reminderOfferMealMessage": {
+        "description": "Offer of meal reminders: message"
+    },
+    "reminderOfferMealAccept": "Turn On Meal Reminders",
+    "@reminderOfferMealAccept": {
+        "description": "Offer of meal reminders: accept button"
+    },
+    "reminderOfferStreakTitle": "Streak Reminder",
+    "@reminderOfferStreakTitle": {
+        "description": "Offer of the streak reminder at a two-week streak: title"
+    },
+    "reminderOfferStreakMessage": "{weeks, plural, other{You're on a {weeks}-week streak. Compound can remind you in the evening when this week's goal needs a session that day.}}",
+    "@reminderOfferStreakMessage": {
+        "description": "Offer of the streak reminder: message",
+        "placeholders": {
+            "weeks": {
+                "type": "int"
+            }
+        }
+    },
+    "reminderOfferStreakAccept": "Turn On Streak Reminder",
+    "@reminderOfferStreakAccept": {
+        "description": "Offer of the streak reminder: accept button"
+    },
+    "reminderOfferNotNow": "Not Now",
+    "@reminderOfferNotNow": {
+        "description": "Reminder offer: decline button"
+    },
+    "reminderOfferSaveFailed": "Unable to Save Setting",
+    "@reminderOfferSaveFailed": {
+        "description": "Reminder offer: the answer could not be saved"
+    },
+    "carouselActiveProgram": "Active Program",
+    "@carouselActiveProgram": {
+        "description": "Progress carousel: count only the active program's workouts"
+    },
+    "carouselAllWorkouts": "All Workouts",
+    "@carouselAllWorkouts": {
+        "description": "Progress carousel: count every workout"
+    },
+    "carouselLeft": "{count, plural, other{{count} left}}",
+    "@carouselLeft": {
+        "description": "Progress carousel: how far a ring is from its program target",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "carouselRingTarget": "{count} target",
+    "@carouselRingTarget": {
+        "description": "Progress carousel: a ring's program target",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
     }
 }

@@ -148,4 +148,36 @@ void main() {
     });
     expect(tally, (muscles: 3, sets: 3, exercises: 2));
   });
+
+  // `ProgressCarouselMetrics.target(of:)`.
+  test("a mesocycle's target is one microcycle of its planned exercises", () {
+    final bench = fixtureLibraryExercise(
+      'bench',
+      muscles: const {
+        Muscles.chest: MuscleTargetType.primary,
+        Muscles.triceps: MuscleTargetType.secondary,
+      },
+    );
+    final row = fixtureLibraryExercise(
+      'row',
+      muscles: const {Muscles.lats: MuscleTargetType.primary},
+    );
+    final curl = fixtureLibraryExercise(
+      'curl',
+      muscles: const {Muscles.biceps: MuscleTargetType.primary},
+    );
+    final mesocycle = fixtureMesocycle('block', [
+      fixtureTemplate(
+        'push',
+        exercises: [fixtureSlot(bench), fixtureSlot(curl, sets: 0)],
+      ),
+      fixtureTemplate(
+        'pull',
+        exercises: [fixtureSlot(row, sets: 4), fixtureSlot(bench, sets: 2)],
+      ),
+    ]);
+
+    // The curl has no set targets, so it plans nothing; bench counts once.
+    expect(mesocycleTarget(mesocycle), (muscles: 3, sets: 9, exercises: 2));
+  });
 }

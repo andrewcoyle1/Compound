@@ -8,6 +8,7 @@ import 'package:compound/check_in/view/check_in_page.dart'
 import 'package:compound/coach/coach.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/notifications/reminder_offer/reminder_offer_scope.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/add_meal/view/amount_sheets.dart';
 import 'package:compound/nutrition/bloc/nutrition_day_bloc.dart';
@@ -71,11 +72,16 @@ class NutritionPage extends StatelessWidget {
           ),
         ),
       ],
-      // Food logged in other apps comes in through Health.
-      child: OnAppear(
-        onAppear: () =>
-            unawaited(context.read<HealthCubit>().nutritionAppeared()),
-        child: const NutritionView(),
+      // Meal reminders are offered on the first visit.
+      child: ReminderOfferScope(
+        uid: state.user.uid,
+        onCreated: (offers) => offers.offerMealRemindersIfNeeded(),
+        // Food logged in other apps comes in through Health.
+        child: OnAppear(
+          onAppear: () =>
+              unawaited(context.read<HealthCubit>().nutritionAppeared()),
+          child: const NutritionView(),
+        ),
       ),
     );
   }

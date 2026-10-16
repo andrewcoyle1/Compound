@@ -2936,5 +2936,17 @@
     "sessionEditNote": "Editar nota",
     "sessionAllSetsDone": "Todas las series hechas",
     "sessionSetProgress": "Serie {done}/{total}",
-    "trackerNoteSaveFailed": "No se pudo guardar la nota"
+    "trackerNoteSaveFailed": "No se pudo guardar la nota",
+    "reminderOfferMealTitle": "Recordatorios de comidas",
+    "reminderOfferMealMessage": "Compound puede recordarte registrar el desayuno, el almuerzo y la cena cada día. Puedes cambiarlo en Ajustes de notificaciones.",
+    "reminderOfferMealAccept": "Activar recordatorios de comidas",
+    "reminderOfferStreakTitle": "Recordatorio de racha",
+    "reminderOfferStreakAccept": "Activar recordatorio de racha",
+    "reminderOfferNotNow": "Ahora no",
+    "reminderOfferSaveFailed": "No se pudo guardar el ajuste",
+    "carouselActiveProgram": "Programa activo",
+    "carouselAllWorkouts": "Todos los entrenamientos",
+    "carouselLeft": "{count, plural, =1{Queda {count}} other{Quedan {count}}}",
+    "carouselRingTarget": "Objetivo: {count}",
+    "reminderOfferStreakMessage": "{weeks, plural, =1{Llevas una racha de {weeks} semana. Compound puede recordártelo por la tarde cuando el objetivo de la semana necesite una sesión ese día.} other{Llevas una racha de {weeks} semanas. Compound puede recordártelo por la tarde cuando el objetivo de la semana necesite una sesión ese día.}}"
 }

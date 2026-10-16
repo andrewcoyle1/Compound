@@ -1,5 +1,6 @@
-// saveAnalyticsSettings, checked against the Firestore contract: what is
-// stored is exactly the model's canonical encoding.
+// The analytics settings' single-field writes, checked against the
+// Firestore contract: each writes its own field, and a document they create
+// is one Swift decodes.
 import 'package:body_repository/body_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -8,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers/contract.dart';
 
 void main() {
-  group('FirestoreBodyRepository.saveAnalyticsSettings', () {
+  group('FirestoreBodyRepository analytics settings writes', () {
     late FakeFirebaseFirestore firestore;
     late FirestoreBodyRepository subject;
 
@@ -22,93 +23,107 @@ void main() {
       subject = FirestoreBodyRepository(firestore: firestore);
     });
 
-    for (final name in [
-      'full',
-      'minimal',
-      'legacy-null-optionals.expected',
-      'legacy-whole-number-doubles.expected',
-    ]) {
-      test('stores the $name fixture as the model encodes it', () async {
-        final model = AnalyticsSettings.fromFirestore(
-          modelFixture('analytics_settings', name),
-        );
+    test('saveStepGoal creates a document Swift decodes when there is '
+        'none: the minimal fixture with the goal', () async {
+      const uid = 'user_contract_minimal';
 
-        await subject.saveAnalyticsSettings(model);
-
-        final written = await stored(model.authorId);
-        expect(written, strictlyEquals(model.toFirestore()));
-        expect(
-          written,
-          strictlyEquals(taggedFixture('analytics_settings', name)),
-        );
-      });
-    }
-
-    test('reads back through watchAnalyticsSettings', () async {
-      final model = AnalyticsSettings.fromFirestore(
-        modelFixture('analytics_settings', 'full'),
-      );
-
-      await subject.saveAnalyticsSettings(model);
-      final read = await subject.watchAnalyticsSettings(model.authorId).first;
+      await subject.saveStepGoal(uid, 9000);
 
       expect(
-        read.toFirestore(),
-        strictlyEquals(taggedFixture('analytics_settings', 'full')),
+        await stored(uid),
+        strictlyEquals({
+          ...taggedFixture('analytics_settings', 'minimal'),
+          'daily_step_goal': 9000,
+        }),
+      );
+      expect((await subject.watchAnalyticsSettings(uid).first).stepGoal, 9000);
+    });
+
+    test('saveHiddenSections creates a document Swift decodes when there is '
+        'none', () async {
+      const uid = 'user_contract_minimal';
+
+      await subject.saveHiddenSections(uid, const ['habits']);
+
+      expect(
+        await stored(uid),
+        strictlyEquals({
+          ...taggedFixture('analytics_settings', 'minimal'),
+          'hidden_section_ids': ['habits'],
+        }),
       );
     });
 
-    test('merges: an unknown field survives and a null step goal keeps the '
-        'stored one, as in Swift', () async {
-      final full = AnalyticsSettings.fromFirestore(
-        modelFixture('analytics_settings', 'full'),
-      );
-      await document(full.authorId).set({
+    test('saveStepGoal writes only the goal: hidden sections changed on '
+        'another device, and an unknown field, survive', () async {
+      const uid = 'user_contract_full';
+      await document(uid).set({
         ...storedFixture('analytics_settings', 'full'),
         'field_from_a_newer_build': 1,
       });
+      // Another device hides a section after this one last read the
+      // document.
+      await document(uid).update({
+        'hidden_section_ids': ['habits'],
+      });
 
-      final change = AnalyticsSettings(
-        authorId: full.authorId,
-        hiddenSectionIds: const ['nutrition'],
-      );
-      await subject.saveAnalyticsSettings(change);
+      await subject.saveStepGoal(uid, 6000);
 
       expect(
-        await stored(full.authorId),
+        await stored(uid),
         strictlyEquals({
           ...taggedFixture('analytics_settings', 'full'),
-          ...change.toFirestore(),
+          'hidden_section_ids': ['habits'],
+          'daily_step_goal': 6000,
           'field_from_a_newer_build': 1,
+        }),
+      );
+    });
+
+    test('saveHiddenSections writes only the sections: a step goal changed '
+        'on another device survives', () async {
+      const uid = 'user_contract_full';
+      await document(uid).set(storedFixture('analytics_settings', 'full'));
+      await document(uid).update({'daily_step_goal': 15000});
+
+      await subject.saveHiddenSections(uid, const []);
+
+      expect(
+        await stored(uid),
+        strictlyEquals({
+          ...taggedFixture('analytics_settings', 'full'),
+          'hidden_section_ids': <Object?>[],
+          'daily_step_goal': 15000,
         }),
       );
     });
   });
 
-  group('InMemoryBodyRepository.saveAnalyticsSettings', () {
+  group('InMemoryBodyRepository analytics settings writes', () {
     const uid = 'me';
 
-    test('saves new settings, and watchers see them', () async {
-      final subject = InMemoryBodyRepository();
-      final hidden = subject
-          .watchAnalyticsSettings(uid)
-          .map((settings) => settings.hiddenSectionIds);
-      final expectation = expectLater(
-        hidden,
-        emitsInOrder([
-          <String>[],
-          ['habits'],
-        ]),
-      );
+    test(
+      'saveHiddenSections saves new settings, and watchers see them',
+      () async {
+        final subject = InMemoryBodyRepository();
+        final hidden = subject
+            .watchAnalyticsSettings(uid)
+            .map((settings) => settings.hiddenSectionIds);
+        final expectation = expectLater(
+          hidden,
+          emitsInOrder([
+            <String>[],
+            ['habits'],
+          ]),
+        );
 
-      await subject.saveAnalyticsSettings(
-        const AnalyticsSettings(authorId: uid, hiddenSectionIds: ['habits']),
-      );
+        await subject.saveHiddenSections(uid, const ['habits']);
 
-      await expectation;
-    });
+        await expectation;
+      },
+    );
 
-    test('merges over stored settings, keeping other users apart', () async {
+    test('each write keeps the other field, and other users apart', () async {
       final subject = InMemoryBodyRepository(
         analyticsSettings: const AnalyticsSettings(
           authorId: uid,
@@ -116,17 +131,37 @@ void main() {
         ),
       );
 
-      await subject.saveAnalyticsSettings(
-        const AnalyticsSettings(authorId: uid, hiddenSectionIds: ['habits']),
-      );
-
-      final mine = await subject.watchAnalyticsSettings(uid).first;
+      await subject.saveHiddenSections(uid, const ['habits']);
+      var mine = await subject.watchAnalyticsSettings(uid).first;
       expect(mine.hiddenSectionIds, ['habits']);
       expect(mine.dailyStepGoal, 6000);
+
+      await subject.saveStepGoal(uid, 9000);
+      mine = await subject.watchAnalyticsSettings(uid).first;
+      expect(mine.hiddenSectionIds, ['habits']);
+      expect(mine.dailyStepGoal, 9000);
+
       expect(
         (await subject.watchAnalyticsSettings('you').first).hiddenSectionIds,
         isEmpty,
       );
     });
+
+    test(
+      'saveStepGoal with no settings stored starts from the defaults',
+      () async {
+        final subject = InMemoryBodyRepository();
+
+        await subject.saveStepGoal(uid, 9000);
+
+        final mine = await subject.watchAnalyticsSettings(uid).first;
+        expect(mine.toFirestore(), {
+          'id': 'analytics_settings',
+          'author_id': uid,
+          'hidden_section_ids': <String>[],
+          'daily_step_goal': 9000,
+        });
+      },
+    );
   });
 }

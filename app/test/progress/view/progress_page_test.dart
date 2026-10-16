@@ -1,9 +1,12 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/programs/programs.dart';
+import 'package:compound/progress/bloc/progress_figures.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/progress/view/progress_card.dart';
@@ -22,6 +25,9 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 import '../../helpers/helpers.dart';
 
 class _MockGoRouter extends Mock implements GoRouter;
+
+class _MockProgramsCubit extends MockCubit<ProgramsState>
+    implements ProgramsCubit;
 
 void main() {
   const uid = 'mock_user_123';
@@ -47,6 +53,7 @@ void main() {
     BodyRepository? bodyRepository,
     double width = 400,
     double textScale = 1,
+    ProgramsCubit? programsCubit,
   }) async {
     tester.view.physicalSize = Size(width, 4000);
     tester.view.devicePixelRatio = 1;
@@ -93,6 +100,7 @@ void main() {
       ),
       appBloc: appBloc,
       textScale: textScale,
+      programsCubit: programsCubit,
     );
     await tester.pump();
   }
@@ -319,6 +327,70 @@ void main() {
       await tester.tap(find.text('1-RM'));
       await tester.pumpAndSettle();
       expect(find.textContaining(' kg'), findsWidgets);
+    });
+
+    // `WeeklyWorkoutsCard` with an active mesocycle: its targets on the
+    // rings, and the Active Program / All Workouts toggle.
+    testWidgets('weekly workouts aim at the active program, and the toggle '
+        'counts its sessions or all of them', (tester) async {
+      final mesocycle = fixtureMesocycle('block', [
+        fixtureTemplate(
+          'full body',
+          exercises: [
+            fixtureSlot(fixtureLibraryExercise('bench')),
+            fixtureSlot(
+              fixtureLibraryExercise(
+                'row',
+                muscles: const {Muscles.lats: MuscleTargetType.primary},
+              ),
+              sets: 4,
+            ),
+          ],
+        ),
+      ]);
+      final programs = _MockProgramsCubit();
+      when(() => programs.state).thenReturn(
+        ProgramsState(
+          status: ProgramsStatus.loaded,
+          mesocycles: [mesocycle],
+          activeMesocycleId: mesocycle.id,
+        ),
+      );
+      await pumpView(tester, programsCubit: programs);
+      for (var page = 0; page < 3; page++) {
+        await nextPage(tester);
+      }
+      final bloc = tester
+          .element(find.byType(ProgressView))
+          .read<ProgressBloc>();
+      String sets() => tester
+          .getSemantics(find.bySemanticsLabel('Sets'))
+          .getSemanticsData()
+          .value;
+
+      expect(find.text('Weekly Workouts'), findsOneWidget);
+      expect(find.text('7 target'), findsOneWidget);
+      expect(find.text('2 target'), findsNWidgets(2));
+      // The sample's sessions are not the program's.
+      expect(find.text('7 left'), findsOneWidget);
+      expect(sets(), '0 of 7');
+
+      await tester.tap(find.text('All Workouts'));
+      await tester.pumpAndSettle();
+      final all = bloc.state.weekTally().sets;
+      expect(all, greaterThan(0));
+      expect(sets(), '$all of 7');
+      expect(find.text('7 target'), findsOneWidget);
+    });
+
+    testWidgets('weekly workouts without a program have no targets or '
+        'toggle', (tester) async {
+      await pumpView(tester);
+      for (var page = 0; page < 3; page++) {
+        await nextPage(tester);
+      }
+      expect(find.text('Active Program'), findsNothing);
+      expect(find.textContaining('target'), findsNothing);
     });
 
     testWidgets('records without a workout say so', (tester) async {

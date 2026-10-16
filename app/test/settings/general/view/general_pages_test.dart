@@ -382,7 +382,7 @@ void main() {
 
 class _FailingBody extends InMemoryBodyRepository {
   @override
-  Future<void> saveAnalyticsSettings(AnalyticsSettings settings) =>
+  Future<void> saveHiddenSections(String uid, List<String> hiddenSectionIds) =>
       throw StateError('no');
 }
 

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
@@ -90,6 +91,7 @@ extension PumpApp on WidgetTester {
     ActiveWorkoutCubit? activeWorkoutCubit,
     CoachRepository? coachRepository,
     PurchasesRepository? purchasesRepository,
+    AbTestRepository? abTestRepository,
     HealthRepository? healthRepository,
     HealthCubit? healthCubit,
     StravaRepository? stravaRepository,
@@ -217,6 +219,13 @@ extension PumpApp on WidgetTester {
           providers: [
             BlocProvider.value(value: appBloc ?? MockAppBloc()),
             BlocProvider.value(value: mealDraftCubit ?? MealDraftCubit()),
+            // Swift's defaults unless a test passes others.
+            BlocProvider(
+              create: (_) => AbTestsCubit(
+                repository: abTestRepository ?? InMemoryAbTestRepository(),
+                analytics: analyticsRepository,
+              ),
+            ),
             if (activeWorkoutCubit != null)
               BlocProvider.value(value: activeWorkoutCubit),
             // Following nobody unless a test passes one that does.

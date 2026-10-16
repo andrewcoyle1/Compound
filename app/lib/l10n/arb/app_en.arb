@@ -12194,6 +12194,18 @@
     "@devSettingsExportShareCardsFooter": {
         "description": "Developer tools: footer under Export Share Cards"
     },
+    "devSettingsAbTests": "AB Tests",
+    "@devSettingsAbTests": {
+        "description": "Developer tools: header of the A/B test overrides"
+    },
+    "devSettingsNotificationsTest": "Notifications Test",
+    "@devSettingsNotificationsTest": {
+        "description": "Developer tools: switch that puts this device in the notifications A/B test"
+    },
+    "devSettingsPaywallTest": "Paywall Test",
+    "@devSettingsPaywallTest": {
+        "description": "Developer tools: the paywall A/B test's variant for this device"
+    },
     "accessoryResumeLabel": "{minutes, plural, =1{Resume workout, {name}, 1 minute} other{Resume workout, {name}, {minutes} minutes}}",
     "@accessoryResumeLabel": {
         "description": "Spoken label of the workout bar over the tabs",

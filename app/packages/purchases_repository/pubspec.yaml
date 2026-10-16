@@ -11,7 +11,8 @@ dependencies:
   equatable: ">=2.1.0 <4.0.0"
   flutter:
     sdk: flutter
-  purchases_flutter: ^10.13.2
+  # Exact: purchases_ui_flutter in the app pins the same native SDK (MIT).
+  purchases_flutter: 10.13.2
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
@@ -7,6 +8,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:coach_repository/coach_repository.dart';
+import 'package:compound/app/ab_tests_cubit.dart';
 import 'package:compound/app/app_version.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/challenges/challenges.dart';
@@ -96,6 +98,10 @@ class const App({
   /// Small values kept on the device (Swift's `UserDefaults`): dismissed
   /// cards, today's nudges, the meal draft, units; in memory when left out.
   final DeviceStore? deviceStore,
+
+  /// The A/B tests (Swift `ABTestManager`'s service); Swift's defaults in
+  /// memory when left out.
+  final AbTestRepository? abTestRepository,
 
   /// The target proposals waved away; in [deviceStore] when left out.
   final ProposalDismissals? proposalDismissals,
@@ -264,6 +270,18 @@ class const App({
       ],
       child: MultiBlocProvider(
         providers: [
+          // At launch, as Swift's manager: it sets the user properties.
+          BlocProvider(
+            lazy: false,
+            create: (_) {
+              final cubit = AbTestsCubit(
+                repository: abTestRepository ?? InMemoryAbTestRepository(),
+                analytics: analyticsRepository,
+              );
+              unawaited(cubit.started());
+              return cubit;
+            },
+          ),
           BlocProvider(
             create: (_) => AppBloc(
               authRepository: authRepository,

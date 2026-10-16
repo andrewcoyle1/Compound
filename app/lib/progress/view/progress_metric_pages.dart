@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
@@ -17,6 +18,7 @@ import 'package:compound/training_analytics/view/workout_consistency_page.dart'
     show ContributionGrid;
 import 'package:compound_models/compound_models.dart'
     show BodyMeasurementEntryKeys, WeightGoal;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 /// Insights & Analytics (Swift `InsightsAndAnalyticsView`): workouts,
@@ -147,8 +149,9 @@ class WeighInConsistencyPage extends StatelessWidget {
 }
 
 /// The last 90 days' steps, a day keeping its largest reading (Swift
-/// `StepsView`), from the stored step history. Importing from Health
-/// Connect and Apple Health is a later slice, so there is no sync action.
+/// `StepsView`). Appearing asks Apple Health or Health Connect for step
+/// access and imports; "Sync from Apple Health" does so again on a tap and
+/// says when access is refused.
 class StepsPage extends StatelessWidget {
   const new({this.allData = false, super.key});
 
@@ -163,34 +166,49 @@ class StepsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ProgressProvider(
     screen: 'StepsView',
-    child: ProgressMetricView(
-      allData: allData,
-      allDataRoute: dataName,
-      metric: (context, state) {
-        final l10n = context.l10n;
-        final locale = Localizations.localeOf(context).toLanguageTag();
-        final points = state.stepsHistory;
-        return ProgressMetric(
-          title: l10n.progressSteps,
-          unit: '',
-          series: [
-            MetricChartSeries(
-              label: l10n.progressSteps,
-              points: points,
-              color: context.appColors.steps,
-              isBar: true,
-            ),
-          ],
-          entries: points,
-          entryText: (index) => l10n.stepsEntry(
-            AppFormat.number(
-              points[points.length - 1 - index].value,
-              locale: locale,
-            ),
-          ),
-          emptyMessage: l10n.stepsEmpty,
-        );
-      },
+    child: BlocListener<HealthCubit, HealthState>(
+      listenWhen: (previous, current) =>
+          current.stepsAccessFailures > previous.stepsAccessFailures,
+      listener: (context, _) => unawaited(showStepsAccessFailed(context)),
+      child: OnAppear(
+        onAppear: () => unawaited(context.read<HealthCubit>().stepsAppeared()),
+        child: ProgressMetricView(
+          allData: allData,
+          allDataRoute: dataName,
+          metric: (context, state) {
+            final l10n = context.l10n;
+            final locale = Localizations.localeOf(context).toLanguageTag();
+            final points = state.stepsHistory;
+            return ProgressMetric(
+              title: l10n.progressSteps,
+              unit: '',
+              series: [
+                MetricChartSeries(
+                  label: l10n.progressSteps,
+                  points: points,
+                  color: context.appColors.steps,
+                  isBar: true,
+                ),
+              ],
+              entries: points,
+              entryText: (index) => l10n.stepsEntry(
+                AppFormat.number(
+                  points[points.length - 1 - index].value,
+                  locale: locale,
+                ),
+              ),
+              emptyMessage: l10n.stepsEmpty,
+              // Steps cannot be typed in, but they can be fetched again.
+              add: ProgressMetricAction(
+                label: l10n.healthSync(context),
+                icon: AppSymbols.sync,
+                onPressed: () =>
+                    unawaited(context.read<HealthCubit>().stepsSyncPressed()),
+              ),
+            );
+          },
+        ),
+      ),
     ),
   );
 }

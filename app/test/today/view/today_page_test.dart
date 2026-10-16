@@ -150,9 +150,9 @@ void main() {
       );
       expect(food.date, localDayKey(DateTime.now()));
       expect(food.title, "Today's Food");
-      await tester.scrollUntilVisible(find.text('Get Started · 2 of 3'), -200);
+      await tester.scrollUntilVisible(find.text('Get Started · 3 of 4'), -200);
       // No meals logged: the starter card offers the first meal.
-      expect(find.text('Get Started · 2 of 3'), findsOneWidget);
+      expect(find.text('Get Started · 3 of 4'), findsOneWidget);
       expect(find.text('Log your first meal'), findsOneWidget);
 
       await tester.scrollUntilVisible(find.text('Total workouts'), 200);
@@ -300,7 +300,7 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(TodayView), findsOneWidget);
-      expect(find.text('Get Started · 0 of 3'), findsOneWidget);
+      expect(find.text('Get Started · 0 of 4'), findsOneWidget);
     });
 
     testWidgets('is empty when signed out', (tester) async {

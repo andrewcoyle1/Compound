@@ -8,6 +8,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/expenditure/expenditure.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/profile/profile.dart';
@@ -51,7 +52,11 @@ class TodayPage extends StatelessWidget {
         uid: state.user.uid,
         firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
       )..add(const TodaySubscriptionRequested()),
-      child: const TodayView(),
+      // Health only hands over new steps when asked: asked on each visit.
+      child: OnAppear(
+        onAppear: () => unawaited(context.read<HealthCubit>().importSteps()),
+        child: const TodayView(),
+      ),
     );
   }
 }
@@ -63,11 +68,20 @@ class TodayView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<TodayBloc>().state;
-    return BlocListener<TodayBloc, TodayState>(
-      listenWhen: (previous, current) =>
-          previous.skipFailures != current.skipFailures,
-      listener: (context, _) =>
-          unawaited(showFailureAlert(context, l10n.checkInSkipFailed)),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<TodayBloc, TodayState>(
+          listenWhen: (previous, current) =>
+              previous.skipFailures != current.skipFailures,
+          listener: (context, _) =>
+              unawaited(showFailureAlert(context, l10n.checkInSkipFailed)),
+        ),
+        BlocListener<HealthCubit, HealthState>(
+          listenWhen: (previous, current) =>
+              current.stepsAccessFailures > previous.stepsAccessFailures,
+          listener: (context, _) => unawaited(showStepsAccessFailed(context)),
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.tabToday),
@@ -90,10 +104,34 @@ class _Day extends StatelessWidget {
 
   final TodayState state;
 
+  /// What tapping a getting-started step does, or null for a step that is
+  /// only a reminder (`TodayPresenter.onStarterStepPressed`).
+  static VoidCallback? _starterAction(BuildContext context, StarterStep step) =>
+      switch (step) {
+        StarterStep.firstWeighIn => () => unawaited(
+          context.pushNamed(LogWeightPage.name),
+        ),
+        StarterStep.appleHealth => () => unawaited(
+          context.read<HealthCubit>().connectPressed(),
+        ),
+        StarterStep.strava => () => unawaited(
+          context.pushNamed(IntegrationsPage.name),
+        ),
+        StarterStep.firstWorkout || StarterStep.firstMeal => null,
+      };
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final starter = state.starterSteps;
+    final (stravaAvailable, stravaConnected) = context
+        .select<StravaCubit, (bool, bool)>(
+          (cubit) => (cubit.state.available, cubit.state.isConnected),
+        );
+    final starter = [
+      ...state.starterSteps,
+      if (stravaAvailable && !stravaConnected) StarterStep.strava,
+    ];
+    final starterTotal = StarterStep.values.length - (stravaAvailable ? 0 : 1);
     final gap = state.proteinGapGrams;
     return SafeArea(
       child: ListView(
@@ -102,20 +140,28 @@ class _Day extends StatelessWidget {
           if (starter.isNotEmpty) ...[
             AppSection(
               header: l10n.todayGetStarted(
-                StarterStep.values.length - starter.length,
-                StarterStep.values.length,
+                starterTotal - starter.length,
+                starterTotal,
               ),
               children: [
                 for (final step in starter)
-                  if (step == StarterStep.firstWeighIn)
+                  if (_starterAction(context, step) case final action?)
                     AppListRowButton(
-                      title: TodayText.starter(l10n, step),
+                      title: TodayText.starter(
+                        l10n,
+                        step,
+                        appleHealth: isAppleHealth(context),
+                      ),
                       icon: TodayText.starterIcon(step),
-                      onPressed: () => context.pushNamed(LogWeightPage.name),
+                      onPressed: action,
                     )
                   else
                     AppListRow(
-                      title: TodayText.starter(l10n, step),
+                      title: TodayText.starter(
+                        l10n,
+                        step,
+                        appleHealth: isAppleHealth(context),
+                      ),
                       icon: TodayText.starterIcon(step),
                     ),
               ],

@@ -1,6 +1,7 @@
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/science/view/method_info_button.dart';
@@ -10,6 +11,7 @@ import 'package:compound_models/compound_models.dart'
     show BodyMeasurementEntryKeys;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -75,6 +77,7 @@ void main() {
     NutritionRepository? nutrition,
     UserRepository? users,
     bool noGoal = false,
+    HealthCubit? healthCubit,
   }) async {
     tester.view.physicalSize = const Size(400, 3000);
     tester.view.devicePixelRatio = 1;
@@ -83,6 +86,7 @@ void main() {
       const SizedBox.shrink(),
       router: progressRouter(location),
       appBloc: appBloc,
+      healthCubit: healthCubit,
       analyticsRepository: analytics,
       bodyRepository:
           body ??
@@ -531,6 +535,36 @@ void main() {
     testWidgets('without steps says so', (tester) async {
       await pumpAt(tester, '/progress/steps', body: InMemoryBodyRepository());
       expect(find.text('No step data'), findsOneWidget);
+    });
+
+    testWidgets('asks Health on appearing, syncs on a tap, and says when '
+        'access is refused', (tester) async {
+      final body = InMemoryBodyRepository();
+      final platform = sampleHealthPlatform(DateTime.now());
+      final health = HealthCubit(
+        health: HealthRepository(
+          platform: platform,
+          body: body,
+          nutrition: InMemoryNutritionRepository(),
+        ),
+        analytics: analytics,
+      );
+      await tester.runAsync(() async {
+        health.userChanged(uid);
+        await Future<void>.delayed(Duration.zero);
+      });
+      await pumpAt(tester, '/progress/steps', body: body, healthCubit: health);
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      expect(platform.requested, [HealthScope.steps]);
+      expect(find.text('No step data'), findsNothing);
+
+      platform.granted = false;
+      await tester.tap(find.byTooltip('Sync from Health Connect').first);
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      expect(find.text('Unable to Access Health Connect'), findsOneWidget);
+      expect(analytics.names, contains('StepsView_Sync_Fail'));
     });
   });
 

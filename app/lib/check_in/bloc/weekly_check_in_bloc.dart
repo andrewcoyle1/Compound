@@ -10,6 +10,7 @@ import 'package:compound/weight_metric/models/weight_metric.dart'
     show weighInsOf;
 import 'package:compound_maths/compound_maths.dart' show TargetProposal;
 import 'package:equatable/equatable.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -37,6 +38,7 @@ class WeeklyCheckInBloc extends Bloc<WeeklyCheckInEvent, WeeklyCheckInState> {
     required DateTime weekStart,
     this._now = DateTime.now,
     this._newId = newDocumentId,
+    this._health,
   }) : super(
          WeeklyCheckInState(
            weekStart: weekStart,
@@ -88,6 +90,9 @@ class WeeklyCheckInBloc extends Bloc<WeeklyCheckInEvent, WeeklyCheckInState> {
   final UserRepository _users;
   final NutritionRepository _nutrition;
   final BodyRepository _body;
+
+  /// Where the weigh-in is also saved, first; none in tests.
+  final HealthRepository? _health;
   final CheckInRepository _checkIns;
   final ProgramRepository _programs;
   final AnalyticsRepository _analytics;
@@ -255,7 +260,8 @@ class WeeklyCheckInBloc extends Bloc<WeeklyCheckInEvent, WeeklyCheckInState> {
     final weighIn = state.weighIn;
     final now = _now();
     try {
-      await _body.saveMeasurement(
+      // Through Health first when there is one, as Log Weight saves.
+      await (_health?.saveMeasurement ?? _body.saveMeasurement)(
         BodyMeasurementEntry(
           id: _newId(),
           authorId: _uid,

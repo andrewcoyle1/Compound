@@ -13,6 +13,7 @@ import 'package:compound/coach/coach.dart';
 import 'package:compound/create_exercise/create_exercise.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/launch/launch.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -52,12 +53,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:image_repository/image_repository.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:purchases_repository/purchases_repository.dart';
 import 'package:social_repository/social_repository.dart';
+import 'package:strava_repository/strava_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
@@ -107,6 +110,20 @@ class const App({
   /// never open it.
   final CoachRepository? coachRepository,
 
+  /// Apple Health or Health Connect; one that is never available when
+  /// left out.
+  final HealthRepository? healthRepository,
+
+  /// Strava; unavailable when left out (no client id in this build).
+  final StravaRepository? stravaRepository,
+
+  /// Strava's consent page; the platform's web authentication session
+  /// unless a test or staging passes another.
+  final StravaAuthorizer stravaAuthorizer = const WebStravaAuthorizer(),
+
+  /// Opens web links; tests pass one that records them.
+  final LinkOpener linkOpener = const LinkOpener(),
+
   /// The system share sheet; tests pass one that records what is shared.
   final ShareSheet shareSheet = const ShareSheet(),
   final TrackerClock trackerClock = const TrackerClock(),
@@ -153,6 +170,17 @@ class const App({
         ),
         RepositoryProvider.value(value: trackerClock),
         RepositoryProvider.value(value: shareSheet),
+        RepositoryProvider.value(value: linkOpener),
+        RepositoryProvider<StravaRepository?>.value(value: stravaRepository),
+        RepositoryProvider<HealthRepository>(
+          create: (_) =>
+              healthRepository ??
+              HealthRepository(
+                platform: FakeHealthPlatform(available: false),
+                body: bodyRepository,
+                nutrition: nutritionRepository,
+              ),
+        ),
         RepositoryProvider<ProposalDismissals>(
           create: (_) => proposalDismissals ?? ProposalDismissals(),
         ),
@@ -202,6 +230,19 @@ class const App({
             ),
           ),
           BlocProvider(
+            create: (context) => StravaCubit(
+              strava: stravaRepository,
+              authorizer: stravaAuthorizer,
+              analytics: analyticsRepository,
+            ),
+          ),
+          BlocProvider(
+            create: (context) => HealthCubit(
+              health: context.read(),
+              analytics: analyticsRepository,
+            ),
+          ),
+          BlocProvider(
             create: (context) => ActiveWorkoutCubit(
               notifications: context.read(),
               sessions: workoutSessionRepository,
@@ -211,6 +252,8 @@ class const App({
               store: activeSessionStore ?? InMemoryActiveSessionStore(),
               clock: trackerClock.now,
               programs: context.read(),
+              health: context.read(),
+              strava: stravaRepository,
             ),
           ),
           BlocProvider(
@@ -601,6 +644,15 @@ class _AppViewState extends State<AppView> {
     context.read<InboxBloc>().add(InboxViewerChanged(profile));
     context.read<ChallengesCubit>().viewerChanged(profile?.userId);
     unawaited(context.read<ActiveWorkoutCubit>().userChanged(uid));
+    unawaited(context.read<StravaCubit>().userChanged(uid));
+    // Once the profile is read, so steps and food before the account's
+    // creation are left out, as Swift's sign-in imports do.
+    if (uid == null || profile != null) {
+      context.read<HealthCubit>().userChanged(
+        uid,
+        since: profile?.creationDate,
+      );
+    }
     context.read<ProgramsCubit>().userChanged(uid);
     unawaited(
       context.read<NotificationsCubit>().userChanged(

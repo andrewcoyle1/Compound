@@ -104,7 +104,13 @@ void main() {
       'Finish your first workout',
       'Log your first meal',
       'Log your weight',
+      'Connect Apple Health',
+      'Connect Strava',
     ]);
-    expect(StarterStep.values.map(TodayText.starterIcon).toSet(), hasLength(3));
+    expect(
+      TodayText.starter(l10n, StarterStep.appleHealth, appleHealth: false),
+      'Connect Health Connect',
+    );
+    expect(StarterStep.values.map(TodayText.starterIcon).toSet(), hasLength(5));
   });
 }

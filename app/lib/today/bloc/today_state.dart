@@ -169,10 +169,14 @@ final class const TodayState({
   int get totalWorkouts => _counted.length;
 
   /// The getting-started steps still to do; the card shows while any are.
+  /// Strava's is the view's to add, from the app-wide Strava state, so it
+  /// counts as done here.
   List<StarterStep> get starterSteps => remainingStarterSteps(
     hasWorkout: _counted.isNotEmpty,
     hasMeal: meals?.isNotEmpty ?? false,
     hasWeighIn: weighInChange(measurements ?? const []).latest != null,
+    hasStepData: steps.isNotEmpty,
+    stravaConnected: true,
   );
 
   /// From 5pm, the protein still to eat when at least 20 g short.

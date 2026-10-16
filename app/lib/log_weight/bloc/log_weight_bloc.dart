@@ -7,6 +7,7 @@ import 'package:compound/log_weight/logic/decimal_wheel_value.dart';
 import 'package:compound/weight_metric/models/weight_metric.dart'
     show weighInsOf;
 import 'package:equatable/equatable.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 part 'log_weight_event.dart';
@@ -23,6 +24,7 @@ class LogWeightBloc extends Bloc<LogWeightEvent, LogWeightState> {
     required this._uid,
     this._now = DateTime.now,
     this._newId = newDocumentId,
+    this._healthRepository,
   }) : super(LogWeightState(date: _now())) {
     on<LogWeightStarted>(_onStarted);
     on<LogWeightDateChanged>(_onDateChanged);
@@ -40,6 +42,10 @@ class LogWeightBloc extends Bloc<LogWeightEvent, LogWeightState> {
   final String _uid;
   final DateTime Function() _now;
   final String Function() _newId;
+
+  /// Where a weigh-in logged here is also saved, first; straight to
+  /// [_bodyRepository] without one.
+  final HealthRepository? _healthRepository;
 
   Future<void> _onStarted(
     LogWeightStarted event,
@@ -106,8 +112,8 @@ class LogWeightBloc extends Bloc<LogWeightEvent, LogWeightState> {
   ) => emit(state.withTenths(event.tenths));
 
   /// Saves the weigh-in, then the profile's weight and unit, as
-  /// `LogWeightPresenter.saveWeight` does. Swift exports to Apple Health
-  /// inside the save; that waits for M5.
+  /// `LogWeightPresenter.saveWeight` does, sending the weigh-in to Apple
+  /// Health or Health Connect first, as Swift's save does.
   Future<void> _onSaveRequested(
     LogWeightSaveRequested event,
     Emitter<LogWeightState> emit,
@@ -119,7 +125,8 @@ class LogWeightBloc extends Bloc<LogWeightEvent, LogWeightState> {
     );
     final weightKg = state.weightKg;
     try {
-      await _bodyRepository.saveMeasurement(
+      await (_healthRepository?.saveMeasurement ??
+          _bodyRepository.saveMeasurement)(
         BodyMeasurementEntry(
           id: _newId(),
           authorId: _uid,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/account/view/edit_profile_page.dart';
 import 'package:compound/settings/view/settings_page.dart';
@@ -253,6 +254,13 @@ class _SocialProfileViewState extends State<SocialProfileView> {
                 if (state.tab == SocialProfileTab.progress) ...[
                   _ThisWeek(summary: summary),
                   _Consistency(summary: summary),
+                  // Strava's terms keep an athlete's data to the athlete:
+                  // the reader's own profile only.
+                  if (summary.isOwn)
+                    StravaYearSection(
+                      distanceUnit:
+                          summary.user.submittedDistanceUnitPreference,
+                    ),
                 ] else
                   _Activities(summary: summary, state: state),
               ],

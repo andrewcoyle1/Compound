@@ -6,6 +6,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart' show localDayKey;
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/science/method_info.dart';
@@ -239,6 +240,11 @@ class _Review extends StatelessWidget {
             ],
           ),
         ],
+        // The owner's own imported runs and rides (Strava's terms).
+        StravaWeekSection(
+          weekStart: state.weekStart,
+          distanceUnit: state.user?.submittedDistanceUnitPreference,
+        ),
         if (weightText != null || nutrition != null) ...[
           gap,
           if (nutrition != null) ...[

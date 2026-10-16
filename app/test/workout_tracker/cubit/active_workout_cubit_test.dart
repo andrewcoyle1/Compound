@@ -1,13 +1,18 @@
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:body_repository/body_repository.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/notifications.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:notifications_repository/notifications_repository.dart';
+import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:strava_repository/strava_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
@@ -760,6 +765,100 @@ void main() {
         expect(notifications.ongoingWorkout, isNull);
       });
     });
+  });
+
+  group('$ActiveWorkoutCubit Health and Strava', () {
+    late FakeHealthPlatform health;
+    late FakeStravaApi stravaApi;
+    late StravaRepository strava;
+
+    setUp(() async {
+      health = FakeHealthPlatform();
+      final firestore = FakeFirebaseFirestore();
+      stravaApi = FakeStravaApi(
+        firestore: firestore,
+        uid: uid,
+        athlete: FakeStravaApi.stagingAthlete,
+      );
+      strava = StravaRepository(
+        firestore: firestore,
+        api: stravaApi,
+        sessions: sessions,
+        store: InMemoryStravaAccountStore(),
+        clientId: 'client',
+        uploadContext: (_) async => (
+          library: PrebuiltCatalogue.instance.exercises,
+          weightUnit: WeightUnitPreference.kilograms,
+          distanceUnit: DistanceUnitPreference.kilometers,
+        ),
+        pollInterval: Duration.zero,
+      );
+      await strava.signIn(uid);
+      await cubit.close();
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        copy: AppNotificationCopy(
+          () => lookupAppLocalizations(const Locale('en')),
+        ),
+        clock: clock.call,
+        newId: () => 'ID-${++ids}',
+        wait: (_) async {},
+        health: HealthRepository(
+          platform: health,
+          body: InMemoryBodyRepository(),
+          nutrition: InMemoryNutritionRepository(),
+        ),
+        strava: strava,
+      );
+    });
+
+    test('starting asks for workout access; a saved finish goes to Health, '
+        'then Strava', () async {
+      await cubit.userChanged(uid);
+      await settle();
+      await cubit.start(template: template, eventPrefix: 'x');
+      await settle();
+      expect(health.requested, [HealthScope.workouts]);
+      logNext();
+      clock.advance(const Duration(minutes: 5));
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      final finished = cubit.state.finishedSession!;
+      expect(health.writtenWorkouts.single.start, finished.dateCreated);
+      expect(health.writtenWorkouts.single.end, finished.endedAt);
+      expect(stravaApi.uploads.single.externalId, 'compound-${finished.id}');
+      final stored = await sessions.session(uid, finished.id);
+      expect(stored!.stravaActivityId, isNotNull);
+    });
+
+    test(
+      'a refusal is noted, and the workout is not saved to Health',
+      () async {
+        health.granted = false;
+        await cubit.userChanged(uid);
+        await settle();
+        await cubit.start(template: template, eventPrefix: 'x');
+        await settle();
+        expect(
+          events(),
+          contains('WorkoutTrackerView_HealthKitAuthorisation_Fail'),
+        );
+        logNext();
+
+        await cubit.finish(firstWeekday: DateTime.monday);
+        await settle();
+
+        expect(health.writtenWorkouts, isEmpty);
+        expect(stravaApi.uploads, hasLength(1));
+      },
+    );
   });
 }
 

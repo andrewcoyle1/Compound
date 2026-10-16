@@ -2,6 +2,22 @@
     <!-- Notifications (Android 13+ asks), and rescheduling the reminders after a reboot. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Health Connect, exactly what health_repository's HealthScope asks for: workouts with
+         heart rate and active energy (saved and read), steps, weight (saved and read), body fat,
+         food, height, and history older than 30 days for the imports. -->
+    <uses-permission android:name="android.permission.health.READ_EXERCISE"/>
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED"/>
+    <uses-permission android:name="android.permission.health.WRITE_ACTIVE_CALORIES_BURNED"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <uses-permission android:name="android.permission.health.READ_WEIGHT"/>
+    <uses-permission android:name="android.permission.health.WRITE_WEIGHT"/>
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT"/>
+    <uses-permission android:name="android.permission.health.READ_NUTRITION"/>
+    <uses-permission android:name="android.permission.health.READ_HEIGHT"/>
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY"/>
     <application
         android:label="${appName}"
         android:name="${applicationName}"
@@ -33,6 +49,34 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="compound"/>
+            </intent-filter>
+            <!-- Health Connect's "why does Compound ask?" link from its permission screen. -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
+            </intent-filter>
+        </activity>
+        <!-- Android 14+: Settings' privacy page for Health Connect permissions opens the app. -->
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
+            </intent-filter>
+        </activity-alias>
+        <!-- Strava's consent page redirects to compoundstrava://localhost/exchange_token, which
+             flutter_web_auth_2 catches here and hands back to the app. -->
+        <activity
+            android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
+            android:exported="true"
+            android:taskAffinity="">
+            <intent-filter android:label="flutter_web_auth_2">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="compoundstrava"/>
             </intent-filter>
         </activity>
         <!-- flutter_local_notifications: show scheduled reminders, and reschedule them after a
@@ -69,6 +113,13 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Health Connect, to ask whether it is installed. -->
+        <package android:name="com.google.android.apps.healthdata"/>
+        <!-- url_launcher: "View on Strava" opens the browser or the Strava app. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

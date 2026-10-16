@@ -7,8 +7,11 @@ import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
+import 'package:health_repository/health_repository.dart'
+    show HealthRepository, HealthScope;
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:program_repository/program_repository.dart' show ProgramService;
+import 'package:strava_repository/strava_repository.dart' show StravaRepository;
 import 'package:training_library_repository/training_library_repository.dart'
     show PrebuiltCatalogue, TrainingLibraryRepository;
 import 'package:training_rules/training_rules.dart' as r;
@@ -42,6 +45,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     this._backoff = RetryBackoff.workoutSave,
     this._wait = _delay,
     this._programs,
+    this._health,
+    this._strava,
   }) : _strings = copy ?? AppNotificationCopy(),
        super(const ActiveWorkoutState());
 
@@ -59,6 +64,14 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   /// What finishing a workout does to the program; nothing without one.
   final ProgramService? _programs;
+
+  /// Where a finished workout is saved as a strength training workout;
+  /// nowhere without one.
+  final HealthRepository? _health;
+
+  /// Where a finished workout is uploaded once connected; nowhere without
+  /// one.
+  final StravaRepository? _strava;
 
   static Future<void> _delay(Duration duration) =>
       Future<void>.delayed(duration);
@@ -289,6 +302,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       _slotChangedAt = null;
       _track('${eventPrefix}_Success');
       _emitTracker();
+      unawaited(_askHealthForWorkouts());
     } on Object catch (error) {
       _track(
         '${eventPrefix}_Fail',
@@ -802,6 +816,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     if (result.saved) {
       _track('Workout_Finished', parameters: _finishedParameters(session));
       _track('WorkoutTrackerView_FinishWorkout_Success');
+      await _exportToHealth(session);
+      // Last, because Strava is polled until it has made the activity.
+      // Only a saved workout: one that failed to save would be on Strava
+      // and nowhere in Compound.
+      await _queueForStrava(session);
       return;
     }
     final reason = _uid != session.authorId
@@ -816,6 +835,46 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
     // Still on the device: offered again to resume.
     if (!isClosed && _uid == uid && _controller == null) await _resume(uid);
+  }
+
+  /// Asks for Health's workout access as the workout starts, as Swift asks
+  /// before each HealthKit workout session. A refusal is only noted.
+  Future<void> _askHealthForWorkouts() async {
+    final health = _health;
+    if (health == null || !await health.isAvailable()) return;
+    if (!await health.requestAuthorization(HealthScope.workouts)) {
+      _track(
+        'WorkoutTrackerView_HealthKitAuthorisation_Fail',
+        type: LogType.warning,
+      );
+    }
+  }
+
+  /// Saves the finished workout to Health when it may write workouts
+  /// (Swift ends its HealthKit workout session). Best-effort.
+  Future<void> _exportToHealth(WorkoutSessionModel session) async {
+    final health = _health;
+    if (health == null ||
+        !await health.isAvailable() ||
+        await health.needsWorkoutAuthorization()) {
+      return;
+    }
+    await health.exportWorkout(session);
+  }
+
+  /// Queues the finished workout for Strava and sends the queue, when
+  /// connected. Upload failures are the repository's to report; this only
+  /// guards against the queue's own storage failing.
+  Future<void> _queueForStrava(WorkoutSessionModel session) async {
+    try {
+      await _strava?.queueUpload(session);
+    } on Object catch (error) {
+      _track(
+        'strava_upload_error',
+        parameters: {'error': '$error'},
+        type: LogType.warning,
+      );
+    }
   }
 
   /// The rest days after the workout, and moving the program on

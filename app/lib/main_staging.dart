@@ -5,16 +5,20 @@ import 'package:checkin_repository/checkin_repository.dart';
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/logic/staging_onboarding.dart';
 import 'package:compound_models/compound_models.dart'
     show ExerciseWeightUnit, WorkoutSessionModel, WorkoutSessionModelKeys;
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:food_repository/food_repository.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:purchases_repository/purchases_repository.dart';
 import 'package:social_repository/social_repository.dart';
+import 'package:strava_repository/strava_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_rules/training_rules.dart'
     show LogSetAction, NextExerciseAction;
@@ -82,8 +86,65 @@ Future<void> main() async {
     users: userRepository,
     now: now,
   );
+  final workoutSessionRepository = InMemoryWorkoutSessionRepository(
+    sessions: [
+      ...sampleEarlierWorkoutSessions(uid: sampleUserId, now: now),
+      ...sampleWorkoutSessions(uid: sampleUserId, now: now),
+      ..._programSessions(now),
+      ?finished,
+    ],
+  );
+  final nutritionRepository = InMemoryNutritionRepository(
+    meals: [
+      ...sampleMealLogs(uid: sampleUserId, now: now),
+      ...sampleMealHistory(uid: sampleUserId, now: now),
+    ],
+    dietPlan: sampleDietPlan(uid: sampleUserId, now: now),
+  );
+  final bodyRepository = InMemoryBodyRepository(
+    measurements: sampleBodyMeasurements(uid: sampleUserId, now: now),
+    steps: sampleSteps(uid: sampleUserId, now: now),
+    goals: [sampleWeightGoal(uid: sampleUserId, now: now)],
+  );
+  final trainingLibraryRepository = InMemoryTrainingLibraryRepository(
+    exercises: sampleUserExercises,
+    workoutTemplates: sampleUserWorkoutTemplates,
+    gymProfiles: sampleGymProfiles,
+    exerciseSettings: sampleExerciseSettings,
+    workoutSettings: sampleWorkoutSettings,
+  );
+  const analyticsRepository = AnalyticsRepository(services: [ConsoleService()]);
+  // Strava and its server on the device (Swift's MockStravaService): not
+  // connected at first; connecting imports a run and a ride, which
+  // disconnecting removes. Nothing leaves the device.
+  final stravaFirestore = FakeFirebaseFirestore();
+  final stravaRepository = StravaRepository(
+    firestore: stravaFirestore,
+    api: FakeStravaApi(
+      firestore: stravaFirestore,
+      uid: sampleUserId,
+      activities: sampleStravaActivities(now),
+    ),
+    sessions: workoutSessionRepository,
+    store: InMemoryStravaAccountStore(),
+    clientId: 'staging',
+    uploadContext: stravaUploadContext(
+      users: userRepository,
+      library: trainingLibraryRepository,
+    ),
+    onEvent: stravaEvents(analyticsRepository),
+  );
   await bootstrap(
     () => App(
+      // Two weeks of steps, a week of weigh-ins with body fat, two days of
+      // food from other apps, and the onboarding fill values, in memory.
+      healthRepository: HealthRepository(
+        platform: sampleHealthPlatform(now),
+        body: bodyRepository,
+        nutrition: nutritionRepository,
+      ),
+      stravaRepository: stravaRepository,
+      stravaAuthorizer: FakeStravaAuthorizer(),
       // Premium, as the Swift Mock build starts with "Simulate Premium" on,
       // so the coach is usable here. Staging has no store.
       purchasesRepository: FakePurchasesRepository(),
@@ -98,40 +159,15 @@ Future<void> main() async {
         user: step == null ? InMemoryAuthRepository.sampleUser : anonymous,
       ),
       userRepository: userRepository,
-      workoutSessionRepository: InMemoryWorkoutSessionRepository(
-        sessions: [
-          ...sampleEarlierWorkoutSessions(uid: sampleUserId, now: now),
-          ...sampleWorkoutSessions(uid: sampleUserId, now: now),
-          ..._programSessions(now),
-          ?finished,
-        ],
-      ),
-      nutritionRepository: InMemoryNutritionRepository(
-        meals: [
-          ...sampleMealLogs(uid: sampleUserId, now: now),
-          ...sampleMealHistory(uid: sampleUserId, now: now),
-        ],
-        dietPlan: sampleDietPlan(uid: sampleUserId, now: now),
-      ),
-      bodyRepository: InMemoryBodyRepository(
-        measurements: sampleBodyMeasurements(uid: sampleUserId, now: now),
-        steps: sampleSteps(uid: sampleUserId, now: now),
-        goals: [sampleWeightGoal(uid: sampleUserId, now: now)],
-      ),
+      workoutSessionRepository: workoutSessionRepository,
+      nutritionRepository: nutritionRepository,
+      bodyRepository: bodyRepository,
       programRepository: InMemoryProgramRepository(
         mesocycles: sampleMesocycles(now: now),
         macrocycles: sampleMacrocycles(now: now),
       ),
-      trainingLibraryRepository: InMemoryTrainingLibraryRepository(
-        exercises: sampleUserExercises,
-        workoutTemplates: sampleUserWorkoutTemplates,
-        gymProfiles: sampleGymProfiles,
-        exerciseSettings: sampleExerciseSettings,
-        workoutSettings: sampleWorkoutSettings,
-      ),
-      analyticsRepository: const AnalyticsRepository(
-        services: [ConsoleService()],
-      ),
+      trainingLibraryRepository: trainingLibraryRepository,
+      analyticsRepository: analyticsRepository,
       foodRepository: InMemoryFoodRepository(
         foods: foods,
         recipes: sampleRecipes(uid: sampleUserId, now: now, foods: foods),

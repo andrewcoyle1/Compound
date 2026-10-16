@@ -2,6 +2,8 @@ import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
+import 'package:compound_models/compound_models.dart'
+    show WorkoutSessionModel, WorkoutSessionModelKeys;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:user_repository/user_repository.dart';
@@ -20,6 +22,8 @@ void main() {
     when(() => appBloc.stream).thenAnswer((_) => const Stream.empty());
     when(() => appBloc.state).thenReturn(const AppAuthenticated(authUser));
     sessions = MockWorkoutSessionRepository();
+    when(() => sessions.watchSessions('friend'))
+        .thenAnswer((_) => const Stream.empty());
     users = MockUserRepository();
     when(() => users.watchUser('friend')).thenAnswer(
       (_) => Stream.value(
@@ -31,9 +35,16 @@ void main() {
     );
   });
 
-  Future<void> pump(WidgetTester tester, {double textScale = 1}) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    double textScale = 1,
+    AnalyticsRecorder? analytics,
+    LinkRecorder? links,
+  }) async {
     await tester.pumpApp(
       const WorkoutSessionDetailPage(sessionId: 's'),
+      analyticsRepository: analytics ?? AnalyticsRecorder(),
+      linkOpener: links ?? LinkRecorder(),
       appBloc: appBloc,
       userRepository: users,
       workoutSessionRepository: sessions,
@@ -110,6 +121,28 @@ void main() {
       expect(find.text('Set 1L'), findsOneWidget);
       expect(find.text('1 set · 881.8 lb volume'), findsOneWidget);
       expect(find.text('44.1 lb × 10 reps'), findsNWidgets(2));
+    });
+
+    testWidgets('links a workout on Strava for its author', (tester) async {
+      final stored = WorkoutSessionModel.fromFirestore({
+        ...session.toFirestore(),
+        WorkoutSessionModelKeys.stravaActivityId: 99,
+      });
+      when(() => sessions.session('friend', 's'))
+          .thenAnswer((_) async => session);
+      when(() => sessions.watchSessions('friend'))
+          .thenAnswer((_) => Stream.value([stored]));
+      final analytics = AnalyticsRecorder();
+      final links = LinkRecorder();
+      await pump(tester, analytics: analytics, links: links);
+      await tester.pump();
+
+      await tester.tap(find.text('View on Strava'));
+
+      expect(links.opened, [Uri.parse('https://www.strava.com/activities/99')]);
+      expect(analytics.parameters('WorkoutSessionDetailView_ViewOnStrava'), {
+        'session_id': 's',
+      });
     });
 
     testWidgets('shows a placeholder volume and fits the largest text', (

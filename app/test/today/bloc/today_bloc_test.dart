@@ -338,7 +338,13 @@ void main() {
       meals: const [],
       measurements: const [],
     );
-    expect(state.starterSteps, StarterStep.values);
+    // Strava's step is the view's to add.
+    expect(state.starterSteps, [
+      StarterStep.firstWorkout,
+      StarterStep.firstMeal,
+      StarterStep.firstWeighIn,
+      StarterStep.appleHealth,
+    ]);
     expect(state.streak.state, StreakState.none);
   });
 }

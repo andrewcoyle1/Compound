@@ -10370,5 +10370,242 @@
     "coachAskAboutWorkout": "Ask Coach About This Workout",
     "@coachAskAboutWorkout": {
         "description": "Row on one's own finished workout opening the coach about it"
+    },
+    "settingsIntegrations": "Integrations",
+    "@settingsIntegrations": {
+        "description": "Settings row opening Integrations"
+    },
+    "integrationsTitle": "Integrations",
+    "@integrationsTitle": {
+        "description": "Integrations screen title"
+    },
+    "integrationsAvailable": "Available Integrations",
+    "@integrationsAvailable": {
+        "description": "Integrations section header"
+    },
+    "stravaTitle": "Strava",
+    "@stravaTitle": {
+        "description": "Strava row title"
+    },
+    "stravaNotConnected": "Not connected",
+    "@stravaNotConnected": {
+        "description": "Strava row: not connected"
+    },
+    "stravaConnected": "Connected",
+    "@stravaConnected": {
+        "description": "Strava row: connected, athlete has no name"
+    },
+    "stravaConnectedAs": "Connected as {name}",
+    "@stravaConnectedAs": {
+        "description": "Strava row: connected athlete",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "stravaUnavailable": "Not available in this build",
+    "@stravaUnavailable": {
+        "description": "Strava row when this build has no Strava client id"
+    },
+    "stravaConnect": "Connect",
+    "@stravaConnect": {
+        "description": "Button connecting Strava"
+    },
+    "stravaUploadPastWorkouts": "Upload Past Workouts",
+    "@stravaUploadPastWorkouts": {
+        "description": "Row and dialog button queueing past workouts for Strava"
+    },
+    "stravaNotOnStrava": "{count, plural, =1{1 workout not on Strava} other{{count} workouts not on Strava}}",
+    "@stravaNotOnStrava": {
+        "description": "Under Upload Past Workouts",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "stravaWaiting": "{count, plural, =1{1 workout waiting to upload} other{{count} workouts waiting to upload}}",
+    "@stravaWaiting": {
+        "description": "Workouts queued for Strava",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "stravaTestUpload": "Test Upload",
+    "@stravaTestUpload": {
+        "description": "Development-only test upload to Strava"
+    },
+    "stravaDisconnect": "Disconnect Strava",
+    "@stravaDisconnect": {
+        "description": "Row disconnecting Strava"
+    },
+    "stravaDisconnectTitle": "Disconnect Strava?",
+    "@stravaDisconnectTitle": {
+        "description": "Confirmation title"
+    },
+    "stravaDisconnectMessage": "Workouts will stop uploading to Strava, and activities imported from it are removed.",
+    "@stravaDisconnectMessage": {
+        "description": "Confirmation message"
+    },
+    "stravaDisconnectConfirm": "Disconnect",
+    "@stravaDisconnectConfirm": {
+        "description": "Confirmation button"
+    },
+    "stravaBackfillTitle": "{count, plural, =1{Upload 1 past workout to Strava?} other{Upload {count} past workouts to Strava?}}",
+    "@stravaBackfillTitle": {
+        "description": "Offer after connecting Strava",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "stravaBackfillMessage": "Each one goes up with its sets. A long history can take a while.",
+    "@stravaBackfillMessage": {
+        "description": "Offer after connecting Strava"
+    },
+    "stravaNotNow": "Not Now",
+    "@stravaNotNow": {
+        "description": "Declines a Strava offer"
+    },
+    "stravaBackfillQueued": "{count, plural, =1{1 workout queued for Strava} other{{count} workouts queued for Strava}}",
+    "@stravaBackfillQueued": {
+        "description": "Snack bar after queueing past workouts",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "stravaConnectFailed": "Unable to Connect Strava",
+    "@stravaConnectFailed": {
+        "description": "Alert title"
+    },
+    "stravaDisconnectFailed": "Unable to Disconnect Strava",
+    "@stravaDisconnectFailed": {
+        "description": "Alert title"
+    },
+    "stravaCheckConnection": "Check your internet connection and try again.",
+    "@stravaCheckConnection": {
+        "description": "Alert message"
+    },
+    "stravaMissingUploadPermission": "Allow Compound to upload your activities to connect Strava.",
+    "@stravaMissingUploadPermission": {
+        "description": "Alert message: upload permission unticked on Strava"
+    },
+    "stravaTestUploadSent": "Test upload sent to Strava",
+    "@stravaTestUploadSent": {
+        "description": "Snack bar"
+    },
+    "stravaUploadFailed": "Upload Failed",
+    "@stravaUploadFailed": {
+        "description": "Alert title after a failed test upload"
+    },
+    "stravaBusy": "Strava is busy. Your workouts will upload later.",
+    "@stravaBusy": {
+        "description": "Strava rate limit"
+    },
+    "stravaNotConnectedError": "Not connected to Strava.",
+    "@stravaNotConnectedError": {
+        "description": "Strava error"
+    },
+    "stravaProcessingFailed": "Strava could not process the workout.",
+    "@stravaProcessingFailed": {
+        "description": "Strava error"
+    },
+    "stravaOfferTitle": "Upload Workouts to Strava?",
+    "@stravaOfferTitle": {
+        "description": "One-time offer after the first workout"
+    },
+    "stravaOfferMessage": "Connect Strava and each workout you finish is added to it.",
+    "@stravaOfferMessage": {
+        "description": "One-time offer after the first workout"
+    },
+    "stravaOfferConnect": "Connect Strava",
+    "@stravaOfferConnect": {
+        "description": "Offer button and Today's getting-started step"
+    },
+    "stravaViewOn": "View on Strava",
+    "@stravaViewOn": {
+        "description": "Link to an activity on Strava (Strava's required wording)"
+    },
+    "stravaFromStrava": "From Strava",
+    "@stravaFromStrava": {
+        "description": "Weekly review section of imported activities"
+    },
+    "stravaActivities": "Activities",
+    "@stravaActivities": {
+        "description": "Count of Strava activities"
+    },
+    "stravaDistance": "Distance",
+    "@stravaDistance": {
+        "description": "Strava distance"
+    },
+    "stravaMovingTime": "Moving Time",
+    "@stravaMovingTime": {
+        "description": "Strava moving time"
+    },
+    "stravaThisYear": "Strava This Year",
+    "@stravaThisYear": {
+        "description": "Own profile section"
+    },
+    "healthConnectApple": "Connect Apple Health",
+    "@healthConnectApple": {
+        "description": "Today's getting-started step (iOS)"
+    },
+    "healthConnectAndroid": "Connect Health Connect",
+    "@healthConnectAndroid": {
+        "description": "Today's getting-started step (Android)"
+    },
+    "healthAccessFailedApple": "Unable to Access Apple Health",
+    "@healthAccessFailedApple": {
+        "description": "Alert title (iOS)"
+    },
+    "healthAccessFailedAndroid": "Unable to Access Health Connect",
+    "@healthAccessFailedAndroid": {
+        "description": "Alert title (Android)"
+    },
+    "healthAllowStepsApple": "Allow step access in the Apple Health app to sync your steps.",
+    "@healthAllowStepsApple": {
+        "description": "Alert message (iOS)"
+    },
+    "healthAllowStepsAndroid": "Allow step access in Health Connect to sync your steps.",
+    "@healthAllowStepsAndroid": {
+        "description": "Alert message (Android)"
+    },
+    "healthSyncApple": "Sync from Apple Health",
+    "@healthSyncApple": {
+        "description": "Action on Steps and Visual Body Fat (iOS)"
+    },
+    "healthSyncAndroid": "Sync from Health Connect",
+    "@healthSyncAndroid": {
+        "description": "Action on Steps and Visual Body Fat (Android)"
+    },
+    "healthFillApple": "Fill from Apple Health",
+    "@healthFillApple": {
+        "description": "Onboarding button (iOS)"
+    },
+    "healthFillAndroid": "Fill from Health Connect",
+    "@healthFillAndroid": {
+        "description": "Onboarding button (Android)"
+    },
+    "healthFilledApple": "Filled from Apple Health. Check it before you continue.",
+    "@healthFilledApple": {
+        "description": "Onboarding note (iOS)"
+    },
+    "healthFilledAndroid": "Filled from Health Connect. Check it before you continue.",
+    "@healthFilledAndroid": {
+        "description": "Onboarding note (Android)"
+    },
+    "healthNotFoundApple": "Nothing found in Apple Health, or access is off. Enter it below.",
+    "@healthNotFoundApple": {
+        "description": "Onboarding note (iOS)"
+    },
+    "healthNotFoundAndroid": "Nothing found in Health Connect, or access is off. Enter it below.",
+    "@healthNotFoundAndroid": {
+        "description": "Onboarding note (Android)"
     }
 }

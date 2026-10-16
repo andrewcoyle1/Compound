@@ -1,4 +1,5 @@
 import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
+import 'package:compound/integrations/view/integrations_page.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/account/view/edit_profile_page.dart';
 import 'package:compound/settings/general/view/about_page.dart';
@@ -38,6 +39,9 @@ final profileRoutes = <RouteBase>[
   }),
   _route(SettingsPage.path, SettingsPage.name, (_, _) => const SettingsPage(), [
     _route(UnitsPage.path, UnitsPage.name, (_, _) => const UnitsPage()),
+    _route(IntegrationsPage.path, IntegrationsPage.name, (_, _) {
+      return const IntegrationsPage();
+    }),
     _route(
       CustomiseAnalyticsPage.path,
       CustomiseAnalyticsPage.name,

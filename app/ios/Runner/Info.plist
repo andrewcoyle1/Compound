@@ -38,6 +38,10 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Compound reads your workouts, heart rate, active energy, steps, weight and body fat to track your training, the calories and macros other apps log to track your nutrition, and your date of birth, sex, height or weight when you tap Fill from Apple Health.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Compound saves your workouts, with their heart rate and active energy, and the weight you log to Apple Health.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Compound uses the camera to scan barcodes and nutrition labels, to photograph meals for analysis, and to take progress photos.</string>
 	<key>LSRequiresIPhoneOS</key>

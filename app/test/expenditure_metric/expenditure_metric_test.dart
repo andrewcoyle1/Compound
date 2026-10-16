@@ -152,6 +152,15 @@ void main() {
       await pumpPage(tester, ExpenditureMetric.energyBalance);
       expect(find.text('Energy Balance'), findsOneWidget);
       expect(find.text('Intake'), findsOneWidget);
+      // Swift's combo chart: intake as bars that average, under the
+      // expenditure line.
+      final series = tester
+          .widget<MetricDetailView>(find.byType(MetricDetailView))
+          .series;
+      expect([for (final s in series) s.label], ['Intake', 'Expenditure']);
+      expect(series.first.isBar, isTrue);
+      expect(series.first.isTotal, isFalse);
+      expect(series.last.isLine, isTrue);
       expect(find.byType(ExpenditureEstimateSummary), findsNothing);
       expect(find.byTooltip('Log Meal'), findsOneWidget);
       expect(analytics.names.first, 'EnergyBalanceView_Appear');

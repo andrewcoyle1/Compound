@@ -269,6 +269,12 @@ abstract final class AppSymbols {
   /// Making something the usual one, such as the favourite gym.
   static const IconData favourite = Icons.star_rounded;
 
+  /// Rating the app in the store.
+  static const IconData rate = Icons.star_outline_rounded;
+
+  /// The developer tools (development and staging builds).
+  static const IconData developer = Icons.code_rounded;
+
   /// Closing.
   static const IconData close = Icons.close_rounded;
 

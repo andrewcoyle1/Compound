@@ -1,4 +1,5 @@
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
@@ -10,7 +11,6 @@ import 'package:compound/settings/general/view/methods_and_sources_page.dart';
 import 'package:compound/settings/general/view/notification_settings_page.dart';
 import 'package:compound/settings/general/view/units_page.dart';
 import 'package:compound/settings/settings.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -52,6 +52,7 @@ void main() {
     String location, {
     PushPermission permission = PushPermission.authorized,
     FakeNotificationsRepository? notifications,
+    AppVersion? version,
   }) async {
     when(() => appBloc.state).thenReturn(
       AppAuthenticated(
@@ -68,6 +69,7 @@ void main() {
       userRepository: users,
       bodyRepository: body,
       analyticsRepository: analytics,
+      appVersion: version,
       notificationsRepository:
           notifications ??
           FakeNotificationsRepository(permissionState: permission),
@@ -304,10 +306,19 @@ void main() {
   group(MethodsAndSourcesPage, () {
     testWidgets('lists every method and opens its sheet', (tester) async {
       await pump(tester, '/profile/settings/methods');
+      expect(find.byType(AppListRowButton), findsNWidgets(31));
       for (final title in [
         'Weight Trend',
         'Planned Sets per Muscle',
         'Weekly Goal and Streak',
+        // The seven #128 left out.
+        'Energy in a Kilogram',
+        'Smart Progression',
+        'Deload Week',
+        'Warm-Up Sets',
+        'Rest Timers',
+        'Resting Calories',
+        'Calories Spent Digesting Food',
       ]) {
         expect(find.text(title), findsOneWidget);
       }
@@ -340,9 +351,23 @@ void main() {
   });
 
   group(AboutPage, () {
+    // ProfileAppInfoPresenterTests' "the screen shows a version and build".
+    testWidgets('states the version and build', (tester) async {
+      await pump(
+        tester,
+        '/profile/settings/about',
+        version: const AppVersion(version: '1.4.0', build: '27'),
+      );
+      expect(
+        find.textContaining('You are currently on version 1.4.0 (27).'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('says what Compound is and opens the licences', (tester) async {
       await pump(tester, '/profile/settings/about');
       expect(find.textContaining('training and nutrition'), findsOneWidget);
+      expect(find.textContaining('version'), findsNothing);
       await tester.tap(find.text('View Licenses'));
       await tester.pumpAndSettle();
       expect(find.byType(LicencesPage), findsOneWidget);

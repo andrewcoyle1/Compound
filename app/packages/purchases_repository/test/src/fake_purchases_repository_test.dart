@@ -115,5 +115,21 @@ void main() {
       expect(repository.state.isResolved, isFalse);
       await repository.close();
     });
+
+    test('premium can be switched off and on, emitting each change', () async {
+      final repository = FakePurchasesRepository();
+      final states = <bool>[];
+      final subscription = repository.states.listen(
+        (state) => states.add(state.hasActiveEntitlement),
+      );
+      repository
+        ..premium = false
+        ..premium = false
+        ..premium = true;
+      await Future<void>.delayed(Duration.zero);
+      expect(repository.premium, isTrue);
+      expect(states, [true, false, true]);
+      await subscription.cancel();
+    });
   });
 }

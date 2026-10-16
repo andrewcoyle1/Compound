@@ -263,7 +263,7 @@ void main() {
     });
   });
 
-  test('UserField names only model fields Swift updates by name', () {
+  test('UserField names only model fields updated by name', () {
     expect([
       for (final field in UserField.values) field.key,
     ], unorderedEquals(taggedUpdates.keys));

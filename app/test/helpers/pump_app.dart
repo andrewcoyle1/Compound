@@ -15,6 +15,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/programs/programs.dart';
+import 'package:compound/review/review_moment.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
@@ -39,6 +40,8 @@ import 'package:training_session/training_session.dart'
     show UnitPreferenceStore;
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
+
+import 'fake_store_review.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository;
 
@@ -90,6 +93,8 @@ extension PumpApp on WidgetTester {
     StravaRepository? stravaRepository,
     StravaCubit? stravaCubit,
     LinkOpener linkOpener = const LinkOpener(),
+    AppVersion? appVersion,
+    ReviewPrompter? reviews,
     double textScale = 1,
     GoRouter? router,
   }) {
@@ -163,6 +168,10 @@ extension PumpApp on WidgetTester {
           ),
           RepositoryProvider.value(value: shareSheet),
           RepositoryProvider.value(value: linkOpener),
+          RepositoryProvider<AppVersion?>.value(value: appVersion),
+          RepositoryProvider.value(
+            value: reviews ?? ReviewPrompter(review: FakeStoreReview()),
+          ),
           RepositoryProvider<StravaRepository?>.value(value: stravaRepository),
           // Never available unless a test passes one.
           RepositoryProvider<HealthRepository>(

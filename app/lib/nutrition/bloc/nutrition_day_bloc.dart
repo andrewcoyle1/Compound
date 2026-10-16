@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/app/document_id.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart' show withItems;
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/review/review_moment.dart';
 import 'package:compound/widgets/calendar/calendar_day_marker.dart';
 import 'package:compound_maths/compound_maths.dart';
 import 'package:equatable/equatable.dart';
@@ -22,6 +25,7 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
     AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
     this._now = DateTime.now,
     this._newId = newDocumentId,
+    this._reviews,
   }) : _analytics = analyticsRepository,
        super(_initialState(startOfDay(_now()))) {
     on<NutritionDaySubscriptionRequested>(_onSubscriptionRequested);
@@ -39,6 +43,10 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
   final AnalyticsRepository _analytics;
   final DateTime Function() _now;
   final String Function() _newId;
+
+  /// Asks for a rating after a save, as Swift's `addMeal` does; none in
+  /// tests that leave it out.
+  final ReviewPrompter? _reviews;
 
   Future<void> _onSubscriptionRequested(
     NutritionDaySubscriptionRequested event,
@@ -84,7 +92,9 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
       if (items.isEmpty) {
         await _nutritionRepository.deleteMeal(_uid, meal.mealId);
       } else {
-        await _nutritionRepository.saveMeal(withItems(meal, items));
+        final updated = withItems(meal, items);
+        await _nutritionRepository.saveMeal(updated);
+        _askForReview(updated);
       }
     } on Object catch (_) {
       emit(state.copyWith(deleteFailures: state.deleteFailures + 1));
@@ -141,10 +151,26 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
     try {
       await _nutritionRepository.saveMeal(meal);
       _analytics.analytic('NutritionView_SaveMeal_Success');
+      _askForReview(meal);
       return true;
     } on Object catch (error) {
       _analytics.severe('NutritionView_SaveMeal_Fail', error);
       return false;
     }
+  }
+
+  /// The seventh day of food logging in a row asks for a rating. Swift asks
+  /// only on these three saves (`addMeal`), not when AddMeal logs food.
+  void _askForReview(MealLogModel saved) {
+    final reviews = _reviews;
+    if (reviews == null) return;
+    final days = ReviewMoment.daysInARow(
+      today: _now(),
+      loggedDays: [
+        for (final meal in state.meals ?? const <MealLogModel>[]) meal.date,
+        saved.date,
+      ],
+    );
+    unawaited(reviews.requestIfEarned(ReviewFoodLogged(days)));
   }
 }

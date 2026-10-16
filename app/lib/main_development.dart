@@ -153,6 +153,7 @@ Future<void> main() async {
       );
     }
     return App(
+      appVersion: await AppVersion.load(),
       // The flavor's own bundle id and package name, which Health reports
       // as the source of what this app wrote.
       healthRepository: HealthRepository(

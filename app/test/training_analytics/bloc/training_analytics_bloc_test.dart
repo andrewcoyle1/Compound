@@ -1,4 +1,5 @@
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:app_ui/app_ui.dart' show AppFormat;
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/training_analytics/training_analytics.dart';
@@ -6,6 +7,8 @@ import 'package:compound_maths/compound_maths.dart' show VolumeAction;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart'
+    show UnitPreferenceStore;
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -102,6 +105,34 @@ void main() {
           .having((e) => e.parameters, 'parameters', parameters);
 
   group(TrainingAnalyticsBloc, () {
+    test("an exercise's own weight unit wins over the profile's", () async {
+      final units = UnitPreferenceStore()
+        ..setWeightUnit(uid, 'press', ExerciseWeightUnit.kilograms);
+      final bloc = TrainingAnalyticsBloc(
+        workoutSessionRepository: workouts,
+        trainingLibraryRepository: library,
+        userRepository: users,
+        analyticsRepository: analytics,
+        uid: uid,
+        screen: TrainingAnalyticsScreen.exercises,
+        units: units,
+        now: () => now,
+      )..add(const TrainingAnalyticsSubscriptionRequested());
+      await pumpEventQueue();
+      expect(bloc.state.usesPounds, isTrue);
+      expect(bloc.state.usesPoundsFor('press'), isFalse);
+      expect(bloc.state.usesPoundsFor('other'), isTrue);
+      final kilograms = bloc.state.oneRepMaxPoints('press');
+      units.setWeightUnit(uid, 'press', ExerciseWeightUnit.pounds);
+      await pumpEventQueue();
+      expect(bloc.state.usesPoundsFor('press'), isTrue);
+      expect(
+        bloc.state.oneRepMaxPoints('press').first.value,
+        closeTo(kilograms.first.value * AppFormat.poundsPerKilogram, 1e-9),
+      );
+      await bloc.close();
+    });
+
     test('opens loading', () {
       final state = build().state;
       expect(state.status, TrainingAnalyticsStatus.loading);

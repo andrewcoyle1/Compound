@@ -11832,6 +11832,184 @@
     "@onboardingPhotoLoadFailed": {
         "description": "Name question's message when a picked photo cannot be read"
     },
+    "coachPlansUnavailable": "Plans aren't available in this version yet.",
+    "@coachPlansUnavailable": {
+        "description": "Shown instead of the paywall until it is built"
+    },
+    "swapExerciseTitle": "Swap Exercise",
+    "@swapExerciseTitle": {
+        "description": "Title of the picker that swaps an exercise in the workout"
+    },
+    "swapPlannedAlternatives": "Planned alternatives",
+    "@swapPlannedAlternatives": {
+        "description": "Swap picker: the plan's alternatives, listed first"
+    },
+    "trackerTargets": "Targets",
+    "@trackerTargets": {
+        "description": "Exercise menu in the workout: edit this workout's set targets"
+    },
+    "trackerSwap": "Swap",
+    "@trackerSwap": {
+        "description": "Exercise menu in the workout: swap the exercise for another"
+    },
+    "trackerExerciseSettings": "Exercise Settings",
+    "@trackerExerciseSettings": {
+        "description": "Exercise menu in the workout, and the screen it opens"
+    },
+    "trackerChangeWeightUnit": "Change Weight Unit",
+    "@trackerChangeWeightUnit": {
+        "description": "Title of the question when a new weight unit is chosen"
+    },
+    "trackerChangeDistanceUnit": "Change Distance Unit",
+    "@trackerChangeDistanceUnit": {
+        "description": "Title of the question when a new distance unit is chosen"
+    },
+    "trackerUnitChangeMessage": "This changes the unit for this exercise everywhere, including future workouts. Convert Values also converts the sets not yet logged.",
+    "@trackerUnitChangeMessage": {
+        "description": "Question when a new unit is chosen"
+    },
+    "trackerDisplayOnly": "Display Only",
+    "@trackerDisplayOnly": {
+        "description": "Unit change: change only the unit shown"
+    },
+    "trackerConvertValues": "Convert Values",
+    "@trackerConvertValues": {
+        "description": "Unit change: also convert the sets not yet logged"
+    },
+    "trackerWeightUnitLabel": "Weight unit, {unit}",
+    "@trackerWeightUnitLabel": {
+        "description": "Spoken label of the weight column's unit menu, e.g. Weight unit, Kilograms",
+        "placeholders": {
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerDistanceUnitLabel": "Distance unit, {unit}",
+    "@trackerDistanceUnitLabel": {
+        "description": "Spoken label of the distance column's unit menu, e.g. Distance unit, Meters",
+        "placeholders": {
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "unitMeters": "Meters",
+    "@unitMeters": {
+        "description": "Distance unit name"
+    },
+    "exerciseSettingsInfo": "Info",
+    "@exerciseSettingsInfo": {
+        "description": "Exercise Settings row: opens the exercise's details"
+    },
+    "exerciseSettingsInfoSubtitle": "View instructions, exercise details, and history",
+    "@exerciseSettingsInfoSubtitle": {
+        "description": "Exercise Settings: the Info row's subtitle when the exercise has no description"
+    },
+    "exerciseSettingsWeightUnit": "Weight Unit",
+    "@exerciseSettingsWeightUnit": {
+        "description": "Exercise Settings row: the exercise's weight unit"
+    },
+    "exerciseSettingsDistanceUnit": "Distance Unit",
+    "@exerciseSettingsDistanceUnit": {
+        "description": "Exercise Settings row: the exercise's distance unit"
+    },
+    "exerciseSettingsRestCustom": "Custom ({duration})",
+    "@exerciseSettingsRestCustom": {
+        "description": "Exercise Settings: the rest set on this exercise, e.g. Custom (2:00)",
+        "placeholders": {
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "exerciseSettingsRestDefault": "Default ({duration})",
+    "@exerciseSettingsRestDefault": {
+        "description": "Exercise Settings: the app's default rest, e.g. Default (1:30)",
+        "placeholders": {
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "exerciseSettingsSideRest": "{percent}% of the rest timer",
+    "@exerciseSettingsSideRest": {
+        "description": "Exercise Settings: the rest between left and right sets, e.g. 50% of the rest timer",
+        "placeholders": {
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "exerciseSettingsEditDuplicate": "Edit Duplicate",
+    "@exerciseSettingsEditDuplicate": {
+        "description": "Exercise Settings row: create a new exercise starting from a copy of this one"
+    },
+    "sessionDeleteTitle": "Delete Workout?",
+    "@sessionDeleteTitle": {
+        "description": "Session detail: delete confirmation title"
+    },
+    "sessionDeleteMessage": "Are you sure you want to delete this workout? This cannot be undone.",
+    "@sessionDeleteMessage": {
+        "description": "Session detail: delete confirmation"
+    },
+    "sessionSaveChangesFailed": "Unable to save changes. Please try again.",
+    "@sessionSaveChangesFailed": {
+        "description": "Session detail: Save Changes failed"
+    },
+    "sessionSaveTimingFailed": "Unable to save the change. Please try again.",
+    "@sessionSaveTimingFailed": {
+        "description": "Session detail: a start time or duration failed to save"
+    },
+    "sessionStartedAt": "Started at",
+    "@sessionStartedAt": {
+        "description": "Start time sheet: the date and time picker's label"
+    },
+    "sessionStartTimeFooter": "The workout keeps its duration; only when it started changes.",
+    "@sessionStartTimeFooter": {
+        "description": "Start time sheet: footer"
+    },
+    "sessionNotesLabel": "Workout notes",
+    "@sessionNotesLabel": {
+        "description": "Session detail: notes field while editing"
+    },
+    "sessionNotesPrompt": "Add notes here...",
+    "@sessionNotesPrompt": {
+        "description": "Session detail: empty notes field"
+    },
+    "sessionHours": "Hours",
+    "@sessionHours": {
+        "description": "Duration sheet: hours wheel"
+    },
+    "sessionWeight": "Weight",
+    "@sessionWeight": {
+        "description": "Edit set sheet: weight field"
+    },
+    "sessionDistance": "Distance",
+    "@sessionDistance": {
+        "description": "Edit set sheet: distance field"
+    },
+    "sessionDate": "Date",
+    "@sessionDate": {
+        "description": "Start time sheet: the day"
+    },
+    "sessionTime": "Time",
+    "@sessionTime": {
+        "description": "Start time sheet: the time of day"
+    },
+    "sessionSetActions": "Set actions",
+    "@sessionSetActions": {
+        "description": "Session editor: a set's menu, for screen readers"
+    },
+    "sessionHoursValue": "{hours} hr",
+    "@sessionHoursValue": {
+        "description": "Duration sheet: a row of the hours wheel",
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
     "energyDensityMethodTitle": "Energy in a Kilogram",
     "@energyDensityMethodTitle": {
         "description": "Methods & Sources: the title of a calculation's explanation (Swift MethodInfo)"

@@ -18,6 +18,8 @@ import 'package:compound_models/compound_models.dart' show WorkoutSessionStats;
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart'
+    show UnitPreferenceStore;
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -45,12 +47,14 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
     required int firstWeekday,
     this._screen = 'AnalyticsView',
     this._parameters,
+    this._units,
     DateTime Function() now = DateTime.now,
   }) : super(
          ProgressState(
            uid: _uid,
            now: now(),
            firstWeekday: firstWeekday,
+           weightUnits: _units?.weightUnits(_uid) ?? const {},
            // The weekly target grid opens on today's column.
            targetDay: (now().weekday - firstWeekday + 7) % 7,
          ),
@@ -79,6 +83,9 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
   final TrainingLibraryRepository _trainingLibraryRepository;
   final CheckInRepository _checkInRepository;
   final String _uid;
+
+  /// Each exercise's own weight unit, kept on the device.
+  final UnitPreferenceStore? _units;
   final String _screen;
   final Map<String, Object?>? _parameters;
 
@@ -159,6 +166,11 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
         },
         onError: (_, _) => state,
       ),
+      if (_units case final units?)
+        emit.forEach(
+          units.changes,
+          onData: (_) => state.copyWith(weightUnits: units.weightUnits(_uid)),
+        ),
     ]);
   }
 

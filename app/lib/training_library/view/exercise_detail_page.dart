@@ -24,6 +24,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart'
+    show UnitPreferenceStore;
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// One exercise from the library (Swift `ExerciseModelDetailView`): what
@@ -69,8 +71,13 @@ class ExerciseDetailPage extends StatelessWidget {
         ],
         child: ExerciseDetailView(
           exerciseId: exerciseId,
-          weightUnit: WorkoutText.preferredWeightUnit(
-            state.profile?.submittedWeightUnitPreference,
+          // The exercise's own unit, else the profile's
+          // (`ExerciseModelDetailPresenter.unitPreference`).
+          weightUnit: WorkoutText.weightUnit(
+            context
+                .read<UnitPreferenceStore>()
+                .of(state.user.uid, exerciseId, user: state.profile)
+                .weightUnit,
           ),
         ),
       ),

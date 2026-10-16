@@ -35,6 +35,8 @@ import 'package:purchases_repository/purchases_repository.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:strava_repository/strava_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart'
+    show UnitPreferenceStore;
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -67,6 +69,7 @@ extension PumpApp on WidgetTester {
     OpenFoodFacts? openFoodFacts,
     CheckInRepository? checkInRepository,
     ProposalDismissals? proposalDismissals,
+    UnitPreferenceStore? unitPreferences,
     MealDraftCubit? mealDraftCubit,
     AppBloc? appBloc,
     SocialRepository? socialRepository,
@@ -140,6 +143,9 @@ extension PumpApp on WidgetTester {
           ),
           RepositoryProvider.value(
             value: proposalDismissals ?? ProposalDismissals(),
+          ),
+          RepositoryProvider.value(
+            value: unitPreferences ?? UnitPreferenceStore(),
           ),
           RepositoryProvider<CoachRepository>.value(
             value:

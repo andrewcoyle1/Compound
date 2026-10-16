@@ -3,14 +3,19 @@ import 'dart:async';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/logic/template_summary.dart';
-import 'package:compound/workout_history/view/workout_text.dart';
+import 'package:compound/workout_editor/cubit/set_target_cubit.dart'
+    show SessionScope;
+import 'package:compound/workout_editor/view/set_target_page.dart';
 import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/equipment_sheet.dart';
+import 'package:compound/workout_tracker/view/exercise_settings_page.dart';
 import 'package:compound/workout_tracker/view/notes_sheet.dart';
 import 'package:compound/workout_tracker/view/set_row_parts.dart';
+import 'package:compound/workout_tracker/view/swap_exercise_picker.dart';
 import 'package:compound/workout_tracker/view/tick.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
+import 'package:compound/workout_tracker/view/unit_menu.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -201,9 +206,20 @@ class _Header extends StatelessWidget {
               _ExerciseAction.sides =>
                 context.read<ActiveWorkoutCubit>().toggleSides(exercise.id),
               _ExerciseAction.notes => unawaited(_editNotes(context)),
+              _ExerciseAction.targets => unawaited(_editTargets(context)),
+              _ExerciseAction.swap => unawaited(_swap(context)),
+              _ExerciseAction.settings => unawaited(_settings(context)),
               _ExerciseAction.delete => unawaited(_delete(context)),
             },
             itemBuilder: (_) => [
+              PopupMenuItem(
+                value: _ExerciseAction.notes,
+                child: ListTile(
+                  leading: const Icon(AppSymbols.note),
+                  title: Text(l10n.trackerNotes),
+                ),
+              ),
+              const PopupMenuDivider(),
               if (exercise.equipmentVariations.isNotEmpty)
                 PopupMenuItem(
                   value: _ExerciseAction.equipment,
@@ -223,10 +239,25 @@ class _Header extends StatelessWidget {
                   ),
                 ),
               PopupMenuItem(
-                value: _ExerciseAction.notes,
+                value: _ExerciseAction.targets,
                 child: ListTile(
-                  leading: const Icon(AppSymbols.note),
-                  title: Text(l10n.trackerNotes),
+                  leading: const Icon(AppSymbols.goal),
+                  title: Text(l10n.trackerTargets),
+                ),
+              ),
+              PopupMenuItem(
+                value: _ExerciseAction.swap,
+                child: ListTile(
+                  leading: const Icon(AppSymbols.swap),
+                  title: Text(l10n.trackerSwap),
+                ),
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: _ExerciseAction.settings,
+                child: ListTile(
+                  leading: const Icon(AppSymbols.settings),
+                  title: Text(l10n.trackerExerciseSettings),
                 ),
               ),
               PopupMenuItem(
@@ -277,6 +308,56 @@ class _Header extends StatelessWidget {
     if (setup == null) return;
     cubit.equipmentOpened();
     await showEquipmentSheet(context, setup);
+  }
+
+  /// The exercise as the library has it; null for one it no longer holds,
+  /// which offers no Targets or Exercise Settings, as in Swift.
+  ExerciseModel? _libraryModel(BuildContext context) => context
+      .read<ActiveWorkoutCubit>()
+      .state
+      .library
+      .where((e) => e.id == member.exercise.templateId)
+      .firstOrNull;
+
+  /// This workout's targets for the exercise (`SetTargetScope.session`).
+  Future<void> _editTargets(BuildContext context) async {
+    final cubit = context.read<ActiveWorkoutCubit>();
+    final model = _libraryModel(context);
+    if (model == null) return;
+    cubit.targetsOpened();
+    final saved = await openSetTarget(
+      context,
+      WorkoutTemplateExercise(
+        id: member.exercise.id,
+        exercise: model,
+        setTargets: member.exercise.setTargets,
+        setRestTimers: false,
+      ),
+      scope: const SessionScope(),
+      settings: cubit.state.settings,
+      library: cubit.state.library,
+    );
+    if (saved != null) cubit.setTargets(member.exercise.id, saved.setTargets);
+  }
+
+  /// Swap Exercise, the plan's alternatives first; the logged sets stay.
+  Future<void> _swap(BuildContext context) async {
+    final cubit = context.read<ActiveWorkoutCubit>()..swapOpened();
+    final replacement = await SwapExercisePicker.show(
+      context,
+      library: cubit.state.library,
+      alternativeIds: member.exercise.substituteExerciseIds,
+    );
+    if (replacement != null) {
+      cubit.swapExercise(member.exercise.id, replacement);
+    }
+  }
+
+  Future<void> _settings(BuildContext context) async {
+    final model = _libraryModel(context);
+    if (model == null) return;
+    context.read<ActiveWorkoutCubit>().exerciseSettingsOpened();
+    await ExerciseSettingsPage.push(context, model);
   }
 
   Future<void> _editNotes(BuildContext context) async {
@@ -334,7 +415,15 @@ class _Header extends StatelessWidget {
   }
 }
 
-enum _ExerciseAction { equipment, sides, notes, delete }
+enum _ExerciseAction {
+  equipment,
+  sides,
+  notes,
+  targets,
+  swap,
+  settings,
+  delete,
+}
 
 /// The column headings, which the cells' own labels speak for.
 class _Headings extends StatelessWidget {
@@ -350,20 +439,78 @@ class _Headings extends StatelessWidget {
       fontWeight: FontWeight.w600,
     );
     final mode = member.exercise.trackingMode;
-    return ExcludeSemantics(
-      child: _Columns(
-        badge: Text(l10n.trackerColumnSet, style: style),
-        last: Text(l10n.trackerColumnLast, style: style),
-        fields: [
-          for (final field in SetField.of(_plainSet, mode))
-            Text(
-              _heading(l10n, field, member.weightUnit),
-              style: style,
-              textAlign: TextAlign.center,
+    Widget heading(SetField field) => Text(
+      _heading(l10n, field, member),
+      style: style,
+      textAlign: TextAlign.center,
+    );
+    // The plain headings are left to the cells' own labels; the unit menus
+    // are buttons in their own right.
+    return _Columns(
+      badge: ExcludeSemantics(child: Text(l10n.trackerColumnSet, style: style)),
+      last: ExcludeSemantics(child: Text(l10n.trackerColumnLast, style: style)),
+      fields: [
+        for (final field in SetField.of(_plainSet, mode))
+          switch (field) {
+            SetField.weight => UnitMenu<ExerciseWeightUnit>(
+              key: ValueKey('weight-unit-${member.exercise.id}'),
+              units: ExerciseWeightUnit.values,
+              selected: member.weightUnit,
+              name: (unit) => weightUnitName(l10n, unit),
+              semanticsLabel: l10n.trackerWeightUnitLabel(
+                weightUnitName(l10n, member.weightUnit),
+              ),
+              onSelected: (unit) => unawaited(_weight(context, unit)),
+              child: _MenuHeading(child: heading(field)),
             ),
-        ],
-        done: const SizedBox.shrink(),
-      ),
+            SetField.distance => UnitMenu<DistanceUnit>(
+              key: ValueKey('distance-unit-${member.exercise.id}'),
+              units: DistanceUnit.values,
+              selected: member.distanceUnit,
+              name: (unit) => distanceUnitName(l10n, unit),
+              semanticsLabel: l10n.trackerDistanceUnitLabel(
+                distanceUnitName(l10n, member.distanceUnit),
+              ),
+              onSelected: (unit) => unawaited(_distance(context, unit)),
+              child: _MenuHeading(child: heading(field)),
+            ),
+            SetField.reps ||
+            SetField.duration => ExcludeSemantics(child: heading(field)),
+          },
+      ],
+      done: const SizedBox.shrink(),
+    );
+  }
+
+  /// A new weight unit, asked how to apply (`promptWeightUnitChange`);
+  /// the one in use asks nothing.
+  Future<void> _weight(BuildContext context, ExerciseWeightUnit unit) async {
+    if (unit == member.weightUnit) return;
+    final cubit = context.read<ActiveWorkoutCubit>();
+    final change = await askUnitChange(
+      context,
+      context.l10n.trackerChangeWeightUnit,
+    );
+    if (change == null) return;
+    cubit.changeWeightUnit(
+      member.exercise.id,
+      unit,
+      convert: change == UnitChange.convert,
+    );
+  }
+
+  Future<void> _distance(BuildContext context, DistanceUnit unit) async {
+    if (unit == member.distanceUnit) return;
+    final cubit = context.read<ActiveWorkoutCubit>();
+    final change = await askUnitChange(
+      context,
+      context.l10n.trackerChangeDistanceUnit,
+    );
+    if (change == null) return;
+    cubit.changeDistanceUnit(
+      member.exercise.id,
+      unit,
+      convert: change == UnitChange.convert,
     );
   }
 
@@ -379,13 +526,32 @@ class _Headings extends StatelessWidget {
 String _heading(
   AppLocalizations l10n,
   SetField field,
-  ExerciseWeightUnit unit,
+  TrackerExercise member,
 ) => switch (field) {
-  SetField.weight => WorkoutText.weightUnit(unit).symbol,
+  SetField.weight => weightUnitSymbol(member.weightUnit),
   SetField.reps => l10n.trackerColumnReps,
-  SetField.distance => 'm',
+  SetField.distance => TrackerText.distanceSymbol(member.distanceUnit),
   SetField.duration => l10n.trackerColumnTime,
 };
+
+/// A heading that opens its unit's menu: underlined, with a row's height
+/// to tap.
+class _MenuHeading extends StatelessWidget {
+  const new({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: const BoxConstraints(minHeight: AppControlSize.row),
+    child: Center(
+      child: DefaultTextStyle.merge(
+        style: const TextStyle(decoration: TextDecoration.underline),
+        child: child,
+      ),
+    ),
+  );
+}
 
 /// One row's columns: the badge, last time, the fields and the circle.
 class _Columns extends StatelessWidget {
@@ -467,6 +633,7 @@ class _SetRow extends StatelessWidget {
                 exercise.trackingMode,
                 member.weightUnit,
                 locale: locale,
+                distanceUnit: member.distanceUnit,
               ) ??
               AppFormat.placeholder;
     final secondary = AppTextStyles.rowDetail.copyWith(
@@ -476,7 +643,7 @@ class _SetRow extends StatelessWidget {
     final fields = SetField.of(set, exercise.trackingMode);
     Widget cell(SetField field) => _Cell(
       key: ValueKey('cell-${set.id}-${field.name}'),
-      label: _heading(l10n, field, member.weightUnit),
+      label: _heading(l10n, field, member),
       text: _cellText(field, locale),
       isActive: keypad?.field == field,
       onTap: () => cubit.openKeypad(set.id, field),
@@ -567,7 +734,12 @@ class _SetRow extends StatelessWidget {
     final separator = NumberFormat.decimalPattern(locale).symbols.DECIMAL_SEP;
     final raw = keypad != null && keypad.field == field
         ? keypad.text
-        : SetKeypad.valueText(field, set, member.weightUnit);
+        : SetKeypad.valueText(
+            field,
+            set,
+            member.weightUnit,
+            distanceUnit: member.distanceUnit,
+          );
     // "60 + Red", "Red + Blue": the bands beside the weight.
     final bands = field == SetField.weight
         ? set.bands ?? const <String>[]

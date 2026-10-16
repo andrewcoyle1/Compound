@@ -121,8 +121,9 @@ class FinalExerciseDetailsView extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.l,
                     ),
-                    child: TextField(
+                    child: TextFormField(
                       key: const Key('FinalExerciseDetails.alternateNames'),
+                      initialValue: state.alternateNames,
                       maxLength: ExerciseDefinitionRules.alternateNamesLimit,
                       maxLines: 2,
                       minLines: 1,
@@ -145,8 +146,9 @@ class FinalExerciseDetailsView extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.l,
                     ),
-                    child: TextField(
+                    child: TextFormField(
                       key: const Key('FinalExerciseDetails.description'),
+                      initialValue: state.draft.description,
                       maxLines: 6,
                       minLines: 2,
                       textCapitalization: TextCapitalization.sentences,

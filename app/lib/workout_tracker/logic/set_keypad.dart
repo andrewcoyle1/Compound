@@ -8,7 +8,7 @@ enum SetField {
   weight,
   reps,
 
-  /// In metres, with a decimal point.
+  /// In the exercise's distance unit, with a decimal point.
   distance,
 
   /// Typed like a microwave: digits fill from the right, so "130" is 1:30.
@@ -52,6 +52,9 @@ final class const SetKeypad({
   /// The exercise's weight is assistance, stored negative: the weight
   /// field offers ± (`WeightStep.isAssisted`).
   final bool isAssisted = false,
+
+  /// The unit the distance field is typed in; metres are stored.
+  final DistanceUnit distanceUnit = DistanceUnit.meters,
 }) extends Equatable {
   /// Opens [field] on [set], showing its stored value.
   factory open({
@@ -61,13 +64,15 @@ final class const SetKeypad({
     required List<SetField> fields,
     required m.ExerciseWeightUnit unit,
     bool isAssisted = false,
+    DistanceUnit distanceUnit = DistanceUnit.meters,
   }) => SetKeypad(
     exerciseId: exerciseId,
     setId: set.id,
     field: field,
     fields: fields,
-    text: valueText(field, set, unit),
+    text: valueText(field, set, unit, distanceUnit: distanceUnit),
     isAssisted: isAssisted,
+    distanceUnit: distanceUnit,
   );
 
   /// The ± key, on an assisted exercise's weight only.
@@ -89,8 +94,9 @@ final class const SetKeypad({
     setId: setId,
     field: next,
     fields: fields,
-    text: valueText(next, set, unit),
+    text: valueText(next, set, unit, distanceUnit: distanceUnit),
     isAssisted: isAssisted,
+    distanceUnit: distanceUnit,
   );
 
   /// [key] ("0"–"9" or ".") typed into [set]: the keypad and the set it
@@ -158,8 +164,9 @@ final class const SetKeypad({
         setId: setId,
         field: field,
         fields: fields,
-        text: valueText(field, set, unit),
+        text: valueText(field, set, unit, distanceUnit: distanceUnit),
         isAssisted: isAssisted,
+        distanceUnit: distanceUnit,
       );
 
   /// The weight the field shows, in [unit] and as the total the bar
@@ -187,6 +194,7 @@ final class const SetKeypad({
     text: text,
     replacesOnNextKey: false,
     isAssisted: isAssisted,
+    distanceUnit: distanceUnit,
   );
 
   bool _fits(String candidate) => switch (field) {
@@ -223,7 +231,10 @@ final class const SetKeypad({
         if (set.completedAt != null && (typed ?? 0) < 1) return null;
         return set.copyWith(reps: typed);
       case SetField.distance:
-        return set.copyWith(distanceMeters: double.tryParse(text));
+        final typed = double.tryParse(text);
+        return set.copyWith(
+          distanceMeters: typed == null ? null : distanceUnit.toMeters(typed),
+        );
       case SetField.duration:
         return set.copyWith(durationSec: secondsFromDigits(text));
     }
@@ -233,15 +244,16 @@ final class const SetKeypad({
   static String valueText(
     SetField field,
     m.WorkoutSetModel set,
-    m.ExerciseWeightUnit unit,
-  ) => switch (field) {
+    m.ExerciseWeightUnit unit, {
+    DistanceUnit distanceUnit = DistanceUnit.meters,
+  }) => switch (field) {
     SetField.weight => switch (loadKg(set)) {
       final kg? => formatNumber(r.convertWeight(kg, unit.rules)),
       null => '',
     },
     SetField.reps => set.reps?.toString() ?? '',
     SetField.distance => switch (set.distanceMeters) {
-      final meters? => formatNumber(meters),
+      final meters? => formatNumber(distanceUnit.fromMeters(meters)),
       null => '',
     },
     SetField.duration => switch (set.durationSec) {
@@ -289,5 +301,6 @@ final class const SetKeypad({
     text,
     replacesOnNextKey,
     isAssisted,
+    distanceUnit,
   ];
 }

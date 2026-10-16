@@ -121,4 +121,28 @@ void main() {
       'CreateExerciseView_Disappear',
     ]),
   );
+
+  test('Edit Duplicate opens on a copy, carried to the next step', () {
+    const copy = ExerciseDraft(
+      name: 'Row',
+      metricA: TrackableExerciseMetric.weight,
+      metricB: TrackableExerciseMetric.repsPerSide,
+      type: ExerciseType.compoundUpper,
+      laterality: Laterality.unilateral,
+      muscleGroups: {Muscles.lats: MuscleTargetType.primary},
+      isBodyweight: true,
+      variations: [VariationDraft(id: 'v1')],
+      rangeOfMotion: 3,
+      stability: 2,
+      bodyweightContribution: 10,
+      alternateNames: ['One-Arm Row'],
+      description: 'Brace.',
+    );
+    analytics = AnalyticsRecorder();
+    final cubit = CreateExerciseCubit(analytics: analytics, prefill: copy);
+    addTearDown(cubit.close);
+    expect(cubit.state.name, 'Row');
+    expect(cubit.state.hasUnsavedChanges, isTrue);
+    expect(cubit.continued(), copy);
+  });
 }

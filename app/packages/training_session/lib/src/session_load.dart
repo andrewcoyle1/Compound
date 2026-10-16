@@ -11,6 +11,36 @@ import 'package:training_session/src/mapping.dart';
 import 'package:training_session/src/model_copies.dart';
 import 'package:training_session/src/weight_stepper.dart';
 
+/// The unit an exercise's distances are entered and shown in
+/// (`ExerciseDistanceUnit`); stored distances are always metres.
+enum DistanceUnit {
+  meters(1),
+  miles(1609.344);
+
+  new(this.metersEach);
+
+  /// Metres in one of this unit.
+  final double metersEach;
+
+  /// [value] metres in this unit.
+  double fromMeters(double value) => value / metersEach;
+
+  /// [value] of this unit in metres.
+  double toMeters(double value) => value * metersEach;
+
+  /// [distanceMeters] as it reads in this unit, rounded as a converted
+  /// distance is (`convertAndRoundDistances`): whole metres, or miles to
+  /// the hundredth, back in metres.
+  double rounded(double distanceMeters) {
+    final value = fromMeters(distanceMeters);
+    return toMeters(
+      this == DistanceUnit.meters
+          ? value.roundToDouble()
+          : (value * 100).roundToDouble() / 100,
+    );
+  }
+}
+
 /// The user's units for one exercise (`ExerciseUnitPreference`), which the
 /// Swift app keeps on the device.
 class const UnitPreference({
@@ -19,7 +49,27 @@ class const UnitPreference({
   /// Whether the user chose [weightUnit] for this exercise; when not, it is
   /// only the app-wide unit and the equipment's label wins.
   final bool weightUnitIsChosen = false,
-});
+  final DistanceUnit distanceUnit = DistanceUnit.meters,
+}) {
+  /// The app-wide units in [user]'s profile, which an exercise has until
+  /// its own are chosen (`createDefaultPreference`): kilograms and metres
+  /// without one; a profile from before distance had its own unit follows
+  /// its length unit.
+  factory fromProfile(m.UserModel? user) => UnitPreference(
+    weightUnit:
+        user?.submittedWeightUnitPreference == m.WeightUnitPreference.pounds
+        ? m.ExerciseWeightUnit.pounds
+        : m.ExerciseWeightUnit.kilograms,
+    distanceUnit: switch ((
+      user?.submittedDistanceUnitPreference,
+      user?.submittedLengthUnitPreference,
+    )) {
+      (m.DistanceUnitPreference.miles, _) => DistanceUnit.miles,
+      (null, m.LengthUnitPreference.inches) => DistanceUnit.miles,
+      _ => DistanceUnit.meters,
+    },
+  );
+}
 
 String _key(m.EquipmentKind kind, String id) => '${kind.value}:$id';
 

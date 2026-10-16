@@ -249,6 +249,27 @@ void main() {
       expect(figures.sex, maths.Gender.female);
     });
 
+    test("an exercise's own weight unit, else the profile's", () {
+      final figures = ProgressState(
+        uid: uid,
+        now: now,
+        firstWeekday: DateTime.monday,
+        weightUnits: const {'bench': ExerciseWeightUnit.pounds},
+      );
+      expect(figures.unitFor('bench'), AppWeightUnit.pounds);
+      expect(figures.unitFor('squat'), AppWeightUnit.kilograms);
+      expect(figures.copyWith().unitFor('bench'), AppWeightUnit.pounds);
+      expect(
+        ProgressState(
+          uid: uid,
+          now: now,
+          firstWeekday: DateTime.monday,
+          weightUnits: const {'bench': ExerciseWeightUnit.kilograms},
+        ).unitFor('bench'),
+        AppWeightUnit.kilograms,
+      );
+    });
+
     test('without a profile: centimetres and no sex', () {
       final figures = state();
       expect(figures.lengthSymbol, 'cm');

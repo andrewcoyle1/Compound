@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/create_exercise/create_exercise.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/programs/programs.dart';
@@ -83,8 +84,7 @@ class TrainingView extends StatelessWidget {
   }
 }
 
-/// The + menu (Swift `TrainingView`'s toolbar). New Exercise comes with
-/// the exercise editor.
+/// The + menu (Swift `TrainingView`'s toolbar).
 class _AddMenu extends StatelessWidget {
   const new();
 
@@ -127,6 +127,13 @@ class _AddMenu extends StatelessWidget {
           child: ListTile(
             leading: const Icon(AppSymbols.workout),
             title: Text(l10n.editorNewWorkout),
+          ),
+        ),
+        PopupMenuItem(
+          value: () => unawaited(CreateExercisePage.open(context)),
+          child: ListTile(
+            leading: const Icon(AppSymbols.exercise),
+            title: Text(l10n.createExerciseNew),
           ),
         ),
       ],

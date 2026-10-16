@@ -50,6 +50,11 @@ class ExerciseListCubit extends Cubit<ExerciseListState> {
     emit(state.copyWith(filters: const ExerciseFilters()));
   }
 
+  /// Create Exercise was opened from the list.
+  void addExercisePressed() => _analytics.trackEvent(
+    const AnalyticsEvent('ExercisesView_AddExercisePressed'),
+  );
+
   /// Picking an exercise is what the list is for, so it is counted.
   void exerciseSelected(ExerciseModel exercise) => _analytics.trackEvent(
     AnalyticsEvent(

@@ -178,6 +178,12 @@ class const App({
             ),
           ),
           BlocProvider(
+            create: (context) => InboxBloc(
+              social: context.read(),
+              analytics: analyticsRepository,
+            ),
+          ),
+          BlocProvider(
             create: (context) => CircleBloc(
               social: context.read(),
               sessions: workoutSessionRepository,
@@ -345,6 +351,13 @@ class _AppViewState extends State<AppView> {
                     path: tab.path,
                     name: tab.name,
                     builder: (_, _) => const SocialPage(),
+                    routes: [
+                      GoRoute(
+                        path: NotificationsPage.path,
+                        name: NotificationsPage.name,
+                        builder: (_, _) => const NotificationsPage(),
+                      ),
+                    ],
                   ),
                 },
               ],
@@ -521,9 +534,9 @@ class _AppViewState extends State<AppView> {
   /// links are routed once they are past onboarding.
   void _followUser(AppState state) {
     final uid = state is AppAuthenticated ? state.user.uid : null;
-    context.read<CircleBloc>().add(
-      CircleViewerChanged(state is AppAuthenticated ? state.profile : null),
-    );
+    final profile = state is AppAuthenticated ? state.profile : null;
+    context.read<CircleBloc>().add(CircleViewerChanged(profile));
+    context.read<InboxBloc>().add(InboxViewerChanged(profile));
     unawaited(context.read<ActiveWorkoutCubit>().userChanged(uid));
     context.read<ProgramsCubit>().userChanged(uid);
     unawaited(

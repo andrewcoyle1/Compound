@@ -149,8 +149,10 @@ class const NotificationsLink() extends DeepLink {
   /// A link to the notifications screen.
   this;
 
+  /// The inbox, over Social as Swift opens it from Social's bell.
   @override
-  String toLocation({String? currentUserId}) => DeepLinkTab.social.path;
+  String toLocation({String? currentUserId}) =>
+      '${DeepLinkTab.social.path}/notifications';
 
   @override
   List<Object?> get props => [];

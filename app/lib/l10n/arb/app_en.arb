@@ -9106,5 +9106,268 @@
     "timelineSaveFailed": "Unable to Save Settings",
     "@timelineSaveFailed": {},
     "timelineTryAgain": "Please try again.",
-    "@timelineTryAgain": {}
+    "@timelineTryAgain": {},
+    "inboxTitle": "Notifications",
+    "@inboxTitle": {
+        "description": "The notifications inbox's title"
+    },
+    "inboxFollowRequests": "Follow Requests",
+    "@inboxFollowRequests": {
+        "description": "Header over requests to follow the user"
+    },
+    "inboxWantsToFollow": "Wants to follow you",
+    "@inboxWantsToFollow": {
+        "description": "Under a follow requester's name"
+    },
+    "inboxAccept": "Accept",
+    "@inboxAccept": {
+        "description": "Accept a follow request"
+    },
+    "inboxDecline": "Decline",
+    "@inboxDecline": {
+        "description": "Decline a follow request"
+    },
+    "inboxLiked": "{name} liked your workout",
+    "@inboxLiked": {
+        "description": "A like",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxCommented": "{name} commented",
+    "@inboxCommented": {
+        "description": "A comment with no text",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxCommentedText": "{name} commented: \"{text}\"",
+    "@inboxCommentedText": {
+        "description": "A comment, with its start",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "text": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxMentioned": "{name} mentioned you",
+    "@inboxMentioned": {
+        "description": "A mention with no text",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxMentionedText": "{name} mentioned you: \"{text}\"",
+    "@inboxMentionedText": {
+        "description": "A mention, with its start",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "text": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxFollowed": "{name} started following you",
+    "@inboxFollowed": {
+        "description": "A new follower",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxNudged": "{name} nudged you to train",
+    "@inboxNudged": {
+        "description": "A nudge",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxFollowAccepted": "{name} accepted your follow request",
+    "@inboxFollowAccepted": {
+        "description": "A follow request accepted",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxSharedWorkout": "{name} shared a workout",
+    "@inboxSharedWorkout": {
+        "description": "A share with no name",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxShared": "{name} shared {item}",
+    "@inboxShared": {
+        "description": "A share of a named workout or program",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "item": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxChallengeDone": "You finished a challenge",
+    "@inboxChallengeDone": {
+        "description": "A challenge finished, with no name"
+    },
+    "inboxChallengeDoneNamed": "You finished {name}",
+    "@inboxChallengeDoneNamed": {
+        "description": "A named challenge finished",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxActorsTwo": "{first} and {second}",
+    "@inboxActorsTwo": {
+        "description": "Two people in a grouped row",
+        "placeholders": {
+            "first": {
+                "type": "String"
+            },
+            "second": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxActorsMany": "{first} and {count} others",
+    "@inboxActorsMany": {
+        "description": "The newest person and how many others, in a grouped row",
+        "placeholders": {
+            "first": {
+                "type": "String"
+            },
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxGroupLiked": "{actors} liked your workout",
+    "@inboxGroupLiked": {
+        "description": "Several likes on one workout",
+        "placeholders": {
+            "actors": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxGroupCommented": "{actors} commented on your workout",
+    "@inboxGroupCommented": {
+        "description": "Several comments on one workout",
+        "placeholders": {
+            "actors": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxGroupMentioned": "{actors} mentioned you",
+    "@inboxGroupMentioned": {
+        "description": "Several mentions on one workout",
+        "placeholders": {
+            "actors": {
+                "type": "String"
+            }
+        }
+    },
+    "inboxLoadFailedTitle": "Unable to Load Notifications",
+    "@inboxLoadFailedTitle": {
+        "description": "The inbox could not load"
+    },
+    "inboxLoadFailedMessage": "Check your connection and try again.",
+    "@inboxLoadFailedMessage": {
+        "description": "Under the load failure"
+    },
+    "inboxEmptyTitle": "No Notifications",
+    "@inboxEmptyTitle": {
+        "description": "The inbox is empty"
+    },
+    "inboxEmptyMessage": "You don't have any notifications yet. When you receive notifications, they'll appear here.",
+    "@inboxEmptyMessage": {
+        "description": "Under the empty inbox"
+    },
+    "inboxLoadMore": "Load more",
+    "@inboxLoadMore": {
+        "description": "Loads older notifications"
+    },
+    "inboxUnread": "Unread",
+    "@inboxUnread": {
+        "description": "Screen reader value of an unread row"
+    },
+    "inboxDelete": "Delete",
+    "@inboxDelete": {
+        "description": "Deletes a row"
+    },
+    "inboxDeleteFailed": "Unable to Delete Notification",
+    "@inboxDeleteFailed": {
+        "description": "A delete failed"
+    },
+    "inboxFollowBackFailed": "Unable to Follow User",
+    "@inboxFollowBackFailed": {
+        "description": "Follow back failed"
+    },
+    "inboxAnswerFailed": "Unable to Answer Request",
+    "@inboxAnswerFailed": {
+        "description": "Accept or decline failed"
+    },
+    "inboxOpenFailed": "Unable to Open",
+    "@inboxOpenFailed": {
+        "description": "A notification's subject could not be opened"
+    },
+    "inboxOpenFailedMessage": "It may have been deleted. Please try again.",
+    "@inboxOpenFailedMessage": {
+        "description": "Under the open failure"
+    },
+    "inboxLoadMoreFailed": "Unable to Load More",
+    "@inboxLoadMoreFailed": {
+        "description": "Load more failed"
+    },
+    "socialNotificationsButton": "Notifications",
+    "@socialNotificationsButton": {
+        "description": "The bell on Social"
+    },
+    "notificationSettingsAskFirst": "Notifications are off. Turn them on to get the alerts below.",
+    "@notificationSettingsAskFirst": {
+        "description": "Notification permission never asked"
+    },
+    "notificationSettingsTurnOn": "Turn On Notifications",
+    "@notificationSettingsTurnOn": {
+        "description": "Asks for notification permission"
+    },
+    "notificationSettingsDenied": "Notifications for Compound are turned off in Settings. Allow them there to use these switches.",
+    "@notificationSettingsDenied": {
+        "description": "Notification permission refused"
+    },
+    "notificationSettingsOpenSettings": "Open Settings",
+    "@notificationSettingsOpenSettings": {
+        "description": "Opens the system settings"
+    },
+    "notificationSettingsEnableFailed": "Unable to Enable Notifications",
+    "@notificationSettingsEnableFailed": {
+        "description": "The permission request failed"
+    },
+    "notificationSettingsCheckFailed": "Unable to Check Notification Permission",
+    "@notificationSettingsCheckFailed": {
+        "description": "Reading the permission failed"
+    }
 }

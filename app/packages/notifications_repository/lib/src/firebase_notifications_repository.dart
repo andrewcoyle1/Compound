@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -27,7 +28,8 @@ typedef NotificationErrorReporter = void Function(
 /// The push token and time zone go to `users/{uid}/private/settings`
 /// through [UserRepository.mergePrivateSettings], which completes offline.
 /// `onMessage` and `onMessageOpenedApp` default to Firebase Messaging's;
-/// `localTimezone` to the device's IANA zone.
+/// `localTimezone` to the device's IANA zone; `openSettings` to
+/// `app_settings`' notification page.
 /// {@endtemplate}
 class FirebaseNotificationsRepository extends NotificationsRepository {
   /// {@macro firebase_notifications_repository}
@@ -40,12 +42,14 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
     Stream<RemoteMessage>? onMessage,
     Stream<RemoteMessage>? onMessageOpenedApp,
     Future<String> Function()? localTimezone,
+    Future<void> Function()? openSettings,
   }) : _local = localNotifications,
        _users = userRepository,
        _onMessage = onMessage ?? FirebaseMessaging.onMessage,
        _onMessageOpenedApp =
            onMessageOpenedApp ?? FirebaseMessaging.onMessageOpenedApp,
-       _localTimezone = localTimezone ?? _deviceTimezone;
+       _localTimezone = localTimezone ?? _deviceTimezone,
+       _openSettings = openSettings ?? _notificationSettings;
 
   /// The Android small icon: the app's monochrome `ic_notification`
   /// drawable (kept from resource shrinking by `res/raw/keep.xml`).
@@ -59,10 +63,14 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
   final Stream<RemoteMessage> _onMessage;
   final Stream<RemoteMessage> _onMessageOpenedApp;
   final Future<String> Function() _localTimezone;
+  final Future<void> Function() _openSettings;
 
   final _messages = StreamController<PushMessage>.broadcast();
   final _subscriptions = <StreamSubscription<Object?>>[];
   StreamSubscription<String>? _tokenSubscription;
+
+  static Future<void> _notificationSettings() =>
+      AppSettings.openAppSettings(type: AppSettingsType.notification);
 
   static Future<String> _deviceTimezone() async =>
       (await FlutterTimezone.getLocalTimezone()).identifier;
@@ -136,6 +144,9 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
   @override
   Future<bool> requestPermission() async =>
       _permission(await _messaging.requestPermission()).canDeliver;
+
+  @override
+  Future<void> openSystemSettings() => _guard(_openSettings);
 
   static PushPermission _permission(NotificationSettings settings) =>
       switch (settings.authorizationStatus) {

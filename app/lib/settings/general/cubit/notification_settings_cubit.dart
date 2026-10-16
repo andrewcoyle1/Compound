@@ -5,6 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound_models/compound_models.dart' show ActivityType;
 import 'package:equatable/equatable.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 /// A kind of social push the user can switch off, with the activity type
@@ -47,14 +48,62 @@ enum SocialPush {
   };
 }
 
+/// What stands between the switches and a delivered push, if anything.
+enum PermissionPrompt {
+  /// Never asked: explain and offer to ask.
+  askFirst,
+
+  /// Refused: only the system settings can turn them back on.
+  denied,
+}
+
+/// What failed, for the message that says so.
+enum NotificationSettingsFailure {
+  /// A switch's save failed to start (`Unable to Save Setting`).
+  save,
+
+  /// Reading the permission failed.
+  checkPermission,
+
+  /// Asking for permission failed.
+  requestPermission,
+}
+
 /// The private settings the Notification Settings screen shows, read with
-/// Swift's defaults (`PrivateUserSettings` extensions).
+/// Swift's defaults (`PrivateUserSettings` extensions), and whether the
+/// system lets the app notify.
 class const NotificationSettingsState({
   final PrivateUserSettings settings = const PrivateUserSettings(),
 
-  /// The last save failed to start.
-  final bool saveFailed = false,
+  /// The permission, once read.
+  final PushPermission? permission,
+
+  /// The last failure, bumped by [failureId] so a repeat shows again.
+  final NotificationSettingsFailure? failure,
+  final int failureId = 0,
 }) extends Equatable {
+  /// The prompt above the switches, if any.
+  PermissionPrompt? get permissionPrompt => switch (permission) {
+    PushPermission.notDetermined => PermissionPrompt.askFirst,
+    PushPermission.denied => PermissionPrompt.denied,
+    _ => null,
+  };
+
+  /// The switches change what the server sends, which arrives only once
+  /// the system allows it, so they are usable only then.
+  bool get canChangeSwitches => permission?.canDeliver ?? false;
+
+  NotificationSettingsState copyWith({
+    PrivateUserSettings? settings,
+    PushPermission? permission,
+    NotificationSettingsFailure? failure,
+  }) => NotificationSettingsState(
+    settings: settings ?? this.settings,
+    permission: permission ?? this.permission,
+    failure: failure ?? this.failure,
+    failureId: failure == null ? failureId : failureId + 1,
+  );
+
   /// Swift's and `functions/lib.js`' `DEFAULT_REMINDER_HOUR`.
   static const defaultReminderHour = 19;
 
@@ -78,7 +127,12 @@ class const NotificationSettingsState({
   bool get isMealRemindersEnabled => settings.pushMealReminders ?? false;
 
   @override
-  List<Object> get props => [settings.toFirestore(), saveFailed];
+  List<Object?> get props => [
+    settings.toFirestore(),
+    permission,
+    failure,
+    failureId,
+  ];
 }
 
 /// Notification Settings (Swift `NotificationSettingsPresenter`): each
@@ -86,25 +140,28 @@ class const NotificationSettingsState({
 /// changes, and reads back from the document, so a refused write snaps it
 /// back. The switch events keep Swift's `NotificationsView_` names.
 ///
-/// Not ported yet, waiting for the push wiring: the permission prompt and
-/// disabling the switches until it is granted, and scheduling or withdrawing
-/// the come-back and meal reminders on the device. Only the settings are
-/// written, which is what the device reads when it schedules them.
+/// Above the switches, the permission prompt: ask when never asked, point
+/// to the system settings when refused; the switches stay off until it is
+/// allowed. The come-back and meal reminders are scheduled on the device by
+/// `NotificationsCubit`, which follows the same settings document.
 class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
-  new({required this._users, required this._analytics, required this._uid})
-    : super(const NotificationSettingsState()) {
+  new({
+    required this._users,
+    required this._notifications,
+    required this._analytics,
+    required this._uid,
+  }) : super(const NotificationSettingsState()) {
     _subscription = _users
         .watchPrivateSettings(_uid)
         .listen(
           (settings) => emit(
-            NotificationSettingsState(
-              settings: settings ?? const PrivateUserSettings(),
-            ),
+            state.copyWith(settings: settings ?? const PrivateUserSettings()),
           ),
         );
   }
 
   final UserRepository _users;
+  final NotificationsRepository _notifications;
   final AnalyticsRepository _analytics;
   final String _uid;
   late final StreamSubscription<PrivateUserSettings?> _subscription;
@@ -114,6 +171,55 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
 
   /// `NotificationSettingsView_Disappear`.
   void disappeared() => _analytics.disappear('NotificationSettingsView');
+
+  /// Reads the permission: on appear, after asking, and on each return to
+  /// the app, since the system settings are where a refusal is undone.
+  Future<void> checkPermission() async {
+    try {
+      final permission = await _notifications.permission();
+      if (!isClosed) emit(state.copyWith(permission: permission));
+    } on Object catch (error) {
+      _analytics.severe(
+        'NotificationSettingsView_CheckPermissions_Fail',
+        error,
+      );
+      if (!isClosed) {
+        emit(
+          state.copyWith(failure: NotificationSettingsFailure.checkPermission),
+        );
+      }
+    }
+  }
+
+  /// Turn On Notifications: the system prompt, then the status read back,
+  /// since the answer changes which rows show.
+  Future<void> requestPermissionPressed() async {
+    _analytics.analytic('NotificationSettingsView_RequestPermission_Start');
+    try {
+      final granted = await _notifications.requestPermission();
+      _analytics.analytic(
+        'NotificationSettingsView_RequestPermission_Success',
+        {'granted': granted},
+      );
+      await checkPermission();
+    } on Object catch (error) {
+      // A request the user asked for either works or says why.
+      _analytics.severe(
+        'NotificationSettingsView_RequestPermission_Fail',
+        error,
+      );
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            failure: NotificationSettingsFailure.requestPermission,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Open Settings, where a refusal is undone.
+  Future<void> openSettingsPressed() => _notifications.openSystemSettings();
 
   /// A social push switch.
   Future<void> socialPushChanged(SocialPush push, {required bool isEnabled}) =>
@@ -177,9 +283,7 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
         'setting': event,
       });
       if (!isClosed) {
-        emit(
-          NotificationSettingsState(settings: state.settings, saveFailed: true),
-        );
+        emit(state.copyWith(failure: NotificationSettingsFailure.save));
       }
     }
   }

@@ -191,7 +191,7 @@ void main() {
   group('toLocation', () {
     test('maps each link to a router path', () {
       expect(const TabLink(DeepLinkTab.progress).toLocation(), '/progress');
-      expect(const NotificationsLink().toLocation(), '/social');
+      expect(const NotificationsLink().toLocation(), '/social/notifications');
       expect(const JoinLink('PUSH2345').toLocation(), '/social');
       expect(const WorkoutLink().toLocation(), '/today');
     });

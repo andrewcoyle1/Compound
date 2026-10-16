@@ -13,7 +13,7 @@ class _MockUserRepository extends Mock implements UserRepository;
 void main() {
   late UserRepository users;
   late RecordedAnalytics analytics;
-  late List<Map<String, Object>> writes;
+  late List<Map<String, Object?>> writes;
 
   setUp(() {
     users = _MockUserRepository();

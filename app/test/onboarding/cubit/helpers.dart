@@ -42,6 +42,6 @@ class RecordingAnalytics implements AnalyticsService {
 }
 
 /// A partial update as the map of fields it writes.
-Map<String, Object> fieldsOf(Object? captured) => {
+Map<String, Object?> fieldsOf(Object? captured) => {
   for (final field in captured! as List<UserFieldValue>) field.key: field.value,
 };

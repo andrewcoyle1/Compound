@@ -26,7 +26,11 @@ void main() {
     when(() => users.deleteUser(any())).thenAnswer((_) async {});
   });
 
-  Future<void> pumpPage(WidgetTester tester, {AuthUser user = appleUser}) {
+  Future<void> pumpPage(
+    WidgetTester tester, {
+    AuthUser user = appleUser,
+    LinkRecorder? links,
+  }) {
     when(() => appBloc.state).thenReturn(AppAuthenticated(user));
     tester.view.physicalSize = const Size(2400, 9000);
     addTearDown(tester.view.reset);
@@ -35,6 +39,7 @@ void main() {
       appBloc: appBloc,
       authRepository: auth,
       userRepository: users,
+      linkOpener: links ?? LinkRecorder(),
     );
   }
 
@@ -48,6 +53,18 @@ void main() {
         find.text("You'll be asked to sign in again to confirm."),
         findsOneWidget,
       );
+    });
+
+    testWidgets("Manage Subscription opens the store's subscriptions page", (
+      tester,
+    ) async {
+      final links = LinkRecorder();
+      await pumpPage(tester, links: links);
+      await tester.tap(find.text('Manage Subscription'));
+      await tester.pump();
+      expect(links.opened, [
+        Uri.parse('https://play.google.com/store/account/subscriptions'),
+      ]);
     });
 
     testWidgets('an anonymous account is not told to sign in again', (

@@ -66,7 +66,10 @@ class FirestoreUserRepository implements UserRepository {
     return writeLocally(
       document.path,
       () => document.update(
-        _toFirestore({for (final field in fields) field.key: field.value}),
+        _toFirestore({
+          for (final field in fields)
+            field.key: field.value ?? FieldValue.delete(),
+        }),
       ),
       _onWriteError,
     );

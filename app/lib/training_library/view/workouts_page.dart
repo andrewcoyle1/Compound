@@ -12,6 +12,7 @@ import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/training_library/view/workout_template_detail_page.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:compound/workout_editor/view/workout_wizard_pages.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -201,9 +202,18 @@ class _Sections extends StatelessWidget {
 /// A workout template in a list: its name, exercises and the muscles they
 /// work (Swift `WorkoutTemplateRow`). Opens its detail.
 class WorkoutRow extends StatelessWidget {
-  const new(this.workout, {this.isMesocycleDay = false, super.key});
+  const new(
+    this.workout, {
+    this.isMesocycleDay = false,
+    this.showsPicture = false,
+    super.key,
+  });
 
   final WorkoutTemplateModel workout;
+
+  /// Whether the workout's picture leads the row, when it has one, as on
+  /// Training's search results (`TrainingView.workoutResultRow`).
+  final bool showsPicture;
 
   /// A day of one of the user's mesocycles rather than a library template.
   final bool isMesocycleDay;
@@ -240,6 +250,8 @@ class WorkoutRow extends StatelessWidget {
           child: Row(
             spacing: AppSpacing.m,
             children: [
+              if (workout.imageUrl case final url? when showsPicture)
+                RowThumbnail(url),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

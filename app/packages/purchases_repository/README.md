@@ -11,8 +11,8 @@ RevenueCat) and `PremiumAccess`.
   `apiKey` means the build has none: the state is resolved and not premium, and loading products,
   buying or restoring throws `PurchasesNotConfigured`.
 - `FakePurchasesRepository`: no store, for the staging flavor and tests. Sells the Swift
-  development StoreKit products (Pro Annual £29.99, Pro Monthly £4.99); premium by default; set
-  `failure` to show the cancelled or pending paywall states.
+  development StoreKit products (Pro Annual £29.99, Pro Monthly £4.99); premium by default; queue
+  `failures` (and `failedLoads`) to show every paywall state.
 - `isPremium(...)` / `PurchasesState.isPremiumWith(...)`: the premium gate. Any active entitlement
   counts (no entitlement id is checked, as in Swift). Until the store has answered for the
   signed-in user the answer is optimistic, so a slow network never sends a subscriber to the

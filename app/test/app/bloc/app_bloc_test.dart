@@ -8,11 +8,14 @@ import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound_models/compound_models.dart' show UserModelKeys;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:purchases_repository/purchases_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 import '../../helpers/helpers.dart';
 
 class _MockAnalyticsRepository extends Mock implements AnalyticsRepository;
+
+class _MockPurchasesRepository extends Mock implements PurchasesRepository;
 
 void main() {
   const user = AuthUser(uid: 'uid', isAnonymous: false, email: 'a@b.com');
@@ -345,5 +348,120 @@ void main() {
       act: (bloc) => bloc.add(const AppSignOutPressed()),
       errors: () => [isA<AuthFailure>()],
     );
+
+    group('the store account (Swift CoreInteractor.logIn and signOut)', () {
+      AppBloc withStore(PurchasesRepository purchases) => AppBloc(
+        authRepository: authRepository,
+        userRepository: userRepository,
+        purchasesRepository: purchases,
+        now: () => now,
+      );
+
+      test('logs in with the Firebase uid, and out after a sign-out, never '
+          'when nobody was signed in', () async {
+        final purchases = _MockPurchasesRepository();
+        when(() => purchases.states).thenAnswer((_) => const Stream.empty());
+        when(() => purchases.logIn(any(), email: any(named: 'email')))
+            .thenAnswer((_) async => const []);
+        when(purchases.logOut).thenAnswer((_) async {});
+        final users = StreamController<AuthUser?>();
+        when(() => authRepository.user).thenAnswer((_) => users.stream);
+        final bloc = withStore(purchases)
+          ..add(const AppUserSubscriptionRequested());
+        users.add(null);
+        await pumpEventQueue();
+        verifyNever(purchases.logOut);
+        users.add(user);
+        await pumpEventQueue();
+        verify(() => purchases.logIn('uid', email: 'a@b.com')).called(1);
+        users.add(null);
+        await pumpEventQueue();
+        verify(purchases.logOut).called(1);
+        await users.close();
+        await bloc.close();
+      });
+
+      blocTest<AppBloc, AppState>(
+        'a failed logIn is reported and leaves the gate open',
+        setUp: () =>
+            when(() => authRepository.user)
+                .thenAnswer((_) => Stream.value(user)),
+        build: () {
+          final purchases = _MockPurchasesRepository();
+          when(() => purchases.states).thenAnswer((_) => const Stream.empty());
+          when(() => purchases.logIn(any(), email: any(named: 'email')))
+              .thenAnswer((_) async => throw const PurchasesFailure('offline'));
+          return withStore(purchases);
+        },
+        act: (bloc) => bloc.add(const AppUserSubscriptionRequested()),
+        errors: () => [isA<PurchasesFailure>()],
+        verify: (bloc) =>
+            expect((bloc.state as AppAuthenticated).isPremium, isTrue),
+      );
+
+      test('someone who signs in without a subscription is held at '
+          'Subscription', () async {
+        when(() => authRepository.user).thenAnswer((_) => Stream.value(user));
+        when(() => userRepository.watchUser(any())).thenAnswer(
+          (_) => Stream.value(
+            const UserModel(userId: 'uid', didCompleteOnboarding: true),
+          ),
+        );
+        final bloc = withStore(FakePurchasesRepository(premium: false))
+          ..add(const AppUserSubscriptionRequested());
+        await pumpEventQueue();
+        final state = bloc.state as AppAuthenticated;
+        expect(state.isPremium, isFalse);
+        expect(state.signedInThisRun, isTrue);
+        expect(state.needsSubscription, isTrue);
+        await bloc.close();
+      });
+
+      test('a finished user signed in at launch is not, and buying makes '
+          'them premium', () async {
+        when(() => authRepository.currentUser).thenReturn(user);
+        when(() => authRepository.user).thenAnswer((_) => Stream.value(user));
+        when(() => userRepository.watchUser(any())).thenAnswer(
+          (_) => Stream.value(
+            const UserModel(userId: 'uid', didCompleteOnboarding: true),
+          ),
+        );
+        final purchases = FakePurchasesRepository(premium: false);
+        final bloc = withStore(purchases)
+          ..add(const AppUserSubscriptionRequested());
+        await pumpEventQueue();
+        var state = bloc.state as AppAuthenticated;
+        expect(state.isPremium, isFalse);
+        expect(state.signedInThisRun, isFalse);
+        expect(state.needsSubscription, isFalse);
+        await purchases.purchase(FakePurchasesRepository.sampleProducts.last);
+        await pumpEventQueue();
+        state = bloc.state as AppAuthenticated;
+        expect(state.isPremium, isTrue);
+        expect(state.profileStatus, AppProfileStatus.ready);
+        await bloc.close();
+      });
+
+      test(
+        'signing out and back in as the same user counts as signing in',
+        () async {
+          when(() => authRepository.currentUser).thenReturn(user);
+          final users = StreamController<AuthUser?>();
+          when(() => authRepository.user).thenAnswer((_) => users.stream);
+          final bloc = withStore(FakePurchasesRepository(premium: false))
+            ..add(const AppUserSubscriptionRequested());
+          users.add(user);
+          await pumpEventQueue();
+          expect((bloc.state as AppAuthenticated).signedInThisRun, isFalse);
+          users
+            ..add(null)
+            ..add(user);
+          await pumpEventQueue();
+          expect((bloc.state as AppAuthenticated).signedInThisRun, isTrue);
+          await users.close();
+          await bloc.close();
+        },
+      );
+    });
   });
 }

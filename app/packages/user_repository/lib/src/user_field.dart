@@ -131,6 +131,11 @@ enum UserField<T extends Object> {
     final FirestoreEnum raw => raw.value,
     _ => value,
   });
+
+  /// This field removed from the profile, as Firestore's
+  /// `FieldValue.delete()`: an update can clear a field, where Swift's
+  /// merge save cannot.
+  UserFieldValue get cleared => UserFieldValue._(key, null);
 }
 
 /// One field of a partial update to `users/{uid}`, made by calling a
@@ -143,5 +148,6 @@ final class UserFieldValue {
 
   /// The value as the model's `toFirestore` writes it: enums as raw values,
   /// dates still [DateTime] (the repository stores them as Timestamps).
-  final Object value;
+  /// Null removes the field ([UserField.cleared]).
+  final Object? value;
 }

@@ -2,6 +2,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:compound/onboarding/account_setup/account_setup_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health_repository/health_repository.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -33,6 +34,8 @@ void main() {
       userRepository: users,
       analyticsRepository: analytics.repository,
       uid: 'uid',
+      images: InMemoryImageRepository(),
+      picker: FakePhotoPicker(),
       now: now,
       health: HealthRepository(
         platform: platform,
@@ -173,6 +176,8 @@ void main() {
       userRepository: users,
       analyticsRepository: analytics.repository,
       uid: 'uid',
+      images: InMemoryImageRepository(),
+      picker: FakePhotoPicker(),
       now: now,
     );
     await without.fillFromHealthPressed();

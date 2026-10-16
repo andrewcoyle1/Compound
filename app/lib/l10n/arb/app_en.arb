@@ -9564,5 +9564,356 @@
                 "type": "String"
             }
         }
+    },
+    "coachTitle": "Coach",
+    "@coachTitle": {
+        "description": "The coach screen's title"
+    },
+    "coachAskCoach": "Ask Coach",
+    "@coachAskCoach": {
+        "description": "Button opening the coach about the screen"
+    },
+    "coachAskCoachHint": "Opens the coach about what this screen shows",
+    "@coachAskCoachHint": {
+        "description": "Ask Coach button's screen-reader hint"
+    },
+    "coachPremiumTitle": "Coach Is Part of Premium",
+    "@coachPremiumTitle": {
+        "description": "Coach premium gate title"
+    },
+    "coachPremiumMessage": "Ask about your training, nutrition and progress, answered from your own logs.",
+    "@coachPremiumMessage": {
+        "description": "Coach premium gate message"
+    },
+    "coachSeePlans": "See Plans",
+    "@coachSeePlans": {
+        "description": "Coach premium gate button"
+    },
+    "coachPlansUnavailable": "Plans aren't available in this version yet.",
+    "@coachPlansUnavailable": {
+        "description": "Shown instead of the paywall until it is built"
+    },
+    "coachConsentTitle": "Before You Ask",
+    "@coachConsentTitle": {
+        "description": "Coach consent title"
+    },
+    "coachConsentBody": "To answer, the coach reads your data in Compound and sends what each question needs to Google's Gemini model, running in the EU through Google Cloud.",
+    "@coachConsentBody": {
+        "description": "Coach consent explanation"
+    },
+    "coachConsentReadsHeader": "What It Reads",
+    "@coachConsentReadsHeader": {
+        "description": "Coach consent section"
+    },
+    "coachConsentReadsWorkouts": "Workouts, plans and notes",
+    "@coachConsentReadsWorkouts": {
+        "description": "Coach consent: read"
+    },
+    "coachConsentReadsMeals": "Meals, foods and nutrition targets",
+    "@coachConsentReadsMeals": {
+        "description": "Coach consent: read"
+    },
+    "coachConsentReadsBody": "Weight, measurements and goals",
+    "@coachConsentReadsBody": {
+        "description": "Coach consent: read"
+    },
+    "coachConsentReadsStepsApple": "Steps from Apple Health",
+    "@coachConsentReadsStepsApple": {
+        "description": "Coach consent: read, on iOS"
+    },
+    "coachConsentReadsStepsHealthConnect": "Steps from Health Connect",
+    "@coachConsentReadsStepsHealthConnect": {
+        "description": "Coach consent: read, on Android"
+    },
+    "coachConsentNeverHeader": "What It Never Reads",
+    "@coachConsentNeverHeader": {
+        "description": "Coach consent section"
+    },
+    "coachConsentNeverPhotos": "Progress photos",
+    "@coachConsentNeverPhotos": {
+        "description": "Coach consent: never read"
+    },
+    "coachConsentNeverPeople": "Anything about the people you follow",
+    "@coachConsentNeverPeople": {
+        "description": "Coach consent: never read"
+    },
+    "coachConsentNeverStrava": "Activities imported from Strava",
+    "@coachConsentNeverStrava": {
+        "description": "Coach consent: never read"
+    },
+    "coachConsentFooter": "Google doesn't use your data to train its models. Your chats are saved so you can come back to them, and you can delete them, or withdraw this permission, from Settings at any time. The coach can make mistakes and isn't medical advice.",
+    "@coachConsentFooter": {
+        "description": "Coach consent footer"
+    },
+    "coachConsentAllow": "Allow and Continue",
+    "@coachConsentAllow": {
+        "description": "Coach consent: agree"
+    },
+    "coachConsentNotNow": "Not Now",
+    "@coachConsentNotNow": {
+        "description": "Coach consent: decline"
+    },
+    "coachConsentFailed": "Unable to Save Your Choice",
+    "@coachConsentFailed": {
+        "description": "Alert when consent could not be saved"
+    },
+    "coachEmptyMessage": "Ask about your training, food and progress. Answers come from what you've logged.",
+    "@coachEmptyMessage": {
+        "description": "Coach chat before the first message"
+    },
+    "coachInputHint": "Ask your coach",
+    "@coachInputHint": {
+        "description": "Coach message field placeholder"
+    },
+    "coachSend": "Send",
+    "@coachSend": {
+        "description": "Coach send button"
+    },
+    "coachDisclaimer": "Answers come from your logs and can be wrong. Not medical advice.",
+    "@coachDisclaimer": {
+        "description": "Under the coach message field"
+    },
+    "coachYouSaid": "You: {text}",
+    "@coachYouSaid": {
+        "description": "Screen-reader label of the user's message",
+        "placeholders": {
+            "text": {
+                "type": "String"
+            }
+        }
+    },
+    "coachCoachSaid": "Coach: {text}",
+    "@coachCoachSaid": {
+        "description": "Screen-reader label of the coach's answer",
+        "placeholders": {
+            "text": {
+                "type": "String"
+            }
+        }
+    },
+    "coachMore": "More",
+    "@coachMore": {
+        "description": "Coach menu button"
+    },
+    "coachNewChat": "New Chat",
+    "@coachNewChat": {
+        "description": "Starts a new coach chat"
+    },
+    "coachChats": "Chats",
+    "@coachChats": {
+        "description": "Opens the saved coach chats"
+    },
+    "coachErrorConsent": "Allow the coach to read your data to continue.",
+    "@coachErrorConsent": {
+        "description": "Coach"
+    },
+    "coachErrorPremium": "The coach is part of Premium.",
+    "@coachErrorPremium": {
+        "description": "Coach"
+    },
+    "coachErrorDailyLimit": "You've used today's coach messages. More tomorrow.",
+    "@coachErrorDailyLimit": {
+        "description": "Coach"
+    },
+    "coachErrorTooManyAtOnce": "You're sending messages quickly. Wait a minute and try again.",
+    "@coachErrorTooManyAtOnce": {
+        "description": "More than five coach messages in a minute"
+    },
+    "coachErrorUnavailable": "The coach isn't available right now. Try again in a moment.",
+    "@coachErrorUnavailable": {
+        "description": "Coach"
+    },
+    "coachErrorFailed": "The coach couldn't answer. Try again.",
+    "@coachErrorFailed": {
+        "description": "Coach"
+    },
+    "coachChatsTitle": "Coach Chats",
+    "@coachChatsTitle": {
+        "description": "Saved coach chats title"
+    },
+    "coachChatsEmptyTitle": "No Chats Yet",
+    "@coachChatsEmptyTitle": {
+        "description": "Coach"
+    },
+    "coachChatsEmptyMessage": "Your conversations with the coach appear here.",
+    "@coachChatsEmptyMessage": {
+        "description": "Coach"
+    },
+    "coachWithdraw": "Withdraw Permission and Delete Chats",
+    "@coachWithdraw": {
+        "description": "Coach"
+    },
+    "coachDataSharingHeader": "Data Sharing",
+    "@coachDataSharingHeader": {
+        "description": "Coach"
+    },
+    "coachDataSharingFooter": "The coach reads your workouts, nutrition, body data and steps to answer, through Google's Gemini model in the EU. It never reads progress photos, people you follow, or Strava activities.",
+    "@coachDataSharingFooter": {
+        "description": "Coach"
+    },
+    "coachWithdrawTitle": "Withdraw Permission?",
+    "@coachWithdrawTitle": {
+        "description": "Coach"
+    },
+    "coachWithdrawMessage": "The coach stops reading your data and every chat is deleted.",
+    "@coachWithdrawMessage": {
+        "description": "Coach"
+    },
+    "coachWithdrawConfirm": "Withdraw and Delete Chats",
+    "@coachWithdrawConfirm": {
+        "description": "Coach"
+    },
+    "coachCancel": "Cancel",
+    "@coachCancel": {
+        "description": "Coach"
+    },
+    "coachDelete": "Delete",
+    "@coachDelete": {
+        "description": "Coach"
+    },
+    "coachDeleteFailed": "Unable to Delete Chat",
+    "@coachDeleteFailed": {
+        "description": "Coach"
+    },
+    "coachWithdrawFailed": "Unable to Withdraw Permission",
+    "@coachWithdrawFailed": {
+        "description": "Coach"
+    },
+    "coachTodaysFood": "Today's Food",
+    "@coachTodaysFood": {
+        "description": "Coach title when asked about today's protein gap"
+    },
+    "coachAskToday1": "How did my training go this week?",
+    "@coachAskToday1": {
+        "description": "Coach"
+    },
+    "coachAskToday2": "What should I eat today to hit my protein?",
+    "@coachAskToday2": {
+        "description": "Coach"
+    },
+    "coachAskToday3": "Am I on track for my goal?",
+    "@coachAskToday3": {
+        "description": "Coach"
+    },
+    "coachAskWeightTrend1": "Why has my weight changed this month?",
+    "@coachAskWeightTrend1": {
+        "description": "Coach"
+    },
+    "coachAskWeightTrend2": "Am I losing at the rate I planned?",
+    "@coachAskWeightTrend2": {
+        "description": "Coach"
+    },
+    "coachAskWeightTrend3": "What does my trend say about my calories?",
+    "@coachAskWeightTrend3": {
+        "description": "Coach"
+    },
+    "coachAskExercise1": "Is this lift still progressing?",
+    "@coachAskExercise1": {
+        "description": "Coach"
+    },
+    "coachAskExercise2": "Should I deload this exercise?",
+    "@coachAskExercise2": {
+        "description": "Coach"
+    },
+    "coachAskExercise3": "What should I aim for next session?",
+    "@coachAskExercise3": {
+        "description": "Coach"
+    },
+    "coachAskSession1": "How did this workout compare to last time?",
+    "@coachAskSession1": {
+        "description": "Coach"
+    },
+    "coachAskSession2": "Did I set any records?",
+    "@coachAskSession2": {
+        "description": "Coach"
+    },
+    "coachAskSession3": "What should I change next time?",
+    "@coachAskSession3": {
+        "description": "Coach"
+    },
+    "coachAskCheckIn1": "Why did my targets change?",
+    "@coachAskCheckIn1": {
+        "description": "Coach"
+    },
+    "coachAskCheckIn2": "How did this week go?",
+    "@coachAskCheckIn2": {
+        "description": "Coach"
+    },
+    "coachAskCheckIn3": "What should I focus on next week?",
+    "@coachAskCheckIn3": {
+        "description": "Coach"
+    },
+    "coachAskNutritionDay1": "How did I do against my targets?",
+    "@coachAskNutritionDay1": {
+        "description": "Coach"
+    },
+    "coachAskNutritionDay2": "What can I eat to close my protein gap?",
+    "@coachAskNutritionDay2": {
+        "description": "Coach"
+    },
+    "coachAskNutritionDay3": "Which meal had the most calories?",
+    "@coachAskNutritionDay3": {
+        "description": "Coach"
+    },
+    "coachAskWeeklyReview1": "Summarise my week",
+    "@coachAskWeeklyReview1": {
+        "description": "Coach"
+    },
+    "coachAskWeeklyReview2": "What went well and what didn't?",
+    "@coachAskWeeklyReview2": {
+        "description": "Coach"
+    },
+    "coachAskWeeklyReview3": "What should I change next week?",
+    "@coachAskWeeklyReview3": {
+        "description": "Coach"
+    },
+    "coachAskMesocycle1": "How is this block going?",
+    "@coachAskMesocycle1": {
+        "description": "Coach"
+    },
+    "coachAskMesocycle2": "Am I recovering well enough?",
+    "@coachAskMesocycle2": {
+        "description": "Coach"
+    },
+    "coachAskMesocycle3": "What should my next block focus on?",
+    "@coachAskMesocycle3": {
+        "description": "Coach"
+    },
+    "coachAskExpenditure1": "How is my expenditure estimated?",
+    "@coachAskExpenditure1": {
+        "description": "Coach"
+    },
+    "coachAskExpenditure2": "Why did my expenditure change?",
+    "@coachAskExpenditure2": {
+        "description": "Coach"
+    },
+    "coachAskExpenditure3": "What should my calories be?",
+    "@coachAskExpenditure3": {
+        "description": "Coach"
+    },
+    "coachAskMuscleGroup1": "Am I training this muscle enough?",
+    "@coachAskMuscleGroup1": {
+        "description": "Coach"
+    },
+    "coachAskMuscleGroup2": "Which exercises hit this muscle?",
+    "@coachAskMuscleGroup2": {
+        "description": "Coach"
+    },
+    "coachAskMuscleGroup3": "How has its volume changed?",
+    "@coachAskMuscleGroup3": {
+        "description": "Coach"
+    },
+    "coachMessagesLeft": "{count, plural, =1{1 coach message left today} other{{count} coach messages left today}}",
+    "@coachMessagesLeft": {
+        "description": "Under the coach field when few messages are left",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "coachAskAboutWorkout": "Ask Coach About This Workout",
+    "@coachAskAboutWorkout": {
+        "description": "Row on one's own finished workout opening the coach about it"
     }
 }

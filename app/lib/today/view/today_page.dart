@@ -6,6 +6,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -70,7 +71,7 @@ class TodayView extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.tabToday),
-          actions: const [ProfileButton()],
+          actions: const [AskCoachButton(CoachContext.today), ProfileButton()],
         ),
         body: switch (state.status) {
           TodayStatus.loading => const Center(
@@ -154,6 +155,15 @@ class _Day extends StatelessWidget {
                   title: l10n.todayProteinGap(AppFormat.grams(gap)),
                   icon: AppSymbols.protein,
                   tint: context.appColors.protein,
+                  accessory: AppListRowCustom(
+                    AskCoachButton(
+                      CoachContext(
+                        kind: CoachContextKind.nutritionDay,
+                        date: localDayKey(DateTime.now()),
+                        title: l10n.coachTodaysFood,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

@@ -35,6 +35,13 @@ const Map<String, Object?> _finishedData = {
   'remainingToday': 49,
 };
 
+extension<T> on Stream<T> {
+  Stream<T> followedBy(Exception error) async* {
+    yield* this;
+    throw error;
+  }
+}
+
 void main() {
   setUpAll(() => registerFallbackValue(HttpsCallableOptions()));
 
@@ -159,12 +166,11 @@ void main() {
 
   group('when the stream cannot say why, asks once more without it', () {
     test('and answers whole when the stream ended with no result', () async {
-      stream = () => Stream.value(Chunk({'text': 'Hel'}));
+      stream = () => const Stream.empty();
 
       final events = await send().toList();
 
-      expect(events.first, isA<CoachText>());
-      expect((events.last as CoachFinished).text, 'Hello there');
+      expect((events.single as CoachFinished).text, 'Hello there');
     });
 
     test('and reads the refusal it carries', () async {
@@ -206,6 +212,36 @@ void main() {
         );
       }
     });
+  });
+
+  group('once text has arrived, never asks again', () {
+    for (final (name, failing) in [
+      (
+        'when the stream ends with no result',
+        () => Stream<StreamResponse<Object?, Object?>>.value(
+          Chunk({'text': 'Hel'}),
+        ),
+      ),
+      (
+        'when it fails without a code',
+        () => Stream<StreamResponse<Object?, Object?>>.fromIterable([
+          Chunk({'text': 'Hel'}),
+        ]).followedBy(PlatformException(code: 'firebase_functions')),
+      ),
+    ]) {
+      test(name, () async {
+        stream = failing;
+
+        await expectLater(
+          send(),
+          emitsInOrder([
+            isA<CoachText>(),
+            emitsError(_failure(CoachFailure.unavailable)),
+          ]),
+        );
+        verifyNever(() => callable.call<Object?>(any<Object?>()));
+      });
+    }
   });
 
   test('a failure describes itself', () {

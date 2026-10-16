@@ -1,5 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
@@ -14,8 +15,8 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// One finished workout, read-only: when it started, how long it took, its
 /// volume and notes, then each exercise with its sets. A port of the Swift
-/// app's `WorkoutSessionDetailView` without editing, deleting, sharing,
-/// Strava or Ask Coach.
+/// app's `WorkoutSessionDetailView` without editing, deleting, sharing or
+/// Strava.
 ///
 /// As the summary of a workout just finished (`isWorkoutSummary`), it opens
 /// over the tabs in the tracker's place, shows the [session] it is handed
@@ -121,6 +122,12 @@ class _Detail extends StatelessWidget {
 
   final WorkoutSessionDetailLoaded state;
 
+  static String? _uid(BuildContext context) =>
+      switch (context.read<AppBloc>().state) {
+        AppAuthenticated(:final user) => user.uid,
+        _ => null,
+      };
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -165,6 +172,21 @@ class _Detail extends StatelessWidget {
               ),
               if (notes != null && notes.isNotEmpty)
                 AppListRow(title: notes, icon: AppSymbols.note),
+              // The author's own finished workouts only: the coach reads
+              // the asker's data, never someone else's.
+              if (session.endedAt != null && session.authorId == _uid(context))
+                AppListRowButton(
+                  title: l10n.coachAskAboutWorkout,
+                  icon: AppSymbols.coach,
+                  onPressed: () => CoachPage.open(
+                    context,
+                    CoachContext(
+                      kind: CoachContextKind.session,
+                      id: session.id,
+                      title: session.name,
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),

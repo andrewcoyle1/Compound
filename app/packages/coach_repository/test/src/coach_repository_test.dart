@@ -131,13 +131,53 @@ void main() {
     });
   });
 
-  test('send passes the message, chat and context to coachChat', () async {
-    final events = await subject()
-        .send('Hi', chatId: 'chat-1', context: CoachContext.today)
-        .toList();
+  group('send', () {
+    test('passes the message, chat and context to coachChat', () async {
+      final events = await subject()
+          .send(uid, 'Hi', chatId: 'chat-1', context: CoachContext.today)
+          .toList();
 
-    expect((events.single as CoachText).text, 'hi');
-    expect(sent.single, ('Hi', 'chat-1', CoachContext.today));
+      expect((events.single as CoachText).text, 'hi');
+      expect(sent.single, ('Hi', 'chat-1', CoachContext.today));
+    });
+
+    test(
+      "keeps each user's remaining count, none on the daily limit",
+      () async {
+        var refusal = CoachFailure.dailyLimitReached;
+        final repository = subject(
+          coachChat: (message, {chatId, context}) => message == 'ok'
+              ? Stream.value(
+                  const CoachFinished(
+                    chatId: 'c',
+                    messageId: 'm',
+                    text: 'a',
+                    remainingToday: 49,
+                  ),
+                )
+              : Stream.error(CoachException(refusal)),
+        );
+        expect(repository.remainingToday(uid), isNull);
+
+        await repository.send(uid, 'ok').drain<void>();
+        expect(repository.remainingToday(uid), 49);
+        expect(repository.remainingToday('someone-else'), isNull);
+
+        refusal = CoachFailure.unavailable;
+        await expectLater(
+          repository.send(uid, 'no'),
+          emitsError(_failure(CoachFailure.unavailable)),
+        );
+        expect(repository.remainingToday(uid), 49);
+
+        refusal = CoachFailure.dailyLimitReached;
+        await expectLater(
+          repository.send(uid, 'no'),
+          emitsError(_failure(CoachFailure.dailyLimitReached)),
+        );
+        expect(repository.remainingToday(uid), 0);
+      },
+    );
   });
 
   group('staging', () {
@@ -161,7 +201,7 @@ void main() {
 
     test('refuses until consent is given', () async {
       await expectLater(
-        repository.send('Hi'),
+        repository.send(sampleUserId, 'Hi'),
         emitsError(_failure(CoachFailure.consentRequired)),
       );
     });
@@ -245,6 +285,21 @@ void main() {
           coachChat('Hi'),
           emitsError(_failure(CoachFailure.dailyLimitReached)),
         );
+      });
+
+      test('answers some screens in their own terms', () async {
+        final today = await coachChat('Hi').last as CoachFinished;
+        final trend =
+            await coachChat(
+                  'Hi',
+                  context: const CoachContext(
+                    kind: CoachContextKind.weightTrend,
+                  ),
+                ).last
+                as CoachFinished;
+
+        expect(trend.text, isNot(today.text));
+        expect(trend.text, contains('trend weight'));
       });
 
       test('answers by default after a short pause per word', () async {

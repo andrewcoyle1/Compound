@@ -3,6 +3,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
+import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
@@ -20,6 +21,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:purchases_repository/purchases_repository.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -60,6 +62,8 @@ extension PumpApp on WidgetTester {
     NotificationsRepository? notificationsRepository,
     ProgramsCubit? programsCubit,
     ActiveWorkoutCubit? activeWorkoutCubit,
+    CoachRepository? coachRepository,
+    PurchasesRepository? purchasesRepository,
     double textScale = 1,
     GoRouter? router,
   }) {
@@ -110,6 +114,20 @@ extension PumpApp on WidgetTester {
           ),
           RepositoryProvider.value(
             value: proposalDismissals ?? ProposalDismissals(),
+          ),
+          RepositoryProvider<CoachRepository>.value(
+            value:
+                coachRepository ??
+                CoachRepository(
+                  firestore: FakeFirebaseFirestore(),
+                  users: userRepository ?? MockUserRepository(),
+                  coachChat: (_, {chatId, context}) => Stream.error(
+                    const CoachException(CoachFailure.unavailable),
+                  ),
+                ),
+          ),
+          RepositoryProvider<PurchasesRepository>.value(
+            value: purchasesRepository ?? FakePurchasesRepository(),
           ),
           RepositoryProvider<NotificationsRepository>.value(
             value: notificationsRepository ?? FakeNotificationsRepository(),

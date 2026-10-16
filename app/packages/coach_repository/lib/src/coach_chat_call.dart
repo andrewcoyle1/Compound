@@ -160,13 +160,17 @@ typedef CoachChatCall = Stream<CoachStreamEvent> Function(
 ///
 /// cloud_functions 6.5 streams, but drops a refusal's code: on Android the
 /// stream just ends, and on iOS every error arrives as `unknown`. So when
-/// the stream ends without a result, or fails without a code, the message
-/// is sent once more without streaming, which does carry the code. The
-/// function refuses for consent, premium and quota before it counts or
-/// generates anything, so that second call costs nothing then.
-// ponytail: if the stream drops after the server saved the reply, the
-// retry answers again and the chat holds the exchange twice. Remove the
-// fallback once FlutterFire's stream reports FirebaseFunctionsException.
+/// the stream ends without a result, or fails without a code, before any
+/// text arrived, the message is sent once more without streaming, which
+/// does carry the code. The function refuses for consent, premium and quota
+/// before it counts or generates anything, so that second call costs
+/// nothing then.
+///
+/// Once text has arrived the function was answering, and may already have
+/// saved the reply, so a drop then is [CoachFailure.unavailable]: asking
+/// again would save the exchange twice and use a second message.
+// ponytail: remove the fallback once FlutterFire's stream reports
+// FirebaseFunctionsException.
 CoachChatCall firebaseCoachChat(FirebaseFunctions functions) {
   final callable = functions.httpsCallable(
     'coachChat',
@@ -183,11 +187,13 @@ CoachChatCall firebaseCoachChat(FirebaseFunctions functions) {
           'date': ?context.date,
         },
     };
+    var answering = false;
     try {
       await for (final response in callable.stream<Object?, Object?>(request)) {
         switch (response) {
           case Chunk(:final partialData):
             yield CoachText((partialData! as Map)['text']! as String);
+            answering = true;
           case Result(:final result):
             yield _finished(result.data);
             return;
@@ -196,8 +202,9 @@ CoachChatCall firebaseCoachChat(FirebaseFunctions functions) {
     } on FirebaseFunctionsException catch (error) {
       if (error.code != 'unknown') throw CoachException(_failure(error), error);
     } on Object {
-      // No code to go on: ask again below.
+      // No code to go on: ask again below, unless it was answering.
     }
+    if (answering) throw const CoachException(CoachFailure.unavailable);
     try {
       yield _finished((await callable.call<Object?>(request)).data);
     } on Object catch (error) {

@@ -1,7 +1,9 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart' show localDayKey;
 import 'package:compound/app/app.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/science/method_info.dart';
@@ -88,7 +90,18 @@ class WeeklyReviewView extends StatelessWidget {
     final l10n = context.l10n;
     final state = context.watch<WeeklyReviewBloc>().state;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.weeklyReviewTitle)),
+      appBar: AppBar(
+        title: Text(l10n.weeklyReviewTitle),
+        actions: [
+          AskCoachButton(
+            CoachContext(
+              kind: CoachContextKind.weeklyReview,
+              date: localDayKey(state.weekStart),
+              title: l10n.weeklyReviewTitle,
+            ),
+          ),
+        ],
+      ),
       body: switch (state.status) {
         WeeklyReviewStatus.loading => const Center(
           child: CircularProgressIndicator.adaptive(),

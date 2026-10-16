@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
+import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/view/program_widgets.dart'
     show confirmDestructive;
@@ -132,6 +133,14 @@ class ExerciseDetailView extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           actions: [
+            if (exercise != null)
+              AskCoachButton(
+                CoachContext(
+                  kind: CoachContextKind.exercise,
+                  id: exercise.id,
+                  title: exercise.name,
+                ),
+              ),
             if (canDelete)
               PopupMenuButton<VoidCallback>(
                 key: const Key('ExerciseDetail.options'),

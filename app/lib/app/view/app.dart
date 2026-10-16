@@ -5,8 +5,10 @@ import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
+import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/check_in/check_in.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/create_exercise/create_exercise.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
@@ -47,6 +49,7 @@ import 'package:go_router/go_router.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:purchases_repository/purchases_repository.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart';
@@ -61,6 +64,10 @@ class const App({
   required final BodyRepository bodyRepository,
   required final ProgramRepository programRepository,
   required final TrainingLibraryRepository trainingLibraryRepository,
+
+  /// Subscriptions: whether the user is premium. Required, with no
+  /// fallback, so an entry point can never grant premium by leaving it out.
+  required final PurchasesRepository purchasesRepository,
   final AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
   // Empty and offline when left out, for tests that never log food.
   final FoodRepository? foodRepository,
@@ -82,6 +89,10 @@ class const App({
   /// Follows, the feed, likes and comments; an empty in-memory world when
   /// left out, for tests that never open Social.
   final SocialRepository? socialRepository,
+
+  /// The AI coach; one that answers nothing when left out, for tests that
+  /// never open it.
+  final CoachRepository? coachRepository,
   final TrackerClock trackerClock = const TrackerClock(),
   super.key,
 }) extends StatelessWidget {
@@ -97,6 +108,18 @@ class const App({
         RepositoryProvider.value(value: programRepository),
         RepositoryProvider.value(value: trainingLibraryRepository),
         RepositoryProvider.value(value: analyticsRepository),
+        RepositoryProvider.value(value: purchasesRepository),
+        RepositoryProvider<CoachRepository>(
+          create: (_) =>
+              coachRepository ??
+              CoachRepository(
+                firestore: FakeFirebaseFirestore(),
+                users: userRepository,
+                coachChat: (_, {chatId, context}) => Stream.error(
+                  const CoachException(CoachFailure.unavailable),
+                ),
+              ),
+        ),
         RepositoryProvider<FoodRepository>(
           create: (_) => foodRepository ?? InMemoryFoodRepository(),
         ),
@@ -379,6 +402,7 @@ class _AppViewState extends State<AppView> {
       // over the tabs, from Social and from the profile cover alike.
       ...socialRoutes,
       ...progressRootRoutes,
+      ...coachRoutes,
       // Over the tabs, as the Swift app's sheet.
       GoRoute(
         path: LogWeightPage.path,

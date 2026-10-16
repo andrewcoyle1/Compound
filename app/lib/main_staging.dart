@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
+import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
@@ -12,6 +13,7 @@ import 'package:food_repository/food_repository.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:purchases_repository/purchases_repository.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_rules/training_rules.dart'
@@ -74,8 +76,18 @@ Future<void> main() async {
     users: userRepository,
     now: now,
   );
+  // The sample chat, and canned answers streamed word by word once the
+  // coach is allowed to read the data.
+  final coachRepository = await inMemoryCoachRepository(
+    users: userRepository,
+    now: now,
+  );
   await bootstrap(
     () => App(
+      // Premium, as the Swift Mock build starts with "Simulate Premium" on,
+      // so the coach is usable here. Staging has no store.
+      purchasesRepository: FakePurchasesRepository(),
+      coachRepository: coachRepository,
       activeSessionStore: activeSessionStore,
       // Nothing reaches the platform: reminders and the rest timer's
       // notification are only recorded.

@@ -3,6 +3,9 @@ import 'package:compound/nutrition/add_meal/cubit/amount_cubit.dart';
 import 'package:compound/nutrition/add_meal/cubit/quick_add_cubit.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
+import 'package:compound_models/compound_models.dart'
+    show firestoreToTaggedJson;
+import 'package:device_store/device_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 
@@ -83,6 +86,42 @@ void main() {
         ..keep(full)
         ..clear();
       expect(cubit.state, isNull);
+    });
+
+    test("keeps each account's draft on the device across launches", () {
+      final store = InMemoryDeviceStore();
+      final cubit = MealDraftCubit(store: store)
+        ..userChanged('uid')
+        ..keep(full);
+      expect(store.getString(MealDraftCubit.key('uid')), isNotNull);
+
+      final relaunched = MealDraftCubit(store: store)..userChanged('uid');
+      expect(
+        firestoreToTaggedJson(relaunched.state!.toFirestore()),
+        firestoreToTaggedJson(full.toFirestore()),
+      );
+      relaunched.userChanged('other');
+      expect(relaunched.state, isNull);
+      relaunched.userChanged(null);
+      expect(relaunched.state, isNull);
+
+      cubit.clear();
+      expect(store.getString(MealDraftCubit.key('uid')), isNull);
+      expect((MealDraftCubit(store: store)..userChanged('uid')).state, isNull);
+    });
+
+    test('signed out, a draft is held but not kept', () {
+      final store = InMemoryDeviceStore();
+      final cubit = MealDraftCubit(store: store)..keep(full);
+      expect(cubit.state, full);
+      expect(store.keys, isEmpty);
+      cubit.userChanged(null);
+      expect(cubit.state, full);
+    });
+
+    test('a draft it cannot read is no draft', () {
+      final store = InMemoryDeviceStore({MealDraftCubit.key('uid'): '[1]'});
+      expect((MealDraftCubit(store: store)..userChanged('uid')).state, isNull);
     });
   });
 }

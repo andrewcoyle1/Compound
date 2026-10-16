@@ -51,6 +51,7 @@ import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
+import 'package:device_store/device_store.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -88,14 +89,18 @@ class const App({
   // The check-in's data, empty in memory when left out.
   final CheckInRepository? checkInRepository,
 
-  /// The target proposals waved away; in memory when left out.
+  /// Small values kept on the device (Swift's `UserDefaults`): dismissed
+  /// cards, today's nudges, the meal draft, units; in memory when left out.
+  final DeviceStore? deviceStore,
+
+  /// The target proposals waved away; in [deviceStore] when left out.
   final ProposalDismissals? proposalDismissals,
 
   /// Where the workout under way is kept between launches; in memory when
   /// left out.
   final ActiveSessionStore? activeSessionStore,
 
-  /// Each exercise's units, kept on the device; in memory when left out.
+  /// Each exercise's units; in [deviceStore] when left out.
   final UnitPreferenceStore? unitPreferences,
 
   /// Push and local notifications; the fake (nothing reaches the platform)
@@ -195,11 +200,16 @@ class const App({
                 nutrition: nutritionRepository,
               ),
         ),
+        RepositoryProvider<DeviceStore>(
+          create: (_) => deviceStore ?? InMemoryDeviceStore(),
+        ),
         RepositoryProvider<ProposalDismissals>(
-          create: (_) => proposalDismissals ?? ProposalDismissals(),
+          create: (context) =>
+              proposalDismissals ?? ProposalDismissals(store: context.read()),
         ),
         RepositoryProvider<UnitPreferenceStore>(
-          create: (_) => unitPreferences ?? UnitPreferenceStore(),
+          create: (context) =>
+              unitPreferences ?? UnitPreferenceStore(store: context.read()),
         ),
         RepositoryProvider<NotificationsRepository>(
           create: (_) =>
@@ -240,7 +250,9 @@ class const App({
               purchasesRepository: purchasesRepository,
             )..add(const AppUserSubscriptionRequested()),
           ),
-          BlocProvider(create: (_) => MealDraftCubit()),
+          BlocProvider(
+            create: (context) => MealDraftCubit(store: context.read()),
+          ),
           BlocProvider(
             create: (context) => NotificationsCubit(
               notifications: context.read(),
@@ -269,6 +281,7 @@ class const App({
               analytics: analyticsRepository,
               store: activeSessionStore ?? InMemoryActiveSessionStore(),
               units: context.read(),
+              device: context.read(),
               clock: trackerClock.now,
               programs: context.read(),
               health: context.read(),
@@ -308,6 +321,7 @@ class const App({
               social: context.read(),
               sessions: workoutSessionRepository,
               analytics: analyticsRepository,
+              store: context.read(),
             ),
           ),
         ],
@@ -669,6 +683,7 @@ class _AppViewState extends State<AppView> {
     context.read<CircleBloc>().add(CircleViewerChanged(profile));
     context.read<InboxBloc>().add(InboxViewerChanged(profile));
     context.read<ChallengesCubit>().viewerChanged(profile?.userId);
+    context.read<MealDraftCubit>().userChanged(uid);
     unawaited(context.read<ActiveWorkoutCubit>().userChanged(uid));
     unawaited(context.read<StravaCubit>().userChanged(uid));
     // Once the profile is read, so steps and food before the account's

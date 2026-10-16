@@ -8,6 +8,7 @@ import 'package:compound/workout_tracker/cubit/plate_calculator_cubit.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:device_store/device_store.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health_repository/health_repository.dart'
     show HealthRepository, HealthScope;
@@ -43,6 +44,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required this._notifications,
     AppNotificationCopy? copy,
     UnitPreferenceStore? units,
+    DeviceStore? device,
     this._clock = DateTime.now,
     this._newId = newUuid,
     this._backoff = RetryBackoff.workoutSave,
@@ -52,6 +54,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     this._strava,
   }) : _strings = copy ?? AppNotificationCopy(),
        _units = units ?? UnitPreferenceStore(),
+       _device = device ?? InMemoryDeviceStore(),
        super(const ActiveWorkoutState());
 
   final WorkoutSessionRepository _sessions;
@@ -64,6 +67,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   /// Each exercise's units, kept on the device.
   final UnitPreferenceStore _units;
+
+  /// The keypad's plates switch, kept on the device.
+  final DeviceStore _device;
+
+  /// The set keyboard's `@AppStorage("setKeyboard.showsPlates")`.
+  static const showsPlatesKey = 'setKeyboard.showsPlates';
   final DateTime Function() _clock;
   final IdGenerator _newId;
   final RetryBackoff _backoff;
@@ -966,7 +975,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   /// The plates key: the loading bar over the weight keypad shown or put
   /// away, for the rest of the app's life.
-  void togglePlates() => emit(_copy(showsPlates: !state.showsPlates));
+  void togglePlates() {
+    final shows = !state.showsPlates;
+    _device.setBool(showsPlatesKey, value: shows);
+    emit(_copy(showsPlates: shows));
+  }
 
   /// A reps chip: last set's, the target's least or most.
   void keypadReps(int reps) {
@@ -1459,7 +1472,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       saveNotice: state.saveNotice,
       saveNoticeId: state.saveNoticeId,
       gym: _gym(session.gymProfileId) ?? _favouriteGym,
-      showsPlates: state.showsPlates,
+      showsPlates: _device.getBool(showsPlatesKey) ?? true,
       library: _allExercises,
       gyms: _activeGyms,
     );
@@ -1492,7 +1505,6 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   DateTime? _idleAnchor;
   OngoingWorkout? _ongoing;
   bool _alertOngoing = false;
-  DateTime? _lastSeenActivity;
 
   /// Every rest started or moved (a set logged, +15s) schedules the
   /// rest-over notification under its one id, replacing the last; every rest
@@ -1624,7 +1636,6 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _scheduledRestEnd = null;
     _idleAnchor = null;
     _alertOngoing = false;
-    _lastSeenActivity = null;
     _notify(() async {
       await _notifications.cancel(LocalReminderKind.restOver);
       await _notifications.cancel(LocalReminderKind.idleWorkout);
@@ -1637,15 +1648,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   /// going (`askIfStillTraining`). Asked once per return; Keep Going waits
   /// another hour.
   void checkStillTraining() {
-    final controller = _controller;
-    if (controller == null) return;
-    final lastSet = _lastLog(controller.session);
+    // The controller keeps when it last looked with the workout, so a
+    // relaunch does not ask again (Swift's `lastSeenSetCompletion`).
+    final lastSet = _controller?.stillTrainingPrompt(_clock());
     if (lastSet == null) return;
-    final now = _clock();
-    final seen = _lastSeenActivity;
-    final lastActivity = seen != null && seen.isAfter(lastSet) ? seen : lastSet;
-    if (!IdleWorkout.isIdle(lastActivity: lastActivity, now: now)) return;
-    _lastSeenActivity = now;
     _emitTracker(effect: StillTrainingEffect(lastSet));
   }
 

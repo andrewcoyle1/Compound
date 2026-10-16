@@ -688,6 +688,20 @@ void main() {
       expect(cubit.state.finishedSession!.endedAt, lastSet);
     });
 
+    test('"Still training?" is not asked again after a relaunch', () async {
+      await logFirst();
+      cubit.skipRest();
+      clock.advance(const Duration(minutes: 61));
+      cubit.checkStillTraining();
+      expect(cubit.state.effect, isA<StillTrainingEffect>());
+      await cubit.close();
+
+      cubit = build();
+      await cubit.userChanged(uid);
+      cubit.checkStillTraining();
+      expect(cubit.state.effect, isNot(isA<StillTrainingEffect>()));
+    });
+
     group('with the ongoing notification (Android)', () {
       setUp(() async {
         await cubit.close();

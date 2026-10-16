@@ -13,6 +13,8 @@ dependencies:
     path: ../compound_maths
   compound_models:
     path: ../compound_models
+  device_store:
+    path: ../device_store
   flutter:
     sdk: flutter
   training_rules:

@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/social/logic/circle_week.dart';
 import 'package:compound/social/logic/people.dart';
 import 'package:compound/social/logic/restartable.dart';
+import 'package:device_store/device_store.dart';
 import 'package:equatable/equatable.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -22,30 +24,82 @@ class CircleBloc extends Bloc<CircleEvent, CircleState> {
     required this._social,
     required this._sessions,
     required this._analytics,
+    DeviceStore? store,
     this._now = DateTime.now,
-  }) : super(const CircleState()) {
+  }) : _store = store ?? InMemoryDeviceStore(),
+       super(const CircleState()) {
     on<CircleViewerChanged>(_onViewerChanged);
     on<_CircleSubscribed>(_onSubscribed, transformer: restartable());
     on<CircleFollowPressed>(_onFollowPressed);
     on<CircleNudgePressed>(_onNudgePressed);
-    on<CircleUsernameBannerDismissed>(
-      (event, emit) => emit(state.copyWith(usernameBannerDismissed: true)),
-    );
+    on<CircleUsernameBannerDismissed>((event, emit) {
+      _store.setBool(usernameBannerKey, value: true);
+      emit(state.copyWith(usernameBannerDismissed: true));
+    });
     on<CircleWeeklySummaryDismissed>(_onWeeklySummaryDismissed);
     on<CircleFollowRequestSent>(
       (event, emit) => emit(
         state.copyWith(sentRequestIds: {...state.sentRequestIds, event.userId}),
       ),
     );
-    on<CircleInviteCardDismissed>(
-      (event, emit) => emit(state.copyWith(inviteCardDismissed: true)),
-    );
+    on<CircleInviteCardDismissed>((event, emit) {
+      _store.setBool(inviteCardKey, value: true);
+      emit(state.copyWith(inviteCardDismissed: true));
+    });
   }
 
   final SocialRepository _social;
   final WorkoutSessionRepository _sessions;
   final AnalyticsRepository _analytics;
   final DateTime Function() _now;
+
+  /// Where the dismissals and today's nudges are kept, under Swift's
+  /// `UserDefaults` keys, for the device rather than the account, as there.
+  final DeviceStore _store;
+
+  /// `UsernameBannerView`'s `@AppStorage` flag.
+  static const usernameBannerKey = 'hasDismissedUsernameBanner';
+
+  /// `CircleWeek.summaryDismissedWeekKey`. Swift keeps its week id
+  /// ("2026-W42"); this keeps the week's first day, so a recap dismissed in
+  /// the other app may show once more.
+  static const summaryDismissedKey = 'circleWeeklySummaryDismissedWeekId';
+
+  /// `ReviewPromptStore.inviteCardDismissedKey`.
+  static const inviteCardKey = 'review_prompt_invite_card_dismissed';
+
+  /// `NudgeHistoryManager`'s record of one day's nudges, as JSON
+  /// `{"dayKey": …, "userIds": […]}`.
+  static const nudgesKey = 'nudged_user_ids_today';
+
+  /// A circle for [viewer] with what this device remembers.
+  CircleState _fresh(UserModel? viewer) {
+    final (day, ids) = _nudges();
+    return CircleState(
+      viewer: viewer,
+      usernameBannerDismissed: _store.getBool(usernameBannerKey) ?? false,
+      dismissedSummaryWeek: DateTime.tryParse(
+        _store.getString(summaryDismissedKey) ?? '',
+      ),
+      inviteCardDismissed: _store.getBool(inviteCardKey) ?? false,
+      nudgedDay: day,
+      nudgedIds: ids,
+    );
+  }
+
+  (String?, Set<String>) _nudges() {
+    try {
+      if (jsonDecode(_store.getString(nudgesKey) ?? '') case {
+        'dayKey': final String day,
+        'userIds': final List<Object?> ids,
+      }) {
+        return (day, ids.whereType<String>().toSet());
+      }
+    } on FormatException {
+      // Nothing kept, or a record this build cannot read: nobody nudged.
+    }
+    return (null, const {});
+  }
 
   /// What the listeners were started for: a change restarts them.
   Object? _subscriptionKey;
@@ -63,7 +117,7 @@ class CircleBloc extends Bloc<CircleEvent, CircleState> {
     emit(
       viewer?.userId == state.viewer?.userId
           ? state.copyWith(viewer: () => viewer)
-          : CircleState(viewer: viewer),
+          : _fresh(viewer),
     );
     if (key == _subscriptionKey) return;
     _subscriptionKey = key;
@@ -193,6 +247,16 @@ class CircleBloc extends Bloc<CircleEvent, CircleState> {
     );
     try {
       await _social.nudge(userId, viewer: viewer);
+      // Kept once sent, as `NudgeHistoryManager.addNudge`: another day's
+      // record is replaced.
+      final (keptDay, kept) = _nudges();
+      _store.setString(
+        nudgesKey,
+        jsonEncode({
+          'dayKey': day,
+          'userIds': [...?(keptDay == day ? kept : null), userId]..sort(),
+        }),
+      );
       _analytics.trackEvent(const AnalyticsEvent('SocialView_Nudge_Success'));
     } on Object catch (error) {
       _analytics.trackEvent(
@@ -219,6 +283,7 @@ class CircleBloc extends Bloc<CircleEvent, CircleState> {
     _analytics.trackEvent(
       const AnalyticsEvent('SocialView_WeeklySummary_Dismiss'),
     );
+    _store.setString(summaryDismissedKey, CircleState.dayKey(event.weekStart));
     emit(state.copyWith(dismissedSummaryWeek: event.weekStart));
   }
 }

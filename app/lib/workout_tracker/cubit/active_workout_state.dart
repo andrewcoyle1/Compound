@@ -27,6 +27,9 @@ final class const TrackerExercise({
 
   /// The user's standing note on the exercise (every workout).
   required final String? exerciseNote,
+
+  /// What each row's rest picker opens on, by set id.
+  final Map<String, int> restPicker = const {},
 }) extends Equatable {
   @override
   List<Object?> get props => [
@@ -36,6 +39,7 @@ final class const TrackerExercise({
     weightUnit,
     restAnchor,
     exerciseNote,
+    restPicker,
   ];
 }
 
@@ -188,6 +192,36 @@ final class const ActiveWorkoutState({
         null => null,
       },
       machineBase: inUnit(set.machineBaseKg ?? 0),
+    );
+  }
+
+  /// How many logged rows making [setId] [choice] would delete: sub-rows
+  /// the new type has no use for (`onSetTypeSelected`).
+  int loggedRowsLostBy(String setId, r.SetTypeChoice choice) {
+    final exercise = exerciseHolding(setId);
+    if (exercise == null) return 0;
+    final kept = {
+      for (final row in r.ActiveWorkout.applying(
+        choice,
+        setId,
+        exercise.sets.map(rulesSet).toList(),
+        firstSubSetId: '',
+        dropWeightKg: null,
+      ))
+        row.id,
+    };
+    return exercise.sets
+        .where((s) => s.completedAt != null && !kept.contains(s.id))
+        .length;
+  }
+
+  /// The drops and mini-sets deleting [setId] would take with it.
+  ({int drops, int minis}) subSetsRemovedBy(String setId) {
+    final exercise = exerciseHolding(setId);
+    if (exercise == null) return (drops: 0, minis: 0);
+    return r.ActiveWorkout.subSetsRemovedByDeleting(
+      setId,
+      exercise.sets.map(rulesSet).toList(),
     );
   }
 

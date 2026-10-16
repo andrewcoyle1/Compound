@@ -196,4 +196,95 @@ abstract final class TrackerText {
       unit(weightUnit),
     );
   }
+
+  // MARK: - Set kinds
+
+  /// A line of the set type menu: "Standard", "Warm-up", "Drop Set"…
+  static String setType(AppLocalizations l10n, r.SetTypeChoice choice) =>
+      switch (choice.kind) {
+        null => l10n.trackerSetTypeWarmup,
+        r.SetKind.standard => l10n.trackerSetTypeStandard,
+        r.SetKind.drop => l10n.trackerSetTypeDrop,
+        r.SetKind.amrap => l10n.trackerSetTypeAmrap,
+        r.SetKind.myo => l10n.trackerSetTypeMyo,
+        r.SetKind.restPause => l10n.trackerSetTypeRestPause,
+        r.SetKind.cluster => l10n.trackerSetTypeCluster,
+        r.SetKind.partials => l10n.trackerSetTypePartials,
+        r.SetKind.stretch => l10n.trackerSetTypeStretch,
+        r.SetKind.hold => l10n.trackerSetTypeHold,
+      };
+
+  /// A piece's own name after its set: "Partials", "Stretch", "Hold".
+  static String? pieceName(AppLocalizations l10n, r.SetKind kind) =>
+      switch (kind) {
+        r.SetKind.partials => l10n.setKindPartials,
+        r.SetKind.stretch => l10n.setKindStretch,
+        r.SetKind.hold => l10n.setKindHold,
+        _ => null,
+      };
+
+  /// The chip under a row's number: "Drop", a piece's name or "Mini", and
+  /// "Failure" or "Failure 8+" on a set to failure; `null` for the rest.
+  static String? kindChip(AppLocalizations l10n, WorkoutSetModel set) {
+    final rules = rulesSet(set);
+    return switch (r.subSetKindOf(rules)) {
+      r.SubSetKind.drop => l10n.trackerChipDrop,
+      r.SubSetKind.mini => pieceName(l10n, rules.kind) ?? l10n.trackerChipMini,
+      null when rules.kind == r.SetKind.amrap && !set.isWarmup =>
+        switch (set.targetReps) {
+          final target? => l10n.trackerChipFailureTarget(
+            AppFormat.number(target),
+          ),
+          null => l10n.trackerChipFailure,
+        },
+      null => null,
+    };
+  }
+
+  /// A set to failure's open reps hint at the plan's target: "8+".
+  static String? targetPlaceholder(WorkoutSetModel set) {
+    final rules = rulesSet(set);
+    final target = set.targetReps;
+    if (rules.kind != r.SetKind.amrap ||
+        rules.isSubSet ||
+        set.isWarmup ||
+        set.reps != null ||
+        target == null) {
+      return null;
+    }
+    return '$target+';
+  }
+
+  /// The row's delete action: "Delete Drop Set", "Delete Partials"…
+  static String deleteTitle(AppLocalizations l10n, WorkoutSetModel set) {
+    final rules = rulesSet(set);
+    return switch (r.subSetKindOf(rules)) {
+      r.SubSetKind.drop => l10n.trackerDeleteDropSet,
+      r.SubSetKind.mini => switch (rules.kind) {
+        r.SetKind.partials => l10n.trackerDeletePartials,
+        r.SetKind.stretch => l10n.trackerDeleteStretch,
+        r.SetKind.hold => l10n.trackerDeleteHold,
+        _ => l10n.trackerDeleteMiniSet,
+      },
+      null => l10n.trackerDeleteSet,
+    };
+  }
+
+  /// A row's name in an alert: "Set 2", "Set 1L", "Warm-up set".
+  static String setName(
+    AppLocalizations l10n,
+    WorkoutSetModel set,
+    String badge,
+  ) => set.isWarmup ? l10n.trackerWarmupSetName : l10n.trackerSetName(badge);
+
+  /// "This also deletes its 2 drop sets.", or `null` when it takes none.
+  static String? subSetsDeleted(
+    AppLocalizations l10n,
+    ({int drops, int minis}) removed,
+  ) => switch (removed) {
+    (drops: 0, minis: 0) => null,
+    (:final drops, minis: 0) => l10n.trackerDeleteAlsoDrops(drops),
+    (drops: 0, :final minis) => l10n.trackerDeleteAlsoMinis(minis),
+    (:final drops, :final minis) => l10n.trackerDeleteAlsoBoth(drops + minis),
+  };
 }

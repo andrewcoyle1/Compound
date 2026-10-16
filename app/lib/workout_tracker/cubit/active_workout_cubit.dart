@@ -436,6 +436,77 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _emitTracker(effect: const SetDeletedEffect());
   }
 
+  // MARK: - Set editing
+
+  /// The set number's menu: [setId] (and its pair) made [choice]. Sub-rows
+  /// the new type has no use for go, and a drop or myo set gets its first.
+  void setSetType(String setId, r.SetTypeChoice choice) {
+    final controller = _controller;
+    final set = state.set(setId);
+    if (controller == null || set == null) return;
+    if (r.typeChoiceOf(rulesSet(set)) == choice) return;
+    controller.setSetType(setId, choice);
+    _track(
+      'SetTrackerRow_SetTypeChanged',
+      parameters: {'set_type': choice.eventValue},
+    );
+    _restChanged();
+    _emitTracker(effect: const SelectionEffect());
+  }
+
+  /// A drop (20 % lighter, on a weight the equipment makes) or a mini-set
+  /// (at the set's weight) under [setId], after any it has.
+  void addSubSet(String setId, r.SubSetKind kind) {
+    final controller = _controller;
+    if (controller == null || state.set(setId) == null) return;
+    controller.addSubSet(setId, kind);
+    _track(
+      'SetTrackerRow_SubSetAdded',
+      parameters: {'kind': kind == r.SubSetKind.drop ? 'drop' : 'mini'},
+    );
+    _emitTracker(effect: const SelectionEffect());
+  }
+
+  /// Split L/R: each side logged as its own row, or both as one again.
+  void toggleSides(String exerciseId) {
+    final controller = _controller;
+    final exercise = state.exercise(exerciseId);
+    if (controller == null || exercise == null) return;
+    final splitting = !rulesExercise(exercise).isSplit;
+    if (splitting) {
+      controller.splitSides(exerciseId);
+    } else {
+      controller.joinSides(exerciseId);
+    }
+    _track('SetTracker_Sides_Split', parameters: {'split': splitting});
+    _emitTracker(effect: const SelectionEffect());
+  }
+
+  /// The rest picker's Save: [seconds] for [setId] alone; `null` (both
+  /// wheels at zero) clears it.
+  void setCustomRest(String setId, int? seconds) {
+    final controller = _controller;
+    if (controller == null) return;
+    controller.setCustomRest(setId, seconds);
+    _track(
+      'SetTrackerRow_RestChanged',
+      parameters: {'seconds': seconds ?? 0, 'cleared': seconds == null},
+    );
+    _emitTracker();
+  }
+
+  /// A timed set's stopwatch stopped: the seconds held written into it. It
+  /// never logs the set.
+  void stopwatchStopped(String setId, int seconds) {
+    final controller = _controller;
+    final set = state.set(setId);
+    if (controller == null || set == null) return;
+    controller
+      ..editSet(set.copyWith(durationSec: seconds))
+      ..commitEdit();
+    _emitTracker();
+  }
+
   // MARK: - Correction
 
   /// A rep off or on the set just logged.
@@ -1130,6 +1201,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             weightUnit: _unit(member),
             restAnchor: controller.restAnchor(member.id),
             exerciseNote: _exerciseNote(member.templateId),
+            restPicker: {
+              for (final set in member.sets)
+                set.id: controller.restPickerSeconds(set.id),
+            },
           ),
       ],
       supersetLetter: letter,

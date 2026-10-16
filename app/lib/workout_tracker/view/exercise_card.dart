@@ -8,6 +8,7 @@ import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/equipment_sheet.dart';
 import 'package:compound/workout_tracker/view/notes_sheet.dart';
+import 'package:compound/workout_tracker/view/set_row_parts.dart';
 import 'package:compound/workout_tracker/view/tick.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
@@ -197,6 +198,8 @@ class _Header extends StatelessWidget {
             icon: Icon(AppSymbols.more),
             onSelected: (action) => switch (action) {
               _ExerciseAction.equipment => unawaited(_equipment(context)),
+              _ExerciseAction.sides =>
+                context.read<ActiveWorkoutCubit>().toggleSides(exercise.id),
               _ExerciseAction.notes => unawaited(_editNotes(context)),
               _ExerciseAction.delete => unawaited(_delete(context)),
             },
@@ -207,6 +210,16 @@ class _Header extends StatelessWidget {
                   child: ListTile(
                     leading: const Icon(AppSymbols.equipment),
                     title: Text(l10n.trackerEquipment),
+                  ),
+                ),
+              // A check beside it while the sides are logged apart.
+              if (rulesExercise(exercise).isPerSide)
+                CheckedPopupMenuItem(
+                  value: _ExerciseAction.sides,
+                  checked: rulesExercise(exercise).isSplit,
+                  child: Semantics(
+                    hint: l10n.trackerSplitSidesHint,
+                    child: Text(l10n.trackerSplitSides),
                   ),
                 ),
               PopupMenuItem(
@@ -321,7 +334,7 @@ class _Header extends StatelessWidget {
   }
 }
 
-enum _ExerciseAction { equipment, notes, delete }
+enum _ExerciseAction { equipment, sides, notes, delete }
 
 /// The column headings, which the cells' own labels speak for.
 class _Headings extends StatelessWidget {
@@ -460,64 +473,86 @@ class _SetRow extends StatelessWidget {
       color: scheme.onSurfaceVariant,
     );
     final logLabel = TrackerText.logTitle(l10n, set, exercise, locale: locale);
+    final fields = SetField.of(set, exercise.trackingMode);
+    Widget cell(SetField field) => _Cell(
+      key: ValueKey('cell-${set.id}-${field.name}'),
+      label: _heading(l10n, field, member.weightUnit),
+      text: _cellText(field, locale),
+      isActive: keypad?.field == field,
+      onTap: () => cubit.openKeypad(set.id, field),
+    );
+    final columns = _Columns(
+      badge: SetBadge(
+        set: set,
+        badge: badge,
+        semanticsLabel: set.isWarmup
+            ? l10n.setWarmup
+            : l10n.trackerLogSet(badge),
+      ),
+      last: Semantics(
+        label: '${l10n.trackerColumnLast}, $lastText',
+        excludeSemantics: true,
+        child: Text(
+          lastText,
+          style: secondary,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      fields: [
+        for (final field in fields)
+          // A time still to do gets a stopwatch, filling towards the plan's
+          // seconds for a stretch or hold, else last time's.
+          if (field == SetField.duration &&
+              !fields.contains(SetField.distance) &&
+              !isLogged)
+            SetStopwatch(
+              key: ValueKey('stopwatch-cell-${set.id}'),
+              setId: set.id,
+              targetSeconds: rulesSet(set).isTimedPiece
+                  ? set.durationSec
+                  : previousModel?.durationSec,
+              field: cell(field),
+            )
+          else
+            cell(field),
+      ],
+      done: Semantics(
+        button: true,
+        toggled: isLogged,
+        label: isLogged ? l10n.trackerLoggedValue : logLabel,
+        excludeSemantics: true,
+        child: IconButton(
+          key: ValueKey('done-${set.id}'),
+          onPressed: () => cubit.toggleSet(set.id),
+          icon: Icon(
+            isLogged ? AppSymbols.success : AppSymbols.choiceUnselected,
+            color: isLogged ? colors.success : scheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
     return Semantics(
       customSemanticsActions: {
-        CustomSemanticsAction(label: l10n.trackerDeleteSet): () =>
-            cubit.deleteSet(set.id),
+        CustomSemanticsAction(label: l10n.trackerRestTimer): () =>
+            unawaited(_restTimer(context)),
+        CustomSemanticsAction(label: TrackerText.deleteTitle(l10n, set)): () =>
+            unawaited(deleteSet(context, set, badge)),
       },
       child: GestureDetector(
-        onLongPress: () => unawaited(_menu(context)),
+        onLongPress: () => unawaited(_menu(context, badge)),
         child: ColoredBox(
           color: isNext
               ? AppColors.tintedSurface(scheme.primary)
               : Colors.transparent,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AppControlSize.row),
-            child: _Columns(
-              badge: Text(
-                badge,
-                style: AppTextStyles.rowDetail.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: set.isWarmup ? colors.warmup : scheme.onSurface,
-                ),
-                semanticsLabel: set.isWarmup
-                    ? l10n.setWarmup
-                    : l10n.trackerLogSet(badge),
+            // A drop or mini-set sits under its set, one step in.
+            child: Padding(
+              padding: EdgeInsetsDirectional.only(
+                start: set.parentSetId == null ? 0 : AppSpacing.l,
               ),
-              last: Semantics(
-                label: '${l10n.trackerColumnLast}, $lastText',
-                excludeSemantics: true,
-                child: Text(
-                  lastText,
-                  style: secondary,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              fields: [
-                for (final field in SetField.of(set, exercise.trackingMode))
-                  _Cell(
-                    key: ValueKey('cell-${set.id}-${field.name}'),
-                    label: _heading(l10n, field, member.weightUnit),
-                    text: _cellText(field, locale),
-                    isActive: keypad?.field == field,
-                    onTap: () => cubit.openKeypad(set.id, field),
-                  ),
-              ],
-              done: Semantics(
-                button: true,
-                toggled: isLogged,
-                label: isLogged ? l10n.trackerLoggedValue : logLabel,
-                excludeSemantics: true,
-                child: IconButton(
-                  key: ValueKey('done-${set.id}'),
-                  onPressed: () => cubit.toggleSet(set.id),
-                  icon: Icon(
-                    isLogged ? AppSymbols.success : AppSymbols.choiceUnselected,
-                    color: isLogged ? colors.success : scheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
+              child: columns,
             ),
           ),
         ),
@@ -537,7 +572,11 @@ class _SetRow extends StatelessWidget {
     final bands = field == SetField.weight
         ? set.bands ?? const <String>[]
         : const <String>[];
-    if (raw.isEmpty && bands.isEmpty) return AppFormat.placeholder;
+    if (raw.isEmpty && bands.isEmpty) {
+      return field == SetField.reps
+          ? TrackerText.targetPlaceholder(set) ?? AppFormat.placeholder
+          : AppFormat.placeholder;
+    }
     return switch (field) {
       SetField.duration => SetKeypad.clockFromDigits(raw),
       SetField.weight => [
@@ -549,26 +588,60 @@ class _SetRow extends StatelessWidget {
     };
   }
 
-  Future<void> _menu(BuildContext context) async {
+  /// The long press: the rest for this set, and delete.
+  Future<void> _menu(BuildContext context, String badge) async {
     final l10n = context.l10n;
-    final cubit = context.read<ActiveWorkoutCubit>();
-    final delete = await showModalBottomSheet<bool>(
+    final danger = context.appColors.danger;
+    final action = await showModalBottomSheet<_RowAction>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
-        child: ListTile(
-          leading: Icon(AppSymbols.delete, color: context.appColors.danger),
-          title: Text(
-            l10n.trackerDeleteSet,
-            style: TextStyle(color: context.appColors.danger),
-          ),
-          onTap: () => Navigator.of(context).pop(true),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(AppSymbols.rest),
+              title: Text(l10n.trackerRestTimer),
+              onTap: () => Navigator.of(context).pop(_RowAction.rest),
+            ),
+            ListTile(
+              leading: Icon(AppSymbols.delete, color: danger),
+              title: Text(
+                TrackerText.deleteTitle(l10n, set),
+                style: TextStyle(color: danger),
+              ),
+              onTap: () => Navigator.of(context).pop(_RowAction.delete),
+            ),
+          ],
         ),
       ),
     );
-    if (delete ?? false) cubit.deleteSet(set.id);
+    if (!context.mounted) return;
+    switch (action) {
+      case _RowAction.rest:
+        await _restTimer(context);
+      case _RowAction.delete:
+        await deleteSet(context, set, badge);
+      case null:
+        break;
+    }
+  }
+
+  /// The rest picker, on the rest that would run; Save keeps it for this
+  /// set alone, and both wheels at zero clear it.
+  Future<void> _restTimer(BuildContext context) async {
+    final cubit = context.read<ActiveWorkoutCubit>();
+    final initial =
+        member.restPicker[set.id] ??
+        cubit.state.settings?.defaultRestDurationSeconds ??
+        90;
+    final seconds = await showRestPicker(context, initial);
+    if (seconds == null) return;
+    cubit.setCustomRest(set.id, seconds > 0 ? seconds : null);
   }
 }
+
+enum _RowAction { rest, delete }
 
 /// A field to type into: a tap opens the keypad on it.
 class _Cell extends StatelessWidget {

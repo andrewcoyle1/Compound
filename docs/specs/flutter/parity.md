@@ -6,21 +6,23 @@ reason recorded in `decisions.md`. The milestone column is the plan's first esti
 
 Status: `todo`, `partial` (the gap is named), `done`, `dropped`. Flutter paths are under `app/lib/`.
 
-**Swept 16 Oct 2026, through #151** (the merged slices into `feature/flutter`; #152, the AI scanners,
-is open and counts as in progress). Each row was checked against the Swift presenter's actions and
-router destinations, the Flutter code and routes, and the PR's Decisions and Deferred sections.
+**Swept 16 Oct 2026, through #172** (every slice merged into `feature/flutter`; nothing is open).
+Each `partial` and `todo` row was checked against the Swift presenter's actions and router
+destinations, the Flutter code and routes, and the Decisions, Deferred and gaps sections of #152,
+#154–#159, #161–#168 and #170–#172. A sample of `done` rows was re-checked; that found one gap no PR
+had listed, Swift's `ReminderOfferFlow`, which reopens Today, Nutrition and Local reminders.
 
 | | done | partial | todo | dropped | total |
 |---|---|---|---|---|---|
-| Screen modules | 146 | 37 | 12 | 3 | 198 |
-| Platform features | 6 | 11 | 8 | 0 | 25 |
+| Screen modules | 180 | 12 | 3 | 3 | 198 |
+| Platform features | 12 | 8 | 5 | 0 | 25 |
 
-The open work is grouped into slices under [Remaining work](#remaining-work) at the end.
+The open work is grouped under [Remaining work](#remaining-work) at the end: follow-up slices, what waits on the owner, and M6.
 
 | Area | Swift module | Folder | Milestone | Status | Flutter |
 |---|---|---|---|---|---|
-| Components | CalendarHeader | `Views/CalendarHeader` | M2 | partial | Nutrition's week strip (#95, `nutrition/view/widgets/calendar_strip.dart`), a swipeable week by decision; no Return to Today, no zoomed calendar, and the Training tab has no calendar header |
-| Components | Calendar | `Views/CalendarHeader/Calendar` | M2 | todo | the zoomed month picker behind the header |
+| Components | CalendarHeader | `Views/CalendarHeader` | M2 | done | #164, `widgets/calendar/`: one header for Training and Nutrition, with markers and Return to Today; week-paged by decision (#95, #164) |
+| Components | Calendar | `Views/CalendarHeader/Calendar` | M2 | done | #164, the month picker from both tabs' toolbars (18 months back, 6 ahead) |
 | Components | AuthorHeader | `Views/User` | M2 | done | #131, social feed and profile |
 | Analytics | Analytics | `Compound/Core/Analytics` | M4 | done | #103, #130, #133, #137 (`progress/`) |
 | Analytics | BodyMetrics | `Subviews/BodyMetrics` | M4 | done | #137; Photos row (#150); Sync from Apple Health on Visual Body Fat (#151) |
@@ -28,14 +30,14 @@ The open work is grouped into slices under [Remaining work](#remaining-work) at 
 | Analytics | LogWeight | `Subviews/BodyMetrics/LogMeasurement/LogWeightView` | M4 | done | #106; export to Health first (#151) |
 | Analytics | ProgressPhotos | `Subviews/BodyMetrics/ProgressPhotos` | M4 | done | #150, `/progress/body-metrics/photos` and compare |
 | Analytics | ScaleWeight | `Subviews/BodyMetrics/ScaleWeight` | M4 | done | #98, #106, #137; Health import on appear (#151) |
-| Analytics | ExerciseAnalytics | `Subviews/ExerciseAnalytics` | M4 | done | #133 (profile unit, not per-exercise) |
+| Analytics | ExerciseAnalytics | `Subviews/ExerciseAnalytics` | M4 | done | #133; each exercise's own unit (#163) |
 | Analytics | ExerciseDetail | `Subviews/ExerciseAnalytics/ExerciseDetail` | M4 | done | #133; Ask Coach (#147) |
 | Analytics | FoodLoggingConsistency | `Subviews/FoodLoggingConsistency` | M4 | done | #137 |
 | Analytics | Habits | `Subviews/Habits` | M4 | done | #137 |
 | Analytics | InsightsAndAnalytics | `Subviews/InsightsAndAnalytics` | M4 | done | #137 |
-| Analytics | EnergyBalance | `Subviews/InsightsAndAnalytics/EnergyBalance` | M4 | done | #130 (intake as dots); Ask Coach (#147) |
+| Analytics | EnergyBalance | `Subviews/InsightsAndAnalytics/EnergyBalance` | M4 | done | #130; intake as bars under the expenditure line, paging and readout (#168); Ask Coach (#147) |
 | Analytics | ExpenditureDetail | `Subviews/InsightsAndAnalytics/ExpenditureDetail` | M4 | done | #130, with Edit Profile; Ask Coach (#147) |
-| Analytics | GoalProgress | `Subviews/InsightsAndAnalytics/GoalProgress` | M4 | partial | #137; Set Goal and Change Goal wait for a goal editor outside onboarding |
+| Analytics | GoalProgress | `Subviews/InsightsAndAnalytics/GoalProgress` | M4 | done | #137; Set Goal and Change Goal (#154) |
 | Analytics | MuscleGroupDetail | `Subviews/InsightsAndAnalytics/MuscleGroupDetail` | M4 | done | #133; Ask Coach (#147) |
 | Analytics | Steps | `Subviews/InsightsAndAnalytics/Steps` | M4 | done | #137; access ask and Sync from Apple Health (#151) |
 | Analytics | WeightTrend | `Subviews/InsightsAndAnalytics/WeightTrend` | M4 | done | #98, #137; Ask Coach (#147) |
@@ -44,75 +46,75 @@ The open work is grouped into slices under [Remaining work](#remaining-work) at 
 | Analytics | MuscleGroups | `Subviews/MuscleGroups` | M4 | done | #133 |
 | Analytics | NutritionAnalytics | `Subviews/NutritionAnalytics` | M4 | done | #137 |
 | Analytics | NutritionMetricDetail | `Subviews/NutritionAnalytics/NutritionMetricDetail` | M4 | done | #137 |
-| Analytics | NutritionTargetChart | `Subviews/NutritionTargetChart` | M4 | partial | #137; Create Diet Plan waits for a diet questionnaire outside onboarding |
-| Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | partial | #137; Weekly Workouts has no program targets or Active Program toggle |
+| Analytics | NutritionTargetChart | `Subviews/NutritionTargetChart` | M4 | done | #137; Create Diet Plan (#154) |
+| Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | partial | #137; Weekly Workouts still has no program targets or Active Program toggle (`progress_carousel.dart` says so) |
 | Analytics | WeighInConsistency | `Subviews/WeighInConsistency` | M4 | done | #137 |
-| Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | partial | #133; the grid has no month labels or press-and-hold callout |
-| AppView | App | `Compound/Core/AppView` | M1 | partial | redirect and shell (#86, #90), profile gate and launch retry (#116), push token, reminders and held links (#127), first-page inbox read (#144); no in-app activity banner (#144 deferred) and no widget snapshot on backgrounding (M6) |
+| Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | done | #133; month labels, weekday initials and press-and-hold readout (#168) |
+| AppView | App | `Compound/Core/AppView` | M1 | partial | redirect and shell (#86, #90), profile gate and launch retry (#116), push token, reminders and held links (#127), first-page inbox read (#144), subscription gate (#155), in-app activity banner (#172); no widget snapshot on backgrounding (M6) |
 | Challenges | ChallengeDetail | `ChallengeDetail` | M5 | done | #146, `/challenges/:challengeId` |
 | Challenges | CreateChallenge | `CreateChallenge` | M5 | done | #146, `/challenges/new` |
-| Coach | Coach | `Compound/Core/Coach` | M5 | done | #147, `/coach` and `/coach-chats`; See Plans waits for the paywall |
-| DevSettings | DevSettings | `Compound/Core/DevSettings` | M5 | todo | DEV/MOCK-only tools screen; no Flutter equivalent |
-| Notifications | Notifications | `Compound/Core/Notifications` | M5 | done | #144, `/social/notifications`; share and challenge rows open (#146, #148) |
+| Coach | Coach | `Compound/Core/Coach` | M5 | done | #147, `/coach` and `/coach-chats`; See Plans opens the paywall (#155) |
+| DevSettings | DevSettings | `Compound/Core/DevSettings` | M5 | partial | #166, a Settings row outside production; no A/B overrides (wait for the A/B tests) and no share-card export; seeding resets not needed (#166) |
+| Notifications | Notifications | `Compound/Core/Notifications` | M5 | done | #144, `/social/notifications`; share and challenge rows open (#146, #148); delivered pushes cleared on opening (#172) |
 | Notifications | NotificationSettings | `NotificationSettings` | M5 | done | #128; permission prompt (#144); reminders applied by #127 |
-| Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | partial | #95, #126, #130, #142, #145, Ask Coach (#147), food import (#151); no Customise Food Log link on the tab (Settings only) |
+| Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | partial | #95, #126, #130, #142, #145, #147, #151; calendar header (#164); Customize Food Log row (#167); no meal-reminder offer on the first visit (Swift `ReminderOfferFlow`) |
 | Nutrition | CheckIn | `CheckIn` | M3 | done | #130, `/check-in`; Ask Coach (#147) |
 | Nutrition | IngredientListBuilder | `Components/IngredientListBuilder` | M3 | done | #142, #145 |
-| Nutrition | MealAccessory | `Components/MealAccessory` | M3 | partial | #126; the unlogged-meal bar shows on the Nutrition tab only (Swift: over every tab), and the draft is in memory only |
+| Nutrition | MealAccessory | `Components/MealAccessory` | M3 | done | #126; over every tab, hidden during a workout (#167); draft kept on the device per account (#170) |
 | Nutrition | MealHourHeader | `Components/MealHourHeader` | M3 | done | #126, + per hour |
 | Nutrition | RecipeListBuilder | `Components/RecipeListBuilder` | M3 | done | #145 |
 | Nutrition | Foods | `Foods` | M3 | done | #142, `/nutrition/foods` |
-| Nutrition | CreateFood | `Foods/CreateFood` | M3 | partial | #142, `/create-food`; no food photo |
+| Nutrition | CreateFood | `Foods/CreateFood` | M3 | done | #142, `/create-food`; food photo (#161) |
 | Nutrition | FoodDefinition | `Foods/CreateFood/FoodDefinition` | M3 | done | #142 |
 | Nutrition | FoodPackaging | `Foods/CreateFood/FoodPackaging` | M3 | todo | deferred by #142: unreachable in Swift (public contribution switched off), photos only |
 | Nutrition | PortionDefinition | `Foods/CreateFood/PortionDefinition` | M3 | done | #142 (the serving option, the only one Swift offers) |
-| Nutrition | FoodDetail | `Foods/FoodDetail` | M3 | done | #142, `/nutrition/foods/:foodId` |
-| Nutrition | AddMeal | `MealLog/AddMeal` | M3 | partial | #126, `/log-meal`; no nutrient breakdown, and the unlogged draft is lost if the app is killed |
+| Nutrition | FoodDetail | `Foods/FoodDetail` | M3 | done | #142, `/nutrition/foods/:foodId`; picture (#161) |
+| Nutrition | AddMeal | `MealLog/AddMeal` | M3 | done | #126, `/log-meal`; Show all nutrients (#167); draft on the device (#170) |
 | Nutrition | IngredientAmount | `MealLog/IngredientAmount` | M3 | done | #126 (amount sheet) |
 | Nutrition | MealDetail | `MealLog/MealDetail` | M3 | done | #142, `/nutrition/meal/:mealId` |
 | Nutrition | MealItemAmountView | `MealLog/MealItemAmountView` | M3 | done | #126 (plate); #142 (timeline) |
-| Nutrition | NutritionLibraryPicker | `MealLog/NutritionLibraryPicker` | M3 | partial | #126, #145: Barcode, Search, Quick Add, Library; the AI and Describe tabs are in #152 (open) |
-| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | partial | #126 barcode mode; label mode is in #152 (open, typed text, no OCR); no torch |
+| Nutrition | NutritionLibraryPicker | `MealLog/NutritionLibraryPicker` | M3 | done | #126, #145, #152: Swift's six tabs in order |
+| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | partial | #126 barcode mode; label mode (#152) takes typed or pasted text, no on-device OCR; no torch |
 | Nutrition | FoodItemQuickAdd | `MealLog/NutritionLibraryPicker/FoodItemQuickAdd` | M3 | done | #126 |
 | Nutrition | FoodItemSearch | `MealLog/NutritionLibraryPicker/FoodItemSearch` | M3 | done | #126; recipes (#145) |
 | Nutrition | FoodLibrary | `MealLog/NutritionLibraryPicker/FoodLibrary` | M3 | done | #126; Recipes / Foods / Favorites (#145) |
-| Nutrition | FoodPhotoScanner | `MealLog/NutritionLibraryPicker/FoodPhotoScanner` | M3 | todo | in progress: #152 |
-| Nutrition | MealDescribe | `MealLog/NutritionLibraryPicker/MealDescribe` | M3 | todo | in progress: #152 |
+| Nutrition | FoodPhotoScanner | `MealLog/NutritionLibraryPicker/FoodPhotoScanner` | M3 | done | #152, the AI tab (system camera from Take Photo, no live preview, by decision) |
+| Nutrition | MealDescribe | `MealLog/NutritionLibraryPicker/MealDescribe` | M3 | done | #152, the Describe tab |
 | Nutrition | RecipeAmount | `MealLog/RecipeAmount` | M3 | done | #145 |
 | Nutrition | NutritionOverview | `NutritionOverview` | M3 | done | #130, `/nutrition/overview` |
 | Nutrition | Recipes | `Recipes` | M3 | done | #145, `/nutrition/recipes` |
 | Nutrition | CreateRecipe | `Recipes/CreateRecipe` | M3 | done | #145, `/create-recipe` |
 | Nutrition | RecipeIngredientAmount | `Recipes/CreateRecipe/RecipeIngredientAmount` | M3 | done | #145 |
-| Nutrition | RecipePreparation | `Recipes/CreateRecipe/RecipePreparation` | M3 | partial | #145; no recipe photo |
-| Nutrition | RecipeDetail | `Recipes/RecipeDetail` | M3 | done | #145, `/nutrition/recipes/:id` |
+| Nutrition | RecipePreparation | `Recipes/CreateRecipe/RecipePreparation` | M3 | done | #145; photo (#161) |
+| Nutrition | RecipeDetail | `Recipes/RecipeDetail` | M3 | done | #145, `/nutrition/recipes/:id`; picture (#161) |
 | Nutrition | RecipeStart | `Recipes/RecipeStart` | M3 | done | #145 |
 | Nutrition | TimelineActions | `TimelineActions` | M3 | done | #142 |
-| Onboarding | Welcome | `0 - WelcomeView` | M3 | partial | the sign-in page stands in (#86, #116); Swift's Welcome also sends a non-premium returning user to Subscription, which waits for the paywall |
-| Onboarding | Auth | `2 - AuthView` | M3 | partial | `sign_in/` (#86): Google and anonymous; Apple shows on iOS only (Android at M6) |
-| Onboarding | Subscription | `3 - Subscription` | M3 | todo | waits for the paywall slice (#116 left it out) |
-| Onboarding | NamePhoto | `4 - CompleteAccountSetup/1 - NamePhoto` | M3 | partial | name (#116); the photo step is deferred by #150 |
+| Onboarding | Welcome | `0 - WelcomeView` | M3 | done | the sign-in page stands in (#86, #116); a non-premium user is held at `/subscribe` (#155) |
+| Onboarding | Auth | `2 - AuthView` | M3 | partial | `sign_in/` (#86): Google and anonymous; Apple shows on iOS only, so an Apple-only account can't sign in on Android |
+| Onboarding | Subscription | `3 - Subscription` | M3 | done | #155, `/subscribe` (Why Subscribe) and `/subscribe/plans` |
+| Onboarding | NamePhoto | `4 - CompleteAccountSetup/1 - NamePhoto` | M3 | done | #116; photo (#161) |
 | Onboarding | Gender | `4 - CompleteAccountSetup/2 - Gender` | M3 | done | #116; Fill from Apple Health on iOS (#151) |
 | Onboarding | DateOfBirth | `4 - CompleteAccountSetup/3 - DateOfBirth` | M3 | done | #116; Fill from Apple Health on iOS (#151) |
 | Onboarding | Height | `4 - CompleteAccountSetup/4 - Height` | M3 | done | #116; Fill from Health (#151) |
 | Onboarding | Weight | `4 - CompleteAccountSetup/5 - Weight` | M3 | done | #116; Fill from Health (#151) |
 | Onboarding | ExerciseFrequency | `4 - CompleteAccountSetup/6 - ExerciseFrequency` | M3 | done | #116 |
 | Onboarding | Activity | `4 - CompleteAccountSetup/7 - Activity` | M3 | done | #116 |
-| Onboarding | Expenditure | `4 - CompleteAccountSetup/9 - Expenditure` | M3 | done | #116 |
+| Onboarding | Expenditure | `4 - CompleteAccountSetup/9 - Expenditure` | M3 | done | #116; method ⓘ headers (#166) |
 | Onboarding | HealthDisclaimer | `5 - HealthDisclaimer` | M3 | done | #116 (document links are placeholders in Swift too) |
 | Onboarding | OverarchingObjective | `6 - GoalSetting/1 - OverarchingObjective` | M3 | done | #116 |
 | Onboarding | TargetWeight | `6 - GoalSetting/2 - TargetWeight` | M3 | done | #116 |
 | Onboarding | WeightRate | `6 - GoalSetting/3 - WeightRate` | M3 | done | #116 |
-| Onboarding | GoalSummary | `6 - GoalSetting/4 - GoalSummary` | M3 | done | #116 |
+| Onboarding | GoalSummary | `6 - GoalSetting/4 - GoalSummary` | M3 | done | #116; standalone from Settings and Progress (#154) |
 | Onboarding | CustomisingDietProgram | `8 - OnboardingDiet` | M3 | done | #116 |
-| Onboarding | PreferredDiet | `8 - OnboardingDiet/1 - PreferredDiet` | M3 | done | #116 (onboarding only; Settings' Nutrition Plan is missing, see Settings) |
+| Onboarding | PreferredDiet | `8 - OnboardingDiet/1 - PreferredDiet` | M3 | done | #116; from Settings' Nutrition Plan and Create Diet Plan (#154) |
 | Onboarding | CalorieFloor | `8 - OnboardingDiet/2 - CalorieFloor` | M3 | done | #116 |
 | Onboarding | CalorieDistribution | `8 - OnboardingDiet/4 - CalorieDistribution` | M3 | done | #116 |
 | Onboarding | ProteinIntake | `8 - OnboardingDiet/5 - ProteinIntake` | M3 | done | #116 |
 | Onboarding | DietPlan | `8 - OnboardingDiet/6 - DietPlan` | M3 | done | #116 |
 | Onboarding | OnboardingCompleted | `9 - OnboardingCompleted` | M3 | dropped | decisions.md (#116): unreachable, because `.complete` only arises once onboarding is done |
-| Paywalls | Paywall | `Paywall` | M4 | todo | `purchases_repository` (#114) only; no paywall screen, and both flavors pass a premium fake (#147) |
-| Profile | Settings | `Compound/Core/Profile` | M5 | partial | #128, `/profile/settings`; rows still missing: Subscription, Siri, Weight Goal, Nutrition Plan, Rate, and Save Account for an anonymous user |
-| Profile | About | `Subviews/About` | M5 | partial | #128; no version and build (no `package_info_plus`) |
+| Paywalls | Paywall | `Paywall` | M4 | partial | #155, `/paywall`: Swift's default `custom` variant; the `storeKit` and `revenueCat` variants wait for the A/B tests; real purchases wait for the owner's RevenueCat setup |
+| Profile | Settings | `Compound/Core/Profile` | M5 | partial | #128, `/profile/settings`; Weight Goal and Nutrition Plan (#154), Subscription (#155), Save Account, Rate and Developer Settings (#166); only the Siri row is missing (M6) |
+| Profile | About | `Subviews/About` | M5 | done | #128; version and build (#166) |
 | Profile | Licences | `Subviews/About/Licences` | M5 | done | #128 (`LicensePage`) |
 | Profile | AppIcon | `Subviews/AppIcon` | M6 | todo | iOS alternate icons, M6; Swift hides the row (one icon) |
 | Profile | EditProfile | `Subviews/EditProfile` | M5 | done | #128; photo (#150) |
@@ -123,8 +125,8 @@ The open work is grouped into slices under [Remaining work](#remaining-work) at 
 | Profile | Siri | `Subviews/GeneralSettings/Siri` | M6 | todo | App Intents, M6 |
 | Profile | Units | `Subviews/GeneralSettings/Units` | M5 | done | #128 |
 | Profile | Legal | `Subviews/Legal` | M5 | done | #128 (titles "not published yet"; Swift's links are placeholders) |
-| Profile | MethodsAndSources | `Subviews/MethodsAndSources` | M5 | partial | #128, #130, #133, #137: 18 of Swift's 31 methods; missing energy density, smart progression, mesocycle deload (ported but not listed), warm-up sets, rest intervals, formula expenditure, resting metabolic rate, thermic effect of food, protein target, calorie floor, calorie cycling, weight change rate, goal timeline |
-| Profile | ExpenditureSettings | `Subviews/NutritionSettings/ExpenditureSettings` | M5 | partial | #128; its two ⓘ method buttons are missing |
+| Profile | MethodsAndSources | `Subviews/MethodsAndSources` | M5 | done | #128, #130, #133, #137, #154, #166: all 31 of Swift's methods, in Swift's order |
+| Profile | ExpenditureSettings | `Subviews/NutritionSettings/ExpenditureSettings` | M5 | done | #128; ⓘ headers (#166) |
 | Profile | FoodLogSettings | `Subviews/NutritionSettings/FoodLogSettings` | M5 | done | #128 |
 | Profile | FavouriteMeasurements | `Subviews/NutritionSettings/FoodLogSettings/FavouriteMeasurements` | M5 | done | #128 |
 | Profile | LoggerBanner | `Subviews/NutritionSettings/FoodLogSettings/LoggerBanner` | M5 | done | #128 |
@@ -133,7 +135,7 @@ The open work is grouped into slices under [Remaining work](#remaining-work) at 
 | Profile | StrategySettings | `Subviews/NutritionSettings/StrategySettings` | M5 | done | #128 |
 | Profile | ExerciseAssessment | `Subviews/TrainingSettings/ExerciseAssessment` | M5 | dropped | decisions.md (#144): Swift hides the row; the assessment unlocks nothing |
 | Profile | GymProfiles | `Subviews/TrainingSettings/GymProfiles` | M5 | done | #140, `/profile/settings/gym-profiles` |
-| Profile | GymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile` | M5 | partial | #140; no gym photo or equipment thumbnails |
+| Profile | GymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile` | M5 | done | #140; gym photo and equipment thumbnails (#161) |
 | Profile | AddGymMachine | `Subviews/TrainingSettings/GymProfiles/GymProfile/AddGymMachine` | M5 | done | #140 |
 | Profile | CreateGymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile/CreateGymProfile` | M5 | done | #140; also onboarding and Choose Gym Profile |
 | Profile | EditBand | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand` | M5 | done | #140, shared editor |
@@ -153,23 +155,23 @@ The open work is grouped into slices under [Remaining work](#remaining-work) at 
 | Profile | EditWeightRange | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange` | M5 | done | #140 |
 | Profile | WorkoutSettings | `Subviews/TrainingSettings/WorkoutSettings` | M5 | done | #128 |
 | Profile | RestTimerSettings | `Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings` | M5 | done | #128 |
-| Profile | TimerDuration | `Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration` | M5 | done | #128 |
-| Profile | SmartProgressionSettings | `Subviews/TrainingSettings/WorkoutSettings/SmartProgressionSettings` | M5 | partial | #128; its ⓘ method button is missing (smart progression's `MethodInfo` isn't ported) |
+| Profile | TimerDuration | `Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration` | M5 | done | #128; rest ⓘ (#166) |
+| Profile | SmartProgressionSettings | `Subviews/TrainingSettings/WorkoutSettings/SmartProgressionSettings` | M5 | done | #128; ⓘ (#166) |
 | Profile | Tutorials | `Subviews/Tutorials` | M5 | dropped | decisions.md (#144): Swift hides the row; no tutorials exist |
 | Sharing | ShareToFollower | `ShareToFollower` | M5 | done | #148 (pushed dialog) |
 | Sharing | SharedItem | `SharedItem` | M5 | done | #148, `/shares/:shareId` |
 | Social | Social | `Compound/Core/Social` | M5 | done | #131; bell and badges (#144); challenges and invites (#146) |
 | Social | WeeklyGoal | `CircleGoals/WeeklyGoal` | M5 | done | #131 |
-| Social | SocialProfile | `SocialProfile` | M5 | partial | #131; Share Profile (#146); Strava This Year (#151); no Report, and no "Following {mesocycle}" line |
+| Social | SocialProfile | `SocialProfile` | M5 | done | #131; Share Profile (#146); Strava This Year (#151); Report and the Following line (#159) |
 | Social | FollowersList | `SocialProfile/FollowersList` | M5 | done | #131 |
-| Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | partial | #131; Share Image and Share with Friends (#148); no text Share link (prod Hosting URL), Save as Template or Report |
-| Social | Comments | `WorkoutSessionRow/Comments` | M5 | partial | #131; no Report |
+| Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | partial | #131; Share Image and Share with Friends (#148); Save as Template and Report (#159); no text Share link (waits for the link host) |
+| Social | Comments | `WorkoutSessionRow/Comments` | M5 | done | #131; Report (#159) |
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | #90, five tabs, per-tab stacks, deep-link paths |
-| Today | Today | `Compound/Core/Today` | M2 | partial | #101, #133, #134, #147, #151; the checklist's planned and rest-day training states, the step-goal picker and the social pulse row are missing |
+| Today | Today | `Compound/Core/Today` | M2 | partial | #101, #133, #134, #147, #151; planned and rest-day checklist states, step goal and social pulse (#164); no streak-reminder offer at a two-week streak (Swift `ReminderOfferFlow`) |
 | Today | WeeklyReview | `WeeklyReview` | M2 | done | #133, `/today/weekly-review`; share card (#148), From Strava (#151), Ask Coach (#147) |
-| Training | Training | `Compound/Core/Training` | M3 | partial | #120, #134, #136, #138, #141 (search, active mesocycle, library, + menu); no calendar header, so no tapping a day to open its sessions |
+| Training | Training | `Compound/Core/Training` | M3 | done | #120, #134, #136, #138, #141; calendar header, day taps and month picker (#164) |
 | Training | TodaysWorkoutCard | `Components/TodaysWorkoutCard` | M3 | done | #134 |
-| Training | TrainingAccessory | `Components/TrainingAccessory` | M3 | partial | `ActiveWorkoutBar` (#125): name and clock only; no set progress, rest countdown or Skip Rest |
+| Training | TrainingAccessory | `Components/TrainingAccessory` | M3 | done | `ActiveWorkoutBar` (#125); set ring, rest countdown and Skip Rest (#165) |
 | Training | WorkoutStreak | `Components/WorkoutStreakCard` | M3 | done | #101, Today's `StreakCard` |
 | Training | CreateExercise | `Exercises/CreateExercise` | M3 | done | #141, `/create-exercise` |
 | Training | EquipmentPicker | `Exercises/CreateExercise/EquipmentPicker` | M3 | done | #141 |
@@ -178,7 +180,7 @@ The open work is grouped into slices under [Remaining work](#remaining-work) at 
 | Training | FinalExerciseDetails | `Exercises/CreateExercise/FinalExerciseDetails` | M3 | done | #141 |
 | Training | MuscleGroupPicker | `Exercises/CreateExercise/MuscleGroupPicker` | M3 | done | #141 |
 | Training | ExerciseListBuilder | `Exercises/ExerciseListBuilder` | M3 | done | #120 (filters); Create Exercise row (#141) |
-| Training | ExerciseModelDetail | `Exercises/ExerciseModelDetail` | M3 | partial | #120 About and History; Delete (#141); Ask Coach (#147); the Charts and Records tabs are missing |
+| Training | ExerciseModelDetail | `Exercises/ExerciseModelDetail` | M3 | done | #120 About and History; Delete (#141); Ask Coach (#147); Charts and Records (#167) |
 | Training | Exercises | `Exercises/Exercises` | M3 | done | #120, `/training/exercises`; Create Exercise (#141) |
 | Training | ActiveMesocycle | `Programs/ActiveMesocycle` | M3 | done | #134, #136; Ask Coach (#147) |
 | Training | CreateMesocycle | `Programs/CreateMesocycle` | M3 | done | #136; onboarding's Build My Own (#138) |
@@ -197,25 +199,25 @@ The open work is grouped into slices under [Remaining work](#remaining-work) at 
 | Training | InactiveMesocycle | `Programs/MesocycleLibrary/InactiveMesocycle` | M3 | done | #134 |
 | Training | MesocycleDisclosureGroup | `Programs/MesocycleLibrary/MesocycleDisclosureGroup` | M3 | done | #134; Edit (#136); Share with Friends (#148) |
 | Training | PrebuiltMesocycleDetail | `Programs/MesocycleLibrary/PrebuiltMesocycleDetail` | M3 | done | #134 |
-| Training | ExerciseTracker | `Session/ExerciseTracker` | M3 | partial | #125 block card, targets, Last, notes, Delete Exercise, supersets; no swap, Do Next/Do Later or reordering, progression note, Last tap-to-fill or previous-note hints |
-| Training | ExerciseSettings | `Session/ExerciseTracker/ExerciseSettings` | M3 | partial | the exercise note is in #125's notes sheet; no per-exercise weight or distance unit, rest timer, side-set rest or Edit Duplicate |
-| Training | SetTrackerRow | `Session/ExerciseTracker/SetTrackerRow` | M3 | partial | #125 logging, correction, delete with Undo; no set-type menu (drop, myo, warm-up), sub-sets, split sides, per-row custom rest or unit menu |
-| Training | PlateCalculator | `Session/ExerciseTracker/SetTrackerRow/PlateCalculator` | M3 | todo | deferred by #125 (with the loading bar) |
-| Training | SetKeyboard | `Session/ExerciseTracker/SetTrackerRow/SetKeyboard` | M3 | partial | #125 keypad, chips and steps; no bands chips, ± assisted key or stopwatch |
-| Training | SwapExercisePicker | `Session/ExerciseTracker/SwapExercisePicker` | M3 | todo | deferred by #125 |
-| Training | WorkoutExerciseEquipmentSheet | `Session/ExerciseTracker/WorkoutExerciseEquipmentSheet` | M3 | todo | deferred by #125; it also opens #140's scoped gym editor |
+| Training | ExerciseTracker | `Session/ExerciseTracker` | M3 | done | #125; Swap (#163); Do Next/Do Later, reordering, progression note, Last tap-to-fill, previous-note hint (#165) |
+| Training | ExerciseSettings | `Session/ExerciseTracker/ExerciseSettings` | M3 | done | #163: units, rest timer, side-set rest, note, Edit Duplicate |
+| Training | SetTrackerRow | `Session/ExerciseTracker/SetTrackerRow` | M3 | done | #125; set types, sub-sets, Split L/R, per-row rest (#158); unit menus (#163) |
+| Training | PlateCalculator | `Session/ExerciseTracker/SetTrackerRow/PlateCalculator` | M3 | done | #156 |
+| Training | SetKeyboard | `Session/ExerciseTracker/SetTrackerRow/SetKeyboard` | M3 | done | #125; bands, ± and the loading bar (#156); stopwatch (#158) |
+| Training | SwapExercisePicker | `Session/ExerciseTracker/SwapExercisePicker` | M3 | done | #163 |
+| Training | WorkoutExerciseEquipmentSheet | `Session/ExerciseTracker/WorkoutExerciseEquipmentSheet` | M3 | done | #156, with #140's scoped gym editor |
 | Training | WorkoutHistory | `Session/WorkoutHistory` | M3 | done | #93, `/training/history` |
 | Training | WorkoutNotes | `Session/WorkoutNotes` | M3 | done | #125 notes sheet |
-| Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | #93; summary (#125); Share Image (#148); Ask Coach (#147); View on Strava and the offer (#151); no editing (sets, start time, duration, Add Exercise), no Delete, no Copy Link |
-| Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | partial | #125, #127 (`/workout`); Gym Settings (#140); no Workout Settings from the menu, "Finish at", iPad toolbar or rest-complete sound |
+| Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | #93, #125, #147, #148, #151; editing, start time, duration and Delete (#162), Swift's full edit mode (#171); only Copy Link is missing (link host) |
+| Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | partial | #125, #127 (`/workout`, Finish at); Gym Settings (#140); Workout Settings (#165); rest-complete sound (#172); no iPad toolbar (M6) |
 | Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | done | #138; Create Gym Profile (#140) |
 | Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | done | #138 |
 | Training | DefineWorkoutWrapper | `Workouts/CreateWorkout/DefineWorkoutWrapper` | M3 | done | #138 |
 | Training | ExercisesPicker | `Workouts/CreateWorkout/ExercisesPicker` | M3 | done | #120 `/exercise-picker`; substitutions (#138) |
 | Training | NameWorkout | `Workouts/CreateWorkout/NameWorkout` | M3 | done | #138, `create-workout`, `edit-workout/:id` |
-| Training | SetTarget | `Workouts/CreateWorkout/SetTarget` | M3 | partial | #138 for templates; the tracker's session-scope editing waits for tracker editing |
+| Training | SetTarget | `Workouts/CreateWorkout/SetTarget` | M3 | done | #138; session scope (#163) |
 | Training | WeeklyTargets | `Workouts/CreateWorkout/SetTarget/WeeklyTargets` | M3 | done | #138 |
-| Training | WorkoutTemplateDetail | `Workouts/WorkoutTemplateDetail` | M3 | partial | #120, #134, #136, #138, #148 (Start, Edit, Delete, Edit Mesocycle, Save a Copy, Share); no Watch link or per-set target grid |
+| Training | WorkoutTemplateDetail | `Workouts/WorkoutTemplateDetail` | M3 | done | #120, #134, #136, #138, #148; per-set targets and Watch link (#167) |
 | Training | Workouts | `Workouts/Workouts` | M3 | done | #120, `/training/workouts`; New Workout (#138) |
 
 198 modules.
@@ -224,117 +226,128 @@ The open work is grouped into slices under [Remaining work](#remaining-work) at 
 
 | Feature | Swift | Milestone | Status | Flutter |
 |---|---|---|---|---|
-| Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | partial | `auth_repository` (#86); Apple on iOS only; no Save Account (linking an anonymous account) from Settings |
+| Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | partial | `auth_repository` (#86); Save Account links an anonymous account (#166); Apple on iOS only, none on Android |
 | App Check | `AppCheckProviderFactory` | M1 | done | `main_development.dart`, debug token registered in M1; the production flavor isn't configured |
 | Offline data and sync | Sync engines | M1–M3 | done | Firestore cache + `writeLocally` (#111); no `ensureOnline` pre-checks (#146, #148, by decision) |
-| Device-local preferences | `UserDefaults` | M5 | partial | proposal dismissals in a JSON file (#130); in memory only: the meal draft (#126), "Still training?" last asked (#127), banner, recap and invite-card dismissals and nudges (#131, #146), the review card's opened flag (#133) |
-| Per-exercise unit preferences | `ExerciseUnitPreferenceManager` | M3 | todo | not ported; weights show in the profile's unit (#120, #133, #137) |
+| Device-local preferences | `UserDefaults` | M5 | done | `device_store` on shared_preferences under Swift's keys (#170); review date and the editor's plates switch (#172) |
+| Per-exercise unit preferences | `ExerciseUnitPreferenceManager` | M3 | done | #163, on the device store (#170) |
 | Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |
-| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146); no in-app activity banner, delivered pushes not cleared on opening, no https share links |
-| Local reminders | `PushManager` (local) | M4 | done | come-back and meal reminders, rest-over, "Still training?" (#127); permission prompt (#144) |
-| Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); no paywall UI, RevenueCat logIn not wired, both flavors pass a premium fake (#147) |
+| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed aren't cleared (M6); no https share links (link host) |
+| Local reminders | `PushManager` (local) | M4 | partial | come-back and meal reminders, rest-over, "Still training?" (#127, last asked on the device #170); permission prompt (#144); no in-app reminder offers (`ReminderOfferFlow`) |
+| Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); paywall, gate, RevenueCat logIn/logOut (#155); development runs the fake until the owner's keys; production not wired; logIn sends no analytics ids |
 | A/B tests (Remote Config) | `ABTestManager` | M5 | todo | Swift runs `notificationsTest` and `paywallTest` |
-| App rating prompt | `ReviewMoment` | M5 | todo | Swift asks after the week's goal workout or a 7-day food streak |
-| HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | partial | `health_repository` (#121), UI and native setup (#151); no live workout session (heart rate, active energy); HealthKit capability is an owner TODO |
-| Live Activity and Dynamic Island (iOS); ongoing notification (Android) | `LiveActivityManager`, `WorkoutSessionActivity/` | M3 (Android), M6 (iOS) | partial | Android ongoing notification (#127); no foreground service; iOS at M6 |
+| App rating prompt | `ReviewMoment` | M5 | done | `ReviewMoment`, Rate row and food moments (#166); workout-finish moment and stored date (#172) |
+| HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | partial | `health_repository` (#121), UI and native setup (#151); no live workout session (heart rate, active energy; iOS, M6); HealthKit capability is an owner TODO |
+| Live Activity and Dynamic Island (iOS); ongoing notification (Android) | `LiveActivityManager`, `WorkoutSessionActivity/` | M3 (Android), M6 (iOS) | partial | Android ongoing notification (#127); no foreground service, by decision (#172); iOS at M6 |
 | Home screen widgets | `WorkoutSessionActivity/HomeWidgets.swift` | M6 | todo | M6 |
 | Siri and Shortcuts (App Intents) | `Managers/AppIntents` | M6 | todo | M6, with the `browse_recipes` shortcut (#145) |
-| Strava upload and import | `StravaManager` | M5 | partial | `strava_repository` (#122), UI (#151); no `pushEdit` (sessions can't be edited yet); Keychain-token migration not ported |
-| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | partial | `ai_repository` (#118); scanners in progress (#152), label OCR deferred there; image generation has no caller in Swift's screens |
+| Strava upload and import | `StravaManager` | M5 | partial | `strava_repository` (#122), UI (#151), `pushEdit` (#162); needs the owner's `STRAVA_CLIENT_ID`; Keychain-token migration is M6 |
+| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | partial | `ai_repository` (#118), scanners (#152); no on-device label OCR; image generation has no caller in Swift's screens |
 | AI coach (streaming) | `CoachManager` | M5 | done | `coach_repository` (#118), UI (#147) |
-| Image upload and progress photos | `ImageUploadManager` | M5 | partial | `image_repository` (#150): progress photos and the profile photo; food, recipe, gym and equipment images not done |
-| Reporting and moderation | `ReportManager` | M5 | todo | no Report on profiles, sessions or comments |
-| Haptics and sound effects | `HapticManager`, `SoundEffectManager` | M3 | partial | haptics in the views across slices; no in-app rest-complete sound (needs an audio package, #127) |
+| Image upload and progress photos | `ImageUploadManager` | M5 | done | `image_repository` (#150): progress and profile photos; food, recipe, gym, equipment and NamePhoto (#161) |
+| Reporting and moderation | `ReportManager` | M5 | done | #159: comments, feed cards and profiles |
+| Haptics and sound effects | `HapticManager`, `SoundEffectManager` | M3 | done | haptics across slices; check-in weigh-in (#172); rest-complete sound over a method channel (#172) |
 | Spanish localisation, 100% | `Localizable.xcstrings` | M1 | done | `scripts/arb-spanish.py`, CI check |
 | iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | todo | only Progress's grid widens (2–4 columns, #103); no readable width or `Dashboard` |
 | Mac (Catalyst) | Catalyst | M6 | todo | decided at M6; the macOS folder was removed (#82) |
-| Methods & Sources (citations) | `Components/Science` | M4 | partial | `science/method_info.dart`: 18 of 31 methods (see MethodsAndSources) |
+| Methods & Sources (citations) | `Components/Science` | M4 | done | `science/method_info.dart`: all 31 (#154, #166) |
 
 ## Remaining work
 
-Ordered by user value. Each slice is meant to be one PR into `feature/flutter`; it names the Swift
-modules it finishes and the deferrals it closes.
+Every gap left in the tables above, with the deferrals from `decisions.md` and the PR bodies, in three
+groups. The proposed slices from the #151 sweep are finished, apart from what is carried here.
 
-### In progress
-- **AI scanners** (#152, `flutter/m5-ai-scanners`): FoodPhotoScanner, MealDescribe, label mode of
-  BarcodeScanner, the picker's AI and Describe tabs. Still open after it: on-device label OCR
-  (`google_mlkit_text_recognition`), deferred by #152.
+### (a) Follow-up slices an agent can build without the owner
+Ordered by user value. Each is meant to be one PR into `feature/flutter`.
 
-### Proposed slices
-1. **Tracker: loading and set editing.** PlateCalculator, WorkoutExerciseEquipmentSheet (with #140's
-   scoped gym editor), SetTrackerRow (set-type menu: drop, myo, warm-up; sub-sets; split sides;
-   per-row custom rest; unit menu), SetKeyboard (bands chips, ± assisted key, stopwatch), the
-   loading bar. Closes #125's "loading and set editing" list and #140's scoped-editor deferral.
-2. **Tracker: exercise flow and settings.** SwapExercisePicker, ExerciseTracker (Do Next/Do Later,
-   reordering, the progression note, Last tap-to-fill, previous-note hints), ExerciseSettings (weight
-   and distance unit, rest timer, side-set rest, Edit Duplicate from #141) with per-exercise unit
-   preferences, SetTarget's session scope, WorkoutTracker (Workout Settings from the menu, "Finish
-   at", the per-attempt `finish_workout_save_error` event, Voice Control labels), TrainingAccessory
-   (progress, rest countdown, Skip Rest). Closes the rest of #125's list and #133's per-exercise unit
-   note.
-3. **Editing a finished workout.** WorkoutSessionDetail: edit sets, start time and duration, Add
-   Exercise, Delete; then Strava `pushEdit` (#151 deferral).
-4. **Goals and diet outside onboarding.** Settings' Weight Goal flow (edit, or start new with the old
-   goal abandoned) and Nutrition Plan (PreferredDiet from Settings); GoalProgress's Set/Change Goal;
-   NutritionTargetChart's Create Diet Plan; ProgressCarousel's program targets and Active Program
-   toggle. Closes #137's deferrals.
-5. **Paywall and subscription.** Paywall, Onboarding Subscription, Welcome's non-premium gate,
-   Settings' Subscription row, the coach's See Plans (#147), RevenueCat logIn with the uid, and the
-   A/B tests (`paywallTest`, `notificationsTest`). Needs the RevenueCat owner TODO first.
-6. **Reporting and moderation.** `ReportManager` port; Report on SocialProfile, WorkoutSessionRow and
-   Comments; Save as Template from the feed card; the profile's "Following {mesocycle}" line (#131,
-   #148 deferrals). The text Share link and Copy Link wait for the link-host owner decision below.
-7. **Today, Training and Nutrition gaps.** Today's planned and rest-day checklist states (#101, #134),
-   the step-goal picker and social pulse; CalendarHeader on Training (tap a day to open its sessions)
-   and the Calendar month picker (#134); ExerciseModelDetail's Charts and Records tabs and
-   WorkoutTemplateDetail's Watch link and per-set grid (#120); AddMeal's nutrient breakdown (#126);
-   MealAccessory over every tab; Customise Food Log on the Nutrition tab; WorkoutConsistency's month
-   labels and callout (#133); interactive charts (paging, press-and-hold readout, Energy Balance bars;
-   #98, #130).
-8. **Images for the rest.** Food (CreateFood), recipe (RecipePreparation), gym photo and equipment
-   thumbnails (GymProfile), workout template pictures, and onboarding NamePhoto's photo (#140, #142,
-   #145, #150 deferrals). FoodPackaging stays `todo` until the public food database ships (#142).
-9. **Settings, account and polish.** Save Account (link an anonymous account from Settings), Rate and
-   the review prompt (`ReviewMoment`), About's version (`package_info_plus`), the 13 missing
-   `MethodInfo` entries and the ⓘ buttons on Expenditure and Smart Progression settings (#128),
-   DevSettings, the in-app activity banner and clearing delivered pushes (#144), a device key-value
-   store for every in-memory flag listed under Device-local preferences (#126, #127, #131, #133,
-   #146), the rest-complete sound and an Android foreground service (#127), the haptic after the
-   check-in weigh-in (#130), the first weekday from the device region (#101), bodyweight sets
-   showing "@ 0 kg" (#93), `AppSelectableRow`'s semantics pattern (#141), and the new profile's
-   missing `authProviders` and `creationVersion` (#116).
+1. **Reminder offers** (Swift `ReminderOfferFlow`). Offer meal reminders on the first visit to
+   Nutrition and the streak reminder once a two-week streak is reached, each once per device under
+   Swift's `hasShownReminderOffer_meal_reminders` / `_streak_reminder` keys on `device_store` (#170
+   left them out because nothing called them). Either answer is final; Notification Settings changes
+   it afterwards. Without it both reminders stay off unless the user finds the switches. Closes
+   Today, Nutrition and the Local reminders row. No PR listed this; the sweep found it.
+2. **Program targets on Progress.** ProgressCarousel's Weekly Workouts: the active mesocycle's
+   targets and the Active Program / All Workouts toggle (`ProgressCarouselPresenter.workoutScope`,
+   #137 deferral).
+3. **Label OCR and the torch.** On-device OCR of a nutrition label photo with
+   `google_mlkit_text_recognition` (free; needs Podfile and architecture changes, #152), and the
+   barcode scanner's torch. Closes BarcodeScanner and the AI platform row.
+4. **A/B tests** (Remote Config, Swift `ABTestManager`): `paywallTest` and `notificationsTest`, then
+   the paywall's `storeKit` and `revenueCat` variants (RevenueCatUI, a new free dependency, #155) and
+   Developer Settings' A/B overrides (#166). The in-app defaults can ship first; the parameters in
+   `compound-development` are the owner's (below).
+5. **Small polish.**
+   - Developer Settings' share-card export (a photo-library save, #166).
+   - RevenueCat `logIn` with Mixpanel's distinct id and Firebase's app instance id, once
+     `analytics_repository` exposes them (#155).
+   - The step-goal save rewrites `hidden_section_ids` with the whole `analytics_settings` document,
+     as Swift does, so a stale copy can undo a change from another device (#164); write the goal by
+     field.
 
-### Owner TODOs
+### (b) Waiting on the owner
 - **RevenueCat:** apps for iOS `com.andrewcoyle.compound.flutter.dev` and Play
-  `com.andrewcoyle.compound.dev`, the Play subscriptions on the same entitlement, and a Play
-  service-account credential (#114).
-- **Push:** upload the APNs key to `compound-development`; Push Notifications capability and the Time
-  Sensitive entitlement on the Flutter dev bundle id; optionally the remote-notifications background
-  mode (#117, #127). `compound://` is shared with the Swift app on one device (#127).
-- **Health:** HealthKit capability and entitlement for the development and production bundle ids; the
-  Play Console Health Connect declaration; a privacy policy page for the rationale screen (#121, #151).
+  `com.andrewcoyle.compound.dev`, the Play subscriptions on the same entitlement, a Play
+  service-account credential, and `REVENUECAT_APPLE_API_KEY` / `REVENUECAT_GOOGLE_API_KEY` in
+  `app/dart_defines.json`. Until then development runs the premium fake (#114, #155).
+- **APNs and push:** upload the APNs key to `compound-development`; the Push Notifications capability
+  and the Time Sensitive entitlement on the Flutter dev bundle id; optionally the
+  remote-notifications background mode (#117, #127). `compound://` is shared with the Swift app on one
+  device (#127).
+- **HealthKit and Health Connect:** the HealthKit capability and entitlement for the development and
+  production bundle ids; the Play Console Health Connect declaration; a privacy policy page for the
+  rationale screen (#121, #151).
 - **Strava:** `STRAVA_CLIENT_ID` in `app/dart_defines.json`; confirm the dev Strava app's callback
   domain is `localhost` (#122, #151).
 - **Mixpanel:** `MIXPANEL_TOKEN` in `app/dart_defines.json` (#96).
-- **Native wording:** review the camera usage text and add its Spanish `InfoPlist.strings`; try the
-  barcode scanner on a device (#126); `NSPhotoLibraryUsageDescription` is English only (#150).
-- **Storage rules (dev):** any signed-in user can write and delete another user's photos; one
-  leftover anonymous account in `compound-development` Auth (#150).
+- **Remote Config:** the A/B test parameters in `compound-development`, for slice 4.
+- **Storage rules (dev):** any signed-in user can write and delete another user's photos (#150); food
+  and recipe photos sit at the Storage root (`ingredient_templates/{id}`, `recipe_templates/{id}`),
+  Swift's paths, so per-user rules can't cover them (#161); one leftover anonymous account in
+  `compound-development` Auth (#150).
 - **Firestore rules:** user exercises in `exercise_templates` are readable by every signed-in user
   (`swift-findings.md`).
-- **Share links:** choose a dev-safe host for web share links and Copy Link (#148).
-- **Legal and support:** publish the legal documents and the disclaimer's links (#116, #128).
-- **Brand assets** for `app_ui` (the share cards draw a glyph, #148).
-- **Production flavor:** it throws at launch until the prod project is configured (#86); Play
-  Console account and closed test before Android 1.0 (plan, M3).
-- The Swift findings in `swift-findings.md` each need the owner's decision.
+- **Share-link host:** a dev-safe host for https links. It blocks the feed card's text Share link
+  (WorkoutSessionRow), Copy Link (WorkoutSessionDetail) and https deep links (#148, #159, #162, #171).
+- **Legal URLs and store ids:** publish the Terms of Service and Privacy Policy (the stores need
+  working links on the paywall, #155) and the disclaimer's links (#116, #128); store ids for Rate to
+  open the listing (#166).
+- **Sign in with Apple on Android:** an Apple Services ID and return URL in Apple Developer and
+  Firebase. Without it an account created with Apple on iOS can't sign in on Android (Auth, Sign in).
+- **Production flavor:** it throws at launch until the prod project is configured (#86); production
+  must use RevenueCat, never the fake (#155); Play Console account and closed test before Android 1.0
+  (plan, M3).
+- **Translations and wording to review:**
+  - Spanish written by hand: the label error and hint, "Describe your meal", "per 100ml" (#152);
+    "{first} o {second}" (#156); the plural set confirmations (#158); "Siguiendo {name}" and the
+    per-kind report wording (#159); "Acciones de la serie", "Hora" (#162); the plan note's lists
+    (#165).
+  - Native strings: the camera usage text and its Spanish `InfoPlist.strings`, and a try of the
+    barcode scanner on a device (#126); `NSPhotoLibraryUsageDescription` is English only (#150).
+  - Edit Duplicate keeps the original's name; Swift has no "(Copy)" wording (#163).
+- **Design calls logged for review:** week paging instead of Swift's year-long calendar scroller
+  (#164); rolling chart windows instead of calendar periods, the readout in the header instead of a
+  floating callout, and touch-only readouts with no per-bucket screen-reader values (#168); strip
+  reordering by menu, not drag (#165); Developer Settings as a Settings row, not Today's toolbar
+  (#166); the paywall gate not applied at every launch (#155).
+- **Brand assets** for `app_ui`: the share cards draw a glyph (#148), and the gym editor shows no
+  header without a photo (#161).
+- **FoodPackaging** stays `todo` until the public food database is switched on (#142).
+- **Swift `GoalManager` objective-merge bug** (#154): `updateGoal` merge-saves the whole goal, so
+  changing a goal's objective in Swift stores two objective keys and the goal stops decoding in both
+  apps. Fix in Swift before Android 1.0 shares accounts. The other findings in `swift-findings.md`
+  each need a decision too.
 
-### Waits for M6 (iOS)
-- Live Activity and Dynamic Island (keep `WorkoutSessionActivity`, driven over a platform channel).
-- Home screen widgets, and the widget snapshot on backgrounding (`AppPresenter`).
-- Siri and Shortcuts (App Intents), the Siri settings screen and the `browse_recipes` shortcut (#145).
-- AppIcon (alternate icons).
-- Sign in with Apple on Android (iOS only today).
-- iPad and wide layouts; the Mac Catalyst decision.
-- iOS flavors under the existing bundle ids, the Strava Keychain-token migration (#122, #151), and the
-  final Swift release that flushes pending writes.
+### (c) M6: iOS only, needs the owner's go-ahead
+- Live Activity and Dynamic Island: keep `WorkoutSessionActivity`, driven over a platform channel and
+  an App Group; the Lock Screen set receipt in the progression note's slot (#165).
+- Home screen widgets, and the widget snapshot on backgrounding (App).
+- Siri and Shortcuts (App Intents): the Siri settings row and the `browse_recipes` shortcut (#145).
+- AppIcon (alternate icons; Swift hides the row).
+- HealthKit's live workout session (heart rate, active energy).
+- iPad and wide layouts (readable width, `Dashboard`), including the tracker's iPad toolbar (#165);
+  the Mac Catalyst decision.
+- Clearing pushes iOS displayed while the app was in the background, by identifier (#172).
+- iOS flavors under the existing bundle ids; the Strava Keychain-token migration (#122, #151); the
+  final Swift release that flushes pending writes. At the switch, Swift's Monday-recap week id and its
+  `Date` review stamp don't carry over: a dismissed recap may show once more and the review cooldown
+  restarts (#170, #172).

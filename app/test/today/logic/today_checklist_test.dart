@@ -23,6 +23,7 @@ void main() {
 
   TodayChecklist build({
     WorkoutSessionModel? finished,
+    WorkoutTemplateModel? planned,
     double calories = 0,
     double protein = 0,
     double? calorieTarget = 2000,
@@ -32,6 +33,7 @@ void main() {
     StepsItem? steps,
   }) => TodayChecklist.build(
     finishedToday: finished,
+    planned: planned,
     nutrition: NutritionItem(
       calories: calories,
       proteinGrams: protein,
@@ -58,9 +60,31 @@ void main() {
       );
       expect(item<TrainingItem>(build()), isNull);
       expect(
-        TrainingItem(fixtureSession('a')),
-        TrainingItem(fixtureSession('a')),
+        TrainingItem(session: fixtureSession('a')),
+        TrainingItem(session: fixtureSession('a')),
       );
+    });
+
+    // Swift `testTrainingStates`.
+    test('training is done, a rest day, planned or left out', () {
+      final push = fixtureTemplate(
+        'push',
+        name: 'Push Day',
+        exercises: [fixtureSlot(fixtureLibraryExercise('bench'))],
+      );
+      final rest = fixtureTemplate('rest', name: 'Rest');
+      final done = item<TrainingItem>(
+        build(finished: fixtureSession('a'), planned: push),
+      )!;
+      expect(done.isDone, isTrue);
+      expect(done.session?.id, 'a');
+      final restDay = item<TrainingItem>(build(planned: rest))!;
+      expect(restDay.isRestDay, isTrue);
+      expect(restDay.isDone, isTrue);
+      final planned = item<TrainingItem>(build(planned: push))!;
+      expect(planned.isRestDay, isFalse);
+      expect(planned.isDone, isFalse);
+      expect(item<TrainingItem>(build()), isNull);
     });
 
     test('nutrition needs calories in the band and protein reached', () {
@@ -108,6 +132,23 @@ void main() {
       expect(
         item<StepsItem>(build(steps: const StepsItem(today: 8000, goal: 8000)))!
             .isDone,
+        isTrue,
+      );
+    });
+
+    // Swift `testDayComplete`.
+    test('a rest day counts toward a complete day', () {
+      final rest = fixtureTemplate('rest');
+      final partial = build(planned: rest, calories: 2000, protein: 150);
+      expect(partial.doneCount, 2);
+      expect(partial.isComplete, isFalse);
+      expect(
+        build(
+          planned: rest,
+          calories: 2000,
+          protein: 150,
+          weighIn: const WeighInItem(isToday: true, latestKg: 80),
+        ).isComplete,
         isTrue,
       );
     });
@@ -344,5 +385,74 @@ void main() {
       );
       expect(proteinGap(now: evening, targetGrams: 0, eatenGrams: 0), isNull);
     });
+  });
+
+  // Swift `testSocialPulse`.
+  group('namesTrainedToday', () {
+    final now = DateTime(2026, 3, 14, 18);
+    UserModel user(String id, {String? first, String? display}) =>
+        UserModel(userId: id, submittedFirstName: first, displayName: display);
+    WorkoutSessionModel session(
+      String id,
+      String author, {
+      int day = 14,
+      int hour = 9,
+      bool isRestDay = false,
+    }) => WorkoutSessionModel(
+      id: id,
+      authorId: author,
+      name: id,
+      dateCreated: DateTime(2026, 3, day, hour),
+      dateModified: DateTime(2026, 3, day, hour),
+      endedAt: DateTime(2026, 3, day, hour + 1),
+      isRestDay: isRestDay,
+      exercises: const [],
+    );
+
+    test('are the people followed who finished a workout today, once', () {
+      expect(
+        namesTrainedToday(
+          sessions: [
+            session('s1', 'sam', hour: 7),
+            session('s2', 'sam'),
+            session('r', 'alex', isRestDay: true),
+            session('x', 'stranger'),
+            session('old', 'alex', day: 12),
+          ],
+          following: [
+            user('sam', first: 'Sam'),
+            user('alex', first: 'Alex'),
+          ],
+          now: now,
+        ),
+        ['Sam'],
+      );
+    });
+
+    test('in the order they finished, by first name or display name', () {
+      expect(
+        namesTrainedToday(
+          sessions: [
+            session('a', 'alex', hour: 10),
+            session('b', 'blake', hour: 8),
+            session('c', 'casey'),
+            session('d', 'nameless', hour: 11),
+          ],
+          following: [
+            user('alex', first: 'Alex'),
+            user('alex', first: 'Second Alex'),
+            user('blake', first: '', display: 'Blake B'),
+            user('casey', first: 'Casey'),
+            user('nameless'),
+          ],
+          now: now,
+        ),
+        ['Blake B', 'Casey', 'Alex'],
+      );
+    });
+  });
+
+  test('the step goals offered', () {
+    expect(stepGoalChoices, [5000, 6000, 8000, 10000, 12000, 15000]);
   });
 }

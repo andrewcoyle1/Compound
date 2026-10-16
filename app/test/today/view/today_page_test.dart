@@ -1,17 +1,24 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/log_weight/log_weight.dart';
+import 'package:compound/programs/programs.dart';
+import 'package:compound/progress/view/progress_metric_pages.dart'
+    show StepsPage;
 import 'package:compound/shell/app_tab.dart';
+import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/today/today.dart';
+import 'package:compound/training_library/view/workout_template_detail_page.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
+import 'package:compound_models/compound_models.dart' show WorkoutTemplateModel;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -21,8 +28,12 @@ import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 import '../../helpers/helpers.dart';
+import '../../programs/helpers.dart';
 
 class _MockGoRouter extends Mock implements GoRouter;
+
+class _MockCircleBloc extends MockBloc<CircleEvent, CircleState>
+    implements CircleBloc;
 
 void main() {
   const uid = 'mock_user_123';
@@ -34,6 +45,7 @@ void main() {
   late GoRouter router;
 
   setUp(() {
+    TodayBloc.resetCompletedDays();
     appBloc = MockAppBloc();
     when(() => appBloc.stream).thenAnswer((_) => const Stream.empty());
     when(() => appBloc.state).thenReturn(
@@ -62,6 +74,10 @@ void main() {
     int firstWeekday = DateTime.monday,
     // This week's check-in done, unless a test wants the card.
     bool checkInDue = false,
+    ProgramsCubit? programsCubit,
+    CircleBloc? circleBloc,
+    AnalyticsRepository analytics = const AnalyticsRepository(),
+    BodyRepository? bodyRepository,
   }) async {
     final workouts =
         workoutSessionRepository ??
@@ -72,11 +88,14 @@ void main() {
       meals: meals ?? const [],
       dietPlan: sampleDietPlan(uid: uid, now: now),
     );
-    final body = InMemoryBodyRepository(
-      measurements: measurements ?? sampleBodyMeasurements(uid: uid, now: now),
-      steps: sampleSteps(uid: uid, now: now),
-      goals: [sampleWeightGoal(uid: uid, now: now)],
-    );
+    final body =
+        bodyRepository ??
+        InMemoryBodyRepository(
+          measurements:
+              measurements ?? sampleBodyMeasurements(uid: uid, now: now),
+          steps: sampleSteps(uid: uid, now: now),
+          goals: [sampleWeightGoal(uid: uid, now: now)],
+        );
     final checkIns = InMemoryCheckInRepository(
       records: [
         if (!checkInDue)
@@ -98,7 +117,7 @@ void main() {
             nutritionRepository: nutrition,
             bodyRepository: body,
             userRepository: users,
-            analyticsRepository: const AnalyticsRepository(),
+            analyticsRepository: analytics,
             checkInRepository: checkIns,
             uid: uid,
             firstWeekday: firstWeekday,
@@ -108,11 +127,203 @@ void main() {
         ),
       ),
       appBloc: appBloc,
+      programsCubit: programsCubit,
+      circleBloc: circleBloc,
+      workoutSessionRepository: workouts,
+      userRepository: users,
     );
     await tester.pump();
   }
 
   group(TodayView, () {
+    Future<ProgramsCubit> programs(
+      WidgetTester tester,
+      List<WorkoutTemplateModel> days, {
+      List<WorkoutSessionModel> history = const [],
+    }) async {
+      final mesocycle = fixtureMesocycle('m1', days);
+      final world = ProgramWorld.seeded(
+        mesocycles: [if (days.isNotEmpty) mesocycle],
+        active: days.isEmpty ? null : 'm1',
+        history: history,
+      );
+      final cubit = world.cubit()..userChanged(programUid);
+      await tester.runAsync(
+        () => cubit.stream.firstWhere(
+          (state) => state.status == ProgramsStatus.loaded,
+        ),
+      );
+      return cubit;
+    }
+
+    final push = fixtureTemplate(
+      'push',
+      name: 'Push Day',
+      exercises: [fixtureSlot(fixtureLibraryExercise('bench'))],
+    );
+
+    // Swift `testTrainingStates` and `testTrainingItemRoutes`, through the
+    // screen.
+    testWidgets("plans today's workout and opens it", (tester) async {
+      when(
+        () => router.pushNamed<Object?>(
+          any(),
+          pathParameters: any(named: 'pathParameters'),
+          queryParameters: any(named: 'queryParameters'),
+        ),
+      ).thenAnswer((_) async => null);
+      final analytics = AnalyticsRecorder();
+      await pumpView(
+        tester,
+        sessions: const [],
+        programsCubit: await programs(tester, [push]),
+        analytics: analytics,
+      );
+      await tester.pump();
+      expect(find.text('Train'), findsOneWidget);
+      expect(find.text('Push Day'), findsWidgets);
+      expect(find.text('1 of 4 done'), findsOneWidget);
+      await tester.tap(find.text('Train'));
+      verify(
+        () => router.pushNamed<Object?>(
+          WorkoutTemplateDetailPage.name,
+          pathParameters: {WorkoutTemplateDetailPage.idParameter: 'push'},
+          queryParameters: any(named: 'queryParameters'),
+        ),
+      ).called(1);
+      await tester.pump();
+      expect(analytics.parameters('TodayView_ChecklistItem_Press'), {
+        'item': 'training',
+      });
+    });
+
+    testWidgets('a planned rest day counts as done', (tester) async {
+      await pumpView(
+        tester,
+        sessions: const [],
+        programsCubit: await programs(
+          tester,
+          [fixtureTemplate('rest'), push],
+          history: [programSession('rest', now, rest: true)],
+        ),
+      );
+      await tester.pump();
+      expect(find.text('Rest day'), findsOneWidget);
+      expect(find.text('2 of 4 done'), findsOneWidget);
+    });
+
+    testWidgets('marks a complete day once, with a haptic', (tester) async {
+      final analytics = AnalyticsRecorder();
+      final body = InMemoryBodyRepository(
+        measurements: sampleBodyMeasurements(uid: uid, now: now),
+      );
+      final dayPlan = sampleDietPlan(uid: uid, now: now);
+      final target = dayPlan.days.first;
+      await pumpView(
+        tester,
+        sessions: const [],
+        meals: [
+          MealLogModel(
+            mealId: 'm',
+            authorId: uid,
+            dayKey: localDayKey(now),
+            date: DateTime(now.year, now.month, now.day, 12),
+            items: [
+              MealItemModel(
+                itemId: 'i',
+                sourceType: MealItemSourceType.ingredient,
+                sourceId: 'food',
+                displayName: 'Food',
+                amount: 100,
+                unit: 'g',
+                nutrients: NutrientMap({
+                  NutrientKey.calories: target.calories,
+                  NutrientKey.protein: target.proteinGrams,
+                }),
+              ),
+            ],
+          ),
+        ],
+        bodyRepository: body,
+        analytics: analytics,
+        programsCubit: await programs(tester, const []),
+      );
+      await tester.pump();
+      expect(find.text('Day Complete'), findsOneWidget);
+      expect(analytics.names.where((n) => n == 'TodayView_DayComplete'), [
+        'TodayView_DayComplete',
+      ]);
+    });
+
+    // Swift `testSocialPulseTracked`.
+    testWidgets('says who trained today and opens Social', (tester) async {
+      final circle = _MockCircleBloc();
+      final ended = DateTime(now.year, now.month, now.day, 10);
+      when(() => circle.state).thenReturn(
+        CircleState(
+          followingUsers: const [
+            UserModel(userId: 'sam', submittedFirstName: 'Sam'),
+          ],
+          followingSessions: [
+            WorkoutSessionModel(
+              id: 'f',
+              authorId: 'sam',
+              name: 'Legs',
+              dateCreated: ended,
+              dateModified: ended,
+              endedAt: ended,
+              exercises: const [],
+            ),
+          ],
+        ),
+      );
+      final analytics = AnalyticsRecorder();
+      await pumpView(tester, circleBloc: circle, analytics: analytics);
+      await tester.scrollUntilVisible(find.text('Sam trained today'), 200);
+      await tester.tap(find.text('Sam trained today'));
+      verify(() => router.go(AppTab.social.path)).called(1);
+      await tester.pump();
+      expect(analytics.names, contains('TodayView_SocialPulse_Press'));
+    });
+
+    testWidgets('has no social row when nobody trained', (tester) async {
+      await pumpView(tester);
+      expect(find.textContaining('trained today'), findsNothing);
+    });
+
+    // Swift `testStepGoal`.
+    testWidgets('the Steps item, held, chooses the step goal', (tester) async {
+      await pumpView(tester);
+      await tester.longPress(find.text('Steps'));
+      await tester.pumpAndSettle();
+      expect(find.text('Step Goal'), findsOneWidget);
+      expect(find.text('15,000 steps'), findsOneWidget);
+      await tester.tap(find.text('10,000 steps'));
+      await tester.pumpAndSettle();
+      expect(find.text('Step goal: 10,000 a day.'), findsOneWidget);
+
+      // Closing the choice changes nothing.
+      await tester.longPress(find.text('Steps'));
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+      expect(find.text('Step goal: 10,000 a day.'), findsOneWidget);
+    });
+
+    testWidgets('says when the step goal could not be saved', (tester) async {
+      final body = _FailingBody(
+        measurements: sampleBodyMeasurements(uid: uid, now: now),
+        steps: sampleSteps(uid: uid, now: now),
+      );
+      await pumpView(tester, bodyRepository: body);
+      await tester.longPress(find.text('Steps'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('12,000 steps'));
+      await tester.pumpAndSettle();
+      expect(find.text('Unable to Save Step Goal'), findsOneWidget);
+      expect(find.text('Step goal: 8,000 a day.'), findsOneWidget);
+    });
+
     testWidgets('shows the checklist, protein reminder and streak', (
       tester,
     ) async {
@@ -183,7 +394,7 @@ void main() {
       await tester.tap(find.text('Eat to Target'));
       verify(() => router.go(AppTab.nutrition.path)).called(1);
       await tester.tap(find.text('Steps'));
-      verifyNoMoreInteractions(router);
+      verify(() => router.goNamed(StepsPage.name)).called(1);
     });
 
     testWidgets('logs a weigh-in until one is in today', (tester) async {
@@ -350,4 +561,12 @@ extension on WorkoutSessionModel {
     endedAt: start,
     exercises: exercises,
   );
+}
+
+class _FailingBody extends InMemoryBodyRepository {
+  new({super.measurements, super.steps});
+
+  @override
+  Future<void> saveAnalyticsSettings(AnalyticsSettings settings) =>
+      Future.error(Exception('denied'));
 }

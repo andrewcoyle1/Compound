@@ -16,7 +16,7 @@ import Foundation
 /// check-in: `CheckInSchedule` reads `checkInWeekday`, and `CheckInPresenter` builds its step
 /// list from the other five. See `docs/specs/adaptive-expenditure.md` and
 /// `docs/specs/weekly-check-in.md`.
-struct NutritionStrategySettings: DataSyncModelProtocol {
+struct NutritionStrategySettings: DataSyncModelProtocol, ReplacesClearedFields {
 
     var id: String = "nutrition_strategy_settings"
     var authorId: String
@@ -43,7 +43,7 @@ struct NutritionStrategySettings: DataSyncModelProtocol {
     /// filter already absorbs it. Kept so stored settings still decode and round-trip.
     var predictiveGoalAdjustments: Bool = true
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case authorId = "author_id"
         case checkInWeekday = "check_in_weekday"

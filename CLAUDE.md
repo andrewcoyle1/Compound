@@ -494,6 +494,16 @@ already keep data current, so it only posts `Constants.remoteDataSyncDidComplete
 `NotificationCenter` for screens that want to refresh derived state. Treat it as "tell everyone
 to re-read", not "go fetch".
 
+**Saves merge unless the model says otherwise.** The package saves with `setData(merge: true)`,
+which skips a nil field and merges a map key by key, so clearing a value or removing a map key
+never reaches Firestore. A model that adopts `ReplacesClearedFields`
+(`Managers/DataManagers/ReplacesClearedFields.swift`; its `CodingKeys` must be `CaseIterable`) is
+saved with each declared key as a merge field instead: nil fields are deleted, maps replaced,
+undeclared fields kept. Adopt it for any model whose save can clear something, unless another
+writer (likes, counts, a server field) shares one of its declared fields. Test such a save with
+`TestManagers.collectionEngine(…, firestoreSaves: true)`; the plain mocks replace the whole
+document and cannot show the bug.
+
 ## Live Activities
 
 `WorkoutSessionActivityExtension` target provides the Dynamic Island / Lock Screen UI during workouts. Uses `ActivityKit` guarded with `#if canImport(ActivityKit) && !targetEnvironment(macCatalyst)` throughout.

@@ -17,7 +17,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 ///
 /// Needs a [TrainingLibraryBloc] and an [ExerciseListCubit] above it.
 class ExerciseList extends StatelessWidget {
-  const new({required this.onExercisePressed, this.isSelected, super.key});
+  const new({
+    required this.onExercisePressed,
+    this.isSelected,
+    this.onCreateExercise,
+    super.key,
+  });
 
   /// A row was tapped.
   final ValueChanged<ExerciseModel> onExercisePressed;
@@ -25,9 +30,14 @@ class ExerciseList extends StatelessWidget {
   /// Whether an exercise shows ticked; null shows no selection at all.
   final bool Function(ExerciseModel)? isSelected;
 
+  /// Opens Create Exercise from the end of Custom Exercises; null leaves
+  /// the row out.
+  final VoidCallback? onCreateExercise;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final onCreateExercise = this.onCreateExercise;
     final libraryState = context.watch<TrainingLibraryBloc>().state;
     final listState = context.watch<ExerciseListCubit>().state;
     final header = [
@@ -64,6 +74,12 @@ class ExerciseList extends StatelessWidget {
           onExercisePressed(exercise);
         },
         isSelected: isSelected,
+        onCreateExercise: onCreateExercise == null
+            ? null
+            : () {
+                context.read<ExerciseListCubit>().addExercisePressed();
+                onCreateExercise();
+              },
       ),
     };
     return Column(
@@ -82,12 +98,14 @@ class _Sections extends StatelessWidget {
     required this.state,
     required this.onExercisePressed,
     required this.isSelected,
+    required this.onCreateExercise,
   });
 
   final TrainingLibrary library;
   final ExerciseListState state;
   final ValueChanged<ExerciseModel> onExercisePressed;
   final bool Function(ExerciseModel)? isSelected;
+  final VoidCallback? onCreateExercise;
 
   @override
   Widget build(BuildContext context) {
@@ -111,18 +129,28 @@ class _Sections extends StatelessWidget {
     } else {
       final mine = library.filtered(library.userExercises, filters);
       final official = library.filtered(library.systemExercises, filters);
+      final onCreateExercise = this.onCreateExercise;
       children = [
         AppSection(
           header: l10n.exercisesCustomHeader,
-          children: mine.isEmpty
-              ? [
-                  LibraryEmptyState(
-                    icon: AppSymbols.exercise,
-                    title: l10n.exercisesNoCustomTitle,
-                    message: l10n.exercisesNoCustomMessage,
-                  ),
-                ]
-              : _rows(mine),
+          children: [
+            // First, as Swift's + in the section header.
+            if (onCreateExercise != null)
+              AppListRowButton(
+                key: const Key('ExerciseList.create'),
+                title: l10n.createExerciseRow,
+                icon: AppSymbols.add,
+                onPressed: onCreateExercise,
+              ),
+            if (mine.isEmpty)
+              LibraryEmptyState(
+                icon: AppSymbols.exercise,
+                title: l10n.exercisesNoCustomTitle,
+                message: l10n.exercisesNoCustomMessage,
+              )
+            else
+              ..._rows(mine),
+          ],
         ),
         if (official.isNotEmpty)
           AppSection(
@@ -156,6 +184,7 @@ class _Sections extends StatelessWidget {
   List<Widget> _rows(List<ExerciseModel> exercises) => [
     for (final exercise in exercises)
       _ExerciseRow(
+        key: ValueKey(exercise.id),
         exercise: exercise,
         selected: isSelected?.call(exercise),
         onPressed: () => onExercisePressed(exercise),
@@ -168,6 +197,7 @@ class _ExerciseRow extends StatelessWidget {
     required this.exercise,
     required this.selected,
     required this.onPressed,
+    super.key,
   });
 
   final ExerciseModel exercise;
@@ -179,19 +209,25 @@ class _ExerciseRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = this.selected;
-    return MergeSemantics(
-      child: Semantics(
-        button: true,
-        child: InkWell(
-          onTap: onPressed,
-          child: AppListRow(
-            title: exercise.name,
-            subtitle: exercise.description,
-            thumbnail: ExerciseImage(exercise),
-            accessory: selected == null
-                ? const AppListRowChevron()
-                : AppListRowCheckmark(selected: selected),
-          ),
+    // One node with its own tap, not MergeSemantics: a merged row added
+    // while the list was covered broke the semantics tree when the route
+    // above it popped (Flutter 3.47, `_buildSemanticsSubtree`).
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: exercise.name,
+      value: exercise.description,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onPressed,
+        child: AppListRow(
+          title: exercise.name,
+          subtitle: exercise.description,
+          thumbnail: ExerciseImage(exercise),
+          accessory: selected == null
+              ? const AppListRowChevron()
+              : AppListRowCheckmark(selected: selected),
         ),
       ),
     );

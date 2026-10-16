@@ -8528,5 +8528,170 @@
     "gymWorksAsFooter": "Exercises for the chosen machine use this one too. With None, it is a machine of its own that you can pick when creating an exercise.",
     "@gymWorksAsFooter": {},
     "gymNone": "None",
-    "@gymNone": {}
+    "@gymNone": {},
+    "createExerciseNew": "New Exercise",
+    "@createExerciseNew": {
+        "description": "Training + menu and the exercise list: opens Create Exercise"
+    },
+    "createExerciseRow": "Create Exercise",
+    "@createExerciseRow": {
+        "description": "Exercise list: row at the end of Custom Exercises that opens Create Exercise"
+    },
+    "createExerciseTitle": "Create Custom Exercise",
+    "@createExerciseTitle": {},
+    "createExerciseRequired": "Required",
+    "@createExerciseRequired": {
+        "description": "Create Exercise: a field that must be filled"
+    },
+    "createExerciseAddName": "Add name",
+    "@createExerciseAddName": {
+        "description": "Create Exercise: name field placeholder"
+    },
+    "createExerciseMetricHeader": "Trackable Metric",
+    "@createExerciseMetricHeader": {},
+    "createExerciseMetricA": "Metric 1",
+    "@createExerciseMetricA": {},
+    "createExerciseMetricB": "Metric 2",
+    "@createExerciseMetricB": {},
+    "createExerciseNext": "Next",
+    "@createExerciseNext": {
+        "description": "Create Exercise: continues to the next step"
+    },
+    "metricRepsDescription": "Track the number of repetitions performed.",
+    "@metricRepsDescription": {},
+    "metricRepsPerSideDescription": "Track the number of repetitions performed per side.",
+    "@metricRepsPerSideDescription": {},
+    "metricWeightDescription": "Track the load used for each set.",
+    "@metricWeightDescription": {},
+    "metricWeightPerSideDescription": "Track the load used for each set per side.",
+    "@metricWeightPerSideDescription": {},
+    "metricWeightPerSidePersistentDescription": "Track singular weight used on both sides.",
+    "@metricWeightPerSidePersistentDescription": {},
+    "metricWeightPerSideAssistanceDescription": "Track assisted or supported weight.",
+    "@metricWeightPerSideAssistanceDescription": {},
+    "metricDurationDescription": "Track time for each set.",
+    "@metricDurationDescription": {},
+    "metricDurationPerSideDescription": "Track time for each set per side.",
+    "@metricDurationPerSideDescription": {},
+    "metricDistanceShortDescription": "Track short distances, like sprints or carries.",
+    "@metricDistanceShortDescription": {},
+    "metricDistanceShortPerSideDescription": "Track short distances per side.",
+    "@metricDistanceShortPerSideDescription": {},
+    "metricDistanceLongDescription": "Track long distances, like runs or rows.",
+    "@metricDistanceLongDescription": {},
+    "lateralityBilateralDescription": "Both sides of the body work together at the same time.",
+    "@lateralityBilateralDescription": {},
+    "lateralityUnilateralDescription": "Only one side of the body works independently at a time.",
+    "@lateralityUnilateralDescription": {},
+    "lateralityAssymetricalDescription": "Both sides work together, but with uneven load or position.",
+    "@lateralityAssymetricalDescription": {},
+    "lateralityUnilateralBilateralDescription": "Exercises performed with both sides at once, but each limb works independently on its own path.",
+    "@lateralityUnilateralBilateralDescription": {},
+    "createExerciseSelectMuscles": "Select Muscles",
+    "@createExerciseSelectMuscles": {},
+    "createExerciseMuscleCounts": "{primary} primary, {secondary} secondary",
+    "@createExerciseMuscleCounts": {
+        "description": "Select Muscles: how many muscles are chosen at each level",
+        "placeholders": {
+            "primary": {
+                "type": "int"
+            },
+            "secondary": {
+                "type": "int"
+            }
+        }
+    },
+    "createExerciseMuscleInstruction": "Tap a muscle once for Primary, again for Secondary, and a third time to clear it.",
+    "@createExerciseMuscleInstruction": {},
+    "createExerciseReset": "Reset",
+    "@createExerciseReset": {
+        "description": "Select Muscles: clears every muscle"
+    },
+    "createExerciseSkip": "Skip",
+    "@createExerciseSkip": {
+        "description": "Select Muscles: continues with no muscles chosen"
+    },
+    "createExerciseNotSelected": "Not selected",
+    "@createExerciseNotSelected": {
+        "description": "Select Muscles: a muscle that is not chosen"
+    },
+    "createExerciseSelectEquipment": "Select Equipment",
+    "@createExerciseSelectEquipment": {},
+    "createExerciseBodyweight": "Bodyweight Exercise",
+    "@createExerciseBodyweight": {},
+    "createExerciseBodyweightMessage": "Performed with bodyweight. Add any equipment it needs, such as a pull-up bar.",
+    "@createExerciseBodyweightMessage": {},
+    "createExerciseResistancePrompt": "Equipment that adds load to the exercise",
+    "@createExerciseResistancePrompt": {},
+    "createExerciseSupportPrompt": "Equipment that assists, stabilizes, or makes the movement possible",
+    "@createExerciseSupportPrompt": {},
+    "createExerciseDeleteVariation": "Delete variation",
+    "@createExerciseDeleteVariation": {},
+    "createExerciseAddVariation": "Add Variation",
+    "@createExerciseAddVariation": {},
+    "createExerciseResistanceEquipment": "Resistance Equipment",
+    "@createExerciseResistanceEquipment": {},
+    "createExerciseSupportEquipment": "Support Equipment",
+    "@createExerciseSupportEquipment": {
+        "description": "Equipment picker title: equipment that assists a lift"
+    },
+    "createExerciseFilterEquipment": "Filter equipment by name",
+    "@createExerciseFilterEquipment": {},
+    "createExerciseFinalDetails": "Final Details",
+    "@createExerciseFinalDetails": {},
+    "createExerciseContributionLabel": "Body weight contribution, percent",
+    "@createExerciseContributionLabel": {},
+    "createExerciseContributionRange": "Enter a number from 0 to 100.",
+    "@createExerciseContributionRange": {},
+    "createExerciseBodyweightConflict": "A bodyweight exercise cannot track a load. Go back and turn off Bodyweight Exercise, or track without weight.",
+    "@createExerciseBodyweightConflict": {},
+    "createExerciseContributionFooter": "The share of your body weight this exercise moves.",
+    "@createExerciseContributionFooter": {},
+    "createExerciseContributionMoved": "About {weight} at your current weight.",
+    "@createExerciseContributionMoved": {
+        "description": "Final Details: the weight the contribution is, such as 40 kg",
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            }
+        }
+    },
+    "createExerciseAlternateNames": "Alternate Names",
+    "@createExerciseAlternateNames": {},
+    "createExerciseAlternateNamesHint": "Optionally add other names",
+    "@createExerciseAlternateNamesHint": {},
+    "createExerciseAlternateNamesFooter": "Separate names with a comma.",
+    "@createExerciseAlternateNamesFooter": {},
+    "createExerciseDescriptionHint": "Optionally describe the exercise",
+    "@createExerciseDescriptionHint": {},
+    "createExerciseSave": "Save Exercise",
+    "@createExerciseSave": {
+        "description": "Create Exercise: the review screen's title"
+    },
+    "createExerciseCreate": "Create",
+    "@createExerciseCreate": {
+        "description": "Create Exercise: saves the new exercise"
+    },
+    "createExerciseFailed": "Unable to Create Exercise",
+    "@createExerciseFailed": {},
+    "exerciseOptions": "Exercise options",
+    "@exerciseOptions": {
+        "description": "Exercise detail: the more-actions menu"
+    },
+    "exerciseDeleteTitle": "Delete Exercise",
+    "@exerciseDeleteTitle": {
+        "description": "Exercise detail: deletes the user's own exercise"
+    },
+    "exerciseDeleteMessage": "Are you sure you want to delete '{name}'? This action cannot be undone.",
+    "@exerciseDeleteMessage": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "exerciseDeleteFailed": "Failed to delete exercise",
+    "@exerciseDeleteFailed": {},
+    "exerciseDeleteTryLater": "Please try again later",
+    "@exerciseDeleteTryLater": {}
 }

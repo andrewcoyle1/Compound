@@ -1,5 +1,6 @@
 export 'bloc/exercise_history_bloc.dart';
 export 'bloc/training_library_bloc.dart';
+export 'cubit/delete_exercise_cubit.dart';
 export 'cubit/exercise_list_cubit.dart';
 export 'cubit/exercise_picker_cubit.dart';
 export 'cubit/library_search_cubit.dart';

@@ -1,0 +1,114 @@
+import 'dart:async';
+
+import 'package:analytics_repository/analytics_repository.dart';
+import 'package:app_ui/app_ui.dart';
+import 'package:compound/app/app.dart';
+import 'package:compound/check_in/check_in.dart' show showFailureAlert;
+import 'package:compound/create_exercise/cubit/exercise_save_cubit.dart';
+import 'package:compound/create_exercise/logic/exercise_draft.dart';
+import 'package:compound/create_exercise/view/create_exercise_page.dart';
+import 'package:compound/l10n/l10n.dart';
+import 'package:compound/training_library/bloc/training_library_bloc.dart';
+import 'package:compound/training_library/view/exercise_detail_page.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training_library_repository/training_library_repository.dart';
+
+/// The review, and Create (Swift `ExerciseSaveView`). There is no "Create &
+/// Add": the flow closes, and the new exercise is in the library and any
+/// open picker, unticked, as in Swift.
+class ExerciseSavePage extends StatelessWidget {
+  const new({required this.draft, super.key});
+
+  final ExerciseDraft draft;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = context.read<AppBloc>().state;
+    return BlocProvider(
+      create: (context) => ExerciseSaveCubit(
+        draft: draft,
+        uid: app is AppAuthenticated ? app.user.uid : null,
+        library: context.read<TrainingLibraryRepository>(),
+        analytics: context.read<AnalyticsRepository>(),
+      ),
+      child: ExerciseSaveView(draft: draft),
+    );
+  }
+}
+
+class ExerciseSaveView extends StatelessWidget {
+  const new({required this.draft, super.key});
+
+  /// The exercise to create.
+  final ExerciseDraft draft;
+
+  static Future<void> _done(
+    BuildContext context,
+    ExerciseSaveStatus status,
+  ) async {
+    final l10n = context.l10n;
+    if (status == ExerciseSaveStatus.saved) {
+      unawaited(HapticFeedback.successNotification());
+      CreateExerciseFlow.close(context);
+      return;
+    }
+    unawaited(HapticFeedback.errorNotification());
+    await showFailureAlert(
+      context,
+      l10n.createExerciseFailed,
+      l10n.editorTryAgain,
+    );
+    if (context.mounted) context.read<ExerciseSaveCubit>().failureShown();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cubit = context.read<ExerciseSaveCubit>();
+    final status = context.watch<ExerciseSaveCubit>().state;
+    final library = switch (context.watch<TrainingLibraryBloc>().state) {
+      TrainingLibraryLoaded(:final library) => library,
+      _ => null,
+    };
+    return ScreenAnalytics(
+      appeared: cubit.appeared,
+      disappeared: cubit.disappeared,
+      child: BlocListener<ExerciseSaveCubit, ExerciseSaveStatus>(
+        listenWhen: (previous, current) =>
+            current == ExerciseSaveStatus.saved ||
+            current == ExerciseSaveStatus.failed,
+        listener: (context, status) => unawaited(_done(context, status)),
+        child: Scaffold(
+          appBar: AppBar(title: Text(l10n.createExerciseSave)),
+          body: SafeArea(
+            bottom: false,
+            child: library == null
+                ? const Center(child: CircularProgressIndicator.adaptive())
+                : ExerciseAbout(
+                    // Only shown: the id and dates are made on Create.
+                    exercise: draft.toModel(
+                      id: '',
+                      authorId: '',
+                      now: DateTime.utc(2000),
+                    ),
+                    library: library,
+                  ),
+          ),
+          bottomNavigationBar: AppBottomCta(
+            children: [
+              AppCtaButton(
+                key: const Key('ExerciseSave.create'),
+                label: l10n.createExerciseCreate,
+                isLoading: status == ExerciseSaveStatus.saving,
+                onPressed: status == ExerciseSaveStatus.saving
+                    ? null
+                    : () => unawaited(cubit.create()),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

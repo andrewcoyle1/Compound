@@ -60,6 +60,14 @@ class FirestoreTrainingLibraryRepository implements TrainingLibraryRepository {
   );
 
   @override
+  Future<void> deleteUserExercise(String exerciseId) {
+    final document = _firestore
+        .collection('exercise_templates')
+        .doc(exerciseId);
+    return writeLocally(document.path, document.delete, _onWriteError);
+  }
+
+  @override
   Future<void> saveWorkoutTemplate(WorkoutTemplateModel template) {
     final data = template.toFirestore();
     return _merge(

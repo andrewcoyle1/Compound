@@ -67,6 +67,7 @@ void main() {
   late InMemoryUserRepository users;
   late InMemoryWorkoutSessionRepository sessions;
   late AnalyticsRecorder analytics;
+  late InMemoryTrainingLibraryRepository library;
 
   Widget app({StravaRepository? strava}) => App(
     purchasesRepository: FakePurchasesRepository(),
@@ -78,9 +79,7 @@ void main() {
     nutritionRepository: InMemoryNutritionRepository(),
     bodyRepository: InMemoryBodyRepository(),
     programRepository: InMemoryProgramRepository(),
-    trainingLibraryRepository: InMemoryTrainingLibraryRepository(
-      exercises: [press],
-    ),
+    trainingLibraryRepository: library,
     analyticsRepository: analytics,
     stravaRepository: strava,
   );
@@ -92,6 +91,7 @@ void main() {
     );
     sessions = InMemoryWorkoutSessionRepository(sessions: [workout]);
     analytics = AnalyticsRecorder();
+    library = InMemoryTrainingLibraryRepository(exercises: [press]);
   });
 
   Future<void> settle(WidgetTester tester) async {
@@ -134,16 +134,12 @@ void main() {
     final save = find.byKey(const ValueKey('session-save'));
     expect(tester.widget<IconButton>(save).onPressed, isNull);
 
-    await tap(tester, find.byKey(const ValueKey('set-row-s1')));
-    await tester.enterText(
-      find.descendant(
-        of: find.byKey(const ValueKey('figure-reps')),
-        matching: find.byType(EditableText),
-      ),
-      '10',
-    );
-    await tester.tap(find.byTooltip('Save').last);
-    await settle(tester);
+    // The tracker's own keypad, docked at the foot.
+    await tap(tester, find.byKey(const ValueKey('cell-s1-reps')));
+    await tap(tester, find.byKey(const ValueKey('keypad-1')));
+    await tap(tester, find.byKey(const ValueKey('keypad-0')));
+    await tap(tester, find.byKey(const ValueKey('keypad-hide')));
+    expect(find.byKey(const ValueKey('keypad-1')), findsNothing);
 
     await tap(tester, find.text('Add Set'));
     await tester.enterText(find.byKey(const ValueKey('session-notes')), '');
@@ -195,19 +191,12 @@ void main() {
   testWidgets('a set that cannot be logged says why', (tester) async {
     await open(tester);
     await tap(tester, find.byKey(const ValueKey('session-edit')));
-    await tap(tester, find.byKey(const ValueKey('set-tick-s1')));
-    await tap(tester, find.byKey(const ValueKey('set-row-s1')));
-    await tester.enterText(
-      find.descendant(
-        of: find.byKey(const ValueKey('figure-reps')),
-        matching: find.byType(EditableText),
-      ),
-      '',
-    );
-    await tester.tap(find.byTooltip('Save').last);
-    await settle(tester);
+    await tap(tester, find.byKey(const ValueKey('done-s1')));
+    await tap(tester, find.byKey(const ValueKey('cell-s1-reps')));
+    await tap(tester, find.byKey(const ValueKey('keypad-delete')));
+    await tap(tester, find.byKey(const ValueKey('keypad-hide')));
 
-    await tap(tester, find.byKey(const ValueKey('set-tick-s1')));
+    await tap(tester, find.byKey(const ValueKey('done-s1')));
 
     expect(find.text('Unable to Log Set'), findsOneWidget);
   });
@@ -361,9 +350,9 @@ void main() {
     await open(tester);
     await tap(tester, find.byKey(const ValueKey('session-edit')));
 
-    await tap(tester, find.byKey(const ValueKey('set-menu-s2')));
+    await tap(tester, find.byKey(const ValueKey('set-type-s2')));
     await choose(tester, 'Drop Set');
-    await tap(tester, find.byKey(const ValueKey('set-menu-s2')));
+    await tap(tester, find.byKey(const ValueKey('set-type-s2')));
     await choose(tester, 'Add Another Drop');
     expect(
       (await stored(tester))!.exercises.single.sets,
@@ -371,9 +360,13 @@ void main() {
       reason: 'nothing is saved until Save',
     );
 
-    // Two drops go with it, so it asks.
-    await tap(tester, find.byKey(const ValueKey('set-menu-s2')));
-    await choose(tester, 'Delete Set');
+    // Two drops go with it, so it asks. A finished workout runs no rests,
+    // so the long press offers no Rest Timer.
+    await tester.longPress(find.byKey(const ValueKey('cell-s2-reps')));
+    await settle(tester);
+    expect(find.text('Rest Timer…'), findsNothing);
+    await tester.tap(find.text('Delete Set'));
+    await settle(tester);
     expect(find.text('Delete Set 2?'), findsOneWidget);
     await tap(tester, find.text('Delete Set').last);
 
@@ -398,12 +391,23 @@ void main() {
     await open(tester);
     await tap(tester, find.byKey(const ValueKey('session-edit')));
 
-    await tap(tester, find.byKey(const ValueKey('exercise-menu-bench')));
-    await choose(tester, 'Notes');
-    await tester.enterText(find.byType(EditableText).last, 'Pause reps');
+    await tap(tester, find.byKey(const ValueKey('exercise-note-bench')));
+    // The sheet's fields: this workout's note, then the exercise note.
+    final fields = find.byType(EditableText);
+    await tester.enterText(
+      fields.at(tester.widgetList(fields).length - 2),
+      'Pause reps',
+    );
+    await tester.enterText(fields.last, 'Elbows in');
     await tester.tap(find.text('Save').last);
     await settle(tester);
     expect(find.text('Pause reps'), findsOneWidget);
+    expect(find.text('Elbows in'), findsOneWidget);
+    // The exercise note is kept on the exercise now, not with the edit.
+    final notes = await tester.runAsync(
+      () => library.watchExerciseSettings(uid).first,
+    );
+    expect(notes!.single.note, 'Elbows in');
 
     await tap(tester, find.byKey(const ValueKey('exercise-menu-bench')));
     await choose(tester, 'Delete Exercise');

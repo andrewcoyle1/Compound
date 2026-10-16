@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/sharing/share_card/share_workout_card.dart';
+import 'package:compound/sharing/share_card/workout_share_card.dart';
 import 'package:compound/shell/app_tab.dart';
+import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_session_detail/bloc/workout_session_detail_bloc.dart';
 import 'package:compound/workout_session_detail/view/set_detail_row.dart';
@@ -14,8 +19,8 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// One finished workout, read-only: when it started, how long it took, its
 /// volume and notes, then each exercise with its sets. A port of the Swift
-/// app's `WorkoutSessionDetailView` without editing, deleting, sharing,
-/// Strava or Ask Coach.
+/// app's `WorkoutSessionDetailView` without editing, deleting, Copy Link,
+/// Strava or Ask Coach. Share Image draws the workout's card.
 ///
 /// As the summary of a workout just finished (`isWorkoutSummary`), it opens
 /// over the tabs in the tracker's place, shows the [session] it is handed
@@ -87,6 +92,9 @@ class WorkoutSessionDetailView extends StatelessWidget {
           _ => '',
         }),
         actions: [
+          if (state case WorkoutSessionDetailLoaded(:final session)
+              when session.endedAt != null)
+            _ShareImageButton(session: session),
           if (isWorkoutSummary)
             TextButton(
               onPressed: () => context.canPop()
@@ -232,6 +240,68 @@ class _Message extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Share Image, Story or Square (`WorkoutSessionDetailView`'s menu). The
+/// card names the author when the circle knows them, and reads its records
+/// off the author's sessions the circle holds.
+class _ShareImageButton extends StatefulWidget {
+  const new({required this.session});
+
+  final WorkoutSessionModel session;
+
+  @override
+  State<_ShareImageButton> createState() => _ShareImageButtonState();
+}
+
+class _ShareImageButtonState extends State<_ShareImageButton> {
+  bool _rendering = false;
+
+  Future<void> _share(ShareCardFormat format) async {
+    final circle = context.read<CircleBloc>().state;
+    final session = widget.session;
+    setState(() => _rendering = true);
+    await shareWorkoutCard(
+      context,
+      session,
+      author: circle.authorOf(session),
+      history: [
+        for (final other in circle.sessions)
+          if (other.authorId == session.authorId) other,
+      ],
+      format: format,
+    );
+    if (mounted) setState(() => _rendering = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    if (_rendering) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.l),
+        child: SizedBox.square(
+          dimension: AppSpacing.l,
+          child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+        ),
+      );
+    }
+    return PopupMenuButton<ShareCardFormat>(
+      icon: Icon(AppSymbols.share),
+      tooltip: l10n.shareImage,
+      onSelected: (format) => unawaited(_share(format)),
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: ShareCardFormat.story,
+          child: Text(l10n.shareImageStory),
+        ),
+        PopupMenuItem(
+          value: ShareCardFormat.square,
+          child: Text(l10n.shareImageSquare),
+        ),
+      ],
     );
   }
 }

@@ -63,6 +63,8 @@ void main() {
     WidgetTester tester, {
     List<WorkoutSessionModel>? sessions,
     bool withPlan = true,
+    ShareRecorder? shares,
+    AnalyticsRepository analytics = const AnalyticsRepository(),
   }) async {
     tester.view.physicalSize = const Size(400, 3000);
     tester.view.devicePixelRatio = 1;
@@ -103,7 +105,7 @@ void main() {
       userRepository: InMemoryUserRepository(
         users: {uid: const UserModel(userId: uid)},
       ),
-      analyticsRepository: const AnalyticsRepository(),
+      analyticsRepository: analytics,
       uid: uid,
       firstDayOfWeek: 1,
       now: () => DateTime(2026, 3, 12, 9),
@@ -112,12 +114,31 @@ void main() {
       // The provider closes the bloc with the tree.
       BlocProvider(create: (_) => bloc, child: const WeeklyReviewView()),
       appBloc: appBloc,
+      shareSheet: shares ?? ShareRecorder(),
     );
     await tester.pumpAndSettle();
     return bloc;
   }
 
   group(WeeklyReviewView, () {
+    // WeeklyReviewPresenter.onSharePressed
+    testWidgets('shares the week as a Stories image', (tester) async {
+      final shares = ShareRecorder();
+      final analytics = AnalyticsRecorder();
+      await pumpView(tester, shares: shares, analytics: analytics);
+
+      await tester.tap(find.byTooltip('Share'));
+      for (var i = 0; i < 5 && shares.images.isEmpty; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)),
+        );
+        await tester.pump();
+      }
+      expect(shares.images.single.$1, 'compound-week.png');
+      expect(shares.images.single.$2, isNotEmpty);
+      expect(analytics.names, contains('WeeklyReviewView_Share_Pressed'));
+    });
+
     testWidgets('shows the week', (tester) async {
       await pumpView(tester);
 

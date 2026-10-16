@@ -7,6 +7,7 @@ import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/notifications/inbox/notification_grouping.dart';
 import 'package:compound/notifications/inbox/view/notification_titles.dart';
 import 'package:compound/settings/general/view/notification_settings_page.dart';
+import 'package:compound/sharing/view/shared_item_page.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/logic/people.dart';
 import 'package:compound/social/social_routes.dart';
@@ -111,6 +112,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
     switch (destination) {
       case InboxProfileDestination(:final user):
         SocialNavigation.openProfile(context, user);
+      case InboxShareDestination(:final share, :final senderName):
+        unawaited(
+          SharedItemPage.open(
+            context,
+            SharedItemRequest(share: share, senderName: senderName),
+          ),
+        );
       case InboxChallengeDestination(:final challenge):
         ChallengeNavigation.open(context, challenge);
       case InboxSessionDestination(:final session, :final openComments):

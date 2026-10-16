@@ -33,6 +33,9 @@ class WeeklyReviewBloc extends Bloc<WeeklyReviewEvent, WeeklyReviewState> {
     DateTime Function() now = DateTime.now,
   }) : super(_initial(_uid, now(), firstDayOfWeek)) {
     on<WeeklyReviewSubscriptionRequested>(_onSubscriptionRequested);
+    on<WeeklyReviewSharePressed>(
+      (event, emit) => _analyticsRepository.analytic('${screen}_Share_Pressed'),
+    );
     on<WeeklyReviewPreviousWeekPressed>(
       (event, emit) => emit(state.copyWith(weekStart: _shift(-7))),
     );

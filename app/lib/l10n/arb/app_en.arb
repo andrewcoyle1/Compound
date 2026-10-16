@@ -9886,5 +9886,138 @@
                 "type": "String"
             }
         }
+    },
+    "shareToFollowerTitle": "Share {name}",
+    "@shareToFollowerTitle": {
+        "description": "Share with friends screen title",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "shareToFollowerSend": "Send",
+    "@shareToFollowerSend": {
+        "description": "Sends the share"
+    },
+    "shareToFollowerNoOneTitle": "No one to share with",
+    "@shareToFollowerNoOneTitle": {
+        "description": "Share with friends with no mutuals"
+    },
+    "shareToFollowerNoOneMessage": "You can share with people you follow who follow you back.",
+    "@shareToFollowerNoOneMessage": {
+        "description": "Share with friends with no mutuals"
+    },
+    "shareToFollowerFailed": "Unable to Share",
+    "@shareToFollowerFailed": {
+        "description": "Sending a share failed"
+    },
+    "shareWithFriends": "Share with Friends",
+    "@shareWithFriends": {
+        "description": "Menu item: share a template or mesocycle with mutuals"
+    },
+    "sharedItemSharedBy": "{name} shared this with you.",
+    "@sharedItemSharedBy": {
+        "description": "Shared item: who sent it",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "sharedItemAddToLibrary": "Add to Library",
+    "@sharedItemAddToLibrary": {
+        "description": "Copies a shared item into the library"
+    },
+    "sharedItemDecline": "Decline",
+    "@sharedItemDecline": {
+        "description": "Declines a shared item"
+    },
+    "sharedItemAdded": "Added to your library",
+    "@sharedItemAdded": {
+        "description": "A shared item already accepted"
+    },
+    "sharedItemDismissed": "Dismissed",
+    "@sharedItemDismissed": {
+        "description": "A shared item already declined"
+    },
+    "sharedItemAddFailed": "Unable to Add to Library",
+    "@sharedItemAddFailed": {
+        "description": "Accepting a share failed"
+    },
+    "sharedItemDeclineFailed": "Unable to Decline",
+    "@sharedItemDeclineFailed": {
+        "description": "Declining a share failed"
+    },
+    "sharedItemNotFound": "This shared item is no longer available.",
+    "@sharedItemNotFound": {
+        "description": "A share that cannot be read"
+    },
+    "shareImage": "Share Image",
+    "@shareImage": {
+        "description": "Shares a workout as an image"
+    },
+    "shareImageStory": "Story",
+    "@shareImageStory": {
+        "description": "Share image format: 9:16"
+    },
+    "shareImageSquare": "Square",
+    "@shareImageSquare": {
+        "description": "Share image format: 1:1"
+    },
+    "shareImageFailed": "Unable to Create Image",
+    "@shareImageFailed": {
+        "description": "Rendering a share image failed"
+    },
+    "shareCardSets": "{count, plural, =1{Set} other{Sets}}",
+    "@shareCardSets": {
+        "description": "Share card stat header",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shareCardRecord": "PR: {record}",
+    "@shareCardRecord": {
+        "description": "A personal record on the share card",
+        "placeholders": {
+            "record": {
+                "type": "String"
+            }
+        }
+    },
+    "shareCardHoursMinutes": "{hours}h {minutes}m",
+    "@shareCardHoursMinutes": {
+        "description": "A duration of an hour or more",
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "shareCardMinutes": "{minutes}m",
+    "@shareCardMinutes": {
+        "description": "A duration under an hour",
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "weeklyReviewShare": "Share",
+    "@weeklyReviewShare": {
+        "description": "Weekly Review: shares the week as an image"
+    },
+    "weeklyReviewShareFailed": "Unable to create the image",
+    "@weeklyReviewShareFailed": {
+        "description": "Rendering the weekly review image failed"
+    },
+    "weeklyReviewCardPrs": "PRs",
+    "@weeklyReviewCardPrs": {
+        "description": "Weekly review share card stat"
     }
 }

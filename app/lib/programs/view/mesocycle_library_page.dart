@@ -9,7 +9,10 @@ import 'package:compound/programs/view/import_program_page.dart';
 import 'package:compound/programs/view/mesocycle_design_page.dart';
 import 'package:compound/programs/view/prebuilt_mesocycle_detail_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
+import 'package:compound/sharing/view/share_to_follower_page.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound_models/compound_models.dart'
+    show MesocycleSharePayload;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
@@ -222,6 +225,15 @@ class _DisclosureState extends State<_Disclosure> {
                           ),
                         ),
                         child: Text(l10n.programEditMesocycle),
+                      ),
+                      PopupMenuItem(
+                        onTap: () => unawaited(
+                          showShareToFollower(
+                            context,
+                            MesocycleSharePayload(widget.mesocycle),
+                          ),
+                        ),
+                        child: Text(l10n.shareWithFriends),
                       ),
                       if (onDelete != null)
                         PopupMenuItem(

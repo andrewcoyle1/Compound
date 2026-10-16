@@ -9,8 +9,11 @@ import 'package:compound/programs/cubit/mesocycle_design_cubit.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/mesocycle_settings_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
+import 'package:compound/sharing/view/share_to_follower_page.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/workout_editor/view/define_workout_editor.dart';
+import 'package:compound_models/compound_models.dart'
+    show MesocycleSharePayload;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -221,6 +224,15 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
                   icon: Icon(AppSymbols.more),
                   tooltip: l10n.programMore,
                   itemBuilder: (_) => [
+                    PopupMenuItem(
+                      onTap: () => unawaited(
+                        showShareToFollower(
+                          context,
+                          MesocycleSharePayload(state.mesocycle),
+                        ),
+                      ),
+                      child: Text(l10n.shareWithFriends),
+                    ),
                     PopupMenuItem(
                       onTap: () => unawaited(_deletePressed(context)),
                       child: Text(

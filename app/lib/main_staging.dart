@@ -7,6 +7,7 @@ import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/integrations/integrations.dart';
+import 'package:compound/notifications/notifications.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/logic/staging_onboarding.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
@@ -179,6 +180,11 @@ Future<void> main() async {
   await bootstrap(
     () async => App(
       appVersion: await AppVersion.load(),
+      // The Live Activity and the home-screen widgets are the device's own,
+      // with nothing leaving it, so staging drives the real ones, as the
+      // Swift Mock build does.
+      liveActivityRepository: await _liveActivity(),
+      homeWidgetRepository: MethodChannelHomeWidgetRepository(),
       // Two weeks of steps, a week of weigh-ins with body fat, two days of
       // food from other apps, and the onboarding fill values, in memory.
       healthRepository: HealthRepository(
@@ -237,6 +243,15 @@ Future<void> main() async {
       ),
     ),
   );
+}
+
+/// The platform's Live Activity, once asked whether it is on.
+Future<LiveActivityRepository> _liveActivity() async {
+  final repository = MethodChannelLiveActivityRepository(
+    copy: AppNotificationCopy(),
+  );
+  await repository.initialize();
+  return repository;
 }
 
 /// A workout from [_workout] with [_workoutLogged] sets logged two minutes

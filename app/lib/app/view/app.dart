@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:ai_repository/ai_repository.dart';
@@ -11,6 +12,7 @@ import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/ab_tests_cubit.dart';
 import 'package:compound/app/app_version.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
+import 'package:compound/app/widget_snapshot.dart';
 import 'package:compound/challenges/challenges.dart';
 import 'package:compound/check_in/check_in.dart';
 import 'package:compound/coach/coach.dart';
@@ -19,6 +21,7 @@ import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
 import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/integrations/integrations.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/launch/launch.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -116,6 +119,12 @@ class const App({
   /// Push and local notifications; the fake (nothing reaches the platform)
   /// when left out.
   final NotificationsRepository? notificationsRepository,
+
+  /// The Live Activity (iOS); one that never shows when left out.
+  final LiveActivityRepository? liveActivityRepository,
+
+  /// The home-screen widgets (iOS); in memory when left out.
+  final HomeWidgetRepository? homeWidgetRepository,
 
   /// Follows, the feed, likes and comments; an empty in-memory world when
   /// left out, for tests that never open Social.
@@ -250,6 +259,12 @@ class const App({
           create: (_) =>
               notificationsRepository ?? FakeNotificationsRepository(),
         ),
+        RepositoryProvider<LiveActivityRepository>(
+          create: (_) => liveActivityRepository ?? FakeLiveActivityRepository(),
+        ),
+        RepositoryProvider<HomeWidgetRepository>(
+          create: (_) => homeWidgetRepository ?? FakeHomeWidgetRepository(),
+        ),
         RepositoryProvider<SocialRepository>(
           create: (_) =>
               socialRepository ??
@@ -324,6 +339,7 @@ class const App({
           BlocProvider(
             create: (context) => ActiveWorkoutCubit(
               notifications: context.read(),
+              liveActivity: context.read(),
               sessions: workoutSessionRepository,
               users: userRepository,
               library: trainingLibraryRepository,
@@ -731,22 +747,78 @@ class _AppViewState extends State<AppView> {
     },
   );
 
-  /// The app coming back to the front moves the come-back reminders out.
+  /// The app coming back to the front moves the come-back reminders out;
+  /// leaving it updates the home-screen widgets.
   late final AppLifecycleListener _lifecycle;
+
+  /// Who was signed in, so signing out clears the widgets.
+  String? _uid;
 
   @override
   void initState() {
     super.initState();
     _lifecycle = AppLifecycleListener(
       onResume: () => unawaited(context.read<NotificationsCubit>().resumed()),
+      onHide: _writeWidgetSnapshot,
+    );
+    context.read<LiveActivityRepository>().setActionHandler(
+      _onLiveActivityAction,
     );
     _followUser(context.read<AppBloc>().state);
+  }
+
+  /// A button on the Live Activity. Finishing there never brings the app
+  /// forward, so the widgets are brought up to date at once.
+  Future<void> _onLiveActivityAction(LiveActivityAction action) async {
+    final cubit = context.read<ActiveWorkoutCubit>();
+    await cubit.handleLiveActivityAction(action, firstWeekday: _firstWeekday);
+    if (action is CompleteWorkoutAction && mounted) {
+      _writeWidgetSnapshot(finished: cubit.state.finishedSession);
+    }
+  }
+
+  /// The first day of the week (ISO) where the device is set. Material's
+  /// localizations are below this widget, so a device with no region
+  /// starts on Monday.
+  static int get _firstWeekday {
+    final country = PlatformDispatcher.instance.locale.countryCode ?? '';
+    final day = firstDayOfWeekIndexIn(country);
+    return day == 0 ? DateTime.sunday : day;
+  }
+
+  /// The home-screen widgets as of now (`refreshWidgetSnapshot`), written
+  /// whenever the app leaves the front, which catches every change made in
+  /// it. Signed out writes nothing.
+  void _writeWidgetSnapshot({WorkoutSessionModel? finished}) {
+    final appState = context.read<AppBloc>().state;
+    final user = appState is AppAuthenticated ? appState.profile : null;
+    if (user == null) return;
+    final programs = context.read<ProgramsCubit>().state;
+    unawaited(
+      context.read<HomeWidgetRepository>().write(
+        widgetSnapshot(
+          user: user,
+          run: programs.activeRun,
+          sessions: [
+            for (final session in programs.sessions)
+              if (session.id != finished?.id) session,
+            ?finished,
+          ],
+          now: DateTime.now(),
+          firstWeekday: _firstWeekday,
+        ),
+      ),
+    );
   }
 
   /// The workout under way and the notifications follow the signed-in user;
   /// links are routed once they are past onboarding.
   void _followUser(AppState state) {
     final uid = state is AppAuthenticated ? state.user.uid : null;
+    if (uid == null && _uid != null) {
+      unawaited(context.read<HomeWidgetRepository>().clear());
+    }
+    _uid = uid;
     final profile = state is AppAuthenticated ? state.profile : null;
     context.read<CircleBloc>().add(CircleViewerChanged(profile));
     context.read<InboxBloc>().add(InboxViewerChanged(profile));

@@ -54,6 +54,7 @@ void main() {
   late InMemoryActiveSessionStore store;
   late _MockAnalytics analytics;
   late FakeNotificationsRepository notifications;
+  late FakeLiveActivityRepository liveActivity;
   late ActiveWorkoutCubit cubit;
   var ids = 0;
 
@@ -66,6 +67,7 @@ void main() {
     analytics: analytics,
     store: store,
     notifications: notifications,
+    liveActivity: liveActivity,
     copy: AppNotificationCopy(() => lookupAppLocalizations(const Locale('en'))),
     clock: clock.call,
     newId: () => 'ID-${++ids}',
@@ -98,6 +100,7 @@ void main() {
     store = InMemoryActiveSessionStore();
     analytics = _MockAnalytics();
     notifications = FakeNotificationsRepository();
+    liveActivity = FakeLiveActivityRepository();
     cubit = build();
   });
 
@@ -756,6 +759,7 @@ void main() {
             title: session.name,
             body: notifications.ongoingWorkout!.body,
             clock: session.dateCreated,
+            sessionId: session.id,
           ),
         );
         expect(notifications.ongoingWorkout!.body, startsWith('Next: '));
@@ -818,6 +822,132 @@ void main() {
         await cubit.start(template: template, eventPrefix: 'x');
         await cubit.notificationsSettled;
         expect(notifications.ongoingWorkout, isNull);
+      });
+    });
+  });
+
+  group('$ActiveWorkoutCubit with the Live Activity (iOS)', () {
+    setUp(() async {
+      await cubit.close();
+      liveActivity = FakeLiveActivityRepository(showsOngoingWorkout: true);
+      cubit = build();
+    });
+
+    DateTime? due(LocalReminderKind kind) =>
+        switch (notifications.scheduled[kind]?.schedule) {
+          ReminderAt(:final at) => at,
+          _ => null,
+        };
+
+    Future<void> logFirst() async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      cubit.pressPrimary();
+      await cubit.notificationsSettled;
+    }
+
+    test('shows the target, then the rest with the set just logged, '
+        'and the stand-in two seconds late', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      await cubit.notificationsSettled;
+      final session = cubit.state.session!;
+      final shown = liveActivity.shown!;
+      expect(shown.sessionId, session.id);
+      expect(shown.title, session.name);
+      expect(shown.activity!.targetSetId, isNotNull);
+      expect(shown.activity!.restEndsAt, isNull);
+      expect(notifications.ongoingWorkout, isNull);
+
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      final logged = (cubit.state.primaryAction! as r.LogSetAction).setId;
+      cubit.pressPrimary();
+      await cubit.notificationsSettled;
+      final activity = liveActivity.shown!.activity!;
+      expect(activity.restEndsAt, cubit.state.restEnd);
+      expect(activity.lastLoggedSetId, logged);
+      expect(activity.lastLoggedReps, 8);
+      expect(
+        due(LocalReminderKind.restOver),
+        cubit.state.restEnd!.add(RestOverAlert.standInDelay),
+      );
+    });
+
+    test('finishing leaves the summary showing', () async {
+      await logFirst();
+      clock.advance(const Duration(minutes: 30));
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await cubit.notificationsSettled;
+      expect(liveActivity.shown, isNull);
+      expect(
+        liveActivity.endedWith,
+        const OngoingWorkoutSummary(
+          duration: Duration(minutes: 31),
+          completedSetsCount: 1,
+          volumeKg: 480,
+        ),
+      );
+
+      await logFirst();
+      await cubit.discard();
+      await cubit.notificationsSettled;
+      expect(liveActivity.endedWith, isNull);
+    });
+
+    group('buttons', () {
+      Future<void> tap(LiveActivityAction action) =>
+          cubit.handleLiveActivityAction(action, firstWeekday: 1);
+
+      test('Complete logs the target and starts its rest', () async {
+        await cubit.userChanged(uid);
+        await cubit.start(template: template, eventPrefix: 'x');
+        clock.advance(const Duration(minutes: 1));
+        fillNext();
+        await cubit.notificationsSettled;
+        final target = liveActivity.shown!.activity!.targetSetId!;
+        await tap(CompleteSetAction(target));
+        expect(cubit.state.set(target)!.completedAt, isNotNull);
+        expect(cubit.state.restEnd, isNotNull);
+        // A set already logged is left as it is.
+        final logged = cubit.state.set(target);
+        await tap(CompleteSetAction(target));
+        expect(cubit.state.set(target), logged);
+      });
+
+      test('the reps and +15s work only during the rest', () async {
+        await logFirst();
+        final set = liveActivity.shown!.activity!.lastLoggedSetId!;
+        final end = cubit.state.restEnd!;
+        await tap(AdjustLastSetRepsAction(set, -1));
+        expect(cubit.state.set(set)!.reps, 7);
+        await tap(const AdjustRestAction(15));
+        expect(cubit.state.restEnd, end.add(const Duration(seconds: 15)));
+        await tap(const SkipRestAction());
+        expect(cubit.state.restEnd, isNull);
+        await tap(AdjustLastSetRepsAction(set, -1));
+        await tap(const AdjustRestAction(15));
+        expect(cubit.state.set(set)!.reps, 7);
+        expect(cubit.state.restEnd, isNull);
+      });
+
+      test('Finish finishes the workout', () async {
+        await logFirst();
+        await tap(const CompleteWorkoutAction());
+        expect(cubit.state.finishedSession, isNotNull);
+        expect(liveActivity.endedWith, isNotNull);
+      });
+
+      test('a tap that launched the app waits for the workout', () async {
+        await logFirst();
+        await cubit.close();
+        cubit = build();
+        final tapped = tap(const SkipRestAction());
+        await cubit.userChanged(uid);
+        await tapped;
+        expect(cubit.state.restEnd, isNull);
       });
     });
   });

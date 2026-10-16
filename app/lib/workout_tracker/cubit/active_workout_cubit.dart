@@ -8,6 +8,7 @@ import 'package:compound/social/logic/circle_week.dart';
 import 'package:compound/workout_tracker/cubit/equipment_sheet_cubit.dart';
 import 'package:compound/workout_tracker/cubit/keypad_editing.dart';
 import 'package:compound/workout_tracker/cubit/plate_calculator_cubit.dart';
+import 'package:compound/workout_tracker/logic/live_activity_content.dart';
 import 'package:compound/workout_tracker/logic/set_changes.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/set_table.dart';
@@ -38,8 +39,10 @@ part 'active_workout_state.dart';
 /// this wraps it, reads what it needs from the repositories, and reports
 /// what the user did with the Swift app's event names. It also keeps the
 /// workout's notifications in step: the rest-over notification
-/// (`RestOverNotifying`), "Still training?" (`IdleWorkoutReminder`) and, on
-/// Android, the ongoing notification that stands in for the Live Activity.
+/// (`RestOverNotifying`), "Still training?" (`IdleWorkoutReminder`), and the
+/// workout under way outside the app: Android's ongoing notification and
+/// iOS's Live Activity, whose buttons it answers
+/// ([handleLiveActivityAction]).
 class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
     with KeypadEditing
     implements SetTableActions {
@@ -50,6 +53,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
     required this._analytics,
     required this._store,
     required this._notifications,
+    LiveActivityRepository? liveActivity,
     AppNotificationCopy? copy,
     UnitPreferenceStore? units,
     DeviceStore? device,
@@ -61,7 +65,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
     this._health,
     this._strava,
     this._reviews,
-  }) : _strings = copy ?? AppNotificationCopy(),
+  }) : _liveActivity = liveActivity ?? FakeLiveActivityRepository(),
+       _strings = copy ?? AppNotificationCopy(),
        _units = units ?? UnitPreferenceStore(),
        _device = device ?? InMemoryDeviceStore(),
        super(const ActiveWorkoutState());
@@ -72,7 +77,14 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
   final AnalyticsRepository _analytics;
   final ActiveSessionStore _store;
   final NotificationsRepository _notifications;
+
+  /// The Live Activity (iOS).
+  final LiveActivityRepository _liveActivity;
   final AppNotificationCopy _strings;
+
+  /// Where the workout under way shows outside the app, each where the
+  /// platform has it.
+  List<OngoingWorkoutSurface> get _surfaces => [_notifications, _liveActivity];
 
   /// Each exercise's units, kept on the device.
   final UnitPreferenceStore _units;
@@ -1058,8 +1070,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
     if (controller == null || uid == null) return;
     _controller = null;
     _cancelTimers();
-    _endNotifications();
     final session = await controller.finish(at: at);
+    _endNotifications(finished: session);
     if (isClosed) return;
     emit(ActiveWorkoutState(finishedSession: session));
     _track(
@@ -1518,8 +1530,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
       );
       if (reminder != null) _notify(() => _notifications.schedule(reminder));
     }
-    if (!_notifications.showsOngoingWorkout ||
-        !(_workoutSettings.showOnLockScreen ?? true)) {
+    final surfaces = [
+      for (final surface in _surfaces)
+        if (surface.showsOngoingWorkout) surface,
+    ];
+    if (surfaces.isEmpty || !(_workoutSettings.showOnLockScreen ?? true)) {
       return _clearOngoing();
     }
     final restEnd = state.restEnd;
@@ -1538,21 +1553,40 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
               : null),
       countsDown: restEnd != null,
       alert: alert,
+      sessionId: session.id,
+      activity: _liveActivity.showsOngoingWorkout
+          ? liveActivityState(
+              session: session,
+              isActive: state.pausedAt == null,
+              currentExerciseIndex: _controller!.currentExerciseIndex,
+              now: _clock(),
+              restEnd: restEnd,
+              weightUnit: _unit,
+              distanceUnit: _distanceUnit,
+              plansSets: _workoutSettings.setPlanning ?? false,
+            )
+          : null,
     );
     if (ongoing == _ongoing) return;
     _ongoing = ongoing;
-    _notify(() => _notifications.showOngoingWorkout(ongoing));
+    for (final surface in surfaces) {
+      _notify(() => surface.showOngoingWorkout(ongoing));
+    }
   }
 
-  void _clearOngoing() {
+  /// With [summary], a finished workout's Live Activity shows it a while.
+  void _clearOngoing({OngoingWorkoutSummary? summary}) {
     if (_ongoing == null) return;
     _ongoing = null;
-    _notify(_notifications.clearOngoingWorkout);
+    for (final surface in _surfaces) {
+      _notify(() => surface.clearOngoingWorkout(summary: summary));
+    }
   }
 
   /// The workout is over (finished, discarded, replaced or signed out of):
-  /// nothing about it is left to announce.
-  void _endNotifications() {
+  /// nothing about it is left to announce, but the Live Activity of a
+  /// [finished] one shows its summary.
+  void _endNotifications({WorkoutSessionModel? finished}) {
     _scheduledRestEnd = null;
     _idleAnchor = null;
     _alertOngoing = false;
@@ -1560,8 +1594,59 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
       await _notifications.cancel(LocalReminderKind.restOver);
       await _notifications.cancel(LocalReminderKind.idleWorkout);
     });
-    _clearOngoing();
+    final volume = finished?.loggedVolumeKg ?? 0;
+    _clearOngoing(
+      summary: finished == null
+          ? null
+          : OngoingWorkoutSummary(
+              duration: finished.activeDuration,
+              completedSetsCount: finished.loggedSetCount,
+              volumeKg: volume > 0 ? volume : null,
+            ),
+    );
   }
+
+  // MARK: - The Live Activity's buttons
+
+  /// A button on the Live Activity (`AppLiveActivityIntentHandler`), done
+  /// as the tracker does it, and complete once the activity shows it. A tap
+  /// that launched the app waits a little for the workout to be carried on.
+  /// Finish ends the week on [firstWeekday] (ISO).
+  Future<void> handleLiveActivityAction(
+    LiveActivityAction action, {
+    required int firstWeekday,
+  }) async {
+    if (_controller == null) {
+      await stream
+          .firstWhere((state) => state.isActive)
+          .timeout(liveActivityWait, onTimeout: () => state);
+    }
+    final controller = _controller;
+    if (controller == null || isClosed) return;
+    final restEnd = controller.restEnd;
+    final resting = restEnd != null && restEnd.isAfter(_clock());
+    switch (action) {
+      case CompleteSetAction(:final setId):
+        if (state.set(setId)?.completedAt == null) {
+          _log(setId, source: 'live_activity');
+        }
+      // Only during the rest after a set, as on the activity.
+      case AdjustLastSetRepsAction(:final setId, :final delta) when resting:
+        correctReps(setId, delta);
+      case AdjustRestAction() when resting:
+        addRestTime();
+      case SkipRestAction():
+        skipRest();
+      case CompleteWorkoutAction():
+        await finish(firstWeekday: firstWeekday);
+      case AdjustLastSetRepsAction() || AdjustRestAction():
+        break;
+    }
+    await notificationsSettled;
+  }
+
+  /// How long a tap that launched the app waits for the workout.
+  static const liveActivityWait = Duration(seconds: 8);
 
   /// On the tracker's appearing and each return to the app: an hour since
   /// the last set (or since last asked) asks whether the workout is still

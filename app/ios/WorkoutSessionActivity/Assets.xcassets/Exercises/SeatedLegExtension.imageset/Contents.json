@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "SeatedLegExtension.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

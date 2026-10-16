@@ -216,6 +216,53 @@ void main() {
       expect(plan?.trainingType, 'Upper/Lower');
     });
 
+    testWidgets('writes the home-screen widgets on leaving the app, answers '
+        "the Live Activity's buttons, and clears the widgets on sign-out", (
+      tester,
+    ) async {
+      final auth = InMemoryAuthRepository(
+        user: InMemoryAuthRepository.sampleUser,
+      );
+      final widgets = FakeHomeWidgetRepository();
+      final liveActivity = FakeLiveActivityRepository();
+      await tester.pumpWidget(
+        App(
+          deviceStore: offersShownDevice(),
+          purchasesRepository: FakePurchasesRepository(),
+          programRepository: InMemoryProgramRepository(),
+          trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
+          authRepository: auth,
+          userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
+          homeWidgetRepository: widgets,
+          liveActivityRepository: liveActivity,
+        ),
+      );
+      await tester.pumpAndSettle();
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      expect(widgets.snapshot, isNotNull);
+      expect(widgets.snapshot!.weeklyGoal, 3);
+
+      // With no workout under way, Finish waits for one, then does nothing
+      // but bring the widgets up to date.
+      widgets.snapshot = null;
+      final tapped = liveActivity.tap(const CompleteWorkoutAction());
+      await tester.pump(const Duration(seconds: 9));
+      await tapped;
+      expect(widgets.snapshot, isNotNull);
+
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await auth.signOut();
+      await tester.pumpAndSettle();
+      expect(widgets.snapshot, isNull);
+    });
+
     testWidgets('starts signed in as the sample user, as staging does, and '
         'shows their profile over the tabs', (tester) async {
       await tester.pumpWidget(

@@ -7,6 +7,9 @@ import Vision
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+  /// The Live Activity and the home-screen widgets (`WorkoutActivityChannel`).
+  private var workoutActivity: WorkoutActivityChannel?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -48,6 +51,9 @@ import Vision
           }
         }
       }
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "WorkoutActivity") {
+      workoutActivity = WorkoutActivityChannel(messenger: registrar.messenger())
     }
   }
 }

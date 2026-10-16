@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:notifications_repository/src/deep_link.dart';
+import 'package:notifications_repository/src/live_activity.dart';
 import 'package:notifications_repository/src/local_reminders.dart';
 import 'package:notifications_repository/src/notifications_repository.dart';
 
@@ -84,7 +85,8 @@ class FakeNotificationsRepository extends NotificationsRepository {
   }
 
   @override
-  Future<void> clearOngoingWorkout() async => ongoingWorkout = null;
+  Future<void> clearOngoingWorkout({OngoingWorkoutSummary? summary}) async =>
+      ongoingWorkout = null;
 
   /// A push arriving while the app is in front.
   void receive(PushMessage message) => _messages.add(message);

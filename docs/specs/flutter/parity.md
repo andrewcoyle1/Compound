@@ -15,7 +15,7 @@ had listed, Swift's `ReminderOfferFlow`, which reopens Today, Nutrition and Loca
 | | done | partial | todo | dropped | total |
 |---|---|---|---|---|---|
 | Screen modules | 188 | 5 | 2 | 3 | 198 |
-| Platform features | 16 | 6 | 2 | 1 | 25 |
+| Platform features | 18 | 5 | 1 | 1 | 25 |
 
 The open work is grouped under [Remaining work](#remaining-work) at the end: follow-up slices, what waits on the owner, and M6.
 
@@ -50,7 +50,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | done | #137; Weekly Workouts' program targets and Active Program toggle (#176) |
 | Analytics | WeighInConsistency | `Subviews/WeighInConsistency` | M4 | done | #137 |
 | Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | done | #133; month labels, weekday initials and press-and-hold readout (#168) |
-| AppView | App | `Compound/Core/AppView` | M1 | partial | redirect and shell (#86, #90), profile gate and launch retry (#116), push token, reminders and held links (#127), first-page inbox read (#144), subscription gate (#155), in-app activity banner (#172); no widget snapshot on backgrounding (M6) |
+| AppView | App | `Compound/Core/AppView` | M1 | partial | redirect and shell (#86, #90), profile gate and launch retry (#116), push token, reminders and held links (#127), first-page inbox read (#144), subscription gate (#155), in-app activity banner (#172); widget snapshot on backgrounding and Live Activity buttons (#184) |
 | Challenges | ChallengeDetail | `ChallengeDetail` | M5 | done | #146, `/challenges/:challengeId` |
 | Challenges | CreateChallenge | `CreateChallenge` | M5 | done | #146, `/challenges/new` |
 | Coach | Coach | `Compound/Core/Coach` | M5 | done | #147, `/coach` and `/coach-chats`; See Plans opens the paywall (#155) |
@@ -238,8 +238,8 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | A/B tests (Remote Config) | `ABTestManager` | M5 | done | `ab_test_repository` (#186): `notificationsTest` and `paywallTest` under Swift's keys and defaults, sent as Swift's user properties; development draws locally as Swift's dev, staging in memory, Remote Config for production (the production flavor isn't configured); `notificationsTest` drives nothing, as in Swift |
 | App rating prompt | `ReviewMoment` | M5 | done | `ReviewMoment`, Rate row and food moments (#166); workout-finish moment and stored date (#172) |
 | HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | partial | `health_repository` (#121), UI and native setup (#151); no live workout session (heart rate, active energy; iOS, M6); HealthKit capability is an owner TODO |
-| Live Activity and Dynamic Island (iOS); ongoing notification (Android) | `LiveActivityManager`, `WorkoutSessionActivity/` | M3 (Android), M6 (iOS) | partial | Android ongoing notification (#127); no foreground service, by decision (#172); iOS at M6 |
-| Home screen widgets | `WorkoutSessionActivity/HomeWidgets.swift` | M6 | todo | M6 |
+| Live Activity and Dynamic Island (iOS); ongoing notification (Android) | `LiveActivityManager`, `WorkoutSessionActivity/` | M3 (Android), M6 (iOS) | done | Android ongoing notification (#127); no foreground service, by decision (#172); iOS (#184): `WorkoutSessionActivity` copied into `app/ios`, driven over `com.andrewcoyle.compound/live_activity`, buttons answered by `ActiveWorkoutCubit`; a button tapped after iOS has killed the app waits 10 s for Dart, then only clears its loading state |
+| Home screen widgets | `WorkoutSessionActivity/HomeWidgets.swift` | M6 | done | #184: Today's Workout, Streak, Weekly Goal; snapshot in the flavor's App Group, written on backgrounding and after Finish on the Live Activity, cleared on sign-out |
 | Siri and Shortcuts (App Intents) | `Managers/AppIntents` | M6 | todo | M6, with the `browse_recipes` shortcut (#145) |
 | Strava upload and import | `StravaManager` | M5 | partial | `strava_repository` (#122), UI (#151), `pushEdit` (#162); needs the owner's `STRAVA_CLIENT_ID`; Keychain-token migration is M6 |
 | AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | done | `ai_repository` (#118), scanners (#152); on-device label OCR (#185); image generation has no caller in Swift's screens |

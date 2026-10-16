@@ -20,6 +20,7 @@ import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
+import 'package:device_store/device_store.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -68,6 +69,7 @@ extension PumpApp on WidgetTester {
     FoodRepository? foodRepository,
     OpenFoodFacts? openFoodFacts,
     CheckInRepository? checkInRepository,
+    DeviceStore? deviceStore,
     ProposalDismissals? proposalDismissals,
     UnitPreferenceStore? unitPreferences,
     MealDraftCubit? mealDraftCubit,
@@ -140,6 +142,9 @@ extension PumpApp on WidgetTester {
                   callFunction: (_, _) async => null,
                   users: userRepository ?? MockUserRepository(),
                 ),
+          ),
+          RepositoryProvider<DeviceStore>.value(
+            value: deviceStore ?? InMemoryDeviceStore(),
           ),
           RepositoryProvider.value(
             value: proposalDismissals ?? ProposalDismissals(),

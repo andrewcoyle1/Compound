@@ -1,0 +1,20 @@
+name: device_store
+description: "Small values kept on this device (Swift's UserDefaults): a key-value store on shared_preferences, and one in memory for the staging flavor and tests."
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # The platform's key-value store: UserDefaults on iOS, DataStore on Android (BSD-3).
+  shared_preferences: 2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  shared_preferences_platform_interface: ^2.4.1
+  very_good_analysis: ^11.0.0

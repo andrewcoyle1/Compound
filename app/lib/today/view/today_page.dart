@@ -22,6 +22,7 @@ import 'package:compound/today/view/day_checklist_card.dart';
 import 'package:compound/today/view/streak_card.dart';
 import 'package:compound/today/view/today_text.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
+import 'package:device_store/device_store.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -55,6 +56,7 @@ class TodayPage extends StatelessWidget {
         checkInRepository: context.read<CheckInRepository>(),
         uid: state.user.uid,
         firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
+        store: context.read<DeviceStore>(),
       )..add(const TodaySubscriptionRequested()),
       // Health only hands over new steps when asked: asked on each visit.
       child: OnAppear(

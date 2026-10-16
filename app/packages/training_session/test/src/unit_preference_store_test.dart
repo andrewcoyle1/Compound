@@ -1,9 +1,10 @@
 // Ports ExerciseUnitPreferenceManagerTests: the defaults from the profile,
 // each unit set on its own, per exercise and per account, and kept across
 // instances. The cache cases have nothing to port: the store has no cache.
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:compound_models/compound_models.dart' as m;
+import 'package:device_store/device_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:training_session/training_session.dart';
 
@@ -148,56 +149,46 @@ void main() {
       expect(changes, 1);
     });
 
-    group('in a file', () {
-      late Directory directory;
-
-      setUp(() => directory = Directory.systemTemp.createTempSync('units'));
-      tearDown(() => directory.deleteSync(recursive: true));
-
-      test('preferences persist across instances', () {
-        final file = File('${directory.path}/nested/units.json');
-        UnitPreferenceStore(file: file)
+    group('in the device store', () {
+      test('preferences persist across instances, as JSON', () {
+        final device = InMemoryDeviceStore();
+        UnitPreferenceStore(store: device)
           ..setWeightUnit('u1', 'bench', pounds)
           ..setDistanceUnit('u1', 'row', DistanceUnit.miles);
-        final reopened = UnitPreferenceStore(file: file);
+        final reopened = UnitPreferenceStore(store: device);
         expect(reopened.of('u1', 'bench').weightUnit, pounds);
         expect(reopened.of('u1', 'row').distanceUnit, DistanceUnit.miles);
+        expect(
+          jsonDecode(device.getString('exercise_unit_preference_u1_bench')!),
+          {
+            'exerciseModelId': 'bench',
+            'weightUnit': 'pounds',
+            'distanceUnit': 'meters',
+            'weightUnitIsChosen': true,
+          },
+        );
       });
 
       test('a stored preference without the flag reads as chosen', () {
-        final file = File('${directory.path}/units.json')
-          ..writeAsStringSync(
-            '{"exercise_unit_preference_u1_bench": '
-            '{"weightUnit": "pounds", "distanceUnit": "unknown"}, '
-            '"other": 3}',
-          );
-        final preference = UnitPreferenceStore(file: file).of('u1', 'bench');
+        final device = InMemoryDeviceStore({
+          'exercise_unit_preference_u1_bench':
+              '{"weightUnit": "pounds", "distanceUnit": "unknown"}',
+        });
+        final preference = UnitPreferenceStore(store: device).of('u1', 'bench');
         expect(preference.weightUnit, pounds);
         expect(preference.weightUnitIsChosen, isTrue);
         expect(preference.distanceUnit, DistanceUnit.meters);
       });
 
-      test('a file that cannot be read starts empty', () {
-        final broken = File('${directory.path}/broken.json')
-          ..writeAsStringSync('not json');
-        expect(
-          UnitPreferenceStore(file: broken)
-              .of('u1', 'bench')
-              .weightUnitIsChosen,
-          isFalse,
-        );
-        final list = File('${directory.path}/list.json')
-          ..writeAsStringSync('[]');
-        expect(
-          UnitPreferenceStore(file: list).of('u1', 'b').weightUnit,
-          kilograms,
-        );
-        expect(
-          UnitPreferenceStore(file: File('${directory.path}/none.json'))
-              .of('u1', 'b')
-              .weightUnit,
-          kilograms,
-        );
+      test('a value that cannot be read is the default', () {
+        final device = InMemoryDeviceStore({
+          'exercise_unit_preference_u1_bench': 'not json',
+          'exercise_unit_preference_u1_row': '[]',
+        });
+        final store = UnitPreferenceStore(store: device);
+        expect(store.of('u1', 'bench').weightUnitIsChosen, isFalse);
+        expect(store.of('u1', 'row').weightUnit, kilograms);
+        expect(store.weightUnits('u1'), isEmpty);
       });
     });
   });

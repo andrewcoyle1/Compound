@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/logic/circle_week.dart';
 import 'package:compound/social/logic/people.dart';
+import 'package:device_store/device_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:social_repository/social_repository.dart';
@@ -38,8 +41,9 @@ void main() {
     );
   });
 
-  CircleBloc build({SocialRepository? with_}) => CircleBloc(
+  CircleBloc build({SocialRepository? with_, DeviceStore? store}) => CircleBloc(
     social: with_ ?? social,
+    store: store,
     sessions: InMemoryWorkoutSessionRepository(
       sessions: sampleWorkoutSessions(uid: sampleUserId, now: now),
     ),
@@ -248,4 +252,102 @@ void main() {
       expect(events, ['SocialView_WeeklySummary_Dismiss']);
     },
   );
+
+  group('on the device', () {
+    late DeviceStore store;
+
+    setUpAll(() => registerFallbackValue(const UserModel(userId: 'x')));
+    setUp(() => store = InMemoryDeviceStore());
+
+    const member = CircleMember(
+      user: UserModel(userId: 'user5'),
+      trainedToday: false,
+      canNudge: true,
+      sessionsThisWeek: 0,
+      weeklyGoal: 3,
+      isCurrentUser: false,
+    );
+
+    test("dismissals are kept under Swift's keys and read back", () async {
+      final bloc = build(store: store)
+        ..add(CircleViewerChanged(viewer))
+        ..add(const CircleUsernameBannerDismissed())
+        ..add(CircleWeeklySummaryDismissed(DateTime(2026, 10, 12)))
+        ..add(const CircleInviteCardDismissed());
+      await Future<void>.delayed(Duration.zero);
+      await bloc.close();
+      expect(store.getBool('hasDismissedUsernameBanner'), isTrue);
+      expect(
+        store.getString('circleWeeklySummaryDismissedWeekId'),
+        '2026-10-12',
+      );
+      expect(store.getBool('review_prompt_invite_card_dismissed'), isTrue);
+
+      final again = build(store: store)..add(CircleViewerChanged(viewer));
+      await Future<void>.delayed(Duration.zero);
+      expect(again.state.usernameBannerDismissed, isTrue);
+      expect(again.state.dismissedSummaryWeek, DateTime(2026, 10, 12));
+      expect(again.state.inviteCardDismissed, isTrue);
+      await again.close();
+    });
+
+    test("a sent nudge is kept for the day, as Swift's record", () async {
+      store.setString(
+        CircleBloc.nudgesKey,
+        '{"dayKey":"2026-10-14","userIds":["old"]}',
+      );
+      final bloc = build(store: store)
+        ..add(CircleViewerChanged(viewer))
+        ..add(const CircleNudgePressed(member));
+      await Future<void>.delayed(Duration.zero);
+      await bloc.close();
+      expect(jsonDecode(store.getString(CircleBloc.nudgesKey)!), {
+        'dayKey': '2026-10-15',
+        'userIds': ['user5'],
+      });
+
+      final again = build(store: store)..add(CircleViewerChanged(viewer));
+      await Future<void>.delayed(Duration.zero);
+      expect(again.state.nudgedOn(now), {'user5'});
+      again.add(
+        const CircleNudgePressed(
+          CircleMember(
+            user: UserModel(userId: 'user6'),
+            trainedToday: false,
+            canNudge: true,
+            sessionsThisWeek: 0,
+            weeklyGoal: 3,
+            isCurrentUser: false,
+          ),
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(
+        (jsonDecode(store.getString(CircleBloc.nudgesKey)!) as Map)['userIds'],
+        ['user5', 'user6'],
+      );
+      await again.close();
+    });
+
+    blocTest<CircleBloc, CircleState>(
+      'a nudge that fails is not kept',
+      build: () {
+        final failing = _MockSocial();
+        when(() => failing.nudge(any(), viewer: any(named: 'viewer')))
+            .thenThrow(Exception('offline'));
+        return build(with_: failing, store: store);
+      },
+      seed: () => CircleState(viewer: viewer),
+      act: (bloc) => bloc.add(const CircleNudgePressed(member)),
+      verify: (_) => expect(store.getString(CircleBloc.nudgesKey), isNull),
+    );
+
+    test('a record it cannot read means nobody was nudged', () async {
+      store.setString(CircleBloc.nudgesKey, 'not json');
+      final bloc = build(store: store)..add(CircleViewerChanged(viewer));
+      await Future<void>.delayed(Duration.zero);
+      expect(bloc.state.nudgedOn(now), isEmpty);
+      await bloc.close();
+    });
+  });
 }

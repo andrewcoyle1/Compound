@@ -10,6 +10,7 @@ import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound_maths/compound_maths.dart'
     hide CheckInState, LoggingBreak;
 import 'package:compound_models/compound_models.dart' show WorkoutTemplateModel;
+import 'package:device_store/device_store.dart';
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -31,12 +32,24 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     required this._checkInRepository,
     required this._uid,
     required int firstWeekday,
+    DeviceStore? store,
     DateTime Function() now = DateTime.now,
-  }) : super(TodayState(uid: _uid, now: now(), firstWeekday: firstWeekday)) {
+  }) : _store = store ?? InMemoryDeviceStore(),
+       super(
+         _initial(
+           TodayState(uid: _uid, now: now(), firstWeekday: firstWeekday),
+           store,
+         ),
+       ) {
     on<TodaySubscriptionRequested>(_onSubscriptionRequested);
     on<TodayWeeklyReviewOpened>((event, emit) {
       _analyticsRepository.trackEvent(
         const AnalyticsEvent('TodayView_WeeklyReview_Press'),
+      );
+      // Swift keeps the week opened, so the card stays away all week.
+      _store.setString(
+        weeklyReviewOpenedKey(_uid),
+        weekStartOf(state.todayKey, firstWeekday: state.firstWeekday),
       );
       emit(state.copyWith(weeklyReviewOpened: true));
     });
@@ -63,14 +76,24 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     );
   }
 
-  /// The days, by user and day key, whose completion has been marked.
-  ///
-  /// ponytail: in memory, so a restart marks the day again (Swift keeps
-  /// it in `UserDefaults`); persist with the device key-value store.
-  static final _completedDays = <String>{};
+  /// Where the day completed and the review card opened are kept.
+  final DeviceStore _store;
 
-  /// Forgets which days were marked complete: for tests only.
-  static void resetCompletedDays() => _completedDays.clear();
+  /// The key holding the day [uid] last completed, as Swift keys it.
+  static String dayCompleteKey(String uid) => 'today_day_complete_$uid';
+
+  /// The key holding the week [uid] last opened the review card in (its
+  /// first day), as Swift keys it.
+  static String weeklyReviewOpenedKey(String uid) =>
+      'today_weekly_review_opened_$uid';
+
+  /// [state], with the review card opened if it was this week.
+  static TodayState _initial(TodayState state, DeviceStore? store) =>
+      state.copyWith(
+        weeklyReviewOpened:
+            store?.getString(weeklyReviewOpenedKey(state.uid)) ==
+            weekStartOf(state.todayKey, firstWeekday: state.firstWeekday),
+      );
 
   /// Swift's `ChecklistItem.Kind` raw values.
   static String _kind(ChecklistItem item) => switch (item) {
@@ -84,7 +107,9 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
   /// (`onChecklistCompletionChanged`): `TodayView_DayComplete`, and the
   /// view's success haptic.
   void _onDayCompleted(TodayDayCompleted event, Emitter<TodayState> emit) {
-    if (!_completedDays.add('$_uid/${state.todayKey}')) return;
+    final key = dayCompleteKey(_uid);
+    if (_store.getString(key) == state.todayKey) return;
+    _store.setString(key, state.todayKey);
     _analyticsRepository.analytic('TodayView_DayComplete', {
       'item_count': event.itemCount,
     });

@@ -11,12 +11,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/app/device_store_migration.dart';
 import 'package:compound/bootstrap.dart';
-import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/firebase_options_development.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/notifications/notifications.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
+import 'package:device_store/device_store.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -125,6 +126,9 @@ Future<void> main() async {
 
     // The workout under way, kept on the device between launches.
     final support = await getApplicationSupportDirectory();
+    // Small values kept on the device, as Swift's `UserDefaults`.
+    final deviceStore = await SharedPreferencesDeviceStore.create();
+    migrateDeviceFiles(deviceStore, support);
     final workoutSessionRepository = FirestoreWorkoutSessionRepository(
       firestore: FirebaseFirestore.instance,
       onWriteError: onWriteError,
@@ -209,9 +213,7 @@ Future<void> main() async {
       activeSessionStore: FileActiveSessionStore(
         File('${support.path}/active_workout_session.json'),
       ),
-      unitPreferences: UnitPreferenceStore(
-        file: File('${support.path}/exercise_unit_preferences.json'),
-      ),
+      deviceStore: deviceStore,
       analyticsRepository: analyticsRepository,
       authRepository: FirebaseAuthRepository(
         firebaseAuth: FirebaseAuth.instance,
@@ -230,9 +232,6 @@ Future<void> main() async {
       checkInRepository: FirestoreCheckInRepository(
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,
-      ),
-      proposalDismissals: ProposalDismissals(
-        file: File('${support.path}/dismissed_target_proposals.json'),
       ),
       // Swift's paths in the compound-development bucket.
       imageRepository: FirebaseImageRepository(

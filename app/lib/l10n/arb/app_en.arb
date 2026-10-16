@@ -11081,5 +11081,211 @@
     "targetChartCreatePlan": "Create Diet Plan",
     "@targetChartCreatePlan": {
         "description": "Target chart action when there is no diet plan"
+    },
+    "plateCalculatorTitle": "Plate Calculator",
+    "@plateCalculatorTitle": {
+        "description": "Plate calculator: title"
+    },
+    "plateAvailableWeights": "Available Plate Weights",
+    "@plateAvailableWeights": {
+        "description": "Plate calculator: section of plate weights to switch on and off"
+    },
+    "plateBarWeight": "Bar Weight",
+    "@plateBarWeight": {
+        "description": "Plate calculator: the bar the gym loads"
+    },
+    "plateBase": "Base",
+    "@plateBase": {
+        "description": "Plate calculator: a plate-loaded machine's fixed base weight"
+    },
+    "plateBarFooter": "Used for every exercise on this bar at this gym.",
+    "@plateBarFooter": {
+        "description": "Plate calculator: under the bar picker"
+    },
+    "plateNotLoadablePlates": "Not loadable with these plates",
+    "@plateNotLoadablePlates": {
+        "description": "Plate calculator: the set's weight cannot be made, and nothing near it can"
+    },
+    "plateNotLoadableOptions": "Not loadable: {weights} {unit}",
+    "@plateNotLoadableOptions": {
+        "description": "Plate calculator: the set's weight cannot be made; the nearest that can, e.g. Not loadable: 67.5 or 72.5 kg",
+        "placeholders": {
+            "weights": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "plateOr": "{first} or {second}",
+    "@plateOr": {
+        "description": "Two weights to choose between, e.g. 67.5 or 72.5",
+        "placeholders": {
+            "first": {
+                "type": "String"
+            },
+            "second": {
+                "type": "String"
+            }
+        }
+    },
+    "plateEquationEmpty": "Empty bar = {total}",
+    "@plateEquationEmpty": {
+        "description": "Loading: no plates, e.g. Empty bar = 20 kg",
+        "placeholders": {
+            "total": {
+                "type": "String"
+            }
+        }
+    },
+    "plateEquationBar": "{plates} on each side + {base} bar = {total}",
+    "@plateEquationBar": {
+        "description": "Loading: a bar, e.g. 25 kg on each side + 20 kg bar = 70 kg",
+        "placeholders": {
+            "plates": {
+                "type": "String"
+            },
+            "base": {
+                "type": "String"
+            },
+            "total": {
+                "type": "String"
+            }
+        }
+    },
+    "plateEquationSingle": "{plates} of plates + {base} base = {total}",
+    "@plateEquationSingle": {
+        "description": "Loading: a single-sleeve machine, e.g. 25 kg of plates + 18 kg base = 43 kg",
+        "placeholders": {
+            "plates": {
+                "type": "String"
+            },
+            "base": {
+                "type": "String"
+            },
+            "total": {
+                "type": "String"
+            }
+        }
+    },
+    "keypadNotLoadable": "Not loadable",
+    "@keypadNotLoadable": {
+        "description": "Weight keypad: the weight typed cannot be made with the gym's plates"
+    },
+    "keypadUseWeight": "Use {weight} {unit}",
+    "@keypadUseWeight": {
+        "description": "Weight keypad: a button setting the nearest loadable weight, read by screen readers",
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "keypadPlatesHint": "Opens the plate calculator",
+    "@keypadPlatesHint": {
+        "description": "Weight keypad: hint on the loading bar"
+    },
+    "keypadShowPlates": "Show Plates",
+    "@keypadShowPlates": {
+        "description": "Weight keypad key: shows or hides the bar and plates"
+    },
+    "keypadChangeSign": "Change sign",
+    "@keypadChangeSign": {
+        "description": "Weight keypad key: makes the weight negative (assistance) or positive"
+    },
+    "keypadChangeSignHint": "A negative weight is assistance",
+    "@keypadChangeSignHint": {
+        "description": "Weight keypad: hint on the sign key"
+    },
+    "keypadBands": "Bands",
+    "@keypadBands": {
+        "description": "Weight keypad: the band chips' heading"
+    },
+    "stackPin": "Pin {pin} {unit}",
+    "@stackPin": {
+        "description": "Weight keypad: how to make the weight on a stack, e.g. Pin 14 kg",
+        "placeholders": {
+            "pin": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "stackPinAddOns": "Pin {pin} + {addOns} {unit}",
+    "@stackPinAddOns": {
+        "description": "Weight keypad: how to make the weight on a stack with add-ons, e.g. Pin 14 + 2 kg",
+        "placeholders": {
+            "pin": {
+                "type": "String"
+            },
+            "addOns": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerEquipment": "Equipment",
+    "@trackerEquipment": {
+        "description": "Exercise menu: the exercise's equipment variations"
+    },
+    "equipmentNone": "No Equipment",
+    "@equipmentNone": {
+        "description": "Equipment sheet: the exercise has no variations"
+    },
+    "equipmentNoVariations": "No equipment variations defined for this exercise.",
+    "@equipmentNoVariations": {
+        "description": "Equipment sheet: why there is nothing to choose"
+    },
+    "equipmentVariation": "Variation {number}",
+    "@equipmentVariation": {
+        "description": "Equipment sheet: one way of doing the exercise, e.g. Variation 2",
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "equipmentResistance": "Resistance: {names}",
+    "@equipmentResistance": {
+        "description": "Equipment sheet: what loads the variation",
+        "placeholders": {
+            "names": {
+                "type": "String"
+            }
+        }
+    },
+    "equipmentSupport": "Support: {names}",
+    "@equipmentSupport": {
+        "description": "Equipment sheet: what braces the variation, such as a bench",
+        "placeholders": {
+            "names": {
+                "type": "String"
+            }
+        }
+    },
+    "equipmentNotInGym": "Not in this gym",
+    "@equipmentNotInGym": {
+        "description": "Equipment sheet: the workout's gym lacks some of the variation's equipment"
+    },
+    "equipmentEdit": "Edit {name} equipment",
+    "@equipmentEdit": {
+        "description": "Equipment sheet: the button editing a variation's equipment, read by screen readers",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerUnableToSaveGym": "Unable to Save Gym",
+    "@trackerUnableToSaveGym": {
+        "description": "Alert title: the bar or plates chosen could not be saved"
     }
 }

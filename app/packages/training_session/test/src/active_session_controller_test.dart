@@ -1462,6 +1462,45 @@ void main() {
       expect(c.previousExercise(c.session.exercises.single)?.id, 'last');
     });
 
+    test('refit puts open sets on the edited equipment', () {
+      final dumbbells = [ref(m.EquipmentKind.freeWeight, 'dumbbells')];
+      final curl = library('curl', variations: [variation('db', dumbbells)]);
+      m.GymProfileModel gymWith(List<double> weights) =>
+          gym(freeWeights: [plates(weights, id: 'dumbbells', isPlates: false)]);
+      final c =
+          controller(
+              session([
+                exercise(
+                  'e',
+                  templateId: 'curl',
+                  variations: curl.equipmentVariations,
+                  chosenVariationId: 'db',
+                  sets: [
+                    set('done', weightKg: 14, done: true),
+                    set('open', weightKg: 14),
+                  ],
+                ),
+              ]),
+              libraryExercises: [curl],
+              workoutGym: gymWith([10, 20]),
+            )
+            // The gym's dumbbells edited: 12.5 and 15 switched on.
+            ..environment = TrackerEnvironment(
+              authorId: author,
+              settings: settings(),
+              library: [curl],
+              gym: gymWith([10, 12.5, 15, 20]),
+            )
+            ..refit('e')
+            ..refit('missing');
+
+      expect(weights(c), [14, 15]);
+      expect(
+        c.session.exercises.single.weightUnit,
+        m.ExerciseWeightUnit.kilograms,
+      );
+    });
+
     test('a new environment reads history again', () {
       final c = controller(_typing([100]));
       expect(c.previousExercise(c.session.exercises.single), isNull);

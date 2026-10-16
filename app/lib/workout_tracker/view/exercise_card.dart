@@ -6,6 +6,7 @@ import 'package:compound/training_library/logic/template_summary.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
+import 'package:compound/workout_tracker/view/equipment_sheet.dart';
 import 'package:compound/workout_tracker/view/notes_sheet.dart';
 import 'package:compound/workout_tracker/view/tick.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
@@ -195,10 +196,19 @@ class _Header extends StatelessWidget {
             tooltip: l10n.trackerExerciseOptions,
             icon: Icon(AppSymbols.more),
             onSelected: (action) => switch (action) {
+              _ExerciseAction.equipment => unawaited(_equipment(context)),
               _ExerciseAction.notes => unawaited(_editNotes(context)),
               _ExerciseAction.delete => unawaited(_delete(context)),
             },
             itemBuilder: (_) => [
+              if (exercise.equipmentVariations.isNotEmpty)
+                PopupMenuItem(
+                  value: _ExerciseAction.equipment,
+                  child: ListTile(
+                    leading: const Icon(AppSymbols.equipment),
+                    title: Text(l10n.trackerEquipment),
+                  ),
+                ),
               PopupMenuItem(
                 value: _ExerciseAction.notes,
                 child: ListTile(
@@ -245,6 +255,15 @@ class _Header extends StatelessWidget {
       if ((targets.rirLow, targets.rirHigh) case (final low?, final high?))
         l10n.rirRange(range(low, high)),
     ].nonNulls.join(' · ');
+  }
+
+  /// The exercise's equipment variations, to choose or edit.
+  Future<void> _equipment(BuildContext context) async {
+    final cubit = context.read<ActiveWorkoutCubit>();
+    final setup = cubit.state.equipmentSetup(member.exercise.id);
+    if (setup == null) return;
+    cubit.equipmentOpened();
+    await showEquipmentSheet(context, setup);
   }
 
   Future<void> _editNotes(BuildContext context) async {
@@ -302,7 +321,7 @@ class _Header extends StatelessWidget {
   }
 }
 
-enum _ExerciseAction { notes, delete }
+enum _ExerciseAction { equipment, notes, delete }
 
 /// The column headings, which the cells' own labels speak for.
 class _Headings extends StatelessWidget {
@@ -514,10 +533,18 @@ class _SetRow extends StatelessWidget {
     final raw = keypad != null && keypad.field == field
         ? keypad.text
         : SetKeypad.valueText(field, set, member.weightUnit);
-    if (raw.isEmpty) return AppFormat.placeholder;
+    // "60 + Red", "Red + Blue": the bands beside the weight.
+    final bands = field == SetField.weight
+        ? set.bands ?? const <String>[]
+        : const <String>[];
+    if (raw.isEmpty && bands.isEmpty) return AppFormat.placeholder;
     return switch (field) {
       SetField.duration => SetKeypad.clockFromDigits(raw),
-      SetField.weight || SetField.distance => raw.replaceAll('.', separator),
+      SetField.weight => [
+        if (raw.isNotEmpty) raw.replaceAll('.', separator),
+        ...bands,
+      ].join(' + '),
+      SetField.distance => raw.replaceAll('.', separator),
       SetField.reps => raw,
     };
   }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:flutter/widgets.dart';
@@ -30,7 +32,17 @@ class ShareRecorder extends ShareSheet {
   /// Every text shared, in order.
   final texts = <String>[];
 
+  /// Every image shared, by name, with its PNG bytes.
+  final images = <(String, Uint8List)>[];
+
   @override
   Future<void> shareText(BuildContext context, String text) async =>
       texts.add(text);
+
+  @override
+  Future<void> shareImage(
+    BuildContext context,
+    Uint8List bytes, {
+    required String name,
+  }) async => images.add((name, bytes));
 }

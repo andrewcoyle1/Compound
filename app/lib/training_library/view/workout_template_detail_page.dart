@@ -10,6 +10,7 @@ import 'package:compound/programs/view/mesocycle_design_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound/sharing/view/share_to_follower_page.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/logic/template_summary.dart';
 import 'package:compound/training_library/models/training_library.dart';
@@ -196,6 +197,15 @@ class WorkoutTemplateDetailView extends StatelessWidget {
                     child: Text(l10n.editorEditWorkout),
                   ),
                   PopupMenuItem(
+                    value: () => unawaited(
+                      showShareToFollower(
+                        context,
+                        TemplateSharePayload(ownWorkout),
+                      ),
+                    ),
+                    child: Text(l10n.shareWithFriends),
+                  ),
+                  PopupMenuItem(
                     value: () => unawaited(_delete(context, ownWorkout)),
                     child: Text(
                       l10n.editorDeleteWorkout,
@@ -218,6 +228,15 @@ class WorkoutTemplateDetailView extends StatelessWidget {
                   PopupMenuItem(
                     value: () => unawaited(_saveCopy(context, template)),
                     child: Text(l10n.programSaveCopy),
+                  ),
+                  PopupMenuItem(
+                    value: () => unawaited(
+                      showShareToFollower(
+                        context,
+                        TemplateSharePayload(template),
+                      ),
+                    ),
+                    child: Text(l10n.shareWithFriends),
                   ),
                 ],
               ),

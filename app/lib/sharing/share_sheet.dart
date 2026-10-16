@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -11,6 +13,19 @@ class ShareSheet {
   Future<void> shareText(BuildContext context, String text) => SharePlus
       .instance
       .share(ShareParams(text: text, sharePositionOrigin: _origin(context)));
+
+  /// Shares a PNG image, [bytes], named [name].
+  Future<void> shareImage(
+    BuildContext context,
+    Uint8List bytes, {
+    required String name,
+  }) => SharePlus.instance.share(
+    ShareParams(
+      files: [XFile.fromData(bytes, mimeType: 'image/png', name: name)],
+      fileNameOverrides: [name],
+      sharePositionOrigin: _origin(context),
+    ),
+  );
 
   static Rect? _origin(BuildContext context) {
     final box = context.findRenderObject();

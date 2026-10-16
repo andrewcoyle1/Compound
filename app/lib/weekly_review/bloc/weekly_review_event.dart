@@ -21,3 +21,8 @@ final class WeeklyReviewPreviousWeekPressed extends WeeklyReviewEvent {
 final class WeeklyReviewNextWeekPressed extends WeeklyReviewEvent {
   const new();
 }
+
+/// The user shared the week as an image (`WeeklyReviewView_Share_Pressed`).
+final class WeeklyReviewSharePressed extends WeeklyReviewEvent {
+  const new();
+}

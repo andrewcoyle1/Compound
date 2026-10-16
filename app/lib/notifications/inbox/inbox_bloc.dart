@@ -218,10 +218,9 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
         ActivityType.comment ||
         ActivityType.mention => await _session(notification),
         ActivityType.challengeComplete => await _challenge(notification),
-        // Social part 2b: the shared item.
-        ActivityType.share => null,
+        ActivityType.share => await _share(notification),
       };
-      if (destination != null) emit(state.copyWith(destination: destination));
+      emit(state.copyWith(destination: destination));
     } on Object catch (error) {
       _analytics.severe('NotificationsView_OpenNotification_Fail', error, {
         'type': notification.type.value,
@@ -235,6 +234,15 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     final user = (await _social.users([userId], viewer: viewer)).firstOrNull;
     if (user == null) throw StateError('No profile for $userId');
     return InboxProfileDestination(user);
+  }
+
+  Future<InboxDestination> _share(
+    ActivityNotificationModel notification,
+  ) async {
+    final id = notification.shareId ?? '';
+    final share = await _social.share(id);
+    if (share == null) throw StateError('No share $id');
+    return InboxShareDestination(share, senderName: notification.actorName);
   }
 
   Future<InboxDestination> _challenge(

@@ -16,6 +16,7 @@ import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/review/review_moment.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
@@ -80,6 +81,7 @@ extension PumpApp on WidgetTester {
     ChallengesCubit? challengesCubit,
     InviteCubit? inviteCubit,
     ShareSheet shareSheet = const ShareSheet(),
+    SessionWebLink? sessionWebLink,
     ImageRepository? imageRepository,
     PhotoPicker? photoPicker,
     AiRepository? aiRepository,
@@ -167,6 +169,7 @@ extension PumpApp on WidgetTester {
             value: purchasesRepository ?? FakePurchasesRepository(),
           ),
           RepositoryProvider.value(value: shareSheet),
+          RepositoryProvider<SessionWebLink?>.value(value: sessionWebLink),
           RepositoryProvider.value(value: linkOpener),
           RepositoryProvider<AppVersion?>.value(value: appVersion),
           RepositoryProvider.value(

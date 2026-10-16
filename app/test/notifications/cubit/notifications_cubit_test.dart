@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/notifications/notifications.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -130,6 +131,29 @@ void main() {
       },
       expect: () => const [
         NotificationsState(link: TabLink(DeepLinkTab.progress), linkId: 1),
+        NotificationsState(link: TabLink(DeepLinkTab.progress), linkId: 2),
+      ],
+    );
+
+    blocTest<NotificationsCubit, NotificationsState>(
+      "routes a workout's web page on the flavor's host as the workout",
+      build: () => NotificationsCubit(
+        notifications: notifications,
+        users: users,
+        webLink: SessionWebLink(Uri.parse('https://compound.test/s')),
+      ),
+      act: (cubit) async {
+        await cubit.userChanged(uid, ready: true);
+        cubit
+          ..linkOpened(Uri.parse('https://example.com/s/user1/abc'))
+          ..linkOpened(Uri.parse('https://compound.test/s/user1/abc'))
+          ..linkOpened(Uri.parse('compound://tab/progress'));
+      },
+      expect: () => const [
+        NotificationsState(
+          link: SessionLink(id: 'abc', authorId: 'user1'),
+          linkId: 1,
+        ),
         NotificationsState(link: TabLink(DeepLinkTab.progress), linkId: 2),
       ],
     );

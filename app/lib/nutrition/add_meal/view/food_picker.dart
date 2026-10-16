@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/document_id.dart';
@@ -7,9 +8,13 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/add_meal/bloc/add_meal_bloc.dart';
 import 'package:compound/nutrition/add_meal/bloc/food_search_bloc.dart';
 import 'package:compound/nutrition/add_meal/cubit/barcode_scanner_cubit.dart';
+import 'package:compound/nutrition/add_meal/cubit/food_photo_scanner_cubit.dart';
+import 'package:compound/nutrition/add_meal/cubit/label_scanner_cubit.dart';
+import 'package:compound/nutrition/add_meal/cubit/meal_describe_cubit.dart';
 import 'package:compound/nutrition/add_meal/cubit/quick_add_cubit.dart';
 import 'package:compound/nutrition/add_meal/view/amount_sheets.dart';
 import 'package:compound/nutrition/add_meal/view/barcode_camera.dart';
+import 'package:compound/nutrition/foods/logic/create_food.dart';
 import 'package:compound/nutrition/foods/view/create_food_pages.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
@@ -17,8 +22,12 @@ import 'package:compound/nutrition/recipes/view/create_recipe_pages.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart'
     show FoodLogSettings;
+
+part 'ai_food_tabs.dart';
+part 'label_panel.dart';
 
 /// The food picker over the plate (Swift `NutritionLibraryPickerView`):
 /// a tab per way of finding food, picks landing on the plate as they are
@@ -80,6 +89,8 @@ class FoodPickerView extends StatelessWidget {
         FoodPickerMode.quickAdd => const _QuickAddTab(),
         FoodPickerMode.barcode => const _BarcodeTab(),
         FoodPickerMode.library => const _LibraryTab(),
+        FoodPickerMode.aiScanner => const _PhotoTab(),
+        FoodPickerMode.describe => const _DescribeTab(),
       },
       // Quick add has its own Log beside Add to Plate.
       bottomNavigationBar: state.mode == FoodPickerMode.quickAdd || count == 0
@@ -103,6 +114,8 @@ extension on FoodPickerMode {
     FoodPickerMode.search => l10n.addMealModeSearch,
     FoodPickerMode.quickAdd => l10n.addMealModeQuickAdd,
     FoodPickerMode.library => l10n.addMealModeLibrary,
+    FoodPickerMode.aiScanner => l10n.addMealModeAi,
+    FoodPickerMode.describe => l10n.addMealModeDescribe,
   };
 
   IconData get icon => switch (this) {
@@ -110,6 +123,8 @@ extension on FoodPickerMode {
     FoodPickerMode.search => AppSymbols.search,
     FoodPickerMode.quickAdd => AppSymbols.calories,
     FoodPickerMode.library => AppSymbols.library,
+    FoodPickerMode.aiScanner => AppSymbols.camera,
+    FoodPickerMode.describe => AppSymbols.describe,
   };
 }
 
@@ -946,19 +961,78 @@ class _QuickAddView extends StatelessWidget {
 
 // MARK: - Barcode
 
-class _BarcodeTab extends StatelessWidget {
+/// The Barcode tab, in Barcode or Label mode (Swift `ScanningMode`). A
+/// change of mode starts over: each mode's cubit is made afresh.
+class _BarcodeTab extends StatefulWidget {
   const new();
 
   @override
-  Widget build(BuildContext context) => BlocProvider(
-    create: (context) => BarcodeScannerCubit(
-      uid: context.read<AddMealBloc>().state.meal.authorId,
-      openFoodFacts: context.read<OpenFoodFacts>(),
-      foodRepository: context.read<FoodRepository>(),
-      analyticsRepository: context.read<AnalyticsRepository>(),
-    ),
-    child: const _BarcodeView(),
-  );
+  State<_BarcodeTab> createState() => _BarcodeTabState();
+}
+
+class _BarcodeTabState extends State<_BarcodeTab> {
+  bool _label = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final uid = context.read<AddMealBloc>().state.meal.authorId;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            AppSpacing.s,
+            AppSpacing.l,
+            0,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: Semantics(
+              label: l10n.labelScanningMode,
+              child: SegmentedButton<bool>(
+                key: const Key('FoodPicker.scanningMode'),
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                    value: false,
+                    label: Text(l10n.addMealModeBarcode),
+                  ),
+                  ButtonSegment(value: true, label: Text(l10n.labelModeLabel)),
+                ],
+                selected: {_label},
+                onSelectionChanged: (selected) {
+                  unawaited(HapticFeedback.selectionClick());
+                  setState(() => _label = selected.single);
+                },
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: _label
+              ? BlocProvider(
+                  create: (context) => LabelScannerCubit(
+                    uid: uid,
+                    ai: context.read<AiRepository>(),
+                    foodRepository: context.read<FoodRepository>(),
+                    analytics: context.read<AnalyticsRepository>(),
+                  ),
+                  child: const _LabelView(),
+                )
+              : BlocProvider(
+                  create: (context) => BarcodeScannerCubit(
+                    uid: uid,
+                    openFoodFacts: context.read<OpenFoodFacts>(),
+                    foodRepository: context.read<FoodRepository>(),
+                    analyticsRepository: context.read<AnalyticsRepository>(),
+                  ),
+                  child: const _BarcodeView(),
+                ),
+        ),
+      ],
+    );
+  }
 }
 
 class _BarcodeView extends StatelessWidget {

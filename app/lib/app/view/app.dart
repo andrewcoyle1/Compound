@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -107,6 +108,10 @@ class const App({
   /// The camera and photo library; the bundled sample photo when left out.
   final PhotoPicker? photoPicker,
 
+  /// The AI food scanners' callables; staging's canned answers when left
+  /// out.
+  final AiRepository? aiRepository,
+
   /// The AI coach; one that answers nothing when left out, for tests that
   /// never open it.
   final CoachRepository? coachRepository,
@@ -168,6 +173,10 @@ class const App({
         ),
         RepositoryProvider<PhotoPicker>(
           create: (_) => photoPicker ?? samplePhotoPicker(),
+        ),
+        RepositoryProvider<AiRepository>(
+          create: (_) =>
+              aiRepository ?? AiRepository(callFunction: stagingAiCall),
         ),
         RepositoryProvider.value(value: trackerClock),
         RepositoryProvider.value(value: shareSheet),

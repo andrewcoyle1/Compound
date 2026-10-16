@@ -22,6 +22,9 @@ class _Picker implements PhotoPicker {
 
   @override
   Future<Uint8List?> pick(PhotoSource source, PhotoSize size) async => photo;
+
+  @override
+  Future<void> openSettings() async {}
 }
 
 // The whole app on the staging flavor's in-memory data, signed in as the

@@ -1,3 +1,4 @@
+import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
@@ -169,6 +170,9 @@ Future<void> main() async {
       // picture.
       imageRepository: InMemoryImageRepository(),
       photoPicker: samplePhotoPicker(),
+      // Canned answers, as Swift's MockAIService gives; nothing leaves the
+      // device.
+      aiRepository: AiRepository(callFunction: stagingAiCall),
       programRepository: InMemoryProgramRepository(
         mesocycles: sampleMesocycles(now: now),
         macrocycles: sampleMacrocycles(now: now),

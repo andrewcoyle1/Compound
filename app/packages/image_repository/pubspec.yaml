@@ -8,6 +8,7 @@ environment:
   flutter: ^3.47.0
 
 dependencies:
+  app_settings: 9.0.0
   firebase_storage: 13.6.0
   flutter:
     sdk: flutter

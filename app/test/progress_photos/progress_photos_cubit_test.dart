@@ -22,6 +22,9 @@ class _Picker implements PhotoPicker {
     if (error case final error?) throw error;
     return photo;
   }
+
+  @override
+  Future<void> openSettings() async {}
 }
 
 class _FailingUpload extends InMemoryImageRepository {

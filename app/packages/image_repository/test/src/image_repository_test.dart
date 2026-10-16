@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_repository/image_repository.dart';
@@ -124,6 +124,11 @@ void main() {
       expect(PhotoSize.progressPhoto.maxDimension, 1600);
       expect(PhotoSize.progressPhoto.quality, 80);
     });
+
+    test('caps a food photo below the callable limit', () {
+      expect(PhotoSize.foodPhoto.maxDimension, 1600);
+      expect(PhotoSize.foodPhoto.quality, 80);
+    });
   });
 
   group('DevicePhotoPicker', () {
@@ -180,6 +185,62 @@ void main() {
     test('defaults to the platform picker', () {
       expect(DevicePhotoPicker(), isA<PhotoPicker>());
     });
+
+    void refuse(String code) => when(
+      () => picker.pickImage(
+        source: any(named: 'source'),
+        maxWidth: any(named: 'maxWidth'),
+        maxHeight: any(named: 'maxHeight'),
+        imageQuality: any(named: 'imageQuality'),
+        requestFullMetadata: any(named: 'requestFullMetadata'),
+      ),
+    ).thenThrow(PlatformException(code: code));
+
+    for (final code in ['camera_access_denied', 'photo_access_denied']) {
+      test('a refusal ($code) is a PhotoAccessDeniedException', () {
+        refuse(code);
+        expect(
+          DevicePhotoPicker(picker: picker)
+              .pick(PhotoSource.camera, PhotoSize.foodPhoto),
+          throwsA(isA<PhotoAccessDeniedException>()),
+        );
+      });
+    }
+
+    test('any other failure is passed on', () {
+      refuse('no_available_camera');
+      expect(
+        DevicePhotoPicker(picker: picker)
+            .pick(PhotoSource.camera, PhotoSize.foodPhoto),
+        throwsA(isA<PlatformException>()),
+      );
+    });
+
+    test('opens Settings with the opener it was given', () async {
+      var opened = 0;
+      await DevicePhotoPicker(
+        picker: picker,
+        openSettings: () async => opened++,
+      ).openSettings();
+      expect(opened, 1);
+    });
+
+    test("opens app_settings' page by default", () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      const channel = MethodChannel('com.spencerccf.app_settings/methods');
+      final calls = <MethodCall>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            return null;
+          });
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null),
+      );
+      await DevicePhotoPicker(picker: picker).openSettings();
+      expect(calls, hasLength(1));
+    });
   });
 
   group('SamplePhotoPicker', () {
@@ -189,6 +250,13 @@ void main() {
       expect(
         await picker.pick(PhotoSource.library, PhotoSize.progressPhoto),
         jpeg,
+      );
+    });
+
+    test('has no Settings to open', () async {
+      await expectLater(
+        SamplePhotoPicker(() async => jpeg).openSettings(),
+        completes,
       );
     });
   });

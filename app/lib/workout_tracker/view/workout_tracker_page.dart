@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/gym_profiles/view/gym_profile_page.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/settings/training/view/workout_settings_page.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/training_library/view/exercise_picker_page.dart';
 import 'package:compound/workout_session_detail/view/workout_session_detail_page.dart';
@@ -222,6 +223,9 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
             ],
           ),
         );
+      case BlockMovedEffect(:final position, :final count):
+        unawaited(HapticFeedback.selectionClick());
+        announce(l10n.trackerPosition(position, count));
       case StillTrainingEffect(:final lastSet):
         unawaited(_askStillTraining(context, lastSet));
       case StartFailedEffect() || null:
@@ -380,6 +384,9 @@ class _Tracker extends StatelessWidget {
               items: state.strip,
               onSelected: cubit.selectExercise,
               onAddExercise: () => unawaited(_addExercises(context)),
+              onDoNext: cubit.doNext,
+              onDoLater: cubit.doLater,
+              onMove: cubit.moveBlock,
             ),
           Expanded(
             child: session.exercises.isEmpty
@@ -468,7 +475,7 @@ class _Title extends StatelessWidget {
   }
 }
 
-enum _MenuAction { pause, finish, notes, gym, discard }
+enum _MenuAction { pause, finish, notes, workoutSettings, gym, discard }
 
 class _Menu extends StatelessWidget {
   const new({required this.state});
@@ -486,6 +493,7 @@ class _Menu extends StatelessWidget {
         _MenuAction.pause => context.read<ActiveWorkoutCubit>().togglePause(),
         _MenuAction.finish => unawaited(finishWorkout(context)),
         _MenuAction.notes => unawaited(_workoutNotes(context)),
+        _MenuAction.workoutSettings => _workoutSettings(context),
         _MenuAction.gym => _gymSettings(context),
         _MenuAction.discard => unawaited(_discard(context)),
       },
@@ -513,6 +521,14 @@ class _Menu extends StatelessWidget {
             title: Text(l10n.trackerNotesMenu),
           ),
         ),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: _MenuAction.workoutSettings,
+          child: ListTile(
+            leading: const Icon(AppSymbols.settings),
+            title: Text(l10n.settingsWorkoutSettings),
+          ),
+        ),
         // Offered only when the workout has a gym to show.
         if (state.gym != null)
           PopupMenuItem(
@@ -531,6 +547,15 @@ class _Menu extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Workout Settings over the tracker; the tracker follows a change at
+  /// once.
+  void _workoutSettings(BuildContext context) {
+    context.read<ActiveWorkoutCubit>().workoutSettingsOpened();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const WorkoutSettingsPage()),
     );
   }
 
@@ -704,6 +729,11 @@ class _PrimaryButton extends StatelessWidget {
     final isLarge = MediaQuery.textScalerOf(context).scale(1) > 1.4;
     final inGrace = state.isInGraceAt(now);
     String title;
+    // What the button is called, short enough to say, with the rest of its
+    // words as its value: Voice Control and Voice Access match the name,
+    // as Swift's input labels do ("Log Set 2", "Skip Rest", "Next").
+    String name;
+    String? value;
     switch (slot) {
       case r.SlotLog(:final setId):
         final set = state.set(setId);
@@ -711,14 +741,20 @@ class _PrimaryButton extends StatelessWidget {
         title = set == null || exercise == null
             ? ''
             : TrackerText.logTitle(l10n, set, exercise, locale: locale);
-        if (isLarge) title = title.split(' · ').first;
+        final [first, ...rest] = title.split(' · ');
+        name = first;
+        value = rest.isEmpty ? null : rest.join(' · ');
+        if (isLarge) title = first;
         if (inGrace) title = l10n.trackerRestDone(title);
       case r.SlotNext(:final exerciseId):
-        title = l10n.trackerNext(state.exercise(exerciseId)?.name ?? '');
+        final exerciseName = state.exercise(exerciseId)?.name ?? '';
+        title = l10n.trackerNext(exerciseName);
+        name = l10n.trackerNextShort;
+        value = exerciseName;
       case r.SlotFinish():
-        title = l10n.trackerFinishTitle;
+        title = name = l10n.trackerFinishTitle;
       case r.SlotResume():
-        title = l10n.trackerResume;
+        title = name = l10n.trackerResume;
       case r.SlotSkipRest():
         final left = state.restEnd!.difference(now);
         final clock = AppFormat.duration(
@@ -727,14 +763,23 @@ class _PrimaryButton extends StatelessWidget {
         title = isLarge
             ? l10n.trackerSkipRest
             : '${l10n.trackerSkipRest} $clock';
+        name = l10n.trackerSkipRest;
+        value = clock;
     }
-    final button = AppCtaButton(
-      label: title,
-      onPressed: inGrace
-          ? null
-          : slot is r.SlotFinish
-          ? () => unawaited(finishWorkout(context))
-          : cubit.pressPrimary,
+    final onPressed = inGrace
+        ? null
+        : slot is r.SlotFinish
+        ? () => unawaited(finishWorkout(context))
+        : cubit.pressPrimary;
+    final button = Semantics(
+      key: const Key('WorkoutTracker.primary'),
+      button: true,
+      enabled: onPressed != null,
+      label: name,
+      value: value,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: AppCtaButton(label: title, onPressed: onPressed),
     );
     return Padding(
       padding: const EdgeInsets.fromLTRB(

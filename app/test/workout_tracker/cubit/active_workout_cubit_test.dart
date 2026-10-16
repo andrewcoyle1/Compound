@@ -515,7 +515,13 @@ void main() {
       expect(cubit.state.saveNotice, SaveProgress.failed);
       expect(await store.load(), isNotNull);
       expect(cubit.state.isActive, isTrue);
-      expect(events(), contains('WorkoutTrackerView_FinishWorkout_Fail'));
+      final names = events();
+      expect(names, contains('WorkoutTrackerView_FinishWorkout_Fail'));
+      // Each failed attempt, as Swift's `saveFinishedWorkout` logs it.
+      expect(
+        names.where((e) => e == 'finish_workout_save_error'),
+        hasLength(1),
+      );
     });
 
     test('discarding forgets the workout', () async {

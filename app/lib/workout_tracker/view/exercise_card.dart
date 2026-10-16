@@ -83,7 +83,13 @@ class ExerciseCard extends StatelessWidget {
                 memberLabel: letter == null
                     ? null
                     : r.ActiveWorkout.memberLabel(letter, index),
+                // A superset is put off as one, from its first member.
+                offersDoLater: index == 0 && member.canDoLater,
               ),
+            for (final member in card)
+              if (_ProgressionNote.textOf(context, state, member)
+                  case final text?)
+                _ProgressionNote(text: text),
             const SizedBox(height: AppSpacing.s),
             _Headings(member: card.first),
             for (final member in card)
@@ -136,10 +142,15 @@ class const _Row({
 
 /// The exercise's name, targets and notes, with its menu.
 class _Header extends StatelessWidget {
-  const new({required this.member, required this.memberLabel});
+  const new({
+    required this.member,
+    required this.memberLabel,
+    this.offersDoLater = false,
+  });
 
   final TrackerExercise member;
   final String? memberLabel;
+  final bool offersDoLater;
 
   @override
   Widget build(BuildContext context) {
@@ -206,6 +217,8 @@ class _Header extends StatelessWidget {
               _ExerciseAction.sides =>
                 context.read<ActiveWorkoutCubit>().toggleSides(exercise.id),
               _ExerciseAction.notes => unawaited(_editNotes(context)),
+              _ExerciseAction.doLater =>
+                context.read<ActiveWorkoutCubit>().doLater(exercise.id),
               _ExerciseAction.targets => unawaited(_editTargets(context)),
               _ExerciseAction.swap => unawaited(_swap(context)),
               _ExerciseAction.settings => unawaited(_settings(context)),
@@ -219,6 +232,14 @@ class _Header extends StatelessWidget {
                   title: Text(l10n.trackerNotes),
                 ),
               ),
+              if (offersDoLater)
+                PopupMenuItem(
+                  value: _ExerciseAction.doLater,
+                  child: ListTile(
+                    leading: const Icon(AppSymbols.doLater),
+                    title: Text(l10n.trackerDoLater),
+                  ),
+                ),
               const PopupMenuDivider(),
               if (exercise.equipmentVariations.isNotEmpty)
                 PopupMenuItem(
@@ -372,6 +393,11 @@ class _Header extends StatelessWidget {
           label: l10n.trackerSessionNote,
           footer: l10n.trackerSessionNoteFooter,
           initial: member.exercise.notes ?? '',
+          // The note left last time, the session the Last column reads.
+          hint: switch (member.previous?.notes?.trim()) {
+            final note? when note.isNotEmpty => note,
+            _ => null,
+          },
         ),
         NoteField(
           label: l10n.trackerExerciseNote,
@@ -415,10 +441,124 @@ class _Header extends StatelessWidget {
   }
 }
 
+/// Why smart progression changed today's numbers, above the sets until it
+/// is tapped (`ProgressionNote`): the reason, then the plan the exercise
+/// opens with when the set plan is on.
+class _ProgressionNote extends StatelessWidget {
+  const new({required this.text});
+
+  final String text;
+
+  /// The note for [member], or null when none shows.
+  static String? textOf(
+    BuildContext context,
+    ActiveWorkoutState state,
+    TrackerExercise member,
+  ) {
+    if (!member.showsProgressionNote) return null;
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final reason = member.progressionReason;
+    final note = [
+      if (reason != null)
+        TrackerText.progressionReason(
+          l10n,
+          reason,
+          member.weightUnit,
+          locale: locale,
+        ),
+      if (state.settings?.setPlanning ?? false)
+        ?TrackerText.planSummary(
+          l10n,
+          member.exercise,
+          member.weightUnit,
+          locale: locale,
+        ),
+    ];
+    return note.isEmpty ? null : note.join(' ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.l,
+        AppSpacing.s,
+        AppSpacing.l,
+        0,
+      ),
+      child: Semantics(
+        key: const Key('ExerciseCard.progressionNote'),
+        button: true,
+        label: l10n.trackerProgressionNoteLabel(text),
+        hint: l10n.trackerDismissesNote,
+        excludeSemantics: true,
+        onTap: context.read<ActiveWorkoutCubit>().acknowledgeProgressionNote,
+        child: Material(
+          color: AppColors.tintedSurface(scheme.primary),
+          shape: const RoundedSuperellipseBorder(
+            borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
+          ),
+          child: InkWell(
+            onTap: context
+                .read<ActiveWorkoutCubit>()
+                .acknowledgeProgressionNote,
+            customBorder: const RoundedSuperellipseBorder(
+              borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.m),
+              child: Column(
+                spacing: AppSpacing.xs,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: AppSpacing.xs,
+                    children: [
+                      Icon(
+                        AppSymbols.smartProgression,
+                        size: AppIconSize.small.of(context),
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      Text(
+                        l10n.workoutSettingsSmartProgression,
+                        style: AppTextStyles.label.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.rowTitle.copyWith(
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    l10n.trackerTapToDismiss,
+                    style: AppTextStyles.label.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 enum _ExerciseAction {
   equipment,
   sides,
   notes,
+  doLater,
   targets,
   swap,
   settings,
@@ -656,14 +796,35 @@ class _SetRow extends StatelessWidget {
             ? l10n.setWarmup
             : l10n.trackerLogSet(badge),
       ),
+      // A tap copies last time's figures into an open set
+      // (`SetColumnValue`'s fill).
       last: Semantics(
         label: '${l10n.trackerColumnLast}, $lastText',
+        hint: previousModel == null || isLogged ? null : l10n.trackerFillsSet,
+        button: previousModel != null && !isLogged,
         excludeSemantics: true,
-        child: Text(
-          lastText,
-          style: secondary,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
+        onTap: previousModel == null || isLogged
+            ? null
+            : () => cubit.fillFromPrevious(set.id),
+        child: InkWell(
+          key: ValueKey('last-${set.id}'),
+          onTap: previousModel == null || isLogged
+              ? null
+              : () => cubit.fillFromPrevious(set.id),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppControlSize.row - 8,
+            ),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                lastText,
+                style: secondary,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
         ),
       ),
       fields: [

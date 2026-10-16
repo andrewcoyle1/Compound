@@ -533,6 +533,47 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _emitTracker();
   }
 
+  /// A tap on Last: last time's figures copied into [setId]
+  /// (`onFillFromPrevious`). Not on a logged set, where a stray tap would
+  /// overwrite what was recorded.
+  void fillFromPrevious(String setId) {
+    final controller = _controller;
+    final exercise = state.exerciseHolding(setId);
+    final set = state.set(setId);
+    if (controller == null || exercise == null || set == null) return;
+    if (set.completedAt != null) return;
+    final previous = controller.previousExercise(exercise);
+    final last = previous == null
+        ? null
+        : r.ActiveWorkout.lastSet(
+            rulesSet(set),
+            rulesExercise(exercise),
+            rulesExercise(previous),
+          );
+    if (last == null) return;
+    final filled = r.ActiveWorkout.fillingFromPrevious(
+      rulesSet(set),
+      last,
+      exercise.trackingMode.rules,
+    );
+    controller
+      ..editSet(modelSet(filled, original: set, now: _clock()))
+      ..commitEdit();
+    _track('SetTrackerRow_SetFilled', parameters: {'source': 'last'});
+    _emitTracker(effect: const SelectionEffect());
+  }
+
+  /// The progression note tapped: read, so it goes for this exercise for
+  /// the rest of the workout.
+  void acknowledgeProgressionNote() {
+    final controller = _controller;
+    final exercise = controller?.currentExercise;
+    if (controller == null || exercise == null) return;
+    controller.acknowledgeProgressionNote(exercise.templateId);
+    _track('WorkoutTracker_ProgressionNote_Acknowledged');
+    _emitTracker();
+  }
+
   // MARK: - Correction
 
   /// A rep off or on the set just logged.
@@ -564,6 +605,15 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   void skipRest() {
     _controller?.skipRest();
     _track('WorkoutTracker_Rest_Skipped');
+    _restChanged();
+    _emitTracker();
+  }
+
+  /// Skip Rest on the bar over the tabs (`TrainingAccessoryPresenter`).
+  void skipRestFromBar() {
+    if (_controller == null) return;
+    _track('TrainingAccessory_SkipRest');
+    _controller!.skipRest();
     _restChanged();
     _emitTracker();
   }
@@ -660,6 +710,44 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _track('WorkoutTracker_Exercise_Deleted');
     _restChanged();
     _emitTracker();
+  }
+
+  /// A busy machine: [exerciseId], with its superset, to the end; the card
+  /// moves on when it was on it (`onDoLaterPressed`).
+  void doLater(String exerciseId) =>
+      _moved(() => _controller?.doLater(exerciseId), later: true);
+
+  /// [exerciseId], with its superset, straight after the card's block
+  /// (`onDoNextPressed`).
+  void doNext(String exerciseId) =>
+      _moved(() => _controller?.doNext(exerciseId), later: false);
+
+  void _moved(void Function() move, {required bool later}) {
+    if (_controller == null) return;
+    move();
+    _track(
+      'WorkoutTracker_Exercise_Moved',
+      parameters: {'to': later ? 'later' : 'next'},
+    );
+    _emitTracker(effect: const SelectionEffect());
+  }
+
+  /// The strip's Move Earlier or Move Later: the block [blockId] to
+  /// [index] among the blocks, its new place announced
+  /// (`onStripItemMoved`).
+  void moveBlock(String blockId, int index) {
+    final controller = _controller;
+    if (controller == null) return;
+    final from = controller.strip.indexWhere((item) => item.id == blockId);
+    controller.moveBlock(blockId, index);
+    final strip = controller.strip;
+    final to = strip.indexWhere((item) => item.id == blockId);
+    if (to == from) return;
+    _track(
+      'WorkoutTracker_Exercise_Reordered',
+      parameters: {'from': from, 'to': index},
+    );
+    _emitTracker(effect: BlockMovedEffect(to + 1, strip.length));
   }
 
   /// Swap opened from the exercise's menu.
@@ -968,6 +1056,19 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
   }
 
+  /// Why smart progression changed [exercise]'s numbers, if it did.
+  static r.ProgressionReason? _progressionReason(
+    ActiveSessionController controller,
+    WorkoutExerciseModel exercise,
+  ) {
+    final previous = controller.previousExercise(exercise);
+    return r.ActiveWorkout.progressionReason(
+      suggestion: controller.suggestion(exercise),
+      last: previous == null ? null : rulesExercise(previous),
+      planned: rulesExercise(exercise),
+    );
+  }
+
   ExerciseWeightUnit _unit(WorkoutExerciseModel exercise) =>
       exercise.weightUnit ?? _preference(exercise.templateId).weightUnit;
 
@@ -1040,6 +1141,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   void discardPressed() => _track('WorkoutTracker_Discard_Pressed');
 
+  /// Workout Settings opened from the menu.
+  void workoutSettingsOpened() =>
+      _track('WorkoutTracker_WorkoutSettings_Opened');
+
   /// Gym Settings opened from the menu.
   void gymSettingsOpened() => _track('WorkoutTracker_GymSettings_Opened');
 
@@ -1083,6 +1188,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           privateSettings: _private,
           firstWeekday: firstWeekday,
           currentUid: () => _uid,
+          // Each attempt that fails, as Swift's `saveFinishedWorkout`.
+          onAttemptFailed: (error, {required isTransient}) => _track(
+            'finish_workout_save_error',
+            parameters: {'error': '$error', 'is_transient': isTransient},
+            type: LogType.severe,
+          ),
           onProgress: (progress) {
             if (progress == SaveProgress.retrying) retried = true;
             if (isClosed) return;
@@ -1300,6 +1411,16 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             weightStep: controller.weightStep(member.id),
             weightUnit: _unit(member),
             distanceUnit: _distanceUnit(member),
+            canDoLater: controller.canDoLater(member.id),
+            progressionReason: member.id == current?.id
+                ? _progressionReason(controller, member)
+                : null,
+            showsProgressionNote:
+                member.id == current?.id &&
+                !paused.acknowledgedNoteTemplateIds.contains(
+                  member.templateId,
+                ) &&
+                rulesExercise(member).loggedSetCount == 0,
             restAnchor: controller.restAnchor(member.id),
             exerciseNote: _exerciseNote(member.templateId),
             restPicker: {

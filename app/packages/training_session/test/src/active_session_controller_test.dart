@@ -1116,6 +1116,40 @@ void main() {
       expect(c.state.customRestSeconds, {'s1': 30});
     });
 
+    // WorkoutTrackingRowPresenterTests' rest picker.
+    test('the rest picker opens on the rest that would run', () {
+      final c = controller(
+        session([
+          exercise(
+            'a',
+            templateId: 'bench',
+            sets: [
+              set('w1', warmup: true),
+              set('w2', index: 2, warmup: true),
+              set('a1', index: 3),
+              set('a2', index: 4),
+            ],
+          ),
+        ]),
+        restOverrides: const {'bench': 240},
+        workoutSettings: settings(),
+      );
+      expect(c.restPickerSeconds('a1'), 240);
+      // The last warm-up rests three quarters of it.
+      expect(c.restPickerSeconds('w2'), 180);
+      // No rest runs between warm-ups: the picker offers the base.
+      expect(c.restPickerSeconds('w1'), 240);
+      expect(c.customRest('a1'), isNull);
+
+      // One set by hand wins, and clearing it goes back.
+      c.setCustomRest('a1', 135);
+      expect(c.restPickerSeconds('a1'), 135);
+      expect(c.customRest('a1'), 135);
+      c.setCustomRest('a1', null);
+      expect(c.restPickerSeconds('a1'), 240);
+      expect(c.restPickerSeconds('missing'), 90);
+    });
+
     test('the exercise rest override and plan rest are read', () {
       final c = controller(
         session([

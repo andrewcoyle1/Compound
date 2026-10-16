@@ -11409,5 +11409,218 @@
     "trackerUnableToSaveGym": "Unable to Save Gym",
     "@trackerUnableToSaveGym": {
         "description": "Alert title: the bar or plates chosen could not be saved"
+    },
+    "trackerSetTypeStandard": "Standard",
+    "@trackerSetTypeStandard": {
+        "description": "Set type menu: an ordinary working set"
+    },
+    "trackerSetTypeWarmup": "Warm-up",
+    "@trackerSetTypeWarmup": {
+        "description": "Set type menu: a warm-up"
+    },
+    "trackerSetTypeDrop": "Drop Set",
+    "@trackerSetTypeDrop": {
+        "description": "Set type menu: a drop set"
+    },
+    "trackerSetTypeAmrap": "Failure Set",
+    "@trackerSetTypeAmrap": {
+        "description": "Set type menu: a set to failure (AMRAP)"
+    },
+    "trackerSetTypeMyo": "Myo Set",
+    "@trackerSetTypeMyo": {
+        "description": "Set type menu: a myo-reps set"
+    },
+    "trackerSetTypeRestPause": "Rest-pause",
+    "@trackerSetTypeRestPause": {
+        "description": "Set type menu: a rest-pause set"
+    },
+    "trackerSetTypeCluster": "Cluster",
+    "@trackerSetTypeCluster": {
+        "description": "Set type menu: a cluster set"
+    },
+    "trackerSetTypePartials": "Lengthened partials",
+    "@trackerSetTypePartials": {
+        "description": "Set type menu: lengthened partials"
+    },
+    "trackerSetTypeStretch": "Loaded stretch",
+    "@trackerSetTypeStretch": {
+        "description": "Set type menu: a loaded stretch"
+    },
+    "trackerSetTypeHold": "Static hold",
+    "@trackerSetTypeHold": {
+        "description": "Set type menu: a static hold"
+    },
+    "trackerSetType": "Set Type",
+    "@trackerSetType": {
+        "description": "The set number button: opens the set type menu"
+    },
+    "trackerAddDrop": "Add Another Drop",
+    "@trackerAddDrop": {
+        "description": "Set type menu: another drop under a drop set"
+    },
+    "trackerAddMiniSet": "Add Another Mini-Set",
+    "@trackerAddMiniSet": {
+        "description": "Set type menu: another mini-set under a myo set"
+    },
+    "trackerChipDrop": "Drop",
+    "@trackerChipDrop": {
+        "description": "Chip under a drop set's row"
+    },
+    "trackerChipMini": "Mini",
+    "@trackerChipMini": {
+        "description": "Chip under a mini-set's row"
+    },
+    "trackerChipFailure": "Failure",
+    "@trackerChipFailure": {
+        "description": "Chip under a set to failure"
+    },
+    "trackerChipFailureTarget": "Failure {target}+",
+    "@trackerChipFailureTarget": {
+        "description": "Chip under a set to failure with a target, e.g. Failure 8+",
+        "placeholders": {
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerDeleteDropSet": "Delete Drop Set",
+    "@trackerDeleteDropSet": {
+        "description": "Row action: delete a drop"
+    },
+    "trackerDeleteMiniSet": "Delete Mini-Set",
+    "@trackerDeleteMiniSet": {
+        "description": "Row action: delete a mini-set"
+    },
+    "trackerDeletePartials": "Delete Partials",
+    "@trackerDeletePartials": {
+        "description": "Row action: delete partials after a set"
+    },
+    "trackerDeleteStretch": "Delete Stretch",
+    "@trackerDeleteStretch": {
+        "description": "Row action: delete a stretch after a set"
+    },
+    "trackerDeleteHold": "Delete Hold",
+    "@trackerDeleteHold": {
+        "description": "Row action: delete a hold after a set"
+    },
+    "trackerDeleteSetTitle": "Delete {name}?",
+    "@trackerDeleteSetTitle": {
+        "description": "Alert title: deleting a set that has drops or mini-sets, e.g. Delete Set 2?",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerDeleteAlsoDrops": "{count, plural, =1{This also deletes its drop set.} other{This also deletes its {count} drop sets.}}",
+    "@trackerDeleteAlsoDrops": {
+        "description": "Alert: deleting a set takes its drops too",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerDeleteAlsoMinis": "{count, plural, =1{This also deletes its mini-set.} other{This also deletes its {count} mini-sets.}}",
+    "@trackerDeleteAlsoMinis": {
+        "description": "Alert: deleting a set takes its mini-sets too",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerDeleteAlsoBoth": "{count, plural, =1{This also deletes its drop set and mini-set.} other{This also deletes its {count} drop sets and mini-sets.}}",
+    "@trackerDeleteAlsoBoth": {
+        "description": "Alert: deleting a set takes its drops and mini-sets too",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerChangeTypeTitle": "Change {name} to {type}?",
+    "@trackerChangeTypeTitle": {
+        "description": "Alert title: a new set type would delete logged rows, e.g. Change Set 2 to Standard?",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerChangeTypeMessage": "{count, plural, =1{This deletes {count} logged row under it.} other{This deletes {count} logged rows under it.}}",
+    "@trackerChangeTypeMessage": {
+        "description": "Alert: how many logged rows a set type change deletes",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerChange": "Change",
+    "@trackerChange": {
+        "description": "Alert button: change the set type"
+    },
+    "trackerWarmupSetName": "Warm-up set",
+    "@trackerWarmupSetName": {
+        "description": "A warm-up row's name in alerts"
+    },
+    "trackerSetName": "Set {number}",
+    "@trackerSetName": {
+        "description": "A set's name in alerts, e.g. Set 2",
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerRestTimer": "Rest Timer…",
+    "@trackerRestTimer": {
+        "description": "Row action: set this set's rest"
+    },
+    "trackerSetRest": "Set Rest",
+    "@trackerSetRest": {
+        "description": "Rest picker title"
+    },
+    "trackerRestMinutes": "{minutes} min",
+    "@trackerRestMinutes": {
+        "description": "Rest picker: minutes",
+        "placeholders": {
+            "minutes": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerRestSeconds": "{seconds} s",
+    "@trackerRestSeconds": {
+        "description": "Rest picker: seconds",
+        "placeholders": {
+            "seconds": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerSplitSides": "Split L/R",
+    "@trackerSplitSides": {
+        "description": "Exercise menu: log each side as its own set"
+    },
+    "trackerSplitSidesHint": "Logs each side as its own set",
+    "@trackerSplitSidesHint": {
+        "description": "Hint on Split L/R"
+    },
+    "trackerStartTimer": "Start timer",
+    "@trackerStartTimer": {
+        "description": "Timed set: starts the stopwatch"
+    },
+    "trackerStopTimer": "Stop timer",
+    "@trackerStopTimer": {
+        "description": "Timed set: stops the stopwatch"
+    },
+    "trackerStopTimerHint": "Writes the time held into this set",
+    "@trackerStopTimerHint": {
+        "description": "Hint on the running stopwatch"
     }
 }

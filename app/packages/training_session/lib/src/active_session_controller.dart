@@ -608,6 +608,29 @@ class ActiveSessionController {
     _scheduleSave();
   }
 
+  /// The rest set by hand on [setId]'s row, if any.
+  int? customRest(String setId) => _customRestSeconds[setId];
+
+  /// What the rest picker opens on for [setId]: a rest set by hand, else
+  /// the one that would run after it, scaling included, else the unscaled
+  /// base where the settings say no rest runs there
+  /// (`onRestPickerRequested`).
+  int restPickerSeconds(String setId) {
+    final custom = _customRestSeconds[setId];
+    if (custom != null) return custom;
+    final exercise = _exerciseHolding(setId);
+    if (exercise == null) return _rules.defaultRestDurationSeconds;
+    final set = exercise.sets.firstWhere((s) => s.id == setId);
+    final context = _restContext(exercise);
+    return r.RestDurationRules.restAfterCompletingInExercise(
+          rulesSet(set),
+          rulesExercise(exercise),
+          _rules,
+          context,
+        ) ??
+        r.RestDurationRules.baseRestDuration(_rules, context);
+  }
+
   /// The steps [exerciseId]'s weight moves by on the keyboard: its equipment
   /// in the workout's gym, in its unit, mirrored for assistance.
   r.WeightStep weightStep(String exerciseId) {

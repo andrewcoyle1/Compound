@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/gym_profiles/view/gym_profile_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/training_library/view/exercise_picker_page.dart';
@@ -452,7 +453,7 @@ class _Title extends StatelessWidget {
   }
 }
 
-enum _MenuAction { pause, finish, notes, discard }
+enum _MenuAction { pause, finish, notes, gym, discard }
 
 class _Menu extends StatelessWidget {
   const new({required this.state});
@@ -470,6 +471,7 @@ class _Menu extends StatelessWidget {
         _MenuAction.pause => context.read<ActiveWorkoutCubit>().togglePause(),
         _MenuAction.finish => unawaited(finishWorkout(context)),
         _MenuAction.notes => unawaited(_workoutNotes(context)),
+        _MenuAction.gym => _gymSettings(context),
         _MenuAction.discard => unawaited(_discard(context)),
       },
       itemBuilder: (_) => [
@@ -496,6 +498,15 @@ class _Menu extends StatelessWidget {
             title: Text(l10n.trackerNotesMenu),
           ),
         ),
+        // Offered only when the workout has a gym to show.
+        if (state.gym != null)
+          PopupMenuItem(
+            value: _MenuAction.gym,
+            child: ListTile(
+              leading: const Icon(AppSymbols.gym),
+              title: Text(l10n.gymSettingsMenu),
+            ),
+          ),
         const PopupMenuDivider(),
         PopupMenuItem(
           value: _MenuAction.discard,
@@ -506,6 +517,13 @@ class _Menu extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void _gymSettings(BuildContext context) {
+    final gym = state.gym;
+    if (gym == null) return;
+    context.read<ActiveWorkoutCubit>().gymSettingsOpened();
+    unawaited(GymProfilePage.push(context, gym));
   }
 
   Future<void> _workoutNotes(BuildContext context) async {

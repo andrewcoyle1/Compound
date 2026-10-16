@@ -5,7 +5,6 @@ import 'package:compound/programs/programs.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/workout_editor/workout_editor.dart';
-import 'package:compound_models/compound_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';

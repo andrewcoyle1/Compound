@@ -244,6 +244,9 @@ abstract final class AppSymbols {
   /// Duplicating.
   static const IconData duplicate = Icons.library_add_rounded;
 
+  /// Making something the usual one, such as the favourite gym.
+  static const IconData favourite = Icons.star_rounded;
+
   /// Closing.
   static const IconData close = Icons.close_rounded;
 

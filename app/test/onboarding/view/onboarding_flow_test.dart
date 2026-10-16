@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/gym_profiles/view/gym_profile_page.dart';
 import 'package:compound/onboarding/goal/goal_setup_cubit.dart';
 import 'package:compound/onboarding/logic/staging_onboarding.dart';
 import 'package:compound/onboarding/onboarding.dart';
@@ -189,6 +190,20 @@ void main() {
       expect(find.bySemanticsLabel('Onboarding progress'), findsOneWidget);
     });
   }
+
+  testWidgets('the gym step names the gym, opens its equipment, and '
+      'Continue makes it the usual gym and moves on', (tester) async {
+    await pumpAt(tester, OnboardingStep.gymProfileSetup);
+    await tester.enterText(find.byType(TextField).first, 'Home Gym');
+    await tapText(tester, 'Continue');
+    expect(find.byType(GymProfileView), findsOneWidget);
+    await tapText(tester, 'Continue');
+
+    final profile = await tester.runAsync(() => users.watchUser(uid).first);
+    expect(profile?.submittedFavouriteGymProfileId, isNotNull);
+    expect(find.byType(GymProfileView), findsNothing);
+    expect(find.text('Build My Own'), findsOneWidget);
+  });
 
   testWidgets('Build My Own designs a mesocycle and moves on', (tester) async {
     await pumpAt(tester, OnboardingStep.mesocycleSetup);

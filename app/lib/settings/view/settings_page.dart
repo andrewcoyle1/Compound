@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/cubit/settings_cubit.dart';
@@ -136,6 +137,11 @@ class _SettingsViewState extends State<SettingsView> {
               AppSection(
                 header: l10n.settingsTrainingHeader,
                 children: [
+                  AppListRowButton(
+                    title: l10n.gymProfilesTitle,
+                    icon: AppSymbols.gym,
+                    onPressed: () => _open(GymProfilesPage.name),
+                  ),
                   AppListRowButton(
                     title: l10n.settingsWorkoutSettings,
                     icon: AppSymbols.workout,

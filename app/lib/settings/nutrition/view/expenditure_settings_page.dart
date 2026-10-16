@@ -5,6 +5,8 @@ import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/settings/nutrition/bloc/expenditure_estimate_bloc.dart';
 import 'package:compound/settings/nutrition/cubit/strategy_settings_cubit.dart';
 import 'package:compound/settings/nutrition/logic/nutrition_settings_labels.dart';
@@ -90,8 +92,11 @@ class ExpenditureSettingsView extends StatelessWidget {
         final start = s.calculationStartDate;
         return [
           const _EstimateSection(),
+          MethodInfoHeader(
+            title: l10n.expenditureSettingsInitialHeader,
+            info: MethodInfo.restingMetabolicRate(l10n),
+          ),
           AppSection(
-            header: l10n.expenditureSettingsInitialHeader,
             children: [
               picker(
                 NutritionStrategySettingsKeys.estimationMethod,
@@ -241,52 +246,63 @@ class _EstimateSection extends StatelessWidget {
     final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     Text detail(String text, TextStyle style) =>
         Text(text, style: style.copyWith(color: secondary));
-    return AppSection(
-      header: l10n.expenditureSettingsTodayHeader,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: estimate == null
-              ? const Center(child: CircularProgressIndicator.adaptive())
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  spacing: AppSpacing.xs,
-                  children: [
-                    Text(
-                      l10n.expenditureSettingsKcal(estimate.kcal.round()),
-                      style: AppTextStyles.metricLarge,
+        MethodInfoHeader(
+          title: l10n.expenditureSettingsTodayHeader,
+          info: MethodInfo.adaptiveExpenditure(l10n),
+        ),
+        AppSection(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.l),
+              child: estimate == null
+                  ? const Center(child: CircularProgressIndicator.adaptive())
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      spacing: AppSpacing.xs,
+                      children: [
+                        Text(
+                          l10n.expenditureSettingsKcal(estimate.kcal.round()),
+                          style: AppTextStyles.metricLarge,
+                        ),
+                        if (likelyRange(estimate) case final range?)
+                          detail(
+                            l10n.expenditureSettingsLikely(
+                              range.low,
+                              range.high,
+                            ),
+                            AppTextStyles.rowDetail,
+                          ),
+                        detail(switch (ExpenditureStatus.of(estimate)) {
+                          ExpenditureFixed() => l10n.expenditureSettingsFixed,
+                          ExpenditureCalibrating() =>
+                            l10n.expenditureSettingsCalibrating(
+                              ExpenditureCalibrating.minDays,
+                              ExpenditureCalibrating.minWeighIns,
+                            ),
+                          ExpenditureAdaptive(
+                            :final loggedDays,
+                            :final windowDays,
+                          ) =>
+                            l10n.expenditureSettingsAdaptive(
+                              loggedDays,
+                              windowDays,
+                            ),
+                        }, AppTextStyles.rowDetail),
+                        if (stepAdjustment(estimate) case final kcal?)
+                          detail(
+                            l10n.expenditureSettingsSteps(
+                              kcal > 0 ? '+' : '−',
+                              kcal.abs(),
+                            ),
+                            AppTextStyles.label,
+                          ),
+                      ],
                     ),
-                    if (likelyRange(estimate) case final range?)
-                      detail(
-                        l10n.expenditureSettingsLikely(range.low, range.high),
-                        AppTextStyles.rowDetail,
-                      ),
-                    detail(switch (ExpenditureStatus.of(estimate)) {
-                      ExpenditureFixed() => l10n.expenditureSettingsFixed,
-                      ExpenditureCalibrating() =>
-                        l10n.expenditureSettingsCalibrating(
-                          ExpenditureCalibrating.minDays,
-                          ExpenditureCalibrating.minWeighIns,
-                        ),
-                      ExpenditureAdaptive(
-                        :final loggedDays,
-                        :final windowDays,
-                      ) =>
-                        l10n.expenditureSettingsAdaptive(
-                          loggedDays,
-                          windowDays,
-                        ),
-                    }, AppTextStyles.rowDetail),
-                    if (stepAdjustment(estimate) case final kcal?)
-                      detail(
-                        l10n.expenditureSettingsSteps(
-                          kcal > 0 ? '+' : '−',
-                          kcal.abs(),
-                        ),
-                        AppTextStyles.label,
-                      ),
-                  ],
-                ),
+            ),
+          ],
         ),
       ],
     );

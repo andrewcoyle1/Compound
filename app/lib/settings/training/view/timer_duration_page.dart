@@ -2,6 +2,8 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/settings/training/cubit/exercise_rest_timers_cubit.dart';
 import 'package:compound/settings/training/logic/workout_settings_rules.dart';
 import 'package:compound/settings/training/view/workout_settings_screen.dart';
@@ -44,8 +46,11 @@ class TimerDurationPage extends StatelessWidget {
           screen: 'TimerDurationView',
           title: l10n.restTimerDuration,
           sections: (context, settings, change) => [
+            MethodInfoHeader(
+              title: l10n.timerDurationDefaultsHeader,
+              info: MethodInfo.restIntervals(l10n),
+            ),
             AppSection(
-              header: l10n.timerDurationDefaultsHeader,
               footer: l10n.timerDurationDefaultsFooter,
               children: [
                 for (final type in ExerciseType.values)

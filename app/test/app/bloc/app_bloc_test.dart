@@ -126,10 +126,46 @@ void main() {
             UserModelKeys.userId: 'uid',
             UserModelKeys.email: 'a@b.com',
             UserModelKeys.isAnonymous: false,
+            UserModelKeys.authProviders: <String>[],
             UserModelKeys.creationDate: now,
             UserModelKeys.lastSignInDate: now,
             UserModelKeys.didCompleteOnboarding: false,
           });
+        },
+      );
+
+      blocTest<AppBloc, AppState>(
+        "carries the account's providers, as Swift's raw values, and the "
+        "app's version (`UserModel(auth:creationVersion:)`)",
+        setUp: () {
+          when(() => authRepository.user).thenAnswer(
+            (_) => Stream.value(
+              const AuthUser(
+                uid: 'uid',
+                isAnonymous: false,
+                providers: {SignInProvider.google, SignInProvider.apple},
+              ),
+            ),
+          );
+          when(() => userRepository.userExists('uid'))
+              .thenAnswer((_) async => false);
+          when(() => userRepository.createUser(any())).thenAnswer((_) async {});
+        },
+        build: () => AppBloc(
+          authRepository: authRepository,
+          userRepository: userRepository,
+          now: () => now,
+          appVersion: '1.2.3',
+        ),
+        act: (bloc) => subscribeThenRead(bloc, [null]),
+        verify: (_) {
+          final created =
+              verify(() => userRepository.createUser(captureAny()))
+                      .captured
+                      .single
+                  as UserModel;
+          expect(created.authProviders, ['google', 'apple']);
+          expect(created.creationVersion, '1.2.3');
         },
       );
 

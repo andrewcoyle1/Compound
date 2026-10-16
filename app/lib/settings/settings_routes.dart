@@ -2,6 +2,8 @@ import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/integrations/view/integrations_page.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/account/view/edit_profile_page.dart';
+import 'package:compound/settings/account/view/save_account_page.dart';
+import 'package:compound/settings/dev/dev_settings_page.dart';
 import 'package:compound/settings/general/view/about_page.dart';
 import 'package:compound/settings/general/view/customise_analytics_page.dart';
 import 'package:compound/settings/general/view/legal_page.dart';
@@ -122,5 +124,13 @@ final profileRoutes = <RouteBase>[
     _route(DeleteAccountPage.path, DeleteAccountPage.name, (_, _) {
       return const DeleteAccountPage();
     }),
+    _route(SaveAccountPage.path, SaveAccountPage.name, (_, _) {
+      return const SaveAccountPage();
+    }),
+    // Only reachable where Settings shows its row: never in production.
+    if (DevSettingsPage.isAvailable)
+      _route(DevSettingsPage.path, DevSettingsPage.name, (_, _) {
+        return const DevSettingsPage();
+      }),
   ]),
 ];

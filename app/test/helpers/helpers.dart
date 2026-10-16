@@ -1,5 +1,6 @@
 export 'analytics_recorder.dart';
 export 'expenditure_fixtures.dart';
+export 'fake_store_review.dart';
 export 'library_fixtures.dart';
 export 'library_router.dart';
 export 'photos.dart';

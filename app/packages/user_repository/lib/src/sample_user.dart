@@ -13,7 +13,9 @@ UserModel sampleUser({required DateTime now}) => UserModel(
   userId: sampleUserId,
   email: 'alice@example.com',
   isAnonymous: false,
-  authProviders: const ['google.com'],
+  // Swift's `AuthProviderOption` raw value, as InMemoryAuthRepository's
+  // sample user signs in with Apple.
+  authProviders: const ['apple'],
   displayName: 'Alice Cooper',
   firstName: 'Alice',
   lastName: 'Cooper',

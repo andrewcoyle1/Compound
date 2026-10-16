@@ -26,6 +26,7 @@ import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/review/review_moment.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -53,6 +54,7 @@ class NutritionPage extends StatelessWidget {
             nutritionRepository: context.read<NutritionRepository>(),
             analyticsRepository: context.read<AnalyticsRepository>(),
             uid: state.user.uid,
+            reviews: context.read<ReviewPrompter>(),
           )..add(const NutritionDaySubscriptionRequested()),
         ),
         BlocProvider(

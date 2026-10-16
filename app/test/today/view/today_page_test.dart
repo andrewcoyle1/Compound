@@ -13,6 +13,8 @@ import 'package:compound/progress/view/progress_metric_pages.dart'
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/today/today.dart';
+import 'package:compound/today/view/day_checklist_card.dart';
+import 'package:compound/today/view/streak_card.dart';
 import 'package:compound/training_library/view/workout_template_detail_page.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
@@ -77,7 +79,9 @@ void main() {
     CircleBloc? circleBloc,
     AnalyticsRepository analytics = const AnalyticsRepository(),
     BodyRepository? bodyRepository,
+    Size size = phoneSize,
   }) async {
+    tester.useSize(size);
     final workouts =
         workoutSessionRepository ??
         InMemoryWorkoutSessionRepository(
@@ -430,11 +434,24 @@ void main() {
       },
     );
 
+    testWidgets('lays its sections out in two columns on a tablet', (
+      tester,
+    ) async {
+      await pumpView(tester, size: tabletSize);
+      final lefts = {
+        for (final type in [DayChecklistCard, TodaysWorkoutCard, StreakCard])
+          tester.getTopLeft(find.byType(type)).dx,
+      };
+      // The sections alternate between the two columns.
+      expect(lefts, hasLength(2));
+      expect(find.byType(ListView), findsNothing);
+    });
+
     testWidgets('offers the weekly check-in while it is due', (tester) async {
       await pumpView(tester, checkInDue: true);
       expect(find.text('Weekly Check-In Ready'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Skip This Week'), 200);
-      await tester.pump();
+      await tester.ensureVisible(find.text('Start'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Start'));
       verify(
         () => router.pushNamed<Object?>(

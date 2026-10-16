@@ -129,6 +129,31 @@ void main() {
     expect(find.text('Bob Martinez'), findsNothing);
   });
 
+  testWidgets('declining, following back and pulling to refresh', (
+    tester,
+  ) async {
+    await pump(tester);
+    await tester.tap(find.text('Decline'));
+    await settle(tester);
+    expect(find.text('Bob Martinez'), findsNothing);
+
+    // Priya is followed already, so the button unfollows her.
+    await tester.tap(find.text('Following'));
+    await settle(tester);
+    final viewer = await tester.runAsync(
+      () => world.users.watchUser(sampleUserId).first,
+    );
+    expect(viewer!.followingIds, isNot(contains('user4')));
+
+    await tester.fling(
+      find.text('Dev Patel nudged you to train'),
+      const Offset(0, 400),
+      1000,
+    );
+    await settle(tester);
+    expect(find.text('Dev Patel nudged you to train'), findsOneWidget);
+  });
+
   testWidgets('a like opens the workout', (tester) async {
     await pump(tester);
     await tester.tap(

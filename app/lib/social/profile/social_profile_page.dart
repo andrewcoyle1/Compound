@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/settings/account/view/edit_profile_page.dart';
 import 'package:compound/settings/view/settings_page.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
@@ -14,6 +15,8 @@ import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/social/logic/people.dart';
 import 'package:compound/social/profile/profile_summary.dart';
 import 'package:compound/social/profile/social_profile_cubit.dart';
+import 'package:compound/social/report/report_cubit.dart';
+import 'package:compound/social/report/report_sheet.dart';
 import 'package:compound/social/social_routes.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound/social/weekly_goal/weekly_goal_sheet.dart';
@@ -224,6 +227,19 @@ class _SocialProfileViewState extends State<SocialProfileView> {
                             ),
                     ),
                   ),
+                  PopupMenuItem(
+                    onTap: () => unawaited(
+                      showReportSheet(
+                        context,
+                        ReportedContent(
+                          type: ReportContentType.user,
+                          id: user.userId,
+                          authorId: user.userId,
+                        ),
+                      ),
+                    ),
+                    child: Text(l10n.reportMenu),
+                  ),
                 ],
               ),
           ],
@@ -293,6 +309,11 @@ class _Header extends StatelessWidget {
     );
     final count = summary.workoutCount;
     final streak = summary.latestStreak;
+    // Only the reader's own mesocycle is known without reading someone
+    // else's (`SocialProfilePresenter.mesocycleName`).
+    final mesocycle = context.select<ProgramsCubit, String?>(
+      (cubit) => cubit.state.activeMesocycle?.name,
+    );
     final isLargeText =
         MediaQuery.textScalerOf(context).scale(1) >=
         AppListRow.accessibilityTextScale;
@@ -323,6 +344,8 @@ class _Header extends StatelessWidget {
               ),
             ],
           ),
+        if (summary.isOwn && mesocycle != null)
+          Text(l10n.profileFollowingMesocycle(mesocycle), style: secondary),
         if (summary.isOwn)
           Semantics(
             hint: l10n.socialChangeGoalHint,

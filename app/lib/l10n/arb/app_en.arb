@@ -11082,6 +11082,128 @@
     "@targetChartCreatePlan": {
         "description": "Target chart action when there is no diet plan"
     },
+    "reportCommentTitle": "Report Comment",
+    "@reportCommentTitle": {
+        "description": "Report sheet title for a comment"
+    },
+    "reportWorkoutTitle": "Report Workout",
+    "@reportWorkoutTitle": {
+        "description": "Report sheet title for a workout"
+    },
+    "reportProfileTitle": "Report Profile",
+    "@reportProfileTitle": {
+        "description": "Report sheet title for a profile"
+    },
+    "reportCommentPrompt": "Why are you reporting this comment?",
+    "@reportCommentPrompt": {
+        "description": "Above the report reasons"
+    },
+    "reportWorkoutPrompt": "Why are you reporting this workout?",
+    "@reportWorkoutPrompt": {
+        "description": "Above the report reasons"
+    },
+    "reportProfilePrompt": "Why are you reporting this profile?",
+    "@reportProfilePrompt": {
+        "description": "Above the report reasons"
+    },
+    "reportSentComment": "Report sent. Thanks — we will take a look at this comment.",
+    "@reportSentComment": {
+        "description": "After a report is sent"
+    },
+    "reportSentWorkout": "Report sent. Thanks — we will take a look at this workout.",
+    "@reportSentWorkout": {
+        "description": "After a report is sent"
+    },
+    "reportSentProfile": "Report sent. Thanks — we will take a look at this profile.",
+    "@reportSentProfile": {
+        "description": "After a report is sent"
+    },
+    "reportFailed": "Unable to Send Report",
+    "@reportFailed": {
+        "description": "Alert when a report fails"
+    },
+    "reportSend": "Send",
+    "@reportSend": {
+        "description": "Sends a report"
+    },
+    "reportNote": "Note",
+    "@reportNote": {
+        "description": "Label of the report's note field"
+    },
+    "reportNoteRequired": "Tell us what is wrong.",
+    "@reportNoteRequired": {
+        "description": "Under the note when the reason is Other"
+    },
+    "reportNoteOptional": "Optional: anything that helps us review it.",
+    "@reportNoteOptional": {
+        "description": "Under the note for other reasons"
+    },
+    "reportNoReason": "Choose a reason for the report.",
+    "@reportNoReason": {
+        "description": "Report sent without a reason"
+    },
+    "reportNoNote": "Add a note saying what is wrong.",
+    "@reportNoNote": {
+        "description": "Report with reason Other sent without a note"
+    },
+    "reportNoteTooLong": "Keep the note to {count} characters or fewer.",
+    "@reportNoteTooLong": {
+        "description": "Report note over the limit",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "reportReasonSpam": "Spam",
+    "@reportReasonSpam": {
+        "description": "A report reason"
+    },
+    "reportReasonHarassment": "Harassment",
+    "@reportReasonHarassment": {
+        "description": "A report reason"
+    },
+    "reportReasonInappropriate": "Inappropriate",
+    "@reportReasonInappropriate": {
+        "description": "A report reason"
+    },
+    "reportReasonOther": "Other",
+    "@reportReasonOther": {
+        "description": "A report reason"
+    },
+    "reportMenu": "Report…",
+    "@reportMenu": {
+        "description": "Profile menu item that reports the profile"
+    },
+    "reportWorkoutMenu": "Report Workout…",
+    "@reportWorkoutMenu": {
+        "description": "Feed card menu item that reports the workout"
+    },
+    "reportCommentAction": "Report",
+    "@reportCommentAction": {
+        "description": "Reports someone else's comment"
+    },
+    "saveAsTemplate": "Save as Template",
+    "@saveAsTemplate": {
+        "description": "Feed card menu item that saves the workout as the reader's template"
+    },
+    "saveAsTemplateUnresolved": "None of these exercises are in your library",
+    "@saveAsTemplateUnresolved": {
+        "description": "Alert when no exercise of a workout is in the reader's library"
+    },
+    "saveAsTemplateFailed": "Unable to Save Workout",
+    "@saveAsTemplateFailed": {
+        "description": "Alert when saving a workout as a template fails"
+    },
+    "profileFollowingMesocycle": "Following {name}",
+    "@profileFollowingMesocycle": {
+        "description": "On the reader's own profile: the mesocycle they are running",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
     "plateCalculatorTitle": "Plate Calculator",
     "@plateCalculatorTitle": {
         "description": "Plate calculator: title"

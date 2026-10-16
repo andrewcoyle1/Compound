@@ -348,6 +348,13 @@ abstract final class AppSymbols {
   /// Blocking someone.
   static const IconData block = Icons.block_rounded;
 
+  /// Reporting a profile, workout or comment (`exclamationmark.bubble`).
+  static const IconData report = Icons.flag_rounded;
+
+  /// Saving someone's workout as one's own template
+  /// (`square.and.arrow.down`).
+  static const IconData saveAsTemplate = Icons.download_rounded;
+
   /// The leader of the week.
   static const IconData leader = Icons.workspace_premium_rounded;
 

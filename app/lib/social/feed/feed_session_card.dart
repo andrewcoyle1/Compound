@@ -2,12 +2,16 @@ import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sharing/share_card/share_workout_card.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
 import 'package:compound/sharing/view/share_to_follower_page.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
+import 'package:compound/social/feed/save_session_template_cubit.dart';
 import 'package:compound/social/feed/session_like_cubit.dart';
+import 'package:compound/social/report/report_cubit.dart';
+import 'package:compound/social/report/report_sheet.dart';
 import 'package:compound/social/social_routes.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound/workout_history/workout_history.dart';
@@ -18,9 +22,10 @@ import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
 /// A workout in the feed (`WorkoutSessionRowView`): who did it, the
-/// workout, likes, comments, and More: Share with Friends (the workout's
-/// template, when the reader has it) and Share Image. The text share with
-/// the web link, Save as Template and Report are not ported yet.
+/// workout, likes, comments, and More: Save as Template, Share with Friends
+/// (the workout's template, when the reader has it), Share Image and, on
+/// someone else's workout, Report. The text share with the web link is not
+/// ported yet.
 class FeedSessionCard extends StatelessWidget {
   const new({
     required this.entry,
@@ -41,26 +46,67 @@ class FeedSessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = entry.session;
-    return BlocProvider(
-      create: (context) => SessionLikeCubit(
-        social: context.read<SocialRepository>(),
-        analytics: context.read<AnalyticsRepository>(),
-        session: session,
-        viewerId: viewer?.userId,
-      ),
-      child: WorkoutSessionCard(
-        entry: entry,
-        header: AuthorHeader(
-          author: author,
-          date: session.dateCreated,
-          onPressed: () => SocialNavigation.openProfile(context, author),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => SessionLikeCubit(
+            social: context.read<SocialRepository>(),
+            analytics: context.read<AnalyticsRepository>(),
+            session: session,
+            viewerId: viewer?.userId,
+          ),
         ),
-        onPressed: () => SocialNavigation.openSession(context, session),
-        // A note is its author's private reminder, not a caption.
-        showsNote: viewer?.userId == session.authorId,
-        footer: _Actions(session: session, author: author, viewer: viewer),
+        BlocProvider(
+          create: (context) => SaveSessionTemplateCubit(
+            library: context.read<TrainingLibraryRepository>(),
+            analytics: context.read<AnalyticsRepository>(),
+            session: session,
+          ),
+        ),
+      ],
+      child: BlocListener<SaveSessionTemplateCubit, SaveSessionTemplateState>(
+        listener: _onSaveTemplate,
+        child: WorkoutSessionCard(
+          entry: entry,
+          header: AuthorHeader(
+            author: author,
+            date: session.dateCreated,
+            onPressed: () => SocialNavigation.openProfile(context, author),
+          ),
+          onPressed: () => SocialNavigation.openSession(context, session),
+          // A note is its author's private reminder, not a caption.
+          showsNote: viewer?.userId == session.authorId,
+          footer: _Actions(session: session, author: author, viewer: viewer),
+        ),
       ),
     );
+  }
+
+  void _onSaveTemplate(BuildContext context, SaveSessionTemplateState state) {
+    final l10n = context.l10n;
+    switch (state.status) {
+      case SaveSessionTemplateStatus.saved:
+        unawaited(HapticFeedback.mediumImpact());
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(l10n.programCopySaved(state.savedName!))),
+          );
+      case SaveSessionTemplateStatus.unresolved:
+        unawaited(HapticFeedback.heavyImpact());
+        unawaited(showFailureAlert(context, l10n.saveAsTemplateUnresolved));
+      case SaveSessionTemplateStatus.failed:
+        unawaited(HapticFeedback.heavyImpact());
+        unawaited(
+          showFailureAlert(
+            context,
+            l10n.saveAsTemplateFailed,
+            l10n.socialTryAgain,
+          ),
+        );
+      case SaveSessionTemplateStatus.idle || SaveSessionTemplateStatus.saving:
+        break;
+    }
   }
 }
 
@@ -207,9 +253,21 @@ class _MoreMenuState extends State<_MoreMenu> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final template = _template;
+    final session = widget.session;
+    final viewerId = widget.viewer?.userId;
     return MenuAnchor(
       onOpen: () => unawaited(_findTemplate()),
       menuChildren: [
+        MenuItemButton(
+          leadingIcon: const Icon(AppSymbols.saveAsTemplate),
+          onPressed: () => unawaited(
+            context.read<SaveSessionTemplateCubit>().savePressed(
+              viewerId: viewerId,
+              copyName: l10n.programCopyName,
+            ),
+          ),
+          child: Text(l10n.saveAsTemplate),
+        ),
         if (template != null)
           MenuItemButton(
             leadingIcon: const Icon(AppSymbols.send),
@@ -219,6 +277,22 @@ class _MoreMenuState extends State<_MoreMenu> {
             child: Text(l10n.shareWithFriends),
           ),
         shareImageSubmenu(l10n, (format) => unawaited(_shareImage(format))),
+        // The reader cannot report their own workout.
+        if (viewerId != null && viewerId != session.authorId)
+          MenuItemButton(
+            leadingIcon: const Icon(AppSymbols.report),
+            onPressed: () => unawaited(
+              showReportSheet(
+                context,
+                ReportedContent(
+                  type: ReportContentType.session,
+                  id: session.id,
+                  authorId: session.authorId,
+                ),
+              ),
+            ),
+            child: Text(l10n.reportWorkoutMenu),
+          ),
       ],
       builder: (context, controller, _) => TextButton(
         style: widget.style,

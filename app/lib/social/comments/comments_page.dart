@@ -6,6 +6,8 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/comments/comment_thread.dart';
 import 'package:compound/social/comments/comments_cubit.dart';
+import 'package:compound/social/report/report_cubit.dart';
+import 'package:compound/social/report/report_sheet.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
@@ -316,6 +318,30 @@ class _CommentRow extends StatelessWidget {
                         ),
                         onPressed: () => _confirmDelete(context),
                         child: Text(l10n.commentsDelete),
+                      ),
+                    ] else if (viewerId != null) ...[
+                      const SizedBox(width: AppSpacing.m),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: scheme.onSurfaceVariant,
+                          textStyle: AppTextStyles.label,
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(
+                            AppControlSize.row,
+                            AppControlSize.row,
+                          ),
+                        ),
+                        onPressed: () => unawaited(
+                          showReportSheet(
+                            context,
+                            ReportedContent(
+                              type: ReportContentType.comment,
+                              id: comment.id,
+                              authorId: comment.authorId,
+                            ),
+                          ),
+                        ),
+                        child: Text(l10n.reportCommentAction),
                       ),
                     ],
                   ],

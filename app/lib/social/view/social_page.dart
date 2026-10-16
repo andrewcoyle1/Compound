@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/challenges/challenges.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/notifications/inbox/view/notifications_page.dart';
@@ -9,6 +10,8 @@ import 'package:compound/profile/profile.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/feed/feed_entry.dart';
 import 'package:compound/social/feed/feed_session_card.dart';
+import 'package:compound/social/invite/invite_code_sheet.dart';
+import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/social/logic/circle_week.dart';
 import 'package:compound/social/logic/people.dart';
 import 'package:compound/social/search/people_search_bloc.dart';
@@ -25,7 +28,7 @@ import 'package:social_repository/social_repository.dart';
 
 /// The Social tab (Swift `SocialView`): the circle strip, the week's
 /// leaderboard and the following feed, with a search for people, and the
-/// notifications bell. Invites and challenges come with Social part 2.
+/// notifications bell, the circle's challenges, and invites.
 class SocialPage extends StatelessWidget {
   const new({super.key});
 
@@ -68,6 +71,7 @@ class _SocialViewState extends State<SocialView> {
     _cubit = context.read<SocialCubit>();
     // The bell's badge, refreshed silently.
     context.read<InboxBloc>().add(const InboxBadgeRefreshRequested());
+    unawaited(context.read<ChallengesCubit>().refresh());
     _searchFocus.addListener(() => setState(() {}));
     _maybeLoadSuggestions(context.read<CircleBloc>().state);
   }
@@ -177,14 +181,43 @@ class _SearchResults extends StatelessWidget {
     final l10n = context.l10n;
     final search = context.watch<PeopleSearchBloc>().state;
     final circle = context.watch<CircleBloc>().state;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     if (!search.isSearching) {
-      return Padding(
+      final viewer = circle.viewer;
+      return ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
-        child: Text(
-          l10n.socialSearchHint,
-          style: AppTextStyles.label.copyWith(color: secondary),
-        ),
+        children: [
+          AppSection(
+            footer: l10n.inviteSearchFooter,
+            children: [
+              AppListRowButton(
+                title: l10n.inviteFriendRow,
+                icon: AppSymbols.share,
+                accessory: null,
+                onPressed: viewer == null
+                    ? null
+                    : () => unawaited(
+                        context.read<InviteCubit>().shareRequested(
+                          viewer.userId,
+                          pressedEvent: 'SocialView_InviteFriend_Press',
+                        ),
+                      ),
+              ),
+              AppListRowButton(
+                title: l10n.inviteEnterCode,
+                icon: AppSymbols.invite,
+                accessory: null,
+                onPressed: viewer == null
+                    ? null
+                    : () async {
+                        final invites = context.read<InviteCubit>();
+                        final code = await showInviteCodeSheet(context);
+                        if (code == null) return;
+                        await invites.accept(code, viewer: viewer);
+                      },
+              ),
+            ],
+          ),
+        ],
       );
     }
     final results = search.results(circle.visibleFollowing);
@@ -263,6 +296,17 @@ class _Dashboard extends StatelessWidget {
             dismissedWeek: circle.dismissedSummaryWeek,
           );
     final feed = circle.feed;
+    final held = context.watch<ChallengesCubit>().state;
+    final challenges = challengeCards(
+      held.challenges,
+      progress: held.progress,
+      users: {
+        for (final user in circle.followingUsers) user.userId: user,
+        viewer.userId: viewer,
+      },
+      readerId: viewer.userId,
+      now: now,
+    );
     final sessions = circle.sessions;
     const gutter = EdgeInsets.fromLTRB(
       AppSpacing.l,
@@ -325,6 +369,34 @@ class _Dashboard extends StatelessWidget {
               ),
             ),
           ),
+        if (circle.showsInviteCard)
+          Padding(
+            padding: gutter,
+            child: _Banner(
+              icon: AppSymbols.invite,
+              iconColor: Theme.of(context).colorScheme.primary,
+              text: l10n.inviteCardTitle,
+              detail: l10n.inviteCardMessage,
+              dismissLabel: l10n.socialDismiss,
+              onPressed: () {
+                context.read<CircleBloc>().add(
+                  const CircleInviteCardDismissed(),
+                );
+                unawaited(
+                  context.read<InviteCubit>().shareRequested(
+                    viewer.userId,
+                    pressedEvent: 'SocialView_InviteCard_Press',
+                  ),
+                );
+              },
+              onDismissed: () {
+                cubit.pressed('InviteCard_Dismiss');
+                context.read<CircleBloc>().add(
+                  const CircleInviteCardDismissed(),
+                );
+              },
+            ),
+          ),
         if (members.isNotEmpty)
           Padding(
             padding: gutter,
@@ -341,6 +413,19 @@ class _Dashboard extends StatelessWidget {
                 SocialNavigation.openProfile(context, user);
               },
             ),
+          ),
+        if (challenges.isNotEmpty || members.isNotEmpty)
+          ChallengesSection(
+            cards: challenges,
+            viewerId: viewer.userId,
+            onCardPressed: (card) {
+              cubit.pressed('Challenge_Press');
+              ChallengeNavigation.open(context, card.challenge);
+            },
+            onCreatePressed: () {
+              cubit.pressed('CreateChallenge_Press');
+              ChallengeNavigation.openNew(context);
+            },
           ),
         SocialSectionHeader(
           title: l10n.socialWorkoutFeed,
@@ -409,6 +494,7 @@ class _Banner extends StatelessWidget {
     required this.dismissLabel,
     required this.onDismissed,
     this.onPressed,
+    this.detail,
   });
 
   final IconData icon;
@@ -418,8 +504,12 @@ class _Banner extends StatelessWidget {
   final VoidCallback onDismissed;
   final VoidCallback? onPressed;
 
+  /// A second line, under [text].
+  final String? detail;
+
   @override
   Widget build(BuildContext context) {
+    final detail = this.detail;
     final content = Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.l,
@@ -438,11 +528,24 @@ class _Banner extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Text(
-              text,
-              style: AppTextStyles.rowDetail.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: AppSpacing.xxs,
+              children: [
+                Text(
+                  text,
+                  style: AppTextStyles.rowDetail.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (detail != null)
+                  Text(
+                    detail,
+                    style: AppTextStyles.label.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

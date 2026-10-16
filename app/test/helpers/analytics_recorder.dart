@@ -1,4 +1,6 @@
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:compound/sharing/share_sheet.dart';
+import 'package:flutter/widgets.dart';
 
 /// An [AnalyticsRepository] that keeps every event it is given, in order.
 class AnalyticsRecorder extends AnalyticsRepository {
@@ -19,4 +21,16 @@ class AnalyticsRecorder extends AnalyticsRepository {
 
   @override
   void trackScreenView(LoggableEvent event) => events.add(event);
+}
+
+/// A [ShareSheet] that keeps what it was asked to share.
+class ShareRecorder extends ShareSheet {
+  new();
+
+  /// Every text shared, in order.
+  final texts = <String>[];
+
+  @override
+  Future<void> shareText(BuildContext context, String text) async =>
+      texts.add(text);
 }

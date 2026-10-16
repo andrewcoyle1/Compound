@@ -4,12 +4,15 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/challenges/challenges.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/programs/programs.dart';
+import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
+import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,6 +60,9 @@ extension PumpApp on WidgetTester {
     SocialRepository? socialRepository,
     CircleBloc? circleBloc,
     InboxBloc? inboxBloc,
+    ChallengesCubit? challengesCubit,
+    InviteCubit? inviteCubit,
+    ShareSheet shareSheet = const ShareSheet(),
     NotificationsRepository? notificationsRepository,
     ProgramsCubit? programsCubit,
     ActiveWorkoutCubit? activeWorkoutCubit,
@@ -111,6 +117,7 @@ extension PumpApp on WidgetTester {
           RepositoryProvider.value(
             value: proposalDismissals ?? ProposalDismissals(),
           ),
+          RepositoryProvider.value(value: shareSheet),
           RepositoryProvider<NotificationsRepository>.value(
             value: notificationsRepository ?? FakeNotificationsRepository(),
           ),
@@ -162,6 +169,22 @@ extension PumpApp on WidgetTester {
                   CircleBloc(
                     social: context.read(),
                     sessions: context.read(),
+                    analytics: analyticsRepository,
+                  ),
+            ),
+            BlocProvider<ChallengesCubit>(
+              create: (context) =>
+                  challengesCubit ??
+                  ChallengesCubit(
+                    social: context.read(),
+                    analytics: analyticsRepository,
+                  ),
+            ),
+            BlocProvider<InviteCubit>(
+              create: (context) =>
+                  inviteCubit ??
+                  InviteCubit(
+                    social: context.read(),
                     analytics: analyticsRepository,
                   ),
             ),

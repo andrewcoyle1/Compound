@@ -34,6 +34,18 @@ FollowState followStateOf(
 bool hasBlocked(UserModel? viewer, String userId) =>
     viewer?.blockedUserIds?.contains(userId) ?? false;
 
+/// The people [viewer] follows who follow them back, less anyone they
+/// blocked: who a challenge or a share can go to, since it lands in the
+/// other person's own screens (`CreateChallengePresenter.candidates`,
+/// `ShareToFollowerPresenter.recipients`).
+List<UserModel> mutualsOf(UserModel viewer, List<UserModel> following) => [
+  for (final user in following)
+    if (user.userId != viewer.userId &&
+        !hasBlocked(viewer, user.userId) &&
+        (user.followingIds?.contains(viewer.userId) ?? false))
+      user,
+];
+
 /// The name a list shows for [user]: full name, else first name, else null
 /// (`UserRowView.displayName`).
 String? listNameOf(UserModel user) => fullNameOf(user) ?? firstNameOf(user);

@@ -51,6 +51,9 @@ final class const CircleState({
   /// The week whose Monday recap was closed.
   final DateTime? dismissedSummaryWeek,
 
+  /// The invite card was tapped or closed.
+  final bool inviteCardDismissed = false,
+
   /// The last failure to tell the user about.
   final CircleNotice? notice,
 
@@ -79,6 +82,25 @@ final class const CircleState({
     for (final user in followingUsers)
       if (!hasBlocked(viewer, user.userId)) user,
   ];
+
+  /// The one-time invite card: from the fifth counted workout of the
+  /// viewer's own until it is tapped or closed
+  /// (`ReviewPromptPolicy.showsInviteCard`). A workout counts when it is
+  /// not a rest day and has a set done (`ReviewPromptPolicy.counts`).
+  bool get showsInviteCard =>
+      viewer != null &&
+      !inviteCardDismissed &&
+      ownSessions
+              .where(
+                (session) =>
+                    !session.isRestDay &&
+                    session.exercises.any(
+                      (exercise) =>
+                          exercise.sets.any((set) => set.completedAt != null),
+                    ),
+              )
+              .length >=
+          5;
 
   /// The session's author, when it is [viewer] or someone they follow.
   UserModel? authorOf(WorkoutSessionModel session) {
@@ -144,6 +166,7 @@ final class const CircleState({
     String? nudgedDay,
     bool? usernameBannerDismissed,
     DateTime? dismissedSummaryWeek,
+    bool? inviteCardDismissed,
     CircleNotice? notice,
     String? noticeName,
   }) => CircleState(
@@ -159,6 +182,7 @@ final class const CircleState({
     usernameBannerDismissed:
         usernameBannerDismissed ?? this.usernameBannerDismissed,
     dismissedSummaryWeek: dismissedSummaryWeek ?? this.dismissedSummaryWeek,
+    inviteCardDismissed: inviteCardDismissed ?? this.inviteCardDismissed,
     notice: notice ?? this.notice,
     noticeName: notice == null ? this.noticeName : noticeName,
     noticeId: notice == null ? noticeId : noticeId + 1,
@@ -176,6 +200,7 @@ final class const CircleState({
     nudgedDay,
     usernameBannerDismissed,
     dismissedSummaryWeek,
+    inviteCardDismissed,
     notice,
     noticeName,
     noticeId,

@@ -290,3 +290,39 @@ class SocialSectionHeader extends StatelessWidget {
     );
   }
 }
+
+/// A person to tick, with their picture and full name: challenge members
+/// and share recipients. Announced as selected when ticked.
+class SelectablePersonRow extends StatelessWidget {
+  const new({
+    required this.user,
+    required this.selected,
+    required this.onPressed,
+    super.key,
+  });
+
+  final UserModel user;
+  final bool selected;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        child: InkWell(
+          onTap: onPressed,
+          child: AppListRow(
+            title: fullNameOf(user) ?? context.l10n.socialUser,
+            thumbnail: UserAvatar(
+              imageUrl: profileImageOf(user),
+              size: AppControlSize.thumbnail,
+            ),
+            accessory: AppListRowCheckmark(selected: selected),
+          ),
+        ),
+      ),
+    );
+  }
+}

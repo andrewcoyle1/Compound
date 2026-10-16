@@ -84,7 +84,14 @@ void main() {
 
       await tester.tap(find.text('Find People'));
       await tester.pump();
-      expect(find.text('Search by name or @username.'), findsOneWidget);
+      expect(
+        find.text(
+          'Search by name or @username, or bring a friend in with an invite.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Invite a Friend'), findsOneWidget);
+      expect(find.text('Enter Invite Code'), findsOneWidget);
 
       await tester.enterText(find.byType(EditableText), 'Dav');
       await settle(tester);
@@ -168,7 +175,7 @@ void main() {
       await tester.pageBack();
       await settle(tester);
 
-      await tester.tap(find.byTooltip('Dismiss'));
+      await tester.tap(find.byTooltip('Dismiss').first);
       await settle(tester);
       expect(
         find.text('Pick a username so friends can find you'),

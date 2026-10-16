@@ -209,6 +209,13 @@ abstract final class AppSymbols {
   /// Friends and followers.
   static const IconData friends = Icons.group_rounded;
 
+  /// Inviting someone to the app (`person.badge.plus`).
+  static const IconData invite = Icons.person_add_alt_1_rounded;
+
+  /// Leaving a group, such as a challenge
+  /// (`rectangle.portrait.and.arrow.right`).
+  static const IconData leave = Icons.logout_rounded;
+
   /// The roadmap.
   static const IconData roadmap = Icons.map_rounded;
 

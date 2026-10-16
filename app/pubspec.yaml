@@ -56,6 +56,7 @@ dependencies:
   path_provider: ^2.1.5
   program_repository:
     path: packages/program_repository
+  share_plus: 13.3.1
   social_repository:
     path: packages/social_repository
   training_library_repository:

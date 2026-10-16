@@ -32,6 +32,14 @@ class CircleBloc extends Bloc<CircleEvent, CircleState> {
       (event, emit) => emit(state.copyWith(usernameBannerDismissed: true)),
     );
     on<CircleWeeklySummaryDismissed>(_onWeeklySummaryDismissed);
+    on<CircleFollowRequestSent>(
+      (event, emit) => emit(
+        state.copyWith(sentRequestIds: {...state.sentRequestIds, event.userId}),
+      ),
+    );
+    on<CircleInviteCardDismissed>(
+      (event, emit) => emit(state.copyWith(inviteCardDismissed: true)),
+    );
   }
 
   final SocialRepository _social;

@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
+import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/models/training_library.dart';
@@ -243,12 +244,18 @@ class _ChooseGymProfileViewState extends State<ChooseGymProfileView> {
         child: LibrarySections(
           children: [
             // Every workout needs a gym.
-            if (gyms.isEmpty)
+            if (gyms.isEmpty) ...[
               LibraryEmptyState(
                 icon: AppSymbols.gym,
                 title: l10n.editorNoGyms,
                 message: l10n.editorNoGymsMessage,
               ),
+              TextButton(
+                key: const Key('ChooseGymProfile.create'),
+                onPressed: () => unawaited(CreateGymProfilePage.push(context)),
+                child: Text(l10n.onboardingGymTitle),
+              ),
+            ],
             AppSection(
               header: l10n.editorChooseGymHeader,
               children: [

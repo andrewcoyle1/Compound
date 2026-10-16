@@ -1,3 +1,4 @@
+import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/account/view/edit_profile_page.dart';
 import 'package:compound/settings/general/view/about_page.dart';
@@ -58,6 +59,9 @@ final profileRoutes = <RouteBase>[
         return const LicencesPage();
       }),
     ]),
+    _route(GymProfilesPage.path, GymProfilesPage.name, (_, _) {
+      return const GymProfilesPage();
+    }),
     _route(
       WorkoutSettingsPage.path,
       WorkoutSettingsPage.name,

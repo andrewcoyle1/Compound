@@ -8236,5 +8236,297 @@
     "editorIncrease": "Increase",
     "@editorIncrease": {},
     "onboardingBuildMyOwn": "Build My Own",
-    "@onboardingBuildMyOwn": {}
+    "@onboardingBuildMyOwn": {},
+    "gymProfilesTitle": "Gym Profiles",
+    "@gymProfilesTitle": {},
+    "gymSettingsMenu": "Gym Settings",
+    "@gymSettingsMenu": {},
+    "gymNoProfiles": "No Gym Profiles",
+    "@gymNoProfiles": {},
+    "gymNoProfilesMessage": "Add the gyms you train at and the equipment each one has.",
+    "@gymNoProfilesMessage": {},
+    "gymAddProfile": "Add a Gym Profile",
+    "@gymAddProfile": {},
+    "gymAddProfileLabel": "Add gym profile",
+    "@gymAddProfileLabel": {},
+    "gymFavouriteProfile": "Favorite Gym Profile",
+    "@gymFavouriteProfile": {},
+    "gymCount": "{count, plural, =1{1 gym} other{{count} gyms}}",
+    "@gymCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "gymDelete": "Delete",
+    "@gymDelete": {},
+    "gymCancel": "Cancel",
+    "@gymCancel": {},
+    "gymFavourite": "Favorite",
+    "@gymFavourite": {},
+    "gymDeleteProfileTitle": "Delete Gym Profile?",
+    "@gymDeleteProfileTitle": {},
+    "gymDeleteProfileMessage": "{name} and the equipment set up in it will be deleted.",
+    "@gymDeleteProfileMessage": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "gymUnableToDelete": "Unable to delete gym profile",
+    "@gymUnableToDelete": {},
+    "gymUnableToFavourite": "Unable to set your usual gym",
+    "@gymUnableToFavourite": {},
+    "gymTryAgain": "Please try again.",
+    "@gymTryAgain": {},
+    "gymUnableToSave": "Unable to save gym profile",
+    "@gymUnableToSave": {},
+    "gymCheckConnection": "Please check your internet connection and try again.",
+    "@gymCheckConnection": {},
+    "gymEquipment": "Equipment",
+    "@gymEquipment": {},
+    "gymFilterAll": "All",
+    "@gymFilterAll": {},
+    "gymFilterSelected": "Selected",
+    "@gymFilterSelected": {},
+    "gymFilterByName": "Filter equipment by name",
+    "@gymFilterByName": {},
+    "gymFreeWeights": "Free Weights",
+    "@gymFreeWeights": {},
+    "gymLoadableBars": "Loadable Bars",
+    "@gymLoadableBars": {},
+    "gymFixedWeightBars": "Fixed Weight Bars",
+    "@gymFixedWeightBars": {},
+    "gymBands": "Bands",
+    "@gymBands": {},
+    "gymBodyWeights": "Body Weights",
+    "@gymBodyWeights": {},
+    "gymBenchesAndRacks": "Benches & Racks",
+    "@gymBenchesAndRacks": {},
+    "gymAccessories": "Accessories",
+    "@gymAccessories": {},
+    "gymLoadableAccessories": "Loadable Accessories",
+    "@gymLoadableAccessories": {},
+    "gymCableMachines": "Cable Machines",
+    "@gymCableMachines": {},
+    "gymPlateLoadedMachines": "Plate Loaded Machines",
+    "@gymPlateLoadedMachines": {},
+    "gymPinLoadedMachines": "Pin Loaded Machines",
+    "@gymPinLoadedMachines": {},
+    "gymEditWeights": "Edit Weights",
+    "@gymEditWeights": {},
+    "gymEditInventory": "Edit Inventory",
+    "@gymEditInventory": {},
+    "gymEditBaseWeights": "Edit Base Weights",
+    "@gymEditBaseWeights": {},
+    "gymEditMachine": "Edit Machine",
+    "@gymEditMachine": {},
+    "gymEditBaseWeight": "Edit Base Weight",
+    "@gymEditBaseWeight": {},
+    "gymBaseOneSide": "Base {weight} · one side",
+    "@gymBaseOneSide": {
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            }
+        }
+    },
+    "gymAddMachineMenu": "Add Machine…",
+    "@gymAddMachineMenu": {},
+    "gymAddMachine": "Add Machine",
+    "@gymAddMachine": {},
+    "gymMachineActions": "Machine actions",
+    "@gymMachineActions": {},
+    "gymDuplicate": "Duplicate",
+    "@gymDuplicate": {},
+    "gymDeleteMachineTitle": "Delete Machine?",
+    "@gymDeleteMachineTitle": {},
+    "gymDeleteMachineMessage": "{name} will be removed from this gym.",
+    "@gymDeleteMachineMessage": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "gymNumberedName": "{name} {number}",
+    "@gymNumberedName": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "gymWeights": "Weights",
+    "@gymWeights": {},
+    "gymNoUnitWeights": "No {unit} weights",
+    "@gymNoUnitWeights": {
+        "placeholders": {
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "gymNoUnitWeightsMessage": "There are no weights for the selected unit.",
+    "@gymNoUnitWeightsMessage": {},
+    "gymAvailable": "Available",
+    "@gymAvailable": {},
+    "gymNoLimit": "No limit",
+    "@gymNoLimit": {},
+    "gymHowMany": "How many",
+    "@gymHowMany": {},
+    "gymUpTo": "Up to {weight}",
+    "@gymUpTo": {
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            }
+        }
+    },
+    "gymCollars": "Collars",
+    "@gymCollars": {},
+    "gymEachCollar": "Each collar",
+    "@gymEachCollar": {},
+    "gymCollarsFooter": "Two collars are added to the bar's weight.",
+    "@gymCollarsFooter": {},
+    "gymAddFreeWeight": "Add free weight",
+    "@gymAddFreeWeight": {},
+    "gymAddBodyWeight": "Add body weight",
+    "@gymAddBodyWeight": {},
+    "gymAddBand": "Add band",
+    "@gymAddBand": {},
+    "gymAddLoadableBar": "Add loadable bar",
+    "@gymAddLoadableBar": {},
+    "gymAddFixedWeightBar": "Add fixed-weight bar",
+    "@gymAddFixedWeightBar": {},
+    "gymAdd": "Add",
+    "@gymAdd": {},
+    "gymConfirm": "Confirm",
+    "@gymConfirm": {},
+    "gymInfo": "Info",
+    "@gymInfo": {},
+    "gymPlateColour": "Plate Color",
+    "@gymPlateColour": {},
+    "gymBandColour": "Band Color",
+    "@gymBandColour": {},
+    "gymLabel": "Label",
+    "@gymLabel": {},
+    "gymWeight": "Weight",
+    "@gymWeight": {},
+    "gymPairsFooter": "A bar takes plates in pairs, so a single plate only loads a one-sleeve machine.",
+    "@gymPairsFooter": {},
+    "gymWeightAboveZero": "Enter a weight above zero.",
+    "@gymWeightAboveZero": {},
+    "gymCountAtLeastOne": "Enter at least one, or leave it empty for no limit.",
+    "@gymCountAtLeastOne": {},
+    "gymWeightAlreadyAdded": "This weight is already added.",
+    "@gymWeightAlreadyAdded": {},
+    "gymWeightNeedsName": "Please enter a name for this weight.",
+    "@gymWeightNeedsName": {},
+    "gymColourDefault": "Default",
+    "@gymColourDefault": {},
+    "gymColourRed": "Red",
+    "@gymColourRed": {},
+    "gymColourOrange": "Orange",
+    "@gymColourOrange": {},
+    "gymColourYellow": "Yellow",
+    "@gymColourYellow": {},
+    "gymColourGreen": "Green",
+    "@gymColourGreen": {},
+    "gymColourBlue": "Blue",
+    "@gymColourBlue": {},
+    "gymColourPurple": "Purple",
+    "@gymColourPurple": {},
+    "gymName": "Name",
+    "@gymName": {},
+    "gymAddRange": "Add Range",
+    "@gymAddRange": {},
+    "gymEditRange": "Edit Range",
+    "@gymEditRange": {},
+    "gymLightestPin": "Lightest pin",
+    "@gymLightestPin": {},
+    "gymHeaviestPin": "Heaviest pin",
+    "@gymHeaviestPin": {},
+    "gymIncrement": "Increment",
+    "@gymIncrement": {},
+    "gymRangeIncrements": "{range}, {increment} increments",
+    "@gymRangeIncrements": {
+        "placeholders": {
+            "range": {
+                "type": "String"
+            },
+            "increment": {
+                "type": "String"
+            }
+        }
+    },
+    "gymUnevenWeights": "{count, plural, =1{Uneven · 1 weight} other{Uneven · {count} weights}}",
+    "@gymUnevenWeights": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "gymLightestBelowHeaviest": "The lightest pin must be less than the heaviest.",
+    "@gymLightestBelowHeaviest": {},
+    "gymIncrementAboveZero": "The increment must be greater than zero.",
+    "@gymIncrementAboveZero": {},
+    "gymRangeNameTaken": "A range with this name already exists.",
+    "@gymRangeNameTaken": {},
+    "gymRangeAlreadyAdded": "This range is already added.",
+    "@gymRangeAlreadyAdded": {},
+    "gymUnevenStack": "Uneven stack",
+    "@gymUnevenStack": {},
+    "gymUnevenFooter": "For a stack whose plates are not all the same weight: list every weight the pin can select.",
+    "@gymUnevenFooter": {},
+    "gymPinWeight": "Pin weight",
+    "@gymPinWeight": {},
+    "gymPinWeightAboveZero": "A pin weight must be more than zero.",
+    "@gymPinWeightAboveZero": {},
+    "gymPinWeightOnStack": "This weight is already on the stack.",
+    "@gymPinWeightOnStack": {},
+    "gymAddOnWeights": "Add-on weights",
+    "@gymAddOnWeights": {},
+    "gymAddOnWeight": "Add-on weight",
+    "@gymAddOnWeight": {},
+    "gymAddOnsFooter": "Weights that go on top of the pin, each on or off, such as a 2 kg toggle. A lever with three positions is two equal add-ons.",
+    "@gymAddOnsFooter": {},
+    "gymAddOnAboveZero": "An add-on must weigh more than zero.",
+    "@gymAddOnAboveZero": {},
+    "gymAddOnLimit": "A stack can have up to {count} add-ons.",
+    "@gymAddOnLimit": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "gymPlatesGoOn": "Plates go on",
+    "@gymPlatesGoOn": {},
+    "gymOneSide": "One side",
+    "@gymOneSide": {},
+    "gymTwoSides": "Two sides",
+    "@gymTwoSides": {},
+    "gymPlatesOnly": "Enter plates only",
+    "@gymPlatesOnly": {},
+    "gymPlatesOnlyFooter": "Sets are entered and shown as the plates loaded. The machine's weight is still added to what is recorded.",
+    "@gymPlatesOnlyFooter": {},
+    "gymKindCable": "Cable",
+    "@gymKindCable": {},
+    "gymKindPinLoaded": "Pin-loaded",
+    "@gymKindPinLoaded": {},
+    "gymKindPlateLoaded": "Plate-loaded",
+    "@gymKindPlateLoaded": {},
+    "gymWorksAs": "Works as",
+    "@gymWorksAs": {},
+    "gymWorksAsFooter": "Exercises for the chosen machine use this one too. With None, it is a machine of its own that you can pick when creating an exercise.",
+    "@gymWorksAsFooter": {},
+    "gymNone": "None",
+    "@gymNone": {}
 }

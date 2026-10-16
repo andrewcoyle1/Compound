@@ -29,109 +29,50 @@ void main() {
   group(GymSetupCubit, () {
     var ids = 0;
     GymSetupCubit build({WeightUnitPreference? unit}) => GymSetupCubit(
-      trainingSetupService: service,
       analyticsRepository: analytics.repository,
       profile: UserModel(userId: 'uid', submittedWeightUnitPreference: unit),
       now: () => now,
       newId: () => 'ID-${ids++}',
-      untitledName: 'Gimnasio sin nombre',
       kilogramStackName: 'Pila en kilos',
     );
 
-    setUp(() {
-      ids = 0;
-      when(
-        () => service.saveGymProfile(
-          any(),
-          untitledName: any(named: 'untitledName'),
-        ),
-      ).thenAnswer(
-        (invocation) async =>
-            invocation.positionalArguments.single as GymProfileModel,
-      );
-      when(() => service.setFavouriteGymProfile(any(), any()))
-          .thenAnswer((_) async {});
+    setUp(() => ids = 0);
+
+    test('a gym needs a name before it can be created', () {
+      final cubit = build();
+      expect(cubit.state.canSave, isFalse);
+      expect(cubit.draft(), isNull);
+      cubit.nameChanged('Home Gym');
+      expect(cubit.state.canSave, isTrue);
+      // Untrimmed, as Swift's canSave.
+      expect((build()..nameChanged(' ')).state.canSave, isTrue);
     });
 
-    test('saves a new gym with the catalogue for the user unit, then makes '
-        'it the usual one', () async {
-      final cubit = build(unit: WeightUnitPreference.pounds)
-        ..nameChanged('Home');
-      await cubit.save();
-
-      final saved =
-          verify(
-                () => service.saveGymProfile(
-                  captureAny(),
-                  untitledName: 'Gimnasio sin nombre',
-                ),
-              ).captured.single
-              as GymProfileModel;
+    test('the typed name carries into the new gym, with the catalogue for '
+        "the user's unit", () {
+      final draft = (build(
+        unit: WeightUnitPreference.pounds,
+      )..nameChanged('Home Gym')).draft()!;
       ids = 0;
       final expected = newGymProfile(
         authorId: 'uid',
-        name: 'Home',
+        name: 'Home Gym',
         now: now,
         weightUnit: WeightUnitPreference.pounds,
         newId: () => 'ID-${ids++}',
         kilogramStackName: 'Pila en kilos',
       );
-      expect(saved.toFirestore(), expected.toFirestore());
-      verify(() => service.setFavouriteGymProfile('uid', 'ID-0')).called(1);
-      expect(cubit.state.status, GymSetupStatus.saved);
-      expect(analytics.names, [
-        'CreateGymProfileView_Appear',
-        'GymProfileView_Save_Start',
-        'GymProfileView_Save_Success',
-        'GymProfileView_FavouriteGymProfile_Start',
-        'GymProfileView_FavouriteGymProfile_Success',
-      ]);
-      await cubit.save();
-      verifyNever(
-        () => service.saveGymProfile(
-          any(),
-          untitledName: any(named: 'untitledName'),
-        ),
-      );
-    });
-
-    test('needs a name', () async {
-      final cubit = build();
-      await cubit.save();
-      expect(cubit.state.canSave, isFalse);
+      expect(draft.toFirestore(), expected.toFirestore());
+      expect(draft.authorId, 'uid');
       verifyZeroInteractions(service);
     });
 
-    test('a failed save says so and makes nothing usual', () async {
-      when(
-        () => service.saveGymProfile(
-          any(),
-          untitledName: any(named: 'untitledName'),
-        ),
-      ).thenThrow(Exception('offline'));
-      final cubit = build()..nameChanged('Home');
-      await cubit.save();
-      expect(cubit.state.status, GymSetupStatus.failure);
-      verifyNever(() => service.setFavouriteGymProfile(any(), any()));
-      expect(analytics.names.last, 'GymProfileView_Save_Fail');
+    test('appearing is tracked as a screen view, and leaving', () async {
+      final cubit = build();
+      expect(analytics.names, ['CreateGymProfileView_Appear']);
+      await cubit.close();
+      expect(analytics.names.last, 'CreateGymProfileView_Disappear');
     });
-
-    test(
-      'a failed favourite is logged and passed over, as Swift does',
-      () async {
-        when(() => service.setFavouriteGymProfile(any(), any()))
-            .thenThrow(Exception('offline'));
-        final cubit = build()..nameChanged('Home');
-        await cubit.save();
-        expect(cubit.state.status, GymSetupStatus.saved);
-        expect(
-          analytics.last('GymProfileView_FavouriteGymProfile_Fail').parameters,
-          isNull,
-        );
-        await cubit.close();
-        expect(analytics.names.last, 'CreateGymProfileView_Disappear');
-      },
-    );
   });
 
   group(ProgramSetupCubit, () {

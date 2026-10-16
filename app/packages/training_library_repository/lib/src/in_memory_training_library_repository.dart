@@ -7,8 +7,9 @@ import 'package:training_library_repository/src/training_library_repository.dart
 /// [TrainingLibraryRepository] in memory, for the staging flavor and tests.
 /// Seed it from `sample_training_library.dart`.
 ///
-/// A saved gym profile or exercise settings merge over the stored ones field
-/// by field, as a Firestore merge does, and every watcher sees the change.
+/// A saved gym profile replaces the stored one, as the Firestore save writes
+/// every field; saved exercise settings merge over the stored ones field by
+/// field, as a Firestore merge does. Every watcher sees the change.
 class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
   /// Creates an [InMemoryTrainingLibraryRepository] holding everyone's
   /// documents; each read keeps the ones its user owns.
@@ -122,11 +123,17 @@ class InMemoryTrainingLibraryRepository implements TrainingLibraryRepository {
     if (index < 0) {
       _gymProfiles.add(profile);
     } else {
-      _gymProfiles[index] = GymProfileModel.fromFirestore({
-        ..._gymProfiles[index].toFirestore(),
-        ...profile.toFirestore(),
-      });
+      // Every field is written, as the Firestore save does.
+      _gymProfiles[index] = profile;
     }
+    _gymProfileChanges.add(null);
+  }
+
+  @override
+  Future<void> deleteGymProfile(String uid, String profileId) async {
+    _gymProfiles.removeWhere(
+      (stored) => stored.authorId == uid && stored.id == profileId,
+    );
     _gymProfileChanges.add(null);
   }
 

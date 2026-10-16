@@ -1,6 +1,7 @@
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/general/view/about_page.dart';
 import 'package:compound/settings/general/view/customise_analytics_page.dart';
@@ -102,6 +103,7 @@ void main() {
       ('Food Log', FoodLogSettingsPage),
       ('Expenditure', ExpenditureSettingsPage),
       ('Strategy', StrategySettingsPage),
+      ('Gym Profiles', GymProfilesPage),
       ('Workout Settings', WorkoutSettingsPage),
       ('Legal', LegalPage),
       ('Methods & Sources', MethodsAndSourcesPage),

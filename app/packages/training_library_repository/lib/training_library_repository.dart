@@ -16,12 +16,15 @@ export 'package:compound_models/compound_models.dart'
         ExerciseModel,
         ExerciseSettingsModel,
         ExerciseType,
+        ExerciseWeightUnit,
         FixedWeightBars,
         FreeWeights,
         FreeWeightsAvailable,
         GymEquipmentCatalogue,
         GymEquipmentItem,
+        GymEquipmentKeys,
         GymProfileModel,
+        GymProfileModelKeys,
         InitialLogFillOption,
         Laterality,
         LoadableAccessoryEquipment,
@@ -44,6 +47,7 @@ export 'package:compound_models/compound_models.dart'
         WorkoutTemplateModel;
 
 export 'src/firestore_training_library_repository.dart';
+export 'src/gym_editor_rules.dart';
 export 'src/in_memory_training_library_repository.dart';
 export 'src/prebuilt_catalogue.dart';
 export 'src/sample_training_library.dart';

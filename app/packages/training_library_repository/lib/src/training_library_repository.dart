@@ -35,11 +35,16 @@ abstract interface class TrainingLibraryRepository {
   Stream<List<GymProfileModel>> watchGymProfiles(String uid);
 
   /// Saves [profile] to `users/{profile.authorId}/gym_profiles/{profile.id}`,
-  /// merged over anything there, as `GymProfileManager.saveGymProfile` does
-  /// (`GymProfileManager.swift:40`; `saveDocument` is `setData(merge:
-  /// true)`). Every equipment list is written whole. The picture upload
-  /// Swift can do first is not ported (M5).
+  /// as `GymProfileManager.saveGymProfile` does (`GymProfileManager.swift:40`;
+  /// `saveDocument` is `setData(merge: true)`), so a field this app does not
+  /// know survives. Every field it knows is written: each equipment list
+  /// whole, and a cleared picture or deletion date as a delete, which Swift's
+  /// merge would keep. The picture upload Swift can do first is not ported.
   Future<void> saveGymProfile(GymProfileModel profile);
+
+  /// Deletes the profile [profileId] at `users/{uid}/gym_profiles`, as
+  /// `GymProfileManager.deleteGymProfile` does (`deleteDocument`).
+  Future<void> deleteGymProfile(String uid, String profileId);
 
   /// The per-exercise settings at `users/{uid}/exercise_settings`, one per
   /// exercise id.

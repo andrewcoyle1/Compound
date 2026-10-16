@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/challenges/challenges.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/notifications/inbox/notification_grouping.dart';
@@ -110,6 +111,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     switch (destination) {
       case InboxProfileDestination(:final user):
         SocialNavigation.openProfile(context, user);
+      case InboxChallengeDestination(:final challenge):
+        ChallengeNavigation.open(context, challenge);
       case InboxSessionDestination(:final session, :final openComments):
         SocialNavigation.openSession(context, session);
         if (openComments) SocialNavigation.openComments(context, session);

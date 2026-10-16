@@ -60,6 +60,7 @@ dependencies:
     path: packages/program_repository
   purchases_repository:
     path: packages/purchases_repository
+  share_plus: 13.3.1
   social_repository:
     path: packages/social_repository
   training_library_repository:

@@ -40,6 +40,13 @@ final class const InboxSessionDestination(
   List<Object?> get props => [session, openComments];
 }
 
+/// A challenge's standings: a finished challenge.
+final class const InboxChallengeDestination(final ChallengeModel challenge)
+    extends InboxDestination {
+  @override
+  List<Object?> get props => [challenge];
+}
+
 /// The signed-in user's activity, app-wide (Swift's
 /// `ActivityNotificationManager` and `incomingFollowRequests`, with the
 /// inbox screen's own state).

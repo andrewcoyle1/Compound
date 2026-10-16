@@ -7,6 +7,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
+import 'package:compound/challenges/challenges.dart';
 import 'package:compound/check_in/check_in.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/create_exercise/create_exercise.dart';
@@ -27,8 +28,11 @@ import 'package:compound/profile/profile.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/settings/settings.dart';
+import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:compound/social/invite/invite_cubit.dart';
+import 'package:compound/social/profile/social_profile_page.dart';
 import 'package:compound/social/social.dart';
 import 'package:compound/today/today.dart';
 import 'package:compound/training/training.dart';
@@ -93,6 +97,9 @@ class const App({
   /// The AI coach; one that answers nothing when left out, for tests that
   /// never open it.
   final CoachRepository? coachRepository,
+
+  /// The system share sheet; tests pass one that records what is shared.
+  final ShareSheet shareSheet = const ShareSheet(),
   final TrackerClock trackerClock = const TrackerClock(),
   super.key,
 }) extends StatelessWidget {
@@ -130,6 +137,7 @@ class const App({
           create: (_) => checkInRepository ?? InMemoryCheckInRepository(),
         ),
         RepositoryProvider.value(value: trackerClock),
+        RepositoryProvider.value(value: shareSheet),
         RepositoryProvider<ProposalDismissals>(
           create: (_) => proposalDismissals ?? ProposalDismissals(),
         ),
@@ -202,6 +210,18 @@ class const App({
           ),
           BlocProvider(
             create: (context) => InboxBloc(
+              social: context.read(),
+              analytics: analyticsRepository,
+            ),
+          ),
+          BlocProvider(
+            create: (context) => ChallengesCubit(
+              social: context.read(),
+              analytics: analyticsRepository,
+            ),
+          ),
+          BlocProvider(
+            create: (context) => InviteCubit(
               social: context.read(),
               analytics: analyticsRepository,
             ),
@@ -401,6 +421,7 @@ class _AppViewState extends State<AppView> {
       // Profiles, someone's workout and its comments, and the username:
       // over the tabs, from Social and from the profile cover alike.
       ...socialRoutes,
+      ...challengeRoutes,
       ...progressRootRoutes,
       ...coachRoutes,
       // Over the tabs, as the Swift app's sheet.
@@ -562,6 +583,7 @@ class _AppViewState extends State<AppView> {
     final profile = state is AppAuthenticated ? state.profile : null;
     context.read<CircleBloc>().add(CircleViewerChanged(profile));
     context.read<InboxBloc>().add(InboxViewerChanged(profile));
+    context.read<ChallengesCubit>().viewerChanged(profile?.userId);
     unawaited(context.read<ActiveWorkoutCubit>().userChanged(uid));
     context.read<ProgramsCubit>().userChanged(uid);
     unawaited(
@@ -586,6 +608,70 @@ class _AppViewState extends State<AppView> {
         workoutActive: context.read<ActiveWorkoutCubit>().state.isActive,
       ),
     );
+    // An invite link lands on Social, which accepts it
+    // (`SocialPresenter.onAcceptInviteNotificationReceived`).
+    final viewer = appState is AppAuthenticated ? appState.profile : null;
+    if (link is JoinLink && viewer != null) {
+      unawaited(context.read<InviteCubit>().accept(link.code, viewer: viewer));
+    }
+  }
+
+  /// Shares the invite link, or opens the inviter's profile and says what
+  /// accepting did, or says why either failed (`InviteShareFlow`,
+  /// `InviteAcceptFlow`).
+  void _onInvite(BuildContext context, InviteState state) {
+    final l10n = context.l10n;
+    void tell(String message) => ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+    switch (state.result) {
+      case null:
+        return;
+      case InviteShareReady(:final link):
+        unawaited(
+          context.read<ShareSheet>().shareText(
+            context,
+            l10n.inviteShareMessage(link),
+          ),
+        );
+      case InviteShareFailed():
+        tell('${l10n.inviteCreateFailed}. ${l10n.socialTryAgain}');
+      case InviteAccepted(:final inviter, :final acceptance):
+        if (acceptance.youFollow == InviteOutcome.requested) {
+          context.read<CircleBloc>().add(
+            CircleFollowRequestSent(inviter.userId),
+          );
+        }
+        unawaited(
+          _router.pushNamed(
+            SocialProfilePage.name,
+            pathParameters: {SocialProfilePage.userIdParameter: inviter.userId},
+            extra: inviter,
+          ),
+        );
+        final name = firstNameOf(inviter) ?? l10n.inviteYourFriend;
+        tell(switch ((acceptance.youFollow, acceptance.theyFollow)) {
+          (InviteOutcome.following, InviteOutcome.following) =>
+            l10n.inviteBothFollowing,
+          (InviteOutcome.following, InviteOutcome.requested) =>
+            l10n.inviteYouFollowTheyRequested(name),
+          (InviteOutcome.requested, InviteOutcome.following) =>
+            l10n.inviteTheyFollowYouRequested(name),
+          (InviteOutcome.requested, InviteOutcome.requested) =>
+            l10n.inviteBothRequested,
+        });
+      case InviteAcceptFailed(:final failure):
+        tell(
+          '${l10n.inviteAcceptFailed}. ${switch (failure) {
+            InviteFailure.invalidCode => l10n.inviteInvalidCode,
+            InviteFailure.notFound => l10n.inviteNotFound,
+            InviteFailure.ownInvite => l10n.inviteOwn,
+            InviteFailure.exhausted => l10n.inviteExhausted,
+            InviteFailure.unavailable => l10n.inviteUnavailable,
+            _ => l10n.socialTryAgain,
+          }}',
+        );
+    }
   }
 
   @override
@@ -629,6 +715,11 @@ class _AppViewState extends State<AppView> {
               listenWhen: (previous, current) =>
                   current.noticeId != previous.noticeId,
               listener: showCircleNotice,
+            ),
+            BlocListener<InviteCubit, InviteState>(
+              listenWhen: (previous, current) =>
+                  current.resultId != previous.resultId,
+              listener: _onInvite,
             ),
           ],
           child: child!,

@@ -48,3 +48,16 @@ final class const CircleWeeklySummaryDismissed(final DateTime weekStart)
   @override
   List<Object?> get props => [weekStart];
 }
+
+/// A follow request to [userId] was sent elsewhere, by accepting their
+/// invite (`UserManager.markFollowRequestSent`).
+final class const CircleFollowRequestSent(final String userId)
+    extends CircleEvent {
+  @override
+  List<Object?> get props => [userId];
+}
+
+/// The invite card was tapped or closed.
+final class CircleInviteCardDismissed extends CircleEvent {
+  const new();
+}

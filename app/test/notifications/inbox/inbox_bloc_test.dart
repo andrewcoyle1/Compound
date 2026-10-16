@@ -432,9 +432,58 @@ void main() {
       );
     }
 
-    for (final type in [ActivityType.share, ActivityType.challengeComplete]) {
+    final finished = ActivityNotificationModel(
+      id: 'challenge_done',
+      type: ActivityType.challengeComplete,
+      actorId: uid,
+      actorName: 'Maya Chen',
+      sessionId: '',
+      sessionAuthorId: uid,
+      commentText: 'October Grind',
+      dateCreated: now,
+      challengeId: 'c1',
+    );
+    final challenge = ChallengeModel(
+      id: 'c1',
+      ownerId: uid,
+      title: 'October Grind',
+      targetSessions: 12,
+      startsAt: now,
+      endsAt: now.add(const Duration(days: 20)),
+      memberIds: const [uid],
+      dateCreated: now,
+    );
+
+    // NotificationTapThroughTests: a finished challenge opens its standings.
+    blocTest<InboxBloc, InboxState>(
+      'a finished challenge opens its standings',
+      setUp: () =>
+          when(() => social.challenge('c1')).thenAnswer((_) async => challenge),
+      build: build,
+      seed: () => seeded([finished]),
+      act: (bloc) =>
+          bloc.add(InboxGroupPressed(groupNotifications([finished]).single)),
+      verify: (bloc) =>
+          expect(bloc.state.destination, InboxChallengeDestination(challenge)),
+    );
+
+    blocTest<InboxBloc, InboxState>(
+      'a challenge that cannot be read alerts',
+      setUp: () =>
+          when(() => social.challenge('c1')).thenAnswer((_) async => null),
+      build: build,
+      seed: () => seeded([finished]),
+      act: (bloc) =>
+          bloc.add(InboxGroupPressed(groupNotifications([finished]).single)),
+      verify: (bloc) {
+        expect(bloc.state.destination, isNull);
+        expect(bloc.state.notice, InboxNotice.openFailed);
+      },
+    );
+
+    for (final type in [ActivityType.share]) {
       blocTest<InboxBloc, InboxState>(
-        'a ${type.value} only marks itself read until Social part 2',
+        'a ${type.value} only marks itself read until Social part 2b',
         build: build,
         seed: () => seeded([item('a', type: type, session: '')]),
         act: (bloc) => bloc.add(

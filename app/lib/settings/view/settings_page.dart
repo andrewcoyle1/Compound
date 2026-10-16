@@ -19,6 +19,7 @@ import 'package:compound/settings/nutrition/view/expenditure_settings_page.dart'
 import 'package:compound/settings/nutrition/view/food_log_settings_page.dart';
 import 'package:compound/settings/nutrition/view/strategy_settings_page.dart';
 import 'package:compound/settings/training/view/workout_settings_page.dart';
+import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -160,6 +161,20 @@ class _SettingsViewState extends State<SettingsView> {
               AppSection(
                 header: l10n.settingsCommunityHeader,
                 children: [
+                  AppListRowButton(
+                    title: l10n.inviteCardTitle,
+                    icon: AppSymbols.invite,
+                    onPressed: () {
+                      final app = context.read<AppBloc>().state;
+                      if (app is! AppAuthenticated) return;
+                      unawaited(
+                        context.read<InviteCubit>().shareRequested(
+                          app.user.uid,
+                          pressedEvent: 'ProfileView_InviteFriend_Press',
+                        ),
+                      );
+                    },
+                  ),
                   AppListRowButton(
                     title: l10n.settingsSupport,
                     icon: AppSymbols.help,

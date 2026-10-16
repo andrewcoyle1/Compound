@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:equatable/equatable.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -18,6 +19,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     required this._notifications,
     required this._users,
     this._now = DateTime.now,
+    this._webLink,
   }) : super(const NotificationsState()) {
     _links = _notifications.deepLinks.changes.listen((_) => _routePending());
   }
@@ -25,6 +27,9 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   final NotificationsRepository _notifications;
   final UserRepository _users;
   final DateTime Function() _now;
+
+  /// The flavor's workout web pages, which open the workout in the app.
+  final SessionWebLink? _webLink;
 
   late final StreamSubscription<void> _links;
   StreamSubscription<PrivateUserSettings?>? _settingsSubscription;
@@ -89,10 +94,12 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     await _notifications.applyReminderSettings(settings, now: _now());
   }
 
-  /// A `compound://` URL the platform opened the app with; held like a tap
-  /// until it can be routed. One the app doesn't know does nothing.
-  void linkOpened(Uri uri) =>
-      _notifications.deepLinks.store(DeepLink.parse(uri));
+  /// A `compound://` URL, or a workout's web page, the platform opened the
+  /// app with; held like a tap until it can be routed. One the app doesn't
+  /// know does nothing.
+  void linkOpened(Uri uri) => _notifications.deepLinks.store(
+    _webLink?.parse(uri) ?? DeepLink.parse(uri),
+  );
 
   void _routePending() {
     final link = _notifications.deepLinks.consume();

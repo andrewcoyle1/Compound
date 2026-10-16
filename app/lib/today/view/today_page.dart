@@ -184,143 +184,130 @@ class _Day extends StatelessWidget {
         now: state.now,
       ),
     );
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(AppSpacing.l),
-        children: [
-          if (starter.isNotEmpty) ...[
-            AppSection(
-              header: l10n.todayGetStarted(
-                starterTotal - starter.length,
-                starterTotal,
+    // Complete only once the schedule is known, so a planned workout still
+    // to come can't be missed.
+    return _DayCompleteWatcher(
+      itemCount: checklist.items.length,
+      isComplete:
+          checklist.isComplete && programs.status != ProgramsStatus.loading,
+      child: SafeArea(
+        child: AppDashboard(
+          sections: [
+            if (starter.isNotEmpty)
+              AppSection(
+                header: l10n.todayGetStarted(
+                  starterTotal - starter.length,
+                  starterTotal,
+                ),
+                children: [
+                  for (final step in starter)
+                    if (_starterAction(context, step) case final action?)
+                      AppListRowButton(
+                        title: TodayText.starter(
+                          l10n,
+                          step,
+                          appleHealth: isAppleHealth(context),
+                        ),
+                        icon: TodayText.starterIcon(step),
+                        onPressed: action,
+                      )
+                    else
+                      AppListRow(
+                        title: TodayText.starter(
+                          l10n,
+                          step,
+                          appleHealth: isAppleHealth(context),
+                        ),
+                        icon: TodayText.starterIcon(step),
+                      ),
+                ],
               ),
-              children: [
-                for (final step in starter)
-                  if (_starterAction(context, step) case final action?)
-                    AppListRowButton(
-                      title: TodayText.starter(
-                        l10n,
-                        step,
-                        appleHealth: isAppleHealth(context),
-                      ),
-                      icon: TodayText.starterIcon(step),
-                      onPressed: action,
-                    )
-                  else
-                    AppListRow(
-                      title: TodayText.starter(
-                        l10n,
-                        step,
-                        appleHealth: isAppleHealth(context),
-                      ),
-                      icon: TodayText.starterIcon(step),
-                    ),
-              ],
+            DayChecklistCard(
+              checklist: checklist,
+              stepGoal: state.stepGoal,
+              unit: state.usesPounds
+                  ? AppWeightUnit.pounds
+                  : AppWeightUnit.kilograms,
+              workout: workout,
+              onItemPressed: (item) => context.read<TodayBloc>().add(
+                TodayChecklistItemPressed(item),
+              ),
+              onStepGoalSelected: (goal) =>
+                  context.read<TodayBloc>().add(TodayStepGoalSelected(goal)),
             ),
-            const SizedBox(height: AppSpacing.xl),
-          ],
-          // Complete only once the schedule is known, so a planned workout
-          // still to come can't be missed.
-          _DayCompleteWatcher(
-            itemCount: checklist.items.length,
-            isComplete:
-                checklist.isComplete &&
-                programs.status != ProgramsStatus.loading,
-          ),
-          DayChecklistCard(
-            checklist: checklist,
-            stepGoal: state.stepGoal,
-            unit: state.usesPounds
-                ? AppWeightUnit.pounds
-                : AppWeightUnit.kilograms,
-            workout: workout,
-            onItemPressed: (item) =>
-                context.read<TodayBloc>().add(TodayChecklistItemPressed(item)),
-            onStepGoalSelected: (goal) =>
-                context.read<TodayBloc>().add(TodayStepGoalSelected(goal)),
-          ),
-          if (state.dueCheckInWeekStart case final weekStart?) ...[
-            const SizedBox(height: AppSpacing.xl),
-            DecisionCard(
-              title: l10n.checkInReadyTitle,
-              message: l10n.checkInReadyMessage,
-              primary: l10n.checkInStart,
-              onPrimary: () {
-                context.read<TodayBloc>().add(const TodayCheckInStarted());
-                unawaited(CheckInPage.show(context, weekStart));
-              },
-              secondary: l10n.checkInSkipWeek,
-              onSecondary: () =>
-                  context.read<TodayBloc>().add(const TodayCheckInSkipped()),
-            ),
-          ],
-          // Swift's order: the workout before the evening protein.
-          const SizedBox(height: AppSpacing.xl),
-          const TodaysWorkoutCard(),
-          if (gap != null) ...[
-            const SizedBox(height: AppSpacing.xl),
-            AppSection(
-              children: [
-                AppListRow(
-                  title: l10n.todayProteinGap(AppFormat.grams(gap)),
-                  icon: AppSymbols.protein,
-                  tint: context.appColors.protein,
-                  accessory: AppListRowCustom(
-                    AskCoachButton(
-                      CoachContext(
-                        kind: CoachContextKind.nutritionDay,
-                        date: localDayKey(DateTime.now()),
-                        title: l10n.coachTodaysFood,
+            if (state.dueCheckInWeekStart case final weekStart?)
+              DecisionCard(
+                title: l10n.checkInReadyTitle,
+                message: l10n.checkInReadyMessage,
+                primary: l10n.checkInStart,
+                onPrimary: () {
+                  context.read<TodayBloc>().add(const TodayCheckInStarted());
+                  unawaited(CheckInPage.show(context, weekStart));
+                },
+                secondary: l10n.checkInSkipWeek,
+                onSecondary: () =>
+                    context.read<TodayBloc>().add(const TodayCheckInSkipped()),
+              ),
+            // Swift's order: the workout before the evening protein.
+            const TodaysWorkoutCard(),
+            if (gap != null)
+              AppSection(
+                children: [
+                  AppListRow(
+                    title: l10n.todayProteinGap(AppFormat.grams(gap)),
+                    icon: AppSymbols.protein,
+                    tint: context.appColors.protein,
+                    accessory: AppListRowCustom(
+                      AskCoachButton(
+                        CoachContext(
+                          kind: CoachContextKind.nutritionDay,
+                          date: localDayKey(DateTime.now()),
+                          title: l10n.coachTodaysFood,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            if (state.showsWeeklyReviewCard)
+              AppSection(
+                children: [
+                  AppListRowButton(
+                    title: l10n.weeklyReviewReady,
+                    icon: AppSymbols.weeklyReview,
+                    onPressed: () {
+                      context.read<TodayBloc>().add(
+                        const TodayWeeklyReviewOpened(),
+                      );
+                      context.goNamed(WeeklyReviewPage.name);
+                    },
+                  ),
+                ],
+              ),
+            StreakCard(
+              streak: state.streak,
+              weekDays: state.weekDays,
+              workoutDays: state.workoutDaysThisWeek,
+              totalWorkouts: state.totalWorkouts,
+              today: state.now,
             ),
+            if (pulse != null)
+              AppSection(
+                children: [
+                  AppListRowButton(
+                    title: pulse,
+                    icon: AppSymbols.friends,
+                    onPressed: () {
+                      context.read<TodayBloc>().add(
+                        const TodaySocialPulsePressed(),
+                      );
+                      context.go(AppTab.social.path);
+                    },
+                  ),
+                ],
+              ),
           ],
-          if (state.showsWeeklyReviewCard) ...[
-            const SizedBox(height: AppSpacing.xl),
-            AppSection(
-              children: [
-                AppListRowButton(
-                  title: l10n.weeklyReviewReady,
-                  icon: AppSymbols.weeklyReview,
-                  onPressed: () {
-                    context.read<TodayBloc>().add(
-                      const TodayWeeklyReviewOpened(),
-                    );
-                    context.goNamed(WeeklyReviewPage.name);
-                  },
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: AppSpacing.xl),
-          StreakCard(
-            streak: state.streak,
-            weekDays: state.weekDays,
-            workoutDays: state.workoutDaysThisWeek,
-            totalWorkouts: state.totalWorkouts,
-            today: state.now,
-          ),
-          if (pulse != null) ...[
-            const SizedBox(height: AppSpacing.xl),
-            AppSection(
-              children: [
-                AppListRowButton(
-                  title: pulse,
-                  icon: AppSymbols.friends,
-                  onPressed: () {
-                    context.read<TodayBloc>().add(
-                      const TodaySocialPulsePressed(),
-                    );
-                    context.go(AppTab.social.path);
-                  },
-                ),
-              ],
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -330,10 +317,15 @@ class _Day extends StatelessWidget {
 /// when it already is; the bloc marks the day once
 /// (`TodayView.onChange(of: checklist.isComplete, initial: true)`).
 class _DayCompleteWatcher extends StatefulWidget {
-  const new({required this.itemCount, required this.isComplete});
+  const new({
+    required this.itemCount,
+    required this.isComplete,
+    required this.child,
+  });
 
   final int itemCount;
   final bool isComplete;
+  final Widget child;
 
   @override
   State<_DayCompleteWatcher> createState() => _DayCompleteWatcherState();
@@ -359,7 +351,7 @@ class _DayCompleteWatcherState extends State<_DayCompleteWatcher> {
   }
 
   @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// The day could not be read: the Today glyph and a line saying so.

@@ -45,6 +45,9 @@ class RevenueCatPurchasesRepository implements PurchasesRepository {
 
   final bool _configured;
 
+  /// Whether RevenueCat was started, so its own paywall can show.
+  bool get isConfigured => _configured;
+
   /// The app user RevenueCat is identified as; `null` while anonymous. An
   /// answer counts as resolved only while it is set.
   String? _userId;

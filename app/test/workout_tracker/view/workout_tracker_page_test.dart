@@ -91,7 +91,12 @@ void main() {
 
   String nextSetId() => (cubit.state.primaryAction! as r.LogSetAction).setId;
 
-  Future<void> pump(WidgetTester tester, {double textScale = 1}) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    double textScale = 1,
+    Size size = phoneSize,
+  }) async {
+    tester.useSize(size);
     final router = GoRouter(
       initialLocation: WorkoutTrackerPage.path,
       routes: [
@@ -413,6 +418,36 @@ void main() {
       await tester.tap(find.text('Resume Workout'));
       await tester.pumpAndSettle();
       expect(cubit.state.isPaused, isFalse);
+      await cubit.close();
+    });
+
+    testWidgets('on a tablet, pause, finish and notes are on the bar', (
+      tester,
+    ) async {
+      await start(tester);
+      await pump(tester, size: tabletSize);
+      await tester.tap(find.byTooltip('Workout options'));
+      await tester.pumpAndSettle();
+      expect(find.text('Pause Workout'), findsNothing);
+      expect(find.text('Workout Settings'), findsOneWidget);
+      await tester.tapAt(Offset.zero);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Pause Workout'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.isPaused, isTrue);
+      expect(find.byTooltip('Resume Workout'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Workout Notes…'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(EditableText), 'Felt strong');
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.session!.notes, 'Felt strong');
+
+      await tester.tap(find.byTooltip('Finish Workout…'));
+      await tester.pumpAndSettle();
+      expect(find.text('Finish'), findsOneWidget);
       await cubit.close();
     });
 

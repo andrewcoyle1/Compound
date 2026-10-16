@@ -17,12 +17,15 @@ import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/display_size.dart';
+
 void main() {
   const uid = sampleUserId;
   final now = DateTime.now();
 
   testWidgets('starts a template, logs sets, finishes and shows the summary, '
       'with the session saved exactly', (tester) async {
+    tester.useSize(phoneSize);
     final sessions = InMemoryWorkoutSessionRepository(sessions: const []);
     final users = InMemoryUserRepository(
       users: {uid: sampleUser(now: now)},

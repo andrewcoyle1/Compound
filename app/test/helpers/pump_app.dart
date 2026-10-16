@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
@@ -16,6 +17,7 @@ import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/review/review_moment.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
@@ -80,14 +82,17 @@ extension PumpApp on WidgetTester {
     ChallengesCubit? challengesCubit,
     InviteCubit? inviteCubit,
     ShareSheet shareSheet = const ShareSheet(),
+    SessionWebLink? sessionWebLink,
     ImageRepository? imageRepository,
     PhotoPicker? photoPicker,
+    LabelTextReader? labelTextReader,
     AiRepository? aiRepository,
     NotificationsRepository? notificationsRepository,
     ProgramsCubit? programsCubit,
     ActiveWorkoutCubit? activeWorkoutCubit,
     CoachRepository? coachRepository,
     PurchasesRepository? purchasesRepository,
+    AbTestRepository? abTestRepository,
     HealthRepository? healthRepository,
     HealthCubit? healthCubit,
     StravaRepository? stravaRepository,
@@ -167,6 +172,7 @@ extension PumpApp on WidgetTester {
             value: purchasesRepository ?? FakePurchasesRepository(),
           ),
           RepositoryProvider.value(value: shareSheet),
+          RepositoryProvider<SessionWebLink?>.value(value: sessionWebLink),
           RepositoryProvider.value(value: linkOpener),
           RepositoryProvider<AppVersion?>.value(value: appVersion),
           RepositoryProvider.value(
@@ -188,6 +194,9 @@ extension PumpApp on WidgetTester {
           ),
           RepositoryProvider<PhotoPicker>.value(
             value: photoPicker ?? SamplePhotoPicker(() async => Uint8List(0)),
+          ),
+          RepositoryProvider<LabelTextReader>.value(
+            value: labelTextReader ?? const SampleLabelTextReader(),
           ),
           RepositoryProvider<AiRepository>.value(
             value: aiRepository ?? AiRepository(callFunction: stagingAiCall),
@@ -214,6 +223,13 @@ extension PumpApp on WidgetTester {
           providers: [
             BlocProvider.value(value: appBloc ?? MockAppBloc()),
             BlocProvider.value(value: mealDraftCubit ?? MealDraftCubit()),
+            // Swift's defaults unless a test passes others.
+            BlocProvider(
+              create: (_) => AbTestsCubit(
+                repository: abTestRepository ?? InMemoryAbTestRepository(),
+                analytics: analyticsRepository,
+              ),
+            ),
             if (activeWorkoutCubit != null)
               BlocProvider.value(value: activeWorkoutCubit),
             // Following nobody unless a test passes one that does.

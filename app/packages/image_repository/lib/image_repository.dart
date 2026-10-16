@@ -6,4 +6,5 @@ library;
 export 'src/firebase_image_repository.dart';
 export 'src/image_repository.dart';
 export 'src/in_memory_image_repository.dart';
+export 'src/label_text_reader.dart';
 export 'src/photo_picker.dart';

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
 
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -16,6 +17,7 @@ import 'package:compound/bootstrap.dart';
 import 'package:compound/firebase_options_development.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/notifications/notifications.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
 import 'package:device_store/device_store.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -220,6 +222,14 @@ Future<void> main() async {
         File('${support.path}/active_workout_session.json'),
       ),
       deviceStore: deviceStore,
+      // A random draw kept on the device, as Swift's dev builds
+      // (`LocalABTestService`); Developer Settings overrides it.
+      abTestRepository: LocalAbTestRepository(deviceStore),
+      // Workouts' web pages: the sessionPage function behind this project's
+      // Hosting rewrite.
+      sessionWebLink: SessionWebLink(
+        Uri.parse('https://compound-development.web.app/s'),
+      ),
       analyticsRepository: analyticsRepository,
       authRepository: FirebaseAuthRepository(
         firebaseAuth: FirebaseAuth.instance,
@@ -249,6 +259,7 @@ Future<void> main() async {
         storage: FirebaseStorage.instance,
       ),
       photoPicker: DevicePhotoPicker(),
+      labelTextReader: const PlatformLabelTextReader(),
       // The food photo, meal description and label callables are
       // us-central1 and enforce App Check.
       aiRepository: AiRepository(

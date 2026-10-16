@@ -27,6 +27,7 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/display_size.dart';
 import '../../helpers/reminder_offers.dart';
 
 void main() {
@@ -425,6 +426,41 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Social'), findsOneWidget);
+    });
+
+    testWidgets('on a wide window, centres each screen in a readable column '
+        'and gives Today a dashboard', (tester) async {
+      tester.useSize(const Size(1366, 1024));
+      await tester.pumpWidget(
+        App(
+          deviceStore: offersShownDevice(),
+          purchasesRepository: FakePurchasesRepository(),
+          programRepository: InMemoryProgramRepository(),
+          trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
+          authRepository: InMemoryAuthRepository(
+            user: InMemoryAuthRepository.sampleUser,
+          ),
+          userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      double barWidth(String title) =>
+          tester.getSize(find.widgetWithText(AppBar, title)).width;
+      expect(barWidth('Today'), AppContentWidth.dashboard);
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('Training'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(barWidth('Training'), AppContentWidth.readable);
+      // The tab bar still spans the window.
+      expect(tester.getSize(find.byType(NavigationBar)).width, 1366);
     });
 
     testWidgets('opens the workout history and a workout from Training', (

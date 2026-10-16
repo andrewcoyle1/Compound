@@ -1,3 +1,4 @@
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/paywall/paywall.dart';
@@ -9,10 +10,11 @@ import '../../helpers/helpers.dart';
 
 class _MockPurchasesRepository extends Mock implements PurchasesRepository;
 
-/// Swift `PaywallPresenterTests`, case for case. Not ported: the RevenueCat
-/// and StoreKit variants' cases (only the default, custom paywall is
-/// built), the variant read from the A/B test (no A/B tests yet), and the
-/// error sorting (`RevenueCatPurchasesRepository`'s own tests sort
+/// Swift `PaywallPresenterTests`, case for case. Which variant shows is
+/// `paywall_variant_test.dart`'s. Not ported: "only the custom paywall loads
+/// products" (Flutter's storeKit variant draws the plans itself, so it
+/// loads them; the page skips loading for revenueCat), and the error
+/// sorting (`RevenueCatPurchasesRepository`'s own tests sort
 /// RevenueCat's codes). Where a purchase lands (back where the user was, or
 /// the onboarding step the profile implies) is the router's, in
 /// `app_redirect_test.dart` and `paywall_flow_test.dart`.
@@ -363,6 +365,56 @@ void main() {
       verify: (_) => expect(analytics.names.last, 'PaywallView_SignOut_Fail'),
     );
   });
+
+  group("RevenueCat's paywall", () {
+    blocTest<PaywallCubit, PaywallState>(
+      'a purchase with an entitlement moves the user on',
+      build: build,
+      act: (cubit) =>
+          cubit.revenueCatPurchaseCompleted(hasActiveEntitlement: true),
+      expect: () => const [PaywallState(isComplete: true)],
+      verify: (_) => expect(
+        analytics.parameters('PaywallView_RevenueCat_Purchase_Complete'),
+        {'hasActiveEntitlement': true},
+      ),
+    );
+
+    blocTest<PaywallCubit, PaywallState>(
+      'an empty restore neither lets through nor alerts twice',
+      build: build,
+      act: (cubit) => cubit
+        ..revenueCatRestoreCompleted(hasActiveEntitlement: false)
+        ..revenueCatPurchaseCompleted(hasActiveEntitlement: false),
+      expect: () => const <PaywallState>[],
+      verify: (_) => expect(analytics.names, [
+        'PaywallView_RevenueCat_Restore_Complete',
+        'PaywallView_RevenueCat_Purchase_Complete',
+      ]),
+    );
+
+    blocTest<PaywallCubit, PaywallState>(
+      'a restore with an entitlement moves the user on',
+      build: build,
+      act: (cubit) =>
+          cubit.revenueCatRestoreCompleted(hasActiveEntitlement: true),
+      expect: () => const [PaywallState(isComplete: true)],
+    );
+  });
+
+  blocTest<PaywallCubit, PaywallState>(
+    'logs the variant it shows',
+    build: () => PaywallCubit(
+      purchases: purchases,
+      auth: auth,
+      analytics: analytics,
+      productIds: productIds,
+      variant: PaywallTestOption.storeKit,
+    ),
+    act: (cubit) => cubit.loadProducts(),
+    verify: (_) => expect(analytics.parameters('PaywallView_Load_Start'), {
+      'paywallVariant': 'storeKit',
+    }),
+  );
 
   test('tracks its own lifecycle and close button', () async {
     build()

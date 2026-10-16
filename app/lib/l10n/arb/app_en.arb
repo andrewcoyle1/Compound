@@ -5066,18 +5066,6 @@
             }
         }
     },
-    "nutritionDraftMeal": "{count, plural, =1{Unlogged meal · 1 item · {calories}} other{Unlogged meal · {count} items · {calories}}}",
-    "@nutritionDraftMeal": {
-        "description": "The bar that reopens an unlogged meal",
-        "placeholders": {
-            "count": {
-                "type": "int"
-            },
-            "calories": {
-                "type": "String"
-            }
-        }
-    },
     "nutritionDeleteItem": "Delete",
     "@nutritionDeleteItem": {
         "description": "Deletes a logged food"
@@ -12512,6 +12500,192 @@
     "todayOthers": "{count, plural, =1{{count} other} other{{count} others}}",
     "@todayOthers": {
         "description": "Today's social row: how many more people trained today, after the first two names",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "exerciseChartsTab": "Charts",
+    "@exerciseChartsTab": {
+        "description": "Exercise detail: the tab of charts"
+    },
+    "exerciseRecordsTab": "Records",
+    "@exerciseRecordsTab": {
+        "description": "Exercise detail: the tab of records"
+    },
+    "exerciseTopSet": "Top Set",
+    "@exerciseTopSet": {
+        "description": "Exercise detail Charts: the chart of each session's heaviest set"
+    },
+    "exerciseRepsPerSession": "Reps Per Session",
+    "@exerciseRepsPerSession": {
+        "description": "Exercise detail Charts: the chart of each session's total reps"
+    },
+    "exerciseRepsUnit": "reps",
+    "@exerciseRepsUnit": {
+        "description": "Exercise detail Charts: the unit of the reps chart"
+    },
+    "exercisePersonalBest": "Personal Best",
+    "@exercisePersonalBest": {
+        "description": "Exercise detail Records: heading of the heaviest set ever"
+    },
+    "exerciseAchievedOn": "Achieved on {date}",
+    "@exerciseAchievedOn": {
+        "description": "Exercise detail Records: when the personal best was set",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "exerciseOneRepMaxLabel": "1RM",
+    "@exerciseOneRepMaxLabel": {
+        "description": "Exercise detail Records: the label under the best estimated one-rep max"
+    },
+    "exerciseNoWorkingSets": "No working sets logged yet.",
+    "@exerciseNoWorkingSets": {
+        "description": "Exercise detail Records: no personal best yet"
+    },
+    "exerciseRecentRecords": "Recent Records",
+    "@exerciseRecentRecords": {
+        "description": "Exercise detail Records: heading of the sessions that set a new estimated one-rep max"
+    },
+    "exerciseNoRecords": "No records yet.",
+    "@exerciseNoRecords": {
+        "description": "Exercise detail Records: no one-rep-max records yet"
+    },
+    "exerciseAllTimeStats": "All-Time Stats",
+    "@exerciseAllTimeStats": {
+        "description": "Exercise detail Records: heading of the totals"
+    },
+    "exerciseTotalSets": "Total Sets",
+    "@exerciseTotalSets": {
+        "description": "Exercise detail Records: every working set ever"
+    },
+    "exerciseTotalReps": "Total Reps",
+    "@exerciseTotalReps": {
+        "description": "Exercise detail Records: every rep ever"
+    },
+    "exerciseTotalVolume": "Total Volume",
+    "@exerciseTotalVolume": {
+        "description": "Exercise detail Records: weight times reps over every set"
+    },
+    "templateWatch": "Watch",
+    "@templateWatch": {
+        "description": "Workout template detail: opens an exercise's demonstration link"
+    },
+    "templateWatchLabel": "Watch {name}",
+    "@templateWatchLabel": {
+        "description": "Workout template detail: the Watch link read to a screen reader",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "templateSetLabel": "Set {number}, {target}",
+    "@templateSetLabel": {
+        "description": "Workout template detail: one set's target read to a screen reader",
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "templateRepRange": "{range} reps",
+    "@templateRepRange": {
+        "description": "Workout template detail: a set's rep target, e.g. '8–12 reps'",
+        "placeholders": {
+            "range": {
+                "type": "String"
+            }
+        }
+    },
+    "templateRepFloor": "{min}+ reps",
+    "@templateRepFloor": {
+        "description": "Workout template detail: a set's rep target with only a floor, e.g. '8+ reps'",
+        "placeholders": {
+            "min": {
+                "type": "int"
+            }
+        }
+    },
+    "templateNoTarget": "No target set",
+    "@templateNoTarget": {
+        "description": "Workout template detail: a set with no rep target"
+    },
+    "addMealShowAllNutrients": "Show all nutrients",
+    "@addMealShowAllNutrients": {
+        "description": "Meal logger: opens every nutrient the plate's foods record"
+    },
+    "addMealNoneRecorded": "None of the foods on this plate record {category} data.",
+    "@addMealNoneRecorded": {
+        "description": "Meal logger's nutrients: a category nothing on the plate records; category is lower case, e.g. 'vitamins'",
+        "placeholders": {
+            "category": {
+                "type": "String"
+            }
+        }
+    },
+    "nutrientCategoryProtein": "Protein",
+    "@nutrientCategoryProtein": {
+        "description": "Nutrient category heading"
+    },
+    "nutrientCategoryFat": "Fat",
+    "@nutrientCategoryFat": {
+        "description": "Nutrient category heading"
+    },
+    "nutrientCategoryCarbs": "Carbohydrates",
+    "@nutrientCategoryCarbs": {
+        "description": "Nutrient category heading"
+    },
+    "nutrientCategoryVitamins": "Vitamins",
+    "@nutrientCategoryVitamins": {
+        "description": "Nutrient category heading"
+    },
+    "nutrientCategoryMinerals": "Minerals",
+    "@nutrientCategoryMinerals": {
+        "description": "Nutrient category heading"
+    },
+    "nutrientCategoryOther": "Other",
+    "@nutrientCategoryOther": {
+        "description": "Nutrient category heading"
+    },
+    "nutrientAddedSugars": "Added Sugars",
+    "@nutrientAddedSugars": {
+        "description": "A nutrient's name"
+    },
+    "nutrientBiotin": "Biotin",
+    "@nutrientBiotin": {
+        "description": "A nutrient's name"
+    },
+    "nutritionCustomizeFoodLog": "Customize Food Log",
+    "@nutritionCustomizeFoodLog": {
+        "description": "Nutrition tab: opens the food log settings"
+    },
+    "mealDraftTitle": "Unlogged meal",
+    "@mealDraftTitle": {
+        "description": "The bar over the tab bar that reopens an unlogged meal: its title"
+    },
+    "mealDraftDetail": "{count, plural, =1{1 item · {calories}} other{{count} items · {calories}}}",
+    "@mealDraftDetail": {
+        "description": "The unlogged meal bar: its items and calories",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "calories": {
+                "type": "String"
+            }
+        }
+    },
+    "mealDraftLabel": "{count, plural, =1{Continue draft meal, 1 item} other{Continue draft meal, {count} items}}",
+    "@mealDraftLabel": {
+        "description": "The unlogged meal bar read to a screen reader",
         "placeholders": {
             "count": {
                 "type": "int"

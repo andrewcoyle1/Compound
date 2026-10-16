@@ -1,0 +1,11 @@
+{
+  "author_id": "user_contract_full",
+  "date_created": {
+    "$timestamp": "2026-10-14T10:00:00.250Z"
+  },
+  "id": "comment_contract_minimal",
+  "liked_by_user_ids": [],
+  "session_author_id": "user_contract_friend",
+  "session_id": "session_contract_full",
+  "text": "Nice"
+}

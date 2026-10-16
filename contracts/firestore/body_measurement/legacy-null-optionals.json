@@ -1,0 +1,35 @@
+{
+  "id": "body_measurement_legacy",
+  "author_id": "user_legacy",
+  "date": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "source": "manual",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:05.000Z"
+  },
+  "weight_kg": null,
+  "body_fat_percentage": null,
+  "neck_circumference": null,
+  "shoulder_circumference": null,
+  "bust_circumference": null,
+  "chest_circumference": null,
+  "waist_circumference": null,
+  "hip_circumference": null,
+  "left_bicep_circumference": null,
+  "right_bicep_circumference": null,
+  "left_forearm_circumference": null,
+  "right_forearm_circumference": null,
+  "left_wrist_circumference": null,
+  "right_wrist_circumference": null,
+  "left_thigh_circumference": null,
+  "right_thigh_circumference": null,
+  "left_calf_circumference": null,
+  "right_calf_circumference": null,
+  "left_ankle_circumference": null,
+  "right_ankle_circumference": null,
+  "progress_photo_urls": null,
+  "notes": null,
+  "deleted_at": null,
+  "healthkit_uuid": null
+}

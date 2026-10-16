@@ -1,0 +1,31 @@
+name: social_repository
+description: Reads and writes what users share with each other (follows and follow requests, the following feed, likes, comments, notifications, challenges, invites, shares, reports and usernames) in Firestore, or in an in-memory Firestore in the staging flavor.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  cloud_firestore: ^6.10.0
+  cloud_functions: ^6.5.0
+  compound_models:
+    path: ../compound_models
+  # The staging flavor's Firestore: social data spans every user's documents,
+  # so staging runs the real repository over an in-memory Firestore.
+  fake_cloud_firestore: ^4.3.0
+  flutter:
+    sdk: flutter
+  training_library_repository:
+    path: ../training_library_repository
+  user_repository:
+    path: ../user_repository
+  workout_session_repository:
+    path: ../workout_session_repository
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0

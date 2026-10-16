@@ -1,0 +1,29 @@
+{
+  "coach_consent": true,
+  "coach_consent_at": {
+    "$timestamp": "2026-09-01T12:00:00.500Z"
+  },
+  "fcm_token": "fcm-token",
+  "last_trained_at": {
+    "$timestamp": "2026-10-13T17:45:30.250Z"
+  },
+  "push_come_back_reminders": false,
+  "push_meal_reminders": true,
+  "reminder_hour": 7,
+  "social_push_challenges": true,
+  "social_push_comments": true,
+  "social_push_follows": false,
+  "social_push_likes": false,
+  "social_push_mentions": false,
+  "social_push_nudges": true,
+  "social_push_shares": true,
+  "social_push_streak_reminder": true,
+  "social_push_weekly_digest": false,
+  "timezone": "Europe/London",
+  "week_ends_at": {
+    "$timestamp": "2026-10-18T23:00:00.000Z"
+  },
+  "week_goal": 4,
+  "week_sessions": 3,
+  "week_streak": 12
+}

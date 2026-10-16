@@ -1,0 +1,65 @@
+{
+  "accepted_health_disclaimer_date": {
+    "$timestamp": "2025-10-06T07:08:09.010Z"
+  },
+  "accepted_health_disclaimer_version": "2025.10.05",
+  "accepted_health_privacy_policy_date": {
+    "$timestamp": "2025-10-06T07:08:09.010Z"
+  },
+  "accepted_health_privacy_policy_version": "2025.10.05",
+  "auth_providers": [
+    "google.com",
+    "apple.com"
+  ],
+  "blocked_user_ids": [
+    "user_blocked"
+  ],
+  "creation_date": {
+    "$timestamp": "2025-03-04T05:06:07.123Z"
+  },
+  "creation_version": "2.4.0",
+  "did_complete_onboarding": true,
+  "display_name": "Ada Lovelace",
+  "email": "ada@example.com",
+  "fcm_token": "fcm-token-legacy",
+  "first_name": "Ada",
+  "following_ids": [
+    "user_followed_1",
+    "user_followed_2"
+  ],
+  "is_anonymous": false,
+  "is_private": true,
+  "last_name": "Lovelace",
+  "last_sign_in_date": {
+    "$timestamp": "2026-10-01T08:09:10.456Z"
+  },
+  "phone_number": "+447700900123",
+  "photo_url": "https://example.com/ada.jpg",
+  "social_push_comments": true,
+  "social_push_follows": false,
+  "social_push_likes": false,
+  "social_push_mentions": false,
+  "social_push_nudges": true,
+  "submitted_active_mesocycle_id": "mesocycle_contract",
+  "submitted_cardio_fitness_level": "intermediate",
+  "submitted_current_goal_id": "goal_contract",
+  "submitted_daily_activity_level": "very_active",
+  "submitted_date_of_birth": {
+    "$timestamp": "1990-12-10T00:00:00.000Z"
+  },
+  "submitted_distance_unit_preference": "miles",
+  "submitted_email": "augusta@example.com",
+  "submitted_exercise_frequency": "3-4",
+  "submitted_favourite_gym_profile_id": "gym_contract",
+  "submitted_first_name": "Augusta",
+  "submitted_gender": "prefer_not_to_say",
+  "submitted_height_centimeters": 172.5,
+  "submitted_last_name": "King",
+  "submitted_length_unit_preference": "inches",
+  "submitted_profile_image": "https://example.com/augusta.jpg",
+  "submitted_weight_kilograms": 64.25,
+  "submitted_weight_unit_preference": "pounds",
+  "user_id": "user_contract_full",
+  "username": "ada",
+  "weekly_session_goal": 4
+}

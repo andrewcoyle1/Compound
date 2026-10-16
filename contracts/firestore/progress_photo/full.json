@@ -1,0 +1,12 @@
+{
+  "author_id": "user_contract_full",
+  "date": {
+    "$timestamp": "2026-10-12T07:45:00.250Z"
+  },
+  "id": "progress_photo_contract_full",
+  "image_url": "https://example.com/progress-photo.jpg",
+  "note": "Morning, fasted",
+  "pose": "side",
+  "storage_path": "users/user_contract_full/progress_photos/progress_photo_contract_full.jpg",
+  "weight_kg": 81.75
+}

@@ -1,0 +1,19 @@
+{
+  "id": "variation_contract_full",
+  "resistance_equipment": [
+    {
+      "id": "olympic_barbell",
+      "kind": "loadableBar"
+    },
+    {
+      "id": "bumper_plates",
+      "kind": "freeWeight"
+    }
+  ],
+  "support_equipment": [
+    {
+      "id": "flat_bench",
+      "kind": "supportEquipment"
+    }
+  ]
+}

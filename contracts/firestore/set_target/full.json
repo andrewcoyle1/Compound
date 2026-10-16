@@ -1,0 +1,15 @@
+{
+  "amrap_target_reps": 12,
+  "drop_count": 2,
+  "drop_reps": 8,
+  "drop_step_percent": 15,
+  "hold_seconds": 30,
+  "id": "set_target_contract_full",
+  "max_reps": 10,
+  "min_reps": 6,
+  "mini_set_count": 3,
+  "partial_reps": 5,
+  "rir_target": 1,
+  "set_number": 2,
+  "set_type": "drop"
+}

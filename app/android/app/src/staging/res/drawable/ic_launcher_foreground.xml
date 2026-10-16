@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compound's icon with the flavour's band across the foot. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@mipmap/ic_launcher_foreground" />
+    <item android:drawable="@drawable/ic_launcher_flag" />
+</layer-list>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification icons are named only in code and the manifest's meta-data, so resource
+     shrinking would otherwise drop them and notifications would fail silently. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_notification" />

@@ -1,0 +1,23 @@
+{
+  "id": "old_dumbbells",
+  "typeId": "dumbbells",
+  "name": "Legacy old_dumbbells",
+  "isActive": true,
+  "needsColour": false,
+  "isPlates": true,
+  "range": [
+    {
+      "id": "w1",
+      "availableWeights": 2.5,
+      "unit": "kilograms",
+      "isActive": false
+    },
+    {
+      "id": "w6",
+      "availableWeights": 10.0,
+      "unit": "pounds",
+      "isActive": true,
+      "count": 4
+    }
+  ]
+}

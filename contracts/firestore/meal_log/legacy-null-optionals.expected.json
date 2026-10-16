@@ -1,0 +1,9 @@
+{
+  "author_id": "user_contract_minimal",
+  "date": {
+    "$timestamp": "2026-10-13T12:30:00.000Z"
+  },
+  "day_key": "2026-10-13",
+  "items": [],
+  "meal_id": "meal_log_contract_minimal"
+}

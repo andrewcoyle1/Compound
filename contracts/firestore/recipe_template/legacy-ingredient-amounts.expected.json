@@ -1,0 +1,97 @@
+{
+  "author_id": "user_contract_legacy",
+  "date_created": {
+    "$timestamp": "2026-07-06T08:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-07-06T08:00:00.000Z"
+  },
+  "ingredients": [
+    {
+      "amount": 0.0,
+      "ingredient": {
+        "date_created": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "date_modified": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "ingredient_id": "food_contract_minimal",
+        "measurement_method": "weight",
+        "name": "Water",
+        "nutrients": {}
+      },
+      "unit": "grams"
+    },
+    {
+      "amount": 0.0,
+      "ingredient": {
+        "date_created": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "date_modified": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "ingredient_id": "food_contract_minimal",
+        "measurement_method": "weight",
+        "name": "Water",
+        "nutrients": {}
+      },
+      "unit": "grams"
+    },
+    {
+      "amount": 1000000.0,
+      "ingredient": {
+        "date_created": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "date_modified": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "ingredient_id": "food_contract_minimal",
+        "measurement_method": "weight",
+        "name": "Water",
+        "nutrients": {}
+      },
+      "unit": "grams"
+    },
+    {
+      "amount": 0.0,
+      "ingredient": {
+        "date_created": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "date_modified": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "ingredient_id": "food_contract_minimal",
+        "measurement_method": "weight",
+        "name": "Water",
+        "nutrients": {}
+      },
+      "unit": "grams"
+    },
+    {
+      "amount": 40.0,
+      "ingredient": {
+        "date_created": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "date_modified": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "ingredient_id": "food_contract_minimal",
+        "measurement_method": "weight",
+        "name": "Water",
+        "nutrients": {}
+      },
+      "unit": "grams"
+    }
+  ],
+  "name": "Broth",
+  "preparation_steps": [
+    "Simmer."
+  ],
+  "recipe_id": "recipe_contract_legacy_amounts",
+  "serving_quantity": 4.0
+}

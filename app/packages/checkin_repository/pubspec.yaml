@@ -1,0 +1,23 @@
+name: checkin_repository
+description: Reads and writes the weekly check-in's data (strategy settings, day annotations, logging break, check-in record) from Firestore, or from memory in the staging flavor, and assembles the expenditure engine's inputs.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  cloud_firestore: ^6.10.0
+  compound_maths:
+    path: ../compound_maths
+  compound_models:
+    path: ../compound_models
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  fake_cloud_firestore: ^4.3.0
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^11.0.0

@@ -1,0 +1,17 @@
+{
+  "author_id": "user_contract_minimal",
+  "equipment_variations": [
+
+  ],
+  "id": "exercise_contract_minimal",
+  "index": 1,
+  "name": "Plank",
+  "set_targets": [
+
+  ],
+  "sets": [
+
+  ],
+  "template_id": "plank",
+  "tracking_mode": "timeOnly"
+}

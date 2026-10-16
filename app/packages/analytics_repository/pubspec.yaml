@@ -1,0 +1,21 @@
+name: analytics_repository
+description: "Compound event logging: one call fans out to the console, Firebase Analytics, Crashlytics and Mixpanel."
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  firebase_analytics: ^12.6.0
+  firebase_crashlytics: ^5.4.0
+  flutter:
+    sdk: flutter
+  mixpanel_flutter: ^3.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0

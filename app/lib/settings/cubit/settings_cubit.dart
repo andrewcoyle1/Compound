@@ -1,0 +1,112 @@
+import 'package:analytics_repository/analytics_repository.dart';
+import 'package:auth_repository/auth_repository.dart';
+import 'package:bloc/bloc.dart';
+import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/review/review_moment.dart';
+
+/// How an account signs in, for Settings' Sign-In Method row (Swift
+/// `SettingsPresenter.signInMethod`).
+enum SignInMethod {
+  /// Anonymous: nothing to sign in again with.
+  notSaved,
+
+  /// Sign in with Apple.
+  apple,
+
+  /// Google.
+  google,
+
+  /// Linked to neither (no such account today).
+  unknown;
+
+  /// Apple before Google, as Swift checks them.
+  factory of(AuthUser user) {
+    if (user.isAnonymous) return notSaved;
+    if (user.providers.contains(SignInProvider.apple)) return apple;
+    if (user.providers.contains(SignInProvider.google)) return google;
+    return unknown;
+  }
+}
+
+/// What the Settings screen has to say beyond its rows: whether signing out
+/// just failed.
+enum SettingsStatus {
+  /// Nothing to report.
+  idle,
+
+  /// Signing out is under way.
+  signingOut,
+
+  /// Signing out failed; the user is still signed in.
+  signOutFailure,
+}
+
+/// The Settings list behind the profile's gear (Swift `SettingsPresenter`):
+/// its analytics, with Swift's event names, and signing out.
+class SettingsCubit extends Cubit<SettingsStatus> {
+  new({required this._analytics, required this._auth, this._reviews})
+    : super(SettingsStatus.idle);
+
+  final AnalyticsRepository _analytics;
+  final AuthRepository _auth;
+
+  /// The store's rating prompt; none in tests that leave it out.
+  final ReviewPrompter? _reviews;
+
+  /// `ProfileView_Appear`: the screen's Swift name.
+  void appeared() => _analytics.appear('ProfileView');
+
+  /// `ProfileView_Disappear`.
+  void disappeared() => _analytics.disappear('ProfileView');
+
+  /// `ProfileView_Subscription_Press`, before the store's subscription
+  /// page (a subscriber) or the paywall opens.
+  void subscriptionPressed() =>
+      _analytics.analytic('ProfileView_Subscription_Press');
+
+  /// `ProfileView_Support_Press`.
+  void supportPressed() => _analytics.analytic('ProfileView_Support_Press');
+
+  /// `ProfileView_NotificationSettings_Press`.
+  void notificationSettingsPressed() =>
+      _analytics.analytic('ProfileView_NotificationSettings_Press');
+
+  /// `ProfileView_NutritionPlan_Press`: the diet questions open to rebuild
+  /// the plan.
+  void nutritionPlanPressed() =>
+      _analytics.analytic('ProfileView_NutritionPlan_Press');
+
+  /// `ProfileView_Ratings_Pressed`, then straight to the store's rating
+  /// prompt (`onRatingsButtonPressed`), which also starts the cooldown the
+  /// review moments share.
+  Future<void> ratePressed() async {
+    _analytics.analytic('ProfileView_Ratings_Pressed');
+    await _reviews?.request();
+  }
+
+  /// `Settings_SaveAccount_Press`: an anonymous account is offered the
+  /// upgrade instead of signing out.
+  void saveAccountPressed() =>
+      _analytics.analytic('Settings_SaveAccount_Press');
+
+  /// `Settings_DeleteAccount_Start`: the confirmation screen opens, and
+  /// nothing is deleted yet.
+  void deleteAccountPressed() =>
+      _analytics.analytic('Settings_DeleteAccount_Start');
+
+  /// Signs out; the router then leaves for sign-in. On failure the user
+  /// stays signed in and the screen says so.
+  Future<void> signOutPressed() async {
+    if (state == SettingsStatus.signingOut) return;
+    emit(SettingsStatus.signingOut);
+    _analytics.analytic('Settings_SignOut_Start');
+    try {
+      await _auth.signOut();
+      _analytics.analytic('Settings_SignOut_Success');
+      emit(SettingsStatus.idle);
+    } on Object catch (error) {
+      _analytics.severe('Settings_SignOut_Fail', error);
+      emit(SettingsStatus.signOutFailure);
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "author_id": "user_contract_full",
+  "chosen_variation_id": "variation_contract_full",
+  "equipment_variations": [
+    {
+      "id": "variation_contract_full",
+      "resistance_equipment": [
+        {
+          "id": "olympic_barbell",
+          "kind": "loadableBar"
+        },
+        {
+          "id": "bumper_plates",
+          "kind": "freeWeight"
+        }
+      ],
+      "support_equipment": [
+        {
+          "id": "flat_bench",
+          "kind": "supportEquipment"
+        }
+      ]
+    }
+  ],
+  "id": "exercise_contract_full",
+  "image_name": "bench_press",
+  "index": 1,
+  "link_url": "https://example.com/bench",
+  "loads_per_set": 2,
+  "machine_base_kg": 20.5,
+  "name": "Bench Press",
+  "notes": "Pause on the chest",
+  "plan_notes": "Elbows tucked",
+  "plan_slot_id": "slot_contract",
+  "rest_seconds": 150,
+  "set_targets": [
+    {
+      "amrap_target_reps": 12,
+      "drop_count": 2,
+      "drop_reps": 8,
+      "drop_step_percent": 15,
+      "hold_seconds": 30,
+      "id": "set_target_contract_full",
+      "max_reps": 10,
+      "min_reps": 6,
+      "mini_set_count": 3,
+      "partial_reps": 5,
+      "rir_target": 1,
+      "set_number": 2,
+      "set_type": "drop"
+    }
+  ],
+  "sets": [
+    {
+      "author_id": "user_contract_full",
+      "bands": [
+        "Red",
+        "Blue"
+      ],
+      "completed_at": {
+        "$timestamp": "2026-10-12T17:41:02.750Z"
+      },
+      "date_created": {
+        "$timestamp": "2026-10-12T17:30:00.250Z"
+      },
+      "distance_meters": 400.5,
+      "duration_sec": 45,
+      "id": "set_contract_full",
+      "index": 3,
+      "isWarmup": false,
+      "kind": "drop",
+      "load_count": 2,
+      "machine_base_kg": 20.5,
+      "parent_set_id": "set_contract_parent",
+      "reps": 8,
+      "rpe": 8.5,
+      "side": "left",
+      "target_reps": 10,
+      "weight_kg": 82.5,
+      "weight_unit": "pounds"
+    }
+  ],
+  "substitute_exercise_ids": [
+    "dumbbell_bench_press"
+  ],
+  "superset_group_id": "superset_contract",
+  "template_id": "bench_press",
+  "tracking_mode": "weightReps",
+  "weight_unit": "pounds"
+}

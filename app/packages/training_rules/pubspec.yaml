@@ -1,0 +1,16 @@
+name: training_rules
+description: "Pure Dart port of the Compound workout tracker's and smart progression's rules: double progression, weight rounding, rest, warm-ups and the active-workout rules."
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  compound_maths:
+    path: ../compound_maths
+  equatable: ">=2.1.0 <4.0.0"
+
+dev_dependencies:
+  test: ^1.32.0
+  very_good_analysis: ^11.0.0

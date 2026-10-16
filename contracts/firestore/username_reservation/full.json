@@ -1,0 +1,6 @@
+{
+  "date_created": {
+    "$timestamp": "2026-10-01T09:00:00.000Z"
+  },
+  "user_id": "user_contract_full"
+}

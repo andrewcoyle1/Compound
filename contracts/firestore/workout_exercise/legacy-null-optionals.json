@@ -1,0 +1,33 @@
+{
+  "author_id": "user_legacy",
+  "chosen_variation_id": null,
+  "equipment_variations": null,
+  "id": "exercise_legacy",
+  "image_name": null,
+  "index": 1,
+  "link_url": null,
+  "loads_per_set": null,
+  "machine_base_kg": null,
+  "name": "Back Squat",
+  "notes": null,
+  "plan_notes": null,
+  "plan_slot_id": null,
+  "rest_seconds": null,
+  "set_targets": null,
+  "sets": [
+    {
+      "author_id": "user_legacy",
+      "date_created": {
+        "$timestamp": "2025-06-01T07:00:00.000Z"
+      },
+      "id": "set_legacy",
+      "index": 1,
+      "isWarmup": false
+    }
+  ],
+  "substitute_exercise_ids": null,
+  "superset_group_id": null,
+  "template_id": "back_squat",
+  "tracking_mode": "weightReps",
+  "weight_unit": null
+}

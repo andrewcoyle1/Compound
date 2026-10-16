@@ -1,0 +1,8 @@
+{
+  "description": "By the mirrors",
+  "id": "support_equipment_contract_full",
+  "imageName": "flat_bench_icon",
+  "isActive": true,
+  "name": "Second Flat Bench",
+  "typeId": "flat_bench"
+}

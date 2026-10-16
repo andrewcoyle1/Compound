@@ -1,0 +1,17 @@
+{
+  "id": "old_vest",
+  "name": "Legacy old_vest",
+  "range": [
+    {
+      "id": "w1",
+      "availableWeights": 2.5
+    },
+    {
+      "id": "w2",
+      "availableWeights": true
+    },
+    {
+      "availableWeights": 2.5
+    }
+  ]
+}

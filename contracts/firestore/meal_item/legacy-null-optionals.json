@@ -1,0 +1,11 @@
+{
+  "amount": 0.5,
+  "displayName": "Quick add",
+  "itemId": "meal_item_contract_minimal",
+  "nutrients": {},
+  "resolvedGrams": null,
+  "resolvedMilliliters": null,
+  "sourceId": "quick_add",
+  "sourceType": "quick_add",
+  "unit": "serving"
+}

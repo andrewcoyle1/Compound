@@ -1,0 +1,23 @@
+{
+  "fcm_token": null,
+  "social_push_likes": null,
+  "social_push_comments": null,
+  "social_push_follows": null,
+  "social_push_nudges": null,
+  "social_push_mentions": null,
+  "social_push_shares": null,
+  "reminder_hour": null,
+  "timezone": null,
+  "social_push_streak_reminder": null,
+  "social_push_weekly_digest": null,
+  "week_streak": null,
+  "week_sessions": null,
+  "week_goal": null,
+  "week_ends_at": null,
+  "last_trained_at": null,
+  "social_push_challenges": null,
+  "push_come_back_reminders": null,
+  "push_meal_reminders": null,
+  "coach_consent": null,
+  "coach_consent_at": null
+}

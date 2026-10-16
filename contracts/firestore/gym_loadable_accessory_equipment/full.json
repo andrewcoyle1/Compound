@@ -1,0 +1,10 @@
+{
+  "baseWeight": 1.5,
+  "description": "Bolted to the rack",
+  "id": "loadable_accessory_equipment_contract_full",
+  "imageName": "landmine_icon",
+  "isActive": true,
+  "name": "Corner Landmine",
+  "typeId": "landmine",
+  "unit": "kilograms"
+}

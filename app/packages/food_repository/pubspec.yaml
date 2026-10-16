@@ -1,0 +1,24 @@
+name: food_repository
+description: The signed-in user's food library from Firestore, Open Food Facts search and barcode lookup, and a food as a meal item; in memory in the staging flavor.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  cloud_firestore: ^6.10.0
+  cloud_functions: ^6.5.0
+  compound_models:
+    path: ../compound_models
+  flutter:
+    sdk: flutter
+  http: ^1.6.0
+
+dev_dependencies:
+  fake_cloud_firestore: ^4.3.0
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0

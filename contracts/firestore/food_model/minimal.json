@@ -1,0 +1,14 @@
+{
+  "date_created": {
+    "$timestamp": "2026-07-02T08:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-07-02T08:00:00.000Z"
+  },
+  "ingredient_id": "food_contract_minimal",
+  "measurement_method": "weight",
+  "name": "Water",
+  "nutrients": {
+
+  }
+}

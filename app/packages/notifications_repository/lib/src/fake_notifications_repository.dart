@@ -1,0 +1,95 @@
+import 'dart:async';
+
+import 'package:notifications_repository/src/deep_link.dart';
+import 'package:notifications_repository/src/local_reminders.dart';
+import 'package:notifications_repository/src/notifications_repository.dart';
+
+/// {@template fake_notifications_repository}
+/// A [NotificationsRepository] with no platform plugins, for the staging
+/// (mock) flavor and tests. Permission starts as [permissionState]; asking
+/// grants it. Scheduled reminders are kept in [scheduled]; [receive] and
+/// [tap] stand in for a push arriving and a notification being tapped.
+/// {@endtemplate}
+class FakeNotificationsRepository extends NotificationsRepository {
+  /// {@macro fake_notifications_repository}
+  new({
+    this.permissionState = PushPermission.notDetermined,
+    this.showsOngoingWorkout = false,
+  });
+
+  @override
+  bool showsOngoingWorkout;
+
+  /// The ongoing workout notification showing, or `null`.
+  OngoingWorkout? ongoingWorkout;
+
+  /// What [permission] answers.
+  PushPermission permissionState;
+
+  /// How many times the system settings were opened.
+  int settingsOpened = 0;
+
+  /// The uid whose token is being synced, or `null`.
+  String? tokenUserId;
+
+  /// The pending reminders, by kind.
+  final Map<LocalReminderKind, LocalReminder> scheduled = {};
+
+  /// How many times the delivered pushes were cleared.
+  int deliveredCleared = 0;
+
+  final _messages = StreamController<PushMessage>.broadcast(sync: true);
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<void> clearDelivered() async => deliveredCleared++;
+
+  @override
+  Future<PushPermission> permission() async => permissionState;
+
+  @override
+  Future<bool> requestPermission() async {
+    if (permissionState == PushPermission.notDetermined) {
+      permissionState = PushPermission.authorized;
+    }
+    return permissionState.canDeliver;
+  }
+
+  @override
+  Future<void> openSystemSettings() async => settingsOpened++;
+
+  @override
+  Future<void> startPushTokenSync(String uid) async => tokenUserId = uid;
+
+  @override
+  Future<void> stopPushTokenSync() async => tokenUserId = null;
+
+  @override
+  Stream<PushMessage> get foregroundMessages => _messages.stream;
+
+  @override
+  Future<void> schedule(LocalReminder reminder) async {
+    if (reminder.kind == LocalReminderKind.restOver) await requestPermission();
+    scheduled[reminder.kind] = reminder;
+  }
+
+  @override
+  Future<void> cancel(LocalReminderKind kind) async => scheduled.remove(kind);
+
+  @override
+  Future<void> showOngoingWorkout(OngoingWorkout workout) async {
+    if (showsOngoingWorkout) ongoingWorkout = workout;
+  }
+
+  @override
+  Future<void> clearOngoingWorkout() async => ongoingWorkout = null;
+
+  /// A push arriving while the app is in front.
+  void receive(PushMessage message) => _messages.add(message);
+
+  /// A notification with [data] being tapped.
+  void tap(Map<String, Object?> data) =>
+      deepLinks.store(DeepLink.fromData(data));
+}

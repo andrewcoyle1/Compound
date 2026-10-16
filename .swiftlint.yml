@@ -19,6 +19,8 @@ excluded:
   # Xcode's own checkouts live in DerivedData and are never seen from here.
   - SourcePackages
   - Pods
+  # The Flutter app (app/): its ios/ runner holds Flutter's generated Swift.
+  - app
   - Carthage
 
 # Design system rules (docs/specs/ui-framework/CONTRACT.md). Use a token or primitive from

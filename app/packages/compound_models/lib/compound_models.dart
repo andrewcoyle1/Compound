@@ -1,0 +1,48 @@
+/// Firestore-shaped models shared with the Swift app, held to the Firestore
+/// contract (docs/specs/flutter/firestore-contract.md).
+library;
+
+export 'src/analytics_settings.dart';
+export 'src/body_enums.dart';
+export 'src/body_measurement_entry.dart';
+export 'src/check_in.dart';
+export 'src/circle.dart';
+export 'src/coach_chat.dart';
+export 'src/diet_plan.dart';
+export 'src/equipment_variation.dart';
+export 'src/exercise_model.dart';
+export 'src/exercise_settings_model.dart';
+export 'src/firestore_enum.dart';
+export 'src/firestore_values.dart';
+export 'src/firestore_writes.dart';
+export 'src/food_log_settings.dart';
+export 'src/food_model.dart';
+export 'src/gym_equipment.dart';
+export 'src/gym_profile_model.dart';
+export 'src/library_enums.dart';
+export 'src/macrocycle.dart';
+export 'src/meal_item_model.dart';
+export 'src/meal_log_model.dart';
+export 'src/mesocycle.dart';
+export 'src/nutrient_map.dart';
+export 'src/nutrition_enums.dart';
+export 'src/nutrition_strategy_settings.dart';
+export 'src/private_user_settings.dart';
+export 'src/progress_photo_model.dart';
+export 'src/recipe_template_model.dart';
+export 'src/set_target.dart';
+export 'src/shortcut_settings.dart';
+export 'src/social.dart';
+export 'src/steps_model.dart';
+export 'src/strava_imported_activity.dart';
+export 'src/tagged_json.dart';
+export 'src/training_enums.dart';
+export 'src/user_enums.dart';
+export 'src/user_model.dart';
+export 'src/weight_goal.dart';
+export 'src/workout_exercise_model.dart';
+export 'src/workout_session_model.dart';
+export 'src/workout_set_model.dart';
+export 'src/workout_settings.dart';
+export 'src/workout_stats.dart';
+export 'src/workout_template_model.dart';

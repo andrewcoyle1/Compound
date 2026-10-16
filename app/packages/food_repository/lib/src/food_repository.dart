@@ -13,6 +13,11 @@ abstract interface class FoodRepository {
   /// Throws an [ArgumentError], writing nothing, when [food] has no author
   /// (the rules refuse it) or no id.
   Future<void> saveFood(FoodModel food);
+
+  /// Deletes `users/{uid}/foods/{ingredientId}`, as `FoodManager.deleteFood`
+  /// does (`deleteDocument` is a plain `delete()`). Deleting a food that is
+  /// not there is not an error, as in Firestore.
+  Future<void> deleteFood(String uid, String ingredientId);
 }
 
 /// The user id [food] is saved under: its author, which must be set.

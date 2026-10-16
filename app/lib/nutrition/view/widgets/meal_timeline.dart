@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
@@ -127,14 +129,19 @@ class MealHourHeader extends StatelessWidget {
 }
 
 /// One meal's foods on a card, with the meal's time in the gutter beside
-/// the first of them (Swift `MealItemRowView` and `MealItemLabel`). A food
-/// swipes away to delete it when [onDeleteItem] is set; no edit button or
-/// context menu yet.
+/// the first of them (Swift `MealItemRowView` and `MealItemLabel`). With
+/// the callbacks set, as on the Nutrition tab: a tap opens the meal, the
+/// pencil corrects the food's amount, a swipe from the end deletes the
+/// food and one from the start logs the meal again, and a long press (or a
+/// screen reader's actions) offers View Meal, Log Meal Again and Delete.
 class MealCard extends StatelessWidget {
   const new({
     required this.meal,
     required this.settings,
     this.onDeleteItem,
+    this.onOpenMeal,
+    this.onEditItem,
+    this.onLogAgain,
     super.key,
   });
 
@@ -146,6 +153,15 @@ class MealCard extends StatelessWidget {
 
   /// Deletes a food.
   final ValueChanged<MealItemModel>? onDeleteItem;
+
+  /// Opens the meal (`NutritionPresenter.onViewMealPressed`).
+  final VoidCallback? onOpenMeal;
+
+  /// Corrects a food's amount (`NutritionPresenter.onEditMealItem`).
+  final ValueChanged<MealItemModel>? onEditItem;
+
+  /// Logs the meal again now (`NutritionPresenter.onLogAgainPressed`).
+  final VoidCallback? onLogAgain;
 
   @override
   Widget build(BuildContext context) {
@@ -178,10 +194,16 @@ class MealCard extends StatelessWidget {
               children: [
                 for (final (index, item) in meal.items.indexed) ...[
                   if (index > 0) const Divider(indent: AppSpacing.l),
-                  _deletable(
+                  _actionable(
                     context,
                     item,
-                    _MealItemLabel(item: item, settings: settings),
+                    _MealItemLabel(
+                      item: item,
+                      settings: settings,
+                      onEdit: onEditItem == null
+                          ? null
+                          : () => onEditItem!(item),
+                    ),
                   ),
                 ],
               ],
@@ -193,46 +215,128 @@ class MealCard extends StatelessWidget {
     );
   }
 
-  Widget _deletable(BuildContext context, MealItemModel item, Widget child) {
-    final onDelete = onDeleteItem;
-    if (onDelete == null) return child;
+  Widget _actionable(BuildContext context, MealItemModel item, Widget child) {
+    final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final label = context.l10n.nutritionDeleteItem;
-    return Dismissible(
-      key: ValueKey(item.itemId),
-      direction: DismissDirection.endToStart,
-      background: ColoredBox(
-        color: scheme.error,
-        child: Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: Icon(AppSymbols.delete, color: scheme.onError),
-          ),
+    final onDelete = onDeleteItem;
+    final onOpen = onOpenMeal;
+    final onAgain = onLogAgain;
+    if (onDelete == null && onOpen == null && onAgain == null) return child;
+    Widget swipeBackground(
+      Color color,
+      Color onColor,
+      IconData icon,
+      AlignmentGeometry alignment,
+    ) => ColoredBox(
+      color: color,
+      child: Align(
+        alignment: alignment,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+          child: Icon(icon, color: onColor),
         ),
       ),
-      // The row leaves when the meal log says it has gone; if the delete
-      // fails it slides back.
-      confirmDismiss: (_) async {
-        onDelete(item);
+    );
+    final direction = switch ((onDelete != null, onAgain != null)) {
+      (true, true) => DismissDirection.horizontal,
+      (true, false) => DismissDirection.endToStart,
+      (false, true) => DismissDirection.startToEnd,
+      (false, false) => DismissDirection.none,
+    };
+    return Dismissible(
+      key: ValueKey(item.itemId),
+      direction: direction,
+      background: swipeBackground(
+        scheme.primary,
+        scheme.onPrimary,
+        AppSymbols.logAgain,
+        AlignmentDirectional.centerStart,
+      ),
+      secondaryBackground: swipeBackground(
+        scheme.error,
+        scheme.onError,
+        AppSymbols.delete,
+        AlignmentDirectional.centerEnd,
+      ),
+      // Nothing slides away: a deleted food leaves when the meal log says
+      // it has gone, and if the delete fails it stays.
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.endToStart) {
+          onDelete?.call(item);
+        } else {
+          onAgain?.call();
+        }
         return false;
       },
-      // The same action for anyone who cannot swipe.
+      // The same actions for anyone who cannot swipe.
       child: Semantics(
         customSemanticsActions: {
-          CustomSemanticsAction(label: label): () => onDelete(item),
+          CustomSemanticsAction(label: l10n.nutritionViewMeal): ?onOpen,
+          CustomSemanticsAction(label: l10n.nutritionLogMealAgain): ?onAgain,
+          if (onDelete != null)
+            CustomSemanticsAction(label: l10n.nutritionDeleteItem): () =>
+                onDelete(item),
         },
-        child: child,
+        child: InkWell(
+          onTap: onOpen,
+          onLongPress: () => unawaited(_showMenu(context, item)),
+          child: child,
+        ),
       ),
     );
+  }
+
+  /// The long press's menu (Swift's `contextMenu`).
+  Future<void> _showMenu(BuildContext context, MealItemModel item) async {
+    final l10n = context.l10n;
+    final onDelete = onDeleteItem;
+    final action = await showModalBottomSheet<VoidCallback>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (onOpenMeal case final open?)
+              ListTile(
+                leading: const Icon(AppSymbols.meal),
+                title: Text(l10n.nutritionViewMeal),
+                onTap: () => Navigator.of(context).pop(open),
+              ),
+            if (onLogAgain case final again?)
+              ListTile(
+                leading: const Icon(AppSymbols.logAgain),
+                title: Text(l10n.nutritionLogMealAgain),
+                onTap: () => Navigator.of(context).pop(again),
+              ),
+            if (onDelete != null)
+              ListTile(
+                leading: Icon(
+                  AppSymbols.delete,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  l10n.nutritionDeleteItem,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                onTap: () => Navigator.of(context).pop(() => onDelete(item)),
+              ),
+          ],
+        ),
+      ),
+    );
+    action?.call();
   }
 }
 
 class _MealItemLabel extends StatelessWidget {
-  const new({required this.item, required this.settings});
+  const new({required this.item, required this.settings, this.onEdit});
 
   final MealItemModel item;
   final FoodLogSettings settings;
+
+  /// The pencil; none when null.
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -283,6 +387,12 @@ class _MealItemLabel extends StatelessWidget {
               ],
             ),
           ),
+          if (onEdit case final onEdit?)
+            IconButton(
+              icon: const Icon(AppSymbols.edit),
+              tooltip: l10n.nutritionEditItem(item.displayName),
+              onPressed: onEdit,
+            ),
         ],
       ),
     );

@@ -127,8 +127,12 @@ class ItemAmountSheet extends StatelessWidget {
       buttons: [
         AppCtaButton(
           label: l10n.addMealSaveAmount,
-          onPressed: () => Navigator.of(context)
-              .pop(editedItem(item, context.read<AmountCubit>().state.amount)),
+          // Nothing, or less, is not a correction (Swift disables Save).
+          onPressed: amount > 0
+              ? () => Navigator.of(context).pop(
+                  editedItem(item, context.read<AmountCubit>().state.amount),
+                )
+              : null,
         ),
       ],
     );

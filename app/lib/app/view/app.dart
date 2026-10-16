@@ -17,6 +17,7 @@ import 'package:compound/notifications/notifications.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/nutrition.dart';
+import 'package:compound/nutrition/nutrition_routes.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
@@ -285,6 +286,7 @@ class _AppViewState extends State<AppView> {
                     name: tab.name,
                     builder: (_, _) => const NutritionPage(),
                     routes: [
+                      ...nutritionRoutes,
                       GoRoute(
                         path: NutritionOverviewPage.path,
                         name: NutritionOverviewPage.name,
@@ -406,6 +408,7 @@ class _AppViewState extends State<AppView> {
           ),
         ),
       ),
+      createFoodRoute,
       // Over the tabs, as the Swift app's sheet. Pops with the exercises
       // picked (`ExercisePickerPage.show`).
       GoRoute(

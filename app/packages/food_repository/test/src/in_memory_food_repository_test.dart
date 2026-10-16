@@ -86,6 +86,36 @@ void main() {
     });
   });
 
+  group('deleteFood', () {
+    final now = DateTime.utc(2026, 10, 15, 8);
+    FoodModel food(String id, String authorId) => FoodModel(
+      ingredientId: id,
+      authorId: authorId,
+      name: id,
+      dateCreated: now,
+      dateModified: now,
+    );
+
+    test("removes only that user's food, and watchers see it", () async {
+      final subject = InMemoryFoodRepository(
+        foods: [food('a', 'alice'), food('b', 'alice'), food('a', 'bob')],
+      );
+      final emissions = subject.watchFoods('alice').take(2).toList();
+
+      await subject.deleteFood('alice', 'a');
+
+      final [before, after] = await emissions;
+      expect(before.map((f) => f.ingredientId), ['a', 'b']);
+      expect(after.map((f) => f.ingredientId), ['b']);
+      expect((await subject.watchFoods('bob').first).single.ingredientId, 'a');
+    });
+
+    test('a food that is not there is not an error', () async {
+      final subject = InMemoryFoodRepository();
+      await expectLater(subject.deleteFood('alice', 'missing'), completes);
+    });
+  });
+
   group('sampleFoods', () {
     final now = DateTime.utc(2026, 10, 15, 8);
     final foods = sampleFoods(uid: 'mock_user_123', now: now);

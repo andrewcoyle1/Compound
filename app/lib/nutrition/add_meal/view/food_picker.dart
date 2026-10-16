@@ -19,6 +19,7 @@ import 'package:compound/nutrition/foods/view/create_food_pages.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/nutrition/recipes/view/create_recipe_pages.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -189,6 +190,12 @@ class FoodRow extends StatelessWidget {
         padding: const EdgeInsets.only(left: AppSpacing.l),
         child: Row(
           children: [
+            // `FoodLibraryPickerRowView`'s image, on the logger setting.
+            if (settings.showFoodImageInLogger)
+              Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.m),
+                child: RowThumbnail(food.imageUrl),
+              ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
@@ -275,6 +282,12 @@ class RecipeRow extends StatelessWidget {
         padding: const EdgeInsets.only(left: AppSpacing.l),
         child: Row(
           children: [
+            // `FoodLibraryPickerRowView`'s image, on the logger setting.
+            if (settings.showFoodImageInLogger)
+              Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.m),
+                child: RowThumbnail(recipe.imageUrl),
+              ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),

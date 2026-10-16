@@ -11,6 +11,7 @@ import 'package:compound/onboarding/training/gym_setup_cubit.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:program_repository/program_repository.dart';
@@ -238,7 +239,10 @@ class _GymRow extends StatelessWidget {
           subtitle: l10n.editorActiveEquipment(
             TrainingLibrary.activeEquipmentCount(gym),
           ),
-          icon: AppSymbols.gym,
+          icon: gym.imageUrl == null ? AppSymbols.gym : null,
+          thumbnail: gym.imageUrl == null
+              ? null
+              : StoredThumbnail(gym.imageUrl),
           onPressed: () => unawaited(GymProfilePage.push(context, gym)),
         ),
       ),

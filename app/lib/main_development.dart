@@ -52,10 +52,21 @@ const _mixpanelToken = String.fromEnvironment('MIXPANEL_TOKEN');
 /// file. Strava shows as unavailable when it's empty.
 const _stravaClientId = String.fromEnvironment('STRAVA_CLIENT_ID');
 
+/// RevenueCat's public SDK keys for the Flutter apps, from the same
+/// gitignored file. Without the running platform's key the app never
+/// starts RevenueCat and uses the premium fake instead.
+const _revenueCatAppleKey = String.fromEnvironment('REVENUECAT_APPLE_API_KEY');
+const _revenueCatGoogleKey = String.fromEnvironment(
+  'REVENUECAT_GOOGLE_API_KEY',
+);
+
 /// The development flavor: the `compound-development` Firebase project.
 Future<void> main() async {
   await bootstrap(() async {
     final options = DefaultFirebaseOptions.currentPlatform;
+    final revenueCatKey = Platform.isIOS
+        ? _revenueCatAppleKey
+        : _revenueCatGoogleKey;
     await Firebase.initializeApp(options: options);
     // Debug providers: the token is printed to the device log on first run
     // and must be registered in the compound-development console before
@@ -174,10 +185,16 @@ Future<void> main() async {
               ),
               onEvent: stravaEvents(analyticsRepository),
             ),
-      // Premium for now: RevenueCat's logIn isn't wired yet (the paywall
-      // slice does it), and coachChat on compound-development skips its
-      // premium check as dev builds do. Never copy this to production.
-      purchasesRepository: FakePurchasesRepository(),
+      // RevenueCat when this platform's key is set (AppBloc logs in with
+      // the Firebase uid). Otherwise nothing reaches RevenueCat: the premium
+      // fake, since coachChat on compound-development skips its premium
+      // check as dev builds do. Never copy the fake to production.
+      purchasesRepository: revenueCatKey.isEmpty
+          ? FakePurchasesRepository()
+          : await RevenueCatPurchasesRepository.init(
+              apiKey: revenueCatKey,
+              appUserId: FirebaseAuth.instance.currentUser?.uid,
+            ),
       // coachChat runs in europe-west4, beside the Firestore data it reads,
       // and enforces App Check.
       coachRepository: CoachRepository(

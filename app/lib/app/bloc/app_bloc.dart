@@ -5,6 +5,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:equatable/equatable.dart';
+import 'package:purchases_repository/purchases_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 part 'app_event.dart';
@@ -13,6 +14,11 @@ part 'app_state.dart';
 /// Whether anyone is signed in, following [AuthRepository.user]; who
 /// analytics attributes events to; and the signed-in user's profile, which
 /// decides between onboarding and the tabs.
+///
+/// The store account follows the signed-in user too: `logIn` with the
+/// Firebase uid on sign-in and `logOut` on sign-out, as Swift's
+/// `CoreInteractor.logIn` and `signOut` do, and whether the user is premium
+/// is part of [AppAuthenticated].
 ///
 /// A new account's profile is written here, as `UserManager.signIn` does
 /// for a new user (`UserManager.swift:56-60`): only once the server says
@@ -23,55 +29,129 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     required this._authRepository,
     required this._userRepository,
     this._analyticsRepository = const AnalyticsRepository(),
+    this._purchasesRepository,
     this._now = DateTime.now,
-  }) : super(AppState.from(_authRepository.currentUser)) {
+  }) : _launchUid = _authRepository.currentUser?.uid,
+       super(AppState.from(_authRepository.currentUser)) {
     on<AppUserSubscriptionRequested>(_onUserSubscriptionRequested);
     on<AppSignOutPressed>(_onSignOutPressed);
     on<AppProfileRetryRequested>(_onProfileRetryRequested);
     on<_AppProfileChanged>(_onProfileChanged);
     on<_AppProfileFailed>(_onProfileFailed);
+    on<_AppPurchasesChanged>(_onPurchasesChanged);
   }
 
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
   final AnalyticsRepository _analyticsRepository;
+
+  /// Subscriptions. Only `App` passes it; left out (tests that never reach
+  /// a subscription) there is no store and nobody is sent to Subscription.
+  final PurchasesRepository? _purchasesRepository;
   final DateTime Function() _now;
 
+  /// Who was signed in when the app started, until they sign out: anyone
+  /// else signed in during this run (Swift's sign-in screen).
+  String? _launchUid;
+
+  /// What the store last said, as the premium gate reads it (optimistic
+  /// until it has answered for the signed-in user).
+  bool _isPremium = true;
+
   StreamSubscription<UserModel?>? _profileSubscription;
+  StreamSubscription<PurchasesState>? _purchasesSubscription;
 
   /// The uid whose missing profile is being checked or written, so a second
   /// empty read meanwhile does not write it twice.
   String? _creatingFor;
 
+  /// [user], signed in, with what is known of their profile and premium.
+  AppAuthenticated _authenticated(
+    AuthUser user, {
+    UserModel? profile,
+    AppProfileStatus profileStatus = AppProfileStatus.loading,
+  }) => AppAuthenticated(
+    user,
+    profile: profile,
+    profileStatus: profileStatus,
+    isPremium: _isPremium,
+    signedInThisRun: user.uid != _launchUid,
+  );
+
   Future<void> _onUserSubscriptionRequested(
     AppUserSubscriptionRequested event,
     Emitter<AppState> emit,
-  ) => emit.onEach(
-    _authRepository.user,
-    onData: (user) {
-      _logUser(user);
-      final current = state;
-      // The same account again (a token refresh, or linking an anonymous
-      // account to Apple or Google): keep the profile already read, so the
-      // router doesn't send anyone back through the launch screen.
-      if (user != null &&
-          current is AppAuthenticated &&
-          current.user.uid == user.uid &&
-          _profileSubscription != null) {
-        emit(
-          AppAuthenticated(
-            user,
-            profile: current.profile,
-            profileStatus: current.profileStatus,
-          ),
+  ) {
+    final purchases = _purchasesRepository;
+    if (purchases != null) {
+      _purchasesSubscription ??= purchases.states.listen(
+        (state) => add(_AppPurchasesChanged(state)),
+      );
+    }
+    return emit.onEach(
+      _authRepository.user,
+      onData: (user) {
+        _logUser(user);
+        final current = state;
+        // The same account again (a token refresh, or linking an anonymous
+        // account to Apple or Google): keep the profile already read, so
+        // the router doesn't send anyone back through the launch screen.
+        if (user != null &&
+            current is AppAuthenticated &&
+            current.user.uid == user.uid &&
+            _profileSubscription != null) {
+          emit(
+            _authenticated(
+              user,
+              profile: current.profile,
+              profileStatus: current.profileStatus,
+            ),
+          );
+          return;
+        }
+        if (user == null) _launchUid = null;
+        emit(user == null ? const AppUnauthenticated() : _authenticated(user));
+        _watchProfile(user);
+        unawaited(
+          _followStoreAccount(user, wasSignedIn: current is AppAuthenticated),
         );
-        return;
+      },
+      onError: addError,
+    );
+  }
+
+  /// Identifies the store account as [user]'s Firebase uid, or forgets it
+  /// once nobody is signed in. A failure (offline, most often) leaves the
+  /// store unanswered, so the gate stays optimistic until the next sign-in.
+  Future<void> _followStoreAccount(
+    AuthUser? user, {
+    required bool wasSignedIn,
+  }) async {
+    final purchases = _purchasesRepository;
+    if (purchases == null) return;
+    try {
+      if (user != null) {
+        await purchases.logIn(user.uid, email: user.email);
+      } else if (wasSignedIn) {
+        await purchases.logOut();
       }
-      emit(AppState.from(user));
-      _watchProfile(user);
-    },
-    onError: addError,
-  );
+    } on Object catch (error, stackTrace) {
+      if (!isClosed) addError(error, stackTrace);
+    }
+  }
+
+  void _onPurchasesChanged(_AppPurchasesChanged event, Emitter<AppState> emit) {
+    _isPremium = event.state.isPremiumWith();
+    final state = this.state;
+    if (state is! AppAuthenticated) return;
+    emit(
+      _authenticated(
+        state.user,
+        profile: state.profile,
+        profileStatus: state.profileStatus,
+      ),
+    );
+  }
 
   void _watchProfile(AuthUser? user) {
     unawaited(_profileSubscription?.cancel());
@@ -103,7 +183,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     final profile = event.profile;
     if (profile != null) {
       emit(
-        AppAuthenticated(
+        _authenticated(
           user,
           profile: profile,
           profileStatus: AppProfileStatus.ready,
@@ -151,7 +231,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   void _fail(String uid, Emitter<AppState> emit) {
     final user = _current(uid);
     if (user == null) return;
-    emit(AppAuthenticated(user, profileStatus: AppProfileStatus.failure));
+    emit(_authenticated(user, profileStatus: AppProfileStatus.failure));
   }
 
   void _onProfileRetryRequested(
@@ -160,7 +240,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   ) {
     final state = this.state;
     if (state is! AppAuthenticated) return;
-    emit(AppAuthenticated(state.user));
+    emit(_authenticated(state.user));
     _watchProfile(state.user);
   }
 
@@ -208,6 +288,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   @override
   Future<void> close() async {
     await _profileSubscription?.cancel();
+    await _purchasesSubscription?.cancel();
     await super.close();
   }
 }

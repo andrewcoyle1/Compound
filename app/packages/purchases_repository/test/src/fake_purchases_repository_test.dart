@@ -64,19 +64,42 @@ void main() {
       );
     });
 
-    test('a set failure is thrown once, by purchase or restore', () async {
+    test('queued failures are thrown in turn by purchase or restore', () async {
       final repository = FakePurchasesRepository(
         premium: false,
-        failure: const PurchaseCancelled(),
+        failures: const [PurchaseCancelled(), PurchasePending()],
       );
       await expectLater(
         repository.purchase(yearly.first),
         throwsA(isA<PurchaseCancelled>()),
       );
-      expect(repository.failure, isNull);
-      repository.failure = const PurchasePending();
       await expectLater(repository.restore(), throwsA(isA<PurchasePending>()));
+      expect(repository.failures, isEmpty);
       expect(await repository.restore(), isEmpty);
+    });
+
+    test('a plan already owned is found by the restore after it', () async {
+      final repository = FakePurchasesRepository(
+        premium: false,
+        failures: const [ProductAlreadyOwned()],
+      );
+      await repository.logIn('uid');
+      await expectLater(
+        repository.purchase(yearly.last),
+        throwsA(isA<ProductAlreadyOwned>()),
+      );
+      expect((await repository.restore()).single.productId, yearly.last.id);
+    });
+
+    test('failed loads throw, then the products load', () async {
+      final repository = FakePurchasesRepository(failedLoads: 1);
+      final ids = SubscriptionPlan.productIds(development: true);
+      await expectLater(
+        repository.getProducts(ids),
+        throwsA(isA<PurchasesFailure>()),
+      );
+      expect(repository.failedLoads, 0);
+      expect(await repository.getProducts(ids), hasLength(2));
     });
 
     test('restore and refresh return what the account owns', () async {

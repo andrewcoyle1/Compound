@@ -40,3 +40,13 @@ final class _AppProfileFailed extends AppEvent {
   @override
   List<Object?> get props => [user];
 }
+
+/// The store said something new about the signed-in user's entitlements.
+final class _AppPurchasesChanged extends AppEvent {
+  const new(this.state);
+
+  final PurchasesState state;
+
+  @override
+  List<Object?> get props => [state];
+}

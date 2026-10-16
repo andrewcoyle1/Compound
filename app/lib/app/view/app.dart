@@ -27,6 +27,7 @@ import 'package:compound/nutrition/nutrition_routes.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/onboarding/onboarding.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/paywall/paywall.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/progress/progress.dart';
@@ -236,6 +237,7 @@ class const App({
               authRepository: authRepository,
               userRepository: userRepository,
               analyticsRepository: analyticsRepository,
+              purchasesRepository: purchasesRepository,
             )..add(const AppUserSubscriptionRequested()),
           ),
           BlocProvider(create: (_) => MealDraftCubit()),
@@ -500,6 +502,7 @@ class _AppViewState extends State<AppView> {
       ...sharingRoutes,
       ...progressRootRoutes,
       ...coachRoutes,
+      ...paywallRoutes,
       ...goalEditingRoutes,
       // Over the tabs, as the Swift app's sheet.
       GoRoute(
@@ -845,9 +848,11 @@ class _AppViewState extends State<AppView> {
 
 /// Where the router sends [location] for [state], or null to stay: signed
 /// out to sign-in; while the profile loads (or can't be read) to the launch
-/// screen, remembering where the user was going; during onboarding to the
-/// screen of the step the profile resumes at (`OnboardingStepRouter`); and
-/// once onboarded, away from sign-in, launch and onboarding to the tabs.
+/// screen, remembering where the user was going; without a subscription to
+/// Subscription when [AppAuthenticated.needsSubscription] says so; during
+/// onboarding to the screen of the step the profile resumes at
+/// (`OnboardingStepRouter`); and once onboarded, away from sign-in, launch,
+/// Subscription and onboarding to the tabs.
 String? appRedirect(AppState state, Uri location) {
   final path = location.path;
   final onSignIn = path == SignInPage.path;
@@ -862,6 +867,8 @@ String? appRedirect(AppState state, Uri location) {
           : {LaunchPage.fromParameter: location.toString()},
     ).toString();
   }
+  final onSubscribe = path.startsWith(SubscribePage.path);
+  if (state.needsSubscription) return onSubscribe ? null : SubscribePage.path;
   final step = state.onboardingStep;
   if (step != null) {
     final target = onboardingRoute(step)!.path;
@@ -876,5 +883,7 @@ String? appRedirect(AppState state, Uri location) {
     return location.queryParameters[LaunchPage.fromParameter] ??
         AppTab.today.path;
   }
-  return onSignIn || path.startsWith(onboardingPath) ? AppTab.today.path : null;
+  return onSignIn || onSubscribe || path.startsWith(onboardingPath)
+      ? AppTab.today.path
+      : null;
 }

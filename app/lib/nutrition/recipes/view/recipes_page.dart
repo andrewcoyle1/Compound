@@ -8,9 +8,11 @@ import 'package:compound/nutrition/recipes/cubit/recipes_cubit.dart';
 import 'package:compound/nutrition/recipes/view/create_recipe_pages.dart';
 import 'package:compound/nutrition/recipes/view/recipe_detail_page.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// The user's recipes (Swift `RecipesView`, with the
 /// `RecipeListBuilderView` it embeds): filter, open one, or create one.
@@ -34,6 +36,7 @@ class RecipesPage extends StatelessWidget {
       create: (context) => RecipesCubit(
         uid: app.user.uid,
         foods: context.read<FoodRepository>(),
+        nutrition: context.read<NutritionRepository>(),
         analytics: context.read<AnalyticsRepository>(),
       ),
       child: const RecipesView(),
@@ -93,6 +96,9 @@ class RecipesView extends StatelessWidget {
                         AppListRowButton(
                           title: recipe.name,
                           subtitle: recipe.description,
+                          thumbnail: state.showImage
+                              ? StoredThumbnail(recipe.imageUrl)
+                              : null,
                           onPressed: () =>
                               unawaited(RecipeDetailPage.show(context, recipe)),
                         ),

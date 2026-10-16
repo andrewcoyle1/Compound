@@ -14,11 +14,13 @@ import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/programs/view/program_widgets.dart'
     show confirmDestructive;
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// Creating a recipe (Swift `CreateRecipeView`, then
@@ -42,6 +44,8 @@ class CreateRecipePage extends StatelessWidget {
         uid: app is AppAuthenticated ? app.user.uid : null,
         foods: context.read<FoodRepository>(),
         analytics: context.read<AnalyticsRepository>(),
+        images: context.read<ImageRepository>(),
+        picker: context.read<PhotoPicker>(),
       ),
       child: const CreateRecipeView(),
     );
@@ -294,6 +298,7 @@ class _IngredientRow extends StatelessWidget {
               child: AppListRow(
                 title: ingredient.name,
                 subtitle: ingredient.ingredient.description,
+                thumbnail: StoredThumbnail(ingredient.ingredient.imageUrl),
               ),
             ),
             SizedBox(
@@ -490,6 +495,12 @@ class _PickerRow extends StatelessWidget {
                 ?food.brandName,
                 AppFormat.kcal(calories.round()),
               ].join(' · '),
+              thumbnail:
+                  context.select<FoodsCubit, bool>(
+                    (cubit) => cubit.state.showFoodImage,
+                  )
+                  ? StoredThumbnail(food.imageUrl)
+                  : null,
             ),
           ),
           IconButton(
@@ -664,6 +675,46 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
                   accessory: null,
                   onPressed: _add,
                 ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.l),
+            AppSection(
+              header: l10n.recipePreparationPhoto,
+              children: [
+                if (state.photo case final photo?)
+                  Semantics(
+                    button: true,
+                    label: l10n.recipePreparationSelectPhoto,
+                    excludeSemantics: true,
+                    child: InkWell(
+                      key: const Key('RecipePreparation.photo'),
+                      onTap: () => unawaited(cubit.photoPressed()),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.l),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppRadius.s),
+                          child: SizedBox(
+                            height: AppChartHeight.compact,
+                            width: double.infinity,
+                            child: Image.memory(
+                              photo,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  AppListRowButton(
+                    key: const Key('RecipePreparation.photo'),
+                    title: l10n.recipePreparationSelectPhoto,
+                    icon: AppSymbols.photoLibrary,
+                    accessory: null,
+                    onPressed: () => unawaited(cubit.photoPressed()),
+                  ),
               ],
             ),
           ],

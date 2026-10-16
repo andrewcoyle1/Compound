@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/app/document_id.dart';
@@ -5,6 +7,7 @@ import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
+import 'package:image_repository/image_repository.dart';
 
 /// Where the create flow's save is.
 enum CreateRecipeStatus {
@@ -34,6 +37,10 @@ final class const CreateRecipeState({
   final double? cookTime,
   final String sourceUrl = '',
   final CreateRecipeStatus status = CreateRecipeStatus.editing,
+
+  /// The recipe's picture, picked on the preparation step and uploaded by
+  /// Create.
+  final Uint8List? photo,
 }) extends Equatable {
   /// Both required fields are filled in, so Next is on
   /// (`CreateRecipePresenter.canSave`).
@@ -63,6 +70,7 @@ final class const CreateRecipeState({
     double? Function()? cookTime,
     String? sourceUrl,
     CreateRecipeStatus? status,
+    Uint8List? photo,
   }) => CreateRecipeState(
     name: name ?? this.name,
     servings: servings == null ? this.servings : servings(),
@@ -73,6 +81,7 @@ final class const CreateRecipeState({
     cookTime: cookTime == null ? this.cookTime : cookTime(),
     sourceUrl: sourceUrl ?? this.sourceUrl,
     status: status ?? this.status,
+    photo: photo ?? this.photo,
   );
 
   @override
@@ -86,6 +95,7 @@ final class const CreateRecipeState({
     cookTime,
     sourceUrl,
     status,
+    photo,
   ];
 }
 
@@ -100,6 +110,8 @@ class CreateRecipeCubit extends Cubit<CreateRecipeState> {
     required this._uid,
     required this._foods,
     required this._analytics,
+    required this._images,
+    required this._picker,
     this._now = DateTime.now,
     this._newId = newDocumentId,
   }) : super(const CreateRecipeState());
@@ -107,6 +119,8 @@ class CreateRecipeCubit extends Cubit<CreateRecipeState> {
   final String? _uid;
   final FoodRepository _foods;
   final AnalyticsRepository _analytics;
+  final ImageRepository _images;
+  final PhotoPicker _picker;
   final DateTime Function() _now;
   final String Function() _newId;
 
@@ -216,6 +230,20 @@ class CreateRecipeCubit extends Cubit<CreateRecipeState> {
     );
   }
 
+  /// Where a recipe's picture is stored
+  /// (`RecipeTemplateManager.saveRecipeTemplate`).
+  static String photoPath(String recipeId) => 'recipe_templates/$recipeId';
+
+  /// The Photo section's picker (`RecipePreparationView.photoSection`): a
+  /// photo from the library, uploaded by Create. As in Swift, nothing is
+  /// logged, and a cancel or a photo that cannot be read changes nothing.
+  Future<void> photoPressed() async {
+    try {
+      final photo = await _picker.pick(PhotoSource.library, PhotoSize.standard);
+      if (photo != null && !isClosed) emit(state.copyWith(photo: photo));
+    } on Object catch (_) {}
+  }
+
   /// Create (`RecipePreparationPresenter.onCreatePressed`): saves the
   /// recipe between `RecipePreparationView_CreateRecipe_Start` and
   /// `_Success` or a severe `_Fail`. Does nothing while saving or without
@@ -225,8 +253,21 @@ class CreateRecipeCubit extends Cubit<CreateRecipeState> {
     if (state.isSaving || recipe == null) return;
     emit(state.copyWith(status: CreateRecipeStatus.saving));
     _analytics.analytic('RecipePreparationView_CreateRecipe_Start');
+    final photo = state.photo;
     try {
-      await _foods.saveRecipe(recipe);
+      // The picture first, as Swift uploads it before saving: an upload
+      // needs the server, so offline the recipe is not created.
+      await _foods.saveRecipe(
+        photo == null
+            ? recipe
+            : RecipeTemplateModel.fromFirestore({
+                ...recipe.toFirestore(),
+                RecipeTemplateModelKeys.imageUrl: await _images.upload(
+                  photo,
+                  photoPath(recipe.recipeId),
+                ),
+              }),
+      );
       _analytics.analytic('RecipePreparationView_CreateRecipe_Success');
       emit(state.copyWith(status: CreateRecipeStatus.created));
     } on Object catch (error) {

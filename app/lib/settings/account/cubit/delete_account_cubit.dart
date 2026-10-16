@@ -52,6 +52,11 @@ class DeleteAccountCubit extends Cubit<DeleteAccountStatus> {
   /// `DeleteAccountView_Disappear`.
   void disappeared() => _analytics.disappear(_screen);
 
+  /// `DeleteAccountView_ManageSubscription_Press`, before the store's
+  /// subscription page opens.
+  void manageSubscriptionPressed() =>
+      _analytics.analytic('${_screen}_ManageSubscription_Press');
+
   /// Deletes the account. The `Settings_DeleteAccount_*` names are the ones
   /// Swift's old alert logged, kept so the deletion funnel carries on.
   /// [onDeleted] runs once the account is gone, even after this cubit has

@@ -4839,6 +4839,14 @@
     "@addMealBarcodeScanAgain": {
         "description": "Starts a new scan"
     },
+    "torchTurnOn": "Turn on flashlight",
+    "@torchTurnOn": {
+        "description": "The barcode camera's torch button, while the torch is off (Swift BarcodeScannerView)."
+    },
+    "torchTurnOff": "Turn off flashlight",
+    "@torchTurnOff": {
+        "description": "The barcode camera's torch button, while the torch is on (Swift BarcodeScannerView)."
+    },
     "addMealCameraDenied": "Compound can't use the camera. Allow it in Settings, or enter the barcode below.",
     "@addMealCameraDenied": {
         "description": "Camera permission denied"

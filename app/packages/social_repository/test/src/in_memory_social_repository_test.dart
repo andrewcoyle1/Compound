@@ -42,10 +42,10 @@ void main() {
         sampleWorkoutSessions(uid: sampleUserId, now: now).last.id,
       ),
     ];
-    expect(comments, hasLength(3));
+    expect(comments, hasLength(4));
     expect(await subject.challenges(sampleUserId), hasLength(2));
     expect(await subject.challengeProgress('mock_challenge_1'), hasLength(4));
-    expect(await subject.notifications(sampleUserId), hasLength(5));
+    expect(await subject.notifications(sampleUserId), hasLength(7));
     expect(await subject.share('sample-share-template'), isNotNull);
     expect(
       await subject.watchIncomingFollowRequests(viewer).first,

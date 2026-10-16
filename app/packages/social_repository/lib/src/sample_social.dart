@@ -16,8 +16,9 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 /// - comments on Maya's newest session and on [uid]'s own newest one;
 /// - two challenges with standings, Maya's invite `PUSH2345`, and a
 ///   pending template share from Maya;
-/// - notifications for [uid]: a like, a comment, a share and a nudge
-///   unread, and a follow read.
+/// - notifications for [uid]: two likes on their newest session (which the
+///   inbox groups), a comment, a mention, a share and a nudge unread, and a
+///   follow read.
 Map<String, Map<String, Object?>> sampleSocial({
   required String uid,
   required DateTime now,
@@ -108,6 +109,16 @@ Map<String, Map<String, Object?>> sampleSocial({
       text: 'Those pushdowns 🔥',
       dateCreated: ago(hour),
     ),
+    WorkoutSessionComment(
+      id: 'sample-comment-4',
+      sessionId: ownNewest.id,
+      sessionAuthorId: uid,
+      authorId: 'user3',
+      authorName: 'Charlie Nguyen',
+      authorImageUrl: _avatar('charlie'),
+      text: '@alice.cooper teach me your ways',
+      dateCreated: ago(const Duration(minutes: 40)),
+    ),
   ];
 
   final challenges = [
@@ -179,6 +190,23 @@ Map<String, Map<String, Object?>> sampleSocial({
       'Charlie Nguyen',
       hour * 2,
       sessionId: ownNewest.id,
+    ),
+    from(
+      'like_${ownNewest.id}_user4',
+      ActivityType.like,
+      'user4',
+      'Priya Shah',
+      hour * 4,
+      sessionId: ownNewest.id,
+    ),
+    from(
+      'mention_sample-comment-4',
+      ActivityType.mention,
+      'user3',
+      'Charlie Nguyen',
+      const Duration(minutes: 40),
+      sessionId: ownNewest.id,
+      text: '@alice.cooper teach me your ways',
     ),
     from(
       'comment_sample-comment-3',

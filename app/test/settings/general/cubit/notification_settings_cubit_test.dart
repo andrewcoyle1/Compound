@@ -4,17 +4,21 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:compound/settings/general/cubit/notification_settings_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 import '../recorded_analytics.dart';
 
 class _MockUserRepository extends Mock implements UserRepository;
 
+class _MockNotifications extends Mock implements NotificationsRepository;
+
 void main() {
   late UserRepository users;
   late RecordedAnalytics analytics;
   late StreamController<PrivateUserSettings?> stored;
   late List<Map<String, Object?>> writes;
+  late FakeNotificationsRepository notifications;
 
   setUpAll(() => registerFallbackValue(const PrivateUserSettings()));
 
@@ -23,6 +27,7 @@ void main() {
     analytics = RecordedAnalytics();
     stored = StreamController<PrivateUserSettings?>();
     writes = [];
+    notifications = FakeNotificationsRepository();
     when(() => users.watchPrivateSettings('uid'))
         .thenAnswer((_) => stored.stream);
     when(() => users.mergePrivateSettings('uid', any()))
@@ -39,9 +44,11 @@ void main() {
 
   Future<NotificationSettingsCubit> build([
     PrivateUserSettings? settings,
+    NotificationsRepository? with_,
   ]) async {
     final cubit = NotificationSettingsCubit(
       users: users,
+      notifications: with_ ?? notifications,
       analytics: analytics,
       uid: 'uid',
     );
@@ -185,7 +192,7 @@ void main() {
           .thenThrow(StateError('no'));
       final cubit = await build();
       await cubit.socialPushChanged(SocialPush.likes, isEnabled: false);
-      expect(cubit.state.saveFailed, isTrue);
+      expect(cubit.state.failure, NotificationSettingsFailure.save);
       expect(cubit.state.isSocialPushEnabled(SocialPush.likes), isTrue);
       expect(
         analytics.events.last[0],
@@ -208,7 +215,7 @@ void main() {
     await cubit.close();
     refusal.completeError(StateError('no'));
     await saving;
-    expect(cubit.state.saveFailed, isFalse);
+    expect(cubit.state.failure, isNull);
   });
 
   test('appearing and disappearing are tracked', () async {
@@ -217,5 +224,132 @@ void main() {
       ..disappeared();
     expect(analytics.screenViews, ['NotificationSettingsView_Appear']);
     expect(analytics.names, ['NotificationSettingsView_Disappear']);
+  });
+
+  group('permission (NotificationSettingsPresenterTests)', () {
+    test(
+      'an unasked permission offers to ask and disables the switches',
+      () async {
+        final cubit = await build();
+        await cubit.checkPermission();
+        expect(cubit.state.permissionPrompt, PermissionPrompt.askFirst);
+        expect(cubit.state.canChangeSwitches, isFalse);
+      },
+    );
+
+    test(
+      'a denied permission points to Settings and disables the switches',
+      () async {
+        notifications.permissionState = PushPermission.denied;
+        final cubit = await build();
+        await cubit.checkPermission();
+        expect(cubit.state.permissionPrompt, PermissionPrompt.denied);
+        expect(cubit.state.canChangeSwitches, isFalse);
+        await cubit.openSettingsPressed();
+        expect(notifications.settingsOpened, 1);
+      },
+    );
+
+    for (final permission in [
+      PushPermission.authorized,
+      PushPermission.provisional,
+    ]) {
+      test('an allowed permission ($permission) shows no prompt and enables '
+          'the switches', () async {
+        notifications.permissionState = permission;
+        final cubit = await build();
+        await cubit.checkPermission();
+        expect(cubit.state.permissionPrompt, isNull);
+        expect(cubit.state.canChangeSwitches, isTrue);
+      });
+    }
+
+    test('until it is read, no prompt shows and the switches wait', () async {
+      final cubit = await build();
+      expect(cubit.state.permissionPrompt, isNull);
+      expect(cubit.state.canChangeSwitches, isFalse);
+    });
+
+    test('granting permission enables the switches immediately', () async {
+      final cubit = await build();
+      await cubit.checkPermission();
+      await cubit.requestPermissionPressed();
+      expect(cubit.state.canChangeSwitches, isTrue);
+      expect(analytics.events, [
+        [
+          'NotificationSettingsView_RequestPermission_Start',
+          null,
+          LogType.analytic,
+        ],
+        [
+          'NotificationSettingsView_RequestPermission_Success',
+          {'granted': true},
+          LogType.analytic,
+        ],
+      ]);
+    });
+
+    test('a failed permission request is not swallowed', () async {
+      final failing = _MockNotifications();
+      when(failing.requestPermission).thenThrow(StateError('no'));
+      final cubit = await build(null, failing);
+      await cubit.requestPermissionPressed();
+      expect(
+        cubit.state.failure,
+        NotificationSettingsFailure.requestPermission,
+      );
+      expect(
+        analytics.events.last[0],
+        'NotificationSettingsView_RequestPermission_Fail',
+      );
+      expect(analytics.events.last[2], LogType.severe);
+    });
+
+    test('a failed permission check is reported', () async {
+      final failing = _MockNotifications();
+      when(failing.permission).thenThrow(StateError('no'));
+      final cubit = await build(null, failing);
+      await cubit.checkPermission();
+      await cubit.checkPermission();
+      expect(cubit.state.failure, NotificationSettingsFailure.checkPermission);
+      // Each failure is told again.
+      expect(cubit.state.failureId, 2);
+      expect(
+        analytics.events.last[0],
+        'NotificationSettingsView_CheckPermissions_Fail',
+      );
+    });
+
+    test('a successful permission check says nothing', () async {
+      final cubit = await build();
+      await cubit.checkPermission();
+      expect(cubit.state.failure, isNull);
+      expect(analytics.events, isEmpty);
+    });
+
+    test('a check or request that ends after closing emits nothing', () async {
+      final failing = _MockNotifications();
+      final answer = Completer<PushPermission>();
+      final asked = Completer<bool>();
+      when(failing.permission).thenAnswer((_) => answer.future);
+      when(failing.requestPermission).thenAnswer((_) => asked.future);
+      final cubit = await build(null, failing);
+      final checking = cubit.checkPermission();
+      final requesting = cubit.requestPermissionPressed();
+      await cubit.close();
+      answer.completeError(StateError('no'));
+      asked.completeError(StateError('no'));
+      await checking;
+      await requesting;
+      expect(cubit.state.failure, isNull);
+    });
+
+    test('returning re-reads the permission', () async {
+      final cubit = await build();
+      await cubit.checkPermission();
+      notifications.permissionState = PushPermission.authorized;
+      await cubit.checkPermission();
+      expect(cubit.state.canChangeSwitches, isTrue);
+    });
   });
 }

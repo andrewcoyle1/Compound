@@ -139,6 +139,10 @@ abstract class NotificationsRepository {
   /// POST_NOTIFICATIONS too). True when allowed.
   Future<bool> requestPermission();
 
+  /// Opens the app's notification settings in the system Settings app,
+  /// the only place a refusal can be undone.
+  Future<void> openSystemSettings();
+
   /// Keeps [uid]'s push token (and the device's time zone, which the streak
   /// reminder reads) in `users/{uid}/private/settings`, now and whenever it
   /// changes. Never on the public profile.

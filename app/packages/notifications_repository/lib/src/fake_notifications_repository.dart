@@ -26,6 +26,9 @@ class FakeNotificationsRepository extends NotificationsRepository {
   /// What [permission] answers.
   PushPermission permissionState;
 
+  /// How many times the system settings were opened.
+  int settingsOpened = 0;
+
   /// The uid whose token is being synced, or `null`.
   String? tokenUserId;
 
@@ -47,6 +50,9 @@ class FakeNotificationsRepository extends NotificationsRepository {
     }
     return permissionState.canDeliver;
   }
+
+  @override
+  Future<void> openSystemSettings() async => settingsOpened++;
 
   @override
   Future<void> startPushTokenSync(String uid) async => tokenUserId = uid;

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/notifications/inbox/inbox_bloc.dart';
+import 'package:compound/notifications/inbox/view/notifications_page.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/feed/feed_entry.dart';
@@ -18,11 +20,12 @@ import 'package:compound/social/weekly_goal/weekly_goal_sheet.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:social_repository/social_repository.dart';
 
 /// The Social tab (Swift `SocialView`): the circle strip, the week's
-/// leaderboard and the following feed, with a search for people. The
-/// notifications bell, invites and challenges come with Social part 2.
+/// leaderboard and the following feed, with a search for people, and the
+/// notifications bell. Invites and challenges come with Social part 2.
 class SocialPage extends StatelessWidget {
   const new({super.key});
 
@@ -63,6 +66,8 @@ class _SocialViewState extends State<SocialView> {
   void initState() {
     super.initState();
     _cubit = context.read<SocialCubit>();
+    // The bell's badge, refreshed silently.
+    context.read<InboxBloc>().add(const InboxBadgeRefreshRequested());
     _searchFocus.addListener(() => setState(() {}));
     _maybeLoadSuggestions(context.read<CircleBloc>().state);
   }
@@ -119,7 +124,7 @@ class _SocialViewState extends State<SocialView> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.tabSocial),
-          actions: const [ProfileButton()],
+          actions: const [_NotificationsButton(), ProfileButton()],
         ),
         body: SafeArea(
           bottom: false,
@@ -575,6 +580,28 @@ class _Leaderboard extends StatelessWidget {
               }(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The bell: unread rows plus follow requests waiting on an answer
+/// (`SocialPresenter.bellBadgeCount`); zero hides the badge.
+class _NotificationsButton extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final count = context.select<InboxBloc, int>(
+      (bloc) => bloc.state.bellBadgeCount,
+    );
+    return IconButton(
+      tooltip: context.l10n.socialNotificationsButton,
+      onPressed: () => context.pushNamed(NotificationsPage.name),
+      icon: Badge.count(
+        count: count,
+        isLabelVisible: count > 0,
+        child: const Icon(AppSymbols.notifications),
       ),
     );
   }

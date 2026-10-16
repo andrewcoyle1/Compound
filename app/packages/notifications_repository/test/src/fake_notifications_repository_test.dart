@@ -87,6 +87,11 @@ void main() {
       expect(await repository.requestPermission(), isFalse);
     });
 
+    test('counts the times the system settings were opened', () async {
+      await repository.openSystemSettings();
+      expect(repository.settingsOpened, 1);
+    });
+
     test('token sync follows sign-in and sign-out', () async {
       await repository.startPushTokenSync('uid');
       expect(repository.tokenUserId, 'uid');

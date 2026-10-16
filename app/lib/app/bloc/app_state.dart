@@ -28,6 +28,8 @@ final class AppAuthenticated extends AppState {
     this.user, {
     this.profile,
     this.profileStatus = AppProfileStatus.loading,
+    this.isPremium = true,
+    this.signedInThisRun = false,
   });
 
   final AuthUser user;
@@ -36,6 +38,15 @@ final class AppAuthenticated extends AppState {
   final UserModel? profile;
 
   final AppProfileStatus profileStatus;
+
+  /// Whether the user is treated as a subscriber (`PremiumAccess.isPremium`):
+  /// optimistic until the store has answered for them.
+  final bool isPremium;
+
+  /// Whether they signed in during this run of the app, rather than being
+  /// signed in when it started. Fixed for as long as [user] is, so it is
+  /// left out of equality.
+  final bool signedInThisRun;
 
   /// Where onboarding resumes, or null once it is done or while the profile
   /// is unknown. As Swift's `WelcomePresenter`, a finished onboarding goes
@@ -46,8 +57,17 @@ final class AppAuthenticated extends AppState {
     final profile => inferredOnboardingStep(profile),
   };
 
+  /// Whether the router holds the user at Subscription ("Why Subscribe?"):
+  /// not premium, and either just signed in (Swift's `AuthPresenter` checks
+  /// premium before anything else) or still in onboarding. Someone who had
+  /// finished onboarding and was already signed in at launch reaches the
+  /// tabs, as Swift's launch into the tab bar does; there the coach and
+  /// Settings offer the paywall.
+  bool get needsSubscription =>
+      !isPremium && (signedInThisRun || onboardingStep != null);
+
   @override
-  List<Object?> get props => [user, profile, profileStatus];
+  List<Object?> get props => [user, profile, profileStatus, isPremium];
 }
 
 final class AppUnauthenticated extends AppState {

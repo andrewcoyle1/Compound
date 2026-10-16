@@ -77,7 +77,9 @@ abstract final class WorkoutText {
         final reps = set.reps;
         if (reps == null) return null;
         final load = set.loadKg;
-        if (load == null) return number(reps);
+        // No external load (a bodyweight set logged at 0) reads as reps
+        // alone, as an empty weight does; Swift prints "@ 0 kg" (finding).
+        if (load == null || load == 0) return number(reps);
         final weight = AppFormat.weight(load, weightUnit(unit), locale: locale);
         return '${number(reps)} @ $weight';
       case TrackingMode.repsOnly:

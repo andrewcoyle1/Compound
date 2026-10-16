@@ -388,8 +388,11 @@ class _FailingBody extends InMemoryBodyRepository {
 
 class _FailingUsers extends InMemoryUserRepository {
   @override
-  Future<void> mergePrivateSettings(String uid, PrivateUserSettings settings) =>
-      throw StateError('no');
+  Future<void> mergePrivateSettings(
+    String uid,
+    PrivateUserSettings settings, {
+    Set<String> clearing = const {},
+  }) => throw StateError('no');
 }
 
 class _FailingNotifications extends FakeNotificationsRepository {

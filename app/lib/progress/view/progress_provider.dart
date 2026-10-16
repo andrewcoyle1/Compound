@@ -3,6 +3,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/progress/bloc/progress_bloc.dart';
 import 'package:compound/settings/general/view/on_dispose.dart';
@@ -40,7 +41,7 @@ class ProgressProvider extends StatelessWidget {
     final state = context.read<AppBloc>().state;
     if (state is! AppAuthenticated) return const SizedBox.shrink();
     final analytics = context.read<AnalyticsRepository>();
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     return BlocProvider(
       create: (context) => ProgressBloc(
         workoutSessionRepository: context.read<WorkoutSessionRepository>(),

@@ -669,6 +669,10 @@ t("flutter: finishing copies the streak to the private settings", async () => {
     };
     await assertSucceeds(merge(ref(uid), streak));
     await assertFails(merge(ref(BOB), streak));
+    // Deleting the last workout: last_trained_at is deleted in the same merge.
+    const cleared = { ...streak, week_sessions: 0, last_trained_at: deleteField() };
+    await assertSucceeds(merge(ref(uid), cleared));
+    await assertFails(merge(ref(BOB), cleared));
 });
 
 t("flutter: saveExerciseSettings merges a note and a rest override", async () => {

@@ -35,10 +35,16 @@ class FakeNotificationsRepository extends NotificationsRepository {
   /// The pending reminders, by kind.
   final Map<LocalReminderKind, LocalReminder> scheduled = {};
 
+  /// How many times the delivered pushes were cleared.
+  int deliveredCleared = 0;
+
   final _messages = StreamController<PushMessage>.broadcast(sync: true);
 
   @override
   Future<void> initialize() async {}
+
+  @override
+  Future<void> clearDelivered() async => deliveredCleared++;
 
   @override
   Future<PushPermission> permission() async => permissionState;

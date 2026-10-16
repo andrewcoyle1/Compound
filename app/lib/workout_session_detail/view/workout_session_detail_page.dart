@@ -4,6 +4,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/integrations/integrations.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sharing/share_card/share_workout_card.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
@@ -23,6 +24,7 @@ import 'package:compound/workout_tracker/view/set_row_parts.dart'
     show confirmDestructive;
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:device_store/device_store.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -144,6 +146,7 @@ class WorkoutSessionDetailView extends StatelessWidget {
             library: context.read<TrainingLibraryRepository>(),
             strava: context.read<StravaRepository?>(),
             units: context.read<UnitPreferenceStore>(),
+            device: context.read<DeviceStore>(),
             uid: switch (context.read<AppBloc>().state) {
               AppAuthenticated(:final user) => user.uid,
               _ => null,
@@ -211,7 +214,7 @@ void _leave(BuildContext context, {required bool summary}) {
 
 /// The locale's first day of the week (ISO), as the streak counts weeks.
 int _firstWeekday(BuildContext context) {
-  final first = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+  final first = firstDayOfWeekIndex(context);
   return first == 0 ? DateTime.sunday : first;
 }
 

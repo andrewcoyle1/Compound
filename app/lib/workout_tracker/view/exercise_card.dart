@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/training_library/logic/template_summary.dart';
 import 'package:compound/workout_editor/cubit/set_target_cubit.dart'
     show SessionScope;
@@ -490,6 +492,12 @@ class _ProgressionNote extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
+    final acknowledge = context
+        .read<ActiveWorkoutCubit>()
+        .acknowledgeProgressionNote;
+    const shape = RoundedSuperellipseBorder(
+      borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.l,
@@ -497,65 +505,74 @@ class _ProgressionNote extends StatelessWidget {
         AppSpacing.l,
         0,
       ),
-      child: Semantics(
-        key: const Key('ExerciseCard.progressionNote'),
-        button: true,
-        label: l10n.trackerProgressionNoteLabel(text),
-        hint: l10n.trackerDismissesNote,
-        excludeSemantics: true,
-        onTap: context.read<ActiveWorkoutCubit>().acknowledgeProgressionNote,
-        child: Material(
-          color: AppColors.tintedSurface(scheme.primary),
-          shape: const RoundedSuperellipseBorder(
-            borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
-          ),
-          child: InkWell(
-            onTap: context
-                .read<ActiveWorkoutCubit>()
-                .acknowledgeProgressionNote,
-            customBorder: const RoundedSuperellipseBorder(
-              borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.m),
-              child: Column(
+      child: Material(
+        color: AppColors.tintedSurface(scheme.primary),
+        shape: shape,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            // The method sits beside the label, outside the dismissing
+            // tap, so asking how the numbers were reached keeps them.
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 spacing: AppSpacing.xs,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Icon(
+                    AppSymbols.smartProgression,
+                    size: AppIconSize.small.of(context),
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  Text(
+                    l10n.workoutSettingsSmartProgression,
+                    style: AppTextStyles.label.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  MethodInfoButton(MethodInfo.smartProgression(l10n)),
+                ],
+              ),
+            ),
+            Semantics(
+              key: const Key('ExerciseCard.progressionNote'),
+              button: true,
+              label: l10n.trackerProgressionNoteLabel(text),
+              hint: l10n.trackerDismissesNote,
+              excludeSemantics: true,
+              onTap: acknowledge,
+              child: InkWell(
+                onTap: acknowledge,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.m,
+                    0,
+                    AppSpacing.m,
+                    AppSpacing.m,
+                  ),
+                  child: Column(
                     spacing: AppSpacing.xs,
                     children: [
-                      Icon(
-                        AppSymbols.smartProgression,
-                        size: AppIconSize.small.of(context),
-                        color: scheme.onSurfaceVariant,
+                      Text(
+                        text,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.rowTitle.copyWith(
+                          color: scheme.onSurface,
+                        ),
                       ),
                       Text(
-                        l10n.workoutSettingsSmartProgression,
+                        l10n.trackerTapToDismiss,
                         style: AppTextStyles.label.copyWith(
-                          fontWeight: FontWeight.w600,
                           color: scheme.onSurfaceVariant,
                         ),
                       ),
                     ],
                   ),
-                  Text(
-                    text,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.rowTitle.copyWith(
-                      color: scheme.onSurface,
-                    ),
-                  ),
-                  Text(
-                    l10n.trackerTapToDismiss,
-                    style: AppTextStyles.label.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

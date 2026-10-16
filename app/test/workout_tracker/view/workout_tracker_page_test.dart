@@ -5,8 +5,10 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
+import 'package:compound/workout_tracker/view/rest_sound.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -258,6 +260,41 @@ void main() {
       await tester.tap(find.textContaining('Skip Rest'));
       await tester.pumpAndSettle();
       expect(cubit.state.restEnd, isNull);
+      await cubit.close();
+    });
+
+    testWidgets('a rest running out plays the sound and the haptic', (
+      tester,
+    ) async {
+      final sounds = <String>[];
+      final haptics = <Object?>[];
+      final messenger = tester.binding.defaultBinaryMessenger
+        ..setMockMethodCallHandler(RestSound.channel, (call) async {
+          sounds.add(call.method);
+          return null;
+        })
+        ..setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'HapticFeedback.vibrate') {
+            haptics.add(call.arguments);
+          }
+          return null;
+        });
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(RestSound.channel, null),
+      );
+      await start(tester);
+      await pump(tester);
+      await tester.tap(find.byKey(ValueKey('done-${nextSetId()}')));
+      await tester.pumpAndSettle();
+      sounds.clear();
+      haptics.clear();
+      final end = cubit.state.restEnd!;
+      final loggedAt = clock.now;
+      clock.now = end;
+      await tester.pump(end.difference(loggedAt));
+      await tester.pump();
+      expect(sounds, ['restComplete']);
+      expect(haptics, contains('HapticFeedbackType.warningNotification'));
       await cubit.close();
     });
 

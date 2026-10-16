@@ -28,16 +28,23 @@ class AppSelectableRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MergeSemantics(
-      child: Semantics(
-        button: true,
-        child: InkWell(
-          onTap: onPressed,
-          child: AppListRow(
-            title: title,
-            subtitle: subtitle,
-            accessory: AppListRowCheckmark(selected: selected),
-          ),
+    // One node with its own tap, not MergeSemantics: a merged row added
+    // while its list was covered broke the semantics tree when the route
+    // above popped (Flutter 3.47, `_buildSemanticsSubtree`; #141).
+    return Semantics(
+      button: true,
+      enabled: onPressed != null,
+      selected: selected,
+      label: title,
+      value: subtitle,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onPressed,
+        child: AppListRow(
+          title: title,
+          subtitle: subtitle,
+          accessory: AppListRowCheckmark(selected: selected),
         ),
       ),
     );

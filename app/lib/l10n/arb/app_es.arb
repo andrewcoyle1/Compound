@@ -2206,6 +2206,7 @@
     "inboxWantsToFollow": "Quiere seguirte",
     "inboxAccept": "Aceptar",
     "inboxDecline": "Rechazar",
+    "activityBannerHint": "Abre Notificaciones",
     "inboxLiked": "A {name} le gustó tu entrenamiento",
     "inboxCommented": "{name} comentó",
     "inboxCommentedText": "{name} comentó: \"{text}\"",

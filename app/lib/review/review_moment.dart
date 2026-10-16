@@ -1,4 +1,5 @@
 import 'package:compound/nutrition/logic/meal_day.dart' show startOfDay;
+import 'package:device_store/device_store.dart';
 import 'package:in_app_review/in_app_review.dart';
 
 /// When to ask for a store rating (Swift `ReviewMoment`, decision 10d): the
@@ -70,24 +71,34 @@ class StoreReview {
 /// Asks for a rating at Swift's moments, and from Settings' Rate row. Both
 /// stamp one date, so neither asks again inside the cooldown.
 class ReviewPrompter {
-  new({this._review = const StoreReview(), this._now = DateTime.now});
+  /// Keeps the last request in [store]; in memory when left out.
+  new({
+    this._review = const StoreReview(),
+    this._now = DateTime.now,
+    DeviceStore? store,
+  }) : _store = store ?? InMemoryDeviceStore();
 
   final StoreReview _review;
   final DateTime Function() _now;
+  final DeviceStore _store;
 
-  // ponytail: kept in memory, so a relaunch forgets it; the stores still cap
-  // the prompt. Persist it with slice 9b's device key-value store.
-  DateTime? _lastRequestedAt;
+  /// SwiftfulUtilities' `AppStoreRatingsHelper` key. Swift keeps a `Date`;
+  /// this keeps an ISO 8601 string, so Swift's value reads as never asked.
+  static const lastRequestKey = 'last_ratings_request_date';
+
+  /// When a rating was last asked for on this device.
+  DateTime? get lastRequestedAt =>
+      DateTime.tryParse(_store.getString(lastRequestKey) ?? '');
 
   /// Settings' Rate row: straight to the prompt (`onRatingsButtonPressed`).
   Future<void> request() async {
-    _lastRequestedAt = _now();
+    _store.setString(lastRequestKey, _now().toUtc().toIso8601String());
     await _review.request();
   }
 
   /// Asks if [moment] has earned it (`requestReviewIfEarned`).
   Future<void> requestIfEarned(ReviewMoment moment) async {
-    if (!moment.shouldAsk(lastRequestedAt: _lastRequestedAt, now: _now())) {
+    if (!moment.shouldAsk(lastRequestedAt: lastRequestedAt, now: _now())) {
       return;
     }
     await request();

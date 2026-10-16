@@ -80,8 +80,14 @@ class FirestoreUserRepository implements UserRepository {
   Future<void> deleteUser(String uid) => _user(uid).delete();
 
   @override
-  Future<void> mergePrivateSettings(String uid, PrivateUserSettings settings) =>
-      _merge(_settings(uid), settings.toFirestore());
+  Future<void> mergePrivateSettings(
+    String uid,
+    PrivateUserSettings settings, {
+    Set<String> clearing = const {},
+  }) => _merge(_settings(uid), {
+    ...settings.toFirestore(),
+    for (final key in clearing) key: FieldValue.delete(),
+  });
 
   Future<void> _merge(
     DocumentReference<Map<String, dynamic>> document,

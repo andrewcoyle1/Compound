@@ -1,5 +1,6 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sharing/share_card/share_card_content.dart';
 import 'package:compound/sharing/share_card/share_card_renderer.dart';
@@ -38,7 +39,7 @@ Future<void> shareWorkoutCard(
     session,
     author: author,
     history: history,
-    firstDayOfWeek: MaterialLocalizations.of(context).firstDayOfWeekIndex,
+    firstDayOfWeek: firstDayOfWeekIndex(context),
     locale: Localizations.localeOf(context).toLanguageTag(),
   );
   final accent = Theme.of(context).colorScheme.primary;

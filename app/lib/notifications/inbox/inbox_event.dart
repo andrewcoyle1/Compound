@@ -80,3 +80,10 @@ final class const InboxRequestAnswered(
   @override
   List<Object?> get props => [request, accept];
 }
+
+/// The activity banner was tapped, flicked away or timed out.
+final class const InboxBannerDismissed(final String notificationId)
+    extends InboxEvent {
+  @override
+  List<Object?> get props => [notificationId];
+}

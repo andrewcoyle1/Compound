@@ -4,6 +4,7 @@ library;
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/settings/training/view/workout_settings_page.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter/material.dart';
@@ -163,6 +164,15 @@ void main() {
     expect(note, findsOneWidget);
     expect(find.textContaining('Set 2 is to failure, target 8+.'), findsOne);
     expect(find.text('Tap to dismiss'), findsOneWidget);
+
+    // The method opens beside the label and leaves the note up.
+    await tester.tap(find.byTooltip('How Smart Progression is calculated'));
+    await tester.pumpAndSettle();
+    expect(find.byType(MethodInfoSheet), findsOneWidget);
+    Navigator.of(tester.element(find.byType(MethodInfoSheet))).pop();
+    await tester.pumpAndSettle();
+    expect(note, findsOneWidget);
+
     await tester.tap(note);
     await tester.pumpAndSettle();
     expect(note, findsNothing);

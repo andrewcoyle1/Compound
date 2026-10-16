@@ -44,8 +44,14 @@ abstract interface class UserRepository {
   /// A null field is left out of the write, so it keeps its stored value
   /// rather than clearing it. To turn something off, write `false`: coach
   /// consent is withdrawn by writing `coachConsent: false`
-  /// (`CoachManager.swift:75`).
-  Future<void> mergePrivateSettings(String uid, PrivateUserSettings settings);
+  /// (`CoachManager.swift:75`). A field that must go is named in
+  /// [clearing] (a `PrivateUserSettingsKeys` constant) and deleted in the
+  /// same write.
+  Future<void> mergePrivateSettings(
+    String uid,
+    PrivateUserSettings settings, {
+    Set<String> clearing = const {},
+  });
 
   /// Deletes the profile at `users/{uid}`, as `UserManager.deleteCurrentUser`
   /// does inside account deletion (`CoreInteractor.swift:240-262`). The

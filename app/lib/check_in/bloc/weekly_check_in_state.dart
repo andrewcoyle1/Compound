@@ -55,6 +55,9 @@ final class const WeeklyCheckInState({
 
   /// Moves each time an [alert] should be shown.
   final int alertId = 0,
+
+  /// Moves each time a weigh-in is saved, for the view's success haptic.
+  final int weighInsSaved = 0,
 }) extends Equatable {
   /// The step showing, or null before the flow is built.
   CheckInStep? get currentStep {
@@ -74,6 +77,7 @@ final class const WeeklyCheckInState({
     bool? isSaving,
     WeeklyCheckInAlert? alert,
     int? alertId,
+    int? weighInsSaved,
   }) => WeeklyCheckInState(
     weekStart: weekStart,
     weighIn: weighIn ?? this.weighIn,
@@ -86,6 +90,7 @@ final class const WeeklyCheckInState({
     isSaving: isSaving ?? this.isSaving,
     alert: alert ?? this.alert,
     alertId: alertId ?? this.alertId,
+    weighInsSaved: weighInsSaved ?? this.weighInsSaved,
   );
 
   @override
@@ -101,5 +106,6 @@ final class const WeeklyCheckInState({
     isSaving,
     alert,
     alertId,
+    weighInsSaved,
   ];
 }

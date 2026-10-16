@@ -87,6 +87,11 @@ void main() {
       expect(await repository.requestPermission(), isFalse);
     });
 
+    test('counts the times the delivered pushes were cleared', () async {
+      await repository.clearDelivered();
+      expect(repository.deliveredCleared, 1);
+    });
+
     test('counts the times the system settings were opened', () async {
       await repository.openSystemSettings();
       expect(repository.settingsOpened, 1);

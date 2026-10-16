@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/training_analytics/bloc/training_analytics_bloc.dart';
@@ -71,8 +72,7 @@ class _WorkoutConsistencyView extends StatelessWidget {
               valueText: metric.entryText,
             );
           }
-          final firstDay = MaterialLocalizations.of(context)
-              .firstDayOfWeekIndex;
+          final firstDay = firstDayOfWeekIndex(context);
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [

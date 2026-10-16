@@ -157,6 +157,9 @@ class const App({
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<DeviceStore>(
+          create: (_) => deviceStore ?? InMemoryDeviceStore(),
+        ),
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: userRepository),
         RepositoryProvider.value(value: workoutSessionRepository),
@@ -200,7 +203,10 @@ class const App({
         RepositoryProvider.value(value: shareSheet),
         RepositoryProvider.value(value: linkOpener),
         RepositoryProvider<AppVersion?>.value(value: appVersion),
-        RepositoryProvider(create: (_) => ReviewPrompter(review: storeReview)),
+        RepositoryProvider(
+          create: (context) =>
+              ReviewPrompter(review: storeReview, store: context.read()),
+        ),
         RepositoryProvider<StravaRepository?>.value(value: stravaRepository),
         RepositoryProvider<HealthRepository>(
           create: (_) =>
@@ -210,9 +216,6 @@ class const App({
                 body: bodyRepository,
                 nutrition: nutritionRepository,
               ),
-        ),
-        RepositoryProvider<DeviceStore>(
-          create: (_) => deviceStore ?? InMemoryDeviceStore(),
         ),
         RepositoryProvider<ProposalDismissals>(
           create: (context) =>
@@ -298,6 +301,7 @@ class const App({
               programs: context.read(),
               health: context.read(),
               strava: stravaRepository,
+              reviews: context.read(),
             ),
           ),
           BlocProvider(
@@ -314,6 +318,7 @@ class const App({
             create: (context) => InboxBloc(
               social: context.read(),
               analytics: analyticsRepository,
+              notifications: context.read(),
             ),
           ),
           BlocProvider(
@@ -843,7 +848,10 @@ class _AppViewState extends State<AppView> {
               listener: _onInvite,
             ),
           ],
-          child: child!,
+          child: ActivityBannerOverlay(
+            onOpen: () => _router.goNamed(NotificationsPage.name),
+            child: child!,
+          ),
         ),
       ),
     );

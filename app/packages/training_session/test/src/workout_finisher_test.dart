@@ -47,10 +47,11 @@ class _Users extends InMemoryUserRepository {
   @override
   Future<void> mergePrivateSettings(
     String uid,
-    m.PrivateUserSettings settings,
-  ) {
+    m.PrivateUserSettings settings, {
+    Set<String> clearing = const {},
+  }) {
     merges++;
-    return super.mergePrivateSettings(uid, settings);
+    return super.mergePrivateSettings(uid, settings, clearing: clearing);
   }
 }
 
@@ -328,6 +329,23 @@ void main() {
       );
       expect(record.lastTrainedAt, isNull);
       expect(record.settings.weekStreak, 0);
+      // The last session gone: the reminder's copy loses it too.
+      expect(record.clearing, {'last_trained_at'});
+      expect(
+        record.isRecordedIn(m.PrivateUserSettings(lastTrainedAt: _now)),
+        isFalse,
+      );
+    });
+
+    test('a counted session clears nothing', () {
+      final record = StreakRecord.of(
+        [_finished('ok', DateTime(2026, 10, 12, 7))],
+        uid: author,
+        goal: 3,
+        now: _now,
+        firstWeekday: DateTime.monday,
+      );
+      expect(record.clearing, isEmpty);
     });
   });
 

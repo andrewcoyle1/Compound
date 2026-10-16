@@ -91,6 +91,16 @@ void main() {
         ]),
         '1 × 8',
       );
+      // A bodyweight set logged at 0 kg reads as its reps; assistance keeps
+      // its load.
+      expect(
+        describe(TrackingMode.weightReps, [fixtureSet(reps: 8, weightKg: 0)]),
+        '1 × 8',
+      );
+      expect(
+        describe(TrackingMode.weightReps, [fixtureSet(reps: 8, weightKg: -20)]),
+        '1 × 8 @ -20 kg',
+      );
       expect(
         describe(TrackingMode.repsOnly, [fixtureSet(reps: 12, weightKg: null)]),
         '1 × 12',

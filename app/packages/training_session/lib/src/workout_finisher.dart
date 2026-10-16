@@ -166,6 +166,13 @@ class const StreakRecord({
     lastTrainedAt: lastTrainedAt,
   );
 
+  /// The fields to delete in the same write: `last_trained_at` once no
+  /// counted session is left, so the reminder does not think the user
+  /// trained (Swift's merge keeps the old value; finding).
+  Set<String> get clearing => {
+    if (lastTrainedAt == null) m.PrivateUserSettingsKeys.lastTrainedAt,
+  };
+
   /// Whether [current] already holds these figures, to the millisecond
   /// Firestore keeps (`recordWeeklyStreak` writes only a change).
   bool isRecordedIn(m.PrivateUserSettings? current) {
@@ -270,7 +277,11 @@ class WorkoutFinisher {
         record.streak.weeks,
       );
       if (!record.isRecordedIn(privateSettings)) {
-        await _users.mergePrivateSettings(uid, record.settings);
+        await _users.mergePrivateSettings(
+          uid,
+          record.settings,
+          clearing: record.clearing,
+        );
       }
     } on Object catch (error) {
       return FinishResult(saved: true, streakError: error);

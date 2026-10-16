@@ -7,6 +7,7 @@ import 'package:checkin_repository/checkin_repository.dart' show localDayKey;
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/integrations/integrations.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/science/method_info.dart';
@@ -47,7 +48,7 @@ class WeeklyReviewPage extends StatelessWidget {
     final state = context.read<AppBloc>().state;
     if (state is! AppAuthenticated) return const SizedBox.shrink();
     final analytics = context.read<AnalyticsRepository>();
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     return BlocProvider(
       create: (context) => WeeklyReviewBloc(
         workoutSessionRepository: context.read<WorkoutSessionRepository>(),

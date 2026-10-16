@@ -145,6 +145,19 @@ void main() {
           {...fullSettings.toFirestore(), 'coach_consent': false},
         );
       });
+
+      test('mergePrivateSettings deletes the fields it clears', () async {
+        await repository.mergePrivateSettings('me', fullSettings);
+        await repository.mergePrivateSettings(
+          'me',
+          const PrivateUserSettings(weekStreak: 0),
+          clearing: {PrivateUserSettingsKeys.lastTrainedAt},
+        );
+        final stored = (await repository.watchPrivateSettings('me').first)!;
+        expect(stored.lastTrainedAt, isNull);
+        expect(stored.weekStreak, 0);
+        expect(stored.coachConsent, fullSettings.coachConsent);
+      });
     });
   });
 

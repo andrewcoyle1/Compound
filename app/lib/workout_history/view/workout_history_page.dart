@@ -1,5 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/workout_history/bloc/workout_history_bloc.dart';
 import 'package:compound/workout_history/view/workout_session_card.dart';
@@ -22,8 +23,7 @@ class WorkoutHistoryPage extends StatelessWidget {
     // The router only shows this page while someone is signed in.
     final state = context.read<AppBloc>().state;
     if (state is! AppAuthenticated) return const SizedBox.shrink();
-    final firstDayOfWeek = MaterialLocalizations.of(context)
-        .firstDayOfWeekIndex;
+    final firstDayOfWeek = firstDayOfWeekIndex(context);
     return BlocProvider(
       create: (context) => WorkoutHistoryBloc(
         repository: context.read<WorkoutSessionRepository>(),

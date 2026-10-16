@@ -8,6 +8,8 @@ import 'package:compound/social/logic/people.dart';
 import 'package:compound/social/logic/restartable.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
+import 'package:notifications_repository/notifications_repository.dart'
+    show NotificationsRepository;
 import 'package:social_repository/social_repository.dart';
 
 part 'inbox_event.dart';
@@ -20,7 +22,7 @@ part 'inbox_state.dart';
 /// ([InboxViewerChanged]); the Social tab and the inbox read it. Events keep
 /// Swift's `NotificationsView_` names.
 class InboxBloc extends Bloc<InboxEvent, InboxState> {
-  new({required this._social, required this._analytics})
+  new({required this._social, required this._analytics, this._notifications})
     : super(const InboxState()) {
     on<InboxViewerChanged>(_onViewerChanged);
     on<_InboxSubscribed>(_onSubscribed, transformer: restartable());
@@ -38,10 +40,20 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     on<InboxGroupDeleted>(_onGroupDeleted);
     on<InboxFollowBackPressed>(_onFollowBackPressed);
     on<InboxRequestAnswered>(_onRequestAnswered);
+    // Only the banner it was raised for: a newer one stays.
+    on<InboxBannerDismissed>((event, emit) {
+      if (state.banner?.id == event.notificationId) {
+        emit(state.copyWith(banner: () => null));
+      }
+    });
   }
 
   final SocialRepository _social;
   final AnalyticsRepository _analytics;
+
+  /// Where the delivered pushes are cleared once the inbox is read; none in
+  /// tests that never open it.
+  final NotificationsRepository? _notifications;
 
   /// What the listeners were started for: a change restarts them.
   Object? _subscriptionKey;
@@ -83,6 +95,10 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
             ? state
             : state.copyWith(
                 notifications: [notification, ...state.notifications],
+                // Announced over the app, unless from someone blocked.
+                banner: hasBlocked(state.viewer, notification.actorId)
+                    ? null
+                    : () => notification,
               ),
         onError: (_, _) => state,
       ),
@@ -144,6 +160,8 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     } on Object catch (error) {
       _warning('NotificationsView_MarkRead_Fail', error);
     }
+    // Read here, so off the tray too.
+    await _notifications?.clearDelivered();
     emit(state.copyWith(isLoading: false, hasLoadedOnce: true));
   }
 

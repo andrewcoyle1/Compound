@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound/sharing/share_card/share_workout_card.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
 import 'package:compound/shell/app_tab.dart';
@@ -29,6 +32,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:social_repository/social_repository.dart';
 import 'package:strava_repository/strava_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart'
     show TrainingLibraryRepository;
@@ -39,10 +43,11 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// One finished workout: when it started, how long it took, its volume and
 /// notes, then each exercise with its sets. A port of the Swift app's
-/// `WorkoutSessionDetailView` without Copy Link. Its author can move its
-/// start, change its duration, edit it (sets, notes, exercises) and delete
-/// it. Share Image draws the workout's card; "View on Strava" opens the
-/// activity, and the summary of a first workout offers Strava once.
+/// `WorkoutSessionDetailView`. Its author can move its start, change its
+/// duration, edit it (sets, notes, exercises) and delete it. Share Image
+/// draws the workout's card, Copy Link copies its web page; "View on
+/// Strava" opens the activity, and the summary of a first workout offers
+/// Strava once.
 ///
 /// As the summary of a workout just finished (`isWorkoutSummary`), it opens
 /// over the tabs in the tracker's place, shows the [session] it is handed
@@ -50,6 +55,7 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 class WorkoutSessionDetailPage extends StatelessWidget {
   const new({
     required this.sessionId,
+    this.authorId,
     this.session,
     this.isWorkoutSummary = false,
     super.key,
@@ -73,6 +79,10 @@ class WorkoutSessionDetailPage extends StatelessWidget {
   /// The workout to show.
   final String sessionId;
 
+  /// Who did it, when it may be someone else's; the signed-in user's
+  /// otherwise.
+  final String? authorId;
+
   /// The workout itself, when the caller has it.
   final WorkoutSessionModel? session;
 
@@ -90,8 +100,10 @@ class WorkoutSessionDetailPage extends StatelessWidget {
           create: (context) => WorkoutSessionDetailBloc(
             sessionRepository: context.read<WorkoutSessionRepository>(),
             userRepository: context.read<UserRepository>(),
+            socialRepository: context.read<SocialRepository>(),
             uid: state.user.uid,
             sessionId: sessionId,
+            authorId: authorId,
             session: session,
           )..add(const WorkoutSessionDetailRequested()),
         ),
@@ -751,7 +763,8 @@ class _Message extends StatelessWidget {
   }
 }
 
-/// Share Image, Story or Square (`WorkoutSessionDetailView`'s menu). The
+/// Share Image, Story or Square, and Copy Link where the workout has a public
+/// page (`WorkoutSessionDetailView`'s menu). The
 /// card names the author when the circle knows them, and reads its records
 /// off the author's sessions the circle holds.
 class _ShareImageButton extends StatefulWidget {
@@ -786,6 +799,13 @@ class _ShareImageButtonState extends State<_ShareImageButton> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final session = widget.session;
+    final link = context.read<SessionWebLink?>()?.url(
+      session,
+      author: context.select<CircleBloc, UserModel?>(
+        (bloc) => bloc.state.authorOf(session),
+      ),
+    );
     if (_rendering) {
       return const Padding(
         padding: EdgeInsets.all(AppSpacing.l),
@@ -808,7 +828,23 @@ class _ShareImageButtonState extends State<_ShareImageButton> {
           value: ShareCardFormat.square,
           child: Text(l10n.shareImageSquare),
         ),
+        if (link != null)
+          PopupMenuItem(
+            onTap: () => unawaited(_copyLink(link)),
+            child: Text(l10n.copyLink),
+          ),
       ],
     );
+  }
+
+  /// Copy Link (`WorkoutSessionDetailPresenter.onCopyLinkPressed`): the
+  /// page's address on the clipboard, a success haptic for confirmation.
+  Future<void> _copyLink(Uri link) async {
+    context.read<AnalyticsRepository>().analytic(
+      'WorkoutSessionDetailView_CopyLink',
+      {'session_id': widget.session.id},
+    );
+    await Clipboard.setData(ClipboardData(text: '$link'));
+    await HapticFeedback.successNotification();
   }
 }

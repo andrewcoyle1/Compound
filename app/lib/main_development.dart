@@ -16,6 +16,7 @@ import 'package:compound/bootstrap.dart';
 import 'package:compound/firebase_options_development.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/notifications/notifications.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
 import 'package:device_store/device_store.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -214,6 +215,11 @@ Future<void> main() async {
         File('${support.path}/active_workout_session.json'),
       ),
       deviceStore: deviceStore,
+      // Workouts' web pages: the sessionPage function behind this project's
+      // Hosting rewrite.
+      sessionWebLink: SessionWebLink(
+        Uri.parse('https://compound-development.web.app/s'),
+      ),
       analyticsRepository: analyticsRepository,
       authRepository: FirebaseAuthRepository(
         firebaseAuth: FirebaseAuth.instance,

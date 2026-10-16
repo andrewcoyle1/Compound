@@ -10086,6 +10086,23 @@
     "@shareImageSquare": {
         "description": "Share image format: 1:1"
     },
+    "copyLink": "Copy Link",
+    "@copyLink": {
+        "description": "Workout detail share menu: copy the workout's web page link"
+    },
+    "shareWorkout": "Share workout",
+    "@shareWorkout": {
+        "description": "Feed card: accessibility label of the button sharing the workout's summary and link"
+    },
+    "shareWorkoutLifted": "{weight} lifted",
+    "@shareWorkoutLifted": {
+        "description": "Shared workout summary: the total weight lifted, e.g. 5,040 kg lifted",
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            }
+        }
+    },
     "shareImageFailed": "Unable to Create Image",
     "@shareImageFailed": {
         "description": "Rendering a share image failed"

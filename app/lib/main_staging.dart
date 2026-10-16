@@ -10,6 +10,7 @@ import 'package:compound/integrations/integrations.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/logic/staging_onboarding.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound_models/compound_models.dart'
     show ExerciseWeightUnit, WorkoutSessionModel, WorkoutSessionModelKeys;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -187,6 +188,11 @@ Future<void> main() async {
       ),
       stravaRepository: stravaRepository,
       stravaAuthorizer: FakeStravaAuthorizer(),
+      // A host that cannot resolve (`.invalid` is reserved): links are made
+      // and opened in the app, and nothing real is ever reached.
+      sessionWebLink: SessionWebLink(
+        Uri.parse('https://compound-staging.invalid/s'),
+      ),
       // Premium unless `STAGING_PREMIUM=false`, as the Swift Mock build
       // starts with "Simulate Premium" on. Staging has no store.
       purchasesRepository: stagingPurchases(),

@@ -42,6 +42,7 @@ final socialRoutes = <RouteBase>[
     name: SocialNavigation.sessionName,
     builder: (_, state) => WorkoutSessionDetailPage(
       sessionId: state.pathParameters[SocialNavigation.sessionIdParameter]!,
+      authorId: state.pathParameters[SocialNavigation.authorIdParameter],
       session: switch (state.extra) {
         final WorkoutSessionModel session => session,
         _ => null,

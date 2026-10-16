@@ -4,8 +4,10 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound/sharing/share_card/share_workout_card.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
+import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/sharing/view/share_to_follower_page.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/feed/save_session_template_cubit.dart';
@@ -24,8 +26,7 @@ import 'package:training_library_repository/training_library_repository.dart';
 /// A workout in the feed (`WorkoutSessionRowView`): who did it, the
 /// workout, likes, comments, and More: Save as Template, Share with Friends
 /// (the workout's template, when the reader has it), Share Image and, on
-/// someone else's workout, Report. The text share with the web link is not
-/// ported yet.
+/// someone else's workout, Report. Share sends its summary and web page.
 class FeedSessionCard extends StatelessWidget {
   const new({
     required this.entry,
@@ -176,6 +177,18 @@ class _Actions extends StatelessWidget {
             ),
           ),
           Expanded(
+            child: Semantics(
+              label: l10n.shareWorkout,
+              button: true,
+              excludeSemantics: true,
+              child: TextButton(
+                style: style,
+                onPressed: () => unawaited(_share(context)),
+                child: Icon(AppSymbols.share),
+              ),
+            ),
+          ),
+          Expanded(
             child: _MoreMenu(
               session: session,
               author: author,
@@ -187,6 +200,45 @@ class _Actions extends StatelessWidget {
       ),
     );
   }
+
+  /// The workout's page, with its summary as the message; the summary
+  /// alone where there is no page (`WorkoutSessionRowView`'s `ShareLink`).
+  Future<void> _share(BuildContext context) {
+    final link = context.read<SessionWebLink?>()?.url(session, author: author);
+    final summary = shareWorkoutSummary(
+      context.l10n,
+      session,
+      locale: Localizations.localeOf(context).toLanguageTag(),
+    );
+    return context.read<ShareSheet>().shareText(
+      context,
+      link == null ? summary : '$summary\n$link',
+    );
+  }
+}
+
+/// "Push A · 5 exercises · 18 sets · 5,040 kg lifted", the volume only when
+/// something was lifted, in the unit the author lifted in
+/// (`WorkoutSessionRowPresenter.shareSummary`).
+String shareWorkoutSummary(
+  AppLocalizations l10n,
+  WorkoutSessionModel session, {
+  String? locale,
+}) {
+  final volume = session.loggedVolumeKg;
+  return [
+    session.name,
+    l10n.exerciseCount(session.doneExercises.length),
+    l10n.setCount(session.loggedSetCount),
+    if (volume > 0)
+      l10n.shareWorkoutLifted(
+        AppFormat.weight(
+          volume,
+          WorkoutText.weightUnit(session.authorWeightUnit),
+          locale: locale,
+        ),
+      ),
+  ].join(' · ');
 }
 
 /// The card's More menu (`WorkoutSessionRowView`'s): Share with Friends

@@ -10,6 +10,8 @@ import 'package:compound_maths/compound_maths.dart' as maths;
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_session/training_session.dart'
+    show UnitPreferenceStore;
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -62,8 +64,15 @@ class TrainingAnalyticsBloc
     required this._uid,
     required this._screen,
     this._parameters,
+    this._units,
     DateTime Function() now = DateTime.now,
-  }) : super(TrainingAnalyticsState(uid: _uid, now: now())) {
+  }) : super(
+         TrainingAnalyticsState(
+           uid: _uid,
+           now: now(),
+           weightUnits: _units?.weightUnits(_uid) ?? const {},
+         ),
+       ) {
     on<TrainingAnalyticsSubscriptionRequested>(_onSubscriptionRequested);
     on<TrainingAnalyticsRangeSelected>(
       (event, emit) => emit(state.copyWith(range: event.range)),
@@ -78,6 +87,9 @@ class TrainingAnalyticsBloc
   final String _uid;
   final TrainingAnalyticsScreen _screen;
   final Map<String, Object?>? _parameters;
+
+  /// Each exercise's own weight unit, kept on the device.
+  final UnitPreferenceStore? _units;
 
   Future<void> _onSubscriptionRequested(
     TrainingAnalyticsSubscriptionRequested event,
@@ -102,6 +114,11 @@ class TrainingAnalyticsBloc
         onData: (user) => state.copyWith(user: () => user),
         onError: (_, _) => state,
       ),
+      if (_units case final units?)
+        emit.forEach(
+          units.changes,
+          onData: (_) => state.copyWith(weightUnits: units.weightUnits(_uid)),
+        ),
     ]);
   }
 

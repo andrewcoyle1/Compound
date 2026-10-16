@@ -167,6 +167,10 @@ void main() {
       expect(week.state.showsRestTimers, isFalse);
       expect(const WeekScope(3), const WeekScope(3));
       expect(const TemplateScope().props, isEmpty);
+      // A session's exercise, from the tracker: targets only.
+      final session = build(scope: const SessionScope());
+      expect(session.state.showsPlan, isFalse);
+      expect(session.state.showsRestTimers, isFalse);
     });
 
     test('weekly variations are kept', () {

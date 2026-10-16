@@ -191,6 +191,9 @@ Future<void> main() async {
       activeSessionStore: FileActiveSessionStore(
         File('${support.path}/active_workout_session.json'),
       ),
+      unitPreferences: UnitPreferenceStore(
+        file: File('${support.path}/exercise_unit_preferences.json'),
+      ),
       analyticsRepository: analyticsRepository,
       authRepository: FirebaseAuthRepository(
         firebaseAuth: FirebaseAuth.instance,

@@ -895,6 +895,64 @@ class ActiveSessionController {
     _loadHistory([refitted]);
   }
 
+  /// [exerciseId]'s weights entered in [unit] from now on. With [convert],
+  /// its open sets go to the nearest weight the equipment makes in [unit]
+  /// (`convertAndRoundWeights`); logged sets keep what was lifted. The
+  /// preference itself is the caller's to keep.
+  void setWeightUnit(
+    String exerciseId,
+    m.ExerciseWeightUnit unit, {
+    required bool convert,
+  }) {
+    final exercise = _exercise(exerciseId);
+    if (exercise == null) return;
+    if (!convert) return _replaceExercise(exercise.copyWith(weightUnit: unit));
+    final rule = weightRoundingRule(
+      exercise: _library(exercise),
+      gym: _environment.gym,
+      preferredUnit: unit,
+      resistanceEquipment: exercise.activeVariation?.resistanceEquipment,
+    );
+    _replaceExercise(
+      exercise.copyWith(
+        weightUnit: unit,
+        sets: [
+          for (final set in exercise.sets)
+            if (set.completedAt == null && set.weightKg != null)
+              set.copyWith(weightKg: rule.round(set.weightKg!))
+            else
+              set,
+        ],
+      ),
+    );
+  }
+
+  /// [exerciseId]'s open distances rounded as they read in [unit]
+  /// (`convertAndRoundDistances`); logged sets keep what was done.
+  void convertDistances(String exerciseId, DistanceUnit unit) {
+    final exercise = _exercise(exerciseId);
+    if (exercise == null) return;
+    _replaceExercise(
+      exercise.copyWith(
+        sets: [
+          for (final set in exercise.sets)
+            if (set.completedAt == null && set.distanceMeters != null)
+              set.copyWith(distanceMeters: unit.rounded(set.distanceMeters!))
+            else
+              set,
+        ],
+      ),
+    );
+  }
+
+  /// [exerciseId]'s targets for this workout (the tracker's Targets); its
+  /// sets are left as they are.
+  void setTargets(String exerciseId, List<m.SetTarget> targets) {
+    final exercise = _exercise(exerciseId);
+    if (exercise == null) return;
+    _replaceExercise(exercise.copyWith(setTargets: targets));
+  }
+
   List<m.WorkoutExerciseModel> _movingGroup(String exerciseId) {
     final exercise = _exercise(exerciseId);
     if (exercise == null) return [];

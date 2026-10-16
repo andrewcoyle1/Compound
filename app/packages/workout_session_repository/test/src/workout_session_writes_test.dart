@@ -148,6 +148,94 @@ void main() {
       });
     });
 
+    group('updateEditedSession', () {
+      final full = WorkoutSessionModel.fromFirestore(
+        modelFixture('workout_session', 'full'),
+      );
+      final start = DateTime.utc(2026, 10, 2, 7);
+      final edited = WorkoutSessionModel.fromFirestore(
+        {
+          ...full.toFirestore(),
+          WorkoutSessionModelKeys.dateCreated: start,
+          WorkoutSessionModelKeys.endedAt: start.add(const Duration(hours: 1)),
+          WorkoutSessionModelKeys.dateModified: start.add(
+            const Duration(hours: 2),
+          ),
+          WorkoutSessionModelKeys.exercises: <Object?>[],
+        }..remove(WorkoutSessionModelKeys.notes),
+      );
+
+      setUp(
+        () => document(
+          full.authorId,
+          full.id,
+        ).set(storedFixture('workout_session', 'full')),
+      );
+
+      test('writes only the edited fields, deleting cleared notes', () async {
+        await subject.updateEditedSession(full.authorId, edited);
+
+        final expected = {
+          ...taggedFixture('workout_session', 'full'),
+          ...firestoreToTaggedJson({
+            WorkoutSessionModelKeys.dateCreated: start,
+            WorkoutSessionModelKeys.endedAt: start.add(
+              const Duration(hours: 1),
+            ),
+            WorkoutSessionModelKeys.dateModified: start.add(
+              const Duration(hours: 2),
+            ),
+          }),
+          WorkoutSessionModelKeys.exercises: <Object?>[],
+        }..remove(WorkoutSessionModelKeys.notes);
+        expect(await stored(full.authorId, full.id), strictlyEquals(expected));
+      });
+
+      test(
+        'keeps a like, a streak and a Strava id written meanwhile',
+        () async {
+          await document(full.authorId, full.id).update({
+            WorkoutSessionModelKeys.likedByUserIds: FieldValue.arrayUnion([
+              'friend-who-liked-it',
+            ]),
+            WorkoutSessionModelKeys.weekStreakCount: 12,
+            WorkoutSessionModelKeys.stravaActivityId: 777,
+          });
+          // The screen's copy predates all three.
+          final stale = WorkoutSessionModel.fromFirestore(
+            {
+              ...edited.toFirestore(),
+              WorkoutSessionModelKeys.likedByUserIds: <String>[],
+            }..remove(WorkoutSessionModelKeys.stravaActivityId),
+          );
+
+          await subject.updateEditedSession(full.authorId, stale);
+
+          final written = await stored(full.authorId, full.id);
+          expect(
+            written[WorkoutSessionModelKeys.likedByUserIds],
+            contains('friend-who-liked-it'),
+          );
+          expect(written[WorkoutSessionModelKeys.weekStreakCount], 12);
+          expect(written[WorkoutSessionModelKeys.stravaActivityId], 777);
+        },
+      );
+
+      test('fails when there is no such session, as Firestore does', () async {
+        await expectLater(
+          subject.updateEditedSession('someone', edited),
+          throwsA(isA<FirebaseException>()),
+        );
+      });
+
+      test('names fields of the contract', () {
+        expect(
+          taggedFixture('workout_session', 'full').keys,
+          containsAll(EditedSessionFields.all),
+        );
+      });
+    });
+
     group('updateStravaActivityId', () {
       test('sets strava_activity_id alone, as an int', () async {
         final model = WorkoutSessionModel.fromFirestore(
@@ -264,6 +352,37 @@ void main() {
     test('fails to set the Strava activity on a missing session', () async {
       await expectLater(
         subject.updateStravaActivityId(uid, 'missing', 1),
+        throwsA(
+          isA<FirebaseException>().having((e) => e.code, 'code', 'not-found'),
+        ),
+      );
+    });
+
+    test('an edit writes its fields over a like made meanwhile', () async {
+      await subject.saveSession(uid, model);
+      await subject.updateWeekStreakCount(uid, model.id, 4);
+      final stale = WorkoutSessionModel.fromFirestore(
+        {
+          ...model.toFirestore(),
+          WorkoutSessionModelKeys.likedByUserIds: <String>[],
+          WorkoutSessionModelKeys.name: 'Renamed elsewhere',
+          WorkoutSessionModelKeys.exercises: <Object?>[],
+        }..remove(WorkoutSessionModelKeys.notes),
+      );
+
+      await subject.updateEditedSession(uid, stale);
+
+      final read = (await subject.session(uid, model.id))!;
+      expect(read.likedByUserIds, model.likedByUserIds);
+      expect(read.weekStreakCount, 4);
+      expect(read.name, model.name);
+      expect(read.notes, isNull);
+      expect(read.exercises, isEmpty);
+    });
+
+    test('fails to edit a missing session', () async {
+      await expectLater(
+        subject.updateEditedSession(uid, model),
         throwsA(
           isA<FirebaseException>().having((e) => e.code, 'code', 'not-found'),
         ),

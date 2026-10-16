@@ -15,6 +15,14 @@ abstract interface class WorkoutSessionRepository {
   /// the sync engine's `saveDocument` is `setData(merge: true)`).
   Future<void> saveSession(String uid, WorkoutSessionModel session);
 
+  /// Writes only what editing a finished workout changes
+  /// (`WorkoutSessionDetailPresenter.saveChanges` and the timing sheets):
+  /// [EditedSessionFields], with a cleared `notes` deleted, as an `update`.
+  /// Likes, the streak stamp and the Strava id are never part of it, so one
+  /// written meanwhile survives. Fails, as Firestore's update does, when
+  /// there is no such session.
+  Future<void> updateEditedSession(String uid, WorkoutSessionModel session);
+
   /// Deletes the session [id] of [uid] (`WorkoutSessionManager
   /// .deleteWorkoutSession`): unticking a rest day, or the rest a workout
   /// trained through.
@@ -33,4 +41,25 @@ abstract interface class WorkoutSessionRepository {
     String sessionId,
     int activityId,
   );
+}
+
+/// The fields [WorkoutSessionRepository.updateEditedSession] writes.
+abstract final class EditedSessionFields {
+  /// Every one of them.
+  static const List<String> all = [
+    WorkoutSessionModelKeys.exercises,
+    WorkoutSessionModelKeys.notes,
+    WorkoutSessionModelKeys.dateCreated,
+    WorkoutSessionModelKeys.endedAt,
+    WorkoutSessionModelKeys.dateModified,
+  ];
+
+  /// [session]'s values for them, a cleared one as [cleared].
+  static Map<String, Object?> of(
+    WorkoutSessionModel session, {
+    required Object cleared,
+  }) {
+    final encoded = session.toFirestore();
+    return {for (final key in all) key: encoded[key] ?? cleared};
+  }
 }

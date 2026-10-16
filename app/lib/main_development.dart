@@ -244,6 +244,7 @@ Future<void> main() async {
         storage: FirebaseStorage.instance,
       ),
       photoPicker: DevicePhotoPicker(),
+      labelTextReader: const PlatformLabelTextReader(),
       // The food photo, meal description and label callables are
       // us-central1 and enforce App Check.
       aiRepository: AiRepository(

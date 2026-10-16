@@ -1,6 +1,12 @@
+import 'dart:async';
+import 'dart:typed_data';
+
+import 'package:compound/nutrition/add_meal/cubit/food_photo_scanner_cubit.dart'
+    show CameraState;
 import 'package:compound/nutrition/add_meal/cubit/label_scanner_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../fake_ai.dart';
@@ -9,6 +15,23 @@ import '../recording_analytics.dart';
 class _MockFoodRepository extends Mock implements FoodRepository;
 
 class _FakeFood extends Fake implements FoodModel;
+
+/// Reads every photo as [text], or throws [error]; [gate], when set, holds
+/// the answer until it completes.
+class _Reader implements LabelTextReader {
+  String text = 'Energy 46kcal\nProtein 1.2 g';
+  Exception? error;
+  Completer<void>? gate;
+  final photos = <Uint8List>[];
+
+  @override
+  Future<String> read(Uint8List jpeg) async {
+    photos.add(jpeg);
+    await gate?.future;
+    if (error case final error?) throw error;
+    return text;
+  }
+}
 
 String _label({String measurementMethod = 'weight'}) =>
     '''
@@ -25,6 +48,8 @@ void main() {
   late FakeAi ai;
   late FoodRepository foods;
   late RecordingAnalytics analytics;
+  late FakePhotoPicker picker;
+  late _Reader reader;
 
   setUpAll(() => registerFallbackValue(_FakeFood()));
 
@@ -32,6 +57,8 @@ void main() {
     ai = FakeAi()..json = _label();
     foods = _MockFoodRepository();
     analytics = RecordingAnalytics();
+    picker = FakePhotoPicker();
+    reader = _Reader();
     when(() => foods.saveFood(any())).thenAnswer((_) async {});
   });
 
@@ -40,6 +67,8 @@ void main() {
     ai: ai.repository,
     foodRepository: foods,
     analytics: analytics,
+    picker: picker,
+    reader: reader,
   );
 
   group(LabelScannerCubit, () {
@@ -206,6 +235,147 @@ void main() {
       await failure;
 
       expect(ai.calls, hasLength(2));
+    });
+  });
+
+  // On-device reading of a label photo, which Swift does live with
+  // DataScannerViewController.
+  group('scan', () {
+    test("a photo's text is read on the device for the field", () async {
+      final cubit = build();
+      final states = <LabelScannerState>[];
+      final subscription = cubit.stream.listen(states.add);
+
+      await cubit.scan(PhotoSource.camera);
+      await Future<void>.delayed(Duration.zero);
+      await subscription.cancel();
+
+      expect(states, [
+        const LabelScannerState(status: LabelStatus.reading),
+        const LabelScannerState(
+          status: LabelStatus.read,
+          text: 'Energy 46kcal\nProtein 1.2 g',
+        ),
+      ]);
+      expect(picker.picks.single, (PhotoSource.camera, PhotoSize.foodPhoto));
+      expect(reader.photos.single, picker.photo);
+      expect(ai.calls, isEmpty);
+    });
+
+    test('a library photo is read the same way', () async {
+      final cubit = build();
+
+      await cubit.scan(PhotoSource.library);
+
+      expect(picker.picks.single.$1, PhotoSource.library);
+      expect(cubit.state.status, LabelStatus.read);
+    });
+
+    test('a photo with no text is unreadable', () async {
+      reader.text = '';
+      final cubit = build();
+
+      await cubit.scan(PhotoSource.camera);
+
+      expect(
+        cubit.state,
+        const LabelScannerState(status: LabelStatus.unreadable),
+      );
+    });
+
+    test('a reader failure is reported as unreadable', () async {
+      reader.error = Exception('vision');
+      final cubit = build();
+
+      await cubit.scan(PhotoSource.camera);
+
+      expect(cubit.state.status, LabelStatus.unreadable);
+      expect(analytics.names, ['BarcodeScanner_LabelError']);
+    });
+
+    test('a cancelled photo changes nothing', () async {
+      picker.photo = null;
+      final cubit = build();
+
+      await cubit.scan(PhotoSource.camera);
+
+      expect(cubit.state, const LabelScannerState());
+      expect(reader.photos, isEmpty);
+    });
+
+    test('a refused camera says so, and Settings can be opened', () async {
+      picker.error = const PhotoAccessDeniedException();
+      final cubit = build();
+
+      await cubit.scan(PhotoSource.camera);
+      await cubit.openSettings();
+
+      expect(cubit.state.camera, CameraState.denied);
+      expect(picker.settingsOpened, 1);
+      expect(analytics.names, [
+        'BarcodeScanner_CameraDenied',
+        'BarcodeScanner_OpenSettings',
+      ]);
+    });
+
+    test('a camera that cannot open is unavailable', () async {
+      picker.error = Exception('no camera');
+      final cubit = build();
+
+      await cubit.scan(PhotoSource.camera);
+
+      expect(cubit.state.camera, CameraState.unavailable);
+    });
+
+    test('nothing else starts while a photo is read', () async {
+      reader.gate = Completer();
+      final cubit = build();
+      final pending = cubit.scan(PhotoSource.camera);
+      await Future<void>.delayed(Duration.zero);
+
+      await cubit.scan(PhotoSource.camera);
+      await cubit.parse('Energy 46kcal');
+      reader.gate!.complete();
+      await pending;
+
+      expect(picker.picks, hasLength(1));
+      expect(ai.calls, isEmpty);
+      expect(cubit.state.status, LabelStatus.read);
+    });
+
+    test('a read that returns after the tab closed is dropped', () async {
+      reader.gate = Completer();
+      final cubit = build();
+      final pending = cubit.scan(PhotoSource.camera);
+      await Future<void>.delayed(Duration.zero);
+      await cubit.close();
+      reader.gate!.complete();
+      await pending;
+
+      reader
+        ..gate = Completer()
+        ..error = Exception('vision');
+      final failing = build();
+      final failure = failing.scan(PhotoSource.camera);
+      await Future<void>.delayed(Duration.zero);
+      await failing.close();
+      reader.gate!.complete();
+      await failure;
+
+      expect(reader.photos, hasLength(2));
+    });
+
+    test('a photo that arrives after the tab closed is dropped', () async {
+      final cubit = build();
+      await cubit.close();
+
+      await cubit.scan(PhotoSource.camera);
+      picker.error = const PhotoAccessDeniedException();
+      await cubit.scan(PhotoSource.camera);
+      picker.error = Exception('no camera');
+      await cubit.scan(PhotoSource.camera);
+
+      expect(reader.photos, isEmpty);
     });
   });
 }

@@ -13,9 +13,11 @@ const List<NutrientKey> _labelNutrients = [
   NutrientKey.ironMg,
 ];
 
-/// Label mode: the label's text, typed or pasted (Swift's "Enter Label"),
-/// is read by the AI into a food that Use This Food saves to the library
-/// and puts on the plate. Reading the text from a photo is not built yet.
+/// Label mode: the label's text, read on the device from a photo (Swift's
+/// live text scanner) or typed or pasted (Swift's "Enter Label"), is read
+/// by the AI into a food that Use This Food saves to the library and puts
+/// on the plate. The photo's text lands in the field first, to be checked
+/// before Parse Label, as Swift waits for its Parse Label tap.
 class _LabelView extends StatefulWidget {
   const new();
 
@@ -48,7 +50,12 @@ class _LabelViewState extends State<_LabelView> {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         switch (state.status) {
-          case LabelStatus.failed || LabelStatus.saveFailed:
+          case LabelStatus.read:
+            _text.text = state.text!;
+            unawaited(HapticFeedback.successNotification());
+          case LabelStatus.failed ||
+              LabelStatus.saveFailed ||
+              LabelStatus.unreadable:
             unawaited(HapticFeedback.errorNotification());
           case LabelStatus.saved:
             // In the library now; on to its amount, as a found barcode is.
@@ -62,6 +69,42 @@ class _LabelViewState extends State<_LabelView> {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [
+          if (state.status == LabelStatus.reading)
+            _Working(l10n.labelReading)
+          else
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: AppSpacing.s,
+              children: [
+                OutlinedButton.icon(
+                  key: const Key('FoodPicker.scanLabel'),
+                  icon: const Icon(AppSymbols.camera),
+                  label: Text(l10n.labelScan),
+                  onPressed: () => unawaited(cubit.scan(PhotoSource.camera)),
+                ),
+                TextButton.icon(
+                  icon: const Icon(AppSymbols.photoLibrary),
+                  label: Text(l10n.labelChooseFromLibrary),
+                  onPressed: () => unawaited(cubit.scan(PhotoSource.library)),
+                ),
+              ],
+            ),
+          if (_scanMessage(l10n, state) case final message?) ...[
+            const SizedBox(height: AppSpacing.s),
+            AppInlineMessage(
+              kind: AppInlineMessageKind.error,
+              text: message,
+              kindLabel: l10n.addMealErrorLabel,
+            ),
+            if (state.camera == CameraState.denied)
+              Center(
+                child: TextButton(
+                  onPressed: () => unawaited(cubit.openSettings()),
+                  child: Text(l10n.labelOpenSettings),
+                ),
+              ),
+          ],
+          const SizedBox(height: AppSpacing.m),
           AppCard(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
@@ -79,7 +122,9 @@ class _LabelViewState extends State<_LabelView> {
           ),
           const SizedBox(height: AppSpacing.s),
           Text(
-            l10n.labelHint,
+            state.status == LabelStatus.read
+                ? l10n.labelCaptured
+                : l10n.labelScanHint,
             style: AppTextStyles.label.copyWith(color: secondary),
           ),
           const SizedBox(height: AppSpacing.l),
@@ -150,6 +195,15 @@ class _LabelViewState extends State<_LabelView> {
     );
   }
 }
+
+/// Why the last scan gave no text, if it did not.
+String? _scanMessage(AppLocalizations l10n, LabelScannerState state) =>
+    switch ((state.status, state.camera)) {
+      (_, CameraState.denied) => l10n.labelCameraOff,
+      (_, CameraState.unavailable) => l10n.labelCameraUnavailable,
+      (LabelStatus.unreadable, _) => l10n.labelUnreadable,
+      _ => null,
+    };
 
 /// A label's food (Swift's parsed-ingredient card): its name and basis, its
 /// calories and macros, and the other nutrients the label printed.

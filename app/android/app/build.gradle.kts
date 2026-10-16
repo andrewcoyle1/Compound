@@ -111,4 +111,6 @@ googleServices {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // On-device label text (MainActivity), the bundled Latin model: no download at first use.
+    implementation("com.google.mlkit:text-recognition:16.0.1")
 }

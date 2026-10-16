@@ -6,8 +6,10 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
+import 'package:compound/integrations/link_opener.dart';
 import 'package:compound/integrations/view/integrations_page.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/paywall/paywall.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/cubit/settings_cubit.dart';
 import 'package:compound/settings/general/view/about_page.dart';
@@ -95,6 +97,28 @@ class _SettingsViewState extends State<SettingsView> {
               AppSection(
                 header: l10n.settingsGeneralHeader,
                 children: [
+                  // A subscriber is shown their subscription, not sold one.
+                  AppListRowButton(
+                    title: l10n.settingsSubscription,
+                    icon: AppSymbols.favourite,
+                    accessory: AppListRowValue(
+                      state.isPremium
+                          ? l10n.settingsSubscriptionActive
+                          : l10n.settingsSubscriptionInactive,
+                    ),
+                    onPressed: () {
+                      cubit.subscriptionPressed();
+                      if (state.isPremium) {
+                        unawaited(
+                          context.read<LinkOpener>().open(
+                            manageSubscriptionsUri(Theme.of(context).platform),
+                          ),
+                        );
+                      } else {
+                        _open(PaywallPage.name);
+                      }
+                    },
+                  ),
                   AppListRowButton(
                     title: l10n.settingsNotificationSettings,
                     icon: AppSymbols.notifications,

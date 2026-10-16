@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/integrations/link_opener.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/paywall/paywall_exits.dart';
 import 'package:compound/settings/account/cubit/delete_account_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:user_repository/user_repository.dart';
@@ -135,17 +139,23 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                // Swift's Manage Subscription row opens Apple's sheet; the
-                // app has no store sheet yet, so this says where to go.
+                // Deleting the account does not cancel the subscription.
                 AppSection(
                   header: l10n.deleteAccountSubscriptionHeader,
+                  footer: l10n.deleteAccountSubscriptionMessage,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(AppSpacing.l),
-                      child: Text(
-                        l10n.deleteAccountSubscriptionMessage,
-                        style: AppTextStyles.rowDetail,
-                      ),
+                    AppListRowButton(
+                      title: l10n.deleteAccountManageSubscription,
+                      icon: AppSymbols.openExternally,
+                      accessory: null,
+                      onPressed: () {
+                        _cubit.manageSubscriptionPressed();
+                        unawaited(
+                          context.read<LinkOpener>().open(
+                            manageSubscriptionsUri(Theme.of(context).platform),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

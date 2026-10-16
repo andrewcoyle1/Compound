@@ -10,6 +10,7 @@ import 'package:compound/coach/view/coach_chats_page.dart';
 import 'package:compound/coach/view/coach_message_body.dart';
 import 'package:compound/coach/view/coach_text.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/paywall/view/paywall_page.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -227,15 +228,12 @@ class _PremiumGate extends StatelessWidget {
               message: l10n.coachPremiumMessage,
             ),
             FilledButton(
-              onPressed: () {
-                context.read<CoachCubit>().seePlansPressed();
-                // The paywall is not built yet: its slice opens it here,
-                // as Swift's `showPaywall(isOnboarding: false)`.
-                ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(
-                    SnackBar(content: Text(l10n.coachPlansUnavailable)),
-                  );
+              onPressed: () async {
+                final cubit = context.read<CoachCubit>()..seePlansPressed();
+                // Swift's `showPaywall(isOnboarding: false)`; coming back,
+                // the gate is read again, as Swift's `onViewAppear` does.
+                await context.pushNamed<bool>(PaywallPage.name);
+                await cubit.appeared();
               },
               child: Text(l10n.coachSeePlans),
             ),

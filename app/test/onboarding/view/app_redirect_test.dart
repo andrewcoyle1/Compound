@@ -54,4 +54,53 @@ void main() {
     expect(at(onboarded, '/onboarding/diet'), '/today');
     expect(at(onboarded, '/profile'), isNull);
   });
+
+  group('without a subscription (Swift: Auth and Welcome send the user to '
+      'Subscription)', () {
+    AppAuthenticated notPremium(UserModel profile, {required bool signedIn}) =>
+        AppAuthenticated(
+          user,
+          profile: profile,
+          profileStatus: AppProfileStatus.ready,
+          isPremium: false,
+          signedInThisRun: signedIn,
+        );
+
+    test('someone who just signed in is held at Subscription', () {
+      final lapsed = notPremium(
+        const UserModel(userId: 'uid', didCompleteOnboarding: true),
+        signedIn: true,
+      );
+      expect(lapsed.needsSubscription, isTrue);
+      expect(at(lapsed, '/today'), '/subscribe');
+      expect(at(lapsed, '/launch'), '/subscribe');
+      expect(at(lapsed, '/subscribe'), isNull);
+      expect(at(lapsed, '/subscribe/plans'), isNull);
+      expect(at(lapsed, '/subscribe/account'), isNull);
+    });
+
+    test('so is an account still in onboarding, even at launch', () {
+      final onboarding = notPremium(
+        const UserModel(userId: 'uid'),
+        signedIn: false,
+      );
+      expect(at(onboarding, '/onboarding/account'), '/subscribe');
+    });
+
+    test('a finished user signed in at launch reaches the tabs, as Swift '
+        'launches into the tab bar', () {
+      final returning = notPremium(
+        const UserModel(userId: 'uid', didCompleteOnboarding: true),
+        signedIn: false,
+      );
+      expect(returning.needsSubscription, isFalse);
+      expect(at(returning, '/today'), isNull);
+    });
+
+    test('once premium, Subscription moves on to onboarding or Today', () {
+      expect(at(newUser, '/subscribe/plans'), '/onboarding/account');
+      expect(at(onboarded, '/subscribe/plans'), '/today');
+      expect(at(onboarded, '/subscribe'), '/today');
+    });
+  });
 }

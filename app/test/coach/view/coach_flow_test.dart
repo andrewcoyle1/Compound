@@ -198,21 +198,22 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('without Premium, the gate and no chat', (tester) async {
+  testWidgets('without Premium, the gate; See Plans opens the paywall, and '
+      'buying unlocks the coach', (tester) async {
     final purchases = FakePurchasesRepository(premium: false);
-    await tester.runAsync(() => purchases.logIn(uid));
     await pumpApp(tester, purchases: purchases);
 
     await tap(tester, askCoach().first);
 
     expect(find.text('Coach Is Part of Premium'), findsOneWidget);
     await tap(tester, find.text('See Plans'));
-    expect(
-      find.text("Plans aren't available in this version yet."),
-      findsOneWidget,
-    );
-    // The snack bar's own timer.
-    await tester.pump(const Duration(seconds: 5));
-    await tester.pumpAndSettle();
+    expect(find.text('Pro Annual'), findsOneWidget);
+    await tap(tester, find.text('Subscribe'));
+
+    // Back on the coach, which reads the gate again: consent is next.
+    expect(find.text('Pro Annual'), findsNothing);
+    expect(find.text('Coach Is Part of Premium'), findsNothing);
+    expect(find.text('Before You Ask'), findsOneWidget);
+    expect(purchases.state.isPremiumWith(), isTrue);
   });
 }

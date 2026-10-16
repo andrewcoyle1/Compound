@@ -10202,10 +10202,6 @@
     "@coachSeePlans": {
         "description": "Coach premium gate button"
     },
-    "coachPlansUnavailable": "Plans aren't available in this version yet.",
-    "@coachPlansUnavailable": {
-        "description": "Shown instead of the paywall until it is built"
-    },
     "coachConsentTitle": "Before You Ask",
     "@coachConsentTitle": {
         "description": "Coach consent title"
@@ -10929,5 +10925,178 @@
     "healthNotFoundAndroid": "Nothing found in Health Connect, or access is off. Enter it below.",
     "@healthNotFoundAndroid": {
         "description": "Onboarding note (Android)"
+    },
+    "paywallTitle": "Compound",
+    "@paywallTitle": {
+        "description": "Paywall header: the product's one name"
+    },
+    "paywallSubtitle": "One subscription for training, nutrition and progress.",
+    "@paywallSubtitle": {
+        "description": "Paywall header"
+    },
+    "paywallIncluded": "Included",
+    "@paywallIncluded": {
+        "description": "Paywall: section header above what the subscription includes"
+    },
+    "paywallPricePeriod": "{price} / {period}",
+    "@paywallPricePeriod": {
+        "description": "Paywall plan price and billing period, e.g. £4.99 / 1 month",
+        "placeholders": {
+            "price": {
+                "type": "String"
+            },
+            "period": {
+                "type": "String"
+            }
+        }
+    },
+    "paywallPeriodYear": "1 year",
+    "@paywallPeriodYear": {
+        "description": "Paywall billing period"
+    },
+    "paywallPeriodMonth": "1 month",
+    "@paywallPeriodMonth": {
+        "description": "Paywall billing period"
+    },
+    "paywallPeriodWeek": "1 week",
+    "@paywallPeriodWeek": {
+        "description": "Paywall billing period"
+    },
+    "paywallPeriodDay": "1 day",
+    "@paywallPeriodDay": {
+        "description": "Paywall billing period"
+    },
+    "paywallRenews": "Plan auto-renews for {price} until canceled.",
+    "@paywallRenews": {
+        "description": "Paywall: renewal terms under the plans",
+        "placeholders": {
+            "price": {
+                "type": "String"
+            }
+        }
+    },
+    "paywallSubscribe": "Subscribe",
+    "@paywallSubscribe": {
+        "description": "Paywall: buy the chosen plan"
+    },
+    "paywallRestore": "Restore Subscription",
+    "@paywallRestore": {
+        "description": "Paywall: restore purchases"
+    },
+    "paywallLoadFailedTitle": "Unable to load subscription options",
+    "@paywallLoadFailedTitle": {
+        "description": "Paywall: the plans did not load"
+    },
+    "paywallLoadFailedMessage": "Please check your internet connection and try again.",
+    "@paywallLoadFailedMessage": {
+        "description": "Paywall: why the plans or a purchase failed"
+    },
+    "paywallNoProducts": "No subscription options are available right now. Please try again in a moment.",
+    "@paywallNoProducts": {
+        "description": "Paywall: the store returned no plans"
+    },
+    "paywallPending": "Waiting for approval. Your subscription starts once the purchase is approved.",
+    "@paywallPending": {
+        "description": "Paywall: Ask to Buy or a pending payment"
+    },
+    "paywallPurchaseFailed": "Unable to Complete Purchase",
+    "@paywallPurchaseFailed": {
+        "description": "Paywall alert title"
+    },
+    "paywallRestoreFailed": "Unable to Restore Purchases",
+    "@paywallRestoreFailed": {
+        "description": "Paywall alert title"
+    },
+    "paywallNothingToRestore": "Nothing to Restore",
+    "@paywallNothingToRestore": {
+        "description": "Paywall alert title: a restore found nothing active"
+    },
+    "paywallNothingToRestoreApple": "We couldn't find an active subscription on this Apple Account. Check that you are signed in with the account you subscribed with.",
+    "@paywallNothingToRestoreApple": {
+        "description": "Paywall alert (iOS)"
+    },
+    "paywallNothingToRestoreGoogle": "We couldn't find an active subscription on this Google Account. Check that you are signed in with the account you subscribed with.",
+    "@paywallNothingToRestoreGoogle": {
+        "description": "Paywall alert (Android)"
+    },
+    "paywallAccount": "Account",
+    "@paywallAccount": {
+        "description": "Paywall and Subscription: the account menu and row"
+    },
+    "subscribeTitle": "Why Subscribe?",
+    "@subscribeTitle": {
+        "description": "Onboarding Subscription step title"
+    },
+    "subscribeSubtitle": "A subscription is required to use Compound.",
+    "@subscribeSubtitle": {
+        "description": "Onboarding Subscription step subtitle"
+    },
+    "subscribeAccountFooter": "Edit, sign out of or delete your account without subscribing.",
+    "@subscribeAccountFooter": {
+        "description": "Onboarding Subscription step: under the Account row"
+    },
+    "subscriptionFeaturePlans": "Personalized plans",
+    "@subscriptionFeaturePlans": {
+        "description": "What the subscription includes"
+    },
+    "subscriptionFeaturePlansDetail": "Training and nutrition tailored to your goals and schedule.",
+    "@subscriptionFeaturePlansDetail": {
+        "description": "What the subscription includes"
+    },
+    "subscriptionFeatureCoaching": "Smart coaching",
+    "@subscriptionFeatureCoaching": {
+        "description": "What the subscription includes"
+    },
+    "subscriptionFeatureCoachingDetail": "Daily guidance powered by your data and AI insights.",
+    "@subscriptionFeatureCoachingDetail": {
+        "description": "What the subscription includes"
+    },
+    "subscriptionFeatureProgress": "Progress tracking",
+    "@subscriptionFeatureProgress": {
+        "description": "What the subscription includes"
+    },
+    "subscriptionFeatureProgressDetail": "See trends, weekly summaries, and PRs at a glance.",
+    "@subscriptionFeatureProgressDetail": {
+        "description": "What the subscription includes"
+    },
+    "subscriptionFeatureHealthApple": "Apple Health sync",
+    "@subscriptionFeatureHealthApple": {
+        "description": "What the subscription includes (iOS)"
+    },
+    "subscriptionFeatureHealthAppleDetail": "Automatically log workouts and recovery from Apple Health.",
+    "@subscriptionFeatureHealthAppleDetail": {
+        "description": "What the subscription includes (iOS)"
+    },
+    "subscriptionFeatureHealthAndroid": "Health Connect sync",
+    "@subscriptionFeatureHealthAndroid": {
+        "description": "What the subscription includes (Android)"
+    },
+    "subscriptionFeatureHealthAndroidDetail": "Automatically log workouts and recovery from Health Connect.",
+    "@subscriptionFeatureHealthAndroidDetail": {
+        "description": "What the subscription includes (Android)"
+    },
+    "subscriptionFeatureAccountability": "Accountability",
+    "@subscriptionFeatureAccountability": {
+        "description": "What the subscription includes"
+    },
+    "subscriptionFeatureAccountabilityDetail": "Reminders and nudges to help you stay consistent.",
+    "@subscriptionFeatureAccountabilityDetail": {
+        "description": "What the subscription includes"
+    },
+    "settingsSubscription": "Subscription",
+    "@settingsSubscription": {
+        "description": "Settings row"
+    },
+    "settingsSubscriptionActive": "Active",
+    "@settingsSubscriptionActive": {
+        "description": "Settings: the subscription is active"
+    },
+    "settingsSubscriptionInactive": "Inactive",
+    "@settingsSubscriptionInactive": {
+        "description": "Settings: no active subscription"
+    },
+    "deleteAccountManageSubscription": "Manage Subscription",
+    "@deleteAccountManageSubscription": {
+        "description": "Delete Account: opens the store's subscription management"
     }
 }

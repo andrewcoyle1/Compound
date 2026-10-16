@@ -1,6 +1,8 @@
 import 'package:compound/workout_session_detail/cubit/session_edit_cubit.dart';
+import 'package:compound/workout_tracker/cubit/keypad_editing.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:device_store/device_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_rules/training_rules.dart' as r;
@@ -147,7 +149,10 @@ void main() {
     analytics = AnalyticsRecorder();
   });
 
-  Future<SessionEditCubit> editing(List<WorkoutExerciseModel> exercises) async {
+  Future<SessionEditCubit> editing(
+    List<WorkoutExerciseModel> exercises, {
+    DeviceStore? device,
+  }) async {
     final opened = session(exercises);
     await sessions.saveSession(_uid, opened);
     final cubit = SessionEditCubit(
@@ -160,6 +165,7 @@ void main() {
       uid: _uid,
       library: library,
       units: units,
+      device: device,
       clock: () => today,
       newId: () => 'new-${ids++}',
     );
@@ -551,6 +557,20 @@ void main() {
       final timed = cubit.state.session.exercises.single.sets.single;
       expect(timed.durationSec, 45);
       expect(timed.completedAt, isNull);
+    });
+
+    test("the plates key is the tracker's, kept on the device", () async {
+      final device = InMemoryDeviceStore();
+      final cubit = await editing([
+        exercise('e1', 1, [set('s1', logged: false)]),
+      ], device: device);
+      expect(cubit.state.showsPlates, isTrue);
+      cubit.togglePlates();
+      expect(device.getBool(KeypadEditing.showsPlatesKey), isFalse);
+      final again = await editing([
+        exercise('e1', 1, [set('s1', logged: false)]),
+      ], device: device);
+      expect(again.state.showsPlates, isFalse);
     });
   });
 

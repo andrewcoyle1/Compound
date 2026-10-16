@@ -7,6 +7,7 @@ import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart'
     show TrackerExercise;
 import 'package:compound/workout_tracker/cubit/equipment_sheet_cubit.dart'
     show EquipmentSheetSetup;
+import 'package:compound/workout_tracker/cubit/keypad_editing.dart';
 import 'package:compound/workout_tracker/cubit/plate_calculator_cubit.dart'
     show PlateCalculatorSetup;
 import 'package:compound/workout_tracker/logic/set_changes.dart';
@@ -14,6 +15,7 @@ import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/set_table.dart';
 import 'package:compound_maths/compound_maths.dart' as maths;
 import 'package:compound_models/compound_models.dart';
+import 'package:device_store/device_store.dart';
 import 'package:equatable/equatable.dart';
 import 'package:strava_repository/strava_repository.dart' show StravaRepository;
 import 'package:training_library_repository/training_library_repository.dart'
@@ -41,6 +43,7 @@ part 'session_edit_state.dart';
 /// when the workout is there. After a save or a delete the reminder's copy
 /// of the streak is brought up to date.
 class SessionEditCubit extends Cubit<SessionEditState>
+    with KeypadEditing
     implements SetTableActions {
   new({
     required WorkoutSessionModel session,
@@ -51,15 +54,19 @@ class SessionEditCubit extends Cubit<SessionEditState>
     this._library,
     this._strava,
     UnitPreferenceStore? units,
+    DeviceStore? device,
     this._clock = DateTime.now,
     this._newId = newUuid,
   }) : _saved = session,
        _units = units ?? UnitPreferenceStore(),
+       _device = device ?? InMemoryDeviceStore(),
        super(
          SessionEditState(
            session: session,
            // Nobody owns a workout when no one is signed in.
            isAuthor: _uid != null && _uid == session.authorId,
+           // The tracker's plates switch, kept on the device.
+           showsPlates: device?.getBool(KeypadEditing.showsPlatesKey) ?? true,
          ),
        );
 
@@ -72,6 +79,9 @@ class SessionEditCubit extends Cubit<SessionEditState>
 
   /// Each exercise's units, kept on the device.
   final UnitPreferenceStore _units;
+
+  /// The keypad's plates switch, kept on the device.
+  final DeviceStore _device;
   final DateTime Function() _clock;
   final IdGenerator _newId;
 
@@ -632,7 +642,7 @@ class SessionEditCubit extends Cubit<SessionEditState>
     ExerciseModel replacement, {
     required bool keepLoggedSets,
   }) {
-    if (state.keypad?.exerciseId == exerciseId) _closeKeypad();
+    if (state.keypad?.exerciseId == exerciseId) dismissKeypad();
     _edit(
       (c) => c.swapInPlace(
         exerciseId,
@@ -695,7 +705,7 @@ class SessionEditCubit extends Cubit<SessionEditState>
   }) {
     final exercise = _exercise(exerciseId);
     if (_controller == null || exercise == null) return;
-    _closeKeypad();
+    dismissKeypad();
     _units.setWeightUnit(_uid, exercise.templateId, unit, user: _user);
     _edit((c) => c.setWeightUnit(exerciseId, unit, convert: convert));
     if (!convert) {
@@ -713,190 +723,59 @@ class SessionEditCubit extends Cubit<SessionEditState>
   }) {
     final exercise = _exercise(exerciseId);
     if (_controller == null || exercise == null) return;
-    _closeKeypad();
+    dismissKeypad();
     if (convert) _edit((c) => c.convertDistances(exerciseId, unit));
     _units.setDistanceUnit(_uid, exercise.templateId, unit, user: _user);
     _track('SetTracker_Unit_Changed', parameters: {'unit': unit.name});
     _environmentChanged();
   }
 
-  // MARK: - Keypad
-
-  // ponytail: these follow ActiveWorkoutCubit's keypad section line for
-  // line; share them as a mixin once both cubits are free to change.
-
-  /// Opens the keypad on [field] of [setId].
-  @override
-  void openKeypad(String setId, SetField field) {
-    final controller = _controller;
-    final exercise = _exerciseHolding(setId);
-    final set = _set(setId);
-    if (controller == null || exercise == null || set == null) return;
-    if (state.keypad?.setId != setId) controller.commitEdit();
-    _emitEdit(
-      keypad: () => SetKeypad.open(
-        exerciseId: exercise.id,
-        set: set,
-        field: field,
-        fields: SetField.of(set, exercise.trackingMode),
-        unit: _unit(exercise),
-        distanceUnit: _distanceUnit(exercise),
-        isAssisted: controller.weightStep(exercise.id).isAssisted,
-      ),
-    );
-  }
+  // MARK: - Keypad (`KeypadEditing`, shared with the tracker)
 
   @override
-  void keypadKey(String key) =>
-      _keypadEdit((keypad, set, unit) => keypad.type(key, set, unit));
+  ActiveSessionController? get keypadController => _controller;
 
   @override
-  void keypadBackspace() =>
-      _keypadEdit((keypad, set, unit) => keypad.backspace(set, unit));
+  SetKeypad? get openKeypadState => state.keypad;
 
   @override
-  void keypadStep({required bool up}) {
-    final keypad = state.keypad;
-    final controller = _controller;
-    if (keypad == null || controller == null) return;
-    final exercise = _exercise(keypad.exerciseId);
-    final set = _set(keypad.setId);
-    if (exercise == null || set == null) return;
-    final unit = _unit(exercise).rules;
-    final step = controller.weightStep(exercise.id);
-    final current = switch (set.weightKg) {
-      final kg? => r.convertWeight(kg, unit),
-      null => null,
-    };
-    // Bands alone have no weight to step: ± moves through them one at a
-    // time, choosing just that band.
-    if (step.kind is r.StepBands) {
-      final last = set.bands?.lastOrNull;
-      final index = last == null ? -1 : step.bands.indexOf(last);
-      final next = step.band(index < 0 ? null : index, forward: up);
-      return _keypadSet(
-        set.copyWith(
-          bands: next == null ? null : [step.bands[next]],
-          weightKg: null,
-        ),
-      );
-    }
-    final value = up ? step.next(current) : step.previous(current);
-    if (value == null) return;
-    _keypadSet(set.copyWith(weightKg: r.convertWeightToKg(value, unit)));
-  }
+  bool get showsPlatesNow => state.showsPlates;
 
   @override
-  void keypadSign() =>
-      _keypadEdit((keypad, set, unit) => keypad.toggleSign(set, unit));
+  DeviceStore get keypadDevice => _device;
 
   @override
-  void keypadWeight(double value) {
-    final keypad = state.keypad;
-    final exercise = keypad == null ? null : _exercise(keypad.exerciseId);
-    final set = keypad == null ? null : _set(keypad.setId);
-    if (exercise == null || set == null) return;
-    _keypadSet(
-      set.copyWith(weightKg: r.convertWeightToKg(value, _unit(exercise).rules)),
-    );
-  }
+  WorkoutExerciseModel? keypadExercise(String exerciseId) =>
+      _exercise(exerciseId);
 
   @override
-  void keypadBand(String name) {
-    final keypad = state.keypad;
-    final set = keypad == null ? null : _set(keypad.setId);
-    if (set == null) return;
-    final bands = [...?set.bands];
-    if (!bands.remove(name)) bands.add(name);
-    _edit((c) => c.editSet(set.copyWith(bands: bands.isEmpty ? null : bands)));
-  }
-
-  /// The plates key: kept in memory while the screen is open, as the
-  /// tracker keeps it.
-  @override
-  void togglePlates() => emit(state.copyWith(showsPlates: !state.showsPlates));
+  WorkoutExerciseModel? keypadExerciseHolding(String setId) =>
+      _exerciseHolding(setId);
 
   @override
-  void keypadReps(int reps) {
-    final set = state.keypad == null ? null : _set(state.keypad!.setId);
-    if (set == null) return;
-    _keypadSet(set.copyWith(reps: reps));
-  }
+  WorkoutSetModel? keypadSet(String setId) => _set(setId);
 
   @override
-  void keypadRir(int rir) {
-    final set = state.keypad == null ? null : _set(state.keypad!.setId);
-    if (set == null) return;
-    final rpe = r.EffortScale.rpeFromRir(rir);
-    final selected = set.rpe == null ? null : r.EffortScale.rirChoice(set.rpe!);
-    _keypadSet(set.copyWith(rpe: selected == rir ? null : rpe));
-  }
+  ExerciseWeightUnit keypadUnit(WorkoutExerciseModel exercise) =>
+      _unit(exercise);
 
   @override
-  void keypadNext() {
-    final keypad = state.keypad;
-    final next = keypad?.nextField;
-    final set = keypad == null ? null : _set(keypad.setId);
-    final exercise = keypad == null ? null : _exercise(keypad.exerciseId);
-    if (keypad == null || next == null || set == null || exercise == null) {
-      return;
-    }
-    _emitEdit(keypad: () => keypad.moved(next, set, _unit(exercise)));
-  }
+  DistanceUnit keypadDistanceUnit(WorkoutExerciseModel exercise) =>
+      _distanceUnit(exercise);
 
-  /// ✓ on the row's last field: logs the set and closes; a logged set only
-  /// closes, and one that cannot be logged yet stays open.
+  /// The editor plays no selection haptic.
   @override
-  void keypadDone() {
-    final keypad = state.keypad;
-    final set = keypad == null ? null : _set(keypad.setId);
-    if (keypad == null || set == null) return;
-    if (set.completedAt == null && _toggle(set.id, source: 'keypad')) return;
-    closeKeypad();
-  }
+  void emitKeypadEdit({
+    SetKeypad? Function()? keypad,
+    bool selection = false,
+  }) => _emitEdit(keypad: keypad);
 
   @override
-  void closeKeypad() {
-    if (state.keypad == null) return;
-    _closeKeypad();
-    _emitEdit();
-  }
+  void emitShowsPlates({required bool showsPlates}) =>
+      emit(state.copyWith(showsPlates: showsPlates));
 
-  void _closeKeypad() {
-    _controller?.commitEdit();
-    _keypadClosed = true;
-  }
-
-  bool _keypadClosed = false;
-
-  void _keypadEdit(
-    (SetKeypad, WorkoutSetModel)? Function(
-      SetKeypad keypad,
-      WorkoutSetModel set,
-      ExerciseWeightUnit unit,
-    )
-    edit,
-  ) {
-    final keypad = state.keypad;
-    final controller = _controller;
-    if (keypad == null || controller == null) return;
-    final exercise = _exercise(keypad.exerciseId);
-    final set = _set(keypad.setId);
-    if (exercise == null || set == null) return;
-    final result = edit(keypad, set, _unit(exercise));
-    if (result == null) return;
-    controller.editSet(result.$2);
-    _emitEdit(keypad: () => result.$1);
-  }
-
-  void _keypadSet(WorkoutSetModel set) {
-    final keypad = state.keypad;
-    final controller = _controller;
-    final exercise = keypad == null ? null : _exercise(keypad.exerciseId);
-    if (keypad == null || controller == null || exercise == null) return;
-    controller.editSet(set);
-    _emitEdit(keypad: () => keypad.showing(set, _unit(exercise)));
-  }
+  @override
+  bool logFromKeypad(String setId) => _toggle(setId, source: 'keypad');
 
   /// The loading bar opened the plate calculator.
   @override
@@ -941,8 +820,8 @@ class SessionEditCubit extends Cubit<SessionEditState>
     if (controller == null || isClosed) return;
     controller.flush();
     final session = controller.session;
-    var nextKeypad = _keypadClosed ? null : state.keypad;
-    _keypadClosed = false;
+    var nextKeypad = keypadClosed ? null : state.keypad;
+    keypadClosed = false;
     if (keypad != null) nextKeypad = keypad();
     if (nextKeypad != null &&
         !session.exercises.any(

@@ -24,6 +24,7 @@ import 'package:compound/workout_tracker/view/set_row_parts.dart'
     show confirmDestructive;
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:device_store/device_store.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -145,6 +146,7 @@ class WorkoutSessionDetailView extends StatelessWidget {
             library: context.read<TrainingLibraryRepository>(),
             strava: context.read<StravaRepository?>(),
             units: context.read<UnitPreferenceStore>(),
+            device: context.read<DeviceStore>(),
             uid: switch (context.read<AppBloc>().state) {
               AppAuthenticated(:final user) => user.uid,
               _ => null,

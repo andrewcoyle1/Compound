@@ -1,5 +1,6 @@
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/notifications.dart';
+import 'package:compound/workout_tracker/cubit/keypad_editing.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:device_store/device_store.dart';
@@ -245,7 +246,7 @@ void main() {
       cubit = build(device: device);
       await benchWeightOpen();
       cubit.togglePlates();
-      expect(device.getBool(ActiveWorkoutCubit.showsPlatesKey), isFalse);
+      expect(device.getBool(KeypadEditing.showsPlatesKey), isFalse);
       await cubit.close();
       cubit = build(device: device);
       await benchWeightOpen();

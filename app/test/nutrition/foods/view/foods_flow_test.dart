@@ -385,8 +385,6 @@ void main() {
       expect(meals, hasLength(2));
       expect(meals.last.notes, 'Desk lunch');
 
-      await tester.ensureVisible(find.text('Bread').first);
-      await tester.pumpAndSettle();
       await tester.longPress(find.text('Bread').first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('View Meal'));
@@ -402,14 +400,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(await nutrition.watchMeals(uid).first, hasLength(2));
 
-      await tester.ensureVisible(find.text('Bread').first);
-      await tester.pumpAndSettle();
       await tester.drag(find.text('Bread').first, const Offset(-400, 0));
       await tester.pumpAndSettle();
-      // The copy is logged now, so it sits above or below lunch by the
-      // time of day: whichever Bread was first, one food has gone.
       final meals = await nutrition.watchMeals(uid).first;
-      expect(meals.expand((meal) => meal.items), hasLength(3));
+      expect(
+        meals.firstWhere((meal) => meal.mealId == 'lunch').items.length,
+        1,
+      );
     });
 
     testWidgets('Timeline Actions copies the day after asking where to', (

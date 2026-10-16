@@ -79,6 +79,22 @@ abstract interface class BodyRepository {
   /// Firestore's `update` does, when there is no such goal.
   Future<void> abandonGoal(String uid, String goalId);
 
+  /// Changes what the goal at `users/{uid}/goals/{goalId}` aims for: its
+  /// [objective], [targetWeightKg] and [weeklyChangeKg], and nothing else
+  /// (`GoalManager.updateGoal`). Where it started is frozen by the rules; a
+  /// fresh start is a new goal ([saveGoal]).
+  ///
+  /// An `update`, not Swift's merge: a merge keeps the old objective's key
+  /// beside the new one in the `objective` map, which neither app can then
+  /// decode. Fails, as Firestore's `update` does, when there is no such goal.
+  Future<void> editGoal(
+    String uid,
+    String goalId, {
+    required OverarchingObjective objective,
+    required double targetWeightKg,
+    required double weeklyChangeKg,
+  });
+
   /// The progress photos at `users/{uid}/progress_photos` whose author is
   /// [uid], newest first, as `ProgressPhotoManager.photos` lists them
   /// (Swift listens to the whole collection and filters on the author).

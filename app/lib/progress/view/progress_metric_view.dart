@@ -56,6 +56,10 @@ class const ProgressMetric({
   /// The add action, in the app bar and on the empty state.
   final ProgressMetricAction? add,
 
+  /// More app bar actions, after the add action (Goal Progress's Change
+  /// Goal).
+  final List<ProgressMetricAction> actions = const [],
+
   /// Shown in place of the chart and its rows: a contribution grid, or Goal
   /// Progress's bar (Swift `contributionSeries`, `customChartView`).
   final Widget? chart,
@@ -123,6 +127,13 @@ class ProgressMetricView extends StatelessWidget {
                 tooltip: add.label,
                 onPressed: add.onPressed,
               ),
+            if (!allData)
+              for (final action in metric.actions)
+                IconButton(
+                  icon: Icon(action.icon),
+                  tooltip: action.label,
+                  onPressed: action.onPressed,
+                ),
           ],
         ),
         body: switch (state.status) {

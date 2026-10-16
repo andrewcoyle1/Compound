@@ -37,6 +37,13 @@ final class const ProgressTargetDayPressed(final int day)
   List<Object?> get props => [day];
 }
 
+/// The user pressed Create Diet Plan on the weekly target grid, which has
+/// no plan to show.
+final class const ProgressCreatePlanPressed() extends ProgressEvent {
+  @override
+  List<Object?> get props => [];
+}
+
 /// The current weight goal changed, or the user's goal id did.
 final class const _ProgressGoalChanged(final WeightGoal? goal)
     extends ProgressEvent {

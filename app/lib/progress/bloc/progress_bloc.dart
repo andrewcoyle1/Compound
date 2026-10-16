@@ -61,6 +61,11 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
     );
     on<ProgressMeasurementCleared>(_onMeasurementCleared);
     on<ProgressTargetDayPressed>(_onTargetDayPressed);
+    on<ProgressCreatePlanPressed>(
+      (_, _) => _analyticsRepository.analytic(
+        'NutritionTargetChart_CreatePlan_Pressed',
+      ),
+    );
     on<_ProgressGoalChanged>(
       (event, emit) => emit(state.copyWith(goal: () => event.goal)),
     );

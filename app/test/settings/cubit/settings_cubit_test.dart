@@ -73,12 +73,14 @@ void main() {
         ..notificationSettingsPressed()
         ..supportPressed()
         ..deleteAccountPressed()
+        ..nutritionPlanPressed()
         ..disappeared();
       expect(events, [
         ('ProfileView_Appear', LogType.analytic),
         ('ProfileView_NotificationSettings_Press', LogType.analytic),
         ('ProfileView_Support_Press', LogType.analytic),
         ('Settings_DeleteAccount_Start', LogType.analytic),
+        ('ProfileView_NutritionPlan_Press', LogType.analytic),
         ('ProfileView_Disappear', LogType.analytic),
       ]);
     });

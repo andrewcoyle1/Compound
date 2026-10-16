@@ -3,12 +3,16 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
+import 'package:compound/goal_editing/current_goal_cubit.dart';
+import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/integrations/link_opener.dart';
 import 'package:compound/integrations/view/integrations_page.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/paywall/paywall.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/cubit/settings_cubit.dart';
@@ -154,6 +158,7 @@ class _SettingsViewState extends State<SettingsView> {
               AppSection(
                 header: l10n.settingsNutritionHeader,
                 children: [
+                  _WeightGoalRow(state: state),
                   AppListRowButton(
                     title: l10n.settingsFoodLog,
                     icon: AppSymbols.food,
@@ -168,6 +173,14 @@ class _SettingsViewState extends State<SettingsView> {
                     title: l10n.settingsStrategy,
                     icon: AppSymbols.strategy,
                     onPressed: () => _open(StrategySettingsPage.name),
+                  ),
+                  AppListRowButton(
+                    title: l10n.settingsNutritionPlan,
+                    icon: AppSymbols.meal,
+                    onPressed: () {
+                      cubit.nutritionPlanPressed();
+                      openDietPlan(context);
+                    },
                   ),
                 ],
               ),
@@ -260,6 +273,42 @@ class _SettingsViewState extends State<SettingsView> {
             child: Text(l10n.settingsOk),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The weight goal's objective, or "Not Set", which is the cue to set one
+/// (`SettingsPresenter.weightGoalStatus`); pressing it edits or replaces
+/// the goal. Follows the goal the profile names.
+class _WeightGoalRow extends StatelessWidget {
+  const new({required this.state});
+
+  final AppAuthenticated state;
+
+  @override
+  Widget build(BuildContext context) {
+    final goalId = state.profile?.submittedCurrentGoalId;
+    return BlocProvider(
+      key: ValueKey(goalId),
+      create: (context) => CurrentGoalCubit(
+        bodyRepository: context.read<BodyRepository>(),
+        uid: state.user.uid,
+        currentGoalId: goalId,
+      ),
+      child: Builder(
+        builder: (context) {
+          final l10n = context.l10n;
+          final goal = context.watch<CurrentGoalCubit>().state;
+          return AppListRowButton(
+            title: l10n.weightGoalTitle,
+            icon: AppSymbols.goal,
+            accessory: AppListRowValue(
+              goal?.objective.label(l10n) ?? l10n.profileNotSet,
+            ),
+            onPressed: () => unawaited(openWeightGoal(context, goal)),
+          );
+        },
       ),
     );
   }

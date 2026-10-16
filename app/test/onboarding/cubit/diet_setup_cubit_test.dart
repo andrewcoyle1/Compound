@@ -85,18 +85,23 @@ void main() {
         .thenAnswer((_) async => calls.add('updateUserFields'));
   });
 
-  DietSetupCubit build({UserModel? user}) => DietSetupCubit(
-    nutritionRepository: nutrition,
-    programRepository: programs,
-    bodyRepository: body,
-    userRepository: users,
-    analyticsRepository: analytics.repository,
-    profile: user ?? profile,
-    now: () => now,
-  );
+  DietSetupCubit build({UserModel? user, bool isFromSettings = false}) =>
+      DietSetupCubit(
+        nutritionRepository: nutrition,
+        programRepository: programs,
+        bodyRepository: body,
+        userRepository: users,
+        analyticsRepository: analytics.repository,
+        profile: user ?? profile,
+        isFromSettings: isFromSettings,
+        now: () => now,
+      );
 
-  Future<DietSetupCubit> loaded({UserModel? user}) async {
-    final cubit = build(user: user);
+  Future<DietSetupCubit> loaded({
+    UserModel? user,
+    bool isFromSettings = false,
+  }) async {
+    final cubit = build(user: user, isFromSettings: isFromSettings);
     await cubit.load();
     return cubit;
   }
@@ -304,5 +309,119 @@ void main() {
       await cubit.close();
       expect(analytics.names.last, 'CustomisingDietProgramView_Disappear');
     });
+  });
+
+  // OnboardingDietChoicesPresenterTests' settings and floor cases,
+  // OnboardingDietPlanPresenterTests' "Rebuilding From Settings Does Not
+  // Enter Onboarding" and OnboardingSelectionHapticsTests' is_onboarding.
+  group('from Settings', () {
+    test(
+      'opens on the diet, and its screens say they are not onboarding',
+      () async {
+        final cubit = await loaded(isFromSettings: true);
+        expect(cubit.state.question, DietQuestion.preferredDiet);
+        expect(cubit.state.isFromSettings, isTrue);
+        expect(analytics.events.first.eventName, 'PreferredDietView_Appear');
+        expect(analytics.events.first.parameters, {'is_onboarding': false});
+        // The diet is the first question: back leaves the flow.
+        expect(cubit.back(), isFalse);
+        cubit.dietContinued();
+        await cubit.close();
+        for (final name in [
+          'PreferredDietView_Disappear',
+          'CalorieFloorView_Appear',
+          'CalorieFloorView_Disappear',
+        ]) {
+          expect(analytics.last(name).parameters, {'is_onboarding': false});
+        }
+      },
+    );
+
+    test('the floor opens on the recommended one, and the chosen floor and '
+        'the earlier diet are both carried', () async {
+      final cubit = await loaded(isFromSettings: true);
+      cubit
+        ..dietSelected(maths.PreferredDiet.lowCarb)
+        ..dietContinued();
+      expect(cubit.state.question, DietQuestion.calorieFloor);
+      expect(cubit.state.calorieFloor, standardCalorieFloor);
+      expect(analytics.last('Onboarding_CalFloor_Prefilled').parameters, {
+        'floor': 'standard',
+        'reason': 'default',
+      });
+      cubit.calorieFloorContinued();
+      expect(cubit.state.question, DietQuestion.distribution);
+      expect(
+        analytics.last('Onboarding_CalFloor_Navigate').parameters,
+        <String, Object?>{},
+      );
+      expect(cubit.state.diet, maths.PreferredDiet.lowCarb);
+      // Back from the distribution is the floor here, not the diet.
+      expect(cubit.back(), isTrue);
+      expect(cubit.state.question, DietQuestion.calorieFloor);
+      expect(cubit.back(), isTrue);
+      expect(cubit.state.question, DietQuestion.preferredDiet);
+    });
+
+    test('rebuilding a plan opens on its floor; the old low floor opens on '
+        'the standard one', () async {
+      DietPlan plan(String floor) => DietPlan.fromFirestore({
+        ...buildDietPlan(
+          user: profile,
+          choices: recommendedDietChoices(null),
+          now: now,
+        ).toFirestore(),
+        'calorieFloor': floor,
+      });
+      for (final (floor, reason) in [
+        ('standard', 'current_plan'),
+        ('low', 'default'),
+      ]) {
+        when(() => nutrition.watchDietPlan('uid'))
+            .thenAnswer((_) => Stream.value(plan(floor)));
+        final cubit = await loaded(isFromSettings: true);
+        cubit.dietContinued();
+        expect(cubit.state.calorieFloor, standardCalorieFloor);
+        expect(
+          analytics.last('Onboarding_CalFloor_Prefilled').parameters?['reason'],
+          reason,
+        );
+      }
+    });
+
+    test('the floor can be picked again, but not continued without one', () {
+      final cubit = build(isFromSettings: true)..calorieFloorContinued();
+      expect(cubit.state.question, DietQuestion.preferredDiet);
+      cubit.calorieFloorSelected(standardCalorieFloor);
+      expect(cubit.state.calorieFloor, standardCalorieFloor);
+    });
+
+    test('rebuilding the plan saves it and leaves onboarding alone', () async {
+      final cubit = await loaded(isFromSettings: true);
+      cubit
+        ..dietContinued()
+        ..calorieFloorContinued()
+        ..distributionContinued()
+        ..proteinContinued();
+      expect(cubit.state.question, DietQuestion.plan);
+      await cubit.save();
+      expect(calls, ['saveDietPlan']);
+      verifyNever(() => users.updateUserFields(any(), any()));
+      expect(cubit.state.status, DietSetupStatus.saved);
+      expect(analytics.names.last, 'DietView_Navigate');
+    });
+  });
+
+  test('onboarding skips the floor, both ways', () async {
+    final cubit = await loaded();
+    cubit
+      ..customize()
+      ..dietContinued();
+    expect(cubit.state.question, DietQuestion.distribution);
+    expect(analytics.names, isNot(contains('CalorieFloorView_Appear')));
+    expect(cubit.back(), isTrue);
+    expect(cubit.state.question, DietQuestion.preferredDiet);
+    expect(cubit.back(), isTrue);
+    expect(cubit.state.question, DietQuestion.intro);
   });
 }

@@ -104,7 +104,7 @@ extension PumpApp on WidgetTester {
             value: nutritionRepository ?? MockNutritionRepository(),
           ),
           RepositoryProvider.value(
-            value: bodyRepository ?? MockBodyRepository(),
+            value: bodyRepository ?? InMemoryBodyRepository(),
           ),
           RepositoryProvider.value(
             value:

@@ -294,6 +294,42 @@ void main() {
         },
       );
 
+      test(
+        'editGoal changes the aim and keeps where the goal started',
+        () async {
+          await subject.editGoal(
+            'me',
+            'me',
+            objective: OverarchingObjective.gainWeight,
+            targetWeightKg: 90.5,
+            weeklyChangeKg: 0.25,
+          );
+
+          final edited = await subject.watchCurrentGoal('me').first;
+          expect(edited!.toFirestore(), {
+            ...goal('me', 'me').toFirestore(),
+            'objective': {'gainWeight': <String, Object?>{}},
+            'target_weight_kg': 90.5,
+            'weekly_change_kg': 0.25,
+          });
+        },
+      );
+
+      test('editGoal fails with not-found for a missing goal', () {
+        expect(
+          subject.editGoal(
+            'me',
+            'you',
+            objective: OverarchingObjective.maintain,
+            targetWeightKg: 70,
+            weeklyChangeKg: 0,
+          ),
+          throwsA(
+            isA<FirebaseException>().having((e) => e.code, 'code', 'not-found'),
+          ),
+        );
+      });
+
       test('abandonGoal fails with not-found for a missing goal', () {
         expect(
           subject.abandonGoal('me', 'you'),

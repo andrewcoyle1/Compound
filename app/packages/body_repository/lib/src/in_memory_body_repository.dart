@@ -132,7 +132,27 @@ class InMemoryBodyRepository implements BodyRepository {
   }
 
   @override
-  Future<void> abandonGoal(String uid, String goalId) async {
+  Future<void> abandonGoal(String uid, String goalId) async => _updateGoal(
+    uid,
+    goalId,
+    {WeightGoalKeys.status: GoalStatus.abandoned.value},
+  );
+
+  @override
+  Future<void> editGoal(
+    String uid,
+    String goalId, {
+    required OverarchingObjective objective,
+    required double targetWeightKg,
+    required double weeklyChangeKg,
+  }) async => _updateGoal(uid, goalId, {
+    WeightGoalKeys.objective: objective.toFirestore(),
+    WeightGoalKeys.targetWeightKg: targetWeightKg,
+    WeightGoalKeys.weeklyChangeKg: weeklyChangeKg,
+  });
+
+  /// Replaces [fields] of a stored goal, as Firestore's `update` does.
+  void _updateGoal(String uid, String goalId, Map<String, Object?> fields) {
     final index = _goals.indexWhere(_isGoal(uid, goalId));
     if (index < 0) {
       throw FirebaseException(
@@ -143,7 +163,7 @@ class InMemoryBodyRepository implements BodyRepository {
     }
     _goals[index] = WeightGoal.fromFirestore({
       ..._goals[index].toFirestore(),
-      WeightGoalKeys.status: GoalStatus.abandoned.value,
+      ...fields,
     });
     _changes.add(null);
   }

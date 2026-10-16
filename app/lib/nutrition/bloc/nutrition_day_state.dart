@@ -77,7 +77,7 @@ final class const NutritionDayState({
   Macros? get target => dailyTarget(dietPlan, dayKey);
 
   /// Every logged day's calendar mark, by day key.
-  Map<String, CalorieMarker> get markers =>
+  Map<String, CalendarDayMarker> get markers =>
       calorieMarkersByDay(meals ?? const [], dietPlan);
 
   NutritionDayState copyWith({

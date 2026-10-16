@@ -300,4 +300,149 @@ abstract final class TrackerText {
     (drops: 0, :final minis) => l10n.trackerDeleteAlsoMinis(minis),
     (:final drops, :final minis) => l10n.trackerDeleteAlsoBoth(drops + minis),
   };
+
+  // MARK: - The progression note
+
+  /// Why smart progression changed today's numbers, in a sentence: "+2.5 kg
+  /// today. You hit 5 reps on every working set last time."
+  /// (`ActiveWorkout.progressionReason`).
+  static String progressionReason(
+    AppLocalizations l10n,
+    r.ProgressionReason reason,
+    ExerciseWeightUnit unit, {
+    String? locale,
+  }) {
+    switch (reason.rationale) {
+      case r.Rationale.addReps:
+        return l10n.trackerReasonAddReps(l10n.repCount(reason.addedReps ?? 0));
+      case r.Rationale.deload:
+        return l10n.trackerReasonDeload(
+          signedWeight(reason.changeKg ?? 0, unit, locale: locale),
+        );
+      case r.Rationale.progressWeight ||
+          r.Rationale.hold ||
+          r.Rationale.noHistory:
+        final change = signedWeight(reason.changeKg ?? 0, unit, locale: locale);
+        final reps = reason.lastMinReps;
+        return reps == null
+            ? l10n.trackerReasonChange(change)
+            : l10n.trackerReasonProgress(change, l10n.repCount(reps));
+    }
+  }
+
+  /// "+2.5 kg", "−5 lb": a change in the exercise's own unit.
+  static String signedWeight(
+    double kilograms,
+    ExerciseWeightUnit unit, {
+    String? locale,
+  }) {
+    final text = AppFormat.weight(
+      kilograms.abs(),
+      WorkoutText.weightUnit(unit),
+      maxFractionDigits: 2,
+      locale: locale,
+    );
+    return kilograms < 0 ? '−$text' : '+$text';
+  }
+
+  /// The plan [exercise] opens with, for the progression note: "Set 3 is a
+  /// drop set from your plan: 100 × 8, then 80 and 64 to failure, no rest
+  /// between. Set 4 is to failure, target 8+." Only drops and mini-sets under
+  /// a set, and failure targets; null once a working set is logged or with
+  /// no plan to tell (`ActiveWorkout.planSummary`).
+  static String? planSummary(
+    AppLocalizations l10n,
+    WorkoutExerciseModel exercise,
+    ExerciseWeightUnit unit, {
+    String? locale,
+  }) {
+    final rules = rulesExercise(exercise);
+    if (rules.sets.any((s) => !s.isWarmup && s.completedAt != null)) {
+      return null;
+    }
+    final mode = exercise.trackingMode;
+    String? plain(r.WorkoutSet set) {
+      final kg = set.loadKg;
+      if (mode != TrackingMode.weightReps || kg == null || kg == 0) {
+        return null;
+      }
+      return AppFormat.number(
+        r.convertWeight(kg, unit.rules),
+        maxFractionDigits: 1,
+        locale: locale,
+      );
+    }
+
+    String figures(r.WorkoutSet set) => switch ((plain(set), set.reps)) {
+      (final weight?, final reps?) => '$weight × $reps',
+      (final weight?, null) => weight,
+      (null, final reps?) => l10n.repCount(reps),
+      (null, null) => AppFormat.placeholder,
+    };
+
+    final sentences = <String>[];
+    // A left/right pair is one set: its left row speaks for it.
+    for (final set in rules.sets.where(
+      (s) => !s.isWarmup && !s.isSubSet && s.side != r.SetSide.right,
+    )) {
+      final number = rules.workingSetNumber(set);
+      final pieces = r.ActiveWorkout.subSets(
+        set.id,
+        rules.sets,
+      ).where((p) => p.side == set.side).toList();
+      final target = set.targetReps;
+      if (set.kind == r.SetKind.amrap && target != null) {
+        sentences.add(l10n.trackerPlanFailure(number, target));
+        continue;
+      }
+      final drops = [
+        for (final piece in pieces)
+          if (r.subSetKindOf(piece) == r.SubSetKind.drop) piece,
+      ];
+      if (drops.isNotEmpty) {
+        final weights = listAnd(l10n, [
+          for (final drop in drops) plain(drop) ?? AppFormat.placeholder,
+        ]);
+        final reps = drops.first.reps;
+        sentences.add(
+          reps == null
+              ? l10n.trackerPlanDropFailure(number, figures(set), weights)
+              : l10n.trackerPlanDropReps(number, figures(set), weights, reps),
+        );
+        continue;
+      }
+      // Mini-sets are stored plain; partials, a stretch or a hold are not.
+      final minis = pieces
+          .where(
+            (p) =>
+                r.subSetKindOf(p) == r.SubSetKind.mini &&
+                p.kind == r.SetKind.standard,
+          )
+          .length;
+      if (minis > 0) {
+        sentences.add(
+          l10n.trackerPlanMinis(
+            number,
+            set.kind == r.SetKind.myo
+                ? l10n.trackerMyoReps
+                : setType(l10n, r.SetTypeChoice.ofKind(set.kind)),
+            figures(set),
+            l10n.trackerMiniSetCount(minis),
+          ),
+        );
+      }
+    }
+    return sentences.isEmpty ? null : sentences.join(' ');
+  }
+
+  /// "80", "80 and 64", "80, 64, and 50".
+  static String listAnd(AppLocalizations l10n, List<String> items) =>
+      switch (items) {
+        [final only] => only,
+        [final first, final second] => l10n.trackerListAndTwo(first, second),
+        _ => l10n.trackerListAndMany(
+          items.sublist(0, items.length - 1).join(', '),
+          items.last,
+        ),
+      };
 }

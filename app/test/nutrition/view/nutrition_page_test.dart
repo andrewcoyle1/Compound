@@ -1,3 +1,4 @@
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
@@ -6,10 +7,10 @@ import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/nutrition/search/nutrition_search_cubit.dart';
-import 'package:compound/nutrition/view/widgets/calendar_strip.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
+import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart'
@@ -69,6 +70,12 @@ void main() {
             create: (_) =>
                 NutritionSearchCubit(uid: uid, foods: InMemoryFoodRepository()),
           ),
+          BlocProvider(
+            create: (_) => CalendarHeaderCubit(
+              analytics: const AnalyticsRepository(),
+              today: monday,
+            ),
+          ),
         ],
         child: const NutritionView(),
       ),
@@ -121,7 +128,7 @@ void main() {
   Iterable<String> cellValues(WidgetTester tester) => tester
       .widgetList<Semantics>(
         find.descendant(
-          of: find.byType(CalendarStrip),
+          of: find.byType(CalendarHeader),
           matching: find.byWidgetPredicate(
             (widget) => widget is Semantics && widget.properties.button == true,
           ),
@@ -139,7 +146,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(NutritionView), findsOneWidget);
-      expect(find.byType(CalendarStrip), findsOneWidget);
+      expect(find.byType(CalendarHeader), findsOneWidget);
     });
 
     testWidgets('shows nothing once signed out', (tester) async {
@@ -183,7 +190,7 @@ void main() {
       await pumpView(tester);
 
       expect(find.text('Sep 21, 2026'), findsOneWidget);
-      expect(find.byType(CalendarStrip), findsOneWidget);
+      expect(find.byType(CalendarHeader), findsOneWidget);
       expect(find.byType(MacroHeader), findsOneWidget);
       // Monday is a training day: 2,550 kcal.
       expect(find.textContaining(' / 2,550'), findsOneWidget);
@@ -225,16 +232,36 @@ void main() {
       expect(find.text('Sep 21, 2026'), findsOneWidget);
     });
 
+    testWidgets('the calendar button picks a day from the month picker', (
+      tester,
+    ) async {
+      await pumpView(tester);
+      await tester.tap(find.byTooltip('Show calendar'));
+      await tester.pumpAndSettle();
+      expect(find.text('September 2026'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('Thursday, September 3'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sep 3, 2026'), findsOneWidget);
+      // The strip follows the day picked, and offers the way back.
+      expect(find.bySemanticsLabel('Thursday, September 3'), findsOneWidget);
+      // The date row's Today, and Return to Today on the strip.
+      expect(find.bySemanticsLabel('Today'), findsNWidgets(2));
+    });
+
     testWidgets('swipes between weeks', (tester) async {
       await pumpView(tester);
       expect(find.bySemanticsLabel('Saturday, September 19'), findsNothing);
 
-      await tester.fling(find.byType(CalendarStrip), const Offset(300, 0), 800);
+      await tester.fling(
+        find.byType(CalendarHeader),
+        const Offset(300, 0),
+        800,
+      );
       await tester.pump();
       expect(find.bySemanticsLabel('Saturday, September 19'), findsOneWidget);
 
       await tester.fling(
-        find.byType(CalendarStrip),
+        find.byType(CalendarHeader),
         const Offset(-300, 0),
         800,
       );
@@ -317,7 +344,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(CalendarStrip), findsNothing);
+      expect(find.byType(CalendarHeader), findsNothing);
       expect(find.byType(LinearProgressIndicator), findsNothing);
       expect(find.byType(AppStat), findsNothing);
       // Only the amount is left of the details.
@@ -394,6 +421,12 @@ void main() {
                   create: (_) => NutritionSearchCubit(
                     uid: uid,
                     foods: InMemoryFoodRepository(),
+                  ),
+                ),
+                BlocProvider(
+                  create: (_) => CalendarHeaderCubit(
+                    analytics: const AnalyticsRepository(),
+                    today: startOfDay(now),
                   ),
                 ),
               ],

@@ -7,6 +7,7 @@ import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart' show withItems;
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/review/review_moment.dart';
+import 'package:compound/widgets/calendar/calendar_day_marker.dart';
 import 'package:compound_maths/compound_maths.dart';
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';

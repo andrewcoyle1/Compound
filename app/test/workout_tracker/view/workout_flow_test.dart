@@ -186,8 +186,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ActiveWorkoutBar), findsOneWidget);
-    expect(find.text('Workout In Progress'), findsOneWidget);
-    await tester.tap(find.text('Workout In Progress'));
+    // An empty workout: nothing done of nothing.
+    expect(find.text('0/0 sets'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ActiveWorkoutBar.open')));
     await tester.pumpAndSettle();
     expect(find.text('No Exercises'), findsOneWidget);
 
@@ -199,7 +200,8 @@ void main() {
     await tester.tap(find.text('Discard'));
     await tester.pumpAndSettle();
     expect(find.byType(WorkoutTrackerView), findsNothing);
-    expect(find.text('Workout In Progress'), findsNothing);
+    expect(find.byType(ActiveWorkoutBar), findsOneWidget);
+    expect(find.text('0/0 sets'), findsNothing);
     expect(await store.load(), isNull);
   });
 }

@@ -66,6 +66,13 @@ final class const TodayState({
 
   /// Moves each time skipping the check-in fails.
   final int skipFailures = 0,
+
+  /// Moves each time a step goal is saved, and each time saving one fails.
+  final int stepGoalSaves = 0,
+  final int stepGoalFailures = 0,
+
+  /// Moves the first time each day the checklist is complete.
+  final int dayCompletions = 0,
 }) extends Equatable {
   /// Where the data has got to.
   TodayStatus get status => failed
@@ -99,14 +106,19 @@ final class const TodayState({
   WorkoutSessionModel? get finishedToday =>
       sessionFinishedToday(sessions ?? const [], uid: uid, now: now);
 
-  /// The day's checklist (`TodayPresenter.checklist`).
-  TodayChecklist get checklist {
+  /// The day's checklist without a mesocycle's plan.
+  TodayChecklist get checklist => checklistWith();
+
+  /// The day's checklist (`TodayPresenter.checklist`), with [planned], today's
+  /// day plan in the active mesocycle, for the training item.
+  TodayChecklist checklistWith({WorkoutTemplateModel? planned}) {
     final totals = nutritionTotals;
     final target = nutritionTarget;
     final trend = weighInChange(measurements ?? const []);
     final latest = trend.latest;
     return TodayChecklist.build(
       finishedToday: finishedToday,
+      planned: planned,
       nutrition: NutritionItem(
         calories: totals.calories,
         proteinGrams: totals.proteinGrams,
@@ -237,6 +249,9 @@ final class const TodayState({
     LoggingBreak? Function()? loggingBreak,
     bool? checkInSkipped,
     int? skipFailures,
+    int? stepGoalSaves,
+    int? stepGoalFailures,
+    int? dayCompletions,
   }) => TodayState(
     uid: uid,
     now: now,
@@ -258,6 +273,9 @@ final class const TodayState({
     loggingBreak: loggingBreak == null ? this.loggingBreak : loggingBreak(),
     checkInSkipped: checkInSkipped ?? this.checkInSkipped,
     skipFailures: skipFailures ?? this.skipFailures,
+    stepGoalSaves: stepGoalSaves ?? this.stepGoalSaves,
+    stepGoalFailures: stepGoalFailures ?? this.stepGoalFailures,
+    dayCompletions: dayCompletions ?? this.dayCompletions,
   );
 
   @override
@@ -280,5 +298,8 @@ final class const TodayState({
     loggingBreak,
     checkInSkipped,
     skipFailures,
+    stepGoalSaves,
+    stepGoalFailures,
+    dayCompletions,
   ];
 }

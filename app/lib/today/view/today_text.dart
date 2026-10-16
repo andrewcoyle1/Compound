@@ -22,16 +22,18 @@ abstract final class TodayText {
     StepsItem() => AppSymbols.steps,
   };
 
-  /// The line under the item's title: the workout's name, calories and
-  /// protein against target, the weight and its week, or steps against the
-  /// goal.
+  /// The line under the item's title: the workout done or planned (or
+  /// "Rest day"), calories and protein against target, the weight and its
+  /// week, or steps against the goal.
   static String detail(
     AppLocalizations l10n,
     ChecklistItem item,
     AppWeightUnit unit, {
     String? locale,
   }) => switch (item) {
-    TrainingItem(:final session) => session.name,
+    TrainingItem(:final session?) => session.name,
+    TrainingItem(isRestDay: true) => l10n.todayRestDay,
+    TrainingItem(:final planned) => planned?.name ?? '',
     NutritionItem() => _nutrition(l10n, item, locale),
     WeighInItem() => _weighIn(l10n, item, unit, locale),
     StepsItem(:final today, :final goal) => l10n.todayStepsOfGoal(
@@ -94,6 +96,20 @@ abstract final class TodayText {
     if (kilograms < -0.04) return '−$text';
     return text;
   }
+
+  /// Who among the people followed trained today, or null for nobody
+  /// (`TodayChecklist.socialPulse`).
+  static String? socialPulse(AppLocalizations l10n, List<String> names) =>
+      switch (names) {
+        [] => null,
+        [final name] => l10n.todayTrainedOne(name),
+        [final first, final second] => l10n.todayTrainedTwo(first, second),
+        [final first, final second, ...final rest] => l10n.todayTrainedMany(
+          first,
+          second,
+          l10n.todayOthers(rest.length),
+        ),
+      };
 
   /// A getting-started step's title.
   static String starter(

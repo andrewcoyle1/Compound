@@ -89,8 +89,10 @@ Future<void> startWorkout(
   await WorkoutTrackerPage.show(context);
 }
 
-/// The workout under way, over the tab bar while the tracker is minimised:
-/// its name and clock; a tap opens the tracker.
+/// The workout under way, over the tabs while its tracker is minimised
+/// (Swift `TrainingAccessoryView`): a ring of the sets done, the name over
+/// "3/12 sets", and the rest counting down, with Skip Rest beside it, or
+/// else the workout clock. A tap reopens the tracker.
 class ActiveWorkoutBar extends StatelessWidget {
   const new({super.key});
 
@@ -101,61 +103,140 @@ class ActiveWorkoutBar extends StatelessWidget {
     if (!state.isActive || session == null) return const SizedBox.shrink();
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
+    final progress = state.setProgress;
+    final fraction = progress.total == 0 ? 0.0 : progress.done / progress.total;
+    final digits = AppTextStyles.metricSmall.copyWith(
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
     return Material(
       color: AppColors.tintedSurface(scheme.primary),
-      child: Semantics(
-        button: true,
-        child: InkWell(
-          onTap: () => WorkoutTrackerPage.show(context),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AppControlSize.row),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.l,
-                vertical: AppSpacing.s,
-              ),
-              child: Row(
-                spacing: AppSpacing.m,
-                children: [
-                  Icon(AppSymbols.workout, color: scheme.primary),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.trackerInProgress,
-                          style: AppTextStyles.label.copyWith(
-                            color: scheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          session.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.rowTitle.copyWith(
-                            color: scheme.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
+      child: Tick(
+        builder: (context, now) {
+          final restEnd = state.restEnd;
+          final resting = restEnd != null && now.isBefore(restEnd);
+          return Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  label: l10n.accessoryResumeLabel(
+                    session.name,
+                    state.elapsedAt(now).inMinutes,
                   ),
-                  Tick(
-                    builder: (context, now) => Text(
-                      state.isPaused
-                          ? l10n.trackerPaused
-                          : AppFormat.duration(state.elapsedAt(now)),
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: scheme.onSurface,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+                  excludeSemantics: true,
+                  child: InkWell(
+                    key: const Key('ActiveWorkoutBar.open'),
+                    onTap: () => WorkoutTrackerPage.show(context),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: AppControlSize.row,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                          AppSpacing.l,
+                          AppSpacing.s,
+                          AppSpacing.m,
+                          AppSpacing.s,
+                        ),
+                        child: Row(
+                          spacing: AppSpacing.m,
+                          children: [
+                            _ProgressRing(fraction: fraction),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    session.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.rowDetail.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: scheme.onSurface,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${progress.done}/'
+                                    '${l10n.setCount(progress.total)}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.rowDetail.copyWith(
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // The rest in the accent, else the clock: the
+                            // colour and Skip Rest say which.
+                            Text(
+                              resting
+                                  ? AppFormat.duration(
+                                      restEnd.difference(now) +
+                                          const Duration(milliseconds: 999),
+                                    )
+                                  : state.isPaused
+                                  ? l10n.trackerPaused
+                                  : AppFormat.duration(state.elapsedAt(now)),
+                              style: digits.copyWith(
+                                color: resting
+                                    ? scheme.primary
+                                    : scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  Icon(AppSymbols.disclosure, color: scheme.onSurfaceVariant),
-                ],
+                ),
+              ),
+              // Beside the bar's button rather than in it, so a screen
+              // reader reaches it.
+              if (resting)
+                IconButton(
+                  key: const Key('ActiveWorkoutBar.skipRest'),
+                  tooltip: l10n.accessorySkipRest,
+                  icon: const Icon(AppSymbols.skip),
+                  color: scheme.primary,
+                  onPressed: context.read<ActiveWorkoutCubit>().skipRestFromBar,
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// The sets done as a ring around the workout symbol.
+class _ProgressRing extends StatelessWidget {
+  const new({required this.fraction});
+
+  final double fraction;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ExcludeSemantics(
+      child: SizedBox.square(
+        dimension: 32,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox.expand(
+              child: CircularProgressIndicator(
+                value: fraction,
+                strokeWidth: 3,
+                backgroundColor: AppColors.tintedSurface(scheme.primary),
               ),
             ),
-          ),
+            Icon(
+              AppSymbols.workout,
+              size: AppIconSize.small.of(context),
+              color: scheme.primary,
+            ),
+          ],
         ),
       ),
     );

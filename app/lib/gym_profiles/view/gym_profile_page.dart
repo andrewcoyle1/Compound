@@ -11,9 +11,11 @@ import 'package:compound/gym_profiles/view/machine_sheets.dart';
 import 'package:compound/gym_profiles/view/stack_machine_editor.dart';
 import 'package:compound/gym_profiles/view/weight_list_editor.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
@@ -49,6 +51,8 @@ class GymProfilePage extends StatelessWidget {
         uid: app.user.uid,
         setup: context.read<TrainingSetupService>(),
         analytics: context.read<AnalyticsRepository>(),
+        images: context.read<ImageRepository>(),
+        picker: context.read<PhotoPicker>(),
         untitledName: l10n.onboardingUntitledGym,
         numbered: l10n.gymNumberedName,
       ),
@@ -158,6 +162,27 @@ class _GymProfileViewState extends State<GymProfileView> {
               tooltip: l10n.gymAddMachineMenu,
               onPressed: () => unawaited(_addMachine()),
             ),
+            if (state.savingPhoto)
+              const Padding(
+                padding: EdgeInsets.all(AppSpacing.m),
+                child: SizedBox.square(
+                  dimension: AppControlSize.icon,
+                  child: CircularProgressIndicator.adaptive(),
+                ),
+              )
+            else
+              IconButton(
+                key: const Key('GymProfile.photo'),
+                icon: Icon(
+                  state.gym.imageUrl == null
+                      ? AppSymbols.addPhoto
+                      : AppSymbols.changePhoto,
+                ),
+                tooltip: state.gym.imageUrl == null
+                    ? l10n.gymAddPhoto
+                    : l10n.gymChangePhoto,
+                onPressed: () => unawaited(_cubit.photoPressed()),
+              ),
           ],
         ),
         body: SafeArea(
@@ -165,6 +190,22 @@ class _GymProfileViewState extends State<GymProfileView> {
           child: ListView(
             padding: const EdgeInsets.only(bottom: AppSpacing.xl),
             children: [
+              // Swift's header falls back to the splash artwork, which the
+              // Flutter app does not have; without a photo there is none.
+              if (state.gym.imageUrl case final url?)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.l,
+                    AppSpacing.s,
+                    AppSpacing.l,
+                    0,
+                  ),
+                  child: StoredHeroImage(
+                    url,
+                    height: 300,
+                    semanticLabel: l10n.gymPhoto,
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.l,
@@ -409,6 +450,7 @@ class _EquipmentRow extends StatelessWidget {
       child: Row(
         spacing: AppSpacing.m,
         children: [
+          RowThumbnail(equipmentImage(item)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,3 +508,11 @@ class _EquipmentRow extends StatelessWidget {
 }
 
 enum _MachineAction { duplicate, delete }
+
+/// An item's bundled picture (Swift's `imageName` asset), scaled down from
+/// the Swift app's in `assets/equipment/`; null for the many without one.
+String? equipmentImage(GymEquipmentItem item) =>
+    switch (item.toFirestore()[GymEquipmentKeys.imageName]) {
+      final String name => 'assets/equipment/$name.webp',
+      _ => null,
+    };

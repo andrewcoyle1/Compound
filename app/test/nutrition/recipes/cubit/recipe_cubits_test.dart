@@ -8,12 +8,15 @@ import 'package:compound/nutrition/recipes/cubit/recipes_cubit.dart';
 import 'package:compound/nutrition/search/nutrition_search_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
 import '../../../helpers/helpers.dart';
 
 class _MockFoodRepository extends Mock implements FoodRepository;
+
+class _MockNutritionRepository extends Mock implements NutritionRepository;
 
 class _FakeSettings extends Fake implements FoodLogSettings;
 
@@ -87,6 +90,7 @@ void main() {
       final cubit = RecipesCubit(
         uid: uid,
         foods: InMemoryFoodRepository(recipes: recipes),
+        nutrition: InMemoryNutritionRepository(),
         analytics: analytics,
       );
       await pumpEventQueue();
@@ -141,11 +145,48 @@ void main() {
       final cubit = RecipesCubit(
         uid: uid,
         foods: failing,
+        nutrition: InMemoryNutritionRepository(),
         analytics: analytics,
       );
       await pumpEventQueue();
 
       expect(cubit.state.recipes, isEmpty);
+    });
+
+    test('rows show pictures as the logger’s Show Food Image says '
+        '(RecipeListBuilderView)', () async {
+      final cubit = RecipesCubit(
+        uid: uid,
+        foods: InMemoryFoodRepository(),
+        nutrition: InMemoryNutritionRepository(
+          foodLogSettings: const FoodLogSettings(
+            authorId: uid,
+            showFoodImageInLogger: false,
+          ),
+        ),
+        analytics: analytics,
+      );
+      expect(cubit.state.showImage, isTrue);
+      await pumpEventQueue();
+
+      expect(cubit.state.showImage, isFalse);
+      await cubit.close();
+    });
+
+    test('an unreadable setting leaves pictures shown', () async {
+      final nutrition = _MockNutritionRepository();
+      when(() => nutrition.watchFoodLogSettings(uid))
+          .thenAnswer((_) => Stream.error(StateError('denied')));
+      final cubit = RecipesCubit(
+        uid: uid,
+        foods: InMemoryFoodRepository(),
+        nutrition: nutrition,
+        analytics: analytics,
+      );
+      await pumpEventQueue();
+
+      expect(cubit.state.showImage, isTrue);
+      await cubit.close();
     });
   });
 
@@ -357,12 +398,16 @@ void main() {
 
   group(CreateRecipeCubit, () {
     late InMemoryFoodRepository foods;
+    late InMemoryImageRepository images;
+    late FakePhotoPicker picker;
 
     CreateRecipeCubit build({String? user = uid, FoodRepository? repository}) =>
         CreateRecipeCubit(
           uid: user,
           foods: repository ?? foods,
           analytics: analytics,
+          images: images,
+          picker: picker,
           now: () => now,
           newId: () => 'RECIPE',
         );
@@ -370,7 +415,78 @@ void main() {
     Future<RecipeTemplateModel?> saved() async =>
         (await foods.watchRecipes(uid).first).firstOrNull;
 
-    setUp(() => foods = InMemoryFoodRepository());
+    setUp(() {
+      foods = InMemoryFoodRepository();
+      images = InMemoryImageRepository();
+      picker = FakePhotoPicker();
+    });
+
+    group('photo (RecipePreparationView.photoSection, '
+        'RecipeTemplateManager.saveRecipeTemplate)', () {
+      CreateRecipeCubit filled({ImageRepository? store}) =>
+          CreateRecipeCubit(
+              uid: uid,
+              foods: foods,
+              analytics: analytics,
+              images: store ?? images,
+              picker: picker,
+              now: () => now,
+              newId: () => 'RECIPE',
+            )
+            ..nameChanged('Chilli')
+            ..servingsChanged(4);
+
+      test('a photo is picked from the library, logging nothing', () async {
+        final cubit = filled();
+
+        await cubit.photoPressed();
+
+        expect(cubit.state.photo, picker.photo);
+        expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+        expect(analytics.names, isEmpty);
+      });
+
+      test('a cancel or an unreadable photo changes nothing', () async {
+        final cubit = filled();
+        picker.photo = null;
+        await cubit.photoPressed();
+        picker.error = Exception('unreadable');
+        await cubit.photoPressed();
+
+        expect(cubit.state.photo, isNull);
+      });
+
+      test('Create uploads the photo to Swift’s path before saving its '
+          'address', () async {
+        final cubit = filled();
+        await cubit.photoPressed();
+
+        await cubit.create();
+
+        expect(images.images.keys, ['recipe_templates/RECIPE']);
+        expect((await saved())?.imageUrl, startsWith('data:image/jpeg'));
+      });
+
+      test('without a photo nothing is uploaded', () async {
+        final cubit = filled();
+
+        await cubit.create();
+
+        expect(images.images, isEmpty);
+        expect((await saved())?.imageUrl, isNull);
+      });
+
+      test('a failed upload saves nothing and stays open', () async {
+        final cubit = filled(store: FailingImageRepository());
+        await cubit.photoPressed();
+
+        await cubit.create();
+
+        expect(await saved(), isNull);
+        expect(cubit.state.status, CreateRecipeStatus.failed);
+        expect(analytics.names.last, 'RecipePreparationView_CreateRecipe_Fail');
+      });
+    });
 
     test('a recipe cannot be saved without a name', () {
       final cubit = build()

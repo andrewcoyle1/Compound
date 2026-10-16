@@ -39,7 +39,7 @@ void main() {
   late AnalyticsRepository analytics;
   late UserRepository users;
   late List<(String, LogType)> events;
-  late List<Map<String, Object>> writes;
+  late List<Map<String, Object?>> writes;
   late InMemoryImageRepository images;
   late _Picker picker;
 

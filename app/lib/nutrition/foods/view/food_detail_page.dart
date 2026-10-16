@@ -9,6 +9,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/foods/cubit/food_detail_cubit.dart';
 import 'package:compound/programs/view/program_widgets.dart'
     show confirmDestructive;
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -187,6 +188,10 @@ class _Nutrients extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
+        if (food.imageUrl case final url?) ...[
+          StoredHeroImage(url),
+          const SizedBox(height: AppSpacing.l),
+        ],
         if (description != null && description.isNotEmpty) ...[
           Text(description, style: AppTextStyles.rowDetail),
           const SizedBox(height: AppSpacing.l),

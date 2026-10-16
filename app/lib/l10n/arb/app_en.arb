@@ -11081,5 +11081,45 @@
     "targetChartCreatePlan": "Create Diet Plan",
     "@targetChartCreatePlan": {
         "description": "Target chart action when there is no diet plan"
+    },
+    "createFoodChooseImage": "Choose food image",
+    "@createFoodChooseImage": {
+        "description": "Create Food's image button, for screen readers"
+    },
+    "recipePreparationPhoto": "Photo",
+    "@recipePreparationPhoto": {
+        "description": "Recipe Preparation section header for the recipe's photo"
+    },
+    "recipePreparationSelectPhoto": "Select Photo",
+    "@recipePreparationSelectPhoto": {
+        "description": "Recipe Preparation button that picks the recipe's photo"
+    },
+    "gymAddPhoto": "Add gym photo",
+    "@gymAddPhoto": {
+        "description": "Gym editor toolbar button when the gym has no photo"
+    },
+    "gymChangePhoto": "Change gym photo",
+    "@gymChangePhoto": {
+        "description": "Gym editor toolbar button when the gym has a photo"
+    },
+    "gymPhoto": "Gym photo",
+    "@gymPhoto": {
+        "description": "Screen-reader label of the gym's photo"
+    },
+    "onboardingAddPhoto": "Add Photo (Optional)",
+    "@onboardingAddPhoto": {
+        "description": "Name question's photo button when no photo is set"
+    },
+    "onboardingChangePhoto": "Change Photo",
+    "@onboardingChangePhoto": {
+        "description": "Name question's photo button when a photo is set"
+    },
+    "onboardingRemovePhoto": "Remove Photo",
+    "@onboardingRemovePhoto": {
+        "description": "Name question's button that removes the photo"
+    },
+    "onboardingPhotoLoadFailed": "Couldn't load that photo. Try a different one.",
+    "@onboardingPhotoLoadFailed": {
+        "description": "Name question's message when a picked photo cannot be read"
     }
 }

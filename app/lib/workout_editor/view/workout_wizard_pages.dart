@@ -9,6 +9,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:compound/workout_editor/cubit/workout_wizard_cubit.dart';
 import 'package:compound/workout_editor/view/define_workout_editor.dart';
 import 'package:flutter/services.dart';
@@ -266,7 +267,10 @@ class _ChooseGymProfileViewState extends State<ChooseGymProfileView> {
                     subtitle: l10n.editorActiveEquipment(
                       TrainingLibrary.activeEquipmentCount(gym),
                     ),
-                    icon: AppSymbols.gym,
+                    icon: gym.imageUrl == null ? AppSymbols.gym : null,
+                    thumbnail: gym.imageUrl == null
+                        ? null
+                        : StoredThumbnail(gym.imageUrl),
                     onPressed: () {
                       _cubit.gymChosen(gym);
                       unawaited(

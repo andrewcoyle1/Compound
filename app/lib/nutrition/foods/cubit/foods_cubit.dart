@@ -17,6 +17,10 @@ final class const FoodsState({
 
   /// The filter typed.
   final String filter = '',
+
+  /// Whether rows show the food's picture (the Show Food Image setting of
+  /// the logger's food tiles).
+  final bool showFoodImage = true,
 }) extends Equatable {
   /// The foods shown (`IngredientListBuilderPresenter.userFoods` and
   /// `.filteredFoods`): branded ones only when the setting allows, matching
@@ -37,14 +41,16 @@ final class const FoodsState({
     List<FoodModel>? foods,
     bool? showBrandedFoods,
     String? filter,
+    bool? showFoodImage,
   }) => FoodsState(
     foods: foods ?? this.foods,
     showBrandedFoods: showBrandedFoods ?? this.showBrandedFoods,
     filter: filter ?? this.filter,
+    showFoodImage: showFoodImage ?? this.showFoodImage,
   );
 
   @override
-  List<Object?> get props => [foods, showBrandedFoods, filter];
+  List<Object?> get props => [foods, showBrandedFoods, filter, showFoodImage];
 }
 
 /// The Foods screen (Swift `FoodsPresenter`, with the
@@ -70,7 +76,10 @@ class FoodsCubit extends Cubit<FoodsState> {
           .watchFoodLogSettings(uid)
           .listen(
             (settings) => emit(
-              state.copyWith(showBrandedFoods: settings.showBrandedFoods),
+              state.copyWith(
+                showBrandedFoods: settings.showBrandedFoods,
+                showFoodImage: settings.showFoodImageInLogger,
+              ),
             ),
             onError: (Object _) {},
           ),

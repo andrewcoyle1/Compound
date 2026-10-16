@@ -169,6 +169,12 @@ abstract final class AppSymbols {
   /// The photo library.
   static const IconData photoLibrary = Icons.photo_library_rounded;
 
+  /// Add a photo (Swift `photo.badge.plus`).
+  static const IconData addPhoto = Icons.add_photo_alternate_rounded;
+
+  /// Change the photo set (Swift `photo.badge.checkmark`).
+  static const IconData changePhoto = Icons.image_rounded;
+
   /// Progress photos (Swift `photo.stack`).
   static const IconData progressPhotos = Icons.collections_rounded;
 

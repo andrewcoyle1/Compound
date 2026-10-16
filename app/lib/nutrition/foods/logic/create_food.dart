@@ -173,6 +173,7 @@ FoodModel createdFood({
   required PortionInput portion,
   required Map<NutrientKey, double> nutrients,
   required DateTime now,
+  String? imageUrl,
 }) {
   final weight = portion.servingWeight;
   final scale =
@@ -194,6 +195,7 @@ FoodModel createdFood({
     servingWeight: weight,
     portionSize: portion.portionSize,
     portionName: portion.portionName,
+    imageUrl: imageUrl,
     dateCreated: now,
     dateModified: now,
   );

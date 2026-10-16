@@ -91,6 +91,18 @@ void main() {
         );
       });
 
+      test('updateUserFields removes a cleared field', () async {
+        await repository.createUser(full);
+
+        await repository.updateUserFields(full.userId, [
+          UserField.submittedProfileImage.cleared,
+        ]);
+
+        final user = await repository.watchUser(full.userId).first;
+        expect(user!.submittedProfileImage, isNull);
+        expect(user.submittedFirstName, full.submittedFirstName);
+      });
+
       test('updateUserFields fails with not-found without a profile', () {
         expect(
           repository.updateUserFields('nobody', [UserField.isPrivate(true)]),

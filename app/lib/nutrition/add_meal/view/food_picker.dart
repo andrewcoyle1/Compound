@@ -12,9 +12,13 @@ import 'package:compound/nutrition/add_meal/view/amount_sheets.dart';
 import 'package:compound/nutrition/add_meal/view/barcode_camera.dart';
 import 'package:compound/nutrition/foods/view/create_food_pages.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
+import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
+import 'package:compound/nutrition/recipes/view/create_recipe_pages.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
+import 'package:nutrition_repository/nutrition_repository.dart'
+    show FoodLogSettings;
 
 /// The food picker over the plate (Swift `NutritionLibraryPickerView`):
 /// a tab per way of finding food, picks landing on the plate as they are
@@ -207,6 +211,97 @@ class FoodRow extends StatelessWidget {
   }
 }
 
+/// A recipe row's tap (`NutritionLibraryPickerPresenter.navToRecipeAmount`):
+/// the servings sheet, whatever the Quick Add setting.
+Future<void> pickRecipe(
+  BuildContext context,
+  RecipeTemplateModel recipe,
+) async {
+  final bloc = context.read<AddMealBloc>();
+  final result = await showRecipeServingsSheet(context, recipe);
+  if (result == null) return;
+  unawaited(HapticFeedback.successNotification());
+  bloc.add(AddMealItemAdded(result.item));
+  if (result.log) bloc.add(const AddMealSaveRequested());
+}
+
+/// A recipe in the picker (Swift `FoodLibraryPickerRowView` with a
+/// recipe): its figures for one serving as the Logger settings ask, and a
+/// + that adds the servings last logged, which becomes a checkmark and
+/// count once on the plate.
+class RecipeRow extends StatelessWidget {
+  const new({required this.recipe, super.key});
+
+  final RecipeTemplateModel recipe;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final state = context.watch<AddMealBloc>().state;
+    final settings = state.effectiveSettings;
+    final count = addedRecipeCount(state.meal.items, recipe.recipeId);
+    final perServing = recipe.perServing.values;
+    double per(NutrientKey key) => perServing[key] ?? 0;
+    final detail = [
+      if (settings.showCaloriesInLogger)
+        AppFormat.kcal(per(NutrientKey.calories).round()),
+      if (settings.showMacrosInLogger) ...[
+        l10n.nutritionItemProtein(AppFormat.grams(per(NutrientKey.protein))),
+        l10n.nutritionItemFat(AppFormat.grams(per(NutrientKey.fatTotal))),
+        l10n.nutritionItemCarbs(AppFormat.grams(per(NutrientKey.carbs))),
+      ],
+      if (settings.showPortionInLogger)
+        l10n.recipeDetailServingCount(AppFormat.number(1), 1),
+    ].join(' · ');
+    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
+    return InkWell(
+      onTap: () => unawaited(pickRecipe(context, recipe)),
+      child: Padding(
+        padding: const EdgeInsets.only(left: AppSpacing.l),
+        child: Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.xxs,
+                  children: [
+                    Text(recipe.name, style: AppTextStyles.rowTitle),
+                    if (detail.isNotEmpty)
+                      Text(
+                        detail,
+                        style: AppTextStyles.rowDetail.copyWith(
+                          color: secondary,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            if (count > 0)
+              Text(
+                AppFormat.number(count),
+                style: AppTextStyles.label.copyWith(color: secondary),
+                semanticsLabel: l10n.addMealOnPlate(count),
+              ),
+            IconButton(
+              icon: Icon(count > 0 ? AppSymbols.selected : AppSymbols.add),
+              tooltip: l10n.addMealQuickAddRecipe(recipe.name),
+              onPressed: () {
+                unawaited(HapticFeedback.successNotification());
+                context.read<AddMealBloc>().add(
+                  AddMealRecipeQuickAdded(recipe),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// A list's section title.
 class _Header extends StatelessWidget {
   const new(this.text);
@@ -281,6 +376,7 @@ class _SearchField extends StatelessWidget {
     required this.hint,
     required this.onChanged,
     this.autofocus = false,
+    super.key,
   });
 
   final String hint;
@@ -339,8 +435,15 @@ class _SearchView extends StatelessWidget {
     final settings = meal.effectiveSettings;
     final query = search.query.trim();
     final library = libraryMatches(meal.foods, query);
+    final recipes = recipeMatches(meal.recipes, query);
     final online = onlineResults(search.online, library);
-    final recents = recentFoods(meal.meals ?? const [], meal.foods);
+    final recents = recentPicks(
+      meal.meals ?? const [],
+      meal.foods,
+      meal.recipes,
+    );
+    // Neither the library nor the user's recipes found anything.
+    final nothingSaved = library.isEmpty && recipes.isEmpty;
     return Column(
       children: [
         _SearchField(
@@ -368,12 +471,20 @@ class _SearchView extends StatelessWidget {
                   )
                 else ...[
                   _Header(l10n.addMealRecent),
-                  for (final food in recents) FoodRow(food: food),
+                  for (final pick in recents)
+                    switch (pick) {
+                      RecentFood(:final food) => FoodRow(food: food),
+                      RecentRecipe(:final recipe) => RecipeRow(recipe: recipe),
+                    },
                 ]
               else ...[
                 if (library.isNotEmpty) ...[
                   _Header(l10n.addMealMyFoods),
                   for (final food in library) FoodRow(food: food),
+                ],
+                if (recipes.isNotEmpty) ...[
+                  _Header(l10n.addMealMyRecipes),
+                  for (final recipe in recipes) RecipeRow(recipe: recipe),
                 ],
                 if (settings.showOpenFoodFactsFoods) ...[
                   _Header(l10n.addMealOpenFoodFacts),
@@ -400,7 +511,7 @@ class _SearchView extends StatelessWidget {
                       ),
                     ),
                     FoodSearchStatus.idle when online.isEmpty =>
-                      library.isEmpty
+                      nothingSaved
                           ? _Empty(
                               icon: AppSymbols.search,
                               title: l10n.addMealNoResults(query),
@@ -412,7 +523,7 @@ class _SearchView extends StatelessWidget {
                       ],
                     ),
                   },
-                ] else if (library.isEmpty)
+                ] else if (nothingSaved)
                   _Empty(
                     icon: AppSymbols.search,
                     title: l10n.addMealNoResults(query),
@@ -428,6 +539,26 @@ class _SearchView extends StatelessWidget {
 
 // MARK: - Library
 
+/// The library's segments (Swift `FoodLibraryOption`).
+enum LibrarySegment {
+  /// The user's recipes.
+  recipes,
+
+  /// The user's foods.
+  foods,
+
+  /// The favourite recipes and foods.
+  favourites,
+}
+
+/// Where the library opens (`FoodLibraryPresenter.init`): on favourites
+/// once there are any, which is what the user keeps coming back to, else
+/// on recipes.
+LibrarySegment initialLibrarySegment(FoodLogSettings settings) =>
+    settings.favouriteFoodIds.isEmpty && settings.favouriteRecipeIds.isEmpty
+    ? LibrarySegment.recipes
+    : LibrarySegment.favourites;
+
 class _LibraryTab extends StatefulWidget {
   const new();
 
@@ -436,64 +567,212 @@ class _LibraryTab extends StatefulWidget {
 }
 
 class _LibraryTabState extends State<_LibraryTab> {
-  // Filtering is this screen's own view state, not the meal's.
+  // The segment and filter are this screen's own view state, not the
+  // meal's.
+  late LibrarySegment _segment = initialLibrarySegment(
+    context.read<AddMealBloc>().state.effectiveSettings,
+  );
   String _filter = '';
+
+  /// The filter belongs to the segment it was typed for, so changing
+  /// segment clears it (`FoodLibraryPresenter.onLibraryOptionChanged`).
+  void _select(LibrarySegment segment) {
+    if (segment == _segment) return;
+    unawaited(HapticFeedback.selectionClick());
+    setState(() {
+      _segment = segment;
+      _filter = '';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<AddMealBloc>().state;
-    final needle = _filter.trim().toLowerCase();
-    final foods =
-        state.foods
-            .where((food) => food.name.toLowerCase().contains(needle))
-            .toList()
-          ..sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-          );
-    final favouriteIds = state.effectiveSettings.favouriteFoodIds.toSet();
-    final favourites = [
-      for (final food in foods)
-        if (favouriteIds.contains(food.ingredientId)) food,
-    ];
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            AppSpacing.s,
+            AppSpacing.l,
+            0,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<LibrarySegment>(
+              key: const Key('FoodPicker.segments'),
+              showSelectedIcon: false,
+              segments: [
+                ButtonSegment(
+                  value: LibrarySegment.recipes,
+                  label: Text(l10n.addMealLibraryRecipes),
+                ),
+                ButtonSegment(
+                  value: LibrarySegment.foods,
+                  label: Text(l10n.addMealLibraryFoods),
+                ),
+                ButtonSegment(
+                  value: LibrarySegment.favourites,
+                  label: Text(l10n.addMealLibraryFavorites),
+                ),
+              ],
+              selected: {_segment},
+              onSelectionChanged: (selected) => _select(selected.single),
+            ),
+          ),
+        ),
         _SearchField(
-          hint: l10n.addMealFilterFoods,
+          // A new field per segment, so it starts empty.
+          key: ValueKey(_segment),
+          hint: switch (_segment) {
+            LibrarySegment.recipes => l10n.addMealFilterRecipes,
+            LibrarySegment.foods => l10n.addMealFilterFoods,
+            LibrarySegment.favourites => l10n.addMealFilterFavorites,
+          },
           onChanged: (text) => setState(() => _filter = text),
         ),
         Expanded(
-          child: state.foods.isEmpty
-              ? SingleChildScrollView(
-                  child: _Empty(
-                    icon: AppSymbols.food,
-                    title: l10n.addMealLibraryEmptyTitle,
-                    message: l10n.addMealLibraryEmptyMessage,
-                    action: FilledButton(
-                      onPressed: () => unawaited(_createFood(context)),
-                      child: Text(l10n.foodsCreate),
-                    ),
-                  ),
-                )
-              : ListView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  children: [
-                    ListTile(
-                      key: const Key('FoodPicker.createFood'),
-                      leading: const Icon(AppSymbols.add),
-                      title: Text(l10n.foodsCreate),
-                      onTap: () => unawaited(_createFood(context)),
-                    ),
-                    if (favourites.isNotEmpty) ...[
-                      _Header(l10n.addMealFavorites),
-                      for (final food in favourites) FoodRow(food: food),
-                    ],
-                    _Header(l10n.addMealFoods),
-                    for (final food in foods) FoodRow(food: food),
-                  ],
-                ),
+          child: switch (_segment) {
+            LibrarySegment.recipes => _recipes(context, state),
+            LibrarySegment.foods => _foods(context, state),
+            LibrarySegment.favourites => _favourites(context, state),
+          },
         ),
+      ],
+    );
+  }
+
+  /// `RecipeListBuilderView` with a plate.
+  Widget _recipes(BuildContext context, AddMealState state) {
+    final l10n = context.l10n;
+    final recipes = sortedByName([
+      for (final recipe in state.recipes)
+        if (matchesRecipeFilter(recipe, _filter.trim())) recipe,
+    ], (recipe) => recipe.name);
+    final create = ListTile(
+      key: const Key('FoodPicker.createRecipe'),
+      leading: const Icon(AppSymbols.add),
+      title: Text(l10n.recipesCreate),
+      onTap: () => unawaited(CreateRecipePage.show(context)),
+    );
+    if (state.recipes.isEmpty) {
+      return SingleChildScrollView(
+        child: _Empty(
+          icon: AppSymbols.recipe,
+          title: l10n.recipesEmptyTitle,
+          message: l10n.recipesEmptyMessage,
+          action: FilledButton(
+            onPressed: () => unawaited(CreateRecipePage.show(context)),
+            child: Text(l10n.recipesCreate),
+          ),
+        ),
+      );
+    }
+    return ListView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      children: [
+        if (_filter.trim().isEmpty) ...[create, _Header(l10n.recipesCustom)],
+        for (final recipe in recipes) RecipeRow(recipe: recipe),
+        if (recipes.isEmpty)
+          _Empty(
+            icon: AppSymbols.search,
+            title: l10n.addMealNoResults(_filter.trim()),
+          ),
+      ],
+    );
+  }
+
+  /// `IngredientListBuilderView` with a plate: branded foods only when the
+  /// setting allows, matching on name or description.
+  Widget _foods(BuildContext context, AddMealState state) {
+    final l10n = context.l10n;
+    final needle = _filter.trim().toLowerCase();
+    bool has(String? text) =>
+        text != null && text.toLowerCase().contains(needle);
+    final showBranded = state.effectiveSettings.showBrandedFoods;
+    final foods = sortedByName([
+      for (final food in state.foods)
+        if ((showBranded || food.brandName == null) &&
+            (needle.isEmpty || has(food.name) || has(food.description)))
+          food,
+    ], (food) => food.name);
+    if (state.foods.isEmpty) {
+      return SingleChildScrollView(
+        child: _Empty(
+          icon: AppSymbols.food,
+          title: l10n.addMealLibraryEmptyTitle,
+          message: l10n.addMealLibraryEmptyMessage,
+          action: FilledButton(
+            onPressed: () => unawaited(_createFood(context)),
+            child: Text(l10n.foodsCreate),
+          ),
+        ),
+      );
+    }
+    return ListView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      children: [
+        if (needle.isEmpty) ...[
+          ListTile(
+            key: const Key('FoodPicker.createFood'),
+            leading: const Icon(AppSymbols.add),
+            title: Text(l10n.foodsCreate),
+            onTap: () => unawaited(_createFood(context)),
+          ),
+          _Header(l10n.addMealFoods),
+        ],
+        for (final food in foods) FoodRow(food: food),
+        if (foods.isEmpty)
+          _Empty(
+            icon: AppSymbols.search,
+            title: l10n.addMealNoResults(_filter.trim()),
+          ),
+      ],
+    );
+  }
+
+  /// The favourites (`FoodLibraryView.favouritesList`): recipes, then
+  /// foods, each filtered by name. A favourite whose recipe or food has
+  /// gone is dropped.
+  Widget _favourites(BuildContext context, AddMealState state) {
+    final l10n = context.l10n;
+    final settings = state.effectiveSettings;
+    if (settings.favouriteFoodIds.isEmpty &&
+        settings.favouriteRecipeIds.isEmpty) {
+      return SingleChildScrollView(
+        child: _Empty(
+          icon: AppSymbols.heart,
+          title: l10n.addMealNoFavoritesTitle,
+          message: l10n.addMealNoFavoritesMessage,
+        ),
+      );
+    }
+    final recipes = favourites(
+      state.recipes,
+      settings.favouriteRecipeIds,
+      _filter,
+      id: (recipe) => recipe.recipeId,
+      name: (recipe) => recipe.name,
+    );
+    final foods = favourites(
+      state.foods,
+      settings.favouriteFoodIds,
+      _filter,
+      id: (food) => food.ingredientId,
+      name: (food) => food.name,
+    );
+    return ListView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      children: [
+        if (recipes.isNotEmpty) ...[
+          _Header(l10n.addMealLibraryRecipes),
+          for (final recipe in recipes) RecipeRow(recipe: recipe),
+        ],
+        if (foods.isNotEmpty) ...[
+          _Header(l10n.addMealLibraryFoods),
+          for (final food in foods) FoodRow(food: food),
+        ],
       ],
     );
   }

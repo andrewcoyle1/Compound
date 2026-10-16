@@ -161,7 +161,14 @@ void main() {
       await pumpLogger(tester);
       await tester.tap(find.text('Library'));
       await tester.pumpAndSettle();
-      expect(find.text('Foods'), findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('FoodPicker.segments')),
+          matching: find.text('Foods'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Foods'), findsNWidgets(2));
       await tester.enterText(find.byType(TextField), 'salmon');
       await tester.pump();
       expect(find.text('Atlantic Salmon'), findsOneWidget);

@@ -72,6 +72,15 @@ void main() {
     ],
   );
   const settings = FoodLogSettings(authorId: uid);
+  final porridge = RecipeTemplateModel(
+    recipeId: 'porridge',
+    authorId: uid,
+    name: 'Porridge',
+    dateCreated: DateTime.utc(2026),
+    dateModified: DateTime.utc(2026),
+    ingredients: [RecipeIngredientModel.forFood(oats, 80)],
+    servingQuantity: 2,
+  );
 
   late NutritionRepository nutrition;
   late FoodRepository foods;
@@ -93,6 +102,8 @@ void main() {
     when(() => nutrition.watchFoodLogSettings(uid))
         .thenAnswer((_) => Stream.value(settings));
     when(() => foods.watchFoods(uid)).thenAnswer((_) => Stream.value([oats]));
+    when(() => foods.watchRecipes(uid))
+        .thenAnswer((_) => Stream.value([porridge]));
     when(() => nutrition.saveMeal(any())).thenAnswer((_) async {});
     when(() => foods.saveFood(any())).thenAnswer((_) async {});
   });
@@ -119,6 +130,7 @@ void main() {
       verify: (bloc) {
         expect(bloc.state.meals, [yesterday]);
         expect(bloc.state.foods, [oats]);
+        expect(bloc.state.recipes, [porridge]);
         expect(bloc.state.settings, settings);
         expect(bloc.state.dietPlan, isNull);
         expect(analytics.names.first, 'AddMealView_Appear');
@@ -129,6 +141,8 @@ void main() {
       'a stream that fails leaves the plate usable',
       setUp: () {
         when(() => foods.watchFoods(uid))
+            .thenAnswer((_) => Stream.error(Exception('offline')));
+        when(() => foods.watchRecipes(uid))
             .thenAnswer((_) => Stream.error(Exception('offline')));
         when(() => nutrition.watchFoodLogSettings(uid))
             .thenAnswer((_) => Stream.error(Exception('offline')));
@@ -141,6 +155,7 @@ void main() {
       act: (bloc) => bloc.add(const AddMealSubscriptionRequested()),
       verify: (bloc) {
         expect(bloc.state.foods, isEmpty);
+        expect(bloc.state.recipes, isEmpty);
         expect(bloc.state.effectiveSettings.authorId, uid);
         expect(bloc.state.meals, isNull);
       },
@@ -194,6 +209,36 @@ void main() {
         expect(added.sourceId, 'oats');
         expect(added.nutrients.values[NutrientKey.calories], 225);
       },
+    );
+
+    blocTest<AddMealBloc, AddMealState>(
+      "a recipe row's + adds the servings it was last logged at",
+      setUp: () => when(() => nutrition.watchMeals(uid)).thenAnswer(
+        (_) => Stream.value([
+          withItems(yesterday, [porridge.mealItem(1.5, itemId: 'r')]),
+        ]),
+      ),
+      build: build,
+      act: (bloc) => bloc
+        ..add(const AddMealSubscriptionRequested())
+        ..add(AddMealRecipeQuickAdded(porridge)),
+      wait: Duration.zero,
+      verify: (bloc) {
+        final added = bloc.state.meal.items.single;
+        expect(added.sourceType, MealItemSourceType.recipe);
+        expect(added.sourceId, 'porridge');
+        expect(added.amount, 1.5);
+        expect(added.unit, 'serving');
+        // 80 g of 375 kcal/100 g makes 300 kcal in two servings.
+        expect(added.nutrients.values[NutrientKey.calories], 225);
+      },
+    );
+
+    blocTest<AddMealBloc, AddMealState>(
+      'a recipe never logged adds one serving',
+      build: build,
+      act: (bloc) => bloc.add(AddMealRecipeQuickAdded(porridge)),
+      verify: (bloc) => expect(bloc.state.meal.items.single.amount, 1),
     );
 
     blocTest<AddMealBloc, AddMealState>(

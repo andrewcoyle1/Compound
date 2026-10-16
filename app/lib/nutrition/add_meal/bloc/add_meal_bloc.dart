@@ -13,7 +13,7 @@ part 'add_meal_state.dart';
 /// `NutritionLibraryPickerPresenter`): the plate, the picker that fills it,
 /// and the save. Also follows everything the picker reads: the user's
 /// meals (quick add's last amount, recent foods, the day's totals), diet
-/// plan, food log settings and food library.
+/// plan, food log settings, food library and recipes.
 class AddMealBloc extends Bloc<AddMealEvent, AddMealState> {
   new({
     required this._nutritionRepository,
@@ -29,6 +29,12 @@ class AddMealBloc extends Bloc<AddMealEvent, AddMealState> {
     on<AddMealModeSelected>(_onModeSelected);
     on<AddMealItemAdded>(_onItemAdded);
     on<AddMealFoodQuickAdded>(_onFoodQuickAdded);
+    on<AddMealRecipeQuickAdded>(
+      (event, emit) => _setItems(emit, [
+        ...state.meal.items,
+        event.recipe.quickAddItem(state.meals ?? const []),
+      ]),
+    );
     on<AddMealItemRemoved>(
       (event, emit) => _setItems(emit, [
         for (final item in state.meal.items)
@@ -85,6 +91,11 @@ class AddMealBloc extends Bloc<AddMealEvent, AddMealState> {
       emit.forEach(
         _foodRepository.watchFoods(_uid),
         onData: (foods) => state.copyWith(foods: foods),
+        onError: (_, _) => state,
+      ),
+      emit.forEach(
+        _foodRepository.watchRecipes(_uid),
+        onData: (recipes) => state.copyWith(recipes: recipes),
         onError: (_, _) => state,
       ),
     ]);

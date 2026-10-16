@@ -49,6 +49,7 @@ const _workoutFinished = bool.fromEnvironment('STAGING_WORKOUT_FINISHED');
 /// `--dart-define=STAGING_ONBOARDING=<step>` to start at a later step.
 Future<void> main() async {
   final now = DateTime.now();
+  final foods = sampleFoods(uid: sampleUserId, now: now);
   final step = OnboardingStep.values
       .where((step) => step.value == _onboardingStep)
       .firstOrNull;
@@ -120,7 +121,8 @@ Future<void> main() async {
         services: [ConsoleService()],
       ),
       foodRepository: InMemoryFoodRepository(
-        foods: sampleFoods(uid: sampleUserId, now: now),
+        foods: foods,
+        recipes: sampleRecipes(uid: sampleUserId, now: now, foods: foods),
       ),
       openFoodFacts: FakeOpenFoodFacts(),
       socialRepository: socialRepository,

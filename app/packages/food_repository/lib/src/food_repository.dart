@@ -18,6 +18,23 @@ abstract interface class FoodRepository {
   /// does (`deleteDocument` is a plain `delete()`). Deleting a food that is
   /// not there is not an error, as in Firestore.
   Future<void> deleteFood(String uid, String ingredientId);
+
+  /// Every recipe at `users/{uid}/recipe_templates`, as Swift's
+  /// `RecipeTemplateManager` listens to them. Re-emitted on every change.
+  Stream<List<RecipeTemplateModel>> watchRecipes(String uid);
+
+  /// Saves [recipe] to `users/{recipe.authorId}/recipe_templates/
+  /// {recipe.recipeId}`, merged over anything there, as
+  /// `RecipeTemplateManager.saveRecipeTemplate` does.
+  ///
+  /// Throws an [ArgumentError], writing nothing, when [recipe] has no author
+  /// (the rules refuse it) or no id.
+  Future<void> saveRecipe(RecipeTemplateModel recipe);
+
+  /// Deletes `users/{uid}/recipe_templates/{recipeId}`, as
+  /// `RecipeTemplateManager.deleteRecipeTemplate` does. Deleting a recipe
+  /// that is not there is not an error.
+  Future<void> deleteRecipe(String uid, String recipeId);
 }
 
 /// The user id [food] is saved under: its author, which must be set.
@@ -32,6 +49,22 @@ String requireAuthor(FoodModel food) {
       'food.ingredientId',
       'is empty',
     );
+  }
+  return authorId;
+}
+
+/// The user id [recipe] is saved under: its author, which must be set.
+String requireRecipeAuthor(RecipeTemplateModel recipe) {
+  final authorId = recipe.authorId;
+  if (authorId == null || authorId.isEmpty) {
+    throw ArgumentError.value(
+      recipe.authorId,
+      'recipe.authorId',
+      'is required',
+    );
+  }
+  if (recipe.recipeId.isEmpty) {
+    throw ArgumentError.value(recipe.recipeId, 'recipe.recipeId', 'is empty');
   }
   return authorId;
 }

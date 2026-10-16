@@ -5,12 +5,15 @@ import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/nutrition.dart';
+import 'package:compound/nutrition/search/nutrition_search_cubit.dart';
 import 'package:compound/nutrition/view/widgets/calendar_strip.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:food_repository/food_repository.dart'
+    show InMemoryFoodRepository;
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -53,12 +56,20 @@ void main() {
           foodLogSettings: settings,
         );
     await tester.pumpApp(
-      BlocProvider(
-        create: (_) => NutritionDayBloc(
-          nutritionRepository: nutritionRepository,
-          uid: uid,
-          now: () => now,
-        )..add(const NutritionDaySubscriptionRequested()),
+      MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => NutritionDayBloc(
+              nutritionRepository: nutritionRepository,
+              uid: uid,
+              now: () => now,
+            )..add(const NutritionDaySubscriptionRequested()),
+          ),
+          BlocProvider(
+            create: (_) =>
+                NutritionSearchCubit(uid: uid, foods: InMemoryFoodRepository()),
+          ),
+        ],
         child: const NutritionView(),
       ),
       appBloc: appBloc,
@@ -370,12 +381,22 @@ void main() {
         routes: [
           GoRoute(
             path: '/',
-            builder: (_, _) => BlocProvider(
-              create: (_) => NutritionDayBloc(
-                nutritionRepository: nutritionRepository,
-                uid: uid,
-                now: () => now,
-              )..add(const NutritionDaySubscriptionRequested()),
+            builder: (_, _) => MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) => NutritionDayBloc(
+                    nutritionRepository: nutritionRepository,
+                    uid: uid,
+                    now: () => now,
+                  )..add(const NutritionDaySubscriptionRequested()),
+                ),
+                BlocProvider(
+                  create: (_) => NutritionSearchCubit(
+                    uid: uid,
+                    foods: InMemoryFoodRepository(),
+                  ),
+                ),
+              ],
               child: const NutritionView(),
             ),
           ),

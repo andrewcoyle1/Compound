@@ -1,7 +1,9 @@
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/add_meal/cubit/amount_cubit.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
+import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -41,6 +43,155 @@ Future<MealItemModel?> showItemAmountSheet(
     child: ItemAmountSheet(item: item),
   ),
 );
+
+/// How much of [food] goes into a recipe (Swift
+/// `RecipeIngredientAmountView`): 100 g or ml to start, and Add. Null when
+/// dismissed.
+Future<RecipeIngredientModel?> showRecipeIngredientAmountSheet(
+  BuildContext context,
+  FoodModel food,
+) => showModalBottomSheet<RecipeIngredientModel>(
+  context: context,
+  isScrollControlled: true,
+  useSafeArea: true,
+  showDragHandle: true,
+  builder: (_) => BlocProvider(
+    create: (_) => AmountCubit(const AmountState(text: '100')),
+    child: _Tracked(
+      screen: 'RecipeIngredientAmountView',
+      child: RecipeIngredientAmountSheet(food: food),
+    ),
+  ),
+);
+
+/// How many servings of [recipe] to log (Swift `RecipeAmountView`): one
+/// to start, with Log beside Add to Plate. Null when dismissed.
+Future<FoodAmountResult?> showRecipeServingsSheet(
+  BuildContext context,
+  RecipeTemplateModel recipe,
+) => showModalBottomSheet<FoodAmountResult>(
+  context: context,
+  isScrollControlled: true,
+  useSafeArea: true,
+  showDragHandle: true,
+  builder: (_) => BlocProvider(
+    create: (_) => AmountCubit(const AmountState(text: '1')),
+    child: _Tracked(
+      screen: 'RecipeAmountView',
+      child: RecipeServingsSheet(recipe: recipe),
+    ),
+  ),
+);
+
+/// Logs [screen] appearing and going, as the Swift presenters do.
+class _Tracked extends StatefulWidget {
+  const new({required this.screen, required this.child});
+
+  final String screen;
+  final Widget child;
+
+  @override
+  State<_Tracked> createState() => _TrackedState();
+}
+
+class _TrackedState extends State<_Tracked> {
+  late final AnalyticsRepository _analytics = context
+      .read<AnalyticsRepository>();
+
+  @override
+  void initState() {
+    super.initState();
+    _analytics.appear(widget.screen);
+  }
+
+  @override
+  void dispose() {
+    _analytics.disappear(widget.screen);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+class RecipeIngredientAmountSheet extends StatelessWidget {
+  const new({required this.food, super.key});
+
+  final FoodModel food;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final state = context.watch<AmountCubit>().state;
+    final macros = foodAmountMacros(food, state);
+    return _SheetBody(
+      title: food.name,
+      subtitle: food.brandName,
+      field: _AmountField(unit: Text(food.loggedUnitLabel)),
+      macros: macros,
+      buttons: [
+        // Adding to a recipe is not logging, so this keeps its own verb.
+        AppCtaButton(
+          label: l10n.recipeIngredientAdd,
+          onPressed: state.amount > 0
+              ? () => Navigator.of(context).pop(
+                  RecipeIngredientModel.forFood(
+                    food,
+                    context.read<AmountCubit>().state.amount,
+                  ),
+                )
+              : null,
+        ),
+      ],
+    );
+  }
+}
+
+class RecipeServingsSheet extends StatelessWidget {
+  const new({required this.recipe, super.key});
+
+  final RecipeTemplateModel recipe;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final servings = context.watch<AmountCubit>().state.amount;
+    // For the servings entered, so the figures confirm the amount.
+    final perServing = recipe.perServing.values;
+    double? scaled(NutrientKey key) {
+      final value = perServing[key];
+      return value == null ? null : value * servings;
+    }
+
+    void close({required bool log}) => Navigator.of(context).pop((
+      item: recipe.mealItem(context.read<AmountCubit>().state.amount),
+      log: log,
+    ));
+
+    return _SheetBody(
+      title: recipe.name,
+      subtitle: recipe.description,
+      field: _AmountField(label: l10n.recipeAmountServings),
+      macros: (
+        calories: scaled(NutrientKey.calories),
+        protein: scaled(NutrientKey.protein),
+        carbs: scaled(NutrientKey.carbs),
+        fat: scaled(NutrientKey.fatTotal),
+      ),
+      buttons: [
+        AppCtaButton(
+          label: l10n.addMealLog,
+          onPressed: servings > 0 ? () => close(log: true) : null,
+        ),
+        AppCtaButton(
+          label: l10n.addMealAddToPlate,
+          variant: AppCtaVariant.secondary,
+          onPressed: servings > 0 ? () => close(log: false) : null,
+        ),
+      ],
+    );
+  }
+}
 
 class FoodAmountSheet extends StatelessWidget {
   const new({required this.food, super.key});
@@ -234,9 +385,12 @@ class _SheetBody extends StatelessWidget {
 /// The amount, focused with its text selected so typing replaces it, and
 /// its unit.
 class _AmountField extends StatefulWidget {
-  const new({required this.unit});
+  const new({this.unit, this.label});
 
-  final Widget unit;
+  final Widget? unit;
+
+  /// The field's label; Amount when null.
+  final String? label;
 
   @override
   State<_AmountField> createState() => _AmountFieldState();
@@ -282,13 +436,13 @@ class _AmountFieldState extends State<_AmountField> {
                 FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
               ],
               decoration: InputDecoration(
-                labelText: context.l10n.addMealAmount,
+                labelText: widget.label ?? context.l10n.addMealAmount,
               ),
               style: AppTextStyles.metric,
               onChanged: context.read<AmountCubit>().textChanged,
             ),
           ),
-          widget.unit,
+          ?widget.unit,
         ],
       ),
     );

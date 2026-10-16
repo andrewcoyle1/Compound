@@ -443,6 +443,7 @@ class _AppViewState extends State<AppView> {
         ),
       ),
       createFoodRoute,
+      createRecipeRoute,
       // Over the tabs, as the Swift app's sheet. Pops with the exercises
       // picked (`ExercisePickerPage.show`).
       GoRoute(

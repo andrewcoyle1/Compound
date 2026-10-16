@@ -99,6 +99,11 @@
     "abandoned",
     "paused"
   ],
+  "IngredientAmountUnit": [
+    "grams",
+    "milliliters",
+    "units"
+  ],
   "InitialLogFillOption": [
     "smartProgression",
     "previousValues",

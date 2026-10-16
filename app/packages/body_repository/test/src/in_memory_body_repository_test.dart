@@ -320,4 +320,66 @@ void main() {
     await tester.pump();
     expect(arrived, isTrue);
   });
+
+  group('progress photos', () {
+    ProgressPhotoModel photo(String id, String authorId, int day) =>
+        ProgressPhotoModel(
+          id: id,
+          authorId: authorId,
+          date: DateTime.utc(2026, 10, day),
+          pose: ProgressPhotoPose.front,
+          storagePath: ProgressPhotoModel.storagePathFor(authorId, id),
+        );
+
+    test("watchProgressPhotos emits the user's photos, newest first", () {
+      final repository = InMemoryBodyRepository(
+        progressPhotos: [
+          photo('a', 'me', 1),
+          photo('b', 'me', 9),
+          photo('theirs', 'you', 5),
+        ],
+      );
+      expect(
+        repository
+            .watchProgressPhotos('me')
+            .map((photos) => photos.map((photo) => photo.id)),
+        emits(['b', 'a']),
+      );
+    });
+
+    test(
+      'save adds or merges, delete removes, and watchers see each',
+      () async {
+        final repository = InMemoryBodyRepository();
+        final emitted = <List<String>>[];
+        final subscription = repository
+            .watchProgressPhotos('me')
+            .listen(
+              (photos) => emitted.add([
+                for (final photo in photos) '${photo.id}:${photo.note}',
+              ]),
+            );
+
+        await repository.saveProgressPhoto(photo('p', 'me', 3));
+        await repository.saveProgressPhoto(
+          ProgressPhotoModel.fromFirestore({
+            ...photo('p', 'me', 3).toFirestore(),
+            'note': 'Fasted',
+          }),
+        );
+        await repository.deleteProgressPhoto('you', 'p');
+        await repository.deleteProgressPhoto('me', 'p');
+        await pumpEventQueue();
+        await subscription.cancel();
+
+        expect(emitted, [
+          <String>[],
+          ['p:null'],
+          ['p:Fasted'],
+          ['p:Fasted'],
+          <String>[],
+        ]);
+      },
+    );
+  });
 }

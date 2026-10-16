@@ -25,6 +25,7 @@ import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/progress/progress.dart';
+import 'package:compound/progress_photos/progress_photos.dart';
 import 'package:compound/settings/settings.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/sharing/sharing_routes.dart';
@@ -49,6 +50,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
@@ -88,6 +90,12 @@ class const App({
   /// left out, for tests that never open Social.
   final SocialRepository? socialRepository,
 
+  /// Where photos are uploaded; in memory when left out.
+  final ImageRepository? imageRepository,
+
+  /// The camera and photo library; the bundled sample photo when left out.
+  final PhotoPicker? photoPicker,
+
   /// The system share sheet; tests pass one that records what is shared.
   final ShareSheet shareSheet = const ShareSheet(),
   final TrackerClock trackerClock = const TrackerClock(),
@@ -113,6 +121,12 @@ class const App({
         ),
         RepositoryProvider<CheckInRepository>(
           create: (_) => checkInRepository ?? InMemoryCheckInRepository(),
+        ),
+        RepositoryProvider<ImageRepository>(
+          create: (_) => imageRepository ?? InMemoryImageRepository(),
+        ),
+        RepositoryProvider<PhotoPicker>(
+          create: (_) => photoPicker ?? samplePhotoPicker(),
         ),
         RepositoryProvider.value(value: trackerClock),
         RepositoryProvider.value(value: shareSheet),

@@ -70,6 +70,9 @@ class _Document extends Fake
 
   @override
   Future<void> update(Map<Object, Object?> data) => _firestore._write(path);
+
+  @override
+  Future<void> delete() => _firestore._write(path);
 }
 
 class _Batch extends Fake implements WriteBatch {

@@ -151,7 +151,8 @@ struct FirestoreContractTests {
     }
 
     /// Fields named in the `author_id` listener (`BodyMeasurementsManager`), the goal `status`
-    /// update (`GoalManager`), the goal rule's frozen fields (`firestore.rules`), and the reads in
+    /// update (`GoalManager`), the goal rule's frozen fields (`firestore.rules`), the progress-photo
+    /// rule's checked fields, and the reads in
     /// `functions/coach.js` (`date` range queries, `deleted_at`, `number`, `daily_step_goal`, …).
     private static func bodyAndGoalContracts() throws -> [Contract] {
         [
@@ -177,6 +178,13 @@ struct FirestoreContractTests {
                 namedFields: ([
                     .id, .userId, .startingWeightKg, .createdAt, .status, .objective, .targetWeightKg, .weeklyChangeKg
                 ] as [WeightGoal.CodingKeys]).map(\.rawValue)
+            ),
+            // The progress-photo rule checks id, author_id, date, pose and storage_path by name.
+            try contract(
+                ProgressPhotoModel.self, directory: "progress_photo",
+                full: Samples.fullProgressPhoto, minimal: Samples.minimalProgressPhoto,
+                namedFields: ([.id, .authorId, .date, .pose, .storagePath] as [ProgressPhotoModel.CodingKeys])
+                    .map(\.rawValue)
             )
         ]
     }
@@ -367,7 +375,8 @@ struct FirestoreContractTests {
             "WeightSource": weightSources.map(\.rawValue),
             "StepsSource": stepsSources.map(\.rawValue),
             "GoalStatus": goalStatuses.map(\.rawValue),
-            "OverarchingObjective": objectiveKeys
+            "OverarchingObjective": objectiveKeys,
+            "ProgressPhotoPose": ProgressPhotoModel.Pose.allCases.map(\.rawValue)
         ]
     }
 

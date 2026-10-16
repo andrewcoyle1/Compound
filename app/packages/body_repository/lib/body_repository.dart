@@ -9,6 +9,8 @@ export 'package:compound_models/compound_models.dart'
         BodyMeasurementEntry,
         GoalStatus,
         OverarchingObjective,
+        ProgressPhotoModel,
+        ProgressPhotoPose,
         StepsModel,
         StepsSource,
         WeightGoal,

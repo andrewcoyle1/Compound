@@ -5,14 +5,17 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/settings/account/cubit/edit_profile_cubit.dart';
 import 'package:compound/social/social_routes.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:user_repository/user_repository.dart';
 
 /// Edit Profile (Swift `EditProfileView`), opened from the profile. Save
 /// writes the profile section; the privacy switch writes as it flips; the
-/// username row opens its own editor. The profile photo is not built yet.
+/// username row opens its own editor. The photo button picks a new profile
+/// photo, which Save uploads.
 class EditProfilePage extends StatelessWidget {
   const new({super.key});
 
@@ -27,6 +30,8 @@ class EditProfilePage extends StatelessWidget {
       create: (context) => EditProfileCubit(
         userRepository: context.read<UserRepository>(),
         analytics: context.read<AnalyticsRepository>(),
+        images: context.read<ImageRepository>(),
+        picker: context.read<PhotoPicker>(),
         user: state is AppAuthenticated ? state.profile : null,
       )..appeared(),
       child: const EditProfileView(),
@@ -117,6 +122,8 @@ class _EditProfileViewState extends State<EditProfileView> {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
+              _PhotoSection(state: state),
+              const SizedBox(height: AppSpacing.xl),
               _ProfileSection(state: state),
               const SizedBox(height: AppSpacing.xl),
               AppSection(
@@ -135,6 +142,69 @@ class _EditProfileViewState extends State<EditProfileView> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The profile photo (Swift `imageSection`): a newly picked one, else the
+/// stored one, else the person glyph, with the button that picks one.
+class _PhotoSection extends StatelessWidget {
+  const new({required this.state});
+
+  final EditProfileState state;
+
+  static const _size = 96.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    final picked = state.pickedPhoto;
+    final stored = state.profileImageUrl;
+    final placeholder = Icon(
+      AppSymbols.profile,
+      size: _size,
+      color: scheme.onSurfaceVariant,
+    );
+    final hasPhoto = picked != null || stored != null;
+    return Center(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ClipOval(
+            child: SizedBox.square(
+              dimension: _size,
+              child: picked != null
+                  ? Image.memory(
+                      picked,
+                      fit: BoxFit.cover,
+                      semanticLabel: l10n.editProfilePhoto,
+                      errorBuilder: (_, _, _) => placeholder,
+                    )
+                  : stored != null
+                  ? StoredImage(
+                      stored,
+                      semanticLabel: l10n.editProfilePhoto,
+                      placeholder: placeholder,
+                    )
+                  : placeholder,
+            ),
+          ),
+          Positioned(
+            right: -AppSpacing.s,
+            bottom: -AppSpacing.s,
+            child: IconButton.filled(
+              icon: const Icon(AppSymbols.camera),
+              tooltip: hasPhoto
+                  ? l10n.editProfileChangePhoto
+                  : l10n.editProfileAddPhoto,
+              onPressed: state.uid == null
+                  ? null
+                  : context.read<EditProfileCubit>().photoPressed,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -32,6 +32,8 @@ final class EditProfileState extends Equatable {
     this.activityLevel,
     this.isPrivate = false,
     this.username,
+    this.profileImageUrl,
+    this.pickedPhoto,
     this.status = EditProfileStatus.editing,
   });
 
@@ -65,6 +67,7 @@ final class EditProfileState extends Equatable {
       activityLevel: user.submittedDailyActivityLevel,
       isPrivate: user.isPrivate ?? false,
       username: user.username,
+      profileImageUrl: user.submittedProfileImage ?? user.photoUrl,
     );
   }
 
@@ -93,6 +96,12 @@ final class EditProfileState extends Equatable {
 
   /// Shown, not edited here yet.
   final String? username;
+
+  /// The picture shown now: the uploaded one, else the account's.
+  final String? profileImageUrl;
+
+  /// A new photo from the library, uploaded by Save.
+  final Uint8List? pickedPhoto;
   final EditProfileStatus status;
 
   /// A profile needs a first name.
@@ -144,6 +153,7 @@ final class EditProfileState extends Equatable {
     ExerciseFrequency? Function()? exerciseFrequency,
     ActivityLevel? Function()? activityLevel,
     bool? isPrivate,
+    Uint8List? pickedPhoto,
     EditProfileStatus? status,
   }) => EditProfileState(
     uid: uid,
@@ -163,6 +173,8 @@ final class EditProfileState extends Equatable {
     activityLevel: activityLevel != null ? activityLevel() : this.activityLevel,
     isPrivate: isPrivate ?? this.isPrivate,
     username: username,
+    profileImageUrl: profileImageUrl,
+    pickedPhoto: pickedPhoto ?? this.pickedPhoto,
     status: status ?? this.status,
   );
 
@@ -183,6 +195,8 @@ final class EditProfileState extends Equatable {
     activityLevel,
     isPrivate,
     username,
+    profileImageUrl,
+    pickedPhoto,
     status,
   ];
 }

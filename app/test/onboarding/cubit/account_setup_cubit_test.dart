@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/onboarding/account_setup/account_setup_cubit.dart';
 import 'package:compound_models/compound_models.dart' show UserModelKeys;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -14,6 +17,8 @@ import 'helpers.dart';
 void main() {
   late UserRepository users;
   late RecordingAnalytics analytics;
+  late InMemoryImageRepository images;
+  late FakePhotoPicker picker;
   final now = DateTime(2026, 10, 15, 9, 30);
 
   setUpAll(() => registerFallbackValue(<UserFieldValue>[]));
@@ -21,18 +26,25 @@ void main() {
   setUp(() {
     users = MockUserRepository();
     analytics = RecordingAnalytics();
+    images = InMemoryImageRepository();
+    picker = FakePhotoPicker();
     when(() => users.updateUserFields(any(), any())).thenAnswer((_) async {});
   });
 
-  AccountSetupCubit build({bool usesMetric = true, UserModel? profile}) =>
-      AccountSetupCubit(
-        userRepository: users,
-        analyticsRepository: analytics.repository,
-        uid: 'uid',
-        now: now,
-        usesMetric: usesMetric,
-        profile: profile,
-      );
+  AccountSetupCubit build({
+    bool usesMetric = true,
+    UserModel? profile,
+    ImageRepository? store,
+  }) => AccountSetupCubit(
+    userRepository: users,
+    analyticsRepository: analytics.repository,
+    uid: 'uid',
+    images: store ?? images,
+    picker: picker,
+    now: now,
+    usesMetric: usesMetric,
+    profile: profile,
+  );
 
   /// Answers every question up to the expenditure screen.
   void answerAll(AccountSetupCubit cubit) => cubit
@@ -122,6 +134,189 @@ void main() {
         expect(fail.parameters, {'error_description': '$error'});
       },
     );
+  });
+
+  group('the photo (OnboardingNamePhotoPresenterTests)', () {
+    List<String> photoEvents() => [
+      for (final name in analytics.names)
+        if (name.startsWith('NamePhoto_Photo')) name,
+    ];
+
+    Map<String, Object?> saved() => fieldsOf(
+      verify(() => users.updateUserFields('uid', captureAny())).captured.single,
+    );
+
+    test('the picker handing back nothing is recorded', () async {
+      picker.photo = null;
+      final cubit = build();
+
+      await cubit.photoPressed();
+
+      expect(photoEvents(), ['NamePhoto_PhotoNotSelected']);
+      expect(analytics.last('NamePhoto_PhotoNotSelected').type, LogType.info);
+      expect(cubit.state.photo, isNull);
+    });
+
+    test('a photo that fails to upload stops the flow instead of being '
+        'dropped', () async {
+      final cubit = build(store: FailingImageRepository())
+        ..firstNameChanged('Ada');
+      await cubit.photoPressed();
+
+      await cubit.saveName();
+
+      expect(cubit.state.status, AccountSetupStatus.nameFailure);
+      expect(cubit.state.question, AccountQuestion.name);
+      verifyNever(() => users.updateUserFields(any(), any()));
+    });
+
+    test('a chosen photo is uploaded along with the name', () async {
+      final cubit = build()..firstNameChanged('Ada');
+      await cubit.photoPressed();
+
+      await cubit.saveName();
+
+      expect(images.images.keys, ['users/uid/profile']);
+      expect(saved(), {
+        UserModelKeys.submittedProfileImage: startsWith('data:image/jpeg'),
+        UserModelKeys.submittedFirstName: 'Ada',
+        UserModelKeys.submittedLastName: '',
+      });
+      expect(cubit.state.question, AccountQuestion.gender);
+      expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+      expect(photoEvents(), [
+        'NamePhoto_PhotoSelected',
+        'NamePhoto_PhotoLoad_Start',
+        'NamePhoto_PhotoLoad_Success',
+      ]);
+    });
+
+    test('no photo means no upload is attempted', () async {
+      final cubit = build()..firstNameChanged('Ada');
+
+      await cubit.saveName();
+
+      expect(images.images, isEmpty);
+      expect(
+        saved().keys,
+        isNot(contains(UserModelKeys.submittedProfileImage)),
+      );
+    });
+
+    test('an empty photo selection loads nothing', () async {
+      picker.photo = Uint8List(0);
+      final cubit = build();
+
+      await cubit.photoPressed();
+
+      expect(cubit.state.photo, isNull);
+      expect(cubit.state.photoLoadFailed, isTrue);
+      expect(photoEvents().last, 'NamePhoto_PhotoLoad_Empty');
+    });
+
+    test('a photo that cannot be read says so; a good one clears it', () async {
+      picker.error = Exception('unreadable');
+      final cubit = build();
+
+      await cubit.photoPressed();
+
+      expect(cubit.state.photoLoadFailed, isTrue);
+      expect(photoEvents(), [
+        'NamePhoto_PhotoSelected',
+        'NamePhoto_PhotoLoad_Start',
+        'NamePhoto_PhotoLoad_Fail',
+      ]);
+      expect(analytics.last('NamePhoto_PhotoLoad_Fail').parameters, {
+        'error_description': 'Exception: unreadable',
+      });
+
+      picker.error = null;
+      await cubit.photoPressed();
+      expect(cubit.state.photoLoadFailed, isFalse);
+      expect(cubit.state.photo, picker.photo);
+    });
+
+    test(
+      'a photo is reported as set once picked, and cleared once removed',
+      () async {
+        final cubit = build();
+        expect(cubit.state.hasPhoto, isFalse);
+        expect(cubit.state.canRemovePhoto, isFalse);
+
+        await cubit.photoPressed();
+        expect(cubit.state.hasPhoto, isTrue);
+        expect(cubit.state.canRemovePhoto, isTrue);
+
+        cubit.removePhoto();
+        expect(cubit.state.hasPhoto, isFalse);
+        expect(cubit.state.photo, isNull);
+      },
+    );
+
+    test(
+      'the profile’s photo shows, the uploaded one before the account’s',
+      () {
+        final both = build(
+          profile: const UserModel(
+            userId: 'uid',
+            photoUrl: 'https://account/photo',
+            submittedProfileImage: 'https://uploaded/photo',
+          ),
+        );
+        expect(both.state.storedPhoto, 'https://uploaded/photo');
+        expect(both.state.hasPhoto, isTrue);
+
+        final account = build(
+          profile: const UserModel(userId: 'uid', photoUrl: 'https://a/p'),
+        );
+        expect(account.state.storedPhoto, 'https://a/p');
+        expect(account.state.hasPhoto, isTrue);
+        // The sign-in account's photo is not the app's to remove.
+        expect(account.state.canRemovePhoto, isFalse);
+        account.removePhoto();
+        expect(account.state.storedPhoto, 'https://a/p');
+      },
+    );
+
+    test('removing an uploaded photo clears it with the name, where Swift '
+        'kept it', () async {
+      final cubit =
+          build(
+              profile: const UserModel(
+                userId: 'uid',
+                photoUrl: 'https://account/photo',
+                submittedProfileImage: 'https://uploaded/photo',
+              ),
+            )
+            ..firstNameChanged('Ada')
+            ..removePhoto();
+
+      expect(cubit.state.storedPhoto, 'https://account/photo');
+      expect(cubit.state.canRemovePhoto, isFalse);
+      await cubit.saveName();
+
+      expect(saved(), {
+        UserModelKeys.submittedProfileImage: null,
+        UserModelKeys.submittedFirstName: 'Ada',
+        UserModelKeys.submittedLastName: '',
+      });
+    });
+
+    test('Remove takes a picked photo before the uploaded one', () async {
+      final cubit = build(
+        profile: const UserModel(
+          userId: 'uid',
+          submittedProfileImage: 'https://uploaded/photo',
+        ),
+      );
+      await cubit.photoPressed();
+
+      cubit.removePhoto();
+
+      expect(cubit.state.photo, isNull);
+      expect(cubit.state.storedPhoto, 'https://uploaded/photo');
+      expect(cubit.state.clearsUploadedPhoto, isFalse);
+    });
   });
 
   test('each question needs an answer before it moves on', () {

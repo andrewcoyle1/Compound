@@ -13,8 +13,10 @@ import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/onboarding/view/onboarding_widgets.dart';
 import 'package:compound/widgets/number_wheel.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:health_repository/health_repository.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 import 'package:user_repository/user_repository.dart';
 
@@ -37,6 +39,8 @@ class AccountSetupPage extends StatelessWidget {
         userRepository: context.read<UserRepository>(),
         analyticsRepository: context.read<AnalyticsRepository>(),
         uid: state.user.uid,
+        images: context.read<ImageRepository>(),
+        picker: context.read<PhotoPicker>(),
         now: DateTime.now(),
         usesMetric: !_imperialCountries.contains(country),
         profile: state.profile,
@@ -65,7 +69,11 @@ class AccountSetupView extends StatelessWidget {
         subtitle: l10n.onboardingNameSubtitle,
         isLoading: saving,
         onContinue: state.canSaveName ? cubit.saveName : null,
-        children: [_NameFields(state: state)],
+        children: [
+          _NamePhoto(state: state),
+          const SizedBox(height: AppSpacing.l),
+          _NameFields(state: state),
+        ],
       ),
       AccountQuestion.gender => OnboardingQuestion(
         step: OnboardingStep.completeAccountSetup,
@@ -322,6 +330,85 @@ class _HealthFill extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// The optional profile photo (`NamePhotoView.imageSection`): the photo
+/// picked or already set, or a glyph inviting one; Remove Photo; and a
+/// message when a photo could not be read.
+class _NamePhoto extends StatelessWidget {
+  const new({required this.state});
+
+  final AccountSetupState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cubit = context.read<AccountSetupCubit>();
+    final scheme = Theme.of(context).colorScheme;
+    final side = MediaQuery.textScalerOf(context)
+        .scale(AppIconSize.hero.points + AppSpacing.xl);
+    final picked = state.photo;
+    final stored = state.storedPhoto;
+    final glyph = Icon(
+      AppSymbols.profile,
+      size: AppIconSize.hero.of(context),
+      color: scheme.primary,
+    );
+    final invite = Column(
+      spacing: AppSpacing.s,
+      children: [
+        glyph,
+        Text(
+          l10n.onboardingAddPhoto,
+          style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
+        ),
+      ],
+    );
+    return Column(
+      spacing: AppSpacing.s,
+      children: [
+        Semantics(
+          button: true,
+          label: state.hasPhoto
+              ? l10n.onboardingChangePhoto
+              : l10n.onboardingAddPhoto,
+          excludeSemantics: true,
+          child: InkWell(
+            key: const Key('NamePhoto.photo'),
+            customBorder: const CircleBorder(),
+            onTap: () => unawaited(cubit.photoPressed()),
+            child: picked != null || stored != null
+                ? ClipOval(
+                    child: SizedBox.square(
+                      dimension: side,
+                      child: picked != null
+                          ? Image.memory(
+                              picked,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => glyph,
+                            )
+                          : StoredImage(stored!, placeholder: glyph),
+                    ),
+                  )
+                : invite,
+          ),
+        ),
+        if (state.canRemovePhoto)
+          TextButton(
+            key: const Key('NamePhoto.remove'),
+            onPressed: cubit.removePhoto,
+            style: TextButton.styleFrom(foregroundColor: scheme.error),
+            child: Text(l10n.onboardingRemovePhoto),
+          ),
+        if (state.photoLoadFailed)
+          AppInlineMessage(
+            kind: AppInlineMessageKind.error,
+            text: l10n.onboardingPhotoLoadFailed,
+            kindLabel: l10n.errorLabel,
+          ),
+      ],
     );
   }
 }

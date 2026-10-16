@@ -386,7 +386,10 @@ class _SearchResults extends StatelessWidget {
         if (workouts.isNotEmpty)
           AppSection(
             header: l10n.trainingWorkoutsRow,
-            children: [for (final workout in workouts) WorkoutRow(workout)],
+            children: [
+              for (final workout in workouts)
+                WorkoutRow(workout, showsPicture: true),
+            ],
           ),
       ],
     );

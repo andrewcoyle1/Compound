@@ -1,9 +1,12 @@
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:compound/gym_profiles/cubit/gym_profile_editor_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
+import '../../helpers/photos.dart';
 import '../../onboarding/cubit/helpers.dart';
 
 /// Swift `GymProfilePresenterTests`, for what the cubit holds: saving on
@@ -15,6 +18,8 @@ void main() {
   late MockTrainingSetupService setup;
   late RecordingAnalytics analytics;
   late GymProfileModel gym;
+  late InMemoryImageRepository images;
+  late FakePhotoPicker picker;
 
   setUpAll(() {
     registerFallbackValue(
@@ -25,6 +30,8 @@ void main() {
   setUp(() {
     setup = MockTrainingSetupService();
     analytics = RecordingAnalytics();
+    images = InMemoryImageRepository();
+    picker = FakePhotoPicker();
     gym = newGymProfile(
       authorId: 'author-1',
       name: 'Home Gym',
@@ -49,6 +56,8 @@ void main() {
     uid: 'user-1',
     setup: setup,
     analytics: analytics.repository,
+    images: images,
+    picker: picker,
     untitledName: 'Gimnasio sin nombre',
     newId: () => 'new-${ids++}',
   );
@@ -260,6 +269,8 @@ void main() {
         uid: 'user-1',
         setup: setup,
         analytics: analytics.repository,
+        images: images,
+        picker: picker,
         scope: const {(EquipmentKind.loadableBar, 'barbell')},
         onSaved: heard.add,
       );
@@ -297,11 +308,135 @@ void main() {
         uid: 'user-1',
         setup: setup,
         analytics: analytics.repository,
+        images: images,
+        picker: picker,
         onSaved: heard.add,
       )..renamed('Garage');
       expect(await cubit.left(), isFalse);
       expect(heard, isEmpty);
       await cubit.close();
+    });
+  });
+
+  group('the gym photo (GymProfilePresenter.onImageSelectorChanged)', () {
+    String photoPath() => 'users/author-1/gymProfiles/gym-1';
+
+    test('adding an image opens the photo library', () async {
+      await build().photoPressed();
+      expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+    });
+
+    test('a photo is uploaded to Swift’s path and saved on the gym', () async {
+      final cubit = build();
+      analytics.events.clear();
+
+      await cubit.photoPressed();
+
+      expect(images.images.keys, [photoPath()]);
+      final url = saved().single.imageUrl;
+      expect(url, startsWith('data:image/jpeg'));
+      expect(cubit.state.gym.imageUrl, url);
+      expect(cubit.state.hasUnsavedChanges, isFalse);
+      expect(cubit.state.savingPhoto, isFalse);
+      expect(analytics.names, [
+        'GymProfileView_ImageSelected_Start',
+        'GymProfileView_ImageSelected_Success',
+      ]);
+    });
+
+    test('edits made before the photo are saved with it', () async {
+      final cubit = build()..renamed('Garage Gym');
+      await cubit.photoPressed();
+      expect(saved().single.name, 'Garage Gym');
+      expect(await cubit.left(), isNull);
+    });
+
+    test('a save on leaving after a photo change keeps the photo', () async {
+      final cubit = build();
+      await cubit.photoPressed();
+      final url = cubit.state.gym.imageUrl;
+      cubit.renamed('Garage Gym');
+
+      await cubit.left();
+
+      final last = saved().last;
+      expect(last.name, 'Garage Gym');
+      expect(last.imageUrl, url);
+    });
+
+    test('saving without a new image keeps the existing one '
+        '(GymProfileManagerTests)', () async {
+      gym = GymProfileModel.fromFirestore({
+        ...gym.toFirestore(),
+        GymProfileModelKeys.imageUrl: 'https://example.com/gym.jpg',
+      });
+      await (build()..renamed('Home')).left();
+      expect(saved().single.imageUrl, 'https://example.com/gym.jpg');
+    });
+
+    test('a cancel saves nothing', () async {
+      picker.photo = null;
+      final cubit = build();
+      analytics.events.clear();
+
+      await cubit.photoPressed();
+
+      expect(images.images, isEmpty);
+      verifyNever(
+        () => setup.saveGymProfile(
+          any(),
+          untitledName: any(named: 'untitledName'),
+        ),
+      );
+      expect(analytics.names, [
+        'GymProfileView_ImageSelected_Start',
+        'GymProfileView_ImageSelected_Cancel',
+      ]);
+    });
+
+    test('a failed upload is severe and leaves the gym as it was', () async {
+      final cubit = GymProfileEditorCubit(
+        gym: gym,
+        uid: 'user-1',
+        setup: setup,
+        analytics: analytics.repository,
+        images: FailingImageRepository(),
+        picker: picker,
+      );
+
+      await cubit.photoPressed();
+
+      expect(cubit.state.gym.imageUrl, isNull);
+      expect(cubit.state.hasUnsavedChanges, isFalse);
+      expect(cubit.state.savingPhoto, isFalse);
+      expect(
+        analytics.last('GymProfileView_ImageSelected_Fail').type,
+        LogType.severe,
+      );
+    });
+
+    test('a failed save keeps the photo for the save on leaving', () async {
+      when(
+        () => setup.saveGymProfile(
+          any(),
+          untitledName: any(named: 'untitledName'),
+        ),
+      ).thenThrow(Exception('encoding'));
+      final cubit = build();
+
+      await cubit.photoPressed();
+
+      expect(cubit.state.gym.imageUrl, isNotNull);
+      expect(cubit.state.hasUnsavedChanges, isTrue);
+      expect(analytics.names.last, 'GymProfileView_ImageSelected_Fail');
+    });
+
+    test('a second press while one is saving does nothing', () async {
+      final cubit = build();
+      final first = cubit.photoPressed();
+      await cubit.photoPressed();
+      await first;
+      expect(picker.picks, hasLength(1));
     });
   });
 }

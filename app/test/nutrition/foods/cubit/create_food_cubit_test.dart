@@ -1,8 +1,10 @@
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/nutrition/foods/cubit/create_food_cubit.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart' show EnergyUnit;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../helpers/helpers.dart';
@@ -15,6 +17,8 @@ void main() {
   final now = DateTime.utc(2026, 9, 14, 12);
   late FoodRepository foods;
   late AnalyticsRecorder analytics;
+  late InMemoryImageRepository images;
+  late FakePhotoPicker picker;
   final saved = <FoodModel>[];
 
   setUpAll(() => registerFallbackValue(_FakeFood()));
@@ -23,6 +27,8 @@ void main() {
     saved.clear();
     foods = _MockFoodRepository();
     analytics = AnalyticsRecorder();
+    images = InMemoryImageRepository();
+    picker = FakePhotoPicker();
     when(() => foods.saveFood(any())).thenAnswer((invocation) async {
       saved.add(invocation.positionalArguments.single as FoodModel);
     });
@@ -32,6 +38,8 @@ void main() {
     uid: uid,
     foods: foods,
     analytics: analytics,
+    images: images,
+    picker: picker,
     now: () => now,
     newId: () => 'food-1',
   );
@@ -269,4 +277,102 @@ void main() {
       },
     );
   });
+
+  group(
+    'CreateFoodCubit image (CreateFoodPresenter, FoodManager.saveFood)',
+    () {
+      test('opening the image picker is tracked', () async {
+        await build().photoPressed();
+
+        expect(analytics.names.first, 'IngredientImageSelector_Start');
+        expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+      });
+
+      test('a picked photo is kept, and counts as something to lose', () async {
+        final cubit = build();
+
+        await cubit.photoPressed();
+
+        expect(cubit.state.photo, picker.photo);
+        expect(cubit.state.hasUnsavedChanges, isTrue);
+        expect(analytics.names, [
+          'IngredientImageSelector_Start',
+          'IngredientImageSelector_Success',
+        ]);
+      });
+
+      test('a cancel keeps nothing', () async {
+        picker.photo = null;
+        final cubit = build();
+
+        await cubit.photoPressed();
+
+        expect(cubit.state.photo, isNull);
+        expect(analytics.names, [
+          'IngredientImageSelector_Start',
+          'IngredientImageSelector_Cancel',
+        ]);
+      });
+
+      test('a photo that cannot be read is a severe failure', () async {
+        picker.error = Exception('unreadable');
+        final cubit = build();
+
+        await cubit.photoPressed();
+
+        expect(cubit.state.photo, isNull);
+        expect(analytics.names.last, 'IngredientImageSelector_Fail');
+        expect(analytics.events.last.type, LogType.severe);
+      });
+
+      test('Create uploads the photo to Swift’s path, then saves its address '
+          'on the food', () async {
+        final cubit = build()
+          ..nameChanged('Oats')
+          ..energyChanged(250);
+        await cubit.photoPressed();
+
+        await cubit.create();
+
+        expect(images.images.keys, ['ingredient_templates/food-1']);
+        expect(saved.single.imageUrl, startsWith('data:image/jpeg'));
+        expect(cubit.state.created?.imageUrl, saved.single.imageUrl);
+      });
+
+      test(
+        'without a photo nothing is uploaded and no address saved',
+        () async {
+          final cubit = build()
+            ..nameChanged('Oats')
+            ..energyChanged(250);
+
+          await cubit.create();
+
+          expect(images.images, isEmpty);
+          expect(saved.single.imageUrl, isNull);
+        },
+      );
+
+      test('a failed upload creates nothing and stays open', () async {
+        final cubit =
+            CreateFoodCubit(
+                uid: 'user-1',
+                foods: foods,
+                analytics: analytics,
+                images: FailingImageRepository(),
+                picker: picker,
+                newId: () => 'food-1',
+              )
+              ..nameChanged('Oats')
+              ..energyChanged(250);
+        await cubit.photoPressed();
+
+        await cubit.create();
+
+        expect(saved, isEmpty);
+        expect(cubit.state.status, CreateFoodStatus.failed);
+        expect(analytics.names.last, 'FoodDefinitionView_CreateFood_Fail');
+      });
+    },
+  );
 }

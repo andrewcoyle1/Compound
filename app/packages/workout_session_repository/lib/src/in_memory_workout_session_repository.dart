@@ -82,7 +82,26 @@ class InMemoryWorkoutSessionRepository implements WorkoutSessionRepository {
     activityId,
   );
 
-  void _update(String uid, String sessionId, String field, Object value) {
+  @override
+  Future<void> updateEditedSession(
+    String uid,
+    WorkoutSessionModel session,
+  ) async => _updateFields(
+    uid,
+    session.id,
+    EditedSessionFields.of(session, cleared: _cleared),
+  );
+
+  static const _cleared = Object();
+
+  void _update(String uid, String sessionId, String field, Object value) =>
+      _updateFields(uid, sessionId, {field: value});
+
+  void _updateFields(
+    String uid,
+    String sessionId,
+    Map<String, Object?> fields,
+  ) {
     final index = _indexOf(uid, sessionId);
     if (index < 0) {
       throw FirebaseException(
@@ -92,10 +111,9 @@ class InMemoryWorkoutSessionRepository implements WorkoutSessionRepository {
             'No document to update: users/$uid/workout_sessions/$sessionId',
       );
     }
-    _sessions[index] = WorkoutSessionModel.fromFirestore({
-      ..._sessions[index].toFirestore(),
-      field: value,
-    });
+    final data = {..._sessions[index].toFirestore(), ...fields}
+      ..removeWhere((_, value) => identical(value, _cleared));
+    _sessions[index] = WorkoutSessionModel.fromFirestore(data);
     _changes.add(null);
   }
 

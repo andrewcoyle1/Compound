@@ -11,6 +11,7 @@ import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/programs/view/program_widgets.dart'
     show confirmDestructive;
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -218,6 +219,10 @@ class _Details extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
+        if (recipe.imageUrl case final url?) ...[
+          StoredHeroImage(url),
+          const SizedBox(height: AppSpacing.l),
+        ],
         if (description != null && description.isNotEmpty) ...[
           Text(
             description,

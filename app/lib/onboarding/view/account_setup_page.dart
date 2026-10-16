@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/integrations/view/health_text.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/account_setup/account_setup_cubit.dart';
 import 'package:compound/onboarding/logic/body_units.dart';
@@ -12,6 +14,7 @@ import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/onboarding/view/onboarding_widgets.dart';
 import 'package:compound/widgets/number_wheel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 import 'package:user_repository/user_repository.dart';
 
@@ -37,6 +40,7 @@ class AccountSetupPage extends StatelessWidget {
         now: DateTime.now(),
         usesMetric: !_imperialCountries.contains(country),
         profile: state.profile,
+        health: context.read<HealthRepository>(),
       ),
       child: const AccountSetupView(),
     );
@@ -70,6 +74,7 @@ class AccountSetupView extends StatelessWidget {
         onBack: onBack,
         onContinue: state.gender == null ? null : cubit.genderContinued,
         children: [
+          if (isAppleHealth(context)) _HealthFill(state: state),
           OnboardingOptions<Gender>(
             options: Gender.values,
             selected: state.gender,
@@ -87,7 +92,10 @@ class AccountSetupView extends StatelessWidget {
         subtitle: l10n.onboardingDateOfBirthSubtitle,
         onBack: onBack,
         onContinue: cubit.dateOfBirthContinued,
-        children: [_DateOfBirthRow(date: state.dateOfBirth)],
+        children: [
+          if (isAppleHealth(context)) _HealthFill(state: state),
+          _DateOfBirthRow(date: state.dateOfBirth),
+        ],
       ),
       AccountQuestion.height => OnboardingQuestion(
         step: OnboardingStep.completeAccountSetup,
@@ -95,7 +103,10 @@ class AccountSetupView extends StatelessWidget {
         subtitle: l10n.onboardingHeightSubtitle,
         onBack: onBack,
         onContinue: cubit.heightContinued,
-        children: [_HeightPicker(state: state)],
+        children: [
+          _HealthFill(state: state),
+          _HeightPicker(state: state),
+        ],
       ),
       AccountQuestion.weight => OnboardingQuestion(
         step: OnboardingStep.completeAccountSetup,
@@ -103,7 +114,10 @@ class AccountSetupView extends StatelessWidget {
         subtitle: l10n.onboardingWeightSubtitle,
         onBack: onBack,
         onContinue: state.canSubmitWeight ? cubit.weightContinued : null,
-        children: [_WeightPicker(state: state)],
+        children: [
+          _HealthFill(state: state),
+          _WeightPicker(state: state),
+        ],
       ),
       AccountQuestion.exerciseFrequency => OnboardingQuestion(
         step: OnboardingStep.completeAccountSetup,
@@ -269,6 +283,46 @@ class AccountSetupView extends StatelessWidget {
         ],
       ),
     ];
+  }
+}
+
+/// "Fill from Apple Health" over a question's control, and what it found
+/// (Swift `AppleHealthFillSection`). Health Connect holds no date of birth
+/// or sex, so Android offers it for height and weight only.
+class _HealthFill extends StatelessWidget {
+  const new({required this.state});
+
+  final AccountSetupState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final fill = state.healthFill;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.l),
+      child: AppSection(
+        children: [
+          AppListRowButton(
+            title: l10n.healthFill(context),
+            icon: AppSymbols.heart,
+            accessory: fill == HealthFill.loading
+                ? const AppListRowCustom(CircularProgressIndicator.adaptive())
+                : null,
+            onPressed: () => unawaited(
+              context.read<AccountSetupCubit>().fillFromHealthPressed(),
+            ),
+          ),
+          if (fill == HealthFill.filled || fill == HealthFill.notFound)
+            AppInlineMessage(
+              kind: AppInlineMessageKind.info,
+              kindLabel: l10n.infoLabel,
+              text: fill == HealthFill.filled
+                  ? l10n.healthFilled(context)
+                  : l10n.healthNotFound(context),
+            ),
+        ],
+      ),
+    );
   }
 }
 

@@ -96,17 +96,25 @@ abstract final class TodayText {
   }
 
   /// A getting-started step's title.
-  static String starter(AppLocalizations l10n, StarterStep step) =>
-      switch (step) {
-        StarterStep.firstWorkout => l10n.todayFirstWorkout,
-        StarterStep.firstMeal => l10n.todayFirstMeal,
-        StarterStep.firstWeighIn => l10n.todayFirstWeighIn,
-      };
+  static String starter(
+    AppLocalizations l10n,
+    StarterStep step, {
+    bool appleHealth = true,
+  }) => switch (step) {
+    StarterStep.firstWorkout => l10n.todayFirstWorkout,
+    StarterStep.firstMeal => l10n.todayFirstMeal,
+    StarterStep.firstWeighIn => l10n.todayFirstWeighIn,
+    StarterStep.appleHealth =>
+      appleHealth ? l10n.healthConnectApple : l10n.healthConnectAndroid,
+    StarterStep.strava => l10n.stravaOfferConnect,
+  };
 
   /// A getting-started step's glyph.
   static IconData starterIcon(StarterStep step) => switch (step) {
     StarterStep.firstWorkout => AppSymbols.workout,
     StarterStep.firstMeal => AppSymbols.meal,
     StarterStep.firstWeighIn => AppSymbols.scaleWeight,
+    StarterStep.appleHealth => AppSymbols.heart,
+    StarterStep.strava => AppSymbols.cardio,
   };
 }

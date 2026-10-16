@@ -285,15 +285,39 @@ void main() {
         hasWorkout: false,
         hasMeal: false,
         hasWeighIn: false,
+        hasStepData: false,
+        stravaConnected: false,
       ),
       StarterStep.values,
     );
     expect(
-      remainingStarterSteps(hasWorkout: true, hasMeal: false, hasWeighIn: true),
+      remainingStarterSteps(
+        hasWorkout: true,
+        hasMeal: false,
+        hasWeighIn: true,
+        hasStepData: true,
+        stravaConnected: true,
+      ),
       [StarterStep.firstMeal],
     );
     expect(
-      remainingStarterSteps(hasWorkout: true, hasMeal: true, hasWeighIn: true),
+      remainingStarterSteps(
+        hasWorkout: true,
+        hasMeal: true,
+        hasWeighIn: true,
+        hasStepData: false,
+        stravaConnected: false,
+      ),
+      [StarterStep.appleHealth, StarterStep.strava],
+    );
+    expect(
+      remainingStarterSteps(
+        hasWorkout: true,
+        hasMeal: true,
+        hasWeighIn: true,
+        hasStepData: true,
+        stravaConnected: true,
+      ),
       isEmpty,
     );
   });

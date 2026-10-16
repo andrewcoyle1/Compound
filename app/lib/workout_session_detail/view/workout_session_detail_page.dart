@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sharing/share_card/share_workout_card.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
@@ -10,18 +11,21 @@ import 'package:compound/shell/app_tab.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_session_detail/bloc/workout_session_detail_bloc.dart';
+import 'package:compound/workout_session_detail/cubit/session_strava_cubit.dart';
 import 'package:compound/workout_session_detail/view/set_detail_row.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:strava_repository/strava_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// One finished workout, read-only: when it started, how long it took, its
 /// volume and notes, then each exercise with its sets. A port of the Swift
-/// app's `WorkoutSessionDetailView` without editing, deleting, Copy Link or
-/// Strava. Share Image draws the workout's card.
+/// app's `WorkoutSessionDetailView` without editing, deleting or Copy Link.
+/// Share Image draws the workout's card; "View on Strava" opens the
+/// activity, and the summary of a first workout offers Strava once.
 ///
 /// As the summary of a workout just finished (`isWorkoutSummary`), it opens
 /// over the tabs in the tracker's place, shows the [session] it is handed
@@ -63,14 +67,29 @@ class WorkoutSessionDetailPage extends StatelessWidget {
     // The router only shows this page while someone is signed in.
     final state = context.read<AppBloc>().state;
     if (state is! AppAuthenticated) return const SizedBox.shrink();
-    return BlocProvider(
-      create: (context) => WorkoutSessionDetailBloc(
-        sessionRepository: context.read<WorkoutSessionRepository>(),
-        userRepository: context.read<UserRepository>(),
-        uid: state.user.uid,
-        sessionId: sessionId,
-        session: session,
-      )..add(const WorkoutSessionDetailRequested()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => WorkoutSessionDetailBloc(
+            sessionRepository: context.read<WorkoutSessionRepository>(),
+            userRepository: context.read<UserRepository>(),
+            uid: state.user.uid,
+            sessionId: sessionId,
+            session: session,
+          )..add(const WorkoutSessionDetailRequested()),
+        ),
+        BlocProvider(
+          create: (context) => SessionStravaCubit(
+            sessions: context.read<WorkoutSessionRepository>(),
+            analytics: context.read(),
+            strava: context.read<StravaRepository?>(),
+            uid: state.user.uid,
+            sessionId: sessionId,
+            session: session,
+            isWorkoutSummary: isWorkoutSummary,
+          )..started(),
+        ),
+      ],
       child: WorkoutSessionDetailView(isWorkoutSummary: isWorkoutSummary),
     );
   }
@@ -85,43 +104,85 @@ class WorkoutSessionDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<WorkoutSessionDetailBloc>().state;
     final l10n = context.l10n;
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: !isWorkoutSummary,
-        title: Text(switch (state) {
-          WorkoutSessionDetailLoaded(:final session) => session.name,
-          _ => '',
-        }),
-        actions: [
-          if (state case WorkoutSessionDetailLoaded(:final session)
-              when session.endedAt != null)
-            _ShareImageButton(session: session),
-          if (isWorkoutSummary)
-            TextButton(
-              onPressed: () => context.canPop()
-                  ? context.pop()
-                  : context.go(AppTab.today.path),
-              child: Text(
-                l10n.summaryDone,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<SessionStravaCubit, SessionStravaState>(
+          listenWhen: (previous, current) =>
+              current.offerId != previous.offerId,
+          listener: (context, _) => unawaited(_offerStrava(context)),
+        ),
+        // A connection the offer started that failed.
+        BlocListener<StravaCubit, StravaState>(
+          listenWhen: (previous, current) =>
+              isWorkoutSummary && current.noticeId != previous.noticeId,
+          listener: showStravaNotice,
+        ),
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: !isWorkoutSummary,
+          title: Text(switch (state) {
+            WorkoutSessionDetailLoaded(:final session) => session.name,
+            _ => '',
+          }),
+          actions: [
+            if (state case WorkoutSessionDetailLoaded(:final session)
+                when session.endedAt != null)
+              _ShareImageButton(session: session),
+            if (isWorkoutSummary)
+              TextButton(
+                onPressed: () => context.canPop()
+                    ? context.pop()
+                    : context.go(AppTab.today.path),
+                child: Text(
+                  l10n.summaryDone,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
-            ),
+          ],
+        ),
+        body: switch (state) {
+          WorkoutSessionDetailLoading() => const Center(
+            child: CircularProgressIndicator.adaptive(),
+          ),
+          WorkoutSessionDetailNotFound() => _Message(
+            text: l10n.workoutSessionNotFound,
+          ),
+          WorkoutSessionDetailFailure() => _Message(
+            text: l10n.workoutSessionLoadFailure,
+            canRetry: true,
+          ),
+          final WorkoutSessionDetailLoaded loaded => _Detail(state: loaded),
+        },
+      ),
+    );
+  }
+
+  /// "Upload Workouts to Strava?" over the summary of a first workout.
+  static Future<void> _offerStrava(BuildContext context) async {
+    final l10n = context.l10n;
+    final offer = context.read<SessionStravaCubit>();
+    final strava = context.read<StravaCubit>();
+    final connect = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.stravaOfferTitle),
+        content: Text(l10n.stravaOfferMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.stravaNotNow),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.stravaOfferConnect),
+          ),
         ],
       ),
-      body: switch (state) {
-        WorkoutSessionDetailLoading() => const Center(
-          child: CircularProgressIndicator.adaptive(),
-        ),
-        WorkoutSessionDetailNotFound() => _Message(
-          text: l10n.workoutSessionNotFound,
-        ),
-        WorkoutSessionDetailFailure() => _Message(
-          text: l10n.workoutSessionLoadFailure,
-          canRetry: true,
-        ),
-        final WorkoutSessionDetailLoaded loaded => _Detail(state: loaded),
-      },
     );
+    final accepted = connect ?? false;
+    await offer.offerAnswered(connect: accepted);
+    if (accepted) await strava.connect(fromOffer: true);
   }
 }
 
@@ -194,6 +255,17 @@ class _Detail extends StatelessWidget {
                       title: session.name,
                     ),
                   ),
+                ),
+              if (context.watch<SessionStravaCubit>().state.link
+                  case final link?)
+                AppListRowButton(
+                  title: l10n.stravaViewOn,
+                  icon: AppSymbols.openExternally,
+                  accessory: null,
+                  onPressed: () {
+                    context.read<SessionStravaCubit>().viewOnStravaPressed();
+                    unawaited(context.read<LinkOpener>().open(link));
+                  },
                 ),
             ],
           ),

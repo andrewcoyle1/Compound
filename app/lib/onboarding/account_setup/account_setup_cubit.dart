@@ -4,6 +4,7 @@ import 'package:compound/onboarding/logic/body_units.dart';
 import 'package:compound/onboarding/logic/expenditure_estimate.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:equatable/equatable.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 /// The account-setup questions, in order (Swift folders `4 - …/1–9`).
@@ -26,6 +27,17 @@ enum AccountQuestion {
 /// Where a save has got to.
 enum AccountSetupStatus { idle, saving, nameFailure, profileFailure }
 
+/// Where "Fill from Apple Health" has got to on the question shown (Swift
+/// `AppleHealthFillState`).
+enum HealthFill {
+  idle,
+  loading,
+  filled,
+
+  /// Nothing stored, or read access refused: Health does not say which.
+  notFound,
+}
+
 /// Every answer of account setup. Only the name is saved before the last
 /// screen; the rest are saved together from the expenditure screen.
 final class const AccountSetupState({
@@ -44,6 +56,7 @@ final class const AccountSetupState({
   final int pounds = 154,
   final ExerciseFrequency? exerciseFrequency,
   final ActivityLevel? activityLevel,
+  final HealthFill healthFill = HealthFill.idle,
 }) extends Equatable {
   /// A first name that isn't only whitespace.
   bool get canSaveName => firstName.trim().isNotEmpty;
@@ -96,6 +109,7 @@ final class const AccountSetupState({
     int? pounds,
     ExerciseFrequency? exerciseFrequency,
     ActivityLevel? activityLevel,
+    HealthFill? healthFill,
   }) => AccountSetupState(
     question: question ?? this.question,
     status: status ?? this.status,
@@ -112,6 +126,7 @@ final class const AccountSetupState({
     pounds: pounds ?? this.pounds,
     exerciseFrequency: exerciseFrequency ?? this.exerciseFrequency,
     activityLevel: activityLevel ?? this.activityLevel,
+    healthFill: healthFill ?? this.healthFill,
   );
 
   @override
@@ -131,6 +146,7 @@ final class const AccountSetupState({
     pounds,
     exerciseFrequency,
     activityLevel,
+    healthFill,
   ];
 }
 
@@ -139,7 +155,8 @@ final class const AccountSetupState({
 /// other answers in one update from the expenditure screen. The AppBloc
 /// then sees the profile complete and moves on to the disclaimer.
 ///
-/// Left out: the profile photo (M5) and filling from Apple Health (M5).
+/// The sex, date of birth, height and weight questions can be filled from
+/// Apple Health or Health Connect. Left out: the profile photo.
 class AccountSetupCubit extends Cubit<AccountSetupState> {
   /// [usesMetric] picks the height unit the screen opens on, as Swift reads
   /// the locale's measurement system. [profile] prefills the name.
@@ -150,7 +167,9 @@ class AccountSetupCubit extends Cubit<AccountSetupState> {
     required DateTime now,
     bool usesMetric = true,
     UserModel? profile,
-  }) : super(
+    this._health,
+  }) : _openedAt = now,
+       super(
          AccountSetupState(
            // Eighteen years ago (`DateOfBirthPresenter`).
            dateOfBirth: DateTime(
@@ -173,12 +192,74 @@ class AccountSetupCubit extends Cubit<AccountSetupState> {
   final UserRepository _userRepository;
   final AnalyticsRepository _analyticsRepository;
   final String _uid;
+  final HealthRepository? _health;
+  final DateTime _openedAt;
 
   void _go(AccountQuestion question) {
     _analyticsRepository
       ..disappear(state.question.screen)
       ..appear(question.screen);
-    emit(state.copyWith(question: question, status: AccountSetupStatus.idle));
+    emit(
+      state.copyWith(
+        question: question,
+        status: AccountSetupStatus.idle,
+        healthFill: HealthFill.idle,
+      ),
+    );
+  }
+
+  /// "Fill from Apple Health" on the sex, date of birth, height or weight
+  /// question (`GenderPresenter`, `DateOfBirthPresenter`, `HeightPresenter`,
+  /// `WeightPresenter.onFillFromAppleHealthPressed`): asks for that one
+  /// type, then sets the control. A value the control cannot show counts as
+  /// nothing found and leaves it as it was.
+  Future<void> fillFromHealthPressed() async {
+    final health = _health;
+    final question = state.question;
+    if (health == null || state.healthFill == HealthFill.loading) return;
+    emit(state.copyWith(healthFill: HealthFill.loading));
+    void Function()? apply;
+    switch (question) {
+      case AccountQuestion.gender:
+        if (await health.readSex() case final sex?) {
+          apply = () => genderSelected(sex);
+        }
+      case AccountQuestion.dateOfBirth:
+        final earliest = DateTime(
+          _openedAt.year - 120,
+          _openedAt.month,
+          _openedAt.day,
+        );
+        if (await health.readDateOfBirth() case final date?
+            when !date.isBefore(earliest) && !date.isAfter(_openedAt)) {
+          apply = () => dateOfBirthChanged(date);
+        }
+      case AccountQuestion.height:
+        if (await health.readLatestHeightCentimeters() case final cm?
+            when cm.round() >= centimetresRange.min &&
+                cm.round() <= centimetresRange.max) {
+          apply = () => centimetresChanged(cm.round());
+        }
+      case AccountQuestion.weight:
+        if (await health.readLatestWeightKilograms() case final kg?
+            when kg.round() >= kilogramsRange.min &&
+                kg.round() <= kilogramsRange.max) {
+          apply = () => kilogramsChanged(kg.round());
+        }
+      case _:
+        emit(state.copyWith(healthFill: HealthFill.idle));
+        return;
+    }
+    if (isClosed || state.question != question) return;
+    apply?.call();
+    emit(
+      state.copyWith(
+        healthFill: apply == null ? HealthFill.notFound : HealthFill.filled,
+      ),
+    );
+    _analyticsRepository.analytic('${question.screen}_FillFromHealth', {
+      'found': apply != null,
+    });
   }
 
   /// Back one question. False on the first, where there is nothing behind.

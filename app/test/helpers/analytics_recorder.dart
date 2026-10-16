@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:compound/integrations/link_opener.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:flutter/widgets.dart';
 
@@ -45,4 +46,15 @@ class ShareRecorder extends ShareSheet {
     Uint8List bytes, {
     required String name,
   }) async => images.add((name, bytes));
+}
+
+/// A [LinkOpener] that keeps the links it was asked to open.
+class LinkRecorder extends LinkOpener {
+  new();
+
+  /// Every link opened, in order.
+  final opened = <Uri>[];
+
+  @override
+  Future<void> open(Uri uri) async => opened.add(uri);
 }

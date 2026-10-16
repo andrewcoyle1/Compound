@@ -3,7 +3,9 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 import '../../helpers/helpers.dart';
@@ -305,6 +307,39 @@ void main() {
           ]);
         },
       );
+
+      test('sends the weigh-in to Health first and keeps its id', () async {
+        final health = FakeHealthPlatform();
+        final bloc =
+            LogWeightBloc(
+                bodyRepository: bodyRepository,
+                userRepository: userRepository,
+                analyticsRepository: analyticsRepository,
+                uid: uid,
+                now: () => now,
+                newId: () => 'NEW-ID',
+                healthRepository: HealthRepository(
+                  platform: health,
+                  body: bodyRepository,
+                  nutrition: InMemoryNutritionRepository(),
+                ),
+              )
+              ..emit(ready())
+              ..add(const LogWeightSaveRequested());
+        await bloc.stream.firstWhere(
+          (state) => state.status == LogWeightStatus.saved,
+        );
+
+        expect(health.requested, [HealthScope.bodyMeasurements]);
+        expect(health.writtenWeights.single.value, 70);
+        final entry =
+            verify(() => bodyRepository.saveMeasurement(captureAny()))
+                    .captured
+                    .single
+                as BodyMeasurementEntry;
+        expect(entry.healthKitUuid, isNotNull);
+        await bloc.close();
+      });
 
       blocTest<LogWeightBloc, LogWeightState>(
         'saves the measurement before the profile',

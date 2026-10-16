@@ -16,6 +16,7 @@ import 'package:compound/shell/app_tab.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
@@ -53,6 +54,7 @@ class CheckInPage extends StatelessWidget {
         users: context.read<UserRepository>(),
         nutrition: context.read<NutritionRepository>(),
         body: context.read<BodyRepository>(),
+        health: context.read<HealthRepository>(),
         checkIns: context.read<CheckInRepository>(),
         programs: context.read<ProgramRepository>(),
         analytics: context.read<AnalyticsRepository>(),

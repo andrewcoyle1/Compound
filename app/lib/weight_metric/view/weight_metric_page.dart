@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
@@ -40,7 +43,15 @@ class WeightMetricPage extends StatelessWidget {
         uid: state.user.uid,
         metric: metric,
       )..add(const WeightMetricSubscriptionRequested()),
-      child: WeightMetricView(allData: allData),
+      // Scale Weight brings Health's weigh-ins in as it appears.
+      child: OnAppear(
+        onAppear: () {
+          if (metric == WeightMetric.scaleWeight) {
+            unawaited(context.read<HealthCubit>().syncBody());
+          }
+        },
+        child: WeightMetricView(allData: allData),
+      ),
     );
   }
 }

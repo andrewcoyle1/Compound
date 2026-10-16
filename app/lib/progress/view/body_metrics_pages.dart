@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_measurement/log_measurement.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
@@ -17,6 +18,7 @@ import 'package:compound_maths/compound_maths.dart'
     show BodyRatioBand, BodyRatioKind, Gender, bodyRatioBand;
 import 'package:compound_models/compound_models.dart'
     show BodyMeasurementEntryKeys;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 /// Body Metrics (Swift `BodyMetricsView`): scale weight and visual body
@@ -125,15 +127,23 @@ class BodyMetricDetailPage extends StatelessWidget {
     return ProgressProvider(
       screen: screen,
       parameters: parameters,
-      child: ProgressMetricView(
-        allData: allData,
-        allDataRoute: dataName,
-        pathParameters: {metricParameter: id},
-        metric: (context, state) => kind != null
-            ? _measurement(context, state, kind)
-            : ratio != null
-            ? _ratio(context, state, ratio)
-            : _bodyFat(context, state),
+      child: OnAppear(
+        // Visual body fat comes from Apple Health or Health Connect.
+        onAppear: () {
+          if (kind == null && ratio == null) {
+            unawaited(context.read<HealthCubit>().syncBody());
+          }
+        },
+        child: ProgressMetricView(
+          allData: allData,
+          allDataRoute: dataName,
+          pathParameters: {metricParameter: id},
+          metric: (context, state) => kind != null
+              ? _measurement(context, state, kind)
+              : ratio != null
+              ? _ratio(context, state, ratio)
+              : _bodyFat(context, state),
+        ),
       ),
     );
   }
@@ -184,6 +194,13 @@ class BodyMetricDetailPage extends StatelessWidget {
       entryIds: [for (final r in readings) r.id],
       deleteFields: const {BodyMeasurementEntryKeys.bodyFatPercentage},
       emptyMessage: l10n.bodyFatEmpty,
+      // No manual entry: re-reading all of Health also picks up history
+      // from before body fat access was granted.
+      add: ProgressMetricAction(
+        label: l10n.healthSync(context),
+        icon: AppSymbols.sync,
+        onPressed: () => unawaited(context.read<HealthCubit>().syncBody()),
+      ),
     );
   }
 

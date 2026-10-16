@@ -12,6 +12,7 @@ import 'package:compound/widgets/number_wheel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:user_repository/user_repository.dart';
 
@@ -32,6 +33,7 @@ class LogWeightPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => LogWeightBloc(
         bodyRepository: context.read<BodyRepository>(),
+        healthRepository: context.read<HealthRepository>(),
         userRepository: context.read<UserRepository>(),
         analyticsRepository: context.read<AnalyticsRepository>(),
         uid: state.user.uid,

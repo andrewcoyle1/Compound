@@ -269,6 +269,14 @@ abstract final class AppSymbols {
   /// Opening something in another app or the browser.
   static const IconData openExternally = Icons.open_in_new_rounded;
 
+  /// Apps connected to Compound, such as Strava (Swift
+  /// `app.connected.to.app.below.fill`).
+  static const IconData integrations = Icons.hub_rounded;
+
+  /// Fetching again from another app, such as "Sync from Apple Health"
+  /// (Swift `arrow.clockwise`).
+  static const IconData sync = Icons.sync_rounded;
+
   /// Watching a demonstration video.
   static const IconData video = Icons.smart_display_rounded;
 

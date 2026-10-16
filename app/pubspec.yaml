@@ -17,9 +17,9 @@ dependencies:
   auth_repository:
     path: packages/auth_repository
   bloc: ^9.2.1
-  characters: ^1.4.1
   body_repository:
     path: packages/body_repository
+  characters: ^1.4.1
   checkin_repository:
     path: packages/checkin_repository
   cloud_firestore: ^6.10.0
@@ -47,10 +47,14 @@ dependencies:
   flutter_local_notifications: ^22.3.2
   flutter_localizations:
     sdk: flutter
+  # Strava's consent page in a web authentication session (MIT).
+  flutter_web_auth_2: 5.1.0
   food_repository:
     path: packages/food_repository
   go_router: ^18.1.0
   google_sign_in: ^7.2.0
+  health_repository:
+    path: packages/health_repository
   http: ^1.6.0
   image_repository:
     path: packages/image_repository
@@ -69,12 +73,16 @@ dependencies:
   share_plus: 13.3.1
   social_repository:
     path: packages/social_repository
+  strava_repository:
+    path: packages/strava_repository
   training_library_repository:
     path: packages/training_library_repository
   training_rules:
     path: packages/training_rules
   training_session:
     path: packages/training_session
+  # "View on Strava" links (BSD-3).
+  url_launcher: 6.3.2
   user_repository:
     path: packages/user_repository
   wakelock_plus: ^1.8.1

@@ -259,8 +259,7 @@ class const TodayChecklist(final List<ChecklistItem> items) extends Equatable {
 
 // MARK: - Getting started
 
-/// A new account's first steps (`TodayStarter`), less connecting Apple
-/// Health and Strava, which are not ported yet.
+/// A new account's first steps (`TodayStarter`).
 enum StarterStep {
   /// Finish a workout.
   firstWorkout,
@@ -270,6 +269,12 @@ enum StarterStep {
 
   /// Log a weigh-in.
   firstWeighIn,
+
+  /// Connect Apple Health or Health Connect: done once steps have come in.
+  appleHealth,
+
+  /// Connect Strava. Left out of a build without Strava.
+  strava,
 }
 
 /// The starter steps not yet done, in order: the card shows while any are
@@ -278,10 +283,14 @@ List<StarterStep> remainingStarterSteps({
   required bool hasWorkout,
   required bool hasMeal,
   required bool hasWeighIn,
+  required bool hasStepData,
+  required bool stravaConnected,
 }) => [
   if (!hasWorkout) StarterStep.firstWorkout,
   if (!hasMeal) StarterStep.firstMeal,
   if (!hasWeighIn) StarterStep.firstWeighIn,
+  if (!hasStepData) StarterStep.appleHealth,
+  if (!stravaConnected) StarterStep.strava,
 ];
 
 // MARK: - Evening protein

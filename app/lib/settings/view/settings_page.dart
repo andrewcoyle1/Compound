@@ -6,6 +6,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
+import 'package:compound/integrations/view/integrations_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/cubit/settings_cubit.dart';
@@ -101,6 +102,11 @@ class _SettingsViewState extends State<SettingsView> {
                       cubit.notificationSettingsPressed();
                       _open(NotificationSettingsPage.name);
                     },
+                  ),
+                  AppListRowButton(
+                    title: l10n.settingsIntegrations,
+                    icon: AppSymbols.integrations,
+                    onPressed: () => _open(IntegrationsPage.name),
                   ),
                   // The coach's chats and the permission behind them.
                   AppListRowButton(

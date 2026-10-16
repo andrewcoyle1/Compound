@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:ai_repository/ai_repository.dart';
@@ -13,6 +14,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/firebase_options_development.dart';
+import 'package:compound/integrations/integrations.dart';
 import 'package:compound/notifications/notifications.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -26,6 +28,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:health_repository/health_repository.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_repository/image_repository.dart';
 import 'package:notifications_repository/notifications_repository.dart';
@@ -34,6 +37,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:purchases_repository/purchases_repository.dart';
 import 'package:social_repository/social_repository.dart';
+import 'package:strava_repository/strava_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
@@ -43,6 +47,10 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 /// `--dart-define-from-file=dart_defines.json` (see the README). Mixpanel is
 /// off when it's empty. Never commit it.
 const _mixpanelToken = String.fromEnvironment('MIXPANEL_TOKEN');
+
+/// Strava's client id for the dev Strava app, from the same gitignored
+/// file. Strava shows as unavailable when it's empty.
+const _stravaClientId = String.fromEnvironment('STRAVA_CLIENT_ID');
 
 /// The development flavor: the `compound-development` Firebase project.
 Future<void> main() async {
@@ -106,7 +114,66 @@ Future<void> main() async {
 
     // The workout under way, kept on the device between launches.
     final support = await getApplicationSupportDirectory();
+    final workoutSessionRepository = FirestoreWorkoutSessionRepository(
+      firestore: FirebaseFirestore.instance,
+      onWriteError: onWriteError,
+    );
+    final nutritionRepository = FirestoreNutritionRepository(
+      firestore: FirebaseFirestore.instance,
+      onWriteError: onWriteError,
+    );
+    final bodyRepository = FirestoreBodyRepository(
+      firestore: FirebaseFirestore.instance,
+      onWriteError: onWriteError,
+    );
+    final trainingLibraryRepository = FirestoreTrainingLibraryRepository(
+      firestore: FirebaseFirestore.instance,
+      onWriteError: onWriteError,
+    );
+    if (_stravaClientId.isEmpty) {
+      developer.log(
+        'STRAVA_CLIENT_ID is not set (dart_defines.json): Strava is '
+        'unavailable in this build',
+        name: 'strava',
+      );
+    }
     return App(
+      // The flavor's own bundle id and package name, which Health reports
+      // as the source of what this app wrote.
+      healthRepository: HealthRepository(
+        platform: HealthPackagePlatform(
+          ownSourceId: Platform.isIOS
+              ? 'com.andrewcoyle.compound.flutter.dev'
+              : 'com.andrewcoyle.compound.dev',
+        ),
+        body: bodyRepository,
+        nutrition: nutritionRepository,
+        onError: (error, stack) =>
+            unawaited(crashlytics.recordError(error, stack)),
+      ),
+      // The strava* callables are us-central1 and enforce App Check; the
+      // tokens never leave the server.
+      stravaRepository: _stravaClientId.isEmpty
+          ? null
+          : StravaRepository(
+              firestore: FirebaseFirestore.instance,
+              api: RemoteStravaApi(
+                callFunction: callStravaFunction(
+                  FirebaseFunctions.instanceFor(region: stravaFunctionsRegion),
+                ),
+                client: http.Client(),
+              ),
+              sessions: workoutSessionRepository,
+              store: FileStravaAccountStore(
+                Directory('${support.path}/strava'),
+              ),
+              clientId: _stravaClientId,
+              uploadContext: stravaUploadContext(
+                users: userRepository,
+                library: trainingLibraryRepository,
+              ),
+              onEvent: stravaEvents(analyticsRepository),
+            ),
       // Premium for now: RevenueCat's logIn isn't wired yet (the paywall
       // slice does it), and coachChat on compound-development skips its
       // premium check as dev builds do. Never copy this to production.
@@ -132,25 +199,13 @@ Future<void> main() async {
       ),
       userRepository: userRepository,
       notificationsRepository: notificationsRepository,
-      workoutSessionRepository: FirestoreWorkoutSessionRepository(
-        firestore: FirebaseFirestore.instance,
-        onWriteError: onWriteError,
-      ),
-      nutritionRepository: FirestoreNutritionRepository(
-        firestore: FirebaseFirestore.instance,
-        onWriteError: onWriteError,
-      ),
-      bodyRepository: FirestoreBodyRepository(
-        firestore: FirebaseFirestore.instance,
-        onWriteError: onWriteError,
-      ),
+      workoutSessionRepository: workoutSessionRepository,
+      nutritionRepository: nutritionRepository,
+      bodyRepository: bodyRepository,
       programRepository: FirestoreProgramRepository(
         firestore: FirebaseFirestore.instance,
       ),
-      trainingLibraryRepository: FirestoreTrainingLibraryRepository(
-        firestore: FirebaseFirestore.instance,
-        onWriteError: onWriteError,
-      ),
+      trainingLibraryRepository: trainingLibraryRepository,
       checkInRepository: FirestoreCheckInRepository(
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,

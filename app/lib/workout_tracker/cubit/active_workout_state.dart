@@ -33,6 +33,18 @@ final class const TrackerExercise({
 
   /// What each row's rest picker opens on, by set id.
   final Map<String, int> restPicker = const {},
+
+  /// Whether it can be put off to the end: sets left, and something else
+  /// to do first (`canDoLater`).
+  final bool canDoLater = false,
+
+  /// Why smart progression changed its numbers; only for the exercise the
+  /// log button is on.
+  final r.ProgressionReason? progressionReason,
+
+  /// Whether its progression note shows: the exercise on the card, not yet
+  /// started, and the note not yet read.
+  final bool showsProgressionNote = false,
 }) extends Equatable {
   @override
   List<Object?> get props => [
@@ -41,6 +53,9 @@ final class const TrackerExercise({
     weightStep,
     weightUnit,
     distanceUnit,
+    canDoLater,
+    progressionReason,
+    showsProgressionNote,
     restAnchor,
     exerciseNote,
     restPicker,
@@ -101,6 +116,14 @@ final class const StillTrainingEffect(final DateTime lastSet)
     extends TrackerEffect {
   @override
   List<Object?> get props => [lastSet];
+}
+
+/// A block was moved on the strip: where it is now, to announce, as it
+/// moves out from under a screen reader's focus.
+final class const BlockMovedEffect(final int position, final int count)
+    extends TrackerEffect {
+  @override
+  List<Object?> get props => [position, count];
 }
 
 /// The workout could not be started.
@@ -243,6 +266,20 @@ final class const ActiveWorkoutState({
       };
 
   bool get isActive => status == ActiveWorkoutStatus.active && session != null;
+
+  /// Working sets done and in all, a left/right pair counted once, for the
+  /// bar over the tabs (`TrainingAccessoryPresenter`).
+  ({int done, int total}) get setProgress {
+    final exercises = session?.exercises ?? const <WorkoutExerciseModel>[];
+    var done = 0;
+    var total = 0;
+    for (final exercise in exercises) {
+      final working = rulesExercise(exercise).workingSets;
+      done += r.fullyCompletedPairedSetCount(working);
+      total += r.pairedSetCount(working);
+    }
+    return (done: done, total: total);
+  }
 
   bool get isPaused => pausedAt != null;
 

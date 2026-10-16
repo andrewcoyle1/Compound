@@ -224,9 +224,11 @@ class WorkoutFinisher {
     required int firstWeekday,
     required String? Function() currentUid,
     void Function(SaveProgress progress)? onProgress,
+    void Function(Object error, {required bool isTransient})? onAttemptFailed,
   }) async {
     final uid = session.authorId;
-    var outcome = await _attempt(session);
+    Future<_Outcome> tryOnce() => _attempt(session, onAttemptFailed);
+    var outcome = await tryOnce();
     if (outcome == _Outcome.transient) {
       var attempt = 2;
       var waited = Duration.zero;
@@ -237,7 +239,7 @@ class WorkoutFinisher {
         await _wait(delay);
         waited += delay;
         if (currentUid() != uid) return const FinishResult(saved: false);
-        outcome = await _attempt(session);
+        outcome = await tryOnce();
         if (outcome != _Outcome.transient) break;
         attempt++;
       }
@@ -276,14 +278,19 @@ class WorkoutFinisher {
     return FinishResult(saved: true, streak: record.streak);
   }
 
-  Future<_Outcome> _attempt(m.WorkoutSessionModel session) async {
+  /// One try at the save; a failure is reported to [onFailed] each time,
+  /// as Swift's `finish_workout_save_error` is logged per attempt.
+  Future<_Outcome> _attempt(
+    m.WorkoutSessionModel session,
+    void Function(Object error, {required bool isTransient})? onFailed,
+  ) async {
     try {
       await _sessions.saveSession(session.authorId, session);
       return _Outcome.saved;
     } on Object catch (error) {
-      return isTransientWriteFailure(error)
-          ? _Outcome.transient
-          : _Outcome.permanent;
+      final transient = isTransientWriteFailure(error);
+      onFailed?.call(error, isTransient: transient);
+      return transient ? _Outcome.transient : _Outcome.permanent;
     }
   }
 }

@@ -123,6 +123,12 @@ Future<void> main() async {
           unawaited(crashlytics.recordError(error, stackTrace)),
     );
     await notificationsRepository.initialize();
+    final liveActivityRepository = MethodChannelLiveActivityRepository(
+      copy: AppNotificationCopy(),
+      onError: (error, stackTrace) =>
+          unawaited(crashlytics.recordError(error, stackTrace)),
+    );
+    await liveActivityRepository.initialize();
 
     // The workout under way, kept on the device between launches.
     final support = await getApplicationSupportDirectory();
@@ -222,6 +228,11 @@ Future<void> main() async {
       ),
       userRepository: userRepository,
       notificationsRepository: notificationsRepository,
+      liveActivityRepository: liveActivityRepository,
+      homeWidgetRepository: MethodChannelHomeWidgetRepository(
+        onError: (error, stackTrace) =>
+            unawaited(crashlytics.recordError(error, stackTrace)),
+      ),
       workoutSessionRepository: workoutSessionRepository,
       nutritionRepository: nutritionRepository,
       bodyRepository: bodyRepository,

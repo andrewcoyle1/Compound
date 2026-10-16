@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:notifications_repository/src/deep_link.dart';
+import 'package:notifications_repository/src/live_activity.dart';
 import 'package:notifications_repository/src/local_reminders.dart';
 
 /// Whether the system lets the app notify.
@@ -41,11 +42,13 @@ class const PushMessage({
 }
 
 /// {@template ongoing_workout}
-/// The workout under way as Android shows it, in an ongoing notification:
-/// the Live Activity's stand-in. [title] is the workout's name and [body]
-/// what is next. The clock counts up from [clock] (the workout's start, less
-/// any pause), or down to it while resting ([countsDown]); none while
-/// paused. [alert] posts it with sound, once, as the rest-over alert.
+/// The workout under way as it shows outside the app: Android's ongoing
+/// notification, and iOS's Live Activity ([OngoingWorkoutSurface]). [title]
+/// is the workout's name and [body] what is next. The clock counts up from
+/// [clock] (the workout's start, less any pause), or down to it while
+/// resting ([countsDown]); none while paused. [alert] posts it with sound,
+/// once, as the rest-over alert. The Live Activity shows [activity], for
+/// [sessionId].
 /// {@endtemplate}
 class const OngoingWorkout({
   required final String title,
@@ -53,12 +56,22 @@ class const OngoingWorkout({
   final DateTime? clock,
   final bool countsDown = false,
   final bool alert = false,
+  final String sessionId = '',
+  final LiveActivityState? activity,
 }) extends Equatable {
   /// {@macro ongoing_workout}
   this;
 
   @override
-  List<Object?> get props => [title, body, clock, countsDown, alert];
+  List<Object?> get props => [
+    title,
+    body,
+    clock,
+    countsDown,
+    alert,
+    sessionId,
+    activity,
+  ];
 }
 
 /// The words of a local notification and a channel's name, from the app's
@@ -123,8 +136,8 @@ class DeepLinkInbox {
 }
 
 /// Push and local notifications: permission, the push token, messages and
-/// taps, and the local reminders.
-abstract class NotificationsRepository {
+/// taps, the local reminders, and Android's ongoing workout notification.
+abstract class NotificationsRepository implements OngoingWorkoutSurface {
   /// Taps on notifications, waiting for the app to route them.
   final DeepLinkInbox deepLinks = DeepLinkInbox();
 
@@ -170,14 +183,18 @@ abstract class NotificationsRepository {
   /// Whether the workout under way shows as an ongoing notification
   /// (Android). When it does, it is the rest-over channel and the rest-over
   /// notification only stands in (`RestOverAlert`).
+  @override
   bool get showsOngoingWorkout;
 
   /// Shows, or updates, the ongoing workout notification; nothing where
   /// [showsOngoingWorkout] is false. A tap opens the tracker.
+  @override
   Future<void> showOngoingWorkout(OngoingWorkout workout);
 
-  /// Withdraws the ongoing workout notification.
-  Future<void> clearOngoingWorkout();
+  /// Withdraws the ongoing workout notification; a notification keeps no
+  /// summary.
+  @override
+  Future<void> clearOngoingWorkout({OngoingWorkoutSummary? summary});
 
   /// Takes the pushes already delivered off the tray, as opening the inbox
   /// reads them (Swift `clearAllDeliveredNotifications`). The app's own

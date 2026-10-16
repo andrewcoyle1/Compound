@@ -5,6 +5,9 @@ import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+  /// The Live Activity and the home-screen widgets (`WorkoutActivityChannel`).
+  private var workoutActivity: WorkoutActivityChannel?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -28,6 +31,9 @@ import UserNotifications
         AudioServicesPlaySystemSound(1007)
         result(nil)
       }
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "WorkoutActivity") {
+      workoutActivity = WorkoutActivityChannel(messenger: registrar.messenger())
     }
   }
 }

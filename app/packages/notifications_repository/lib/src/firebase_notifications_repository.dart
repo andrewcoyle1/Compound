@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:notifications_repository/src/deep_link.dart';
+import 'package:notifications_repository/src/live_activity.dart';
 import 'package:notifications_repository/src/local_reminders.dart';
 import 'package:notifications_repository/src/notifications_repository.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -372,7 +373,7 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
   }
 
   @override
-  Future<void> clearOngoingWorkout() =>
+  Future<void> clearOngoingWorkout({OngoingWorkoutSummary? summary}) =>
       _guard(() => _local.cancel(id: NotificationsRepository.ongoingWorkoutId));
 
   /// ponytail: a push iOS showed itself (the app in the background) has no

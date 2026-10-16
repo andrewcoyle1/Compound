@@ -56,7 +56,8 @@ Future<CoachRepository> inMemoryCoachRepository({
 }
 
 /// `coachChat` played over [firestore] for [uid], as Swift's
-/// `MockCoachService` answers: word by word, [wordDelay] apart.
+/// `MockCoachService` answers: word by word, [wordDelay] apart, with a
+/// canned answer for the screen it was asked from.
 ///
 /// Like the function, it refuses without consent (read from [users]),
 /// refuses a chat id that does not exist, counts 50 messages a day, and
@@ -83,7 +84,8 @@ CoachChatCall stagingCoachChat({
     }
     if (sent == 50) throw const CoachException(CoachFailure.dailyLimitReached);
     sent++;
-    for (final word in _answer.split(' ')) {
+    final answer = _answers[context?.kind] ?? _answer;
+    for (final word in answer.split(' ')) {
       await Future<void>.delayed(wordDelay);
       yield CoachText('$word ');
     }
@@ -100,7 +102,7 @@ CoachChatCall stagingCoachChat({
         ...?existing?[CoachChatKeys.messages] as List<Object?>?,
         for (final (id, role, text) in [
           ('$reply-q', CoachMessageRole.user, message),
-          (reply, CoachMessageRole.assistant, _answer),
+          (reply, CoachMessageRole.assistant, answer),
         ])
           {
             CoachMessageKeys.id: id,
@@ -113,7 +115,7 @@ CoachChatCall stagingCoachChat({
     yield CoachFinished(
       chatId: chat.id,
       messageId: reply,
-      text: _answer,
+      text: answer,
       remainingToday: 50 - sent,
     );
   };
@@ -133,3 +135,23 @@ const _answer =
     'Over the last four weeks you trained 3.5 times a week and your bench '
     'press estimated 1RM rose from 95 kg to 101 kg. Based on your 14 '
     'sessions since 7 September.';
+
+/// Canned answers for the screens with most to say; the rest get [_answer].
+const Map<CoachContextKind, String> _answers = {
+  CoachContextKind.weightTrend:
+      'Your trend weight is down 1.2 kg over the last four weeks, about '
+      '0.3 kg a week, which is the rate you planned. Based on your 24 '
+      'weigh-ins since 18 September.',
+  CoachContextKind.nutritionDay:
+      "You've eaten 1,640 of your 2,200 kcal and 98 of your 160 g of protein "
+      'so far. A chicken breast and a yoghurt would close most of the gap. '
+      "Based on today's three meals.",
+  CoachContextKind.checkIn:
+      'Your expenditure estimate rose by 90 kcal this week as your weight '
+      'held steady on more food, so your target went up by the same. Based '
+      "on this week's weigh-ins and meal logs.",
+  CoachContextKind.expenditure:
+      'Your estimated expenditure is 2,480 kcal a day, give or take 120. It '
+      'comes from your weight trend and what you logged over the last 28 '
+      'days.',
+};

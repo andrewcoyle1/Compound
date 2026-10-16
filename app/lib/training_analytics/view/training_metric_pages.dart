@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/training_analytics/bloc/training_analytics_bloc.dart';
@@ -100,6 +101,11 @@ class MuscleGroupDetailPage extends StatelessWidget {
           color: context.appColors.muscleGroups,
           emptyMessage: l10n.muscleSetsEmpty(name),
           info: MethodInfo.weeklyHardSets(l10n),
+          coach: CoachContext(
+            kind: CoachContextKind.muscleGroup,
+            id: muscle.value,
+            title: name,
+          ),
           summary: VolumeRecommendationSection(
             suggestion: state.recommendation(muscle),
           ),

@@ -15,6 +15,7 @@ import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:purchases_repository/purchases_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
@@ -39,6 +40,7 @@ void main() {
     );
     await tester.pumpWidget(
       App(
+        purchasesRepository: FakePurchasesRepository(),
         programRepository: InMemoryProgramRepository(),
         trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
         authRepository: InMemoryAuthRepository(

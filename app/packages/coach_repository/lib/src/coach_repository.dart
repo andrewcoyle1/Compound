@@ -83,18 +83,44 @@ class CoachRepository {
     }
   }
 
-  /// Sends [message] and streams the answer; a null [chatId] starts a new
-  /// chat. The function saves both sides, so [watchChats] catches up on its
-  /// own. [CoachFinished.remainingToday] is what is left of the day's
-  /// messages.
+  /// What the function said was left of [uid]'s messages today after the
+  /// last answer this run, or null before one (Swift
+  /// `CoachManager.remainingToday`).
+  int? remainingToday(String uid) => _remainingToday[uid];
+
+  final _remainingToday = <String, int>{};
+
+  /// Sends [uid]'s [message] and streams the answer; a null [chatId] starts
+  /// a new chat. The function saves both sides, so [watchChats] catches up
+  /// on its own. [CoachFinished.remainingToday] is what is left of the
+  /// day's messages, and is kept for [remainingToday].
   ///
   /// The stream fails with a [CoachException]. On
   /// [CoachFailure.dailyLimitReached] none are left.
   Stream<CoachStreamEvent> send(
+    String uid,
     String message, {
     String? chatId,
     CoachContext? context,
-  }) => _coachChat(message, chatId: chatId, context: context);
+  }) async* {
+    try {
+      await for (final event in _coachChat(
+        message,
+        chatId: chatId,
+        context: context,
+      )) {
+        if (event is CoachFinished) {
+          _remainingToday[uid] = event.remainingToday;
+        }
+        yield event;
+      }
+    } on CoachException catch (error) {
+      if (error.failure == CoachFailure.dailyLimitReached) {
+        _remainingToday[uid] = 0;
+      }
+      rethrow;
+    }
+  }
 
   CollectionReference<Map<String, dynamic>> _chats(String uid) =>
       _firestore.collection('users').doc(uid).collection('coach_chats');

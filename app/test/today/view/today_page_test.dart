@@ -4,6 +4,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/today/today.dart';
@@ -129,6 +130,26 @@ void main() {
         200,
       );
       expect(find.textContaining('protein to go today'), findsOneWidget);
+      // Swift's CoachTests: Today asks about today, and the gap about
+      // today's food.
+      final contexts = [
+        for (final button in tester.widgetList<AskCoachButton>(
+          find.byType(AskCoachButton),
+        ))
+          button.coachContext,
+      ];
+      expect(
+        contexts.map((context) => context.kind),
+        unorderedEquals([
+          CoachContextKind.today,
+          CoachContextKind.nutritionDay,
+        ]),
+      );
+      final food = contexts.firstWhere(
+        (context) => context.kind == CoachContextKind.nutritionDay,
+      );
+      expect(food.date, localDayKey(DateTime.now()));
+      expect(food.title, "Today's Food");
       await tester.scrollUntilVisible(find.text('Get Started · 2 of 3'), -200);
       // No meals logged: the starter card offers the first meal.
       expect(find.text('Get Started · 2 of 3'), findsOneWidget);

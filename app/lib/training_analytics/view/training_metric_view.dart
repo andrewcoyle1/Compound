@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/science/method_info.dart';
@@ -41,6 +42,9 @@ class const TrainingMetric({
   /// The text of each entry on All Recorded Data, newest first; by default
   /// the value and unit.
   final String Function(int index)? entryText,
+
+  /// What Ask Coach asks about; no button without one.
+  final CoachContext? coach,
 });
 
 /// A training metric's screen (Swift `MetricDetailView` with the
@@ -86,6 +90,7 @@ class TrainingMetricView extends StatelessWidget {
         title: Text(allData ? l10n.metricAllRecordedData : metric.title),
         actions: [
           if (!allData && info != null) MethodInfoButton(info),
+          if (!allData && metric.coach != null) AskCoachButton(metric.coach!),
           if (!allData) const StartWorkoutButton(),
         ],
       ),

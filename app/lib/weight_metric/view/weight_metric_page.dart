@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
@@ -83,6 +84,10 @@ class WeightMetricView extends StatelessWidget {
           actions: [
             if (!allData && state.metric == WeightMetric.weightTrend)
               MethodInfoButton(MethodInfo.weightTrend(l10n)),
+            if (!allData && state.metric == WeightMetric.weightTrend)
+              AskCoachButton(
+                CoachContext(kind: CoachContextKind.weightTrend, title: title),
+              ),
             if (!allData)
               IconButton(
                 icon: const Icon(AppSymbols.add),

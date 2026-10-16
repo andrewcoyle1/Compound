@@ -6,6 +6,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/bloc/weekly_check_in_bloc.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -105,6 +106,15 @@ class CheckInView extends StatelessWidget {
             },
           ),
           title: Text(step == null ? l10n.checkInTitle : stepTitle(l10n, step)),
+          actions: [
+            AskCoachButton(
+              CoachContext(
+                kind: CoachContextKind.checkIn,
+                date: localDayKey(state.weekStart),
+                title: l10n.checkInTitle,
+              ),
+            ),
+          ],
         ),
         body: switch (state.status) {
           WeeklyCheckInStatus.failure => Center(

@@ -99,3 +99,26 @@ struct SetTarget: DataSyncModelProtocol, Equatable, Hashable {
         case holdSeconds = "hold_seconds"
     }
 }
+
+extension SetTarget {
+    /// As the synthesized decoder, except that a missing `set_type` reads as standard, as a null
+    /// one already did. Some stored targets have none, and the whole template failed to decode.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try container.decode(String.self, forKey: .id),
+            setNumber: try container.decode(Int.self, forKey: .setNumber),
+            minReps: try container.decodeIfPresent(Int.self, forKey: .minReps),
+            maxReps: try container.decodeIfPresent(Int.self, forKey: .maxReps),
+            rirTarget: try container.decodeIfPresent(Int.self, forKey: .rirTarget),
+            setType: try container.decodeIfPresent(SetTargetSetType.self, forKey: .setType) ?? .standard,
+            dropCount: try container.decodeIfPresent(Int.self, forKey: .dropCount),
+            dropStepPercent: try container.decodeIfPresent(Int.self, forKey: .dropStepPercent),
+            dropReps: try container.decodeIfPresent(Int.self, forKey: .dropReps),
+            miniSetCount: try container.decodeIfPresent(Int.self, forKey: .miniSetCount),
+            amrapTargetReps: try container.decodeIfPresent(Int.self, forKey: .amrapTargetReps),
+            partialReps: try container.decodeIfPresent(Int.self, forKey: .partialReps),
+            holdSeconds: try container.decodeIfPresent(Int.self, forKey: .holdSeconds)
+        )
+    }
+}

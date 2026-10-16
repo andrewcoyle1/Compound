@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BodyMeasurementEntry: DataSyncModelProtocol, Equatable {
+struct BodyMeasurementEntry: DataSyncModelProtocol, Equatable, ReplacesClearedFields {
     
     let id: String
     let authorId: String
@@ -323,7 +323,7 @@ struct BodyMeasurementEntry: DataSyncModelProtocol, Equatable {
         case rightAnkleCircumference
     }
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case authorId = "author_id"
         case weightKg = "weight_kg"

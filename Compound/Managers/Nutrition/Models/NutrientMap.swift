@@ -46,11 +46,35 @@ struct NutrientMap: Codable, Equatable, Hashable, Sendable, ExpressibleByDiction
     /// nutrient. Breakdowns lean on that distinction — `recordedKeys(in:)` lists only what is
     /// really there, and `AddMealPresenter.breakdown(for:)` deliberately omits rather than prints
     /// `0 mcg`. The headline macros read through `?? 0`, so they are unaffected either way.
+    ///
+    /// Foods saved on 12–13 Mar 2026 stored `[NutrientKey: Double]` as Swift encodes a dictionary
+    /// whose key is not a `String`: an array of alternating keys and values. That shape is read too,
+    /// rather than costing the user the food.
     init(from decoder: Decoder) throws {
-        let stringDict = try [String: Double](from: decoder)
+        let stringDict: [String: Double]
+        if var pairs = try? decoder.unkeyedContainer() {
+            var dict: [String: Double] = [:]
+            while !pairs.isAtEnd {
+                let key = try pairs.decode(String.self)
+                dict[key] = try pairs.decode(Double.self)
+            }
+            stringDict = dict
+        } else {
+            stringDict = try [String: Double](from: decoder)
+        }
         storage = Dictionary(uniqueKeysWithValues: stringDict.compactMap {
             guard let key = NutrientKey(rawValue: $0.key), $0.value.isFinite else { return nil }
             return (key, $0.value)
+        })
+    }
+
+    /// The nutrients a document from before the map stored as top-level fields, each named as its
+    /// `NutrientKey`.
+    init(flatFieldsOf decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: AnyCodingKey.self)
+        storage = Dictionary(uniqueKeysWithValues: NutrientKey.allCases.compactMap { key in
+            guard let value = container.decode(AnyCodingKey(key.rawValue), or: Double?.none), value.isFinite else { return nil }
+            return (key, value)
         })
     }
 

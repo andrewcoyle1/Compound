@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct WeightGoal: DataSyncModelProtocol, Equatable {
+struct WeightGoal: DataSyncModelProtocol, Equatable, ReplacesClearedFields {
     
     /// The goal's own document. Goals are frozen once written (`firestore.rules` refuses changes to
     /// their figures), so a new goal is a new document and the user's `currentGoalId` points at it.
@@ -60,7 +60,7 @@ struct WeightGoal: DataSyncModelProtocol, Equatable {
         }
     }
     
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case id = "goal_id"
         case userId = "user_id"
         case objective
@@ -76,13 +76,35 @@ struct WeightGoal: DataSyncModelProtocol, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         userId = try container.decode(String.self, forKey: .userId)
         id = try container.decodeIfPresent(String.self, forKey: .id) ?? userId
-        objective = try container.decode(OverarchingObjective.self, forKey: .objective)
         startingWeightKg = try container.decode(Double.self, forKey: .startingWeightKg)
         targetWeightKg = try container.decode(Double.self, forKey: .targetWeightKg)
         weeklyChangeKg = try container.decode(Double.self, forKey: .weeklyChangeKg)
+        objective = try Self.objective(in: container, weeklyChangeKg: weeklyChangeKg)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         status = try container.decode(GoalStatus.self, forKey: .status)
         completedAt = try container.decodeIfPresent(Date.self, forKey: .completedAt)
+    }
+
+    /// The stored objective, repairing one that holds two cases where the figures say which.
+    ///
+    /// Builds that merge-saved an edited goal left the old objective's key beside the new one,
+    /// `{"loseWeight": {}, "maintain": {}}`, which the synthesized decoder refuses, so the goal
+    /// vanished. Maintaining is the only objective saved with a weekly rate of 0 (losing and
+    /// gaining start at 0.25% and 0.1% of body weight), so when exactly one stored case fits the
+    /// rate, it is the one the edit wrote. Losing beside gaining stays unreadable: nothing stored
+    /// says which came last, and the direction from start to target does not either, because an
+    /// edit keeps the start. The next save writes the map whole and drops the other key.
+    private static func objective(in container: KeyedDecodingContainer<CodingKeys>, weeklyChangeKg: Double) throws -> OverarchingObjective {
+        do {
+            return try container.decode(OverarchingObjective.self, forKey: .objective)
+        } catch {
+            // The case names the synthesized coding stores as keys.
+            let cases: [String: OverarchingObjective] = ["loseWeight": .loseWeight, "maintain": .maintain, "gainWeight": .gainWeight]
+            let stored = try container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: .objective).allKeys.compactMap { cases[$0.stringValue] }
+            let fitting = stored.filter { ($0 == .maintain) == (weeklyChangeKg == 0) }
+            guard fitting.count == 1, let objective = fitting.first else { throw error }
+            return objective
+        }
     }
 
     // MARK: - Computed Properties

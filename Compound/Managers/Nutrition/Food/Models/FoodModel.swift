@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct FoodModel: DataSyncModelProtocol, SearchListItem, FoodItem {
+struct FoodModel: DataSyncModelProtocol, SearchListItem, FoodItem, ReplacesClearedFields {
 
     var id: String { ingredientId }
 
@@ -179,7 +179,7 @@ struct FoodModel: DataSyncModelProtocol, SearchListItem, FoodItem {
         )
     }
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case ingredientId    = "ingredient_id"
         case authorId        = "author_id"
         case name
@@ -382,5 +382,40 @@ extension FoodModel: Hashable {
     }
     func hash(into hasher: inout Hasher) {
         hasher.combine(ingredientId)
+    }
+}
+
+extension FoodModel {
+    /// As the synthesized decoder, except that a food with no `nutrients` map reads the flat
+    /// nutrient fields builds before 12 Mar 2026 wrote (`calories`, `fat_total`, …, each named as
+    /// its `NutrientKey`). Decoded strictly, those foods vanished from the library. The next save
+    /// writes the map; the flat fields are left in place, unread.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            ingredientId: try container.decode(String.self, forKey: .ingredientId),
+            authorId: try container.decodeIfPresent(String.self, forKey: .authorId),
+            name: try container.decode(String.self, forKey: .name),
+            brandName: try container.decodeIfPresent(String.self, forKey: .brandName),
+            description: try container.decodeIfPresent(String.self, forKey: .description),
+            measurementMethod: try container.decode(MeasurementMethod.self, forKey: .measurementMethod),
+            nutrients: try container.decodeIfPresent(NutrientMap.self, forKey: .nutrients) ?? NutrientMap(flatFieldsOf: decoder),
+            barcode: try container.decodeIfPresent(String.self, forKey: .barcode),
+            servingWeight: try container.decodeIfPresent(Double.self, forKey: .servingWeight),
+            portionSize: try container.decodeIfPresent(Double.self, forKey: .portionSize),
+            portionName: try container.decodeIfPresent(String.self, forKey: .portionName),
+            portionWeight: try container.decodeIfPresent(Double.self, forKey: .portionWeight),
+            weightPortionSize: try container.decodeIfPresent(Double.self, forKey: .weightPortionSize),
+            weightPortionName: try container.decodeIfPresent(String.self, forKey: .weightPortionName),
+            portionVolume: try container.decodeIfPresent(Double.self, forKey: .portionVolume),
+            volumePortionSize: try container.decodeIfPresent(Double.self, forKey: .volumePortionSize),
+            volumePortionName: try container.decodeIfPresent(String.self, forKey: .volumePortionName),
+            imageURL: try container.decodeIfPresent(String.self, forKey: .imageURL),
+            dateCreated: try container.decode(Date.self, forKey: .dateCreated),
+            dateModified: try container.decode(Date.self, forKey: .dateModified),
+            clickCount: try container.decodeIfPresent(Int.self, forKey: .clickCount),
+            bookmarkCount: try container.decodeIfPresent(Int.self, forKey: .bookmarkCount),
+            favouriteCount: try container.decodeIfPresent(Int.self, forKey: .favouriteCount)
+        )
     }
 }

@@ -21,7 +21,36 @@ final class const PlateCalculatorSetup({
 
   /// A plate-loaded machine's base kept out of the set's load, in [unit].
   final double machineBase = 0,
-});
+}) {
+  /// The calculator for [set] of [exercise], on its bar or plate-loaded
+  /// machine in [gym]. `null` with no gym, no set or no such equipment.
+  static PlateCalculatorSetup? forSet(
+    GymProfileModel? gym,
+    WorkoutExerciseModel? exercise,
+    WorkoutSetModel? set,
+  ) {
+    if (gym == null || exercise == null || set == null) return null;
+    final unit = exercise.weightUnit ?? ExerciseWeightUnit.kilograms;
+    final equipment = exercise.activeVariation?.resistanceEquipment
+        .where(
+          (ref) =>
+              WeightStepper.steps([ref], gym, unit.rules).baseWeight != null,
+        )
+        .firstOrNull;
+    if (equipment == null) return null;
+    double inUnit(double kg) => r.convertWeight(kg, unit.rules);
+    return PlateCalculatorSetup(
+      gym: gym,
+      equipment: equipment,
+      unit: unit,
+      total: switch (set.weightKg) {
+        final kg? => (inUnit(kg) * 1000).roundToDouble() / 1000,
+        null => null,
+      },
+      machineBase: inUnit(set.machineBaseKg ?? 0),
+    );
+  }
+}
 
 /// The calculator's copy of the gym, which Done hands back.
 final class const PlateCalculatorState(

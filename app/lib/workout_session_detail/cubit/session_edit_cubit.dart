@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
+import 'package:compound/workout_tracker/logic/set_changes.dart';
 import 'package:compound_maths/compound_maths.dart' as maths;
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';

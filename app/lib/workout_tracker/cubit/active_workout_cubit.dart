@@ -5,7 +5,9 @@ import 'package:bloc/bloc.dart';
 import 'package:compound/notifications/notification_copy.dart';
 import 'package:compound/workout_tracker/cubit/equipment_sheet_cubit.dart';
 import 'package:compound/workout_tracker/cubit/plate_calculator_cubit.dart';
+import 'package:compound/workout_tracker/logic/set_changes.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
+import 'package:compound/workout_tracker/view/set_table.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
@@ -33,7 +35,8 @@ part 'active_workout_state.dart';
 /// workout's notifications in step: the rest-over notification
 /// (`RestOverNotifying`), "Still training?" (`IdleWorkoutReminder`) and, on
 /// Android, the ongoing notification that stands in for the Live Activity.
-class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
+class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
+    implements SetTableActions {
   new({
     required this._sessions,
     required this._users,
@@ -396,6 +399,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   // MARK: - Sets
 
   /// A tap on a row's circle: logs an open set, un-logs a logged one.
+  @override
   void toggleSet(String setId) {
     final controller = _controller;
     final set = state.set(setId);
@@ -452,6 +456,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   /// Deletes [setId] with its pair and sub-rows; [undo] puts them back.
+  @override
   void deleteSet(String setId) {
     final controller = _controller;
     if (controller == null) return;
@@ -466,6 +471,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   /// The set number's menu: [setId] (and its pair) made [choice]. Sub-rows
   /// the new type has no use for go, and a drop or myo set gets its first.
+  @override
   void setSetType(String setId, r.SetTypeChoice choice) {
     final controller = _controller;
     final set = state.set(setId);
@@ -482,6 +488,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   /// A drop (20 % lighter, on a weight the equipment makes) or a mini-set
   /// (at the set's weight) under [setId], after any it has.
+  @override
   void addSubSet(String setId, r.SubSetKind kind) {
     final controller = _controller;
     if (controller == null || state.set(setId) == null) return;
@@ -523,6 +530,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   /// A timed set's stopwatch stopped: the seconds held written into it. It
   /// never logs the set.
+  @override
   void stopwatchStopped(String setId, int seconds) {
     final controller = _controller;
     final set = state.set(setId);
@@ -785,6 +793,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   /// The weight heading's menu: [unit] for [exerciseId] everywhere from
   /// now on, its open sets converted when [convert] (`updateWeightUnit`,
   /// `convertAndRoundWeights`). The keypad closes on the old unit.
+  @override
   void changeWeightUnit(
     String exerciseId,
     ExerciseWeightUnit unit, {
@@ -805,6 +814,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   /// The distance heading's menu: [unit] for [exerciseId] everywhere from
   /// now on, its open sets converted when [convert]
   /// (`updateDistanceUnit`, `convertAndRoundDistances`).
+  @override
   void changeDistanceUnit(
     String exerciseId,
     DistanceUnit unit, {
@@ -878,6 +888,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   // MARK: - Keypad
 
   /// Opens the keypad on [field] of [setId].
+  @override
   void openKeypad(String setId, SetField field) {
     final controller = _controller;
     final exercise = state.exerciseHolding(setId);
@@ -898,13 +909,16 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   /// A digit or the decimal point.
+  @override
   void keypadKey(String key) =>
       _keypadEdit((keypad, set, unit) => keypad.type(key, set, unit));
 
+  @override
   void keypadBackspace() =>
       _keypadEdit((keypad, set, unit) => keypad.backspace(set, unit));
 
   /// − or +: the next weight the equipment makes.
+  @override
   void keypadStep({required bool up}) {
     final keypad = state.keypad;
     final controller = _controller;
@@ -937,10 +951,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   /// ± on an assisted weight: load and assistance swap.
+  @override
   void keypadSign() =>
       _keypadEdit((keypad, set, unit) => keypad.toggleSign(set, unit));
 
   /// A weight from the loading bar ("Use 67.5 kg"), in the display unit.
+  @override
   void keypadWeight(double value) {
     final keypad = state.keypad;
     final exercise = keypad == null ? null : state.exercise(keypad.exerciseId);
@@ -953,6 +969,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   /// A band chip: on the set, or off it; the last one off leaves none.
   /// Beside any weight, so a bar with bands keeps both.
+  @override
   void keypadBand(String name) {
     final keypad = state.keypad;
     final controller = _controller;
@@ -966,9 +983,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   /// The plates key: the loading bar over the weight keypad shown or put
   /// away, for the rest of the app's life.
+  @override
   void togglePlates() => emit(_copy(showsPlates: !state.showsPlates));
 
   /// A reps chip: last set's, the target's least or most.
+  @override
   void keypadReps(int reps) {
     final set = state.keypad == null ? null : state.set(state.keypad!.setId);
     if (set == null) return;
@@ -976,6 +995,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   /// Reps in reserve, kept as RPE; the chip chosen clears it.
+  @override
   void keypadRir(int rir) {
     final set = state.keypad == null ? null : state.set(state.keypad!.setId);
     if (set == null) return;
@@ -985,6 +1005,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   /// Next →: the row's next field.
+  @override
   void keypadNext() {
     final keypad = state.keypad;
     final next = keypad?.nextField;
@@ -998,6 +1019,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   /// ✓ on the row's last field: logs the set and closes; a logged set only
   /// closes, and one that cannot be logged yet stays open.
+  @override
   void keypadDone() {
     final keypad = state.keypad;
     final set = keypad == null ? null : state.set(keypad.setId);
@@ -1011,6 +1033,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   /// Hides the keypad; the edit carries onto the set's open siblings.
+  @override
   void closeKeypad() {
     if (state.keypad == null) return;
     _closeKeypad();
@@ -1078,12 +1101,14 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   // MARK: - Loading and equipment
 
   /// The loading bar opened the plate calculator.
+  @override
   void plateCalculatorOpened() =>
       _track('SetTrackerRow_PlateCalculator_Opened');
 
   /// Done in the plate calculator: only what it changes, the bar chosen
   /// and the plates on, goes onto the gym as it now is, which the keypad
   /// steps on at once while the save runs.
+  @override
   Future<void> saveGymLoading(GymProfileModel edited) async {
     final current = state.gym;
     final gym = current != null && current.id == edited.id

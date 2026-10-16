@@ -197,60 +197,21 @@ final class const ActiveWorkoutState({
   /// with no gym, no keypad or no such equipment.
   PlateCalculatorSetup? get plateCalculatorSetup {
     final keypad = this.keypad;
-    final gym = this.gym;
-    final exercise = keypad == null ? null : this.exercise(keypad.exerciseId);
-    final set = keypad == null ? null : this.set(keypad.setId);
-    if (gym == null || exercise == null || set == null) return null;
-    final unit = exercise.weightUnit ?? ExerciseWeightUnit.kilograms;
-    final equipment = exercise.activeVariation?.resistanceEquipment
-        .where(
-          (ref) =>
-              WeightStepper.steps([ref], gym, unit.rules).baseWeight != null,
-        )
-        .firstOrNull;
-    if (equipment == null) return null;
-    double inUnit(double kg) => r.convertWeight(kg, unit.rules);
-    return PlateCalculatorSetup(
-      gym: gym,
-      equipment: equipment,
-      unit: unit,
-      total: switch (set.weightKg) {
-        final kg? => (inUnit(kg) * 1000).roundToDouble() / 1000,
-        null => null,
-      },
-      machineBase: inUnit(set.machineBaseKg ?? 0),
+    if (keypad == null) return null;
+    return PlateCalculatorSetup.forSet(
+      gym,
+      exercise(keypad.exerciseId),
+      set(keypad.setId),
     );
   }
 
-  /// How many logged rows making [setId] [choice] would delete: sub-rows
-  /// the new type has no use for (`onSetTypeSelected`).
-  int loggedRowsLostBy(String setId, r.SetTypeChoice choice) {
-    final exercise = exerciseHolding(setId);
-    if (exercise == null) return 0;
-    final kept = {
-      for (final row in r.ActiveWorkout.applying(
-        choice,
-        setId,
-        exercise.sets.map(rulesSet).toList(),
-        firstSubSetId: '',
-        dropWeightKg: null,
-      ))
-        row.id,
-    };
-    return exercise.sets
-        .where((s) => s.completedAt != null && !kept.contains(s.id))
-        .length;
-  }
+  /// How many logged rows making [setId] [choice] would delete.
+  int loggedRowsLostBy(String setId, r.SetTypeChoice choice) =>
+      exerciseHolding(setId)?.loggedRowsLostBy(setId, choice) ?? 0;
 
   /// The drops and mini-sets deleting [setId] would take with it.
-  ({int drops, int minis}) subSetsRemovedBy(String setId) {
-    final exercise = exerciseHolding(setId);
-    if (exercise == null) return (drops: 0, minis: 0);
-    return r.ActiveWorkout.subSetsRemovedByDeleting(
-      setId,
-      exercise.sets.map(rulesSet).toList(),
-    );
-  }
+  ({int drops, int minis}) subSetsRemovedBy(String setId) =>
+      exerciseHolding(setId)?.subSetsRemovedBy(setId) ?? (drops: 0, minis: 0);
 
   /// The equipment sheet for [exerciseId]: its variations and the workout's
   /// gym.

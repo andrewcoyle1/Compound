@@ -99,33 +99,12 @@ final class const SessionEditState({
   ];
 
   /// The drops and mini-sets deleting [setId] would take with it.
-  ({int drops, int minis}) subSetsRemovedBy(String setId) {
-    final exercise = _holding(setId);
-    if (exercise == null) return (drops: 0, minis: 0);
-    return r.ActiveWorkout.subSetsRemovedByDeleting(
-      setId,
-      exercise.sets.map(rulesSet).toList(),
-    );
-  }
+  ({int drops, int minis}) subSetsRemovedBy(String setId) =>
+      _holding(setId)?.subSetsRemovedBy(setId) ?? (drops: 0, minis: 0);
 
   /// The logged rows making [setId] [choice] would delete.
-  int loggedRowsLostBy(String setId, r.SetTypeChoice choice) {
-    final exercise = _holding(setId);
-    if (exercise == null) return 0;
-    final kept = {
-      for (final row in r.ActiveWorkout.applying(
-        choice,
-        setId,
-        exercise.sets.map(rulesSet).toList(),
-        firstSubSetId: '',
-        dropWeightKg: null,
-      ))
-        row.id,
-    };
-    return exercise.sets
-        .where((s) => s.completedAt != null && !kept.contains(s.id))
-        .length;
-  }
+  int loggedRowsLostBy(String setId, r.SetTypeChoice choice) =>
+      _holding(setId)?.loggedRowsLostBy(setId, choice) ?? 0;
 
   WorkoutExerciseModel? _holding(String setId) => session.exercises
       .where((e) => e.sets.any((s) => s.id == setId))

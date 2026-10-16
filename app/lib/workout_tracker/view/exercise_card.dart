@@ -7,19 +7,15 @@ import 'package:compound/workout_editor/cubit/set_target_cubit.dart'
     show SessionScope;
 import 'package:compound/workout_editor/view/set_target_page.dart';
 import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart';
-import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/equipment_sheet.dart';
 import 'package:compound/workout_tracker/view/exercise_settings_page.dart';
 import 'package:compound/workout_tracker/view/notes_sheet.dart';
-import 'package:compound/workout_tracker/view/set_row_parts.dart';
+import 'package:compound/workout_tracker/view/set_table.dart';
 import 'package:compound/workout_tracker/view/swap_exercise_picker.dart';
 import 'package:compound/workout_tracker/view/tick.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
-import 'package:compound/workout_tracker/view/unit_menu.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
 
@@ -55,6 +51,7 @@ class ExerciseCard extends StatelessWidget {
               ),
       ];
     }
+    final cubit = context.read<ActiveWorkoutCubit>();
     final nextSetId = switch (state.primaryAction) {
       r.LogSetAction(:final setId) => setId,
       _ => null,
@@ -91,16 +88,23 @@ class ExerciseCard extends StatelessWidget {
                   case final text?)
                 _ProgressionNote(text: text),
             const SizedBox(height: AppSpacing.s),
-            _Headings(member: card.first),
+            SetTableHeadings(member: card.first, actions: cubit),
             for (final member in card)
               if (member.restAnchor is r.RestTop) _RestLine(state: state),
             for (final row in rows) ...[
-              _SetRow(
+              SetTableRow(
                 member: row.member,
                 set: row.set,
+                actions: cubit,
                 badge: row.badge,
                 isNext: row.set.id == nextSetId,
                 keypad: state.keypad?.setId == row.set.id ? state.keypad : null,
+                onFillFromPrevious: cubit.fillFromPrevious,
+                restInitialSeconds:
+                    row.member.restPicker[row.set.id] ??
+                    state.settings?.defaultRestDurationSeconds ??
+                    90,
+                onCustomRest: cubit.setCustomRest,
               ),
               if (row.member.restAnchor == r.RestBelow(row.set.id))
                 _RestLine(state: state),
@@ -111,7 +115,6 @@ class ExerciseCard extends StatelessWidget {
                 alignment: AlignmentDirectional.centerStart,
                 child: TextButton.icon(
                   onPressed: () {
-                    final cubit = context.read<ActiveWorkoutCubit>();
                     if (letter == null) {
                       cubit.addSet(card.single.exercise.id);
                     } else {
@@ -328,7 +331,12 @@ class _Header extends StatelessWidget {
     final setup = cubit.state.equipmentSetup(member.exercise.id);
     if (setup == null) return;
     cubit.equipmentOpened();
-    await showEquipmentSheet(context, setup);
+    await showEquipmentSheet(
+      context,
+      setup,
+      onChosen: cubit.chooseVariation,
+      onGymEdited: cubit.gymEdited,
+    );
   }
 
   /// The exercise as the library has it; null for one it no longer holds,
@@ -563,473 +571,6 @@ enum _ExerciseAction {
   swap,
   settings,
   delete,
-}
-
-/// The column headings, which the cells' own labels speak for.
-class _Headings extends StatelessWidget {
-  const new({required this.member});
-
-  final TrackerExercise member;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final style = AppTextStyles.label.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-      fontWeight: FontWeight.w600,
-    );
-    final mode = member.exercise.trackingMode;
-    Widget heading(SetField field) => Text(
-      _heading(l10n, field, member),
-      style: style,
-      textAlign: TextAlign.center,
-    );
-    // The plain headings are left to the cells' own labels; the unit menus
-    // are buttons in their own right.
-    return _Columns(
-      badge: ExcludeSemantics(child: Text(l10n.trackerColumnSet, style: style)),
-      last: ExcludeSemantics(child: Text(l10n.trackerColumnLast, style: style)),
-      fields: [
-        for (final field in SetField.of(_plainSet, mode))
-          switch (field) {
-            SetField.weight => UnitMenu<ExerciseWeightUnit>(
-              key: ValueKey('weight-unit-${member.exercise.id}'),
-              units: ExerciseWeightUnit.values,
-              selected: member.weightUnit,
-              name: (unit) => weightUnitName(l10n, unit),
-              semanticsLabel: l10n.trackerWeightUnitLabel(
-                weightUnitName(l10n, member.weightUnit),
-              ),
-              onSelected: (unit) => unawaited(_weight(context, unit)),
-              child: _MenuHeading(child: heading(field)),
-            ),
-            SetField.distance => UnitMenu<DistanceUnit>(
-              key: ValueKey('distance-unit-${member.exercise.id}'),
-              units: DistanceUnit.values,
-              selected: member.distanceUnit,
-              name: (unit) => distanceUnitName(l10n, unit),
-              semanticsLabel: l10n.trackerDistanceUnitLabel(
-                distanceUnitName(l10n, member.distanceUnit),
-              ),
-              onSelected: (unit) => unawaited(_distance(context, unit)),
-              child: _MenuHeading(child: heading(field)),
-            ),
-            SetField.reps ||
-            SetField.duration => ExcludeSemantics(child: heading(field)),
-          },
-      ],
-      done: const SizedBox.shrink(),
-    );
-  }
-
-  /// A new weight unit, asked how to apply (`promptWeightUnitChange`);
-  /// the one in use asks nothing.
-  Future<void> _weight(BuildContext context, ExerciseWeightUnit unit) async {
-    if (unit == member.weightUnit) return;
-    final cubit = context.read<ActiveWorkoutCubit>();
-    final change = await askUnitChange(
-      context,
-      context.l10n.trackerChangeWeightUnit,
-    );
-    if (change == null) return;
-    cubit.changeWeightUnit(
-      member.exercise.id,
-      unit,
-      convert: change == UnitChange.convert,
-    );
-  }
-
-  Future<void> _distance(BuildContext context, DistanceUnit unit) async {
-    if (unit == member.distanceUnit) return;
-    final cubit = context.read<ActiveWorkoutCubit>();
-    final change = await askUnitChange(
-      context,
-      context.l10n.trackerChangeDistanceUnit,
-    );
-    if (change == null) return;
-    cubit.changeDistanceUnit(
-      member.exercise.id,
-      unit,
-      convert: change == UnitChange.convert,
-    );
-  }
-
-  static final _plainSet = WorkoutSetModel(
-    id: '',
-    authorId: '',
-    index: 0,
-    isWarmup: false,
-    dateCreated: DateTime(2000),
-  );
-}
-
-String _heading(
-  AppLocalizations l10n,
-  SetField field,
-  TrackerExercise member,
-) => switch (field) {
-  SetField.weight => weightUnitSymbol(member.weightUnit),
-  SetField.reps => l10n.trackerColumnReps,
-  SetField.distance => TrackerText.distanceSymbol(member.distanceUnit),
-  SetField.duration => l10n.trackerColumnTime,
-};
-
-/// A heading that opens its unit's menu: underlined, with a row's height
-/// to tap.
-class _MenuHeading extends StatelessWidget {
-  const new({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(minHeight: AppControlSize.row),
-    child: Center(
-      child: DefaultTextStyle.merge(
-        style: const TextStyle(decoration: TextDecoration.underline),
-        child: child,
-      ),
-    ),
-  );
-}
-
-/// One row's columns: the badge, last time, the fields and the circle.
-class _Columns extends StatelessWidget {
-  const new({
-    required this.badge,
-    required this.last,
-    required this.fields,
-    required this.done,
-  });
-
-  final Widget badge;
-  final Widget last;
-  final List<Widget> fields;
-  final Widget done;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-      child: Row(
-        spacing: AppSpacing.xs,
-        children: [
-          SizedBox(
-            width: MediaQuery.textScalerOf(context).scale(40),
-            child: Center(child: badge),
-          ),
-          Expanded(flex: 3, child: last),
-          for (final field in fields) Expanded(flex: 2, child: field),
-          SizedBox(
-            width: AppControlSize.row,
-            child: Center(child: done),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// One set: its badge, last time, its fields to type into and its circle.
-/// The next set to log is tinted; a long press offers Delete Set.
-class _SetRow extends StatelessWidget {
-  const new({
-    required this.member,
-    required this.set,
-    required this.badge,
-    required this.isNext,
-    required this.keypad,
-  });
-
-  final TrackerExercise member;
-  final WorkoutSetModel set;
-  final String? badge;
-  final bool isNext;
-  final SetKeypad? keypad;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final scheme = Theme.of(context).colorScheme;
-    final colors = context.appColors;
-    final cubit = context.read<ActiveWorkoutCubit>();
-    final exercise = member.exercise;
-    final isLogged = set.completedAt != null;
-    final badge = this.badge ?? TrackerText.badge(l10n, set, exercise);
-    final previous = r.ActiveWorkout.lastSet(
-      rulesSet(set),
-      rulesExercise(exercise),
-      member.previous == null ? null : rulesExercise(member.previous!),
-    );
-    final previousModel = previous == null
-        ? null
-        : member.previous!.sets.firstWhere((s) => s.id == previous.id);
-    final lastText = previousModel == null
-        ? AppFormat.placeholder
-        : TrackerText.figures(
-                l10n,
-                previousModel,
-                exercise.trackingMode,
-                member.weightUnit,
-                locale: locale,
-                distanceUnit: member.distanceUnit,
-              ) ??
-              AppFormat.placeholder;
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
-    final logLabel = TrackerText.logTitle(l10n, set, exercise, locale: locale);
-    final fields = SetField.of(set, exercise.trackingMode);
-    Widget cell(SetField field) => _Cell(
-      key: ValueKey('cell-${set.id}-${field.name}'),
-      label: _heading(l10n, field, member),
-      text: _cellText(field, locale),
-      isActive: keypad?.field == field,
-      onTap: () => cubit.openKeypad(set.id, field),
-    );
-    final columns = _Columns(
-      badge: SetBadge(
-        set: set,
-        badge: badge,
-        semanticsLabel: set.isWarmup
-            ? l10n.setWarmup
-            : l10n.trackerLogSet(badge),
-      ),
-      // A tap copies last time's figures into an open set
-      // (`SetColumnValue`'s fill).
-      last: Semantics(
-        label: '${l10n.trackerColumnLast}, $lastText',
-        hint: previousModel == null || isLogged ? null : l10n.trackerFillsSet,
-        button: previousModel != null && !isLogged,
-        excludeSemantics: true,
-        onTap: previousModel == null || isLogged
-            ? null
-            : () => cubit.fillFromPrevious(set.id),
-        child: InkWell(
-          key: ValueKey('last-${set.id}'),
-          onTap: previousModel == null || isLogged
-              ? null
-              : () => cubit.fillFromPrevious(set.id),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: AppControlSize.row - 8,
-            ),
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Text(
-                lastText,
-                style: secondary,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ),
-      ),
-      fields: [
-        for (final field in fields)
-          // A time still to do gets a stopwatch, filling towards the plan's
-          // seconds for a stretch or hold, else last time's.
-          if (field == SetField.duration &&
-              !fields.contains(SetField.distance) &&
-              !isLogged)
-            SetStopwatch(
-              key: ValueKey('stopwatch-cell-${set.id}'),
-              setId: set.id,
-              targetSeconds: rulesSet(set).isTimedPiece
-                  ? set.durationSec
-                  : previousModel?.durationSec,
-              field: cell(field),
-            )
-          else
-            cell(field),
-      ],
-      done: Semantics(
-        button: true,
-        toggled: isLogged,
-        label: isLogged ? l10n.trackerLoggedValue : logLabel,
-        excludeSemantics: true,
-        child: IconButton(
-          key: ValueKey('done-${set.id}'),
-          onPressed: () => cubit.toggleSet(set.id),
-          icon: Icon(
-            isLogged ? AppSymbols.success : AppSymbols.choiceUnselected,
-            color: isLogged ? colors.success : scheme.onSurfaceVariant,
-          ),
-        ),
-      ),
-    );
-    return Semantics(
-      customSemanticsActions: {
-        CustomSemanticsAction(label: l10n.trackerRestTimer): () =>
-            unawaited(_restTimer(context)),
-        CustomSemanticsAction(label: TrackerText.deleteTitle(l10n, set)): () =>
-            unawaited(deleteSet(context, set, badge)),
-      },
-      child: GestureDetector(
-        onLongPress: () => unawaited(_menu(context, badge)),
-        child: ColoredBox(
-          color: isNext
-              ? AppColors.tintedSurface(scheme.primary)
-              : Colors.transparent,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AppControlSize.row),
-            // A drop or mini-set sits under its set, one step in.
-            child: Padding(
-              padding: EdgeInsetsDirectional.only(
-                start: set.parentSetId == null ? 0 : AppSpacing.l,
-              ),
-              child: columns,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// The live text while the keypad types into the cell, else the stored
-  /// value; empty shows the placeholder.
-  String _cellText(SetField field, String locale) {
-    final keypad = this.keypad;
-    final separator = NumberFormat.decimalPattern(locale).symbols.DECIMAL_SEP;
-    final raw = keypad != null && keypad.field == field
-        ? keypad.text
-        : SetKeypad.valueText(
-            field,
-            set,
-            member.weightUnit,
-            distanceUnit: member.distanceUnit,
-          );
-    // "60 + Red", "Red + Blue": the bands beside the weight.
-    final bands = field == SetField.weight
-        ? set.bands ?? const <String>[]
-        : const <String>[];
-    if (raw.isEmpty && bands.isEmpty) {
-      return field == SetField.reps
-          ? TrackerText.targetPlaceholder(set) ?? AppFormat.placeholder
-          : AppFormat.placeholder;
-    }
-    return switch (field) {
-      SetField.duration => SetKeypad.clockFromDigits(raw),
-      SetField.weight => [
-        if (raw.isNotEmpty) raw.replaceAll('.', separator),
-        ...bands,
-      ].join(' + '),
-      SetField.distance => raw.replaceAll('.', separator),
-      SetField.reps => raw,
-    };
-  }
-
-  /// The long press: the rest for this set, and delete.
-  Future<void> _menu(BuildContext context, String badge) async {
-    final l10n = context.l10n;
-    final danger = context.appColors.danger;
-    final action = await showModalBottomSheet<_RowAction>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(AppSymbols.rest),
-              title: Text(l10n.trackerRestTimer),
-              onTap: () => Navigator.of(context).pop(_RowAction.rest),
-            ),
-            ListTile(
-              leading: Icon(AppSymbols.delete, color: danger),
-              title: Text(
-                TrackerText.deleteTitle(l10n, set),
-                style: TextStyle(color: danger),
-              ),
-              onTap: () => Navigator.of(context).pop(_RowAction.delete),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (!context.mounted) return;
-    switch (action) {
-      case _RowAction.rest:
-        await _restTimer(context);
-      case _RowAction.delete:
-        await deleteSet(context, set, badge);
-      case null:
-        break;
-    }
-  }
-
-  /// The rest picker, on the rest that would run; Save keeps it for this
-  /// set alone, and both wheels at zero clear it.
-  Future<void> _restTimer(BuildContext context) async {
-    final cubit = context.read<ActiveWorkoutCubit>();
-    final initial =
-        member.restPicker[set.id] ??
-        cubit.state.settings?.defaultRestDurationSeconds ??
-        90;
-    final seconds = await showRestPicker(context, initial);
-    if (seconds == null) return;
-    cubit.setCustomRest(set.id, seconds > 0 ? seconds : null);
-  }
-}
-
-enum _RowAction { rest, delete }
-
-/// A field to type into: a tap opens the keypad on it.
-class _Cell extends StatelessWidget {
-  const new({
-    required this.label,
-    required this.text,
-    required this.isActive,
-    required this.onTap,
-    super.key,
-  });
-
-  final String label;
-  final String text;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Semantics(
-      button: true,
-      selected: isActive,
-      label: label,
-      value: text,
-      excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.s)),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: AppControlSize.row - 8),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-          decoration: ShapeDecoration(
-            color: context.appColors.canvas,
-            shape: RoundedSuperellipseBorder(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(AppRadius.s),
-              ),
-              side: isActive
-                  ? BorderSide(color: scheme.primary, width: 2)
-                  : BorderSide.none,
-            ),
-          ),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.rowTitle.copyWith(
-              fontFeatures: const [FontFeature.tabularFigures()],
-              color: scheme.onSurface,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 /// The rest under the set it follows: its countdown and bar, then Ready

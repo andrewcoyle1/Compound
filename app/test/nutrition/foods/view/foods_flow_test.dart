@@ -313,7 +313,8 @@ void main() {
         NutrientKey.protein: 10,
       }),
     );
-    final mealDate = DateTime(now.year, now.month, now.day, 12, 15);
+    // Midnight today: always before a meal logged again now, at any hour.
+    final mealDate = DateTime(now.year, now.month, now.day);
     final meal = MealLogModel(
       mealId: 'lunch',
       authorId: uid,

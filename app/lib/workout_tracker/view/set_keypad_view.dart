@@ -4,6 +4,10 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
+import 'package:compound/workout_tracker/view/plate_calculator_sheet.dart';
+import 'package:compound/workout_tracker/view/plate_loading_view.dart';
+import 'package:compound/workout_tracker/view/tracker_text.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -15,8 +19,10 @@ import 'package:training_session/training_session.dart';
 /// key edits the set as it is pressed.
 ///
 /// Digits on the left, sized as a number pad. The right-hand column, top to
-/// bottom: hide; nothing; − and + on a weight; and Next → to the row's next
-/// field, or ✓ on its last, which logs the set.
+/// bottom: hide; the plates key on a bar or plate-loaded machine, or ± on an
+/// assisted weight; − and + on a weight; and Next → to the row's next field,
+/// or ✓ on its last, which logs the set. Over a weight: the bar and plates
+/// being loaded, the gym's bands and how to make a stack's weight.
 class SetKeypadView extends StatelessWidget {
   const new({required this.state, required this.keypad, super.key});
 
@@ -54,6 +60,23 @@ class SetKeypadView extends StatelessWidget {
         ? null
         : r.EffortScale.rirChoice(set.rpe!);
 
+    // The exercise's equipment, for the loading bar, the bands and ±.
+    final member = state.card
+        .where((member) => member.exercise.id == exercise.id)
+        .firstOrNull;
+    final unit = member?.weightUnit ?? ExerciseWeightUnit.kilograms;
+    final step = member?.weightStep ?? r.WeightStep.fallback(unit.rules);
+    final isWeight = keypad.field == SetField.weight;
+    // On a bar or plate-loaded machine, whatever the weight, so the bar and
+    // plates being loaded are always in view; with every plate off it still
+    // opens the plate calculator, where they go back on.
+    final showsLoadingBar = isWeight && step.baseWeight != null;
+    final shown = keypad.shownWeight(set, unit);
+    final loading = r.PlateLoading.of(step, shown);
+    final stackSummary = isWeight
+        ? TrackerText.stackSummary(l10n, step, shown, unit, locale: locale)
+        : null;
+
     Widget digit(String key) => _Key(
       key: ValueKey('keypad-$key'),
       label: key,
@@ -73,7 +96,33 @@ class SetKeypadView extends StatelessWidget {
           child: const Icon(AppSymbols.hideKeyboard),
         ),
       ],
-      [digit('4'), digit('5'), digit('6'), const SizedBox.shrink()],
+      [
+        digit('4'),
+        digit('5'),
+        digit('6'),
+        if (showsLoadingBar)
+          Semantics(
+            selected: state.showsPlates,
+            child: _Key(
+              key: const ValueKey('keypad-plates'),
+              label: l10n.keypadShowPlates,
+              onPressed: cubit.togglePlates,
+              child: const Icon(AppSymbols.plateCalculator),
+            ),
+          )
+        else if (keypad.showsSignKey)
+          Semantics(
+            hint: l10n.keypadChangeSignHint,
+            child: _Key(
+              key: const ValueKey('keypad-sign'),
+              label: l10n.keypadChangeSign,
+              onPressed: cubit.keypadSign,
+              child: const Text('±'),
+            ),
+          )
+        else
+          const SizedBox.shrink(),
+      ],
       [
         digit('7'),
         digit('8'),
@@ -166,6 +215,45 @@ class SetKeypadView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             spacing: _spacing,
             children: [
+              // A weight the bar cannot carry keeps the bar up, as it holds
+              // the nearest that can.
+              if (showsLoadingBar && (state.showsPlates || loading == null))
+                _LoadingBar(
+                  loading: loading,
+                  step: step,
+                  shown: shown,
+                  unit: unit,
+                  machineBase: r.convertWeight(
+                    set.machineBaseKg ?? 0,
+                    unit.rules,
+                  ),
+                ),
+              if (isWeight && step.bands.isNotEmpty)
+                _ChipStrip(
+                  children: [
+                    _Heading(l10n.keypadBands),
+                    for (final band in step.bands)
+                      _KeyChip(
+                        key: ValueKey('keypad-band-$band'),
+                        title: band,
+                        selected: set.bands?.contains(band) ?? false,
+                        onPressed: () => cubit.keypadBand(band),
+                      ),
+                  ],
+                ),
+              if (stackSummary != null)
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 36),
+                  child: Center(
+                    child: Text(
+                      stackSummary,
+                      style: AppTextStyles.rowDetail.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                ),
               if (keypad.field == SetField.reps && repsChips.isNotEmpty)
                 _ChipStrip(
                   children: [
@@ -182,12 +270,7 @@ class SetKeypadView extends StatelessWidget {
                     Semantics(
                       label: l10n.trackerRirTitle,
                       excludeSemantics: true,
-                      child: Text(
-                        l10n.trackerRirShort,
-                        style: AppTextStyles.label.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      child: _Heading(l10n.trackerRirShort),
                     ),
                     for (final rir in r.EffortScale.rirChoices)
                       _KeyChip(
@@ -314,6 +397,7 @@ class _KeyChip extends StatelessWidget {
     required this.onPressed,
     this.label,
     this.selected = false,
+    super.key,
   });
 
   final String title;
@@ -360,4 +444,145 @@ class _KeyChip extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A chip row's name, before its chips.
+class _Heading extends StatelessWidget {
+  const new(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    title,
+    style: AppTextStyles.label.copyWith(
+      fontWeight: FontWeight.w700,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
+}
+
+/// The bar and plates for the weight being typed (`SetKeyboardView`'s
+/// loading bar), with their sum on a line under them. Tapped, it opens the
+/// plate calculator. A weight the plates cannot make offers the nearest
+/// that they can.
+class _LoadingBar extends StatelessWidget {
+  const new({
+    required this.loading,
+    required this.step,
+    required this.shown,
+    required this.unit,
+    required this.machineBase,
+  });
+
+  final r.PlateLoading? loading;
+  final r.WeightStep step;
+  final double? shown;
+  final ExerciseWeightUnit unit;
+
+  /// A machine's base kept out of the field, in [unit].
+  final double machineBase;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final cubit = context.read<ActiveWorkoutCubit>();
+    final loading = this.loading;
+    final shown = this.shown;
+    final scheme = Theme.of(context).colorScheme;
+    final danger = context.appColors.danger;
+    if (loading != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: AppSpacing.xxs,
+          children: [
+            Semantics(
+              button: true,
+              hint: l10n.keypadPlatesHint,
+              child: InkWell(
+                key: const ValueKey('keypad-loading'),
+                onTap: () => unawaited(_openPlateCalculator(context)),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: PlateLoadingView(
+                    loading: loading,
+                    plates: step.plates,
+                    unit: unit,
+                    showsEquation: false,
+                  ),
+                ),
+              ),
+            ),
+            Text(
+              TrackerText.plateEquation(l10n, loading, unit, locale: locale),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.rowDetail.copyWith(
+                color: scheme.onSurfaceVariant,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    final base = step.baseWeight;
+    final result = base == null || shown == null
+        ? null
+        : r.PlateCalculator.load(
+            total: shown,
+            bar: base,
+            plates: step.plates,
+            sleeves: step.sleeves,
+          );
+    final symbol = TrackerText.unit(unit);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Row(
+          spacing: AppSpacing.s,
+          children: [
+            Icon(AppSymbols.warning, color: danger),
+            Text(
+              l10n.keypadNotLoadable,
+              style: AppTextStyles.rowDetail.copyWith(color: danger),
+            ),
+            if (result case r.NotLoadable(:final below, :final above))
+              for (final value in [?below, ?above])
+                Semantics(
+                  button: true,
+                  label: l10n.keypadUseWeight(
+                    TrackerText.amount(value - machineBase, locale: locale),
+                    symbol,
+                  ),
+                  excludeSemantics: true,
+                  child: OutlinedButton(
+                    key: ValueKey('keypad-use-$value'),
+                    onPressed: () => cubit.keypadWeight(value),
+                    child: Text(_weight(value - machineBase, symbol, locale)),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// The plate calculator for the set; Done saves the bar and plates to
+  /// the gym, and the keypad steps on them from then on.
+  static Future<void> _openPlateCalculator(BuildContext context) async {
+    final cubit = context.read<ActiveWorkoutCubit>();
+    final setup = cubit.state.plateCalculatorSetup;
+    if (setup == null) return;
+    cubit.plateCalculatorOpened();
+    final edited = await showPlateCalculator(context, setup);
+    if (edited != null) await cubit.saveGymLoading(edited);
+  }
+
+  static String _weight(double value, String symbol, String locale) =>
+      '${TrackerText.amount(value, locale: locale)} $symbol';
 }

@@ -1210,4 +1210,222 @@ void main() {
       );
     });
   });
+
+  group('scoped to a variation (GymProfileDelegate.equipment)', () {
+    test('lists only the equipment named, by kind and type', () {
+      final gym = _gym(
+        freeWeights: [
+          _freeWeight('Dumbbells', isActive: true),
+          _freeWeight('Kettlebells'),
+        ],
+        loadableBars: [
+          _loadableBars([_bar(20)]),
+        ],
+      );
+      final scope = {(EquipmentKind.freeWeight, 'dumbbells')};
+      expect(_ids(_Rules.visibleItems(gym, _List.freeWeights, scope: scope)), [
+        'dumbbells',
+      ]);
+      expect(
+        _Rules.visibleItems(gym, _List.loadableBars, scope: scope),
+        isEmpty,
+      );
+      // The type alone is not enough: a bar named like the dumbbells is not
+      // the dumbbells.
+      expect(
+        _Rules.visibleItems(
+          gym,
+          _List.loadableBars,
+          scope: {(EquipmentKind.freeWeight, 'barbell-x')},
+        ),
+        isEmpty,
+      );
+      expect(
+        _Rules.hidesEverything(
+          gym,
+          query: 'kettle',
+          selectedOnly: false,
+          scope: scope,
+        ),
+        isTrue,
+      );
+    });
+
+    test('every list names its kind', () {
+      expect({
+        for (final list in _List.values) list.kind,
+      }, hasLength(_List.values.length));
+      expect(_List.plateLoadedMachines.kind, EquipmentKind.plateLoadedMachine);
+    });
+  });
+
+  group('loading (GymProfileModel+Loading)', () {
+    FreeWeights plates(
+      String id,
+      List<(double, bool)> weights, {
+      ExerciseWeightUnit unit = _kg,
+    }) => _freeWeight(
+      id,
+      id: id,
+      isActive: true,
+      isPlates: true,
+      range: [
+        for (final (weight, isOn) in weights)
+          FreeWeightsAvailable(
+            id: '$id$weight',
+            availableWeights: weight,
+            unit: unit,
+            isActive: isOn,
+          ),
+      ],
+    );
+
+    LoadableBars bars(List<BarBaseWeight> weights, {String? chosen}) =>
+        LoadableBars(
+          id: 'barbell',
+          typeId: 'barbell',
+          name: 'Barbell',
+          baseWeights: weights,
+          collarWeight: 0,
+          isActive: true,
+          chosenBaseWeightId: chosen,
+        );
+
+    BarBaseWeight bar(
+      String id,
+      double weight, {
+      ExerciseWeightUnit unit = _kg,
+      bool isOn = true,
+    }) => BarBaseWeight(id: id, baseWeight: weight, unit: unit, isActive: isOn);
+
+    test('bar choices are the active bars, lightest first', () {
+      var gym = _gym(
+        loadableBars: [
+          bars([
+            bar('20', 20),
+            bar('45', 45, unit: _lb),
+            bar('10', 10, isOn: false),
+          ]),
+        ],
+      );
+      expect(_ids(_Rules.barChoices(gym, 'barbell').map((b) => b.id)), [
+        '20',
+        '45',
+      ]);
+      expect(_Rules.barChoices(gym, 'trap-bar'), isEmpty);
+      gym = _Rules.choosingBar(gym, '45', typeId: 'barbell');
+      expect(_Rules.loadedBar(gym, 'barbell')!.chosenBaseWeightId, '45');
+      expect(_Rules.choosingBar(gym, '20', typeId: 'trap-bar'), same(gym));
+    });
+
+    test('a bar switched off is not the loaded one', () {
+      final gym = _gym(
+        loadableBars: [
+          LoadableBars(
+            id: 'off',
+            typeId: 'barbell',
+            name: 'Barbell',
+            baseWeights: [bar('7', 7)],
+            collarWeight: 0,
+            isActive: false,
+          ),
+          bars([bar('20', 20)]),
+        ],
+      );
+      expect(_Rules.loadedBar(gym, 'barbell')!.id, 'barbell');
+    });
+
+    test('choosing a bar is stored on the gym', () {
+      final gym = _Rules.choosingBar(
+        _gym(
+          loadableBars: [
+            bars([bar('b7', 7), bar('b20', 20)]),
+          ],
+        ),
+        'b7',
+        typeId: 'barbell',
+      );
+      final decoded = GymProfileModel.fromFirestore(gym.toFirestore());
+      expect(_Rules.loadedBar(decoded, 'barbell')!.chosenBaseWeightId, 'b7');
+    });
+
+    test('choices are every weight in the unit, heaviest first', () {
+      final gym = _gym(
+        freeWeights: [
+          plates('iron', [(20, true), (10, false), (2.5, true)]),
+          plates('bumper', [(20, false), (15, true)]),
+          plates('pounds', [(45, true)], unit: _lb),
+        ],
+      );
+      expect(_Rules.plateChoices(gym, _kg), [
+        (weight: 20.0, isOn: true),
+        (weight: 15.0, isOn: true),
+        (weight: 10.0, isOn: false),
+        (weight: 2.5, isOn: true),
+      ]);
+    });
+
+    test('a unit with no plates of its own offers them all converted', () {
+      final gym = _gym(
+        freeWeights: [
+          plates('iron', [(20, true)]),
+        ],
+      );
+      expect(_Rules.plateChoices(gym, _lb), [(weight: 44.092, isOn: true)]);
+    });
+
+    test('switching a weight off reaches every plate of it', () {
+      var gym = _gym(
+        freeWeights: [
+          plates('iron', [(20, true), (2.5, true)]),
+          plates('bumper', [(20, true)]),
+          _freeWeight('Dumbbells', isActive: true, range: [_plate(20)]),
+          plates('pounds', [(44.092, true)], unit: _lb),
+        ],
+      );
+      gym = _Rules.settingPlate(gym, 20, _kg, isOn: false);
+      expect(_Rules.plateChoices(gym, _kg).first, (weight: 20.0, isOn: false));
+      final byId = {for (final item in gym.freeWeights) item.id: item};
+      expect(byId['iron']!.range.map((p) => p.isActive), [false, true]);
+      expect(byId['bumper']!.range.single.isActive, isFalse);
+      // Dumbbells are not plates, and pound plates are not in kilograms.
+      expect(byId['dumbbells']!.range.single.isActive, isTrue);
+      expect(byId['pounds']!.range.single.isActive, isTrue);
+
+      gym = _Rules.settingPlate(gym, 20, _kg, isOn: true);
+      final twenties = [
+        for (final item in gym.freeWeights)
+          if (item.isPlates)
+            for (final plate in item.range)
+              if (plate.availableWeights == 20) plate,
+      ];
+      expect(twenties.every((plate) => plate.isActive), isTrue);
+    });
+
+    test('the plate calculator only changes loading', () {
+      GymProfileModel gym({String? chosen, bool firstPlateOn = true}) => _gym(
+        freeWeights: [
+          plates('iron', [(20, firstPlateOn), (10, true)]),
+          _freeWeight('Dumbbells', isActive: true, range: [_plate(20)]),
+        ],
+        loadableBars: [
+          bars([bar('a', 20), bar('b', 15)], chosen: chosen),
+        ],
+      );
+      final current = _Rules.renamed(gym(chosen: 'a'), 'Renamed meanwhile');
+      final edited = _Rules.renamed(
+        gym(chosen: 'b', firstPlateOn: false),
+        'Stale name',
+      );
+      final merged = _Rules.takingLoading(current, edited);
+      expect(merged.name, 'Renamed meanwhile');
+      expect(_Rules.loadedBar(merged, 'barbell')!.chosenBaseWeightId, 'b');
+      final iron = merged.freeWeights.firstWhere((item) => item.id == 'iron');
+      expect(iron.range.first.isActive, isFalse);
+
+      // A choice cleared in the calculator is cleared on the gym.
+      final cleared = _Rules.takingLoading(current, gym());
+      expect(_Rules.loadedBar(cleared, 'barbell')!.chosenBaseWeightId, isNull);
+    });
+  });
 }

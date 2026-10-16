@@ -61,8 +61,8 @@ there are two, in the same gitignored `app/dart_defines.json`:
 ```
 
 The app passes the one for the running platform to `RevenueCatPurchasesRepository.init`. They
-belong to the RevenueCat apps for the Flutter bundle ids (`com.andrewcoyle.compound.flutter.dev`
-on iOS, `com.andrewcoyle.compound.dev` on Android), not the Swift app's `revenueCatDevAPIKey`.
+belong to the RevenueCat apps for `com.andrewcoyle.compound.dev`: on iOS that is the Swift dev app's
+(its `revenueCatDevAPIKey`), as the development flavor shares its bundle id; Android needs a Play app.
 The development flavor starts RevenueCat only when the running platform's key is set, and
 otherwise uses the premium `FakePurchasesRepository`, so nothing reaches RevenueCat without a key.
 The app logs RevenueCat in with the Firebase uid at every sign-in (`AppBloc`).

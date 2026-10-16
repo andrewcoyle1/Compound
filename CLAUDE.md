@@ -295,8 +295,9 @@ milestones and the Firestore contract are in `docs/specs/flutter/`. Build agents
 - **Stack:** Very Good Core template with VGV layered architecture. Packages live in `app/packages/`
   and features in `app/lib/<feature>/{bloc,view}`. Bloc, go_router, very_good_analysis.
 - **Flavors:**
-  - `development` uses `compound-development`. Its iOS bundle id is
-    `com.andrewcoyle.compound.flutter.dev`, so it installs beside the Swift dev app.
+  - `development` uses `compound-development`. Its iOS bundle id is the Swift dev app's,
+    `com.andrewcoyle.compound.dev` (since 16 Oct 2026), so it replaces the Swift dev app on a device
+    and shares its App ID, App Group (`group.com.compound.app`), Firebase iOS app and RevenueCat app.
   - `staging` uses in-memory fakes and no Firebase.
   - `production` is not configured yet.
   - Run with `flutter run --flavor development -t lib/main_development.dart` from `app/`.

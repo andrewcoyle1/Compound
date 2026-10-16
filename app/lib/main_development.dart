@@ -162,13 +162,11 @@ Future<void> main() async {
     }
     return App(
       appVersion: await AppVersion.load(),
-      // The flavor's own bundle id and package name, which Health reports
-      // as the source of what this app wrote.
+      // The flavor's bundle id (iOS) and package name (Android), the same
+      // here, which Health reports as the source of what this app wrote.
       healthRepository: HealthRepository(
         platform: HealthPackagePlatform(
-          ownSourceId: Platform.isIOS
-              ? 'com.andrewcoyle.compound.flutter.dev'
-              : 'com.andrewcoyle.compound.dev',
+          ownSourceId: 'com.andrewcoyle.compound.dev',
         ),
         body: bodyRepository,
         nutrition: nutritionRepository,

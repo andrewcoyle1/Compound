@@ -141,6 +141,32 @@ class FirestoreBodyRepository implements BodyRepository {
     );
   }
 
+  @override
+  Stream<List<ProgressPhotoModel>> watchProgressPhotos(String uid) =>
+      _progressPhotos(uid).snapshots().map(
+        (snapshot) => newestFirst(
+          _decodeAll(
+            snapshot,
+            ProgressPhotoModel.fromFirestore,
+          ).where((photo) => photo.authorId == uid),
+        ),
+      );
+
+  @override
+  Future<void> saveProgressPhoto(ProgressPhotoModel photo) => _merge(
+    _progressPhotos(photo.authorId).doc(photo.id),
+    photo.toFirestore(),
+  );
+
+  @override
+  Future<void> deleteProgressPhoto(String uid, String photoId) {
+    final document = _progressPhotos(uid).doc(photoId);
+    return writeLocally(document.path, document.delete, _onWriteError);
+  }
+
+  CollectionReference<Map<String, dynamic>> _progressPhotos(String uid) =>
+      _user(uid).collection('progress_photos');
+
   Future<void> _merge(
     DocumentReference<Map<String, dynamic>> document,
     Map<String, Object?> data,

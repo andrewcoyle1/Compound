@@ -102,4 +102,23 @@ void main() {
       equals(goal.toFirestore()),
     );
   });
+
+  test('sampleProgressPhotos are two front photos a month apart', () {
+    final photos = sampleProgressPhotos(uid: 'me', now: now);
+    expect(photos.map((photo) => photo.pose), [
+      ProgressPhotoPose.front,
+      ProgressPhotoPose.front,
+    ]);
+    expect(photos.first.date.isBefore(photos.last.date), isTrue);
+    expect(photos.last.date.isAfter(now), isFalse);
+    for (final photo in photos) {
+      expect(photo.authorId, 'me');
+      expect(
+        photo.storagePath,
+        ProgressPhotoModel.storagePathFor('me', photo.id),
+      );
+      expect(photo.imageUrl, startsWith('assets/exercises/'));
+      expect(photo.weightKg, isNotNull);
+    }
+  });
 }

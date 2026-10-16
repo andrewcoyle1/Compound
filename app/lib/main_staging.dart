@@ -8,11 +8,13 @@ import 'package:compound/bootstrap.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/logic/staging_onboarding.dart';
+import 'package:compound/progress_photos/progress_photos.dart';
 import 'package:compound_models/compound_models.dart'
     show ExerciseWeightUnit, WorkoutSessionModel, WorkoutSessionModelKeys;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:health_repository/health_repository.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
@@ -105,6 +107,7 @@ Future<void> main() async {
     measurements: sampleBodyMeasurements(uid: sampleUserId, now: now),
     steps: sampleSteps(uid: sampleUserId, now: now),
     goals: [sampleWeightGoal(uid: sampleUserId, now: now)],
+    progressPhotos: sampleProgressPhotos(uid: sampleUserId, now: now),
   );
   final trainingLibraryRepository = InMemoryTrainingLibraryRepository(
     exercises: sampleUserExercises,
@@ -162,6 +165,10 @@ Future<void> main() async {
       workoutSessionRepository: workoutSessionRepository,
       nutritionRepository: nutritionRepository,
       bodyRepository: bodyRepository,
+      // Uploads stay in memory, and the camera and library return a bundled
+      // picture.
+      imageRepository: InMemoryImageRepository(),
+      photoPicker: samplePhotoPicker(),
       programRepository: InMemoryProgramRepository(
         mesocycles: sampleMesocycles(now: now),
         macrocycles: sampleMacrocycles(now: now),

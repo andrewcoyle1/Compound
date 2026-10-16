@@ -93,6 +93,11 @@ final _models =
         roundTrip: (data) => WeightGoal.fromFirestore(data).toFirestore(),
         keys: WeightGoalKeys.all,
       ),
+      'progress_photo': (
+        roundTrip: (data) =>
+            ProgressPhotoModel.fromFirestore(data).toFirestore(),
+        keys: ProgressPhotoModelKeys.all,
+      ),
       'exercise_model': (
         roundTrip: (data) => ExerciseModel.fromFirestore(data).toFirestore(),
         keys: ExerciseModelKeys.all,
@@ -366,6 +371,7 @@ void main() {
         'StepsSource': raw(StepsSource.values),
         'GoalStatus': raw(GoalStatus.values),
         'OverarchingObjective': raw(OverarchingObjective.values),
+        'ProgressPhotoPose': raw(ProgressPhotoPose.values),
         'Muscles': raw(Muscles.values),
         'MuscleTargetType': raw(MuscleTargetType.values),
         'TrackableExerciseMetric': raw(TrackableExerciseMetric.values),

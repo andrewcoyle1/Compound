@@ -10371,6 +10371,170 @@
     "@coachAskAboutWorkout": {
         "description": "Row on one's own finished workout opening the coach about it"
     },
+    "progressPhotosTitle": "Progress Photos",
+    "@progressPhotosTitle": {
+        "description": "Progress Photos screen title and the Body Metrics row that opens it"
+    },
+    "progressPhotosHeader": "Photos",
+    "@progressPhotosHeader": {
+        "description": "Body Metrics: the section holding the Progress Photos row"
+    },
+    "progressPhotosEmptyTitle": "No Progress Photos",
+    "@progressPhotosEmptyTitle": {
+        "description": "Progress Photos: none yet"
+    },
+    "progressPhotosEmptyMessage": "Add a front, side or back photo to see how you change over time.",
+    "@progressPhotosEmptyMessage": {
+        "description": "Progress Photos: none yet, what to do"
+    },
+    "progressPhotosAdd": "Add Photo",
+    "@progressPhotosAdd": {
+        "description": "Progress Photos: adds a photo"
+    },
+    "progressPhotosSelectHint": "Select two photos to compare them.",
+    "@progressPhotosSelectHint": {
+        "description": "Progress Photos: above the photos"
+    },
+    "progressPhotosUploading": "Uploading…",
+    "@progressPhotosUploading": {
+        "description": "Progress Photos: a photo is uploading"
+    },
+    "progressPhotosPoseQuestion": "Which pose is this?",
+    "@progressPhotosPoseQuestion": {
+        "description": "Progress Photos: asks the pose of a library photo"
+    },
+    "progressPhotosDeleteQuestion": "Delete this photo?",
+    "@progressPhotosDeleteQuestion": {
+        "description": "Progress Photos: confirms a delete"
+    },
+    "progressPhotosDelete": "Delete",
+    "@progressPhotosDelete": {
+        "description": "Progress Photos: deletes the chosen photo"
+    },
+    "progressPhotosCancel": "Cancel",
+    "@progressPhotosCancel": {
+        "description": "Progress Photos: dismisses a question"
+    },
+    "progressPhotosCompare": "Compare",
+    "@progressPhotosCompare": {
+        "description": "Progress Photos: compares the two chosen photos; the comparison screen's title"
+    },
+    "progressPhotosTakeFront": "Take Front Photo",
+    "@progressPhotosTakeFront": {
+        "description": "Progress Photos: opens the camera for a front photo"
+    },
+    "progressPhotosTakeSide": "Take Side Photo",
+    "@progressPhotosTakeSide": {
+        "description": "Progress Photos: opens the camera for a side photo"
+    },
+    "progressPhotosTakeBack": "Take Back Photo",
+    "@progressPhotosTakeBack": {
+        "description": "Progress Photos: opens the camera for a back photo"
+    },
+    "progressPhotosChooseFromLibrary": "Choose from Library",
+    "@progressPhotosChooseFromLibrary": {
+        "description": "Progress Photos: picks a photo from the library"
+    },
+    "progressPhotoPoseFront": "Front",
+    "@progressPhotoPoseFront": {
+        "description": "A progress photo's pose: from the front"
+    },
+    "progressPhotoPoseSide": "Side",
+    "@progressPhotoPoseSide": {
+        "description": "A progress photo's pose: from the side"
+    },
+    "progressPhotoPoseBack": "Back",
+    "@progressPhotoPoseBack": {
+        "description": "A progress photo's pose: from behind (the body's back, not navigation)"
+    },
+    "progressPhotosAddFailed": "Unable to Add Photo",
+    "@progressPhotosAddFailed": {
+        "description": "Progress Photos: adding failed"
+    },
+    "progressPhotosDeleteFailed": "Unable to Delete Photo",
+    "@progressPhotosDeleteFailed": {
+        "description": "Progress Photos: deleting failed"
+    },
+    "progressPhotosLoadFailed": "Unable to Load Photo",
+    "@progressPhotosLoadFailed": {
+        "description": "Progress Photos: the camera or library photo could not be read"
+    },
+    "progressPhotosFailedMessage": "Please check your internet connection and try again.",
+    "@progressPhotosFailedMessage": {
+        "description": "Progress Photos: under a failure title"
+    },
+    "progressPhotoCaption": "{date} · {weight}",
+    "@progressPhotoCaption": {
+        "description": "A progress photo's caption: its date and the weight that day",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            },
+            "weight": {
+                "type": "String"
+            }
+        }
+    },
+    "progressPhotoLabel": "{pose} photo, {caption}",
+    "@progressPhotoLabel": {
+        "description": "A progress photo for screen readers: its pose and caption",
+        "placeholders": {
+            "pose": {
+                "type": "String"
+            },
+            "caption": {
+                "type": "String"
+            }
+        }
+    },
+    "progressPhotoCompareLayout": "Layout",
+    "@progressPhotoCompareLayout": {
+        "description": "Compare: chooses side by side or the slider"
+    },
+    "progressPhotoCompareSideBySide": "Side by Side",
+    "@progressPhotoCompareSideBySide": {
+        "description": "Compare: the two photos side by side"
+    },
+    "progressPhotoCompareSlider": "Slider",
+    "@progressPhotoCompareSlider": {
+        "description": "Compare: one photo over the other with a slider"
+    },
+    "progressPhotoCompareReveal": "Reveal",
+    "@progressPhotoCompareReveal": {
+        "description": "Compare: the slider that reveals the older photo"
+    },
+    "progressPhotoCompareBefore": "Before",
+    "@progressPhotoCompareBefore": {
+        "description": "Compare: the slider's older end"
+    },
+    "progressPhotoCompareAfter": "After",
+    "@progressPhotoCompareAfter": {
+        "description": "Compare: the slider's newer end"
+    },
+    "progressPhotoCompareOver": "{before} over {after}",
+    "@progressPhotoCompareOver": {
+        "description": "Compare: the slider's two photos for screen readers",
+        "placeholders": {
+            "before": {
+                "type": "String"
+            },
+            "after": {
+                "type": "String"
+            }
+        }
+    },
+    "editProfilePhoto": "Profile photo",
+    "@editProfilePhoto": {
+        "description": "Edit Profile: the profile picture, for screen readers"
+    },
+    "editProfileAddPhoto": "Add profile photo",
+    "@editProfileAddPhoto": {
+        "description": "Edit Profile: picks a profile picture when there is none"
+    },
+    "editProfileChangePhoto": "Change profile photo",
+    "@editProfileChangePhoto": {
+        "description": "Edit Profile: picks a new profile picture"
+    },
     "settingsIntegrations": "Integrations",
     "@settingsIntegrations": {
         "description": "Settings row opening Integrations"

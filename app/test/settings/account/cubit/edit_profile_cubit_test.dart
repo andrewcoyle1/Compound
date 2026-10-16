@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/settings/account/cubit/edit_profile_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -9,11 +12,33 @@ class _MockAnalyticsRepository extends Mock implements AnalyticsRepository;
 
 class _MockUserRepository extends Mock implements UserRepository;
 
+/// Returns [photo], or throws [error], and records the size asked for.
+class _Picker implements PhotoPicker {
+  Uint8List? photo;
+  Exception? error;
+  final picks = <(PhotoSource, PhotoSize)>[];
+
+  @override
+  Future<Uint8List?> pick(PhotoSource source, PhotoSize size) async {
+    picks.add((source, size));
+    if (error case final error?) throw error;
+    return photo;
+  }
+}
+
+class _FailingImages extends InMemoryImageRepository {
+  @override
+  Future<String> upload(Uint8List jpeg, String path) =>
+      Future.error(Exception('retry-limit-exceeded'));
+}
+
 void main() {
   late AnalyticsRepository analytics;
   late UserRepository users;
   late List<(String, LogType)> events;
   late List<Map<String, Object>> writes;
+  late InMemoryImageRepository images;
+  late _Picker picker;
 
   setUpAll(() => registerFallbackValue(const AnalyticsEvent('fallback')));
 
@@ -22,6 +47,8 @@ void main() {
     users = _MockUserRepository();
     events = [];
     writes = [];
+    images = InMemoryImageRepository();
+    picker = _Picker();
     void record(Invocation invocation) {
       final event = invocation.positionalArguments.single as LoggableEvent;
       events.add((event.eventName, event.type));
@@ -39,8 +66,13 @@ void main() {
 
   EditProfileCubit build([
     UserModel? user = const UserModel(userId: 'user-1'),
-  ]) =>
-      EditProfileCubit(userRepository: users, analytics: analytics, user: user);
+  ]) => EditProfileCubit(
+    userRepository: users,
+    analytics: analytics,
+    images: images,
+    picker: picker,
+    user: user,
+  );
 
   group('opening', () {
     test('shows the stored profile', () {
@@ -368,5 +400,88 @@ void main() {
       expect: () => const <EditProfileState>[],
       verify: (_) => expect(writes, isEmpty),
     );
+  });
+
+  group('profile photo', () {
+    final photo = Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xD9]);
+
+    test('shows the uploaded picture, else the account one', () {
+      expect(
+        build(
+          const UserModel(
+            userId: 'user-1',
+            photoUrl: 'https://example.com/google.jpg',
+            submittedProfileImage: 'https://example.com/uploaded.jpg',
+          ),
+        ).state.profileImageUrl,
+        'https://example.com/uploaded.jpg',
+      );
+      expect(
+        build(
+          const UserModel(
+            userId: 'user-1',
+            photoUrl: 'https://example.com/google.jpg',
+          ),
+        ).state.profileImageUrl,
+        'https://example.com/google.jpg',
+      );
+    });
+
+    test("picks from the library at Swift's standard size, and Save uploads it "
+        'to users/{uid}/profile before writing the fields', () async {
+      picker.photo = photo;
+      final cubit = build(
+        const UserModel(userId: 'user-1', submittedFirstName: 'Ann'),
+      );
+
+      await cubit.photoPressed();
+      expect(cubit.state.pickedPhoto, photo);
+      expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+      expect(images.images, isEmpty);
+
+      await cubit.savePressed();
+
+      expect(images.images['users/user-1/profile'], photo);
+      final url = writes.single['submitted_profile_image']! as String;
+      expect(Uri.parse(url).data!.contentAsBytes(), photo);
+      expect(writes.single['submitted_first_name'], 'Ann');
+      expect(cubit.state.status, EditProfileStatus.saved);
+      expect(events.first, ('profile_photo_selected', LogType.analytic));
+    });
+
+    test('a cancelled pick changes nothing', () async {
+      final cubit = build();
+      await cubit.photoPressed();
+      expect(cubit.state.pickedPhoto, isNull);
+      expect(events, isEmpty);
+    });
+
+    test('a photo that cannot be read is only tracked', () async {
+      picker.error = Exception('no camera');
+      final cubit = build();
+      await cubit.photoPressed();
+      expect(cubit.state.pickedPhoto, isNull);
+      expect(events, [('profile_photo_load_failed', LogType.analytic)]);
+    });
+
+    test('a failed upload writes nothing and says so', () async {
+      images = _FailingImages();
+      picker.photo = photo;
+      final cubit = build(
+        const UserModel(userId: 'user-1', submittedFirstName: 'Ann'),
+      );
+      await cubit.photoPressed();
+
+      await cubit.savePressed();
+
+      expect(writes, isEmpty);
+      expect(cubit.state.status, EditProfileStatus.saveFailure);
+    });
+
+    test('without a new photo, Save writes no picture', () async {
+      await build(const UserModel(userId: 'user-1', submittedFirstName: 'Ann'))
+          .savePressed();
+      expect(writes.single.containsKey('submitted_profile_image'), isFalse);
+    });
   });
 }

@@ -121,4 +121,28 @@ void main() {
       );
     });
   });
+
+  group('ProgressPhotoModel', () {
+    test("storagePathFor is Swift's path, the one the rules require", () {
+      expect(
+        ProgressPhotoModel.storagePathFor('u1', 'p1'),
+        'users/u1/progress_photos/p1.jpg',
+      );
+      final full = ProgressPhotoModel.fromFirestore(
+        _fixture('progress_photo', 'full'),
+      );
+      expect(
+        full.storagePath,
+        ProgressPhotoModel.storagePathFor(full.authorId, full.id),
+      );
+    });
+
+    test('rejects an unknown pose', () {
+      final photo = _fixture('progress_photo', 'full')..['pose'] = 'top';
+      expect(
+        () => ProgressPhotoModel.fromFirestore(photo),
+        throwsFormatException,
+      );
+    });
+  });
 }

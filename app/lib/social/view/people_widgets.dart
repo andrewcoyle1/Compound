@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/social/logic/people.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:intl/intl.dart';
 import 'package:social_repository/social_repository.dart';
@@ -31,11 +32,7 @@ class UserAvatar extends StatelessWidget {
           dimension: size,
           child: url == null
               ? placeholder
-              : Image.network(
-                  url,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => placeholder,
-                ),
+              : StoredImage(url, placeholder: placeholder),
         ),
       ),
     );

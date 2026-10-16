@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -22,6 +24,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_repository/health_repository.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -68,6 +71,8 @@ extension PumpApp on WidgetTester {
     ChallengesCubit? challengesCubit,
     InviteCubit? inviteCubit,
     ShareSheet shareSheet = const ShareSheet(),
+    ImageRepository? imageRepository,
+    PhotoPicker? photoPicker,
     NotificationsRepository? notificationsRepository,
     ProgramsCubit? programsCubit,
     ActiveWorkoutCubit? activeWorkoutCubit,
@@ -155,6 +160,12 @@ extension PumpApp on WidgetTester {
                   body: context.read(),
                   nutrition: context.read(),
                 ),
+          ),
+          RepositoryProvider<ImageRepository>.value(
+            value: imageRepository ?? InMemoryImageRepository(),
+          ),
+          RepositoryProvider<PhotoPicker>.value(
+            value: photoPicker ?? SamplePhotoPicker(() async => Uint8List(0)),
           ),
           RepositoryProvider<NotificationsRepository>.value(
             value: notificationsRepository ?? FakeNotificationsRepository(),

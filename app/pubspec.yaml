@@ -37,6 +37,7 @@ dependencies:
   firebase_core: ^4.15.0
   firebase_crashlytics: ^5.4.0
   firebase_messaging: ^16.7.0
+  firebase_storage: 13.6.0
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
@@ -52,6 +53,8 @@ dependencies:
   health_repository:
     path: packages/health_repository
   http: ^1.6.0
+  image_repository:
+    path: packages/image_repository
   intl: ^0.20.2
   material_ui: ^1.1.1
   mobile_scanner: ^7.4.2

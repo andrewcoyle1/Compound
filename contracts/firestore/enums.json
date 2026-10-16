@@ -237,6 +237,11 @@
     "weightFirst",
     "repsFirst"
   ],
+  "ProgressPhotoPose": [
+    "front",
+    "side",
+    "back"
+  ],
   "ReportContentType": [
     "comment",
     "session",

@@ -28,6 +28,7 @@ export 'src/nutrient_map.dart';
 export 'src/nutrition_enums.dart';
 export 'src/nutrition_strategy_settings.dart';
 export 'src/private_user_settings.dart';
+export 'src/progress_photo_model.dart';
 export 'src/recipe_template_model.dart';
 export 'src/set_target.dart';
 export 'src/shortcut_settings.dart';

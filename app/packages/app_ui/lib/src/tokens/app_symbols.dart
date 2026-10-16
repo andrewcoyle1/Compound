@@ -163,6 +163,12 @@ abstract final class AppSymbols {
   /// The camera.
   static const IconData camera = Icons.photo_camera_rounded;
 
+  /// The photo library.
+  static const IconData photoLibrary = Icons.photo_library_rounded;
+
+  /// Progress photos (Swift `photo.stack`).
+  static const IconData progressPhotos = Icons.collections_rounded;
+
   // Body and progress
 
   /// Steps.

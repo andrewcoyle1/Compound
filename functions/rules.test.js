@@ -183,6 +183,16 @@ t("contract: the owner creates the full recipe at its path", async () => {
     await assertFails(setDoc(doc(db(BOB), `users/${BOB}/recipe_templates/${recipe.recipe_id}`), recipe));
 });
 
+t("contract: the owner creates the full and minimal progress photo at their paths", async () => {
+    for (const name of ["full", "minimal"]) {
+        const photo = contractFixture("progress_photo", name);
+        const uid = photo.author_id;
+        await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/progress_photos/${photo.id}`), photo));
+        await assertFails(setDoc(doc(db(BOB), `users/${uid}/progress_photos/bob_copy`), photo));
+        await assertFails(setDoc(doc(db(BOB), `users/${BOB}/progress_photos/${photo.id}`), photo));
+    }
+});
+
 t("contract: the owner creates the full check-in documents and shortcut settings at their paths", async () => {
     const paths = {
         nutrition_strategy_settings: "nutrition_strategy_settings/nutrition_strategy_settings",
@@ -557,6 +567,22 @@ t("flutter: saveRecipe merges a recipe, and never one without author_id; deleteR
     await assertSucceeds(merge(ref(uid), recipe));
     await assertSucceeds(merge(ref(uid), { ...recipe, name: "Overnight Oats Light" }));
     await assertFails(merge(ref(BOB), { ...recipe, name: "Taken" }));
+    await assertFails(deleteDoc(ref(BOB)));
+    await assertSucceeds(deleteDoc(ref(uid)));
+});
+
+t("flutter: saveProgressPhoto merges a photo only at its own storage path; deleteProgressPhoto is the owner's", async () => {
+    const photo = contractFixture("progress_photo");
+    const uid = photo.author_id;
+    const ref = (as) => doc(db(as), `users/${uid}/progress_photos/${photo.id}`);
+    const { author_id: _, ...unowned } = photo;
+    await assertFails(merge(ref(uid), unowned));
+    await assertFails(merge(ref(uid), { ...photo, storage_path: `users/${uid}/profile` }));
+    await assertFails(merge(ref(uid), { ...photo, pose: "top" }));
+    await assertFails(merge(ref(BOB), photo));
+    await assertSucceeds(merge(ref(uid), photo));
+    await assertSucceeds(merge(ref(uid), { ...photo, note: "Evening" }));
+    await assertFails(getDoc(ref(BOB)));
     await assertFails(deleteDoc(ref(BOB)));
     await assertSucceeds(deleteDoc(ref(uid)));
 });

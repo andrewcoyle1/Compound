@@ -109,5 +109,25 @@ void main() {
 
       expect(refused, [('users/u/goals/g', 'not-found')]);
     });
+    test('saveProgressPhoto and deleteProgressPhoto complete offline; a '
+        'refusal is reported', () async {
+      final photo = ProgressPhotoModel.fromFirestore(
+        modelFixture('progress_photo', 'full'),
+      );
+      await subject.saveProgressPhoto(photo);
+      await subject.deleteProgressPhoto('u', 'p');
+      expect(refused, isEmpty);
+
+      firestore.refuse('permission-denied');
+      await pumpEventQueue();
+
+      expect(refused, [
+        (
+          'users/${photo.authorId}/progress_photos/${photo.id}',
+          'permission-denied',
+        ),
+        ('users/u/progress_photos/p', 'permission-denied'),
+      ]);
+    });
   });
 }

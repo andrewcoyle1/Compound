@@ -15,14 +15,16 @@ import 'package:compound_models/compound_models.dart';
 /// change.
 class InMemoryBodyRepository implements BodyRepository {
   /// Creates an [InMemoryBodyRepository] holding `measurements`, `steps`,
-  /// `goals` (stored, like Firestore's, under their `goalId`) and
-  /// `analyticsSettings`.
+  /// `goals` (stored, like Firestore's, under their `goalId`),
+  /// `analyticsSettings` and `progressPhotos`.
   new({
     List<BodyMeasurementEntry> measurements = const [],
     List<StepsModel> steps = const [],
     List<WeightGoal> goals = const [],
     AnalyticsSettings? analyticsSettings,
-  }) : _analyticsSettings = {?analyticsSettings?.authorId: ?analyticsSettings},
+    List<ProgressPhotoModel> progressPhotos = const [],
+  }) : _progressPhotos = List.of(progressPhotos),
+       _analyticsSettings = {?analyticsSettings?.authorId: ?analyticsSettings},
        _measurements = List.of(measurements),
        _steps = List.of(steps),
        _goals = List.of(goals);
@@ -30,6 +32,7 @@ class InMemoryBodyRepository implements BodyRepository {
   final List<BodyMeasurementEntry> _measurements;
   final List<StepsModel> _steps;
   final List<WeightGoal> _goals;
+  final List<ProgressPhotoModel> _progressPhotos;
   final Map<String, AnalyticsSettings> _analyticsSettings;
   final _changes = StreamController<void>.broadcast(sync: true);
 
@@ -142,6 +145,31 @@ class InMemoryBodyRepository implements BodyRepository {
       ..._goals[index].toFirestore(),
       WeightGoalKeys.status: GoalStatus.abandoned.value,
     });
+    _changes.add(null);
+  }
+
+  @override
+  Stream<List<ProgressPhotoModel>> watchProgressPhotos(String uid) => _watch(
+    () => newestFirst(_progressPhotos.where((photo) => photo.authorId == uid)),
+  );
+
+  @override
+  Future<void> saveProgressPhoto(ProgressPhotoModel photo) async {
+    _merge(
+      _progressPhotos,
+      photo,
+      (stored) => stored.authorId == photo.authorId && stored.id == photo.id,
+      ProgressPhotoModel.fromFirestore,
+      (model) => model.toFirestore(),
+    );
+  }
+
+  /// As Firestore's `delete`, deleting a missing photo succeeds.
+  @override
+  Future<void> deleteProgressPhoto(String uid, String photoId) async {
+    _progressPhotos.removeWhere(
+      (photo) => photo.authorId == uid && photo.id == photoId,
+    );
     _changes.add(null);
   }
 

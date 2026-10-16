@@ -56,7 +56,10 @@ void main() {
     });
 
     test('updateUserFields completes offline; not-found is reported', () async {
-      await subject.updateUserFields('u', [UserField.weeklySessionGoal(3)]);
+      await subject.updateUserFields('u', [
+        UserField.weeklySessionGoal(3),
+        UserField.submittedProfileImage.cleared,
+      ]);
       expect(refused, isEmpty);
 
       firestore.refuse('not-found');

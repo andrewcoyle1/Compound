@@ -2751,5 +2751,15 @@
     "trackerSplitSidesHint": "Registra cada lado como su propia serie",
     "trackerStartTimer": "Iniciar cronómetro",
     "trackerStopTimer": "Detener cronómetro",
-    "trackerStopTimerHint": "Anota en esta serie el tiempo mantenido"
+    "trackerStopTimerHint": "Anota en esta serie el tiempo mantenido",
+    "createFoodChooseImage": "Elegir imagen del alimento",
+    "recipePreparationPhoto": "Foto",
+    "recipePreparationSelectPhoto": "Seleccionar foto",
+    "gymAddPhoto": "Añadir foto del gimnasio",
+    "gymChangePhoto": "Cambiar foto del gimnasio",
+    "gymPhoto": "Foto del gimnasio",
+    "onboardingAddPhoto": "Añadir foto (opcional)",
+    "onboardingChangePhoto": "Cambiar foto",
+    "onboardingRemovePhoto": "Eliminar foto",
+    "onboardingPhotoLoadFailed": "No se pudo cargar esa foto. Prueba con otra."
 }

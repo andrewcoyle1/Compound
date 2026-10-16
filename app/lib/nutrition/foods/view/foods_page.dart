@@ -7,6 +7,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/foods/cubit/foods_cubit.dart';
 import 'package:compound/nutrition/foods/view/create_food_pages.dart';
 import 'package:compound/nutrition/foods/view/food_detail_page.dart';
+import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -101,6 +102,9 @@ class FoodsView extends StatelessWidget {
                                   .round(),
                             ),
                           ].join(' · '),
+                          thumbnail: state.showFoodImage
+                              ? StoredThumbnail(food.imageUrl)
+                              : null,
                           onPressed: () {
                             cubit.foodSelected(food);
                             unawaited(FoodDetailPage.show(context, food));

@@ -39,6 +39,7 @@ void main() {
     Future<FoodsCubit> build({
       List<FoodModel> foods = const [],
       bool showBranded = true,
+      bool showImage = true,
     }) async {
       final cubit = FoodsCubit(
         uid: uid,
@@ -47,6 +48,7 @@ void main() {
           foodLogSettings: FoodLogSettings(
             authorId: uid,
             showBrandedFoods: showBranded,
+            showFoodImageInLogger: showImage,
           ),
         ),
         analytics: analytics,
@@ -67,6 +69,12 @@ void main() {
       ]);
       await cubit.close();
       expect(analytics.names, ['FoodsView_Appear', 'FoodsView_Disappear']);
+    });
+
+    test('rows show pictures as the logger’s Show Food Image says '
+        '(IngredientListBuilderView)', () async {
+      expect((await build()).state.showFoodImage, isTrue);
+      expect((await build(showImage: false)).state.showFoodImage, isFalse);
     });
 
     test('hides branded foods when the setting is off', () async {

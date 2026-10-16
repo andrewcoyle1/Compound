@@ -6,6 +6,7 @@ import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
+import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// The user's recipes as the Recipes screen lists them.
 final class const RecipesState({
@@ -14,6 +15,10 @@ final class const RecipesState({
 
   /// The filter typed.
   final String filter = '',
+
+  /// Whether rows show the recipe's picture (`RecipeListBuilderView`'s
+  /// `showFoodImageInLogger`).
+  final bool showImage = true,
 }) extends Equatable {
   /// The recipes shown (`RecipeListBuilderPresenter.userRecipeTemplates`
   /// and `.filteredRecipeTemplates`): those matching the filter, by name.
@@ -22,16 +27,21 @@ final class const RecipesState({
       if (filter.isEmpty || matchesRecipeFilter(recipe, filter)) recipe,
   ], (recipe) => recipe.name);
 
-  RecipesState copyWith({List<RecipeTemplateModel>? recipes, String? filter}) =>
-      RecipesState(
-        recipes: recipes ?? this.recipes,
-        filter: filter ?? this.filter,
-      );
+  RecipesState copyWith({
+    List<RecipeTemplateModel>? recipes,
+    String? filter,
+    bool? showImage,
+  }) => RecipesState(
+    recipes: recipes ?? this.recipes,
+    filter: filter ?? this.filter,
+    showImage: showImage ?? this.showImage,
+  );
 
   @override
   List<Object?> get props => [
     recipes?.map((recipe) => recipe.toFirestore()).toList(),
     filter,
+    showImage,
   ];
 }
 
@@ -42,19 +52,29 @@ class RecipesCubit extends Cubit<RecipesState> {
   new({
     required String uid,
     required FoodRepository foods,
+    required NutritionRepository nutrition,
     required this._analytics,
   }) : super(const RecipesState()) {
     _analytics.appear('RecipesView');
-    _subscription = foods
-        .watchRecipes(uid)
-        .listen(
-          (recipes) => emit(state.copyWith(recipes: recipes)),
-          onError: (Object _) => emit(state.copyWith(recipes: const [])),
-        );
+    _subscriptions = [
+      foods
+          .watchRecipes(uid)
+          .listen(
+            (recipes) => emit(state.copyWith(recipes: recipes)),
+            onError: (Object _) => emit(state.copyWith(recipes: const [])),
+          ),
+      nutrition
+          .watchFoodLogSettings(uid)
+          .listen(
+            (settings) =>
+                emit(state.copyWith(showImage: settings.showFoodImageInLogger)),
+            onError: (Object _) {},
+          ),
+    ];
   }
 
   final AnalyticsRepository _analytics;
-  late final StreamSubscription<List<RecipeTemplateModel>> _subscription;
+  late final List<StreamSubscription<Object?>> _subscriptions;
 
   /// The filter as typed.
   void filterChanged(String filter) => emit(state.copyWith(filter: filter));
@@ -62,7 +82,9 @@ class RecipesCubit extends Cubit<RecipesState> {
   @override
   Future<void> close() async {
     _analytics.disappear('RecipesView');
-    await _subscription.cancel();
+    for (final subscription in _subscriptions) {
+      await subscription.cancel();
+    }
     await super.close();
   }
 }

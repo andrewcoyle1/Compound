@@ -174,6 +174,18 @@ void main() {
         },
       );
 
+      test('a cleared field is deleted, not written as null', () async {
+        await user().set(storedFixture('user_model', 'full'));
+
+        await subject.updateUserFields(uid, [
+          UserField.submittedProfileImage.cleared,
+        ]);
+
+        final data = (await user().get()).data()!;
+        expect(data.containsKey(UserModelKeys.submittedProfileImage), isFalse);
+        expect(data[UserModelKeys.submittedFirstName], isNotNull);
+      });
+
       test('fails when there is no profile, as Firestore does', () async {
         await expectLater(
           subject.updateUserFields(uid, [UserField.weeklySessionGoal(3)]),

@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_repository/image_repository.dart';
 
 /// Creating a food (Swift `CreateFoodView`, then `PortionDefinitionView` and
 /// `FoodDefinitionView`, pushed with the same cubit). Over the tabs, as the
@@ -53,6 +54,8 @@ class CreateFoodPage extends StatelessWidget {
         uid: app is AppAuthenticated ? app.user.uid : null,
         foods: context.read<FoodRepository>(),
         analytics: context.read<AnalyticsRepository>(),
+        images: context.read<ImageRepository>(),
+        picker: context.read<PhotoPicker>(),
       ),
       child: CreateFoodView(addToPlate: addToPlate),
     );
@@ -74,6 +77,69 @@ mixin _TrackedStep<T extends StatefulWidget> on State<T> {
   void dispose() {
     cubit.disappeared(screen);
     super.dispose();
+  }
+}
+
+/// The food's picture (`CreateFoodView.imageSection`): the photo picked, or
+/// a meal glyph with an edit badge, opening the photo library.
+class _FoodImageButton extends StatelessWidget {
+  const new({required this.photo});
+
+  final Uint8List? photo;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final side = MediaQuery.textScalerOf(context).scale(120);
+    final photo = this.photo;
+    return Center(
+      child: Semantics(
+        button: true,
+        label: context.l10n.createFoodChooseImage,
+        excludeSemantics: true,
+        child: InkWell(
+          key: const Key('CreateFood.image'),
+          borderRadius: BorderRadius.circular(AppRadius.m),
+          onTap: () =>
+              unawaited(context.read<CreateFoodCubit>().photoPressed()),
+          child: SizedBox.square(
+            dimension: side,
+            child: photo != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.m),
+                    child: Image.memory(
+                      photo,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Icon(
+                        AppSymbols.meal,
+                        size: AppIconSize.hero.of(context),
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  )
+                : Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        AppSymbols.meal,
+                        size: AppIconSize.hero.of(context),
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      Positioned(
+                        right: AppSpacing.l,
+                        bottom: AppSpacing.l,
+                        child: Icon(
+                          AppSymbols.edit,
+                          size: AppIconSize.medium.of(context),
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -156,6 +222,8 @@ class _CreateFoodViewState extends State<CreateFoodView>
         body: ListView(
           padding: const EdgeInsets.all(AppSpacing.l),
           children: [
+            _FoodImageButton(photo: state.photo),
+            const SizedBox(height: AppSpacing.l),
             AppSection(
               header: l10n.createFoodName,
               children: [

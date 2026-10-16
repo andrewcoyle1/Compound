@@ -24,6 +24,20 @@ void main() {
       );
     });
 
+    testWidgets('passes a thumbnail to the row', (tester) async {
+      await tester.pumpApp(
+        AppListRowButton(
+          title: 'Oats',
+          thumbnail: const ColoredBox(
+            key: Key('thumbnail'),
+            color: Color(0xFF000000),
+          ),
+          onPressed: () {},
+        ),
+      );
+      expect(find.byKey(const Key('thumbnail')), findsOneWidget);
+    });
+
     testWidgets('takes another accessory', (tester) async {
       await tester.pumpApp(
         const AppListRowButton(

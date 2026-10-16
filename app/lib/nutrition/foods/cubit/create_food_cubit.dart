@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/app/document_id.dart';
@@ -6,6 +8,7 @@ import 'package:compound/nutrition/logic/meal_logging.dart' show EnergyUnit;
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
+import 'package:image_repository/image_repository.dart';
 
 /// Where the create flow's save is.
 enum CreateFoodStatus {
@@ -37,6 +40,9 @@ final class const CreateFoodState({
   final CreateFoodStatus status = CreateFoodStatus.editing,
   final FoodModel? created,
 
+  /// The food's picture, picked on the name step and uploaded by Create.
+  final Uint8List? photo,
+
   /// Whether Create & Add was the button pressed.
   final bool addToPlate = false,
 }) extends Equatable {
@@ -46,7 +52,10 @@ final class const CreateFoodState({
   /// Anything typed that closing would throw away
   /// (`CreateFoodPresenter.hasUnsavedChanges`).
   bool get hasUnsavedChanges =>
-      name.trim().isNotEmpty || (brandName ?? '').isNotEmpty || barcode != null;
+      name.trim().isNotEmpty ||
+      (brandName ?? '').isNotEmpty ||
+      barcode != null ||
+      photo != null;
 
   /// The portion this food is defined by.
   PortionInput get portion => (
@@ -78,6 +87,7 @@ final class const CreateFoodState({
     Map<NutrientKey, double>? nutrients,
     CreateFoodStatus? status,
     FoodModel? created,
+    Uint8List? photo,
     bool? addToPlate,
   }) => CreateFoodState(
     name: name ?? this.name,
@@ -92,6 +102,7 @@ final class const CreateFoodState({
     nutrients: nutrients ?? this.nutrients,
     status: status ?? this.status,
     created: created ?? this.created,
+    photo: photo ?? this.photo,
     addToPlate: addToPlate ?? this.addToPlate,
   );
 
@@ -109,6 +120,7 @@ final class const CreateFoodState({
     nutrients,
     status,
     created?.ingredientId,
+    photo,
     addToPlate,
   ];
 }
@@ -123,6 +135,8 @@ class CreateFoodCubit extends Cubit<CreateFoodState> {
     required this._uid,
     required this._foods,
     required this._analytics,
+    required this._images,
+    required this._picker,
     this._now = DateTime.now,
     this._newId = newDocumentId,
   }) : super(const CreateFoodState());
@@ -130,6 +144,8 @@ class CreateFoodCubit extends Cubit<CreateFoodState> {
   final String? _uid;
   final FoodRepository _foods;
   final AnalyticsRepository _analytics;
+  final ImageRepository _images;
+  final PhotoPicker _picker;
   final DateTime Function() _now;
   final String Function() _newId;
 
@@ -139,6 +155,29 @@ class CreateFoodCubit extends Cubit<CreateFoodState> {
 
   /// Records one of the flow's screens going.
   void disappeared(String screen) => _analytics.disappear(screen);
+
+  /// Where a food's picture is stored (`FoodManager.saveFood`).
+  static String photoPath(String foodId) => 'ingredient_templates/$foodId';
+
+  /// The image button (`CreateFoodPresenter.onImageSelectorPressed` and
+  /// `onImageSelectorChanged`): a photo from the library, shown at once and
+  /// uploaded by Create.
+  Future<void> photoPressed() async {
+    _analytics.analytic('IngredientImageSelector_Start');
+    final Uint8List? photo;
+    try {
+      photo = await _picker.pick(PhotoSource.library, PhotoSize.standard);
+    } on Object catch (error) {
+      _analytics.severe('IngredientImageSelector_Fail', error);
+      return;
+    }
+    if (photo == null) {
+      _analytics.analytic('IngredientImageSelector_Cancel');
+      return;
+    }
+    _analytics.analytic('IngredientImageSelector_Success');
+    if (!isClosed) emit(state.copyWith(photo: photo));
+  }
 
   /// The name as typed.
   void nameChanged(String name) => emit(state.copyWith(name: name));
@@ -196,8 +235,10 @@ class CreateFoodCubit extends Cubit<CreateFoodState> {
       state.copyWith(status: CreateFoodStatus.saving, addToPlate: addToPlate),
     );
     _analytics.analytic('FoodDefinitionView_CreateFood_Start');
-    final food = createdFood(
-      id: _newId(),
+    final id = _newId();
+    final photo = state.photo;
+    FoodModel food(String? imageUrl) => createdFood(
+      id: id,
       authorId: uid,
       name: state.name,
       brandName: state.brandName,
@@ -208,11 +249,17 @@ class CreateFoodCubit extends Cubit<CreateFoodState> {
         ...state.nutrients,
       },
       now: _now(),
+      imageUrl: imageUrl,
     );
     try {
-      await _foods.saveFood(food);
+      // The picture first, as Swift uploads it before saving: an upload
+      // needs the server, so offline the food is not created.
+      final created = food(
+        photo == null ? null : await _images.upload(photo, photoPath(id)),
+      );
+      await _foods.saveFood(created);
       _analytics.analytic('FoodDefinitionView_CreateFood_Success');
-      emit(state.copyWith(status: CreateFoodStatus.created, created: food));
+      emit(state.copyWith(status: CreateFoodStatus.created, created: created));
     } on Object catch (error) {
       _analytics.severe('FoodDefinitionView_CreateFood_Fail', error);
       emit(state.copyWith(status: CreateFoodStatus.failed));

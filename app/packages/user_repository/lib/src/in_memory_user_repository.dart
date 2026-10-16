@@ -54,10 +54,12 @@ class InMemoryUserRepository implements UserRepository {
         message: 'No document to update: users/$uid',
       );
     }
-    _users[uid] = UserModel.fromFirestore({
-      ...user.toFirestore(),
-      for (final field in fields) field.key: field.value,
-    });
+    _users[uid] = UserModel.fromFirestore(
+      {
+        ...user.toFirestore(),
+        for (final field in fields) field.key: field.value,
+      }..removeWhere((_, value) => value == null),
+    );
     _changes.add(null);
   }
 

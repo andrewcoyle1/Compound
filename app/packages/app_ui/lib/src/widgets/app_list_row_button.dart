@@ -11,6 +11,7 @@ class AppListRowButton extends StatelessWidget {
     required this.onPressed,
     this.subtitle,
     this.icon,
+    this.thumbnail,
     this.tint,
     this.accessory = const AppListRowChevron(),
     super.key,
@@ -27,6 +28,9 @@ class AppListRowButton extends StatelessWidget {
 
   /// See [AppListRow.icon].
   final IconData? icon;
+
+  /// See [AppListRow.thumbnail].
+  final Widget? thumbnail;
 
   /// See [AppListRow.tint].
   final Color? tint;
@@ -45,6 +49,7 @@ class AppListRowButton extends StatelessWidget {
             title: title,
             subtitle: subtitle,
             icon: icon,
+            thumbnail: thumbnail,
             tint: tint,
             accessory: accessory,
           ),

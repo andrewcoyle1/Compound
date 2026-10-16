@@ -267,16 +267,14 @@ None left: label OCR (#185) and A/B tests (#186) closed the last two.
   `com.andrewcoyle.compound.dev`, the Play subscriptions on the same entitlement, a Play
   service-account credential, and `REVENUECAT_APPLE_API_KEY` / `REVENUECAT_GOOGLE_API_KEY` in
   `app/dart_defines.json`. Until then development runs the premium fake (#114, #155).
-- **APNs and push:** upload the APNs key to `compound-development`; the Push Notifications capability
-  and the Time Sensitive entitlement on the Flutter dev bundle id; optionally the
+- **APNs and push:** done for development on 16 Oct 2026: a sandbox APNs key on both dev iOS apps in
+  `compound-development`, a production key on `com.andrewcoyle.compound` in prod, and Push, Time
+  Sensitive, HealthKit and App Groups on the dev App IDs, with the entitlements in #188. Optionally the
   remote-notifications background mode (#117, #127). `compound://` is shared with the Swift app on one
   device (#127).
-- **HealthKit and Health Connect:** the HealthKit capability and entitlement for the development and
-  production bundle ids; the Play Console Health Connect declaration; a privacy policy page for the
+- **HealthKit and Health Connect:** the HealthKit capability and entitlement for the production
+  bundle id (development is done, #188); the Play Console Health Connect declaration; a privacy policy page for the
   rationale screen (#121, #151).
-- **Strava:** `STRAVA_CLIENT_ID` in `app/dart_defines.json`; confirm the dev Strava app's callback
-  domain is `localhost` (#122, #151).
-- **Mixpanel:** `MIXPANEL_TOKEN` in `app/dart_defines.json` (#96).
 - **RevenueCat paywall:** a paywall designed in RevenueCat's dashboard on the current offering, for
   the `revenueCat` arm of `paywallTest` (#186); without one RevenueCat shows its default template, and
   while RevenueCat isn't running (no keys) that arm shows the custom paywall.

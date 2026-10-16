@@ -180,6 +180,27 @@ why, and what would change it. Review these with the `feature/flutter` → `deve
 | 16 Oct 2026 | M5 workout editor (#138) | Haptics play in the views; the ported Swift tests' haptic assertions are left out | bloc lint; haptics are UI | — |
 | 16 Oct 2026 | M5 workout editor (#138) | The mesocycle day's "View Workout" link is gone (edited in place, as Swift); `programDayEditorLater` and `programViewWorkout` left unused in the ARB | Keeps the PR additive | A strings tidy-up |
 | 16 Oct 2026 | M5 workout editor (#138) | Deferred: Share, New Exercise, and Create Gym Profile from the empty gym list | Their own slices (Create Exercise, gym editor, Social 2) | Those slices |
+| 16 Oct 2026 | M5 gym editor (#140) | Editor rules in `training_library_repository` (`gym_editor_rules.dart`), editing items through their stored maps | The models have no `copyWith`; map edits keep every field Swift writes | Models gain copies |
+| 16 Oct 2026 | M5 gym editor (#140) | One `GymProfileEditorCubit` holds the draft; sub-editors are pushed with it and address items by list and id | Swift's editors share one presenter; ids keep rows right after deletes | — |
+| 16 Oct 2026 | M5 gym editor (#140) | Only Gym Profiles has a route (`/profile/settings/gym-profiles`); the editor, Create and sub-editors are pushed. Leaving saves from the view's `dispose` | As #138; the editor needs the in-memory draft, and the save on leaving covers Swift's debounce | Deep links into a gym |
+| 16 Oct 2026 | M5 gym editor (#140) | `GymSetupCubit` builds the draft only; save and favourite moved to the editor's Continue, which serves onboarding and Create Gym Profile | Swift's Create only builds the gym and Continue saves it; no redirect change needed | — |
+| 16 Oct 2026 | M5 gym editor (#140) | Continue from Choose Gym Profile makes the new gym the usual one | Swift's Continue always does | The owner prefers not to |
+| 16 Oct 2026 | M5 gym editor (#140) | `saveGymProfile` writes deletes for absent keys; new `deleteGymProfile` (hard delete) | A merge can't clear `image_url`; lists were already safe. Swift hard-deletes | — |
+| 16 Oct 2026 | M5 gym editor (#140) | A free weight that needs a colour stores the selected swatch (Default `#000000`) | Swift shows Default selected but stores nil until tapped (finding) | — |
+| 16 Oct 2026 | M5 gym editor (#140) | Machine actions on a long press with a sheet, plus a screen-reader action; `AppSymbols.favourite` added | No swipe-actions row in Flutter; no star token existed | A shared swipe-actions widget |
+| 16 Oct 2026 | M5 gym editor (#140) | Deferred: equipment thumbnails, the gym photo, the scoped editor used by the tracker's equipment sheet | Image upload; Flutter has no equipment sheet yet | Those slices |
+| 16 Oct 2026 | M5 create exercise (#141) | No Create & Add: Create closes the flow and the new exercise appears unticked in the picker | As Swift (`ExerciseSaveView.swift:72`) | The owner wants it added automatically |
+| 16 Oct 2026 | M5 create exercise (#141) | The steps run in a nested `Navigator` inside the `/create-exercise` cover; one cubit per presenter with an `ExerciseDraft` passed forward | Back steps through, Close/Create is one pop; Swift tests port case for case | Deep links into a step |
+| 16 Oct 2026 | M5 create exercise (#141) | `saveUserExercise` keeps its merge; new `deleteUserExercise` | Every save is a new id and Swift has no exercise edit | An Edit Exercise screen (then delete cleared fields as `saveWorkoutTemplate` does) |
+| 16 Oct 2026 | M5 create exercise (#141) | Exercise list rows are one `Semantics` node, not `MergeSemantics` | A merged row added while the list was covered threw when the route above popped (Flutter 3.47); `AppSelectableRow` has the same pattern (polish backlog) | — |
+| 16 Oct 2026 | M5 create exercise (#141) | Muscle tiles are text and a badge; an empty contribution blocks Next with a message | Swift shows one placeholder image on every tile; Swift silently keeps the previous value | — |
+| 16 Oct 2026 | M5 foods (#142) | Deferred: FoodPackaging (parity `todo`), the food image, Nutrition-tab search | Packaging is unreachable in Swift (toggle hidden); image upload doesn't exist; search needs recipes | The public food database ships; image upload; recipes slice |
+| 16 Oct 2026 | M5 foods (#142) | Portion step offers only the serving option | Swift's option picker is commented out | Swift turns it back on |
+| 16 Oct 2026 | M5 foods (#142) | Create Food is one root route with Portion and Definition pushed; Create & Add returns the food and the logger adds `mealItem(100)` | As #138; Flutter's plate is the logger's bloc | Deep links into a step |
+| 16 Oct 2026 | M5 foods (#142) | Foods sorts by name ignoring case; Swift's always-empty "System Foods" section is not ported | Matches #126's Library tab | System foods arrive |
+| 16 Oct 2026 | M5 foods (#142) | The Nutrition empty state sits inside the list above Library and Timeline Actions | Both sections stay reachable | — |
+| 16 Oct 2026 | M5 foods (#142) | Leading swipe is Log Again; View Meal is tap, long press or screen-reader action | `Dismissible` takes one action per side (Swift has two buttons) | — |
+| 16 Oct 2026 | M5 foods (#142) | `MealItemAmountViewView_Appear`/`_Disappear` not logged; meal detail rows have no food image | #126's sheet has no cubit; no food images yet | The sheet gets a cubit; images |
 
 To regenerate the gitignored dev config, run this from `app/`:
 

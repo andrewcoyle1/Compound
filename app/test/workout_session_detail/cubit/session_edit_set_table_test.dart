@@ -130,7 +130,11 @@ void main() {
   late UnitPreferenceStore units;
   late AnalyticsRecorder analytics;
 
+  // Reset for each test, so generated ids don't depend on test order.
+  var ids = 0;
+
   setUp(() {
+    ids = 0;
     sessions = InMemoryWorkoutSessionRepository(sessions: const []);
     library = _Library(
       exercises: [bench, row, plank],
@@ -143,7 +147,6 @@ void main() {
     analytics = AnalyticsRecorder();
   });
 
-  var ids = 0;
   Future<SessionEditCubit> editing(List<WorkoutExerciseModel> exercises) async {
     final opened = session(exercises);
     await sessions.saveSession(_uid, opened);

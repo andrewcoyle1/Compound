@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
 
+import 'package:ab_test_repository/ab_test_repository.dart';
 import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -215,6 +216,9 @@ Future<void> main() async {
         File('${support.path}/active_workout_session.json'),
       ),
       deviceStore: deviceStore,
+      // A random draw kept on the device, as Swift's dev builds
+      // (`LocalABTestService`); Developer Settings overrides it.
+      abTestRepository: LocalAbTestRepository(deviceStore),
       // Workouts' web pages: the sessionPage function behind this project's
       // Hosting rewrite.
       sessionWebLink: SessionWebLink(

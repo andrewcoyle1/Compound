@@ -8,6 +8,8 @@ environment:
   flutter: ^3.47.0
 
 dependencies:
+  ab_test_repository:
+    path: packages/ab_test_repository
   ai_repository:
     path: packages/ai_repository
   analytics_repository:
@@ -76,6 +78,9 @@ dependencies:
     path: packages/program_repository
   purchases_repository:
     path: packages/purchases_repository
+  # RevenueCat's paywall, the A/B test's revenueCat variant; the same native SDK
+  # as purchases_repository's purchases_flutter, so both are exact (MIT).
+  purchases_ui_flutter: 10.13.2
   share_plus: 13.3.1
   social_repository:
     path: packages/social_repository

@@ -379,7 +379,28 @@ class _Tracker extends StatelessWidget {
           icon: const Icon(AppSymbols.minimize),
         ),
         title: _Title(state: state),
-        actions: [_Menu(state: state)],
+        // On a tablet the bar has room for the workout's controls, which
+        // leave the menu (`WorkoutTrackerView+Toolbar`).
+        actions: [
+          if (context.isRegularWidth) ...[
+            IconButton(
+              tooltip: state.isPaused ? l10n.trackerResume : l10n.trackerPause,
+              onPressed: cubit.togglePause,
+              icon: Icon(state.isPaused ? AppSymbols.start : AppSymbols.pause),
+            ),
+            IconButton(
+              tooltip: l10n.trackerFinishMenu,
+              onPressed: () => unawaited(finishWorkout(context)),
+              icon: const Icon(AppSymbols.selected),
+            ),
+            IconButton(
+              tooltip: l10n.trackerNotesMenu,
+              onPressed: () => unawaited(_workoutNotes(context, state)),
+              icon: const Icon(AppSymbols.note),
+            ),
+          ],
+          _Menu(state: state, compact: !context.isRegularWidth),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -483,9 +504,13 @@ class _Title extends StatelessWidget {
 enum _MenuAction { pause, finish, notes, workoutSettings, gym, discard }
 
 class _Menu extends StatelessWidget {
-  const new({required this.state});
+  const new({required this.state, required this.compact});
 
   final ActiveWorkoutState state;
+
+  /// Whether pause, finish and notes are in the menu rather than on the
+  /// bar.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -497,36 +522,40 @@ class _Menu extends StatelessWidget {
       onSelected: (action) => switch (action) {
         _MenuAction.pause => context.read<ActiveWorkoutCubit>().togglePause(),
         _MenuAction.finish => unawaited(finishWorkout(context)),
-        _MenuAction.notes => unawaited(_workoutNotes(context)),
+        _MenuAction.notes => unawaited(_workoutNotes(context, state)),
         _MenuAction.workoutSettings => _workoutSettings(context),
         _MenuAction.gym => _gymSettings(context),
         _MenuAction.discard => unawaited(_discard(context)),
       },
       itemBuilder: (_) => [
-        PopupMenuItem(
-          value: _MenuAction.pause,
-          child: ListTile(
-            leading: Icon(state.isPaused ? AppSymbols.start : AppSymbols.pause),
-            title: Text(
-              state.isPaused ? l10n.trackerResume : l10n.trackerPause,
+        if (compact) ...[
+          PopupMenuItem(
+            value: _MenuAction.pause,
+            child: ListTile(
+              leading: Icon(
+                state.isPaused ? AppSymbols.start : AppSymbols.pause,
+              ),
+              title: Text(
+                state.isPaused ? l10n.trackerResume : l10n.trackerPause,
+              ),
             ),
           ),
-        ),
-        PopupMenuItem(
-          value: _MenuAction.finish,
-          child: ListTile(
-            leading: const Icon(AppSymbols.selected),
-            title: Text(l10n.trackerFinishMenu),
+          PopupMenuItem(
+            value: _MenuAction.finish,
+            child: ListTile(
+              leading: const Icon(AppSymbols.selected),
+              title: Text(l10n.trackerFinishMenu),
+            ),
           ),
-        ),
-        PopupMenuItem(
-          value: _MenuAction.notes,
-          child: ListTile(
-            leading: const Icon(AppSymbols.note),
-            title: Text(l10n.trackerNotesMenu),
+          PopupMenuItem(
+            value: _MenuAction.notes,
+            child: ListTile(
+              leading: const Icon(AppSymbols.note),
+              title: Text(l10n.trackerNotesMenu),
+            ),
           ),
-        ),
-        const PopupMenuDivider(),
+          const PopupMenuDivider(),
+        ],
         PopupMenuItem(
           value: _MenuAction.workoutSettings,
           child: ListTile(
@@ -571,23 +600,6 @@ class _Menu extends StatelessWidget {
     unawaited(GymProfilePage.push(context, gym));
   }
 
-  Future<void> _workoutNotes(BuildContext context) async {
-    final l10n = context.l10n;
-    final cubit = context.read<ActiveWorkoutCubit>();
-    final notes = await showNotesSheet(
-      context,
-      title: l10n.trackerWorkoutNotesTitle,
-      saveLabel: l10n.trackerSave,
-      fields: [
-        NoteField(
-          label: l10n.trackerSessionNote,
-          initial: state.session?.notes ?? '',
-        ),
-      ],
-    );
-    if (notes != null) cubit.setWorkoutNotes(notes.single);
-  }
-
   Future<void> _discard(BuildContext context) async {
     final l10n = context.l10n;
     final cubit = context.read<ActiveWorkoutCubit>()..discardPressed();
@@ -615,6 +627,27 @@ class _Menu extends StatelessWidget {
     await cubit.discard();
     if (context.mounted) closeTracker(context);
   }
+}
+
+/// The workout's own note, from the bar or the menu.
+Future<void> _workoutNotes(
+  BuildContext context,
+  ActiveWorkoutState state,
+) async {
+  final l10n = context.l10n;
+  final cubit = context.read<ActiveWorkoutCubit>();
+  final notes = await showNotesSheet(
+    context,
+    title: l10n.trackerWorkoutNotesTitle,
+    saveLabel: l10n.trackerSave,
+    fields: [
+      NoteField(
+        label: l10n.trackerSessionNote,
+        initial: state.session?.notes ?? '',
+      ),
+    ],
+  );
+  if (notes != null) cubit.setWorkoutNotes(notes.single);
 }
 
 enum _NoSetsChoice { discard, save }

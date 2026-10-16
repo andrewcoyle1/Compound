@@ -4,6 +4,7 @@ import 'package:compound/progress/logic/nutrition_analytics.dart';
 import 'package:compound/progress/view/body_metrics_pages.dart';
 import 'package:compound/progress/view/nutrition_analytics_pages.dart';
 import 'package:compound/progress/view/progress_metric_pages.dart';
+import 'package:compound/progress_photos/progress_photos.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -72,6 +73,23 @@ final progressRoutes = <RouteBase>[
     name: BodyMetricsPage.name,
     builder: (_, _) => const BodyMetricsPage(),
     routes: [
+      GoRoute(
+        path: ProgressPhotosPage.path,
+        name: ProgressPhotosPage.name,
+        builder: (_, _) => const ProgressPhotosPage(),
+        routes: [
+          GoRoute(
+            path: ProgressPhotoComparePage.path,
+            name: ProgressPhotoComparePage.name,
+            builder: (_, state) => switch (state.extra) {
+              final ProgressPhotoComparison comparison =>
+                ProgressPhotoComparePage(comparison: comparison),
+              // Opened without its photos (a restored route): the photos.
+              _ => const ProgressPhotosPage(),
+            },
+          ),
+        ],
+      ),
       _metric(
         BodyMetricDetailPage.path,
         BodyMetricDetailPage.name,

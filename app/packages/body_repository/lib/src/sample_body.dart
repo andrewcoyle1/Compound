@@ -107,3 +107,36 @@ String _dayKey(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-'
     '${date.month.toString().padLeft(2, '0')}-'
     '${date.day.toString().padLeft(2, '0')}';
+
+/// Two of [uid]'s front progress photos a month apart, for the staging
+/// flavor, as Swift's `ProgressPhotoModel.mocks`: their images are bundled
+/// exercise pictures (`assets/exercises/` in the app), and their weights
+/// those of [sampleTrendWeightKg] on the day. Taken at the time of day of
+/// [now], so neither is after it.
+List<ProgressPhotoModel> sampleProgressPhotos({
+  required String uid,
+  required DateTime now,
+}) => [
+  for (final (daysAgo, image) in [
+    (30, 'BarbellSquat'),
+    (0, 'BarbellBenchPress'),
+  ])
+    ProgressPhotoModel(
+      id: 'sample-progress-photo-$daysAgo',
+      authorId: uid,
+      date: DateTime(
+        now.year,
+        now.month,
+        now.day - daysAgo,
+        now.hour,
+        now.minute,
+      ),
+      pose: ProgressPhotoPose.front,
+      storagePath: ProgressPhotoModel.storagePathFor(
+        uid,
+        'sample-progress-photo-$daysAgo',
+      ),
+      imageUrl: 'assets/exercises/$image.webp',
+      weightKg: _round(sampleTrendWeightKg(daysAgo), 1),
+    ),
+];

@@ -3,7 +3,7 @@
 //  CompoundUnitTests
 //
 //  The fixed body and goal samples behind contracts/firestore/{body_measurement,steps,
-//  analytics_settings,weight_goal}. See FirestoreContractTests.swift.
+//  analytics_settings,weight_goal,progress_photo}. See FirestoreContractTests.swift.
 //
 
 import Foundation
@@ -98,5 +98,23 @@ extension Samples {
         targetWeightKg: 78.5,
         weeklyChangeKg: 0.5,
         createdAt: date("2026-09-01T08:00:00.000Z")
+    )
+
+    /// Its storage path is the one the rules require for this owner and id.
+    static let fullProgressPhoto = ProgressPhotoModel(
+        id: "progress_photo_contract_full",
+        authorId: "user_contract_full",
+        date: date("2026-10-12T07:45:00.250Z"),
+        pose: .side,
+        imageUrl: "https://example.com/progress-photo.jpg",
+        weightKg: 81.75,
+        note: "Morning, fasted"
+    )
+
+    static let minimalProgressPhoto = ProgressPhotoModel(
+        id: "progress_photo_contract_minimal",
+        authorId: "user_contract_minimal",
+        date: date("2026-10-13T08:00:00.000Z"),
+        pose: .front
     )
 }

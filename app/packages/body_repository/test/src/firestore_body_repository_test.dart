@@ -453,5 +453,79 @@ void main() {
         );
       });
     });
+    group('progress photos', () {
+      ProgressPhotoModel photo(String id, String date, {String? author}) =>
+          ProgressPhotoModel(
+            id: id,
+            authorId: author ?? uid,
+            date: DateTime.parse(date),
+            pose: ProgressPhotoPose.front,
+            storagePath: ProgressPhotoModel.storagePathFor(uid, id),
+          );
+
+      for (final name in ['full', 'minimal']) {
+        test('saveProgressPhoto stores the $name fixture exactly', () async {
+          final model = ProgressPhotoModel.fromFirestore(
+            modelFixture('progress_photo', name),
+          );
+
+          await subject.saveProgressPhoto(model);
+
+          final written = await stored(
+            'users/${model.authorId}/progress_photos/${model.id}',
+          );
+          expect(
+            written,
+            strictlyEquals(taggedFixture('progress_photo', name)),
+          );
+        });
+      }
+
+      test("watchProgressPhotos returns $uid's photos, newest first, and "
+          'skips one that does not decode', () async {
+        final photos = collection(uid, 'progress_photos');
+        await photos
+            .doc('a')
+            .set(
+              _toFirestore(photo('a', '2026-10-01T07:00:00Z').toFirestore()),
+            );
+        await photos
+            .doc('b')
+            .set(
+              _toFirestore(photo('b', '2026-10-12T07:00:00Z').toFirestore()),
+            );
+        await photos
+            .doc('forged')
+            .set(
+              _toFirestore(
+                photo(
+                  'forged',
+                  '2026-10-05T07:00:00Z',
+                  author: 'x',
+                ).toFirestore(),
+              ),
+            );
+        await photos
+            .doc('bad')
+            .set(
+              _toFirestore(photo('bad', '2026-10-05T07:00:00Z').toFirestore())
+                ..['pose'] = 'top',
+            );
+
+        final read = await subject.watchProgressPhotos(uid).first;
+
+        expect(read.map((photo) => photo.id), ['b', 'a']);
+        expect(decodeErrors.single.$1, 'users/$uid/progress_photos/bad');
+      });
+
+      test('deleteProgressPhoto removes the document', () async {
+        const path = 'users/$uid/progress_photos/progress_photo_contract_full';
+        await firestore.doc(path).set(storedFixture('progress_photo', 'full'));
+
+        await subject.deleteProgressPhoto(uid, 'progress_photo_contract_full');
+
+        expect((await firestore.doc(path).get()).exists, isFalse);
+      });
+    });
   });
 }

@@ -78,4 +78,19 @@ abstract interface class BodyRepository {
   /// when the replaced goal is active, and ignores a failure. Fails, as
   /// Firestore's `update` does, when there is no such goal.
   Future<void> abandonGoal(String uid, String goalId);
+
+  /// The progress photos at `users/{uid}/progress_photos` whose author is
+  /// [uid], newest first, as `ProgressPhotoManager.photos` lists them
+  /// (Swift listens to the whole collection and filters on the author).
+  Stream<List<ProgressPhotoModel>> watchProgressPhotos(String uid);
+
+  /// Saves [photo] to `users/{photo.authorId}/progress_photos/{photo.id}`,
+  /// merged, as `ProgressPhotoManager.addPhoto` does (`saveDocument` is
+  /// `setData(merge: true)`). Its image must already be in Storage at
+  /// `photo.storagePath`.
+  Future<void> saveProgressPhoto(ProgressPhotoModel photo);
+
+  /// Deletes `users/{uid}/progress_photos/{photoId}`, as
+  /// `ProgressPhotoManager.deletePhoto` does before removing the image.
+  Future<void> deleteProgressPhoto(String uid, String photoId);
 }

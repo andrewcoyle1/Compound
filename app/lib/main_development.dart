@@ -20,11 +20,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_repository/image_repository.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -155,6 +157,11 @@ Future<void> main() async {
       proposalDismissals: ProposalDismissals(
         file: File('${support.path}/dismissed_target_proposals.json'),
       ),
+      // Swift's paths in the compound-development bucket.
+      imageRepository: FirebaseImageRepository(
+        storage: FirebaseStorage.instance,
+      ),
+      photoPicker: DevicePhotoPicker(),
       foodRepository: FirestoreFoodRepository(
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,

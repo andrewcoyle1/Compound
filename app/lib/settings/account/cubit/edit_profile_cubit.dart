@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:equatable/equatable.dart';
+import 'package:image_repository/image_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 part 'edit_profile_state.dart';
@@ -11,7 +14,9 @@ const centimetresPerInch = 2.54;
 
 /// Edit Profile (Swift `EditProfilePresenter`): the profile's names, date of
 /// birth, sex, height and the onboarding answers, saved together by Save;
-/// and the privacy switch, written the moment it flips.
+/// and the privacy switch, written the moment it flips. A new profile photo
+/// is picked from the library and uploaded by Save, to Swift's path
+/// `users/{uid}/profile`, before the fields are written.
 ///
 /// Save writes only what Swift writes, each under its own key: the trimmed
 /// names, then every other field only when it has a value, and the height
@@ -22,11 +27,18 @@ class EditProfileCubit extends Cubit<EditProfileState> {
   new({
     required this._userRepository,
     required this._analytics,
+    required this._images,
+    required this._picker,
     required UserModel? user,
   }) : super(EditProfileState.from(user));
 
   final UserRepository _userRepository;
   final AnalyticsRepository _analytics;
+  final ImageRepository _images;
+  final PhotoPicker _picker;
+
+  /// Where the profile photo is stored (`UserManager.updateProfileImage`).
+  static String profilePhotoPath(String uid) => 'users/$uid/profile';
 
   static const _screen = 'AccountView';
 
@@ -77,6 +89,21 @@ class EditProfileCubit extends Cubit<EditProfileState> {
     ),
   );
 
+  /// The photo button: a photo from the library, shown at once and
+  /// uploaded by Save. A cancel changes nothing.
+  Future<void> photoPressed() async {
+    try {
+      final photo = await _picker.pick(PhotoSource.library, PhotoSize.standard);
+      if (photo == null) return;
+      _analytics.analytic('profile_photo_selected');
+      emit(
+        state.copyWith(pickedPhoto: photo, status: EditProfileStatus.editing),
+      );
+    } on Object catch (error) {
+      _analytics.analytic('profile_photo_load_failed', {'error': '$error'});
+    }
+  }
+
   /// `AccountView_Cancel_Pressed`; the view closes the screen.
   void cancelPressed() => _analytics.analytic('AccountView_Cancel_Pressed');
 
@@ -115,7 +142,16 @@ class EditProfileCubit extends Cubit<EditProfileState> {
     emit(state.copyWith(status: EditProfileStatus.saving));
     _analytics.analytic('AccountView_SaveProfile_Start');
     try {
-      await _userRepository.updateUserFields(uid, state.fieldsToSave);
+      final photo = state.pickedPhoto;
+      await _userRepository.updateUserFields(uid, [
+        // The upload needs the server; offline it fails and nothing is
+        // written, as Swift asks for a connection first.
+        if (photo != null)
+          UserField.submittedProfileImage(
+            await _images.upload(photo, profilePhotoPath(uid)),
+          ),
+        ...state.fieldsToSave,
+      ]);
       _analytics
         ..analytic('profile_edit_save_success')
         ..analytic('AccountView_SaveProfile_Success');

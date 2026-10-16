@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_measurement/log_measurement.dart';
@@ -9,15 +11,17 @@ import 'package:compound/progress/view/progress_cards.dart';
 import 'package:compound/progress/view/progress_metric_view.dart';
 import 'package:compound/progress/view/progress_names.dart';
 import 'package:compound/progress/view/progress_provider.dart';
+import 'package:compound/progress_photos/progress_photos.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound_maths/compound_maths.dart'
     show BodyRatioBand, BodyRatioKind, Gender, bodyRatioBand;
 import 'package:compound_models/compound_models.dart'
     show BodyMeasurementEntryKeys;
+import 'package:go_router/go_router.dart';
 
 /// Body Metrics (Swift `BodyMetricsView`): scale weight and visual body
 /// fat, the eighteen circumferences in three groups, and the two ratios,
-/// each card opening its history. Progress photos wait for image upload.
+/// each card opening its history, and the row to Progress Photos.
 class BodyMetricsPage extends StatelessWidget {
   const new({super.key});
 
@@ -54,6 +58,17 @@ class BodyMetricsPage extends StatelessWidget {
                 )
               else
                 for (final kind in BodyRatioKind.values) cards.ratio(kind),
+            ],
+          ),
+          AppSection(
+            header: l10n.progressPhotosHeader,
+            children: [
+              AppListRowButton(
+                title: l10n.progressPhotosTitle,
+                icon: AppSymbols.progressPhotos,
+                onPressed: () =>
+                    unawaited(context.pushNamed(ProgressPhotosPage.name)),
+              ),
             ],
           ),
         ];

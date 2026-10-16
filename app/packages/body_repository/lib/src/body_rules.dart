@@ -35,3 +35,7 @@ List<T> liveOldestFirst<T>(
   for (final entry in entries)
     if (deletedAt(entry) == null) entry,
 ]..sort((a, b) => date(a).compareTo(date(b)));
+
+/// [photos] newest first, as `ProgressPhotoManager.photos` sorts them.
+List<ProgressPhotoModel> newestFirst(Iterable<ProgressPhotoModel> photos) =>
+    photos.toList()..sort((a, b) => b.date.compareTo(a.date));

@@ -73,6 +73,7 @@ abstract final class WeightStepper {
         isAssisted: load.isAssisted,
         constrainsWeight: load.constrainsWeight,
         bands: bands,
+        stack: load.stack,
       );
     }
     if (bands.isEmpty) return fallback(unit);
@@ -136,7 +137,14 @@ abstract final class WeightStepper {
       for (final MapEntry(key: weight, value: group) in byWeight.entries)
         if (_perSleeve(group, sleeves) case final perSleeve
             when weight > 0 && (perSleeve ?? 1) > 0)
-          r.Plate(weight, perSleeve: perSleeve),
+          r.Plate(
+            weight,
+            perSleeve: perSleeve,
+            colour: group
+                .map((entry) => entry.plateColour)
+                .nonNulls
+                .firstOrNull,
+          ),
     ]..sort((a, b) => a.weight.compareTo(b.weight));
   }
 
@@ -365,7 +373,14 @@ abstract final class WeightStepper {
       );
     }
     final loads = stack.loads();
-    return loads.isEmpty ? null : r.WeightStep(r.StepList(loads));
+    return loads.isEmpty
+        ? null
+        : r.WeightStep(
+            r.StepList(loads),
+            stack: stack.addOns.isEmpty
+                ? null
+                : r.PinStack(pins: stack.pinPositions, addOns: stack.addOns),
+          );
   }
 
   /// The weights labelled in [unit] when any are, else all of them

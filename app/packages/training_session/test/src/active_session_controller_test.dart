@@ -1116,6 +1116,40 @@ void main() {
       expect(c.state.customRestSeconds, {'s1': 30});
     });
 
+    // WorkoutTrackingRowPresenterTests' rest picker.
+    test('the rest picker opens on the rest that would run', () {
+      final c = controller(
+        session([
+          exercise(
+            'a',
+            templateId: 'bench',
+            sets: [
+              set('w1', warmup: true),
+              set('w2', index: 2, warmup: true),
+              set('a1', index: 3),
+              set('a2', index: 4),
+            ],
+          ),
+        ]),
+        restOverrides: const {'bench': 240},
+        workoutSettings: settings(),
+      );
+      expect(c.restPickerSeconds('a1'), 240);
+      // The last warm-up rests three quarters of it.
+      expect(c.restPickerSeconds('w2'), 180);
+      // No rest runs between warm-ups: the picker offers the base.
+      expect(c.restPickerSeconds('w1'), 240);
+      expect(c.customRest('a1'), isNull);
+
+      // One set by hand wins, and clearing it goes back.
+      c.setCustomRest('a1', 135);
+      expect(c.restPickerSeconds('a1'), 135);
+      expect(c.customRest('a1'), 135);
+      c.setCustomRest('a1', null);
+      expect(c.restPickerSeconds('a1'), 240);
+      expect(c.restPickerSeconds('missing'), 90);
+    });
+
     test('the exercise rest override and plan rest are read', () {
       final c = controller(
         session([
@@ -1460,6 +1494,45 @@ void main() {
 
       expect(c.session.exercises.single.chosenVariationId, 'db');
       expect(c.previousExercise(c.session.exercises.single)?.id, 'last');
+    });
+
+    test('refit puts open sets on the edited equipment', () {
+      final dumbbells = [ref(m.EquipmentKind.freeWeight, 'dumbbells')];
+      final curl = library('curl', variations: [variation('db', dumbbells)]);
+      m.GymProfileModel gymWith(List<double> weights) =>
+          gym(freeWeights: [plates(weights, id: 'dumbbells', isPlates: false)]);
+      final c =
+          controller(
+              session([
+                exercise(
+                  'e',
+                  templateId: 'curl',
+                  variations: curl.equipmentVariations,
+                  chosenVariationId: 'db',
+                  sets: [
+                    set('done', weightKg: 14, done: true),
+                    set('open', weightKg: 14),
+                  ],
+                ),
+              ]),
+              libraryExercises: [curl],
+              workoutGym: gymWith([10, 20]),
+            )
+            // The gym's dumbbells edited: 12.5 and 15 switched on.
+            ..environment = TrackerEnvironment(
+              authorId: author,
+              settings: settings(),
+              library: [curl],
+              gym: gymWith([10, 12.5, 15, 20]),
+            )
+            ..refit('e')
+            ..refit('missing');
+
+      expect(weights(c), [14, 15]);
+      expect(
+        c.session.exercises.single.weightUnit,
+        m.ExerciseWeightUnit.kilograms,
+      );
     });
 
     test('a new environment reads history again', () {

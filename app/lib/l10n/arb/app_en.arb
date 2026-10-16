@@ -11082,6 +11082,547 @@
     "@targetChartCreatePlan": {
         "description": "Target chart action when there is no diet plan"
     },
+    "reportCommentTitle": "Report Comment",
+    "@reportCommentTitle": {
+        "description": "Report sheet title for a comment"
+    },
+    "reportWorkoutTitle": "Report Workout",
+    "@reportWorkoutTitle": {
+        "description": "Report sheet title for a workout"
+    },
+    "reportProfileTitle": "Report Profile",
+    "@reportProfileTitle": {
+        "description": "Report sheet title for a profile"
+    },
+    "reportCommentPrompt": "Why are you reporting this comment?",
+    "@reportCommentPrompt": {
+        "description": "Above the report reasons"
+    },
+    "reportWorkoutPrompt": "Why are you reporting this workout?",
+    "@reportWorkoutPrompt": {
+        "description": "Above the report reasons"
+    },
+    "reportProfilePrompt": "Why are you reporting this profile?",
+    "@reportProfilePrompt": {
+        "description": "Above the report reasons"
+    },
+    "reportSentComment": "Report sent. Thanks — we will take a look at this comment.",
+    "@reportSentComment": {
+        "description": "After a report is sent"
+    },
+    "reportSentWorkout": "Report sent. Thanks — we will take a look at this workout.",
+    "@reportSentWorkout": {
+        "description": "After a report is sent"
+    },
+    "reportSentProfile": "Report sent. Thanks — we will take a look at this profile.",
+    "@reportSentProfile": {
+        "description": "After a report is sent"
+    },
+    "reportFailed": "Unable to Send Report",
+    "@reportFailed": {
+        "description": "Alert when a report fails"
+    },
+    "reportSend": "Send",
+    "@reportSend": {
+        "description": "Sends a report"
+    },
+    "reportNote": "Note",
+    "@reportNote": {
+        "description": "Label of the report's note field"
+    },
+    "reportNoteRequired": "Tell us what is wrong.",
+    "@reportNoteRequired": {
+        "description": "Under the note when the reason is Other"
+    },
+    "reportNoteOptional": "Optional: anything that helps us review it.",
+    "@reportNoteOptional": {
+        "description": "Under the note for other reasons"
+    },
+    "reportNoReason": "Choose a reason for the report.",
+    "@reportNoReason": {
+        "description": "Report sent without a reason"
+    },
+    "reportNoNote": "Add a note saying what is wrong.",
+    "@reportNoNote": {
+        "description": "Report with reason Other sent without a note"
+    },
+    "reportNoteTooLong": "Keep the note to {count} characters or fewer.",
+    "@reportNoteTooLong": {
+        "description": "Report note over the limit",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "reportReasonSpam": "Spam",
+    "@reportReasonSpam": {
+        "description": "A report reason"
+    },
+    "reportReasonHarassment": "Harassment",
+    "@reportReasonHarassment": {
+        "description": "A report reason"
+    },
+    "reportReasonInappropriate": "Inappropriate",
+    "@reportReasonInappropriate": {
+        "description": "A report reason"
+    },
+    "reportReasonOther": "Other",
+    "@reportReasonOther": {
+        "description": "A report reason"
+    },
+    "reportMenu": "Report…",
+    "@reportMenu": {
+        "description": "Profile menu item that reports the profile"
+    },
+    "reportWorkoutMenu": "Report Workout…",
+    "@reportWorkoutMenu": {
+        "description": "Feed card menu item that reports the workout"
+    },
+    "reportCommentAction": "Report",
+    "@reportCommentAction": {
+        "description": "Reports someone else's comment"
+    },
+    "saveAsTemplate": "Save as Template",
+    "@saveAsTemplate": {
+        "description": "Feed card menu item that saves the workout as the reader's template"
+    },
+    "saveAsTemplateUnresolved": "None of these exercises are in your library",
+    "@saveAsTemplateUnresolved": {
+        "description": "Alert when no exercise of a workout is in the reader's library"
+    },
+    "saveAsTemplateFailed": "Unable to Save Workout",
+    "@saveAsTemplateFailed": {
+        "description": "Alert when saving a workout as a template fails"
+    },
+    "profileFollowingMesocycle": "Following {name}",
+    "@profileFollowingMesocycle": {
+        "description": "On the reader's own profile: the mesocycle they are running",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "plateCalculatorTitle": "Plate Calculator",
+    "@plateCalculatorTitle": {
+        "description": "Plate calculator: title"
+    },
+    "plateAvailableWeights": "Available Plate Weights",
+    "@plateAvailableWeights": {
+        "description": "Plate calculator: section of plate weights to switch on and off"
+    },
+    "plateBarWeight": "Bar Weight",
+    "@plateBarWeight": {
+        "description": "Plate calculator: the bar the gym loads"
+    },
+    "plateBase": "Base",
+    "@plateBase": {
+        "description": "Plate calculator: a plate-loaded machine's fixed base weight"
+    },
+    "plateBarFooter": "Used for every exercise on this bar at this gym.",
+    "@plateBarFooter": {
+        "description": "Plate calculator: under the bar picker"
+    },
+    "plateNotLoadablePlates": "Not loadable with these plates",
+    "@plateNotLoadablePlates": {
+        "description": "Plate calculator: the set's weight cannot be made, and nothing near it can"
+    },
+    "plateNotLoadableOptions": "Not loadable: {weights} {unit}",
+    "@plateNotLoadableOptions": {
+        "description": "Plate calculator: the set's weight cannot be made; the nearest that can, e.g. Not loadable: 67.5 or 72.5 kg",
+        "placeholders": {
+            "weights": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "plateOr": "{first} or {second}",
+    "@plateOr": {
+        "description": "Two weights to choose between, e.g. 67.5 or 72.5",
+        "placeholders": {
+            "first": {
+                "type": "String"
+            },
+            "second": {
+                "type": "String"
+            }
+        }
+    },
+    "plateEquationEmpty": "Empty bar = {total}",
+    "@plateEquationEmpty": {
+        "description": "Loading: no plates, e.g. Empty bar = 20 kg",
+        "placeholders": {
+            "total": {
+                "type": "String"
+            }
+        }
+    },
+    "plateEquationBar": "{plates} on each side + {base} bar = {total}",
+    "@plateEquationBar": {
+        "description": "Loading: a bar, e.g. 25 kg on each side + 20 kg bar = 70 kg",
+        "placeholders": {
+            "plates": {
+                "type": "String"
+            },
+            "base": {
+                "type": "String"
+            },
+            "total": {
+                "type": "String"
+            }
+        }
+    },
+    "plateEquationSingle": "{plates} of plates + {base} base = {total}",
+    "@plateEquationSingle": {
+        "description": "Loading: a single-sleeve machine, e.g. 25 kg of plates + 18 kg base = 43 kg",
+        "placeholders": {
+            "plates": {
+                "type": "String"
+            },
+            "base": {
+                "type": "String"
+            },
+            "total": {
+                "type": "String"
+            }
+        }
+    },
+    "keypadNotLoadable": "Not loadable",
+    "@keypadNotLoadable": {
+        "description": "Weight keypad: the weight typed cannot be made with the gym's plates"
+    },
+    "keypadUseWeight": "Use {weight} {unit}",
+    "@keypadUseWeight": {
+        "description": "Weight keypad: a button setting the nearest loadable weight, read by screen readers",
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "keypadPlatesHint": "Opens the plate calculator",
+    "@keypadPlatesHint": {
+        "description": "Weight keypad: hint on the loading bar"
+    },
+    "keypadShowPlates": "Show Plates",
+    "@keypadShowPlates": {
+        "description": "Weight keypad key: shows or hides the bar and plates"
+    },
+    "keypadChangeSign": "Change sign",
+    "@keypadChangeSign": {
+        "description": "Weight keypad key: makes the weight negative (assistance) or positive"
+    },
+    "keypadChangeSignHint": "A negative weight is assistance",
+    "@keypadChangeSignHint": {
+        "description": "Weight keypad: hint on the sign key"
+    },
+    "keypadBands": "Bands",
+    "@keypadBands": {
+        "description": "Weight keypad: the band chips' heading"
+    },
+    "stackPin": "Pin {pin} {unit}",
+    "@stackPin": {
+        "description": "Weight keypad: how to make the weight on a stack, e.g. Pin 14 kg",
+        "placeholders": {
+            "pin": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "stackPinAddOns": "Pin {pin} + {addOns} {unit}",
+    "@stackPinAddOns": {
+        "description": "Weight keypad: how to make the weight on a stack with add-ons, e.g. Pin 14 + 2 kg",
+        "placeholders": {
+            "pin": {
+                "type": "String"
+            },
+            "addOns": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerEquipment": "Equipment",
+    "@trackerEquipment": {
+        "description": "Exercise menu: the exercise's equipment variations"
+    },
+    "equipmentNone": "No Equipment",
+    "@equipmentNone": {
+        "description": "Equipment sheet: the exercise has no variations"
+    },
+    "equipmentNoVariations": "No equipment variations defined for this exercise.",
+    "@equipmentNoVariations": {
+        "description": "Equipment sheet: why there is nothing to choose"
+    },
+    "equipmentVariation": "Variation {number}",
+    "@equipmentVariation": {
+        "description": "Equipment sheet: one way of doing the exercise, e.g. Variation 2",
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "equipmentResistance": "Resistance: {names}",
+    "@equipmentResistance": {
+        "description": "Equipment sheet: what loads the variation",
+        "placeholders": {
+            "names": {
+                "type": "String"
+            }
+        }
+    },
+    "equipmentSupport": "Support: {names}",
+    "@equipmentSupport": {
+        "description": "Equipment sheet: what braces the variation, such as a bench",
+        "placeholders": {
+            "names": {
+                "type": "String"
+            }
+        }
+    },
+    "equipmentNotInGym": "Not in this gym",
+    "@equipmentNotInGym": {
+        "description": "Equipment sheet: the workout's gym lacks some of the variation's equipment"
+    },
+    "equipmentEdit": "Edit {name} equipment",
+    "@equipmentEdit": {
+        "description": "Equipment sheet: the button editing a variation's equipment, read by screen readers",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerUnableToSaveGym": "Unable to Save Gym",
+    "@trackerUnableToSaveGym": {
+        "description": "Alert title: the bar or plates chosen could not be saved"
+    },
+    "trackerSetTypeStandard": "Standard",
+    "@trackerSetTypeStandard": {
+        "description": "Set type menu: an ordinary working set"
+    },
+    "trackerSetTypeWarmup": "Warm-up",
+    "@trackerSetTypeWarmup": {
+        "description": "Set type menu: a warm-up"
+    },
+    "trackerSetTypeDrop": "Drop Set",
+    "@trackerSetTypeDrop": {
+        "description": "Set type menu: a drop set"
+    },
+    "trackerSetTypeAmrap": "Failure Set",
+    "@trackerSetTypeAmrap": {
+        "description": "Set type menu: a set to failure (AMRAP)"
+    },
+    "trackerSetTypeMyo": "Myo Set",
+    "@trackerSetTypeMyo": {
+        "description": "Set type menu: a myo-reps set"
+    },
+    "trackerSetTypeRestPause": "Rest-pause",
+    "@trackerSetTypeRestPause": {
+        "description": "Set type menu: a rest-pause set"
+    },
+    "trackerSetTypeCluster": "Cluster",
+    "@trackerSetTypeCluster": {
+        "description": "Set type menu: a cluster set"
+    },
+    "trackerSetTypePartials": "Lengthened partials",
+    "@trackerSetTypePartials": {
+        "description": "Set type menu: lengthened partials"
+    },
+    "trackerSetTypeStretch": "Loaded stretch",
+    "@trackerSetTypeStretch": {
+        "description": "Set type menu: a loaded stretch"
+    },
+    "trackerSetTypeHold": "Static hold",
+    "@trackerSetTypeHold": {
+        "description": "Set type menu: a static hold"
+    },
+    "trackerSetType": "Set Type",
+    "@trackerSetType": {
+        "description": "The set number button: opens the set type menu"
+    },
+    "trackerAddDrop": "Add Another Drop",
+    "@trackerAddDrop": {
+        "description": "Set type menu: another drop under a drop set"
+    },
+    "trackerAddMiniSet": "Add Another Mini-Set",
+    "@trackerAddMiniSet": {
+        "description": "Set type menu: another mini-set under a myo set"
+    },
+    "trackerChipDrop": "Drop",
+    "@trackerChipDrop": {
+        "description": "Chip under a drop set's row"
+    },
+    "trackerChipMini": "Mini",
+    "@trackerChipMini": {
+        "description": "Chip under a mini-set's row"
+    },
+    "trackerChipFailure": "Failure",
+    "@trackerChipFailure": {
+        "description": "Chip under a set to failure"
+    },
+    "trackerChipFailureTarget": "Failure {target}+",
+    "@trackerChipFailureTarget": {
+        "description": "Chip under a set to failure with a target, e.g. Failure 8+",
+        "placeholders": {
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerDeleteDropSet": "Delete Drop Set",
+    "@trackerDeleteDropSet": {
+        "description": "Row action: delete a drop"
+    },
+    "trackerDeleteMiniSet": "Delete Mini-Set",
+    "@trackerDeleteMiniSet": {
+        "description": "Row action: delete a mini-set"
+    },
+    "trackerDeletePartials": "Delete Partials",
+    "@trackerDeletePartials": {
+        "description": "Row action: delete partials after a set"
+    },
+    "trackerDeleteStretch": "Delete Stretch",
+    "@trackerDeleteStretch": {
+        "description": "Row action: delete a stretch after a set"
+    },
+    "trackerDeleteHold": "Delete Hold",
+    "@trackerDeleteHold": {
+        "description": "Row action: delete a hold after a set"
+    },
+    "trackerDeleteSetTitle": "Delete {name}?",
+    "@trackerDeleteSetTitle": {
+        "description": "Alert title: deleting a set that has drops or mini-sets, e.g. Delete Set 2?",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerDeleteAlsoDrops": "{count, plural, =1{This also deletes its drop set.} other{This also deletes its {count} drop sets.}}",
+    "@trackerDeleteAlsoDrops": {
+        "description": "Alert: deleting a set takes its drops too",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerDeleteAlsoMinis": "{count, plural, =1{This also deletes its mini-set.} other{This also deletes its {count} mini-sets.}}",
+    "@trackerDeleteAlsoMinis": {
+        "description": "Alert: deleting a set takes its mini-sets too",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerDeleteAlsoBoth": "{count, plural, =1{This also deletes its drop set and mini-set.} other{This also deletes its {count} drop sets and mini-sets.}}",
+    "@trackerDeleteAlsoBoth": {
+        "description": "Alert: deleting a set takes its drops and mini-sets too",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerChangeTypeTitle": "Change {name} to {type}?",
+    "@trackerChangeTypeTitle": {
+        "description": "Alert title: a new set type would delete logged rows, e.g. Change Set 2 to Standard?",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerChangeTypeMessage": "{count, plural, =1{This deletes {count} logged row under it.} other{This deletes {count} logged rows under it.}}",
+    "@trackerChangeTypeMessage": {
+        "description": "Alert: how many logged rows a set type change deletes",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerChange": "Change",
+    "@trackerChange": {
+        "description": "Alert button: change the set type"
+    },
+    "trackerWarmupSetName": "Warm-up set",
+    "@trackerWarmupSetName": {
+        "description": "A warm-up row's name in alerts"
+    },
+    "trackerSetName": "Set {number}",
+    "@trackerSetName": {
+        "description": "A set's name in alerts, e.g. Set 2",
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerRestTimer": "Rest Timer…",
+    "@trackerRestTimer": {
+        "description": "Row action: set this set's rest"
+    },
+    "trackerSetRest": "Set Rest",
+    "@trackerSetRest": {
+        "description": "Rest picker title"
+    },
+    "trackerRestMinutes": "{minutes} min",
+    "@trackerRestMinutes": {
+        "description": "Rest picker: minutes",
+        "placeholders": {
+            "minutes": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerRestSeconds": "{seconds} s",
+    "@trackerRestSeconds": {
+        "description": "Rest picker: seconds",
+        "placeholders": {
+            "seconds": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerSplitSides": "Split L/R",
+    "@trackerSplitSides": {
+        "description": "Exercise menu: log each side as its own set"
+    },
+    "trackerSplitSidesHint": "Logs each side as its own set",
+    "@trackerSplitSidesHint": {
+        "description": "Hint on Split L/R"
+    },
+    "trackerStartTimer": "Start timer",
+    "@trackerStartTimer": {
+        "description": "Timed set: starts the stopwatch"
+    },
+    "trackerStopTimer": "Stop timer",
+    "@trackerStopTimer": {
+        "description": "Timed set: stops the stopwatch"
+    },
+    "trackerStopTimerHint": "Writes the time held into this set",
+    "@trackerStopTimerHint": {
+        "description": "Hint on the running stopwatch"
+    },
     "createFoodChooseImage": "Choose food image",
     "@createFoodChooseImage": {
         "description": "Create Food's image button, for screen readers"

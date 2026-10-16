@@ -40,6 +40,11 @@ final class const GymProfileEditorState({
   /// The photo button was pressed: a photo is being picked, uploaded and
   /// saved.
   final bool savingPhoto = false,
+
+  /// Only these items: one exercise variation's equipment, edited from
+  /// inside a workout (`GymProfileDelegate.equipment`). `null` is the whole
+  /// gym.
+  final EquipmentScope? scope,
 }) extends Equatable {
   /// [list]'s rows, filtered and in name order.
   List<GymEquipmentItem> visible(GymEquipmentList list) =>
@@ -48,6 +53,7 @@ final class const GymProfileEditorState({
         list,
         query: query,
         selectedOnly: filter == GymEquipmentFilter.selected,
+        scope: scope,
       );
 
   /// Whether a query hid every section.
@@ -55,6 +61,7 @@ final class const GymProfileEditorState({
     gym,
     query: query,
     selectedOnly: filter == GymEquipmentFilter.selected,
+    scope: scope,
   );
 
   GymProfileEditorState copyWith({
@@ -71,6 +78,7 @@ final class const GymProfileEditorState({
     hasUnsavedChanges: hasUnsavedChanges ?? this.hasUnsavedChanges,
     status: status ?? this.status,
     savingPhoto: savingPhoto ?? this.savingPhoto,
+    scope: scope,
   );
 
   @override
@@ -81,6 +89,7 @@ final class const GymProfileEditorState({
     hasUnsavedChanges,
     status,
     savingPhoto,
+    scope,
   ];
 }
 
@@ -99,7 +108,9 @@ class GymProfileEditorCubit extends Cubit<GymProfileEditorState> {
     this._untitledName = 'Untitled Gym Profile',
     this._newId = newUuid,
     this._numbered,
-  }) : super(GymProfileEditorState(gym: gym)) {
+    EquipmentScope? scope,
+    this._onSaved,
+  }) : super(GymProfileEditorState(gym: gym, scope: scope)) {
     _analytics.trackScreenView(const AnalyticsEvent('${_screen}_OnAppear'));
   }
 
@@ -113,6 +124,9 @@ class GymProfileEditorCubit extends Cubit<GymProfileEditorState> {
   final String _untitledName;
   final String Function() _newId;
   final String Function(String name, int number)? _numbered;
+
+  /// After each save, with the gym as saved (`GymProfileDelegate.onSaved`).
+  final void Function(GymProfileModel gym)? _onSaved;
 
   void _emit(GymProfileEditorState state) {
     if (!isClosed) emit(state);
@@ -219,14 +233,19 @@ class GymProfileEditorCubit extends Cubit<GymProfileEditorState> {
   Future<bool> _save() async {
     _emit(state.copyWith(hasUnsavedChanges: false));
     _analytics.analytic('${_screen}_Save_Start');
+    final GymProfileModel saved;
     try {
-      await _setup.saveGymProfile(state.gym, untitledName: _untitledName);
+      saved = await _setup.saveGymProfile(
+        state.gym,
+        untitledName: _untitledName,
+      );
     } on Object catch (error) {
       _analytics.severe('${_screen}_Save_Fail', error);
       _emit(state.copyWith(hasUnsavedChanges: true));
       return false;
     }
     _analytics.analytic('${_screen}_Save_Success');
+    _onSaved?.call(saved);
     return true;
   }
 

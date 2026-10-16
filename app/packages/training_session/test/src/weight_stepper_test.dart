@@ -589,6 +589,52 @@ void main() {
       );
     });
 
+    test('a plate takes the colour the gym gives it', () {
+      final profile = gym(
+        freeWeights: [
+          const m.FreeWeights(
+            id: 'weight_plates',
+            typeId: 'weight_plates',
+            name: 'Plates',
+            needsColour: true,
+            isPlates: true,
+            isActive: true,
+            range: [
+              m.FreeWeightsAvailable(
+                id: 'a',
+                availableWeights: 25,
+                unit: kg,
+                isActive: true,
+              ),
+              m.FreeWeightsAvailable(
+                id: 'b',
+                availableWeights: 25,
+                unit: kg,
+                isActive: true,
+                plateColour: '#E53935',
+              ),
+              m.FreeWeightsAvailable(
+                id: 'c',
+                availableWeights: 10,
+                unit: kg,
+                isActive: true,
+              ),
+            ],
+          ),
+        ],
+      );
+      expect(
+        [
+          for (final plate in WeightStepper.availablePlates(
+            profile,
+            r.WeightUnit.kilograms,
+          ))
+            plate.colour,
+        ],
+        [null, '#E53935'],
+      );
+    });
+
     test('iron and bumper plates of one weight add up', () {
       final profile = gym(
         freeWeights: [
@@ -773,9 +819,29 @@ void main() {
           ]),
         ],
       );
+      final step = _step(
+        m.EquipmentKind.cableMachine,
+        'cable',
+        profile: profile,
+      );
+      expect(step.kind, const r.StepList([7, 9, 11, 14, 16, 18, 21, 23, 25]));
+      // How to make a load: pin 14 and the first 2 for 16.
+      expect(step.stack!.pins, [7, 14, 21]);
+      expect(step.stack!.addOns, [2, 2]);
+      expect(step.stack!.breakdown(16)!.addOns, [2]);
+    });
+
+    test('a plain stack has nothing to explain', () {
+      final profile = gym(
+        cableMachines: [
+          _stack('cable', [
+            _range('c', weights: [10, 15, 25]),
+          ]),
+        ],
+      );
       expect(
-        _step(m.EquipmentKind.cableMachine, 'cable', profile: profile).kind,
-        const r.StepList([7, 9, 11, 14, 16, 18, 21, 23, 25]),
+        _step(m.EquipmentKind.cableMachine, 'cable', profile: profile).stack,
+        isNull,
       );
     });
 

@@ -13,6 +13,7 @@ export 'package:compound_models/compound_models.dart'
         BodyWeights,
         BodyWeightsAvailable,
         DeloadType,
+        EquipmentKind,
         ExerciseModel,
         ExerciseSettingsModel,
         ExerciseType,

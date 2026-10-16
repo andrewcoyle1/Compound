@@ -194,3 +194,86 @@ String workoutCopyName(
       ? copyName(name)
       : name;
 }
+
+/// A workout template of [authorId]'s made from a logged [session], usually
+/// someone else's off the feed (`WorkoutSessionTemplateBuilder.template`).
+/// Null when none of its exercises is in [library]: an empty template is
+/// not worth saving.
+///
+/// Exercises keep the session's order and are matched on the id first,
+/// then on the trimmed name ignoring case; anything else is skipped, and a
+/// superset left with one member is dissolved. Each keeps the plan it was
+/// run from: notes, rest, link, alternatives and superset. Every working
+/// set (warm-ups and sub-sets left out, a right side folded into the left
+/// before it) becomes one set target of the reps done; an exercise with
+/// none gets one standard target. The name is [workoutCopyName] of the
+/// session's against [existing].
+WorkoutTemplateModel? workoutTemplateFromSession(
+  WorkoutSessionModel session, {
+  required Iterable<ExerciseModel> library,
+  required Iterable<WorkoutTemplateModel> existing,
+  required String authorId,
+  required String Function(String name) copyName,
+  required DateTime now,
+  String Function() newId = newUuid,
+}) {
+  final logged = [...session.exercises]
+    ..sort((a, b) => a.index.compareTo(b.index));
+  final exercises = WorkoutEditorRules.dissolvingLoneGroups([
+    for (final item in logged)
+      if (_resolve(item, library) case final exercise?)
+        WorkoutTemplateExercise(
+          id: newId(),
+          exercise: exercise,
+          setTargets: _targets(item, newId),
+          setRestTimers: false,
+          notes: item.planNotes,
+          restSeconds: item.restSeconds,
+          substituteExerciseIds: item.substituteExerciseIds,
+          supersetGroupId: item.supersetGroupId,
+          linkUrl: item.linkUrl,
+        ),
+  ]);
+  if (exercises.isEmpty) return null;
+  return WorkoutTemplateModel(
+    workoutId: newId(),
+    authorId: authorId,
+    name: workoutCopyName(session.name, existing, copyName),
+    dateCreated: now,
+    dateModified: now,
+    exercises: exercises,
+  );
+}
+
+ExerciseModel? _resolve(
+  WorkoutExerciseModel logged,
+  Iterable<ExerciseModel> library,
+) {
+  final name = logged.name.trim().toLowerCase();
+  return library.where((e) => e.id == logged.templateId).firstOrNull ??
+      library.where((e) => e.name.trim().toLowerCase() == name).firstOrNull;
+}
+
+List<SetTarget> _targets(WorkoutExerciseModel logged, String Function() newId) {
+  final targets = <SetTarget>[];
+  SetSide? previousSide;
+  for (final set in logged.workingSets) {
+    // A drop or mini-set belongs to its parent's set (Swift makes each a
+    // target of its own).
+    if (set.isSubSet) continue;
+    final folded = set.side == SetSide.right && previousSide == SetSide.left;
+    previousSide = set.side;
+    if (folded) continue;
+    targets.add(
+      SetTarget(
+        id: newId(),
+        setNumber: targets.length + 1,
+        minReps: set.reps,
+        maxReps: set.reps,
+      ),
+    );
+  }
+  return targets.isEmpty
+      ? [WorkoutEditorRules.standardTarget(1, newId: newId)]
+      : targets;
+}

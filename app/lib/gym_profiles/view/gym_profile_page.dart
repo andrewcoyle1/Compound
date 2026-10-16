@@ -22,21 +22,42 @@ import 'package:training_library_repository/training_library_repository.dart';
 /// One gym's equipment (Swift `GymProfileView`): its name, every list of
 /// equipment to switch on and off and edit, machines to add, duplicate and
 /// delete. Leaving saves. With [continues], as when a gym is being set up,
-/// Continue saves it, makes it the usual gym and pops with `true`.
+/// Continue saves it, makes it the usual gym and pops with `true`. With
+/// [scope], only that equipment is listed under [title], as when a workout
+/// edits one variation's equipment; [onSaved] hears each save.
 class GymProfilePage extends StatelessWidget {
-  const new({required this.gym, this.continues = false, super.key});
+  const new({
+    required this.gym,
+    this.continues = false,
+    this.scope,
+    this.title,
+    this.onSaved,
+    super.key,
+  });
 
   final GymProfileModel gym;
   final bool continues;
+  final EquipmentScope? scope;
+  final String? title;
+  final void Function(GymProfileModel gym)? onSaved;
 
   /// Pushes the editor on [gym].
   static Future<bool?> push(
     BuildContext context,
     GymProfileModel gym, {
     bool continues = false,
+    EquipmentScope? scope,
+    String? title,
+    void Function(GymProfileModel gym)? onSaved,
   }) => Navigator.of(context).push(
     MaterialPageRoute<bool>(
-      builder: (_) => GymProfilePage(gym: gym, continues: continues),
+      builder: (_) => GymProfilePage(
+        gym: gym,
+        continues: continues,
+        scope: scope,
+        title: title,
+        onSaved: onSaved,
+      ),
     ),
   );
 
@@ -55,16 +76,22 @@ class GymProfilePage extends StatelessWidget {
         picker: context.read<PhotoPicker>(),
         untitledName: l10n.onboardingUntitledGym,
         numbered: l10n.gymNumberedName,
+        scope: scope,
+        onSaved: onSaved,
       ),
-      child: GymProfileView(continues: continues),
+      child: GymProfileView(continues: continues, title: title),
     );
   }
 }
 
 class GymProfileView extends StatefulWidget {
-  const new({this.continues = false, super.key});
+  const new({this.continues = false, this.title, super.key});
 
   final bool continues;
+
+  /// A fixed title in place of the gym's name, which then cannot be edited
+  /// here, nor machines added: a variation's equipment.
+  final String? title;
 
   @override
   State<GymProfileView> createState() => _GymProfileViewState();
@@ -145,44 +172,51 @@ class _GymProfileViewState extends State<GymProfileView> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: TextField(
-            key: const Key('GymProfile.name'),
-            controller: _name,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              hintText: l10n.onboardingUntitledGym,
-              border: InputBorder.none,
-              filled: false,
-            ),
-            onChanged: _cubit.renamed,
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(AppSymbols.add),
-              tooltip: l10n.gymAddMachineMenu,
-              onPressed: () => unawaited(_addMachine()),
-            ),
-            if (state.savingPhoto)
-              const Padding(
-                padding: EdgeInsets.all(AppSpacing.m),
-                child: SizedBox.square(
-                  dimension: AppControlSize.icon,
-                  child: CircularProgressIndicator.adaptive(),
-                ),
-              )
-            else
-              IconButton(
-                key: const Key('GymProfile.photo'),
-                icon: Icon(
-                  state.gym.imageUrl == null
-                      ? AppSymbols.addPhoto
-                      : AppSymbols.changePhoto,
-                ),
-                tooltip: state.gym.imageUrl == null
-                    ? l10n.gymAddPhoto
-                    : l10n.gymChangePhoto,
-                onPressed: () => unawaited(_cubit.photoPressed()),
+          title: switch (widget.title) {
+            final title? => Text(title),
+            null => TextField(
+              key: const Key('GymProfile.name'),
+              controller: _name,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                hintText: l10n.onboardingUntitledGym,
+                border: InputBorder.none,
+                filled: false,
               ),
+              onChanged: _cubit.renamed,
+            ),
+          },
+          actions: [
+            // A scoped editor, inside a workout, has neither (Swift
+            // `GymProfileView`'s `isScoped`).
+            if (widget.title == null) ...[
+              IconButton(
+                icon: const Icon(AppSymbols.add),
+                tooltip: l10n.gymAddMachineMenu,
+                onPressed: () => unawaited(_addMachine()),
+              ),
+              if (state.savingPhoto)
+                const Padding(
+                  padding: EdgeInsets.all(AppSpacing.m),
+                  child: SizedBox.square(
+                    dimension: AppControlSize.icon,
+                    child: CircularProgressIndicator.adaptive(),
+                  ),
+                )
+              else
+                IconButton(
+                  key: const Key('GymProfile.photo'),
+                  icon: Icon(
+                    state.gym.imageUrl == null
+                        ? AppSymbols.addPhoto
+                        : AppSymbols.changePhoto,
+                  ),
+                  tooltip: state.gym.imageUrl == null
+                      ? l10n.gymAddPhoto
+                      : l10n.gymChangePhoto,
+                  onPressed: () => unawaited(_cubit.photoPressed()),
+                ),
+            ],
           ],
         ),
         body: SafeArea(
@@ -192,7 +226,7 @@ class _GymProfileViewState extends State<GymProfileView> {
             children: [
               // Swift's header falls back to the splash artwork, which the
               // Flutter app does not have; without a photo there is none.
-              if (state.gym.imageUrl case final url?)
+              if (state.gym.imageUrl case final url? when widget.title == null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.l,

@@ -259,6 +259,65 @@ void main() {
     });
   });
 
+  // The scoped editor the tracker's equipment sheet opens
+  // (`GymProfileDelegate.equipment` and `onSaved`).
+  group('scoped to a variation', () {
+    test('lists only its equipment, and hears each save', () async {
+      final heard = <GymProfileModel>[];
+      final cubit = GymProfileEditorCubit(
+        gym: gym,
+        uid: 'user-1',
+        setup: setup,
+        analytics: analytics.repository,
+        images: images,
+        picker: picker,
+        scope: const {(EquipmentKind.loadableBar, 'barbell')},
+        onSaved: heard.add,
+      );
+      expect(
+        [
+          for (final list in GymEquipmentList.values)
+            for (final item in cubit.state.visible(list)) item.id,
+        ],
+        ['barbell'],
+      );
+      cubit
+        ..setActive(GymEquipmentList.loadableBars, 'barbell', isActive: false)
+        ..queryChanged('dumbbell');
+      expect(cubit.state.hidesEverything, isTrue);
+      expect(cubit.state.scope, hasLength(1));
+
+      expect(await cubit.left(), isTrue);
+      expect(
+        heard.single.loadableBars.firstWhere((b) => b.id == 'barbell').isActive,
+        isFalse,
+      );
+      await cubit.close();
+    });
+
+    test('a failed save is not heard', () async {
+      when(
+        () => setup.saveGymProfile(
+          any(),
+          untitledName: any(named: 'untitledName'),
+        ),
+      ).thenThrow(Exception('offline'));
+      final heard = <GymProfileModel>[];
+      final cubit = GymProfileEditorCubit(
+        gym: gym,
+        uid: 'user-1',
+        setup: setup,
+        analytics: analytics.repository,
+        images: images,
+        picker: picker,
+        onSaved: heard.add,
+      )..renamed('Garage');
+      expect(await cubit.left(), isFalse);
+      expect(heard, isEmpty);
+      await cubit.close();
+    });
+  });
+
   group('the gym photo (GymProfilePresenter.onImageSelectorChanged)', () {
     String photoPath() => 'users/author-1/gymProfiles/gym-1';
 

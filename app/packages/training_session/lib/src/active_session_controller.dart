@@ -608,6 +608,29 @@ class ActiveSessionController {
     _scheduleSave();
   }
 
+  /// The rest set by hand on [setId]'s row, if any.
+  int? customRest(String setId) => _customRestSeconds[setId];
+
+  /// What the rest picker opens on for [setId]: a rest set by hand, else
+  /// the one that would run after it, scaling included, else the unscaled
+  /// base where the settings say no rest runs there
+  /// (`onRestPickerRequested`).
+  int restPickerSeconds(String setId) {
+    final custom = _customRestSeconds[setId];
+    if (custom != null) return custom;
+    final exercise = _exerciseHolding(setId);
+    if (exercise == null) return _rules.defaultRestDurationSeconds;
+    final set = exercise.sets.firstWhere((s) => s.id == setId);
+    final context = _restContext(exercise);
+    return r.RestDurationRules.restAfterCompletingInExercise(
+          rulesSet(set),
+          rulesExercise(exercise),
+          _rules,
+          context,
+        ) ??
+        r.RestDurationRules.baseRestDuration(_rules, context);
+  }
+
   /// The steps [exerciseId]'s weight moves by on the keyboard: its equipment
   /// in the workout's gym, in its unit, mirrored for assistance.
   r.WeightStep weightStep(String exerciseId) {
@@ -848,6 +871,22 @@ class ActiveSessionController {
     if (exercise == null || exercise.chosenVariationId == variationId) return;
     final refitted = refittingLoad(
       exercise.copyWith(chosenVariationId: variationId),
+      library: _library(exercise),
+      gym: _environment.gym,
+      preference: _environment.unitPreferences[exercise.templateId],
+    );
+    _replaceExercise(refitted);
+    _loadHistory([refitted]);
+  }
+
+  /// [exerciseId] on the workout's gym as it now is, after its equipment
+  /// was edited (`onGymEdited`): its unit again and its open sets on
+  /// weights the edited equipment makes.
+  void refit(String exerciseId) {
+    final exercise = _exercise(exerciseId);
+    if (exercise == null) return;
+    final refitted = refittingLoad(
+      exercise,
       library: _library(exercise),
       gym: _environment.gym,
       preference: _environment.unitPreferences[exercise.templateId],

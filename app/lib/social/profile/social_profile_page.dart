@@ -9,6 +9,7 @@ import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/feed/feed_entry.dart';
 import 'package:compound/social/feed/feed_session_card.dart';
 import 'package:compound/social/followers/people_list_page.dart';
+import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/social/logic/people.dart';
 import 'package:compound/social/profile/profile_summary.dart';
 import 'package:compound/social/profile/social_profile_cubit.dart';
@@ -413,12 +414,33 @@ class _Header extends StatelessWidget {
                 ],
               ),
             if (summary.isOwn)
-              OutlinedButton(
-                onPressed: () {
-                  cubit.editProfilePressed();
-                  unawaited(context.pushNamed(EditProfilePage.name));
-                },
-                child: Text(l10n.profileEditProfile),
+              Row(
+                spacing: AppSpacing.s,
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        cubit.editProfilePressed();
+                        unawaited(context.pushNamed(EditProfilePage.name));
+                      },
+                      child: Text(l10n.profileEditProfile),
+                    ),
+                  ),
+                  // The invite link is the profile's shareable link:
+                  // accepting it opens this profile.
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => unawaited(
+                        context.read<InviteCubit>().shareRequested(
+                          user.userId,
+                          pressedEvent:
+                              'SocialProfileView_ShareProfile_Pressed',
+                        ),
+                      ),
+                      child: Text(l10n.profileShareProfile),
+                    ),
+                  ),
+                ],
               ),
             if (!summary.isBlocked && summary.isLocked)
               _IconLine(icon: AppSymbols.lock, text: l10n.socialPrivateLocked),

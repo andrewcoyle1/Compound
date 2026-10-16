@@ -217,8 +217,9 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
         ActivityType.like ||
         ActivityType.comment ||
         ActivityType.mention => await _session(notification),
-        // Social part 2: the shared item and the challenge's standings.
-        ActivityType.share || ActivityType.challengeComplete => null,
+        ActivityType.challengeComplete => await _challenge(notification),
+        // Social part 2b: the shared item.
+        ActivityType.share => null,
       };
       if (destination != null) emit(state.copyWith(destination: destination));
     } on Object catch (error) {
@@ -234,6 +235,15 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     final user = (await _social.users([userId], viewer: viewer)).firstOrNull;
     if (user == null) throw StateError('No profile for $userId');
     return InboxProfileDestination(user);
+  }
+
+  Future<InboxDestination> _challenge(
+    ActivityNotificationModel notification,
+  ) async {
+    final id = notification.challengeId ?? '';
+    final challenge = await _social.challenge(id);
+    if (challenge == null) throw StateError('No challenge $id');
+    return InboxChallengeDestination(challenge);
   }
 
   Future<InboxDestination> _session(

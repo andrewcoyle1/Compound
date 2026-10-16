@@ -9369,5 +9369,327 @@
     "notificationSettingsCheckFailed": "Unable to Check Notification Permission",
     "@notificationSettingsCheckFailed": {
         "description": "Reading the permission failed"
+    },
+    "challengesTitle": "Challenges",
+    "@challengesTitle": {
+        "description": "Social: the challenges section header"
+    },
+    "challengesNew": "New",
+    "@challengesNew": {
+        "description": "Social: starts a new challenge"
+    },
+    "challengesNewLabel": "New Challenge",
+    "@challengesNewLabel": {
+        "description": "Social: screen-reader label of the New button"
+    },
+    "challengesEmpty": "Challenge your circle to train a set number of times.",
+    "@challengesEmpty": {
+        "description": "Social: challenges section with none running"
+    },
+    "challengeDaysLeft": "{count, plural, =1{1 day left} other{{count} days left}}",
+    "@challengeDaysLeft": {
+        "description": "A challenge's days left",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "challengeEnded": "Ended",
+    "@challengeEnded": {
+        "description": "A challenge that has ended"
+    },
+    "challengeOpensStandings": "Opens the standings",
+    "@challengeOpensStandings": {
+        "description": "Hint on a challenge card"
+    },
+    "challengeTopEntry": "{rank}. {name} {sessions}",
+    "@challengeTopEntry": {
+        "description": "One of a challenge card's top three",
+        "placeholders": {
+            "rank": {
+                "type": "int"
+            },
+            "name": {
+                "type": "String"
+            },
+            "sessions": {
+                "type": "int"
+            }
+        }
+    },
+    "challengeRingLabel": "{sessions} of {target} sessions",
+    "@challengeRingLabel": {
+        "description": "Screen-reader label of a challenge ring",
+        "placeholders": {
+            "sessions": {
+                "type": "int"
+            },
+            "target": {
+                "type": "int"
+            }
+        }
+    },
+    "challengeTrainTimes": "{count, plural, =1{Train once} other{Train {count} times}}",
+    "@challengeTrainTimes": {
+        "description": "A challenge's goal",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "challengeStandings": "Standings",
+    "@challengeStandings": {
+        "description": "Challenge detail: the standings section"
+    },
+    "challengeFinished": "Finished",
+    "@challengeFinished": {
+        "description": "A member who reached the target"
+    },
+    "challengeRowLabel": "{rank}. {name}, {sessions} of {target} sessions",
+    "@challengeRowLabel": {
+        "description": "Screen-reader label of a standings row",
+        "placeholders": {
+            "rank": {
+                "type": "int"
+            },
+            "name": {
+                "type": "String"
+            },
+            "sessions": {
+                "type": "int"
+            },
+            "target": {
+                "type": "int"
+            }
+        }
+    },
+    "challengeMember": "Member",
+    "@challengeMember": {
+        "description": "A member the reader cannot name"
+    },
+    "challengeLeaveMenu": "Leave Challenge",
+    "@challengeLeaveMenu": {
+        "description": "Challenge detail menu item"
+    },
+    "challengeLeaveTitle": "Leave {title}?",
+    "@challengeLeaveTitle": {
+        "description": "Confirms leaving a challenge",
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "challengeLeaveMessage": "Your progress will no longer count.",
+    "@challengeLeaveMessage": {
+        "description": "Under the leave confirmation"
+    },
+    "challengeLeave": "Leave",
+    "@challengeLeave": {
+        "description": "Confirms leaving a challenge"
+    },
+    "challengeLeaveFailed": "Unable to Leave",
+    "@challengeLeaveFailed": {
+        "description": "Leaving a challenge failed"
+    },
+    "challengeNotFound": "This challenge is no longer available.",
+    "@challengeNotFound": {
+        "description": "A challenge that cannot be read"
+    },
+    "createChallengeTitle": "New Challenge",
+    "@createChallengeTitle": {
+        "description": "Create challenge screen title"
+    },
+    "createChallengeName": "Name",
+    "@createChallengeName": {
+        "description": "Create challenge: the name field"
+    },
+    "createChallengeTarget": "{count, plural, =1{Target: 1 session} other{Target: {count} sessions}}",
+    "@createChallengeTarget": {
+        "description": "Create challenge: the target stepper",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "createChallengeDuration": "Duration",
+    "@createChallengeDuration": {
+        "description": "Create challenge: the duration picker"
+    },
+    "createChallengeDays": "{count, plural, =1{1 day} other{{count} days}}",
+    "@createChallengeDays": {
+        "description": "A challenge length",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "createChallengeSetup": "Challenge Setup",
+    "@createChallengeSetup": {
+        "description": "Create challenge: the setup section"
+    },
+    "createChallengeMembers": "Members",
+    "@createChallengeMembers": {
+        "description": "Create challenge: the members section"
+    },
+    "createChallengeMembersFooter": "People you follow who follow you back.",
+    "@createChallengeMembersFooter": {
+        "description": "Under the members list"
+    },
+    "createChallengeNoOneTitle": "No one to invite",
+    "@createChallengeNoOneTitle": {
+        "description": "Create challenge with no mutuals"
+    },
+    "createChallengeNoOneMessage": "You can invite people you follow who follow you back.",
+    "@createChallengeNoOneMessage": {
+        "description": "Create challenge with no mutuals"
+    },
+    "createChallengeCreate": "Create",
+    "@createChallengeCreate": {
+        "description": "Creates the challenge"
+    },
+    "createChallengeNoName": "Give the challenge a name.",
+    "@createChallengeNoName": {
+        "description": "Create challenge validation"
+    },
+    "createChallengeNameTooLong": "Keep the name under {count} characters.",
+    "@createChallengeNameTooLong": {
+        "description": "Create challenge validation",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "createChallengeTargetRange": "Pick a target between {min} and {max} sessions.",
+    "@createChallengeTargetRange": {
+        "description": "Create challenge validation",
+        "placeholders": {
+            "min": {
+                "type": "int"
+            },
+            "max": {
+                "type": "int"
+            }
+        }
+    },
+    "createChallengeNoDuration": "Pick a duration.",
+    "@createChallengeNoDuration": {
+        "description": "Create challenge validation"
+    },
+    "createChallengeNoMembers": "Invite at least one person.",
+    "@createChallengeNoMembers": {
+        "description": "Create challenge validation"
+    },
+    "createChallengeFailed": "Unable to Create Challenge",
+    "@createChallengeFailed": {
+        "description": "Creating a challenge failed"
+    },
+    "inviteFriendRow": "Invite a Friend",
+    "@inviteFriendRow": {
+        "description": "Social search: shares the invite link"
+    },
+    "inviteEnterCode": "Enter Invite Code",
+    "@inviteEnterCode": {
+        "description": "Social search: types a friend's invite code"
+    },
+    "inviteSearchFooter": "Search by name or @username, or bring a friend in with an invite.",
+    "@inviteSearchFooter": {
+        "description": "Social search before typing"
+    },
+    "inviteCode": "Code",
+    "@inviteCode": {
+        "description": "Invite code field"
+    },
+    "inviteCodeFooter": "The 8-character code from a friend's invite link.",
+    "@inviteCodeFooter": {
+        "description": "Under the invite code field"
+    },
+    "inviteJoin": "Join",
+    "@inviteJoin": {
+        "description": "Accepts a typed invite code"
+    },
+    "inviteCardTitle": "Invite a friend",
+    "@inviteCardTitle": {
+        "description": "Invite card and Settings row"
+    },
+    "inviteCardMessage": "Training's easier with someone keeping you honest.",
+    "@inviteCardMessage": {
+        "description": "Invite card text"
+    },
+    "inviteShareMessage": "Train with me on Compound: {link}",
+    "@inviteShareMessage": {
+        "description": "What the invite share sends",
+        "placeholders": {
+            "link": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteCreateFailed": "Couldn't create invite",
+    "@inviteCreateFailed": {
+        "description": "Reading or creating the invite failed"
+    },
+    "inviteAcceptFailed": "Couldn't accept invite",
+    "@inviteAcceptFailed": {
+        "description": "Accepting an invite failed"
+    },
+    "inviteInvalidCode": "That doesn't look like an invite code. Codes are 8 letters and numbers.",
+    "@inviteInvalidCode": {
+        "description": "An invite code that is not one"
+    },
+    "inviteNotFound": "That invite code doesn't exist.",
+    "@inviteNotFound": {
+        "description": "An unknown invite code"
+    },
+    "inviteOwn": "That's your own invite. Send it to a friend.",
+    "@inviteOwn": {
+        "description": "The user's own invite code"
+    },
+    "inviteExhausted": "That invite has been used too many times.",
+    "@inviteExhausted": {
+        "description": "A used-up invite"
+    },
+    "inviteUnavailable": "That invite isn't available.",
+    "@inviteUnavailable": {
+        "description": "A refused invite"
+    },
+    "inviteBothFollowing": "You're now following each other",
+    "@inviteBothFollowing": {
+        "description": "After accepting an invite"
+    },
+    "inviteYouFollowTheyRequested": "You're following {name}. They've asked to follow you.",
+    "@inviteYouFollowTheyRequested": {
+        "description": "After accepting an invite",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteTheyFollowYouRequested": "{name} is following you. Your follow request is waiting.",
+    "@inviteTheyFollowYouRequested": {
+        "description": "After accepting an invite",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteBothRequested": "Follow requests sent both ways",
+    "@inviteBothRequested": {
+        "description": "After accepting an invite"
+    },
+    "inviteYourFriend": "your friend",
+    "@inviteYourFriend": {
+        "description": "An inviter with no first name"
+    },
+    "profileShareProfile": "Share Profile",
+    "@profileShareProfile": {
+        "description": "Own profile: shares the invite link"
     }
 }

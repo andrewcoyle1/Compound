@@ -14,8 +14,8 @@ had listed, Swift's `ReminderOfferFlow`, which reopens Today, Nutrition and Loca
 
 | | done | partial | todo | dropped | total |
 |---|---|---|---|---|---|
-| Screen modules | 188 | 5 | 2 | 3 | 198 |
-| Platform features | 18 | 5 | 1 | 1 | 25 |
+| Screen modules | 190 | 4 | 1 | 3 | 198 |
+| Platform features | 19 | 5 | 0 | 1 | 25 |
 
 The open work is grouped under [Remaining work](#remaining-work) at the end: follow-up slices, what waits on the owner, and M6.
 
@@ -113,7 +113,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Onboarding | DietPlan | `8 - OnboardingDiet/6 - DietPlan` | M3 | done | #116 |
 | Onboarding | OnboardingCompleted | `9 - OnboardingCompleted` | M3 | dropped | decisions.md (#116): unreachable, because `.complete` only arises once onboarding is done |
 | Paywalls | Paywall | `Paywall` | M4 | partial | #155, `/paywall`: the `paywallTest` arm (#186): `custom`; `revenueCat` is RevenueCat's paywall (`purchases_ui_flutter`), `custom` while RevenueCat isn't running; `storeKit` is a Flutter drawing of StoreKit's layout (no free Flutter equivalent, none on Play); real purchases and the RevenueCat paywall wait for the owner's RevenueCat setup |
-| Profile | Settings | `Compound/Core/Profile` | M5 | partial | #128, `/profile/settings`; Weight Goal and Nutrition Plan (#154), Subscription (#155), Save Account, Rate and Developer Settings (#166); only the Siri row is missing (M6) |
+| Profile | Settings | `Compound/Core/Profile` | M5 | done | #128, `/profile/settings`; Weight Goal and Nutrition Plan (#154), Subscription (#155), Save Account, Rate and Developer Settings (#166); Siri row, iOS only (#187) |
 | Profile | About | `Subviews/About` | M5 | done | #128; version and build (#166) |
 | Profile | Licences | `Subviews/About/Licences` | M5 | done | #128 (`LicensePage`) |
 | Profile | AppIcon | `Subviews/AppIcon` | M6 | done | #181: Compound's icon on iOS (light and dark) and Android (adaptive); no alternate-icon row, as Swift hides it (one icon) |
@@ -122,7 +122,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Profile | EditUsername | `Subviews/EditProfile/EditUsername` | M5 | done | #131, `/username` |
 | Profile | CustomiseAnalytics | `Subviews/GeneralSettings/CustomiseAnalytics` | M5 | done | #128 |
 | Profile | Integrations | `Subviews/GeneralSettings/Integrations` | M5 | done | #151, `/profile/settings/integrations` |
-| Profile | Siri | `Subviews/GeneralSettings/Siri` | M6 | todo | App Intents, M6 |
+| Profile | Siri | `Subviews/GeneralSettings/Siri` | M6 | done | #187, `/profile/settings/siri`: the five App Shortcuts and what to say, Open Shortcuts (`shortcuts://`) for Swift's `ShortcutsLink`; iOS only |
 | Profile | Units | `Subviews/GeneralSettings/Units` | M5 | done | #128 |
 | Profile | Legal | `Subviews/Legal` | M5 | done | #128 (titles "not published yet"; Swift's links are placeholders) |
 | Profile | MethodsAndSources | `Subviews/MethodsAndSources` | M5 | done | #128, #130, #133, #137, #154, #166: all 31 of Swift's methods, in Swift's order |
@@ -232,7 +232,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Device-local preferences | `UserDefaults` | M5 | done | `device_store` on shared_preferences under Swift's keys (#170); review date and the editor's plates switch (#172) |
 | Per-exercise unit preferences | `ExerciseUnitPreferenceManager` | M3 | done | #163, on the device store (#170) |
 | Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |
-| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed aren't cleared (M6); https workout pages routed in Dart, others' sessions opened over Social (#179; no Associated Domains or App Links, as Swift) |
+| Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed cleared by identifier (#187); https workout pages routed in Dart, others' sessions opened over Social (#179; no Associated Domains or App Links, as Swift) |
 | Local reminders | `PushManager` (local) | M4 | done | come-back and meal reminders, rest-over, "Still training?" (#127, last asked on the device #170); permission prompt (#144); in-app reminder offers (`ReminderOfferFlow`, #176) |
 | Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); paywall, gate, RevenueCat logIn/logOut (#155); development runs the fake until the owner's keys; production not wired; logIn sends the email and the Mixpanel and Firebase Analytics ids (#177) |
 | A/B tests (Remote Config) | `ABTestManager` | M5 | done | `ab_test_repository` (#186): `notificationsTest` and `paywallTest` under Swift's keys and defaults, sent as Swift's user properties; development draws locally as Swift's dev, staging in memory, Remote Config for production (the production flavor isn't configured); `notificationsTest` drives nothing, as in Swift |
@@ -240,7 +240,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | partial | `health_repository` (#121), UI and native setup (#151); no live workout session (heart rate, active energy; iOS, M6); HealthKit capability is an owner TODO |
 | Live Activity and Dynamic Island (iOS); ongoing notification (Android) | `LiveActivityManager`, `WorkoutSessionActivity/` | M3 (Android), M6 (iOS) | done | Android ongoing notification (#127); no foreground service, by decision (#172); iOS (#184): `WorkoutSessionActivity` copied into `app/ios`, driven over `com.andrewcoyle.compound/live_activity`, buttons answered by `ActiveWorkoutCubit`; a button tapped after iOS has killed the app waits 10 s for Dart, then only clears its loading state |
 | Home screen widgets | `WorkoutSessionActivity/HomeWidgets.swift` | M6 | done | #184: Today's Workout, Streak, Weekly Goal; snapshot in the flavor's App Group, written on backgrounding and after Finish on the Live Activity, cleared on sign-out |
-| Siri and Shortcuts (App Intents) | `Managers/AppIntents` | M6 | todo | M6, with the `browse_recipes` shortcut (#145) |
+| Siri and Shortcuts (App Intents) | `Managers/AppIntents` | M6 | done | #187: Start Workout, Log Weight, Workouts This Week, Today's Workout, and Recipes (the `browse_recipes` quick action, #145) via `compound://recipes`; answered in Dart (`AppIntents`) over `com.andrewcoyle.compound/app_intents`. App Shortcuts need a team-signed build to run |
 | Strava upload and import | `StravaManager` | M5 | partial | `strava_repository` (#122), UI (#151), `pushEdit` (#162); needs the owner's `STRAVA_CLIENT_ID`; Keychain-token migration is M6 |
 | AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | done | `ai_repository` (#118), scanners (#152); on-device label OCR (#185); image generation has no caller in Swift's screens |
 | AI coach (streaming) | `CoachManager` | M5 | done | `coach_repository` (#118), UI (#147) |

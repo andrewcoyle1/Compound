@@ -11,12 +11,14 @@ import 'package:compound/settings/general/view/customise_analytics_page.dart';
 import 'package:compound/settings/general/view/legal_page.dart';
 import 'package:compound/settings/general/view/methods_and_sources_page.dart';
 import 'package:compound/settings/general/view/notification_settings_page.dart';
+import 'package:compound/settings/general/view/siri_page.dart';
 import 'package:compound/settings/general/view/units_page.dart';
 import 'package:compound/settings/nutrition/view/expenditure_settings_page.dart';
 import 'package:compound/settings/nutrition/view/food_log_settings_page.dart';
 import 'package:compound/settings/nutrition/view/strategy_settings_page.dart';
 import 'package:compound/settings/settings.dart';
 import 'package:compound/settings/training/view/workout_settings_page.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -162,6 +164,20 @@ void main() {
         expect(find.byType(page), findsOneWidget);
       });
     }
+
+    testWidgets('Siri is offered on iOS only, and opens its screen', (
+      tester,
+    ) async {
+      await pumpSettings(tester);
+      expect(find.text('Siri'), findsNothing);
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      await pumpSettings(tester);
+      await tester.tap(find.text('Siri'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byType(SiriPage), findsOneWidget);
+      debugDefaultTargetPlatformOverride = null;
+    });
 
     // SettingsPresenterTests' weight goal and nutrition plan rows.
     testWidgets('Weight Goal says Not Set, and sets one straight away', (

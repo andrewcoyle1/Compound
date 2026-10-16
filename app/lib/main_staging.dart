@@ -185,6 +185,7 @@ Future<void> main() async {
       // Swift Mock build does.
       liveActivityRepository: await _liveActivity(),
       homeWidgetRepository: MethodChannelHomeWidgetRepository(),
+      appIntentsRepository: MethodChannelAppIntentsRepository(),
       // Two weeks of steps, a week of weigh-ins with body fat, two days of
       // food from other apps, and the onboarding fill values, in memory.
       healthRepository: HealthRepository(

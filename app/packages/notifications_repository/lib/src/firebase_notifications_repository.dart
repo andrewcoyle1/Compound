@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:app_settings/app_settings.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:notifications_repository/src/deep_link.dart';
@@ -30,7 +31,8 @@ typedef NotificationErrorReporter = void Function(
 /// through [UserRepository.mergePrivateSettings], which completes offline.
 /// `onMessage` and `onMessageOpenedApp` default to Firebase Messaging's;
 /// `localTimezone` to the device's IANA zone; `openSettings` to
-/// `app_settings`' notification page.
+/// `app_settings`' notification page; `channel` to the Runner's, which
+/// clears the pushes iOS displayed.
 /// {@endtemplate}
 class FirebaseNotificationsRepository extends NotificationsRepository {
   /// {@macro firebase_notifications_repository}
@@ -44,7 +46,9 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
     Stream<RemoteMessage>? onMessageOpenedApp,
     Future<String> Function()? localTimezone,
     Future<void> Function()? openSettings,
+    MethodChannel? channel,
   }) : _local = localNotifications,
+       _channel = channel ?? const MethodChannel(channelName),
        _users = userRepository,
        _onMessage = onMessage ?? FirebaseMessaging.onMessage,
        _onMessageOpenedApp =
@@ -55,6 +59,11 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
   /// The Android small icon: the app's monochrome `ic_notification`
   /// drawable (kept from resource shrinking by `res/raw/keep.xml`).
   static const androidIcon = '@drawable/ic_notification';
+
+  /// The Runner's channel for the pushes iOS displayed itself.
+  static const channelName = 'com.andrewcoyle.compound/notifications';
+
+  final MethodChannel _channel;
 
   final FirebaseMessaging _messaging;
   final FlutterLocalNotificationsPlugin _local;
@@ -376,15 +385,20 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
   Future<void> clearOngoingWorkout({OngoingWorkoutSummary? summary}) =>
       _guard(() => _local.cancel(id: NotificationsRepository.ongoingWorkoutId));
 
-  /// ponytail: a push iOS showed itself (the app in the background) has no
-  /// integer id for the plugin and stays; clear by identifier at M6 if it
-  /// matters there.
+  /// A push iOS showed itself (the app in the background) has no integer
+  /// id for the plugin, so on iOS the Runner clears by identifier everything
+  /// but the kept ids.
   @override
   Future<void> clearDelivered() => _guard(() async {
     final kept = {
       for (final kind in LocalReminderKind.values) kind.id,
       NotificationsRepository.ongoingWorkoutId,
     };
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return await _channel.invokeMethod<void>('clearDelivered', {
+        'keep': [for (final id in kept) '$id'],
+      });
+    }
     for (final shown in await _local.getActiveNotifications()) {
       final id = shown.id;
       if (id == null || kept.contains(id)) continue;

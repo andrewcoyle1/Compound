@@ -239,6 +239,7 @@ Future<void> main() async {
       userRepository: userRepository,
       notificationsRepository: notificationsRepository,
       liveActivityRepository: liveActivityRepository,
+      appIntentsRepository: MethodChannelAppIntentsRepository(),
       homeWidgetRepository: MethodChannelHomeWidgetRepository(
         onError: (error, stackTrace) =>
             unawaited(crashlytics.recordError(error, stackTrace)),

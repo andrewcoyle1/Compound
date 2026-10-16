@@ -12946,5 +12946,170 @@
                 "type": "int"
             }
         }
+    },
+    "intentNotSignedIn": "Open Compound and sign in first.",
+    "@intentNotSignedIn": {
+        "description": "Siri: the app has no one signed in"
+    },
+    "intentWorkoutNotFound": "That workout isn't in your library any more.",
+    "@intentWorkoutNotFound": {
+        "description": "Siri: Start Workout named a workout that is gone"
+    },
+    "intentWeightOutOfRange": "That doesn't look like a body weight. Try again with a number between 20 and 400 kg.",
+    "@intentWeightOutOfRange": {
+        "description": "Siri: Log Weight was given an impossible weight"
+    },
+    "intentNoMesocycle": "You don't have an active mesocycle. Pick one in the Training tab.",
+    "@intentNoMesocycle": {
+        "description": "Siri: Today's Workout without a program"
+    },
+    "intentStarted": "Starting {name}.",
+    "@intentStarted": {
+        "description": "Siri: Start Workout started it",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "intentAlreadyInProgress": "You already have {name} in progress, so I've opened that instead.",
+    "@intentAlreadyInProgress": {
+        "description": "Siri: Start Workout with a workout under way",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "intentLoggedWeight": "Logged {weight}.",
+    "@intentLoggedWeight": {
+        "description": "Siri: Log Weight saved it; weight is like 70.5 kg",
+        "placeholders": {
+            "weight": {
+                "type": "String"
+            }
+        }
+    },
+    "intentWorkoutsNone": "You haven't trained yet this week. Your goal is {goal}.",
+    "@intentWorkoutsNone": {
+        "description": "Siri: Workouts This Week with none",
+        "placeholders": {
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "intentWorkoutsMet": "{count, plural, =1{You've done 1 workout this week, so you've hit your goal of {goal}.} other{You've done {count} workouts this week, so you've hit your goal of {goal}.}}",
+    "@intentWorkoutsMet": {
+        "description": "Siri: Workouts This Week, goal met",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "intentWorkoutsToGo": "{count, plural, =1{You've done 1 workout this week, {remaining} to go to hit your goal of {goal}.} other{You've done {count} workouts this week, {remaining} to go to hit your goal of {goal}.}}",
+    "@intentWorkoutsToGo": {
+        "description": "Siri: Workouts This Week, goal not yet met",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "remaining": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "intentRestDay": "Today is a rest day in {mesocycle}.",
+    "@intentRestDay": {
+        "description": "Siri: Today's Workout on a rest day",
+        "placeholders": {
+            "mesocycle": {
+                "type": "String"
+            }
+        }
+    },
+    "intentAlreadyDone": "You've already done today's workout, {name}.",
+    "@intentAlreadyDone": {
+        "description": "Siri: Today's Workout already done",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "intentToday": "{count, plural, =1{Today's workout is {name}, 1 exercise.} other{Today's workout is {name}, {count} exercises.}}",
+    "@intentToday": {
+        "description": "Siri: Today's Workout",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "settingsSiri": "Siri",
+    "@settingsSiri": {
+        "description": "Settings row: opens the Siri screen"
+    },
+    "siriAskHeader": "Ask Siri",
+    "@siriAskHeader": {
+        "description": "Siri screen: section header"
+    },
+    "siriStartWorkout": "Start Workout",
+    "@siriStartWorkout": {
+        "description": "Siri screen: shortcut title"
+    },
+    "siriStartWorkoutPhrase": "“Start a workout in Compound”",
+    "@siriStartWorkoutPhrase": {
+        "description": "Siri screen: what to say"
+    },
+    "siriLogWeight": "Log Weight",
+    "@siriLogWeight": {
+        "description": "Siri screen: shortcut title"
+    },
+    "siriLogWeightPhrase": "“Log my weight in Compound”",
+    "@siriLogWeightPhrase": {
+        "description": "Siri screen: what to say"
+    },
+    "siriWorkoutsThisWeek": "Workouts This Week",
+    "@siriWorkoutsThisWeek": {
+        "description": "Siri screen: shortcut title"
+    },
+    "siriWorkoutsThisWeekPhrase": "“How many workouts this week in Compound”",
+    "@siriWorkoutsThisWeekPhrase": {
+        "description": "Siri screen: what to say"
+    },
+    "siriTodaysWorkout": "Today's Workout",
+    "@siriTodaysWorkout": {
+        "description": "Siri screen: shortcut title"
+    },
+    "siriTodaysWorkoutPhrase": "“What's my workout today in Compound”",
+    "@siriTodaysWorkoutPhrase": {
+        "description": "Siri screen: what to say"
+    },
+    "siriRecipes": "Recipes",
+    "@siriRecipes": {
+        "description": "Siri screen: shortcut title"
+    },
+    "siriRecipesPhrase": "“Show my recipes in Compound”",
+    "@siriRecipesPhrase": {
+        "description": "Siri screen: what to say"
+    },
+    "siriOpenShortcuts": "Open Shortcuts",
+    "@siriOpenShortcuts": {
+        "description": "Siri screen: opens the Shortcuts app"
+    },
+    "siriFooter": "Add these to the Shortcuts app to run them from your Home Screen or Action button.",
+    "@siriFooter": {
+        "description": "Siri screen: footer"
     }
 }

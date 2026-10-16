@@ -760,6 +760,29 @@ void main() {
         },
       );
 
+      test('on iOS, the Runner clears the pushes it displayed by '
+          'identifier', () async {
+        const channel = MethodChannel(
+          FirebaseNotificationsRepository.channelName,
+        );
+        final calls = <MethodCall>[];
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async {
+              calls.add(call);
+              return null;
+            });
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+        await repository.clearDelivered();
+        debugDefaultTargetPlatformOverride = null;
+        expect(calls.single.method, 'clearDelivered');
+        expect(
+          (calls.single.arguments as Map)['keep'],
+          containsAll(['1', '7', '9']),
+        );
+        verifyNever(() => local.getActiveNotifications());
+      });
+
       test('a platform that cannot list them reports and carries on', () async {
         when(() => local.getActiveNotifications())
             .thenThrow(UnsupportedError('old'));

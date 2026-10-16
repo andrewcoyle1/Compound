@@ -76,6 +76,11 @@ void main() {
     test('the workout widget link', () {
       expect(_url('compound://workout'), const WorkoutLink());
     });
+
+    test('the Browse Recipes shortcut', () {
+      expect(_url('compound://recipes'), const RecipesLink());
+      expect(const RecipesLink().props, isEmpty);
+    });
   });
 
   group('DeepLink.fromData', () {
@@ -194,6 +199,7 @@ void main() {
       expect(const NotificationsLink().toLocation(), '/social/notifications');
       expect(const JoinLink('PUSH2345').toLocation(), '/social');
       expect(const WorkoutLink().toLocation(), '/today');
+      expect(const RecipesLink().toLocation(), '/nutrition/recipes');
     });
 
     test(

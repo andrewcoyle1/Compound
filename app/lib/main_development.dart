@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
@@ -162,6 +163,13 @@ Future<void> main() async {
         storage: FirebaseStorage.instance,
       ),
       photoPicker: DevicePhotoPicker(),
+      // The food photo, meal description and label callables are
+      // us-central1 and enforce App Check.
+      aiRepository: AiRepository(
+        callFunction: callAiFunction(
+          FirebaseFunctions.instanceFor(region: aiFunctionsRegion),
+        ),
+      ),
       foodRepository: FirestoreFoodRepository(
         firestore: FirebaseFirestore.instance,
         onWriteError: onWriteError,

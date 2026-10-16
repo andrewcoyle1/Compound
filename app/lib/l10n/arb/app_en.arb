@@ -4876,6 +4876,164 @@
     "@addMealCameraUnavailable": {
         "description": "No camera"
     },
+    "addMealModeAi": "AI",
+    "@addMealModeAi": {
+        "description": "The picker's AI photo tab"
+    },
+    "addMealModeDescribe": "Describe",
+    "@addMealModeDescribe": {
+        "description": "The picker's describe-a-meal tab"
+    },
+    "aiScanTakePhoto": "Take Photo",
+    "@aiScanTakePhoto": {
+        "description": "Opens the camera to photograph a meal"
+    },
+    "aiScanDisclosure": "Estimated by AI from your photo. The photo is sent to Google's AI service for analysis and isn't stored by Compound.",
+    "@aiScanDisclosure": {
+        "description": "What happens to a meal photo"
+    },
+    "aiScanAnalyzing": "Analyzing meal…",
+    "@aiScanAnalyzing": {
+        "description": "Shown while the AI reads a meal photo"
+    },
+    "aiScanRetake": "Retake",
+    "@aiScanRetake": {
+        "description": "Takes the meal photo again"
+    },
+    "aiScanFailed": "Couldn't recognize the food in this photo. Retake it in good light, or use Search or Describe.",
+    "@aiScanFailed": {
+        "description": "A meal photo the AI could not read"
+    },
+    "aiScanNoFoodsTitle": "No Foods Recognized",
+    "@aiScanNoFoodsTitle": {
+        "description": "The AI found no foods"
+    },
+    "aiScanNoFoodsMessage": "Retake the photo in good light, or use Search or Describe.",
+    "@aiScanNoFoodsMessage": {
+        "description": "The AI found no foods in a photo"
+    },
+    "aiScanCameraOffTitle": "Camera Access Is Off",
+    "@aiScanCameraOffTitle": {
+        "description": "The camera was refused"
+    },
+    "aiScanCameraOffMessage": "Allow camera access in Settings to photograph a meal. You can still add foods with Search or Describe.",
+    "@aiScanCameraOffMessage": {
+        "description": "The camera was refused"
+    },
+    "aiScanOpenSettings": "Open Settings",
+    "@aiScanOpenSettings": {
+        "description": "Opens the app's system settings"
+    },
+    "aiScanCameraUnavailableTitle": "Camera Unavailable",
+    "@aiScanCameraUnavailableTitle": {
+        "description": "There is no usable camera"
+    },
+    "aiScanCameraUnavailableMessage": "This device has no camera. You can still add foods with Search or Describe.",
+    "@aiScanCameraUnavailableMessage": {
+        "description": "There is no usable camera"
+    },
+    "aiEstimateHeader": "AI Estimate",
+    "@aiEstimateHeader": {
+        "description": "The AI results' section title"
+    },
+    "aiEstimateAdded": "Added",
+    "@aiEstimateAdded": {
+        "description": "Add All has put the results on the plate"
+    },
+    "aiEstimateFooter": "Estimates can be wrong. Check amounts before logging.",
+    "@aiEstimateFooter": {
+        "description": "Under the AI results"
+    },
+    "describeHeader": "Meal Description",
+    "@describeHeader": {
+        "description": "The describe field's section title"
+    },
+    "describePrompt": "Describe your meal",
+    "@describePrompt": {
+        "description": "The describe field's placeholder"
+    },
+    "describeFooter": "Estimated by AI from your description, which is sent to Google's AI service for analysis and isn't stored by Compound. Try naming each food and its amount, such as \"2 eggs and a slice of toast.\"",
+    "@describeFooter": {
+        "description": "What happens to a description"
+    },
+    "describeAnalyze": "Analyze",
+    "@describeAnalyze": {
+        "description": "Sends the description to the AI"
+    },
+    "describeFailed": "Couldn't work out the foods in that description. Try naming each food and its amount, then try again.",
+    "@describeFailed": {
+        "description": "A description the AI could not read"
+    },
+    "describeNoFoodsMessage": "Try naming each food and its amount, such as \"2 eggs and a slice of toast.\"",
+    "@describeNoFoodsMessage": {
+        "description": "The AI found no foods in a description"
+    },
+    "labelModeLabel": "Label",
+    "@labelModeLabel": {
+        "description": "The barcode tab's nutrition-label mode"
+    },
+    "labelScanningMode": "Scanning mode",
+    "@labelScanningMode": {
+        "description": "The barcode/label switch, for screen readers"
+    },
+    "labelField": "Label text",
+    "@labelField": {
+        "description": "The label text field's placeholder"
+    },
+    "labelHint": "Type or paste the text from a nutrition label.",
+    "@labelHint": {
+        "description": "Under the label text field"
+    },
+    "labelParse": "Parse Label",
+    "@labelParse": {
+        "description": "Sends the label text to the AI"
+    },
+    "labelAnalyzing": "Analyzing label…",
+    "@labelAnalyzing": {
+        "description": "Shown while the AI reads a label"
+    },
+    "labelFailed": "Couldn't read this label. Check the text and try again.",
+    "@labelFailed": {
+        "description": "A label the AI could not read"
+    },
+    "labelSaveFailed": "Couldn't save this food. Please try again.",
+    "@labelSaveFailed": {
+        "description": "A label's food could not be saved"
+    },
+    "labelPer100g": "per 100g",
+    "@labelPer100g": {
+        "description": "A label food's basis, by weight"
+    },
+    "labelPer100ml": "per 100ml",
+    "@labelPer100ml": {
+        "description": "A label food's basis, by volume"
+    },
+    "labelUseFood": "Use This Food",
+    "@labelUseFood": {
+        "description": "Saves the label's food and adds it"
+    },
+    "labelDismiss": "Dismiss",
+    "@labelDismiss": {
+        "description": "Clears the label result"
+    },
+    "aiEstimateAddAll": "Add All ({count})",
+    "@aiEstimateAddAll": {
+        "description": "Adds every AI result to the plate",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "aiEstimateAdd": "Add {name}",
+    "@aiEstimateAdd": {
+        "description": "A result's add button, for screen readers",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
     "addMealDraftTitle": "You have an unlogged meal",
     "@addMealDraftTitle": {
         "description": "Asks what to do with an unlogged meal"

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -70,6 +71,7 @@ extension PumpApp on WidgetTester {
     ShareSheet shareSheet = const ShareSheet(),
     ImageRepository? imageRepository,
     PhotoPicker? photoPicker,
+    AiRepository? aiRepository,
     NotificationsRepository? notificationsRepository,
     ProgramsCubit? programsCubit,
     ActiveWorkoutCubit? activeWorkoutCubit,
@@ -146,6 +148,9 @@ extension PumpApp on WidgetTester {
           ),
           RepositoryProvider<PhotoPicker>.value(
             value: photoPicker ?? SamplePhotoPicker(() async => Uint8List(0)),
+          ),
+          RepositoryProvider<AiRepository>.value(
+            value: aiRepository ?? AiRepository(callFunction: stagingAiCall),
           ),
           RepositoryProvider<NotificationsRepository>.value(
             value: notificationsRepository ?? FakeNotificationsRepository(),

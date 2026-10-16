@@ -163,6 +163,9 @@ abstract final class AppSymbols {
   /// The camera.
   static const IconData camera = Icons.photo_camera_rounded;
 
+  /// A meal described in words for the AI (Swift `text.bubble`).
+  static const IconData describe = Icons.chat_outlined;
+
   /// The photo library.
   static const IconData photoLibrary = Icons.photo_library_rounded;
 

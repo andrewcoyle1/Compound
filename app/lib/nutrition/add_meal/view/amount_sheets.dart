@@ -13,17 +13,23 @@ import 'package:food_repository/food_repository.dart';
 typedef FoodAmountResult = ({MealItemModel item, bool log});
 
 /// The amount of [food] to log (Swift `IngredientAmountView`), opening on
-/// its own portion. Null when dismissed.
+/// its own portion, or on [amount] grams or millilitres when given (an AI
+/// estimate's `initialAmountText`). Null when dismissed.
 Future<FoodAmountResult?> showFoodAmountSheet(
   BuildContext context,
-  FoodModel food,
-) => showModalBottomSheet<FoodAmountResult>(
+  FoodModel food, {
+  double? amount,
+}) => showModalBottomSheet<FoodAmountResult>(
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
   showDragHandle: true,
   builder: (_) => BlocProvider(
-    create: (_) => AmountCubit(initialAmount(food)),
+    create: (_) => AmountCubit(
+      amount == null
+          ? initialAmount(food)
+          : AmountState(text: amountText(amount)),
+    ),
     child: FoodAmountSheet(food: food),
   ),
 );

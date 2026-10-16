@@ -14,8 +14,8 @@ had listed, Swift's `ReminderOfferFlow`, which reopens Today, Nutrition and Loca
 
 | | done | partial | todo | dropped | total |
 |---|---|---|---|---|---|
-| Screen modules | 187 | 6 | 2 | 3 | 198 |
-| Platform features | 15 | 7 | 3 | 0 | 25 |
+| Screen modules | 188 | 5 | 2 | 3 | 198 |
+| Platform features | 16 | 6 | 2 | 1 | 25 |
 
 The open work is grouped under [Remaining work](#remaining-work) at the end: follow-up slices, what waits on the owner, and M6.
 
@@ -74,7 +74,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Nutrition | MealDetail | `MealLog/MealDetail` | M3 | done | #142, `/nutrition/meal/:mealId` |
 | Nutrition | MealItemAmountView | `MealLog/MealItemAmountView` | M3 | done | #126 (plate); #142 (timeline) |
 | Nutrition | NutritionLibraryPicker | `MealLog/NutritionLibraryPicker` | M3 | done | #126, #145, #152: Swift's six tabs in order |
-| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | partial | #126 barcode mode; label mode (#152) takes typed or pasted text, no on-device OCR; torch (#180) |
+| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | done | #126 barcode mode; label mode (#152); torch (#180); on-device label OCR from a photo (#185): Vision on iOS, ML Kit on Android, not Swift's live scanner |
 | Nutrition | FoodItemQuickAdd | `MealLog/NutritionLibraryPicker/FoodItemQuickAdd` | M3 | done | #126 |
 | Nutrition | FoodItemSearch | `MealLog/NutritionLibraryPicker/FoodItemSearch` | M3 | done | #126; recipes (#145) |
 | Nutrition | FoodLibrary | `MealLog/NutritionLibraryPicker/FoodLibrary` | M3 | done | #126; Recipes / Foods / Favorites (#145) |
@@ -242,14 +242,14 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Home screen widgets | `WorkoutSessionActivity/HomeWidgets.swift` | M6 | todo | M6 |
 | Siri and Shortcuts (App Intents) | `Managers/AppIntents` | M6 | todo | M6, with the `browse_recipes` shortcut (#145) |
 | Strava upload and import | `StravaManager` | M5 | partial | `strava_repository` (#122), UI (#151), `pushEdit` (#162); needs the owner's `STRAVA_CLIENT_ID`; Keychain-token migration is M6 |
-| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | partial | `ai_repository` (#118), scanners (#152); no on-device label OCR; image generation has no caller in Swift's screens |
+| AI: food photo, meal description, nutrition label, image generation | `AIManager` | M5 | done | `ai_repository` (#118), scanners (#152); on-device label OCR (#185); image generation has no caller in Swift's screens |
 | AI coach (streaming) | `CoachManager` | M5 | done | `coach_repository` (#118), UI (#147) |
 | Image upload and progress photos | `ImageUploadManager` | M5 | done | `image_repository` (#150): progress and profile photos; food, recipe, gym, equipment and NamePhoto (#161) |
 | Reporting and moderation | `ReportManager` | M5 | done | #159: comments, feed cards and profiles |
 | Haptics and sound effects | `HapticManager`, `SoundEffectManager` | M3 | done | haptics across slices; check-in weigh-in (#172); rest-complete sound over a method channel (#172) |
 | Spanish localisation, 100% | `Localizable.xcstrings` | M1 | done | `scripts/arb-spanish.py`, CI check |
 | iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | done | #181: every page route in a 700 pt column (`AppPageTransitionsTheme`), Today an `AppDashboard` (two columns from 740 pt), Today and Progress 1,100 pt (#103's grids kept) |
-| Mac (Catalyst) | Catalyst | M6 | todo | decided at M6; the macOS folder was removed (#82) |
+| Mac (Catalyst) | Catalyst | M6 | dropped | the owner dropped Mac for now (16 Oct 2026); a Flutter macOS build can be revisited later. The macOS folder was removed (#82) |
 | Methods & Sources (citations) | `Components/Science` | M4 | done | `science/method_info.dart`: all 31 (#154, #166) |
 
 ## Remaining work
@@ -260,14 +260,7 @@ groups. The proposed slices from the #151 sweep are finished, apart from what is
 ### (a) Follow-up slices an agent can build without the owner
 Ordered by user value. Each is meant to be one PR into `feature/flutter`.
 
-1. **Label OCR.** On-device OCR of a nutrition label photo. The torch is done (#180).
-   `google_mlkit_text_recognition` 0.17.1 was tried and rejected: its iOS pods (MLKit 9) ship fat
-   x86_64 + arm64-device binaries with no arm64-simulator slice and set
-   `EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64`, so simulators would need Rosetta. It would also
-   bring back CocoaPods beside SwiftPM, with a second copy of GoogleUtilities, nanopb and
-   GTMSessionFetcher beside Firebase's. Needs an owner call: Apple Vision on iOS plus ML Kit on
-   Android behind one method channel, or wait for ML Kit xcframeworks. Closes BarcodeScanner and
-   the AI platform row.
+None left: label OCR (#185) and A/B tests (#186) closed the last two.
 
 ### (b) Waiting on the owner
 - **RevenueCat:** apps for iOS `com.andrewcoyle.compound.flutter.dev` and Play
@@ -308,7 +301,7 @@ Ordered by user value. Each is meant to be one PR into `feature/flutter`.
   - Spanish written by hand: the label error and hint, "Describe your meal", "per 100ml" (#152);
     "{first} o {second}" (#156); the plural set confirmations (#158); "Siguiendo {name}" and the
     per-kind report wording (#159); "Acciones de la serie", "Hora" (#162); the plan note's lists
-    (#165).
+    (#165); the label scan hint, Scan Label, "Reading label…" and the two camera messages (#185).
   - Native strings: the camera usage text and its Spanish `InfoPlist.strings`, and a try of the
     barcode scanner on a device (#126); `NSPhotoLibraryUsageDescription` is English only (#150).
   - Edit Duplicate keeps the original's name; Swift has no "(Copy)" wording (#163).
@@ -325,13 +318,12 @@ Ordered by user value. Each is meant to be one PR into `feature/flutter`.
   apps. Fix in Swift before Android 1.0 shares accounts. The other findings in `swift-findings.md`
   each need a decision too.
 
-### (c) M6: iOS only, needs the owner's go-ahead
+### (c) M6: iOS only (go-ahead given 16 Oct 2026)
 - Live Activity and Dynamic Island: keep `WorkoutSessionActivity`, driven over a platform channel and
   an App Group; the Lock Screen set receipt in the progression note's slot (#165).
 - Home screen widgets, and the widget snapshot on backgrounding (App).
 - Siri and Shortcuts (App Intents): the Siri settings row and the `browse_recipes` shortcut (#145).
 - HealthKit's live workout session (heart rate, active energy).
-- The Mac Catalyst decision.
 - Clearing pushes iOS displayed while the app was in the background, by identifier (#172).
 - iOS flavors under the existing bundle ids; the Strava Keychain-token migration (#122, #151); the
   final Swift release that flushes pending writes. At the switch, Swift's Monday-recap week id and its

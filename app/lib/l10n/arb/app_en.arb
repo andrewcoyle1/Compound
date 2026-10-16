@@ -4959,9 +4959,41 @@
     "@labelField": {
         "description": "The label text field's placeholder"
     },
-    "labelHint": "Type or paste the text from a nutrition label.",
-    "@labelHint": {
-        "description": "Under the label text field"
+    "labelScanHint": "Scan a nutrition label, or type or paste its text.",
+    "@labelScanHint": {
+        "description": "Under the label field, before a scan"
+    },
+    "labelCaptured": "Label text captured",
+    "@labelCaptured": {
+        "description": "Under the label field once a photo's text has been read into it (Swift BarcodeScannerView)"
+    },
+    "labelScan": "Scan Label",
+    "@labelScan": {
+        "description": "Opens the camera to photograph a nutrition label"
+    },
+    "labelChooseFromLibrary": "Choose from Library",
+    "@labelChooseFromLibrary": {
+        "description": "Picks a photo of a nutrition label from the library"
+    },
+    "labelReading": "Reading label…",
+    "@labelReading": {
+        "description": "While a label photo's text is read on the device"
+    },
+    "labelUnreadable": "Couldn't read this label. Hold the camera steady and try again, or enter it manually.",
+    "@labelUnreadable": {
+        "description": "No text was read from a label photo (Swift BarcodeScannerPresenter)"
+    },
+    "labelCameraOff": "Allow camera access in Settings to scan a label, or type its text.",
+    "@labelCameraOff": {
+        "description": "The camera was refused, in Label mode"
+    },
+    "labelCameraUnavailable": "The camera isn't available. Choose a photo of the label, or type its text.",
+    "@labelCameraUnavailable": {
+        "description": "The camera could not open, in Label mode"
+    },
+    "labelOpenSettings": "Open Settings",
+    "@labelOpenSettings": {
+        "description": "Opens Settings, where a refused camera can be allowed"
     },
     "labelParse": "Parse Label",
     "@labelParse": {

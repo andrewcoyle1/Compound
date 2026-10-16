@@ -127,6 +127,10 @@ class const App({
   /// The camera and photo library; the bundled sample photo when left out.
   final PhotoPicker? photoPicker,
 
+  /// Reads a label photo's text on the device; staging's sample label when
+  /// left out.
+  final LabelTextReader? labelTextReader,
+
   /// The AI food scanners' callables; staging's canned answers when left
   /// out.
   final AiRepository? aiRepository,
@@ -207,6 +211,9 @@ class const App({
         ),
         RepositoryProvider<PhotoPicker>(
           create: (_) => photoPicker ?? samplePhotoPicker(),
+        ),
+        RepositoryProvider<LabelTextReader>(
+          create: (_) => labelTextReader ?? const SampleLabelTextReader(),
         ),
         RepositoryProvider<AiRepository>(
           create: (_) =>

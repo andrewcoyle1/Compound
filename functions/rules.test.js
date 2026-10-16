@@ -175,6 +175,14 @@ t("contract: the owner creates the full mesocycle, macrocycle and food at their 
     await assertFails(setDoc(doc(db(BOB), `users/${BOB}/foods/${food.ingredient_id}`), food));
 });
 
+t("contract: the owner creates the full recipe at its path", async () => {
+    const recipe = contractFixture("recipe_template");
+    const uid = recipe.author_id;
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/recipe_templates/${recipe.recipe_id}`), recipe));
+    await assertFails(setDoc(doc(db(BOB), `users/${uid}/recipe_templates/bob_copy`), recipe));
+    await assertFails(setDoc(doc(db(BOB), `users/${BOB}/recipe_templates/${recipe.recipe_id}`), recipe));
+});
+
 t("contract: the owner creates the full check-in documents and shortcut settings at their paths", async () => {
     const paths = {
         nutrition_strategy_settings: "nutrition_strategy_settings/nutrition_strategy_settings",
@@ -537,6 +545,20 @@ t("flutter: saveFood merges a food, and never one without author_id", async () =
     const offRef = doc(db(uid), `users/${uid}/foods/off-5010029000061`);
     await assertFails(merge(offRef, { ...unowned, ingredient_id: "off-5010029000061" }));
     await assertSucceeds(merge(offRef, { ...food, ingredient_id: "off-5010029000061" }));
+});
+
+t("flutter: saveRecipe merges a recipe, and never one without author_id; deleteRecipe is the owner's", async () => {
+    const recipe = contractFixture("recipe_template");
+    const uid = recipe.author_id;
+    const ref = (as) => doc(db(as), `users/${uid}/recipe_templates/${recipe.recipe_id}`);
+    const { author_id: _, ...unowned } = recipe;
+    await assertFails(merge(ref(uid), unowned));
+    await assertFails(merge(ref(BOB), recipe));
+    await assertSucceeds(merge(ref(uid), recipe));
+    await assertSucceeds(merge(ref(uid), { ...recipe, name: "Overnight Oats Light" }));
+    await assertFails(merge(ref(BOB), { ...recipe, name: "Taken" }));
+    await assertFails(deleteDoc(ref(BOB)));
+    await assertSucceeds(deleteDoc(ref(uid)));
 });
 
 t("flutter: saveSession merges a workout session, updateWeekStreakCount sets the streak", async () => {

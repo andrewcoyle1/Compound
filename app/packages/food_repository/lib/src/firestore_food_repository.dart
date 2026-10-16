@@ -11,7 +11,7 @@ typedef FoodDecodeErrorHandler = void Function(
   StackTrace stackTrace,
 );
 
-/// [FoodRepository] on Cloud Firestore.
+/// [FoodRepository] on Cloud Firestore: foods and recipes.
 ///
 /// A document that does not decode is skipped and reported to
 /// `onDecodeError`, as the Swift app's sync engine skips it. Writes go
@@ -39,7 +39,11 @@ class FirestoreFoodRepository implements FoodRepository {
   Stream<List<FoodModel>> watchFoods(String uid) => _foods(uid).snapshots().map(
     (snapshot) => [
       for (final document in snapshot.docs)
-        ?_decode(document.reference.path, document.data()),
+        ?_decode(
+          document.reference.path,
+          document.data(),
+          FoodModel.fromFirestore,
+        ),
     ],
   );
 
@@ -62,9 +66,48 @@ class FirestoreFoodRepository implements FoodRepository {
     return writeLocally(document.path, document.delete, _onWriteError);
   }
 
-  FoodModel? _decode(String path, Map<String, Object?> data) {
+  CollectionReference<Map<String, dynamic>> _recipes(String uid) =>
+      _firestore.collection('users').doc(uid).collection('recipe_templates');
+
+  @override
+  Stream<List<RecipeTemplateModel>> watchRecipes(String uid) =>
+      _recipes(uid).snapshots().map(
+        (snapshot) => [
+          for (final document in snapshot.docs)
+            ?_decode(
+              document.reference.path,
+              document.data(),
+              RecipeTemplateModel.fromFirestore,
+            ),
+        ],
+      );
+
+  @override
+  Future<void> saveRecipe(RecipeTemplateModel recipe) {
+    final document = _recipes(requireRecipeAuthor(recipe)).doc(recipe.recipeId);
+    return writeLocally(
+      document.path,
+      () => document.set(
+        _toFirestore(recipe.toFirestore()),
+        SetOptions(merge: true),
+      ),
+      _onWriteError,
+    );
+  }
+
+  @override
+  Future<void> deleteRecipe(String uid, String recipeId) {
+    final document = _recipes(uid).doc(recipeId);
+    return writeLocally(document.path, document.delete, _onWriteError);
+  }
+
+  T? _decode<T>(
+    String path,
+    Map<String, Object?> data,
+    T Function(Map<String, Object?>) fromFirestore,
+  ) {
     try {
-      return FoodModel.fromFirestore(_fromFirestore(data));
+      return fromFirestore(_fromFirestore(data));
     } on Object catch (error, stackTrace) {
       _onDecodeError(path, error, stackTrace);
       return null;

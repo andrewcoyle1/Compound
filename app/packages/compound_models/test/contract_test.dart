@@ -178,6 +178,11 @@ final _models =
         roundTrip: (data) => FoodModel.fromFirestore(data).toFirestore(),
         keys: FoodModelKeys.all,
       ),
+      'recipe_template': (
+        roundTrip: (data) =>
+            RecipeTemplateModel.fromFirestore(data).toFirestore(),
+        keys: RecipeTemplateModelKeys.all,
+      ),
       'nutrition_strategy_settings': (
         roundTrip: (data) =>
             NutritionStrategySettings.fromFirestore(data).toFirestore(),
@@ -374,6 +379,7 @@ void main() {
         'DeloadType': raw(DeloadType.values),
         'MacrocycleStatus': raw(MacrocycleStatus.values),
         'MeasurementMethod': raw(MeasurementMethod.values),
+        'IngredientAmountUnit': raw(IngredientAmountUnit.values),
         'ExpenditureEstimationMethod': raw(ExpenditureEstimationMethod.values),
         'BMREquation': raw(BmrEquation.values),
         'ExpenditureCalculationMode': raw(ExpenditureCalculationMode.values),

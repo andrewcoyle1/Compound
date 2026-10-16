@@ -3,9 +3,12 @@
 //  CompoundUnitTests
 //
 //  Mesocycles (`users/{uid}/mesocycles`, also the payload of a mesocycle share), macrocycles
-//  (`users/{uid}/macrocycles`) and the food library (`users/{uid}/foods`) under the Firestore
-//  contract. All three decode with Swift's synthesized decoder, so their only lenient paths are
-//  null optionals and keys a model no longer has. See FirestoreContractTests.swift.
+//  (`users/{uid}/macrocycles`), the food library (`users/{uid}/foods`) and recipes
+//  (`users/{uid}/recipe_templates`) under the Firestore contract. The first three decode with
+//  Swift's synthesized decoder, so their only lenient paths are null optionals and keys a model no
+//  longer has. A recipe's decoder also defaults a missing ingredient list, serving count and
+//  method, and reads an ingredient amount that is not finite as 0 (the `legacy-*` cases). See
+//  FirestoreContractTests.swift.
 //
 
 import Foundation
@@ -39,6 +42,11 @@ extension FirestoreContractTests {
                 FoodModel.self, directory: "food_model",
                 full: Samples.fullFood, minimal: Samples.minimalFood,
                 namedFields: [FoodModel.CodingKeys.authorId.rawValue]
+            ),
+            try contract(
+                RecipeTemplateModel.self, directory: "recipe_template",
+                full: Samples.fullRecipe, minimal: Samples.minimalRecipe,
+                namedFields: [RecipeTemplateModel.CodingKeys.authorId.rawValue]
             )
         ]
     }
@@ -55,7 +63,8 @@ extension FirestoreContractTests {
         return [
             "DeloadType": DeloadType.allCases.map(\.rawValue),
             "MacrocycleStatus": statuses.map(\.rawValue),
-            "MeasurementMethod": MeasurementMethod.allCases.map(\.rawValue)
+            "MeasurementMethod": MeasurementMethod.allCases.map(\.rawValue),
+            "IngredientAmountUnit": IngredientAmountUnit.allCases.map(\.rawValue)
         ]
     }
 

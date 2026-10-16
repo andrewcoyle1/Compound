@@ -7,7 +7,7 @@ sealed class AddMealEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Start following the meals, plan, settings and foods.
+/// Start following the meals, plan, settings, foods and recipes.
 final class AddMealSubscriptionRequested extends AddMealEvent {
   const new();
 }
@@ -43,6 +43,13 @@ final class const AddMealFoodQuickAdded(final FoodModel food)
     extends AddMealEvent {
   @override
   List<Object?> get props => [food];
+}
+
+/// A recipe row's +: [recipe] at the servings it was last logged.
+final class const AddMealRecipeQuickAdded(final RecipeTemplateModel recipe)
+    extends AddMealEvent {
+  @override
+  List<Object?> get props => [recipe.recipeId];
 }
 
 /// The plate item [itemId] was removed.

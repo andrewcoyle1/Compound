@@ -151,4 +151,119 @@ void main() {
       expect(await subject.watchFoods('mock_user_123').first, hasLength(12));
     });
   });
+
+  group('recipes', () {
+    final now = DateTime.utc(2026, 10, 15, 8);
+    RecipeTemplateModel recipe(
+      String id, {
+      String? authorId = 'alice',
+      String name = 'Chilli',
+      String? description,
+    }) => RecipeTemplateModel(
+      recipeId: id,
+      authorId: authorId,
+      name: name,
+      description: description,
+      dateCreated: now,
+      dateModified: now,
+    );
+
+    test("serves each user's own seeded recipes", () async {
+      final subject = InMemoryFoodRepository(
+        recipes: [
+          recipe('a'),
+          recipe('b', authorId: 'bob'),
+        ],
+      );
+
+      expect(
+        (await subject.watchRecipes('alice').first).map((r) => r.recipeId),
+        ['a'],
+      );
+      expect((await subject.watchRecipes('bob').first).map((r) => r.recipeId), [
+        'b',
+      ]);
+    });
+
+    test('refuses a recipe with no author or no id', () {
+      expect(
+        () => InMemoryFoodRepository(recipes: [recipe('a', authorId: null)]),
+        throwsArgumentError,
+      );
+      expect(
+        () => InMemoryFoodRepository().saveRecipe(recipe('a', authorId: '')),
+        throwsArgumentError,
+      );
+      expect(
+        () => InMemoryFoodRepository().saveRecipe(recipe('')),
+        throwsArgumentError,
+      );
+    });
+
+    test('saves, merging over what is stored, and watchers see it', () async {
+      final subject = InMemoryFoodRepository(
+        recipes: [recipe('a', description: 'Hot')],
+      );
+      final emissions = subject.watchRecipes('alice').take(2).toList();
+
+      await subject.saveRecipe(recipe('a', name: 'Renamed'));
+
+      final [before, after] = await emissions;
+      expect(before.single.name, 'Chilli');
+      expect(after.single.name, 'Renamed');
+      expect(after.single.description, 'Hot');
+    });
+
+    test(
+      "deletes only that user's recipe; a missing one is no error",
+      () async {
+        final subject = InMemoryFoodRepository(
+          recipes: [
+            recipe('a'),
+            recipe('b'),
+            recipe('a', authorId: 'bob'),
+          ],
+        );
+
+        await subject.deleteRecipe('alice', 'a');
+        await subject.deleteRecipe('alice', 'missing');
+
+        expect(
+          (await subject.watchRecipes('alice').first).map((r) => r.recipeId),
+          ['b'],
+        );
+        expect(await subject.watchRecipes('bob').first, hasLength(1));
+      },
+    );
+  });
+
+  group('sampleRecipes', () {
+    final now = DateTime.utc(2026, 10, 15, 8);
+    final foods = sampleFoods(uid: 'mock_user_123', now: now);
+    final recipes = sampleRecipes(uid: 'mock_user_123', now: now, foods: foods);
+
+    test('are three recipes from the sample foods, each round-tripping', () {
+      expect(recipes.map((r) => r.name), [
+        'Overnight Oats',
+        'Chicken Rice Bowl',
+        'Salmon Avocado Toast',
+      ]);
+      for (final recipe in recipes) {
+        expect(recipe.authorId, 'mock_user_123');
+        expect(recipe.recipeId, startsWith('sample-recipe-'));
+        expect(recipe.ingredients, isNotEmpty);
+        expect(recipe.perServing.values[NutrientKey.calories], greaterThan(0));
+        expect(
+          RecipeTemplateModel.fromFirestore(recipe.toFirestore()).toFirestore(),
+          recipe.toFirestore(),
+        );
+      }
+    });
+
+    test('can seed the in-memory repository', () async {
+      final subject = InMemoryFoodRepository(recipes: recipes);
+
+      expect(await subject.watchRecipes('mock_user_123').first, hasLength(3));
+    });
+  });
 }

@@ -57,6 +57,31 @@ void main() {
       ]);
     });
 
+    test('saveRecipe completes offline; a refusal is reported', () async {
+      final recipe = RecipeTemplateModel.fromFirestore(
+        modelFixture('recipe_template', 'full'),
+      );
+      final path =
+          'users/${recipe.authorId}/recipe_templates/${recipe.recipeId}';
+      await subject.saveRecipe(recipe);
+      expect(firestore.writes, [path]);
+
+      firestore.refuse('permission-denied');
+      await pumpEventQueue();
+
+      expect(refused, [(path, 'permission-denied')]);
+    });
+
+    test('deleteRecipe completes offline; a refusal is reported', () async {
+      await subject.deleteRecipe('u', 'r');
+      expect(firestore.writes, ['users/u/recipe_templates/r']);
+
+      firestore.refuse('not-found');
+      await pumpEventQueue();
+
+      expect(refused, [('users/u/recipe_templates/r', 'not-found')]);
+    });
+
     test('deleteFood completes offline; a refusal is reported', () async {
       await subject.deleteFood('u', 'f');
       expect(firestore.writes, ['users/u/foods/f']);

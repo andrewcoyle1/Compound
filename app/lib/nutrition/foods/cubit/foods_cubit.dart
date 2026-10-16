@@ -56,8 +56,9 @@ class FoodsCubit extends Cubit<FoodsState> {
     required FoodRepository foods,
     required NutritionRepository nutrition,
     required this._analytics,
+    this._screen = 'FoodsView',
   }) : super(const FoodsState()) {
-    _analytics.appear('FoodsView');
+    _analytics.appear(_screen);
     _subscriptions = [
       foods
           .watchFoods(uid)
@@ -77,18 +78,24 @@ class FoodsCubit extends Cubit<FoodsState> {
   }
 
   final AnalyticsRepository _analytics;
+
+  /// The screen logged on appear and disappear: `FoodsView`, or
+  /// `IngredientsView` for the list on its own, picking a recipe's
+  /// ingredients.
+  final String _screen;
   late final List<StreamSubscription<Object?>> _subscriptions;
 
   /// The filter as typed.
   void filterChanged(String filter) => emit(state.copyWith(filter: filter));
 
-  /// A food was opened (`IngredientListBuilderPresenter
-  /// .navToIngredientAmountView`, which Foods routes to the detail).
-  void foodSelected(FoodModel food) =>
+  /// A food was picked (`IngredientListBuilderPresenter
+  /// .navToIngredientAmountView`, which Foods routes to the detail), or
+  /// added by its + when [method] is `quickAdd`.
+  void foodSelected(FoodModel food, {String method = 'amount'}) =>
       _analytics.analytic('IngredientsView_Ingredient_Selected', {
         'ingredient_id': food.ingredientId,
         'ingredient_name': food.name,
-        'method': 'amount',
+        'method': method,
       });
 
   /// + or Create a Food.
@@ -97,7 +104,7 @@ class FoodsCubit extends Cubit<FoodsState> {
 
   @override
   Future<void> close() async {
-    _analytics.disappear('FoodsView');
+    _analytics.disappear(_screen);
     for (final subscription in _subscriptions) {
       await subscription.cancel();
     }

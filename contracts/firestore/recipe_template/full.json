@@ -1,0 +1,156 @@
+{
+  "author_id": "user_contract_full",
+  "bookmark_count": 2,
+  "click_count": 4,
+  "cook_time_mins": 0.5,
+  "date_created": {
+    "$timestamp": "2026-07-03T08:00:00.250Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-10-06T12:30:00.750Z"
+  },
+  "description": "Soaked overnight",
+  "favourite_count": 1,
+  "image_url": "https://example.com/overnight-oats.jpg",
+  "ingredients": [
+    {
+      "amount": 250.5,
+      "ingredient": {
+        "author_id": "user_contract_full",
+        "barcode": "7394376616501",
+        "bookmark_count": 3,
+        "brand_name": "Oatly",
+        "click_count": 12,
+        "date_created": {
+          "$timestamp": "2026-07-01T08:00:00.250Z"
+        },
+        "date_modified": {
+          "$timestamp": "2026-10-06T12:00:00.750Z"
+        },
+        "description": "Barista edition",
+        "favourite_count": 1,
+        "image_url": "https://example.com/oat-milk.jpg",
+        "ingredient_id": "food_contract_full",
+        "measurement_method": "volume",
+        "name": "Oat Milk",
+        "nutrients": {
+          "added_sugars": 15.5,
+          "alcohol": 57.5,
+          "biotin_mcg": 48.5,
+          "caffeine_mg": 55.5,
+          "calcium_mg": 30.5,
+          "calories": 0.5,
+          "carbs": 2.5,
+          "chloride_mg": 38.5,
+          "cholesterol_mg": 56.5,
+          "chromium_mcg": 39.5,
+          "copper_mg": 34.5,
+          "cysteine": 17.5,
+          "fat_monounsaturated": 5.5,
+          "fat_polyunsaturated": 6.5,
+          "fat_saturated": 4.5,
+          "fat_total": 3.5,
+          "fat_trans": 7.5,
+          "fiber": 13.5,
+          "folate_mcg": 49.5,
+          "histidine": 18.5,
+          "iodine_mcg": 50.5,
+          "iron_mg": 31.5,
+          "isoleucine": 19.5,
+          "leucine": 20.5,
+          "lysine": 21.5,
+          "magnesium_mg": 32.5,
+          "manganese_mg": 35.5,
+          "methionine": 22.5,
+          "molybdenum_mcg": 40.5,
+          "niacin_mg": 51.5,
+          "omega_3": 8.5,
+          "omega_3_ala": 9.5,
+          "omega_3_dha": 10.5,
+          "omega_3_epa": 11.5,
+          "omega_6": 12.5,
+          "pantothenic_acid_mg": 54.5,
+          "phenylalanine": 23.5,
+          "phosphorus_mg": 36.5,
+          "potassium_mg": 29.5,
+          "protein": 1.5,
+          "riboflavin_mg": 53.5,
+          "selenium_mcg": 37.5,
+          "sodium_mg": 28.5,
+          "starch": 16.5,
+          "sugar": 14.5,
+          "thiamin_mg": 52.5,
+          "threonine": 24.5,
+          "tryptophan": 25.5,
+          "tyrosine": 26.5,
+          "valine": 27.5,
+          "vitamin_a_mcg": 41.5,
+          "vitamin_b6_mg": 42.5,
+          "vitamin_b12_mcg": 43.5,
+          "vitamin_c_mg": 44.5,
+          "vitamin_d_mcg": 45.5,
+          "vitamin_e_mg": 46.5,
+          "vitamin_k_mcg": 47.5,
+          "water": 58.5,
+          "zinc_mg": 33.5
+        },
+        "portion_name": "glass",
+        "portion_size": 1.5,
+        "portion_volume": 240.5,
+        "portion_weight": 30.25,
+        "serving_weight": 250.5,
+        "volume_portion_name": "cup",
+        "volume_portion_size": 1.25,
+        "weight_portion_name": "scoop",
+        "weight_portion_size": 0.5
+      },
+      "unit": "milliliters"
+    },
+    {
+      "amount": 80.25,
+      "ingredient": {
+        "date_created": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "date_modified": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "ingredient_id": "food_contract_minimal",
+        "measurement_method": "weight",
+        "name": "Water",
+        "nutrients": {
+
+        }
+      },
+      "unit": "grams"
+    },
+    {
+      "amount": 1.5,
+      "ingredient": {
+        "date_created": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "date_modified": {
+          "$timestamp": "2026-07-02T08:00:00.000Z"
+        },
+        "ingredient_id": "food_contract_minimal",
+        "measurement_method": "weight",
+        "name": "Water",
+        "nutrients": {
+
+        }
+      },
+      "unit": "units"
+    }
+  ],
+  "name": "Overnight Oats",
+  "prep_time_mins": 5.5,
+  "preparation_steps": [
+    "Mix the oats and milk.",
+    "Chill overnight."
+  ],
+  "recipe_id": "recipe_contract_full",
+  "serving_quantity": 2.5,
+  "source_url": "https://example.com/recipes/overnight-oats",
+  "total_weight": 412.75
+}

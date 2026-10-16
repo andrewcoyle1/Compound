@@ -1,0 +1,14 @@
+{
+  "author_id": "user_contract_legacy",
+  "date_created": {
+    "$timestamp": "2026-07-05T08:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-07-05T08:00:00.000Z"
+  },
+  "ingredients": [],
+  "name": "Toast",
+  "preparation_steps": [],
+  "recipe_id": "recipe_contract_legacy_defaults",
+  "serving_quantity": 1.0
+}

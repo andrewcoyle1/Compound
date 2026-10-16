@@ -197,5 +197,97 @@ void main() {
         expect((await foods(uid).get()).docs, isEmpty);
       });
     });
+
+    group('recipes', () {
+      CollectionReference<Map<String, dynamic>> recipes(String owner) =>
+          firestore.collection('users/$owner/recipe_templates');
+      RecipeTemplateModel fixtureRecipe(String name) =>
+          RecipeTemplateModel.fromFirestore(
+            modelFixture('recipe_template', name),
+          );
+
+      test(
+        'watchRecipes reads every fixture back as Swift writes it',
+        () async {
+          final cases = {
+            'full': 'full',
+            'minimal': 'minimal',
+            'legacy-missing-defaults': 'legacy-missing-defaults.expected',
+            'legacy-ingredient-amounts': 'legacy-ingredient-amounts.expected',
+          };
+          for (final name in cases.keys) {
+            await recipes(uid)
+                .doc(name)
+                .set(storedFixture('recipe_template', name));
+          }
+
+          final read = await subject.watchRecipes(uid).first;
+
+          expect(read, hasLength(cases.length));
+          for (final (index, expected) in cases.values.indexed) {
+            expect(
+              firestoreToTaggedJson(read[index].toFirestore()),
+              strictlyEquals(taggedFixture('recipe_template', expected)),
+            );
+          }
+          expect(decodeErrors, isEmpty);
+        },
+      );
+
+      test(
+        'watchRecipes skips and reports a recipe that does not decode',
+        () async {
+          await recipes(uid).doc('broken').set({'name': 'No id'});
+
+          expect(await subject.watchRecipes(uid).first, isEmpty);
+          expect(decodeErrors.single.$1, 'users/$uid/recipe_templates/broken');
+        },
+      );
+
+      test('saveRecipe stores the full fixture exactly, merged', () async {
+        const path = 'users/$uid/recipe_templates/recipe_contract_full';
+        await firestore.doc(path).set({'field_from_a_newer_build': 'kept'});
+
+        await subject.saveRecipe(fixtureRecipe('full'));
+
+        expect(
+          await stored(path),
+          strictlyEquals({
+            ...taggedFixture('recipe_template', 'full'),
+            'field_from_a_newer_build': 'kept',
+          }),
+        );
+      });
+
+      test(
+        'saveRecipe refuses a recipe with no author, writing nothing',
+        () async {
+          final unowned = RecipeTemplateModel.fromFirestore({
+            ...modelFixture('recipe_template', 'full'),
+            RecipeTemplateModelKeys.authorId: null,
+          });
+          final noId = RecipeTemplateModel.fromFirestore({
+            ...modelFixture('recipe_template', 'full'),
+            RecipeTemplateModelKeys.recipeId: '',
+          });
+
+          expect(() => subject.saveRecipe(unowned), throwsArgumentError);
+          expect(() => subject.saveRecipe(noId), throwsArgumentError);
+          expect(
+            (await firestore.collectionGroup('recipe_templates').get()).docs,
+            isEmpty,
+          );
+        },
+      );
+
+      test('deleteRecipe deletes, and a missing one is no error', () async {
+        await subject.saveRecipe(fixtureRecipe('full'));
+
+        await subject.deleteRecipe(uid, 'recipe_contract_full');
+        await subject.deleteRecipe(uid, 'missing');
+
+        expect((await recipes(uid).get()).docs, isEmpty);
+      });
+    });
   });
 }

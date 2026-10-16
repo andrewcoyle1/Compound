@@ -11944,5 +11944,222 @@
     "exerciseSettingsEditDuplicate": "Edit Duplicate",
     "@exerciseSettingsEditDuplicate": {
         "description": "Exercise Settings row: create a new exercise starting from a copy of this one"
+    },
+    "accessoryResumeLabel": "{minutes, plural, =1{Resume workout, {name}, 1 minute} other{Resume workout, {name}, {minutes} minutes}}",
+    "@accessoryResumeLabel": {
+        "description": "Spoken label of the workout bar over the tabs",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "accessorySkipRest": "Skip rest",
+    "@accessorySkipRest": {
+        "description": "Workout bar over the tabs: ends the rest"
+    },
+    "trackerDoNext": "Do Next",
+    "@trackerDoNext": {
+        "description": "Strip menu: move the exercise straight after the one on the card"
+    },
+    "trackerDoLater": "Do Later",
+    "@trackerDoLater": {
+        "description": "Exercise and strip menus: move the exercise to the end of the workout"
+    },
+    "trackerMoveEarlier": "Move Earlier",
+    "@trackerMoveEarlier": {
+        "description": "Strip menu: move the exercise one place earlier"
+    },
+    "trackerMoveLater": "Move Later",
+    "@trackerMoveLater": {
+        "description": "Strip menu: move the exercise one place later"
+    },
+    "trackerPosition": "Position {position} of {count}",
+    "@trackerPosition": {
+        "description": "Announced after an exercise moves on the strip",
+        "placeholders": {
+            "position": {
+                "type": "int"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerNextShort": "Next",
+    "@trackerNextShort": {
+        "description": "Spoken name of the log button when it opens the next exercise"
+    },
+    "trackerFillsSet": "Fills this set",
+    "@trackerFillsSet": {
+        "description": "Hint on the Last column: a tap copies last time's figures into the set"
+    },
+    "trackerLastTimeNote": "Last time: {note}",
+    "@trackerLastTimeNote": {
+        "description": "Notes sheet: the note left on this exercise last session",
+        "placeholders": {
+            "note": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerTapToDismiss": "Tap to dismiss",
+    "@trackerTapToDismiss": {
+        "description": "Progression note: a tap hides it"
+    },
+    "trackerProgressionNoteLabel": "Smart Progression. {text}",
+    "@trackerProgressionNoteLabel": {
+        "description": "Spoken label of the progression note",
+        "placeholders": {
+            "text": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerDismissesNote": "Dismisses the note",
+    "@trackerDismissesNote": {
+        "description": "Spoken hint on the progression note"
+    },
+    "trackerReasonAddReps": "+{reps} today, at the same weight as last time.",
+    "@trackerReasonAddReps": {
+        "description": "Progression note: reps added, e.g. +1 rep today",
+        "placeholders": {
+            "reps": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerReasonDeload": "{change} today. Two sessions short of the reps, so the weight resets.",
+    "@trackerReasonDeload": {
+        "description": "Progression note: a deload, e.g. −10 kg today",
+        "placeholders": {
+            "change": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerReasonChange": "{change} today.",
+    "@trackerReasonChange": {
+        "description": "Progression note: the weight changed, e.g. +2.5 kg today.",
+        "placeholders": {
+            "change": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerReasonProgress": "{change} today. You hit {reps} on every working set last time.",
+    "@trackerReasonProgress": {
+        "description": "Progression note: the weight went up, e.g. +2.5 kg today. You hit 5 reps on every working set last time.",
+        "placeholders": {
+            "change": {
+                "type": "String"
+            },
+            "reps": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerPlanFailure": "Set {number} is to failure, target {target}+.",
+    "@trackerPlanFailure": {
+        "description": "Progression note: a planned failure set",
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "target": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerPlanDropFailure": "Set {number} is a drop set from your plan: {first}, then {weights} to failure, no rest between.",
+    "@trackerPlanDropFailure": {
+        "description": "Progression note: a planned drop set to failure, e.g. 100 × 8, then 80 and 64",
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "first": {
+                "type": "String"
+            },
+            "weights": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerPlanDropReps": "Set {number} is a drop set from your plan: {first}, then {weights} × {reps}, no rest between.",
+    "@trackerPlanDropReps": {
+        "description": "Progression note: a planned drop set with reps",
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "first": {
+                "type": "String"
+            },
+            "weights": {
+                "type": "String"
+            },
+            "reps": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerPlanMinis": "Set {number} is {kind} from your plan: {first}, then {count}, a short breath between.",
+    "@trackerPlanMinis": {
+        "description": "Progression note: a planned set with mini-sets, e.g. Myo-reps, 3 mini-sets",
+        "placeholders": {
+            "number": {
+                "type": "int"
+            },
+            "kind": {
+                "type": "String"
+            },
+            "first": {
+                "type": "String"
+            },
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerMyoReps": "Myo-reps",
+    "@trackerMyoReps": {
+        "description": "A myo set's name in the progression note"
+    },
+    "trackerMiniSetCount": "{count, plural, =1{1 mini-set} other{{count} mini-sets}}",
+    "@trackerMiniSetCount": {
+        "description": "A number of mini-sets",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerListAndTwo": "{first} and {second}",
+    "@trackerListAndTwo": {
+        "description": "Two items in a list, e.g. 80 and 64",
+        "placeholders": {
+            "first": {
+                "type": "String"
+            },
+            "second": {
+                "type": "String"
+            }
+        }
+    },
+    "trackerListAndMany": "{head}, and {last}",
+    "@trackerListAndMany": {
+        "description": "The last of three or more items in a list, e.g. 80, 64, and 50",
+        "placeholders": {
+            "head": {
+                "type": "String"
+            },
+            "last": {
+                "type": "String"
+            }
+        }
     }
 }

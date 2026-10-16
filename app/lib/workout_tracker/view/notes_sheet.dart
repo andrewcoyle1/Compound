@@ -6,6 +6,9 @@ class const NoteField({
   required final String label,
   required final String initial,
   final String? footer,
+
+  /// Last session's note, shown above the field: "Last time: …".
+  final String? hint,
 });
 
 /// The notes sheet (`WorkoutNotesView`): one field per note, Cancel and
@@ -101,7 +104,14 @@ class _NotesSheetState extends State<_NotesSheet> {
                 ),
               ],
             ),
-            for (final (index, field) in widget.fields.indexed)
+            for (final (index, field) in widget.fields.indexed) ...[
+              if (field.hint case final hint?)
+                Text(
+                  l10n.trackerLastTimeNote(hint),
+                  style: AppTextStyles.rowDetail.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               TextField(
                 controller: _controllers[index],
                 autofocus: index == 0,
@@ -122,6 +132,7 @@ class _NotesSheetState extends State<_NotesSheet> {
                   ),
                 ),
               ),
+            ],
           ],
         ),
       ),

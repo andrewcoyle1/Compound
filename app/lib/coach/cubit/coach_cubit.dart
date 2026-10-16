@@ -74,6 +74,14 @@ class CoachCubit extends Cubit<CoachState> {
   final String Function() _newId;
   StreamSubscription<List<CoachChat>>? _chats;
 
+  /// The saved chats as last read: the function saves an exchange before
+  /// it answers, so a new chat's title can be here before its id is.
+  List<CoachChat> _saved = const [];
+
+  String? _savedTitle(String? chatId) =>
+      _saved.where((chat) => chat.id == chatId).firstOrNull?.title ??
+      state.chatTitle;
+
   Map<String, Object?> get _contextParameter => {
     'context': _request.context.kind.value,
   };
@@ -83,21 +91,10 @@ class CoachCubit extends Cubit<CoachState> {
   /// move it back. Also follows the saved chats for the chat's title.
   Future<void> appeared() async {
     _analytics.appear('CoachView', _contextParameter);
-    _chats ??= _coach
-        .watchChats(_uid)
-        .listen(
-          (chats) => emit(
-            state.copyWith(
-              chatTitle: () =>
-                  chats
-                      .where((chat) => chat.id == state.chatId)
-                      .firstOrNull
-                      ?.title ??
-                  state.chatTitle,
-            ),
-          ),
-          onError: (Object _) {},
-        );
+    _chats ??= _coach.watchChats(_uid).listen((chats) {
+      _saved = chats;
+      emit(state.copyWith(chatTitle: () => _savedTitle(state.chatId)));
+    }, onError: (Object _) {});
     if (!_purchases.state.isPremiumWith()) {
       emit(state.copyWith(gate: CoachGate.premium));
       return;
@@ -192,6 +189,7 @@ class CoachCubit extends Cubit<CoachState> {
             emit(
               state.copyWith(
                 chatId: () => chatId,
+                chatTitle: () => _savedTitle(chatId),
                 remainingToday: event.remainingToday,
                 messages: [
                   ...state.messages,

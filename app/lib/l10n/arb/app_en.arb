@@ -12290,5 +12290,31 @@
                 "type": "int"
             }
         }
+    },
+    "chartPreviousPeriod": "Previous period",
+    "@chartPreviousPeriod": {
+        "description": "Chart: accessibility action showing the window before"
+    },
+    "chartNextPeriod": "Next period",
+    "@chartNextPeriod": {
+        "description": "Chart: accessibility action showing the window after"
+    },
+    "contributionOfDays": "{count, plural, =1{of 1 day} other{of {count} days}}",
+    "@contributionOfDays": {
+        "description": "Contribution grid header: after the number of days logged, e.g. '4 of 112 days'",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "contributionDaysLogged": "Days Logged, {range}",
+    "@contributionDaysLogged": {
+        "description": "Contribution grid header: under the count, the dates it covers",
+        "placeholders": {
+            "range": {
+                "type": "String"
+            }
+        }
     }
 }

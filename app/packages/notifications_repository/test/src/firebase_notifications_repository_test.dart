@@ -319,6 +319,55 @@ void main() {
             .thenAnswer((_) async => settings(AuthorizationStatus.denied));
         expect(await repository.requestPermission(), isFalse);
       });
+
+      test('opens the notification settings, reporting a failure', () async {
+        var opened = 0;
+        final opener = FirebaseNotificationsRepository(
+          messaging: messaging,
+          localNotifications: local,
+          userRepository: users,
+          copy: _Copy(),
+          onError: (error, _) => errors.add(error),
+          onMessage: onMessage.stream,
+          onMessageOpenedApp: onOpened.stream,
+          openSettings: () async => opened++,
+        );
+        await opener.openSystemSettings();
+        expect(opened, 1);
+        expect(errors, isEmpty);
+
+        final failing = FirebaseNotificationsRepository(
+          messaging: messaging,
+          localNotifications: local,
+          userRepository: users,
+          copy: _Copy(),
+          onError: (error, _) => errors.add(error),
+          onMessage: onMessage.stream,
+          onMessageOpenedApp: onOpened.stream,
+          openSettings: () async => throw StateError('no settings'),
+        );
+        await failing.openSystemSettings();
+        expect(errors, hasLength(1));
+      });
+
+      test('opens app_settings\' notification page by default', () async {
+        const channel = MethodChannel('com.spencerccf.app_settings/methods');
+        final calls = <MethodCall>[];
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async {
+              calls.add(call);
+              return null;
+            });
+        addTearDown(
+          () => TestDefaultBinaryMessengerBinding
+              .instance
+              .defaultBinaryMessenger
+              .setMockMethodCallHandler(channel, null),
+        );
+        await repository.openSystemSettings();
+        expect(calls, hasLength(1));
+        expect(errors, isEmpty);
+      });
     });
 
     group('push token', () {

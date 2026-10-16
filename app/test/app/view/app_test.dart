@@ -4,6 +4,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
+import 'package:compound/notifications/notifications.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/onboarding/account_setup/account_setup_cubit.dart';
 import 'package:compound/onboarding/onboarding.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
+import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
@@ -274,6 +276,45 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(ProgressPage), findsOneWidget);
+
+      // A follow request's push opens the inbox, over Social.
+      notifications.tap(const {'type': 'follow_request'});
+      await tester.pumpAndSettle();
+      expect(find.byType(NotificationsPage), findsOneWidget);
+    });
+
+    testWidgets('badges Social with the comments, mentions and requests '
+        'waiting', (tester) async {
+      final users = seededUsers();
+      final social = (await tester.runAsync(
+        () => inMemorySocialRepository(users: users, now: DateTime.now()),
+      ))!;
+      await tester.pumpWidget(
+        App(
+          programRepository: InMemoryProgramRepository(),
+          trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
+          authRepository: InMemoryAuthRepository(
+            user: InMemoryAuthRepository.sampleUser,
+          ),
+          userRepository: users,
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
+          socialRepository: social,
+        ),
+      );
+      for (var i = 0; i < 4; i++) {
+        await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+      // Maya's comment, Charlie's mention and Bob's request.
+      expect(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('3'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('switches between the five tabs', (tester) async {

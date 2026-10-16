@@ -1,7 +1,9 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/workout_tracker/view/start_workout.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 /// The tab bar around the five tabs, each keeping its own navigation stack.
@@ -32,13 +34,33 @@ class AppShell extends StatelessWidget {
             destinations: [
               for (final tab in AppTab.values)
                 NavigationDestination(
-                  icon: Icon(tab.icon),
+                  icon: tab == AppTab.social
+                      ? const _SocialIcon()
+                      : Icon(tab.icon),
                   label: tab.label(l10n),
                 ),
             ],
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Social's tab glyph, badged with the comments and mentions unread and the
+/// follow requests waiting (`TabBarPresenter.unreadActivityCount`).
+class _SocialIcon extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final count = context.select<InboxBloc, int>(
+      (bloc) => bloc.state.tabBadgeCount,
+    );
+    return Badge.count(
+      count: count,
+      isLabelVisible: count > 0,
+      child: Icon(AppTab.social.icon),
     );
   }
 }

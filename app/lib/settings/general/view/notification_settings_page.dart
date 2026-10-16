@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
@@ -6,11 +8,12 @@ import 'package:compound/settings/general/cubit/notification_settings_cubit.dart
 import 'package:compound/settings/general/view/on_dispose.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 /// Which pushes and reminders arrive (Swift `NotificationSettingsView`).
-/// Each switch saves as it changes. The permission prompt waits for the
-/// push wiring.
+/// Each switch saves as it changes; above them, the permission prompt, and
+/// they stay off until notifications are allowed.
 class NotificationSettingsPage extends StatelessWidget {
   const new({super.key});
 
@@ -23,35 +26,77 @@ class NotificationSettingsPage extends StatelessWidget {
     final state = context.read<AppBloc>().state;
     if (state is! AppAuthenticated) return const SizedBox.shrink();
     return BlocProvider(
-      create: (context) => NotificationSettingsCubit(
-        users: context.read<UserRepository>(),
-        analytics: context.read<AnalyticsRepository>(),
-        uid: state.user.uid,
-      )..appeared(),
+      create: (context) {
+        final cubit = NotificationSettingsCubit(
+          users: context.read<UserRepository>(),
+          notifications: context.read<NotificationsRepository>(),
+          analytics: context.read<AnalyticsRepository>(),
+          uid: state.user.uid,
+        )..appeared();
+        unawaited(cubit.checkPermission());
+        return cubit;
+      },
       child: const NotificationSettingsView(),
     );
   }
 }
 
-class NotificationSettingsView extends StatelessWidget {
+class NotificationSettingsView extends StatefulWidget {
   const new({super.key});
+
+  @override
+  State<NotificationSettingsView> createState() =>
+      _NotificationSettingsViewState();
+}
+
+class _NotificationSettingsViewState extends State<NotificationSettingsView> {
+  /// The system settings are where a refusal is undone, so the permission is
+  /// read again on each return to the app.
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: () => unawaited(
+        context.read<NotificationSettingsCubit>().checkPermission(),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<NotificationSettingsCubit>();
     final state = context.watch<NotificationSettingsCubit>().state;
+    final enabled = state.canChangeSwitches;
     String hour(int hour) =>
         DateFormat.j(Localizations.localeOf(context).toLanguageTag())
             .format(DateTime(2000, 1, 1, hour));
     return OnDispose(
       onDispose: cubit.disappeared,
       child: BlocListener<NotificationSettingsCubit, NotificationSettingsState>(
-        listenWhen: (_, state) => state.saveFailed,
-        listener: (context, _) => ScaffoldMessenger.of(context)
+        listenWhen: (previous, current) =>
+            current.failureId != previous.failureId,
+        listener: (context, state) => ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text(l10n.notificationSettingsSaveFailed)),
+            SnackBar(
+              content: Text(switch (state.failure!) {
+                NotificationSettingsFailure.save =>
+                  l10n.notificationSettingsSaveFailed,
+                NotificationSettingsFailure.checkPermission =>
+                  l10n.notificationSettingsCheckFailed,
+                NotificationSettingsFailure.requestPermission =>
+                  l10n.notificationSettingsEnableFailed,
+              }),
+            ),
           ),
         child: Scaffold(
           appBar: AppBar(title: Text(l10n.settingsNotificationSettings)),
@@ -59,6 +104,43 @@ class NotificationSettingsView extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.l),
               children: [
+                ...switch (state.permissionPrompt) {
+                  PermissionPrompt.askFirst => [
+                    AppSection(
+                      children: [
+                        AppInlineMessage(
+                          kind: AppInlineMessageKind.info,
+                          kindLabel: l10n.infoLabel,
+                          text: l10n.notificationSettingsAskFirst,
+                        ),
+                        AppListRowButton(
+                          title: l10n.notificationSettingsTurnOn,
+                          icon: AppSymbols.notifications,
+                          onPressed: cubit.requestPermissionPressed,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                  ],
+                  PermissionPrompt.denied => [
+                    AppSection(
+                      children: [
+                        AppInlineMessage(
+                          kind: AppInlineMessageKind.warning,
+                          kindLabel: l10n.warningLabel,
+                          text: l10n.notificationSettingsDenied,
+                        ),
+                        AppListRowButton(
+                          title: l10n.notificationSettingsOpenSettings,
+                          icon: AppSymbols.settings,
+                          onPressed: cubit.openSettingsPressed,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                  ],
+                  null => const <Widget>[],
+                },
                 AppSection(
                   header: l10n.notificationSettingsSocialHeader,
                   footer: l10n.notificationSettingsSocialFooter,
@@ -67,8 +149,12 @@ class NotificationSettingsView extends StatelessWidget {
                       AppListRowToggle(
                         title: _title(l10n, push),
                         value: state.isSocialPushEnabled(push),
-                        onChanged: (isEnabled) =>
-                            cubit.socialPushChanged(push, isEnabled: isEnabled),
+                        onChanged: !enabled
+                            ? null
+                            : (isEnabled) => cubit.socialPushChanged(
+                                push,
+                                isEnabled: isEnabled,
+                              ),
                       ),
                   ],
                 ),
@@ -80,36 +166,49 @@ class NotificationSettingsView extends StatelessWidget {
                     AppListRowToggle(
                       title: l10n.notificationSettingsStreakReminder,
                       value: state.isStreakReminderEnabled,
-                      onChanged: (isEnabled) =>
-                          cubit.streakReminderChanged(isEnabled: isEnabled),
+                      onChanged: !enabled
+                          ? null
+                          : (isEnabled) => cubit.streakReminderChanged(
+                              isEnabled: isEnabled,
+                            ),
                     ),
                     if (state.isStreakReminderEnabled)
                       AppListRowButton(
                         title: l10n.notificationSettingsRemindAt,
                         accessory: AppListRowValue(hour(state.reminderHour)),
-                        onPressed: () => _chooseHour(
-                          context,
-                          selected: state.reminderHour,
-                          label: hour,
-                        ),
+                        onPressed: !enabled
+                            ? null
+                            : () => _chooseHour(
+                                context,
+                                selected: state.reminderHour,
+                                label: hour,
+                              ),
                       ),
                     AppListRowToggle(
                       title: l10n.notificationSettingsWeeklyDigest,
                       value: state.isWeeklyDigestEnabled,
-                      onChanged: (isEnabled) =>
-                          cubit.weeklyDigestChanged(isEnabled: isEnabled),
+                      onChanged: !enabled
+                          ? null
+                          : (isEnabled) =>
+                                cubit.weeklyDigestChanged(isEnabled: isEnabled),
                     ),
                     AppListRowToggle(
                       title: l10n.notificationSettingsWorkoutReminders,
                       value: state.isComeBackRemindersEnabled,
-                      onChanged: (isEnabled) =>
-                          cubit.comeBackRemindersChanged(isEnabled: isEnabled),
+                      onChanged: !enabled
+                          ? null
+                          : (isEnabled) => cubit.comeBackRemindersChanged(
+                              isEnabled: isEnabled,
+                            ),
                     ),
                     AppListRowToggle(
                       title: l10n.notificationSettingsMealReminders,
                       value: state.isMealRemindersEnabled,
-                      onChanged: (isEnabled) =>
-                          cubit.mealRemindersChanged(isEnabled: isEnabled),
+                      onChanged: !enabled
+                          ? null
+                          : (isEnabled) => cubit.mealRemindersChanged(
+                              isEnabled: isEnabled,
+                            ),
                     ),
                   ],
                 ),

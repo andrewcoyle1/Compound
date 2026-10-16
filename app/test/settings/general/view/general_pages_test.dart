@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 import '../../../helpers/helpers.dart';
@@ -46,7 +47,12 @@ void main() {
     body = InMemoryBodyRepository();
   });
 
-  Future<void> pump(WidgetTester tester, String location) async {
+  Future<void> pump(
+    WidgetTester tester,
+    String location, {
+    PushPermission permission = PushPermission.authorized,
+    FakeNotificationsRepository? notifications,
+  }) async {
     when(() => appBloc.state).thenReturn(
       AppAuthenticated(
         user,
@@ -62,6 +68,9 @@ void main() {
       userRepository: users,
       bodyRepository: body,
       analyticsRepository: analytics,
+      notificationsRepository:
+          notifications ??
+          FakeNotificationsRepository(permissionState: permission),
       router: GoRouter(
         initialLocation: location,
         routes: [
@@ -217,6 +226,79 @@ void main() {
       await tester.pump();
       expect(find.text('Unable to Save Setting'), findsOneWidget);
     });
+
+    testWidgets('never asked: offers to ask, and the switches wait until '
+        'it is allowed', (tester) async {
+      final notifications = FakeNotificationsRepository();
+      await pump(
+        tester,
+        '/profile/settings/notifications',
+        notifications: notifications,
+      );
+      expect(
+        find.text(
+          'Notifications are off. Turn them on to get the alerts below.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Likes'));
+      await tester.pumpAndSettle();
+      expect(await users.watchPrivateSettings('uid').first, isNull);
+
+      await tester.tap(find.text('Turn On Notifications'));
+      await tester.pumpAndSettle();
+      expect(find.text('Turn On Notifications'), findsNothing);
+      await tester.tap(find.text('Likes'));
+      await tester.pumpAndSettle();
+      expect(
+        (await users.watchPrivateSettings('uid').first)!.socialPushLikes,
+        isFalse,
+      );
+    });
+
+    testWidgets('refused: Open Settings, and the answer is read again on '
+        'return', (tester) async {
+      final notifications = FakeNotificationsRepository(
+        permissionState: PushPermission.denied,
+      );
+      await pump(
+        tester,
+        '/profile/settings/notifications',
+        notifications: notifications,
+      );
+      await tester.tap(find.text('Open Settings'));
+      await tester.pumpAndSettle();
+      expect(notifications.settingsOpened, 1);
+
+      notifications.permissionState = PushPermission.authorized;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.text('Open Settings'), findsNothing);
+    });
+
+    testWidgets('says when the permission cannot be read', (tester) async {
+      await pump(
+        tester,
+        '/profile/settings/notifications',
+        notifications: _FailingNotifications(),
+      );
+      expect(
+        find.text('Unable to Check Notification Permission'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('says when asking fails', (tester) async {
+      await pump(
+        tester,
+        '/profile/settings/notifications',
+        notifications: _FailingRequest(),
+      );
+      await tester.tap(find.text('Turn On Notifications'));
+      await tester.pump();
+      expect(find.text('Unable to Enable Notifications'), findsOneWidget);
+    });
   });
 
   group(MethodsAndSourcesPage, () {
@@ -283,4 +365,14 @@ class _FailingUsers extends InMemoryUserRepository {
   @override
   Future<void> mergePrivateSettings(String uid, PrivateUserSettings settings) =>
       throw StateError('no');
+}
+
+class _FailingNotifications extends FakeNotificationsRepository {
+  @override
+  Future<PushPermission> permission() async => throw StateError('no');
+}
+
+class _FailingRequest extends FakeNotificationsRepository {
+  @override
+  Future<bool> requestPermission() async => throw StateError('no');
 }

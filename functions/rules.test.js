@@ -129,6 +129,33 @@ t("contract: the owner creates the full body measurement, steps, analytics setti
     await assertFails(setDoc(goalRef, { ...goal, starting_weight_kg: goal.starting_weight_kg + 1 }, { merge: true }));
 });
 
+t("contract: the Flutter app's single-field analytics settings merges create and update it, owner only", async () => {
+    // body_repository's saveStepGoal and saveHiddenSections: each merges one field with the fixed id and
+    // author_id, the step goal with an empty arrayUnion that creates hidden_section_ids only when missing.
+    const uid = "user_contract_minimal";
+    const ref = (as) => doc(db(as), `users/${uid}/analytics_settings/analytics_settings`);
+    const fixed = { id: "analytics_settings", author_id: uid };
+    const stepGoal = (goal) => ({ ...fixed, daily_step_goal: goal, hidden_section_ids: arrayUnion() });
+    const hidden = (ids) => ({ ...fixed, hidden_section_ids: ids });
+
+    // Created from nothing by either write.
+    await assertSucceeds(setDoc(ref(uid), stepGoal(9000), { merge: true }));
+    const created = (await getDoc(ref(uid))).data();
+    assert.deepEqual(created, { ...fixed, daily_step_goal: 9000, hidden_section_ids: [] });
+    await env.clearFirestore();
+    await assertSucceeds(setDoc(ref(uid), hidden(["habits"]), { merge: true }));
+
+    // Updated, each leaving the other field alone.
+    await assertSucceeds(setDoc(ref(uid), stepGoal(6000), { merge: true }));
+    await assertSucceeds(setDoc(ref(uid), hidden(["habits", "nutrition"]), { merge: true }));
+    assert.deepEqual((await getDoc(ref(uid))).data(), {
+        ...fixed, daily_step_goal: 6000, hidden_section_ids: ["habits", "nutrition"],
+    });
+
+    await assertFails(setDoc(ref(BOB), stepGoal(1), { merge: true }));
+    await assertFails(setDoc(ref(BOB), hidden([]), { merge: true }));
+});
+
 t("contract: the author creates the full exercise and workout template where the app keeps them", async () => {
     // The app keeps a user's exercises in the top-level exercise_templates, queried by author_id;
     // there is no users/{uid}/exercises.

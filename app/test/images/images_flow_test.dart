@@ -26,6 +26,7 @@ import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 import '../helpers/photos.dart';
+import '../helpers/reminder_offers.dart';
 
 // The whole app on the staging flavor's in-memory data: a photo on a new
 // food, on a new recipe, on a gym, and on the onboarding name question, each
@@ -64,6 +65,7 @@ void main() {
     );
     await tester.pumpWidget(
       App(
+        deviceStore: offersShownDevice(),
         purchasesRepository: FakePurchasesRepository(),
         programRepository: InMemoryProgramRepository(),
         trainingLibraryRepository: library,

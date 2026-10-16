@@ -315,7 +315,7 @@ void main() {
             .cast<LoggableEvent>();
 
     setUp(() {
-      when(() => bodyRepository.saveAnalyticsSettings(any()))
+      when(() => bodyRepository.saveStepGoal(any(), any()))
           .thenAnswer((_) async {});
     });
 
@@ -336,13 +336,8 @@ void main() {
       verify: (bloc) {
         expect(bloc.state.stepGoal, 10000);
         expect(bloc.state.stepGoalSaves, 1);
-        final saved =
-            verify(() => bodyRepository.saveAnalyticsSettings(captureAny()))
-                    .captured
-                    .single
-                as AnalyticsSettings;
-        expect(saved.dailyStepGoal, 10000);
-        expect(saved.authorId, uid);
+        // Only the goal is written (Swift rewrites the whole document).
+        verify(() => bodyRepository.saveStepGoal(uid, 10000)).called(1);
         final start = tracked().singleWhere(
           (e) => e.eventName == 'TodayView_StepGoal_Start',
         );
@@ -368,7 +363,7 @@ void main() {
       },
       verify: (bloc) {
         expect(bloc.state.stepGoal, 8000);
-        verify(() => bodyRepository.saveAnalyticsSettings(any())).called(1);
+        verify(() => bodyRepository.saveStepGoal(uid, 8000)).called(1);
       },
     );
 
@@ -387,13 +382,13 @@ void main() {
         bloc.add(const TodayStepGoalSelected(6000));
       },
       verify: (_) =>
-          verifyNever(() => bodyRepository.saveAnalyticsSettings(any())),
+          verifyNever(() => bodyRepository.saveStepGoal(any(), any())),
     );
 
     blocTest<TodayBloc, TodayState>(
       'a goal that fails to save goes back and says so',
       setUp: () =>
-          when(() => bodyRepository.saveAnalyticsSettings(any()))
+          when(() => bodyRepository.saveStepGoal(any(), any()))
               .thenThrow(Exception('denied')),
       build: build,
       act: (bloc) async {

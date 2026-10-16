@@ -369,7 +369,38 @@ void main() {
           ),
         ],
       );
-      expect(figures.weekTally, (muscles: 0, sets: 2, exercises: 1));
+      expect(figures.weekTally(), (muscles: 0, sets: 2, exercises: 1));
+    });
+
+    // `ProgressCarouselPresenter.workoutTally` with `.activeProgram`.
+    test("the Active Program scope counts only that mesocycle's sessions", () {
+      final figures = state(
+        sessions: [
+          fixtureSession(
+            'program',
+            day: 10,
+            author: uid,
+            mesocycleId: 'block',
+            exercises: [
+              fixtureExercise('press', sets: [fixtureSet(), fixtureSet()]),
+            ],
+          ),
+          fixtureSession(
+            'extra',
+            day: 10,
+            author: uid,
+            exercises: [
+              fixtureExercise('row', sets: [fixtureSet()]),
+            ],
+          ),
+        ],
+      );
+      expect(figures.weekTally(mesocycleId: 'block'), (
+        muscles: 0,
+        sets: 2,
+        exercises: 1,
+      ));
+      expect(figures.weekTally(), (muscles: 0, sets: 3, exercises: 2));
     });
 
     test('records leave out rest days, unfinished and other users', () {

@@ -208,9 +208,17 @@ extension ProgressFigures on ProgressState {
   }
 
   /// This week's finished sessions' tally
-  /// (`WorkoutSessionHighlights.sessions(of:inWeekOf:)`).
-  WorkoutTally get weekTally => workoutTally(
-    CircleWeek.sessionsInWeek(uid, now, sessions ?? const [], firstWeekday % 7),
+  /// (`WorkoutSessionHighlights.sessions(of:inWeekOf:)`), only those of
+  /// [mesocycleId] when given (`ProgressCarouselPresenter.workoutTally`).
+  WorkoutTally weekTally({String? mesocycleId}) => workoutTally(
+    CircleWeek.sessionsInWeek(
+      uid,
+      now,
+      sessions ?? const [],
+      firstWeekday % 7,
+    ).where(
+      (session) => mesocycleId == null || session.mesocycleId == mesocycleId,
+    ),
     {
       for (final exercise in exerciseLibrary(
         userExercises,

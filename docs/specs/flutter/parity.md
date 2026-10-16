@@ -14,8 +14,8 @@ had listed, Swift's `ReminderOfferFlow`, which reopens Today, Nutrition and Loca
 
 | | done | partial | todo | dropped | total |
 |---|---|---|---|---|---|
-| Screen modules | 180 | 12 | 3 | 3 | 198 |
-| Platform features | 12 | 8 | 5 | 0 | 25 |
+| Screen modules | 183 | 9 | 3 | 3 | 198 |
+| Platform features | 13 | 7 | 5 | 0 | 25 |
 
 The open work is grouped under [Remaining work](#remaining-work) at the end: follow-up slices, what waits on the owner, and M6.
 
@@ -47,7 +47,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Analytics | NutritionAnalytics | `Subviews/NutritionAnalytics` | M4 | done | #137 |
 | Analytics | NutritionMetricDetail | `Subviews/NutritionAnalytics/NutritionMetricDetail` | M4 | done | #137 |
 | Analytics | NutritionTargetChart | `Subviews/NutritionTargetChart` | M4 | done | #137; Create Diet Plan (#154) |
-| Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | partial | #137; Weekly Workouts still has no program targets or Active Program toggle (`progress_carousel.dart` says so) |
+| Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | done | #137; Weekly Workouts' program targets and Active Program toggle (#176) |
 | Analytics | WeighInConsistency | `Subviews/WeighInConsistency` | M4 | done | #137 |
 | Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | done | #133; month labels, weekday initials and press-and-hold readout (#168) |
 | AppView | App | `Compound/Core/AppView` | M1 | partial | redirect and shell (#86, #90), profile gate and launch retry (#116), push token, reminders and held links (#127), first-page inbox read (#144), subscription gate (#155), in-app activity banner (#172); no widget snapshot on backgrounding (M6) |
@@ -57,7 +57,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | DevSettings | DevSettings | `Compound/Core/DevSettings` | M5 | partial | #166, a Settings row outside production; no A/B overrides (wait for the A/B tests) and no share-card export; seeding resets not needed (#166) |
 | Notifications | Notifications | `Compound/Core/Notifications` | M5 | done | #144, `/social/notifications`; share and challenge rows open (#146, #148); delivered pushes cleared on opening (#172) |
 | Notifications | NotificationSettings | `NotificationSettings` | M5 | done | #128; permission prompt (#144); reminders applied by #127 |
-| Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | partial | #95, #126, #130, #142, #145, #147, #151; calendar header (#164); Customize Food Log row (#167); no meal-reminder offer on the first visit (Swift `ReminderOfferFlow`) |
+| Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | done | #95, #126, #130, #142, #145, #147, #151; calendar header (#164); Customize Food Log row (#167); meal-reminder offer on the first visit (#176) |
 | Nutrition | CheckIn | `CheckIn` | M3 | done | #130, `/check-in`; Ask Coach (#147) |
 | Nutrition | IngredientListBuilder | `Components/IngredientListBuilder` | M3 | done | #142, #145 |
 | Nutrition | MealAccessory | `Components/MealAccessory` | M3 | done | #126; over every tab, hidden during a workout (#167); draft kept on the device per account (#170) |
@@ -167,7 +167,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | partial | #131; Share Image and Share with Friends (#148); Save as Template and Report (#159); no text Share link (waits for the link host) |
 | Social | Comments | `WorkoutSessionRow/Comments` | M5 | done | #131; Report (#159) |
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | #90, five tabs, per-tab stacks, deep-link paths |
-| Today | Today | `Compound/Core/Today` | M2 | partial | #101, #133, #134, #147, #151; planned and rest-day checklist states, step goal and social pulse (#164); no streak-reminder offer at a two-week streak (Swift `ReminderOfferFlow`) |
+| Today | Today | `Compound/Core/Today` | M2 | done | #101, #133, #134, #147, #151; planned and rest-day checklist states, step goal and social pulse (#164); streak-reminder offer at a two-week streak, step goal saved by field (#176) |
 | Today | WeeklyReview | `WeeklyReview` | M2 | done | #133, `/today/weekly-review`; share card (#148), From Strava (#151), Ask Coach (#147) |
 | Training | Training | `Compound/Core/Training` | M3 | done | #120, #134, #136, #138, #141; calendar header, day taps and month picker (#164) |
 | Training | TodaysWorkoutCard | `Components/TodaysWorkoutCard` | M3 | done | #134 |
@@ -233,7 +233,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Per-exercise unit preferences | `ExerciseUnitPreferenceManager` | M3 | done | #163, on the device store (#170) |
 | Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |
 | Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed aren't cleared (M6); no https share links (link host) |
-| Local reminders | `PushManager` (local) | M4 | partial | come-back and meal reminders, rest-over, "Still training?" (#127, last asked on the device #170); permission prompt (#144); no in-app reminder offers (`ReminderOfferFlow`) |
+| Local reminders | `PushManager` (local) | M4 | done | come-back and meal reminders, rest-over, "Still training?" (#127, last asked on the device #170); permission prompt (#144); in-app reminder offers (`ReminderOfferFlow`, #176) |
 | Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); paywall, gate, RevenueCat logIn/logOut (#155); development runs the fake until the owner's keys; production not wired; logIn sends no analytics ids |
 | A/B tests (Remote Config) | `ABTestManager` | M5 | todo | Swift runs `notificationsTest` and `paywallTest` |
 | App rating prompt | `ReviewMoment` | M5 | done | `ReviewMoment`, Rate row and food moments (#166); workout-finish moment and stored date (#172) |
@@ -260,29 +260,17 @@ groups. The proposed slices from the #151 sweep are finished, apart from what is
 ### (a) Follow-up slices an agent can build without the owner
 Ordered by user value. Each is meant to be one PR into `feature/flutter`.
 
-1. **Reminder offers** (Swift `ReminderOfferFlow`). Offer meal reminders on the first visit to
-   Nutrition and the streak reminder once a two-week streak is reached, each once per device under
-   Swift's `hasShownReminderOffer_meal_reminders` / `_streak_reminder` keys on `device_store` (#170
-   left them out because nothing called them). Either answer is final; Notification Settings changes
-   it afterwards. Without it both reminders stay off unless the user finds the switches. Closes
-   Today, Nutrition and the Local reminders row. No PR listed this; the sweep found it.
-2. **Program targets on Progress.** ProgressCarousel's Weekly Workouts: the active mesocycle's
-   targets and the Active Program / All Workouts toggle (`ProgressCarouselPresenter.workoutScope`,
-   #137 deferral).
-3. **Label OCR and the torch.** On-device OCR of a nutrition label photo with
+1. **Label OCR and the torch.** On-device OCR of a nutrition label photo with
    `google_mlkit_text_recognition` (free; needs Podfile and architecture changes, #152), and the
    barcode scanner's torch. Closes BarcodeScanner and the AI platform row.
-4. **A/B tests** (Remote Config, Swift `ABTestManager`): `paywallTest` and `notificationsTest`, then
+2. **A/B tests** (Remote Config, Swift `ABTestManager`): `paywallTest` and `notificationsTest`, then
    the paywall's `storeKit` and `revenueCat` variants (RevenueCatUI, a new free dependency, #155) and
    Developer Settings' A/B overrides (#166). The in-app defaults can ship first; the parameters in
    `compound-development` are the owner's (below).
-5. **Small polish.**
+3. **Small polish.**
    - Developer Settings' share-card export (a photo-library save, #166).
    - RevenueCat `logIn` with Mixpanel's distinct id and Firebase's app instance id, once
      `analytics_repository` exposes them (#155).
-   - The step-goal save rewrites `hidden_section_ids` with the whole `analytics_settings` document,
-     as Swift does, so a stale copy can undo a change from another device (#164); write the goal by
-     field.
 
 ### (b) Waiting on the owner
 - **RevenueCat:** apps for iOS `com.andrewcoyle.compound.flutter.dev` and Play
@@ -299,7 +287,7 @@ Ordered by user value. Each is meant to be one PR into `feature/flutter`.
 - **Strava:** `STRAVA_CLIENT_ID` in `app/dart_defines.json`; confirm the dev Strava app's callback
   domain is `localhost` (#122, #151).
 - **Mixpanel:** `MIXPANEL_TOKEN` in `app/dart_defines.json` (#96).
-- **Remote Config:** the A/B test parameters in `compound-development`, for slice 4.
+- **Remote Config:** the A/B test parameters in `compound-development`, for slice 2.
 - **Storage rules (dev):** any signed-in user can write and delete another user's photos (#150); food
   and recipe photos sit at the Storage root (`ingredient_templates/{id}`, `recipe_templates/{id}`),
   Swift's paths, so per-user rules can't cover them (#161); one leftover anonymous account in

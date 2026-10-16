@@ -34,6 +34,27 @@ WorkoutTally workoutTally(
   return (muscles: muscles.length, sets: sets, exercises: templates.length);
 }
 
+// ponytail: a microcycle stands in for the calendar week the card is titled
+// with, as in Swift; a block whose microcycle is not seven days long reads
+// slightly off. Scale by its length if that matters.
+/// One pass through [mesocycle]'s days: what a full microcycle of it plans,
+/// counting only exercises with set targets
+/// (`ProgressCarouselMetrics.target(of:)`).
+WorkoutTally mesocycleTarget(Mesocycle mesocycle) {
+  final planned = [
+    for (final template in mesocycle.workoutTemplates)
+      for (final exercise in template.exercises)
+        if (exercise.setTargets.isNotEmpty) exercise,
+  ];
+  return (
+    muscles: {
+      for (final exercise in planned) ...exercise.exercise.muscleGroups.keys,
+    }.length,
+    sets: planned.fold(0, (sum, exercise) => sum + exercise.setTargets.length),
+    exercises: {for (final exercise in planned) exercise.exercise.id}.length,
+  );
+}
+
 /// What a record measures.
 enum RecordKind {
   /// One session's working volume for the exercise.

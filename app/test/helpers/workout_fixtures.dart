@@ -63,6 +63,7 @@ WorkoutSessionModel fixtureSession(
   int minutes = 60,
   String? notes,
   int? weekStreakCount,
+  String? mesocycleId,
   List<WorkoutExerciseModel> exercises = const [],
 }) => WorkoutSessionModel(
   id: id,
@@ -74,5 +75,6 @@ WorkoutSessionModel fixtureSession(
   isRestDay: isRestDay,
   notes: notes,
   weekStreakCount: weekStreakCount,
+  mesocycleId: mesocycleId,
   exercises: exercises,
 );

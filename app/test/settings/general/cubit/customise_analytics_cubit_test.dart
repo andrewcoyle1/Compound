@@ -17,8 +17,6 @@ void main() {
   late StreamController<AnalyticsSettings> stored;
   late List<Map<String, Object?>> saved;
 
-  setUpAll(() => registerFallbackValue(const AnalyticsSettings(authorId: 'x')));
-
   setUp(() {
     body = _MockBodyRepository();
     analytics = RecordedAnalytics();
@@ -26,11 +24,8 @@ void main() {
     saved = [];
     when(() => body.watchAnalyticsSettings('uid'))
         .thenAnswer((_) => stored.stream);
-    when(() => body.saveAnalyticsSettings(any())).thenAnswer((invocation) {
-      saved.add(
-        (invocation.positionalArguments.single as AnalyticsSettings)
-            .toFirestore(),
-      );
+    when(() => body.saveHiddenSections('uid', any())).thenAnswer((invocation) {
+      saved.add({'hidden_section_ids': invocation.positionalArguments.last});
       return Future.value();
     });
   });
@@ -86,15 +81,13 @@ void main() {
     expect(cubit.state.hiddenCount, 1);
   });
 
-  test('showing a section saves the whole document, step goal kept', () async {
+  test('showing a section writes only the hidden sections, so a step goal '
+      'set elsewhere is never rewritten', () async {
     final cubit = await build(hidden: ['habits'], dailyStepGoal: 6000);
     await cubit.visibilityChanged(ProgressSection.habits, isVisible: true);
-    expect(saved.single, {
-      'id': 'analytics_settings',
-      'author_id': 'uid',
-      'hidden_section_ids': <String>[],
-      'daily_step_goal': 6000,
-    });
+    expect(saved.single, {'hidden_section_ids': <String>[]});
+    verifyNever(() => body.saveStepGoal(any(), any()));
+    expect(cubit.state.settings.dailyStepGoal, 6000);
   });
 
   test('the last visible section cannot be hidden', () async {
@@ -140,7 +133,8 @@ void main() {
   });
 
   test('a failed save says so', () async {
-    when(() => body.saveAnalyticsSettings(any())).thenThrow(StateError('no'));
+    when(() => body.saveHiddenSections(any(), any()))
+        .thenThrow(StateError('no'));
     final cubit = await build();
     await cubit.visibilityChanged(ProgressSection.habits, isVisible: false);
     expect(cubit.state.saveFailed, isTrue);
@@ -150,7 +144,7 @@ void main() {
 
   test('a save that fails after closing emits nothing', () async {
     final refusal = Completer<void>();
-    when(() => body.saveAnalyticsSettings(any()))
+    when(() => body.saveHiddenSections(any(), any()))
         .thenAnswer((_) => refusal.future);
     final cubit = await build();
     final saving = cubit.visibilityChanged(

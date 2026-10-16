@@ -31,8 +31,9 @@ class const CustomiseAnalyticsState({
 
 /// Which Progress sections show (Swift `CustomiseAnalyticsPresenter`).
 /// Stored as the hidden set, so a section added later shows for everyone.
-/// Each change saves the whole settings document, as Swift does, built on
-/// the copy last read, so a step goal set elsewhere is kept.
+/// Each change writes only the hidden sections, so a step goal set on
+/// another device is never rewritten from the copy last read (Swift saves
+/// the whole document).
 class CustomiseAnalyticsCubit extends Cubit<CustomiseAnalyticsState> {
   new({required this._body, required this._analytics, required String uid})
     : super(
@@ -95,7 +96,7 @@ class CustomiseAnalyticsCubit extends Cubit<CustomiseAnalyticsState> {
     emit(CustomiseAnalyticsState(settings: settings));
     _analytics.analytic('CustomiseAnalyticsView_Save_Start');
     try {
-      await _body.saveAnalyticsSettings(settings);
+      await _body.saveHiddenSections(current.authorId, hidden);
       _analytics.analytic('CustomiseAnalyticsView_Save_Success');
     } on Object catch (error) {
       _analytics.severe('CustomiseAnalyticsView_Save_Fail', error);

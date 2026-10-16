@@ -5,6 +5,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:checkin_repository/checkin_repository.dart' show localMidnight;
 import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/programs/programs.dart';
 import 'package:compound/progress/bloc/progress_bloc.dart';
 import 'package:compound/progress/bloc/progress_figures.dart';
 import 'package:compound/progress/logic/progress_carousel.dart';
@@ -13,6 +14,7 @@ import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound_maths/compound_maths.dart'
     show Macros, comparedAverages, zeroMacros;
+import 'package:compound_models/compound_models.dart' show Mesocycle;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -40,6 +42,7 @@ class _ProgressCarouselState extends State<ProgressCarousel> {
   var _page = 0;
   var _showsRemaining = false;
   var _comparesTargets = false;
+  var _activeProgram = true;
   RecordKind _recordKind = RecordKind.volume;
 
   @override
@@ -75,7 +78,11 @@ class _ProgressCarouselState extends State<ProgressCarousel> {
                   onChanged: (value) =>
                       setState(() => _comparesTargets = value),
                 ),
-                _WeeklyWorkouts(state: state),
+                _WeeklyWorkouts(
+                  state: state,
+                  activeProgram: _activeProgram,
+                  onChanged: (value) => setState(() => _activeProgram = value),
+                ),
                 _RecentRecords(
                   state: state,
                   kind: _recordKind,
@@ -1024,26 +1031,53 @@ class _EnergyBalance extends StatelessWidget {
 // MARK: - Weekly workouts
 
 /// This week's muscles, sets and exercises (Swift `WeeklyWorkoutsCard`).
-/// The program's targets and the Active Program toggle wait for the
-/// programs slice's active mesocycle; without one Swift shows neither.
+/// With an active mesocycle, each ring runs to one microcycle of its plan,
+/// and the toggle narrows the week to that program's sessions; without
+/// one there is nothing to narrow to or aim at, so neither shows.
 class _WeeklyWorkouts extends StatelessWidget {
-  const new({required this.state});
+  const new({
+    required this.state,
+    required this.activeProgram,
+    required this.onChanged,
+  });
 
   final ProgressState state;
+
+  /// Whether only the active program's sessions count.
+  final bool activeProgram;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.appColors;
-    final tally = state.weekTally;
+    final mesocycle = context.select<ProgramsCubit, Mesocycle?>(
+      (cubit) => cubit.state.activeMesocycle,
+    );
+    final tally = state.weekTally(
+      mesocycleId: activeProgram ? mesocycle?.id : null,
+    );
+    final target = mesocycle == null ? null : mesocycleTarget(mesocycle);
     return _Page(
       title: l10n.carouselWeeklyWorkouts,
+      toggle: mesocycle == null
+          ? null
+          : _Toggle<bool>(
+              selected: activeProgram,
+              options: const [true, false],
+              label: (program) => program
+                  ? l10n.carouselActiveProgram
+                  : l10n.carouselAllWorkouts,
+              onChanged: onChanged,
+            ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         spacing: AppSpacing.s,
         children: [
           Expanded(
             child: _Ring(
               value: tally.muscles,
+              target: target?.muscles,
               title: l10n.carouselMuscles,
               colour: colors.muscleGroups,
               diameter: 92,
@@ -1051,6 +1085,7 @@ class _WeeklyWorkouts extends StatelessWidget {
           ),
           _Ring(
             value: tally.sets,
+            target: target?.sets,
             title: l10n.statSets,
             colour: colors.workouts,
             diameter: 136,
@@ -1058,6 +1093,7 @@ class _WeeklyWorkouts extends StatelessWidget {
           Expanded(
             child: _Ring(
               value: tally.exercises,
+              target: target?.exercises,
               title: l10n.progressExercises,
               colour: colors.exercises,
               diameter: 92,
@@ -1069,26 +1105,41 @@ class _WeeklyWorkouts extends StatelessWidget {
   }
 }
 
+/// A count in a ring filled toward its [target], if any, with what is left
+/// and the target itself (Swift `TallyRing`).
 class _Ring extends StatelessWidget {
   const new({
     required this.value,
+    required this.target,
     required this.title,
     required this.colour,
     required this.diameter,
   });
 
   final int value;
+  final int? target;
   final String title;
   final Color colour;
   final double diameter;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final text = _whole(value, locale);
+    final target = this.target;
+    final fraction = target == null || target <= 0
+        ? 0.0
+        : math.min(value / target, 1).toDouble();
+    final secondary = AppTextStyles.label.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
     return Semantics(
       label: title,
-      value: text,
+      value: target == null
+          ? text
+          : l10n.progressOfTarget(text, _whole(target, locale)),
       child: ExcludeSemantics(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1096,30 +1147,51 @@ class _Ring extends StatelessWidget {
           children: [
             SizedBox.square(
               dimension: diameter,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                    width: 8,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CircularProgressIndicator(
+                    value: fraction,
+                    strokeWidth: 8,
+                    strokeCap: StrokeCap.round,
+                    color: colour,
+                    backgroundColor: scheme.outlineVariant,
                   ),
-                ),
-                child: Center(
-                  child: FittedBox(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.m),
-                      child: Text(
-                        text,
-                        style: AppTextStyles.metricLarge.copyWith(
-                          color: colour,
+                  Center(
+                    child: FittedBox(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.m),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              text,
+                              style: AppTextStyles.metricLarge.copyWith(
+                                color: colour,
+                              ),
+                            ),
+                            if (target != null)
+                              Text(
+                                l10n.carouselLeft(math.max(target - value, 0)),
+                                style: secondary,
+                              ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
-            Text(title, style: AppTextStyles.rowTitle),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: AppSpacing.xxs,
+              children: [
+                Text(title, style: AppTextStyles.rowTitle),
+                if (target != null)
+                  Text(l10n.carouselRingTarget(target), style: secondary),
+              ],
+            ),
           ],
         ),
       ),

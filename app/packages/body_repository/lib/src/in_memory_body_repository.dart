@@ -58,13 +58,30 @@ class InMemoryBodyRepository implements BodyRepository {
   Stream<AnalyticsSettings> watchAnalyticsSettings(String uid) =>
       _watch(() => _analyticsSettings[uid] ?? AnalyticsSettings(authorId: uid));
 
-  /// Merges as Firestore does, field by field.
   @override
-  Future<void> saveAnalyticsSettings(AnalyticsSettings settings) async {
-    _analyticsSettings[settings.authorId] = AnalyticsSettings.fromFirestore({
-      ...?_analyticsSettings[settings.authorId]?.toFirestore(),
-      ...settings.toFirestore(),
-    });
+  Future<void> saveStepGoal(String uid, int goal) async {
+    final stored = _analyticsSettings[uid] ?? AnalyticsSettings(authorId: uid);
+    _analyticsSettings[uid] = AnalyticsSettings(
+      authorId: uid,
+      id: stored.id,
+      hiddenSectionIds: stored.hiddenSectionIds,
+      dailyStepGoal: goal,
+    );
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> saveHiddenSections(
+    String uid,
+    List<String> hiddenSectionIds,
+  ) async {
+    final stored = _analyticsSettings[uid] ?? AnalyticsSettings(authorId: uid);
+    _analyticsSettings[uid] = AnalyticsSettings(
+      authorId: uid,
+      id: stored.id,
+      hiddenSectionIds: hiddenSectionIds,
+      dailyStepGoal: stored.dailyStepGoal,
+    );
     _changes.add(null);
   }
 

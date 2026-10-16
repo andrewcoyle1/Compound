@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart' show withItems;
 import 'package:compound/nutrition/nutrition.dart';
+import 'package:compound/review/review_moment.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -273,6 +274,80 @@ void main() {
       build: buildWithAnalytics,
       act: (bloc) => bloc.add(NutritionDayMealLoggedAgain(meal)),
       expect: () => [initial.copyWith(logAgainFailures: 1)],
+    );
+  });
+
+  // Swift's `addMeal` asks for a rating on the seventh day of logging in a
+  // row: after deleting one food, editing one and logging a meal again.
+  group('asking for a rating', () {
+    MealItemModel item(String id) => MealItemModel(
+      itemId: id,
+      sourceType: MealItemSourceType.quickAdd,
+      sourceId: 'q',
+      displayName: id,
+      amount: 1,
+      unit: 'serving',
+    );
+    final food = item('a');
+    MealLogModel mealOn(int day) => MealLogModel(
+      mealId: 'meal-$day',
+      authorId: uid,
+      dayKey: '2026-09-${day.toString().padLeft(2, '0')}',
+      date: DateTime(2026, 9, day, 8),
+      items: [food, item('b')],
+    );
+    late FakeStoreReview store;
+
+    setUpAll(() => registerFallbackValue(mealOn(1)));
+
+    setUp(() {
+      store = FakeStoreReview();
+      when(() => repository.saveMeal(any())).thenAnswer((_) async {});
+    });
+
+    NutritionDayBloc buildWith(List<int> loggedDays) {
+      when(() => repository.watchMeals(uid)).thenAnswer(
+        (_) => Stream.value([for (final day in loggedDays) mealOn(day)]),
+      );
+      return NutritionDayBloc(
+        nutritionRepository: repository,
+        uid: uid,
+        now: now,
+        newId: () => 'copy',
+        reviews: ReviewPrompter(review: store, now: now),
+      )..add(const NutritionDaySubscriptionRequested());
+    }
+
+    final sixDays = [15, 16, 17, 18, 19, 20];
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'logging again on the seventh day asks',
+      build: () => buildWith(sixDays),
+      act: (bloc) async {
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(NutritionDayMealLoggedAgain(mealOn(20)));
+      },
+      verify: (_) => expect(store.requests, 1),
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'deleting one food on the seventh day asks',
+      build: () => buildWith([...sixDays, 21]),
+      act: (bloc) async {
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(NutritionDayItemDeleted(mealOn(21), 'a'));
+      },
+      verify: (_) => expect(store.requests, 1),
+    );
+
+    blocTest<NutritionDayBloc, NutritionDayState>(
+      'editing a food on the sixth day does not',
+      build: () => buildWith([17, 18, 19, 20, 21]),
+      act: (bloc) async {
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(NutritionDayItemEdited(mealOn(21), food));
+      },
+      verify: (_) => expect(store.requests, 0),
     );
   });
 

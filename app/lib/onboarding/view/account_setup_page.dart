@@ -12,6 +12,8 @@ import 'package:compound/onboarding/logic/expenditure_estimate.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/onboarding/view/onboarding_widgets.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/widgets/number_wheel.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -217,8 +219,11 @@ class AccountSetupView extends StatelessWidget {
       (l10n.onboardingDigestionCalories, figures.digestionKcal),
     ];
     return [
+      MethodInfoHeader(
+        title: l10n.onboardingExpenditureHeader,
+        info: MethodInfo.formulaExpenditure(l10n),
+      ),
       AppSection(
-        header: l10n.onboardingExpenditureHeader,
         footer: l10n.onboardingExpenditureFooter,
         children: [
           Padding(
@@ -240,8 +245,11 @@ class AccountSetupView extends StatelessWidget {
           ),
         ],
       ),
+      MethodInfoHeader(
+        title: l10n.onboardingBreakdown,
+        info: MethodInfo.thermicEffectOfFood(l10n),
+      ),
       AppSection(
-        header: l10n.onboardingBreakdown,
         children: [
           for (final (name, value) in parts)
             MergeSemantics(
@@ -270,8 +278,11 @@ class AccountSetupView extends StatelessWidget {
             ),
         ],
       ),
+      MethodInfoHeader(
+        title: l10n.onboardingHowCalculated,
+        info: MethodInfo.restingMetabolicRate(l10n),
+      ),
       AppSection(
-        header: l10n.onboardingHowCalculated,
         footer: l10n.onboardingHowCalculatedFooter,
         children: [
           AppListRow(

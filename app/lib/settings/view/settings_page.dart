@@ -14,8 +14,11 @@ import 'package:compound/integrations/view/integrations_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/paywall/paywall.dart';
+import 'package:compound/review/review_moment.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
+import 'package:compound/settings/account/view/save_account_page.dart';
 import 'package:compound/settings/cubit/settings_cubit.dart';
+import 'package:compound/settings/dev/dev_settings_page.dart';
 import 'package:compound/settings/general/view/about_page.dart';
 import 'package:compound/settings/general/view/customise_analytics_page.dart';
 import 'package:compound/settings/general/view/legal_page.dart';
@@ -49,6 +52,7 @@ class SettingsPage extends StatelessWidget {
       create: (context) => SettingsCubit(
         analytics: context.read<AnalyticsRepository>(),
         auth: context.read<AuthRepository>(),
+        reviews: context.read<ReviewPrompter>(),
       )..appeared(),
       child: const SettingsView(),
     );
@@ -226,6 +230,11 @@ class _SettingsViewState extends State<SettingsView> {
                       _showSupport(context);
                     },
                   ),
+                  AppListRowButton(
+                    title: l10n.settingsRate,
+                    icon: AppSymbols.rate,
+                    onPressed: () => unawaited(cubit.ratePressed()),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -247,6 +256,13 @@ class _SettingsViewState extends State<SettingsView> {
                     icon: AppSymbols.info,
                     onPressed: () => _open(AboutPage.name),
                   ),
+                  // Swift's `#if DEV || MOCK` toolbar button on Today.
+                  if (DevSettingsPage.isAvailable)
+                    AppListRowButton(
+                      title: l10n.devSettingsTitle,
+                      icon: AppSymbols.developer,
+                      onPressed: () => _open(DevSettingsPage.name),
+                    ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -346,9 +362,20 @@ class _SecuritySection extends StatelessWidget {
           ),
         ),
         // Signing an anonymous account out locks its data away for good,
-        // so Swift offers it the upgrade instead; that waits for linking
-        // from Settings.
-        if (!state.user.isAnonymous)
+        // so it is offered the upgrade instead.
+        if (state.user.isAnonymous)
+          AppListRowButton(
+            title: l10n.settingsSaveAccount,
+            accessory: null,
+            onPressed: () {
+              cubit.saveAccountPressed();
+              // Gone to, not pushed: linking changes the signed-in user,
+              // and the router's refresh would rebuild a pushed page with
+              // a fresh cubit before it could close.
+              context.goNamed(SaveAccountPage.name);
+            },
+          )
+        else
           AppListRowButton(
             title: l10n.signOutButton,
             accessory: null,

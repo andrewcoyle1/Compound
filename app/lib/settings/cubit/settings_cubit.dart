@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/review/review_moment.dart';
 
 /// How an account signs in, for Settings' Sign-In Method row (Swift
 /// `SettingsPresenter.signInMethod`).
@@ -43,11 +44,14 @@ enum SettingsStatus {
 /// The Settings list behind the profile's gear (Swift `SettingsPresenter`):
 /// its analytics, with Swift's event names, and signing out.
 class SettingsCubit extends Cubit<SettingsStatus> {
-  new({required this._analytics, required this._auth})
+  new({required this._analytics, required this._auth, this._reviews})
     : super(SettingsStatus.idle);
 
   final AnalyticsRepository _analytics;
   final AuthRepository _auth;
+
+  /// The store's rating prompt; none in tests that leave it out.
+  final ReviewPrompter? _reviews;
 
   /// `ProfileView_Appear`: the screen's Swift name.
   void appeared() => _analytics.appear('ProfileView');
@@ -71,6 +75,19 @@ class SettingsCubit extends Cubit<SettingsStatus> {
   /// the plan.
   void nutritionPlanPressed() =>
       _analytics.analytic('ProfileView_NutritionPlan_Press');
+
+  /// `ProfileView_Ratings_Pressed`, then straight to the store's rating
+  /// prompt (`onRatingsButtonPressed`), which also starts the cooldown the
+  /// review moments share.
+  Future<void> ratePressed() async {
+    _analytics.analytic('ProfileView_Ratings_Pressed');
+    await _reviews?.request();
+  }
+
+  /// `Settings_SaveAccount_Press`: an anonymous account is offered the
+  /// upgrade instead of signing out.
+  void saveAccountPressed() =>
+      _analytics.analytic('Settings_SaveAccount_Press');
 
   /// `Settings_DeleteAccount_Start`: the confirmation screen opens, and
   /// nothing is deleted yet.

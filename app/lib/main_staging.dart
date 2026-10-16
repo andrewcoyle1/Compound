@@ -176,7 +176,8 @@ Future<void> main() async {
     onEvent: stravaEvents(analyticsRepository),
   );
   await bootstrap(
-    () => App(
+    () async => App(
+      appVersion: await AppVersion.load(),
       // Two weeks of steps, a week of weigh-ins with body fat, two days of
       // food from other apps, and the onboarding fill values, in memory.
       healthRepository: HealthRepository(

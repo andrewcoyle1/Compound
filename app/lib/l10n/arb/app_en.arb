@@ -11831,5 +11831,70 @@
     "onboardingPhotoLoadFailed": "Couldn't load that photo. Try a different one.",
     "@onboardingPhotoLoadFailed": {
         "description": "Name question's message when a picked photo cannot be read"
+    },
+    "sessionDeleteTitle": "Delete Workout?",
+    "@sessionDeleteTitle": {
+        "description": "Session detail: delete confirmation title"
+    },
+    "sessionDeleteMessage": "Are you sure you want to delete this workout? This cannot be undone.",
+    "@sessionDeleteMessage": {
+        "description": "Session detail: delete confirmation"
+    },
+    "sessionSaveChangesFailed": "Unable to save changes. Please try again.",
+    "@sessionSaveChangesFailed": {
+        "description": "Session detail: Save Changes failed"
+    },
+    "sessionSaveTimingFailed": "Unable to save the change. Please try again.",
+    "@sessionSaveTimingFailed": {
+        "description": "Session detail: a start time or duration failed to save"
+    },
+    "sessionStartedAt": "Started at",
+    "@sessionStartedAt": {
+        "description": "Start time sheet: the date and time picker's label"
+    },
+    "sessionStartTimeFooter": "The workout keeps its duration; only when it started changes.",
+    "@sessionStartTimeFooter": {
+        "description": "Start time sheet: footer"
+    },
+    "sessionNotesLabel": "Workout notes",
+    "@sessionNotesLabel": {
+        "description": "Session detail: notes field while editing"
+    },
+    "sessionNotesPrompt": "Add notes here...",
+    "@sessionNotesPrompt": {
+        "description": "Session detail: empty notes field"
+    },
+    "sessionHours": "Hours",
+    "@sessionHours": {
+        "description": "Duration sheet: hours wheel"
+    },
+    "sessionWeight": "Weight",
+    "@sessionWeight": {
+        "description": "Edit set sheet: weight field"
+    },
+    "sessionDistance": "Distance",
+    "@sessionDistance": {
+        "description": "Edit set sheet: distance field"
+    },
+    "sessionDate": "Date",
+    "@sessionDate": {
+        "description": "Start time sheet: the day"
+    },
+    "sessionTime": "Time",
+    "@sessionTime": {
+        "description": "Start time sheet: the time of day"
+    },
+    "sessionSetActions": "Set actions",
+    "@sessionSetActions": {
+        "description": "Session editor: a set's menu, for screen readers"
+    },
+    "sessionHoursValue": "{hours} hr",
+    "@sessionHoursValue": {
+        "description": "Duration sheet: a row of the hours wheel",
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            }
+        }
     }
 }

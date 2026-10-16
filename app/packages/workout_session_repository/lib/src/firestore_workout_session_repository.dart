@@ -68,6 +68,21 @@ class FirestoreWorkoutSessionRepository implements WorkoutSessionRepository {
     );
   }
 
+  /// An `update`, as [updateWeekStreakCount] is.
+  @override
+  Future<void> updateEditedSession(String uid, WorkoutSessionModel session) {
+    final document = _sessions(uid).doc(session.id);
+    return writeLocally(
+      document.path,
+      () => document.update(
+        _toFirestore(
+          EditedSessionFields.of(session, cleared: FieldValue.delete()),
+        ),
+      ),
+      _onWriteError,
+    );
+  }
+
   @override
   Future<void> deleteSession(String uid, String id) {
     final document = _sessions(uid).doc(id);

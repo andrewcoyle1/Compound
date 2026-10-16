@@ -2761,5 +2761,20 @@
     "onboardingAddPhoto": "Añadir foto (opcional)",
     "onboardingChangePhoto": "Cambiar foto",
     "onboardingRemovePhoto": "Eliminar foto",
-    "onboardingPhotoLoadFailed": "No se pudo cargar esa foto. Prueba con otra."
+    "onboardingPhotoLoadFailed": "No se pudo cargar esa foto. Prueba con otra.",
+    "sessionDeleteTitle": "¿Eliminar entrenamiento?",
+    "sessionDeleteMessage": "¿Seguro que quieres eliminar este entrenamiento? Esta acción no se puede deshacer.",
+    "sessionSaveChangesFailed": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
+    "sessionSaveTimingFailed": "No se pudo guardar el cambio. Inténtalo de nuevo.",
+    "sessionStartedAt": "Empezado a las",
+    "sessionStartTimeFooter": "El entrenamiento mantiene su duración; solo cambia la hora de inicio.",
+    "sessionNotesLabel": "Notas del entrenamiento",
+    "sessionNotesPrompt": "Añade notas aquí...",
+    "sessionHours": "Horas",
+    "sessionWeight": "Peso",
+    "sessionDistance": "Distancia",
+    "sessionDate": "Fecha",
+    "sessionTime": "Hora",
+    "sessionHoursValue": "{hours} h",
+    "sessionSetActions": "Acciones de la serie"
 }

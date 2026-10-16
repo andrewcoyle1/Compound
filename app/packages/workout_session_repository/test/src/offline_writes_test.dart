@@ -55,6 +55,24 @@ void main() {
       ]);
     });
 
+    test(
+      'updateEditedSession completes offline; not-found is reported',
+      () async {
+        final session = WorkoutSessionModel.fromFirestore(
+          modelFixture('workout_session', 'minimal'),
+        );
+        await subject.updateEditedSession('u', session);
+        expect(refused, isEmpty);
+
+        firestore.refuse('not-found');
+        await pumpEventQueue();
+
+        expect(refused, [
+          ('users/u/workout_sessions/${session.id}', 'not-found'),
+        ]);
+      },
+    );
+
     test('deleteSession completes offline; a refusal is reported', () async {
       await subject.deleteSession('u', 's');
       expect(refused, isEmpty);

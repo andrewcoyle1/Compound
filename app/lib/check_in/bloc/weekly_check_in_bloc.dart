@@ -276,7 +276,9 @@ class WeeklyCheckInBloc extends Bloc<WeeklyCheckInEvent, WeeklyCheckInState> {
         UserField.submittedWeightUnitPreference(weighIn.unit),
       ]);
       _track('CheckInView_LogWeight_Success');
-      emit(state.copyWith(isSaving: false));
+      emit(
+        state.copyWith(isSaving: false, weighInsSaved: state.weighInsSaved + 1),
+      );
       await _advance(emit);
     } on Object catch (error) {
       _fail('CheckInView_LogWeight_Fail', error);

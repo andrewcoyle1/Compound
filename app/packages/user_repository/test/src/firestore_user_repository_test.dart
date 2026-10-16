@@ -227,6 +227,26 @@ void main() {
         );
       });
 
+      test('deletes a field it clears, in the same write', () async {
+        await settings().set(storedFixture('private_user_settings', 'full'));
+
+        await subject.mergePrivateSettings(
+          uid,
+          const PrivateUserSettings(weekStreak: 0),
+          clearing: {PrivateUserSettingsKeys.lastTrainedAt},
+        );
+
+        expect(
+          await stored(settings()),
+          strictlyEquals(
+            {
+              ...taggedFixture('private_user_settings', 'full'),
+              'week_streak': 0,
+            }..remove('last_trained_at'),
+          ),
+        );
+      });
+
       test('withdraws coach consent by writing false over it', () async {
         await settings().set(storedFixture('private_user_settings', 'full'));
 

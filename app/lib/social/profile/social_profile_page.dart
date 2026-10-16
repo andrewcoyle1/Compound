@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/integrations/integrations.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/settings/account/view/edit_profile_page.dart';
@@ -167,7 +168,7 @@ class _SocialProfileViewState extends State<SocialProfileView> {
       circle: circle,
       fetchedSessions: state.sessions,
       now: DateTime.now(),
-      firstDayOfWeek: MaterialLocalizations.of(context).firstDayOfWeekIndex,
+      firstDayOfWeek: firstDayOfWeekIndex(context),
     );
     final username = user.username;
     return MultiBlocListener(
@@ -654,7 +655,7 @@ class _Consistency extends StatelessWidget {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final colors = context.appColors;
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     final now = DateTime.now();
     final thisWeek = WorkoutSessionHighlights.weekStart(now, firstDay);
     final today = DateTime(now.year, now.month, now.day);
@@ -734,7 +735,7 @@ class _Activities extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     final sessions = summary.sessions;
     final Widget content;
     if (state.isLoadingSessions && sessions.isEmpty) {

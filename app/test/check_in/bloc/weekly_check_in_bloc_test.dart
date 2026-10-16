@@ -180,6 +180,7 @@ void main() {
       final user = await data.users.watchUser(uid).first;
       expect(user!.submittedWeightUnitPreference, WeightUnitPreference.pounds);
       expect(analytics.names, contains('CheckInView_LogWeight_Success'));
+      expect(bloc.state.weighInsSaved, 1);
     });
 
     test('skipping the weigh-in moves on', () async {

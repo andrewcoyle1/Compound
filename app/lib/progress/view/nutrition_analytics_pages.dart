@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
@@ -188,7 +189,7 @@ class FoodLoggingConsistencyPage extends StatelessWidget {
         final points = [
           for (final d in days) (date: d.date, value: d.totals.calories),
         ];
-        final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+        final firstDay = firstDayOfWeekIndex(context);
         return ProgressMetric(
           title: l10n.progressFoodLogging,
           unit: 'kcal',

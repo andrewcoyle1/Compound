@@ -75,28 +75,39 @@ class CheckInView extends StatelessWidget {
     final l10n = context.l10n;
     final state = context.watch<WeeklyCheckInBloc>().state;
     final step = state.currentStep;
-    return BlocListener<WeeklyCheckInBloc, WeeklyCheckInState>(
-      listener: (context, state) {
-        if (state.status == WeeklyCheckInStatus.finished) {
-          unawaited(HapticFeedback.successNotification());
-          _close(context);
-          return;
-        }
-        final alert = state.alert;
-        if (alert == null) return;
-        unawaited(HapticFeedback.errorNotification());
-        unawaited(
-          showFailureAlert(context, switch (alert) {
-            WeeklyCheckInAlert.logWeightFailed => l10n.checkInLogWeightFailed,
-            WeeklyCheckInAlert.saveFailed => l10n.checkInSaveFailed,
-            WeeklyCheckInAlert.completeFailed => l10n.checkInCompleteFailed,
-          }, l10n.checkInTryAgain),
-        );
-      },
-      listenWhen: (previous, current) =>
-          previous.alertId != current.alertId ||
-          (previous.status != current.status &&
-              current.status == WeeklyCheckInStatus.finished),
+    return MultiBlocListener(
+      listeners: [
+        // `playHaptic(.success)` after the weigh-in saves.
+        BlocListener<WeeklyCheckInBloc, WeeklyCheckInState>(
+          listenWhen: (previous, current) =>
+              previous.weighInsSaved != current.weighInsSaved,
+          listener: (_, _) => unawaited(HapticFeedback.successNotification()),
+        ),
+        BlocListener<WeeklyCheckInBloc, WeeklyCheckInState>(
+          listener: (context, state) {
+            if (state.status == WeeklyCheckInStatus.finished) {
+              unawaited(HapticFeedback.successNotification());
+              _close(context);
+              return;
+            }
+            final alert = state.alert;
+            if (alert == null) return;
+            unawaited(HapticFeedback.errorNotification());
+            unawaited(
+              showFailureAlert(context, switch (alert) {
+                WeeklyCheckInAlert.logWeightFailed =>
+                  l10n.checkInLogWeightFailed,
+                WeeklyCheckInAlert.saveFailed => l10n.checkInSaveFailed,
+                WeeklyCheckInAlert.completeFailed => l10n.checkInCompleteFailed,
+              }, l10n.checkInTryAgain),
+            );
+          },
+          listenWhen: (previous, current) =>
+              previous.alertId != current.alertId ||
+              (previous.status != current.status &&
+                  current.status == WeeklyCheckInStatus.finished),
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
           leading: CloseButton(

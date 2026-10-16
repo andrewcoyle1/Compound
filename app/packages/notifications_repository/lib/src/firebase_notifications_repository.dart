@@ -375,6 +375,22 @@ class FirebaseNotificationsRepository extends NotificationsRepository {
   Future<void> clearOngoingWorkout() =>
       _guard(() => _local.cancel(id: NotificationsRepository.ongoingWorkoutId));
 
+  /// ponytail: a push iOS showed itself (the app in the background) has no
+  /// integer id for the plugin and stays; clear by identifier at M6 if it
+  /// matters there.
+  @override
+  Future<void> clearDelivered() => _guard(() async {
+    final kept = {
+      for (final kind in LocalReminderKind.values) kind.id,
+      NotificationsRepository.ongoingWorkoutId,
+    };
+    for (final shown in await _local.getActiveNotifications()) {
+      final id = shown.id;
+      if (id == null || kept.contains(id)) continue;
+      await _local.cancel(id: id, tag: shown.tag);
+    }
+  });
+
   /// A notification that fails to schedule is dropped, as in Swift: the rest
   /// runs out whether or not anything announces it.
   Future<void> _guard(Future<void> Function() body) async {

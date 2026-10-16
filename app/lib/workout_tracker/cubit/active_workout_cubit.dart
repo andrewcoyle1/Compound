@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/notifications/notification_copy.dart';
+import 'package:compound/review/review_moment.dart';
+import 'package:compound/social/logic/circle_week.dart';
 import 'package:compound/workout_tracker/cubit/equipment_sheet_cubit.dart';
 import 'package:compound/workout_tracker/cubit/plate_calculator_cubit.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
+import 'package:compound_maths/compound_maths.dart' show weeklySessionGoal;
 import 'package:compound_models/compound_models.dart';
 import 'package:device_store/device_store.dart';
 import 'package:equatable/equatable.dart';
@@ -52,6 +55,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     this._programs,
     this._health,
     this._strava,
+    this._reviews,
   }) : _strings = copy ?? AppNotificationCopy(),
        _units = units ?? UnitPreferenceStore(),
        _device = device ?? InMemoryDeviceStore(),
@@ -88,6 +92,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   /// Where a finished workout is uploaded once connected; nowhere without
   /// one.
   final StravaRepository? _strava;
+
+  /// Asks for a rating after the workout that meets the week's goal; never
+  /// without one.
+  final ReviewPrompter? _reviews;
 
   static Future<void> _delay(Duration duration) =>
       Future<void>.delayed(duration);
@@ -1219,6 +1227,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     if (result.saved) {
       _track('Workout_Finished', parameters: _finishedParameters(session));
       _track('WorkoutTrackerView_FinishWorkout_Success');
+      await _askForReview(session, firstWeekday: firstWeekday);
       await _exportToHealth(session);
       // Last, because Strava is polled until it has made the activity.
       // Only a saved workout: one that failed to save would be on Strava
@@ -1238,6 +1247,38 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
     // Still on the device: offered again to resume.
     if (!isClosed && _uid == uid && _controller == null) await _resume(uid);
+  }
+
+  /// The workout that reaches the week's goal earns a rating request
+  /// (`requestReviewIfEarned(.workoutFinished)`), counted with this
+  /// session as Swift's `sessionsIncludingThis`. Best-effort.
+  Future<void> _askForReview(
+    WorkoutSessionModel session, {
+    required int firstWeekday,
+  }) async {
+    final user = _user;
+    final reviews = _reviews;
+    if (user == null || reviews == null) return;
+    final sessions = [
+      for (final s in _history)
+        if (s.id != session.id) s,
+      session,
+    ];
+    try {
+      await reviews.requestIfEarned(
+        ReviewWorkoutFinished(
+          sessionsThisWeek: CircleWeek.sessionsInWeek(
+            user.userId,
+            _clock(),
+            sessions,
+            firstWeekday % 7,
+          ).length,
+          weeklyGoal: weeklySessionGoal(user.weeklySessionGoal),
+        ),
+      );
+    } on Object {
+      // The store's prompt is a nicety; nothing is lost without it.
+    }
   }
 
   /// Asks for Health's workout access as the workout starts, as Swift asks

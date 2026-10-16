@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/challenges/challenges.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/notifications/inbox/view/notifications_page.dart';
@@ -283,7 +284,7 @@ class _Dashboard extends StatelessWidget {
     final viewer = circle.viewer;
     if (viewer == null) return const SizedBox.shrink();
     final now = DateTime.now();
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     final members = circle.members(now: now, firstDayOfWeek: firstDay);
     final summary = members.isEmpty
         ? null

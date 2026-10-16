@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/gym_profiles/view/gym_profile_page.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/training/view/workout_settings_page.dart';
 import 'package:compound/shell/app_tab.dart';
@@ -13,6 +14,7 @@ import 'package:compound/workout_tracker/view/correction_bar.dart';
 import 'package:compound/workout_tracker/view/exercise_card.dart';
 import 'package:compound/workout_tracker/view/exercise_strip.dart';
 import 'package:compound/workout_tracker/view/notes_sheet.dart';
+import 'package:compound/workout_tracker/view/rest_sound.dart';
 import 'package:compound/workout_tracker/view/set_keypad_view.dart';
 import 'package:compound/workout_tracker/view/tick.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
@@ -202,9 +204,12 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
       case SavedEffect():
         unawaited(HapticFeedback.successNotification());
       case RestOverEffect():
-        // The rest-complete haptic, apart from a logged set's. Flutter has
-        // no mobile alert sound, so the in-app sound waits for an audio
-        // slice.
+        // Sound and vibration asked for separately
+        // (`announceRestCompletion`); the warning haptic, apart from a
+        // logged set's success.
+        if (state.settings?.restTimerPlaySound ?? true) {
+          unawaited(RestSound.play());
+        }
         if (state.settings?.restTimerVibrate ?? true) {
           unawaited(HapticFeedback.warningNotification());
         }
@@ -256,7 +261,7 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
       ),
     );
     if (finish != true || !context.mounted) return;
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     await _cubit.finish(
       firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
       at: lastSet,
@@ -673,7 +678,7 @@ Future<void> finishWorkout(BuildContext context) async {
   }
   if (!context.mounted) return;
   // The locale's first day of the week (0 = Sunday), as Today counts.
-  final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+  final firstDay = firstDayOfWeekIndex(context);
   await cubit.finish(firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay);
 }
 

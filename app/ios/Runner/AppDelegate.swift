@@ -1,3 +1,4 @@
+import AudioToolbox
 import Flutter
 import UIKit
 import UserNotifications
@@ -16,5 +17,17 @@ import UserNotifications
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    // The rest-complete sound (`RestSound`): system sound 1007, the stand-in the Swift app plays
+    // (`SoundEffectFile.restComplete`). It follows the silent switch.
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RestSound") {
+      FlutterMethodChannel(
+        name: "com.andrewcoyle.compound/sound",
+        binaryMessenger: registrar.messenger()
+      ).setMethodCallHandler { call, result in
+        guard call.method == "restComplete" else { return result(FlutterMethodNotImplemented) }
+        AudioServicesPlaySystemSound(1007)
+        result(nil)
+      }
+    }
   }
 }

@@ -179,6 +179,12 @@ abstract class NotificationsRepository {
   /// Withdraws the ongoing workout notification.
   Future<void> clearOngoingWorkout();
 
+  /// Takes the pushes already delivered off the tray, as opening the inbox
+  /// reads them (Swift `clearAllDeliveredNotifications`). The app's own
+  /// reminders and the ongoing workout stay: withdrawing one by id would
+  /// also cancel what is scheduled under it.
+  Future<void> clearDelivered();
+
   /// Brings the come-back and meal reminders into line with [settings]:
   /// withdrawn, then scheduled again when on and allowed. Call once signed
   /// in and on each return to the app, which moves the come-back reminders

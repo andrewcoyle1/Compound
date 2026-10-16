@@ -9244,6 +9244,10 @@
     "@inboxDecline": {
         "description": "Decline a follow request"
     },
+    "activityBannerHint": "Opens Notifications",
+    "@activityBannerHint": {
+        "description": "Screen reader hint on the banner for a notification that just arrived"
+    },
     "inboxLiked": "{name} liked your workout",
     "@inboxLiked": {
         "description": "A like",

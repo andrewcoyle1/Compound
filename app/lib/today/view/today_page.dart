@@ -9,6 +9,7 @@ import 'package:compound/check_in/check_in.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/integrations/integrations.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/profile/profile.dart';
@@ -45,7 +46,7 @@ class TodayPage extends StatelessWidget {
     if (state is! AppAuthenticated) return const SizedBox.shrink();
     // The locale's first day of the week (0 = Sunday), as the Nutrition
     // calendar uses; ISO counts Sunday as 7.
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     return BlocProvider(
       create: (context) => TodayBloc(
         workoutSessionRepository: context.read<WorkoutSessionRepository>(),

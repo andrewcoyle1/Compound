@@ -261,7 +261,11 @@ class SessionEditCubit extends Cubit<SessionEditState> {
         firstWeekday: firstWeekday,
       );
       if (!record.isRecordedIn(private)) {
-        await _users.mergePrivateSettings(uid, record.settings);
+        await _users.mergePrivateSettings(
+          uid,
+          record.settings,
+          clearing: record.clearing,
+        );
       }
     } on Object catch (error) {
       _track(

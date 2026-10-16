@@ -731,6 +731,42 @@ void main() {
         verify(() => local.cancel(id: 9)).called(1);
       });
 
+      test(
+        'delivered pushes are cleared; reminders and the workout stay',
+        () async {
+          when(
+            () => local.cancel(
+              id: any(named: 'id'),
+              tag: any(named: 'tag'),
+            ),
+          ).thenAnswer((_) async {});
+          when(() => local.getActiveNotifications()).thenAnswer(
+            (_) async => const [
+              ActiveNotification(id: 0, tag: 'FCM-Notification:1'),
+              ActiveNotification(id: 123456),
+              ActiveNotification(id: 9),
+              ActiveNotification(id: 1),
+              ActiveNotification(id: 7),
+              ActiveNotification(),
+            ],
+          );
+          await repository.clearDelivered();
+          verify(() => local.cancel(id: 0, tag: 'FCM-Notification:1'))
+              .called(1);
+          verify(() => local.cancel(id: 123456)).called(1);
+          verifyNever(() => local.cancel(id: 9, tag: any(named: 'tag')));
+          verifyNever(() => local.cancel(id: 1, tag: any(named: 'tag')));
+          verifyNever(() => local.cancel(id: 7, tag: any(named: 'tag')));
+        },
+      );
+
+      test('a platform that cannot list them reports and carries on', () async {
+        when(() => local.getActiveNotifications())
+            .thenThrow(UnsupportedError('old'));
+        await repository.clearDelivered();
+        expect(errors, hasLength(1));
+      });
+
       test('compares by value', () {
         expect(
           // Not const, so equality goes through props.

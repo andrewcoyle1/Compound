@@ -1,4 +1,5 @@
 import 'package:compound/review/review_moment.dart';
+import 'package:device_store/device_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/helpers.dart';
@@ -92,6 +93,28 @@ void main() {
       expect(store.requests, 2);
       await prompter.requestIfEarned(const ReviewFoodLogged(7));
       expect(store.requests, 2);
+    });
+
+    test('the last request is kept on the device across launches', () async {
+      final device = InMemoryDeviceStore();
+      final store = FakeStoreReview();
+      await ReviewPrompter(
+        review: store,
+        now: () => now,
+        store: device,
+      ).request();
+      expect(
+        device.getString(ReviewPrompter.lastRequestKey),
+        now.toUtc().toIso8601String(),
+      );
+      final relaunched = ReviewPrompter(
+        review: store,
+        now: () => now,
+        store: device,
+      );
+      expect(relaunched.lastRequestedAt!.isAtSameMomentAs(now), isTrue);
+      await relaunched.requestIfEarned(const ReviewFoodLogged(7));
+      expect(store.requests, 1);
     });
   });
 }

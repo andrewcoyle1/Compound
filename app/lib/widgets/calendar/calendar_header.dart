@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/logic/meal_day.dart' show dayKeyOf;
 import 'package:compound/widgets/calendar/calendar_day_marker.dart';
@@ -81,7 +82,7 @@ class _CalendarHeaderState extends State<CalendarHeader> {
   /// The seven days of [shownDay]'s week, from the locale's first day.
   List<DateTime> _week(DateTime shownDay) {
     // 0 is Sunday, as in the locale's own calendar.
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     final offset = (shownDay.weekday % 7 - firstDay + 7) % 7;
     return [
       for (var i = 0; i < 7; i++)

@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/logic/meal_day.dart' show dayKeyOf;
 import 'package:compound/widgets/calendar/calendar_day_marker.dart';
@@ -79,7 +80,7 @@ class _CalendarSheetState extends State<CalendarSheet> {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
     // 0 is Sunday, as in the locale's own calendar.
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     return SizedBox(
       height: MediaQuery.sizeOf(context).height * 0.85,
       child: Column(

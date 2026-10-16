@@ -66,12 +66,13 @@ class InMemoryUserRepository implements UserRepository {
   @override
   Future<void> mergePrivateSettings(
     String uid,
-    PrivateUserSettings settings,
-  ) async {
-    _settings[uid] = PrivateUserSettings.fromFirestore({
-      ...?_settings[uid]?.toFirestore(),
-      ...settings.toFirestore(),
-    });
+    PrivateUserSettings settings, {
+    Set<String> clearing = const {},
+  }) async {
+    _settings[uid] = PrivateUserSettings.fromFirestore(
+      {...?_settings[uid]?.toFirestore(), ...settings.toFirestore()}
+        ..removeWhere((key, _) => clearing.contains(key)),
+    );
     _changes.add(null);
   }
 

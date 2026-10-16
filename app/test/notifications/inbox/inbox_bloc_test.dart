@@ -7,6 +7,7 @@ import 'package:compound/notifications/inbox/notification_grouping.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
@@ -165,6 +166,33 @@ void main() {
     );
   });
 
+  group('the activity banner', () {
+    blocTest<InboxBloc, InboxState>(
+      'announces each arrival until dismissed, never from someone blocked',
+      build: build,
+      act: (bloc) async {
+        bloc.add(InboxViewerChanged(viewer.copyWithBlocked(['user6'])));
+        await pumpEventQueue();
+        expect(bloc.state.banner, isNull);
+        arrivals.add(item('a'));
+        await pumpEventQueue();
+        expect(bloc.state.banner?.id, 'a');
+        arrivals.add(item('b', actor: 'user6'));
+        await pumpEventQueue();
+        expect(bloc.state.banner?.id, 'a');
+        arrivals.add(item('c'));
+        await pumpEventQueue();
+        // An older banner's timer leaves the newer one up.
+        bloc.add(const InboxBannerDismissed('a'));
+        await pumpEventQueue();
+        expect(bloc.state.banner?.id, 'c');
+        bloc.add(const InboxBannerDismissed('c'));
+        await pumpEventQueue();
+      },
+      verify: (bloc) => expect(bloc.state.banner, isNull),
+    );
+  });
+
   group('badges', () {
     test('the bell counts unread rows and requests', () {
       final state = InboxState(
@@ -243,6 +271,21 @@ void main() {
         expect(analytics.names, ['NotificationsView_Disappear']);
       },
     );
+
+    test('clears the delivered pushes once read', () async {
+      final notifications = FakeNotificationsRepository();
+      final bloc = InboxBloc(
+        social: social,
+        analytics: analytics,
+        notifications: notifications,
+      )..add(InboxViewerChanged(viewer));
+      await pumpEventQueue();
+      expect(notifications.deliveredCleared, 0);
+      bloc.add(const InboxAppeared());
+      await pumpEventQueue();
+      expect(notifications.deliveredCleared, 1);
+      await bloc.close();
+    });
 
     blocTest<InboxBloc, InboxState>(
       'shows a spinner only for the first load',

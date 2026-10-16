@@ -5,6 +5,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_measurement/log_measurement.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -43,7 +44,7 @@ class ProgressPage extends StatelessWidget {
     final state = context.read<AppBloc>().state;
     if (state is! AppAuthenticated) return const SizedBox.shrink();
     // The locale's first day of the week (0 = Sunday), as Today uses.
-    final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    final firstDay = firstDayOfWeekIndex(context);
     return BlocProvider(
       create: (context) => ProgressBloc(
         workoutSessionRepository: context.read<WorkoutSessionRepository>(),

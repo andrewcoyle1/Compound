@@ -97,6 +97,10 @@ final class const InboxState({
   /// The last failure, bumped by [noticeId].
   final InboxNotice? notice,
   final int noticeId = 0,
+
+  /// A notification that just arrived, shown over the app until it is
+  /// dismissed or times out (`AppPresenter.activityBanner`).
+  final ActivityNotificationModel? banner,
 }) extends Equatable {
   /// Nothing a blocked account did reaches the viewer: not the list, not
   /// the badges.
@@ -142,6 +146,7 @@ final class const InboxState({
     InboxDestination? destination,
     UserModel? followBack,
     InboxNotice? notice,
+    ActivityNotificationModel? Function()? banner,
   }) => InboxState(
     viewer: viewer == null ? this.viewer : viewer(),
     notifications: notifications ?? this.notifications,
@@ -157,6 +162,7 @@ final class const InboxState({
     followBackId: followBack == null ? followBackId : followBackId + 1,
     notice: notice ?? this.notice,
     noticeId: notice == null ? noticeId : noticeId + 1,
+    banner: banner == null ? this.banner : banner(),
   );
 
   @override
@@ -175,5 +181,6 @@ final class const InboxState({
     followBackId,
     notice,
     noticeId,
+    banner,
   ];
 }

@@ -4,6 +4,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/integrations/integrations.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sharing/share_card/share_workout_card.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
@@ -206,7 +207,7 @@ void _leave(BuildContext context, {required bool summary}) {
 
 /// The locale's first day of the week (ISO), as the streak counts weeks.
 int _firstWeekday(BuildContext context) {
-  final first = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+  final first = firstDayOfWeekIndex(context);
   return first == 0 ? DateTime.sunday : first;
 }
 

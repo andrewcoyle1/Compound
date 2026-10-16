@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/integrations/integrations.dart';
+import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
@@ -124,7 +125,7 @@ class WeighInConsistencyPage extends StatelessWidget {
       metric: (context, state) {
         final l10n = context.l10n;
         final readings = state.weightReadings;
-        final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+        final firstDay = firstDayOfWeekIndex(context);
         return ProgressMetric(
           title: l10n.progressWeighIn,
           unit: state.unit.symbol,

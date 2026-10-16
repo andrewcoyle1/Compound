@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/notifications.dart';
+import 'package:compound/review/review_moment.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -18,6 +19,8 @@ import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
+
+import '../../helpers/fake_store_review.dart';
 
 class _MockAnalytics extends Mock implements AnalyticsRepository;
 
@@ -402,6 +405,38 @@ void main() {
 
       cubit.summaryShown();
       expect(cubit.state.finishedSession, isNull);
+    });
+
+    test("the workout that meets the week's goal asks for a rating, "
+        'once', () async {
+      final review = FakeStoreReview();
+      await cubit.close();
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        newId: () => 'ID-${++ids}',
+        wait: (_) async {},
+        reviews: ReviewPrompter(review: review, now: clock.call),
+      );
+      await cubit.userChanged(uid);
+      await settle();
+      final asked = <int>[];
+      // The sample user's goal is three a week.
+      for (var i = 0; i < 4; i++) {
+        await cubit.start(template: template, eventPrefix: 'x');
+        logNext();
+        clock.advance(const Duration(minutes: 5));
+        await cubit.finish(firstWeekday: DateTime.monday);
+        await settle();
+        cubit.summaryShown();
+        asked.add(review.requests);
+      }
+      expect(asked, [0, 0, 1, 1]);
     });
 
     test("a program's day starts on its week, cut in a deload, and "

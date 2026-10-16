@@ -62,6 +62,11 @@ class SettingsCubit extends Cubit<SettingsStatus> {
   void notificationSettingsPressed() =>
       _analytics.analytic('ProfileView_NotificationSettings_Press');
 
+  /// `ProfileView_NutritionPlan_Press`: the diet questions open to rebuild
+  /// the plan.
+  void nutritionPlanPressed() =>
+      _analytics.analytic('ProfileView_NutritionPlan_Press');
+
   /// `Settings_DeleteAccount_Start`: the confirmation screen opens, and
   /// nothing is deleted yet.
   void deleteAccountPressed() =>

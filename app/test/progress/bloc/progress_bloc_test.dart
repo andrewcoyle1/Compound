@@ -439,5 +439,16 @@ void main() {
         );
       },
     );
+
+    blocTest<ProgressBloc, ProgressState>(
+      'Create Diet Plan is logged as Swift names it',
+      build: screen,
+      act: (bloc) => bloc.add(const ProgressCreatePlanPressed()),
+      expect: () => const <ProgressState>[],
+      verify: (_) => expect(
+        recorder.events.map((event) => event.eventName),
+        contains('NutritionTargetChart_CreatePlan_Pressed'),
+      ),
+    );
   });
 }

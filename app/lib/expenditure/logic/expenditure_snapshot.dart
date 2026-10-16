@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
+import 'package:compound/expenditure/logic/proposal_dismissals.dart';
 import 'package:compound/onboarding/logic/diet_plan_builder.dart';
 import 'package:compound_maths/compound_maths.dart' as maths;
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -144,6 +145,20 @@ final class ExpenditureFigures {
       checkInState == CheckInState.due ? checkInWeekStart : null;
 }
 
+/// The diet answers [plan] was built from, read back as Swift's
+/// `DietPlanDelegate(plan:)` does, with its defaults for anything unknown.
+DietChoices planChoices(DietPlan plan) => (
+  diet:
+      maths.PreferredDiet.tryParse(plan.preferredDiet) ??
+      maths.PreferredDiet.balanced,
+  distribution:
+      maths.CalorieDistribution.tryParse(plan.calorieDistribution) ??
+      maths.CalorieDistribution.even,
+  protein:
+      maths.ProteinIntake.tryParse(plan.proteinIntake) ??
+      maths.ProteinIntake.moderate,
+);
+
 /// [plan] rebuilt at [proposal]'s target
 /// (`CoreInteractor.acceptTargetProposal`): its own diet choices, the
 /// proposal's expenditure and target, the active [mesocycle]'s training
@@ -156,22 +171,84 @@ DietPlan acceptedPlan({
   Mesocycle? mesocycle,
 }) => buildDietPlan(
   user: user,
-  choices: (
-    diet:
-        maths.PreferredDiet.tryParse(plan.preferredDiet) ??
-        maths.PreferredDiet.balanced,
-    distribution:
-        maths.CalorieDistribution.tryParse(plan.calorieDistribution) ??
-        maths.CalorieDistribution.even,
-    protein:
-        maths.ProteinIntake.tryParse(plan.proteinIntake) ??
-        maths.ProteinIntake.moderate,
-  ),
+  choices: planChoices(plan),
   now: now,
   mesocycle: mesocycle,
   expenditureKcal: proposal.expenditureKcal,
   targetKcal: proposal.proposedTargetKcal,
 );
+
+/// [plan] rebuilt for a [goal] just set or edited
+/// (`CoreInteractor.applyGoalToDietPlan`), so the goal moves today's
+/// targets rather than waiting for a check-in. Only the calories move: the
+/// plan's diet answers stay. The expenditure is the engine's [estimate],
+/// unless it is still provisional or the [calculationMode] is fixed, when
+/// it stays what the plan was built on.
+DietPlan goalAppliedPlan({
+  required DietPlan plan,
+  required UserModel user,
+  required WeightGoal goal,
+  required maths.ExpenditureEstimate estimate,
+  required ExpenditureCalculationMode calculationMode,
+  required DateTime now,
+  Mesocycle? mesocycle,
+}) => buildDietPlan(
+  user: user,
+  choices: planChoices(plan),
+  now: now,
+  goal: goal,
+  mesocycle: mesocycle,
+  expenditureKcal:
+      estimate.isProvisional ||
+          calculationMode == ExpenditureCalculationMode.fixed
+      ? plan.tdeeEstimate
+      : estimate.kcal,
+);
+
+/// Saves the plan [goal] makes of [uid]'s current one ([goalAppliedPlan]),
+/// and forgets a dismissed proposal, as Swift's `applyGoalToDietPlan`
+/// clears it. Without a plan or a profile there is nothing to change.
+Future<void> applyGoalToDietPlan(
+  WeightGoal goal, {
+  required String uid,
+  required UserRepository users,
+  required NutritionRepository nutrition,
+  required BodyRepository body,
+  required CheckInRepository checkIns,
+  required ProgramRepository programs,
+  required ProposalDismissals dismissals,
+  DateTime Function() now = DateTime.now,
+}) async {
+  final snapshot = await watchExpenditure(
+    uid: uid,
+    users: users,
+    nutrition: nutrition,
+    body: body,
+    checkIns: checkIns,
+  ).first;
+  final plan = snapshot.dietPlan;
+  final user = snapshot.user;
+  if (plan == null || user == null) return;
+  final at = now();
+  Mesocycle? mesocycle;
+  try {
+    mesocycle = (await programs.watchMesocycles(uid).first)
+        .where((m) => m.id == user.submittedActiveMesocycleId)
+        .firstOrNull;
+  } on Object catch (_) {}
+  await nutrition.saveDietPlan(
+    goalAppliedPlan(
+      plan: plan,
+      user: user,
+      goal: goal,
+      estimate: ExpenditureFigures.of(snapshot, at).current,
+      calculationMode: snapshot.settings.calculationMode,
+      now: at,
+      mesocycle: mesocycle,
+    ),
+  );
+  dismissals.clear(uid);
+}
 
 /// A proposal as every accept and dismiss event reports it.
 Map<String, Object?> proposalParameters(maths.TargetProposal proposal) => {

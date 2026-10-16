@@ -453,6 +453,47 @@ void main() {
         );
       });
     });
+    // GoalManagerTests' "Editing A Goal Keeps Its Start".
+    group('editGoal', () {
+      test(
+        'replaces the objective and writes only the three edited fields',
+        () async {
+          const path = 'users/$uid/goals/goal_contract_full';
+          await firestore.doc(path).set(storedFixture('weight_goal', 'full'));
+
+          await subject.editGoal(
+            uid,
+            'goal_contract_full',
+            objective: OverarchingObjective.loseWeight,
+            targetWeightKg: 60.5,
+            weeklyChangeKg: 0.35,
+          );
+
+          expect(
+            await stored(path),
+            strictlyEquals({
+              ...taggedFixture('weight_goal', 'full'),
+              'objective': {'loseWeight': <String, Object?>{}},
+              'target_weight_kg': 60.5,
+              'weekly_change_kg': 0.35,
+            }),
+          );
+        },
+      );
+
+      test('fails when there is no such goal, as Firestore does', () async {
+        await expectLater(
+          subject.editGoal(
+            uid,
+            'missing',
+            objective: OverarchingObjective.maintain,
+            targetWeightKg: 70,
+            weeklyChangeKg: 0,
+          ),
+          throwsA(isA<FirebaseException>()),
+        );
+      });
+    });
     group('progress photos', () {
       ProgressPhotoModel photo(String id, String date, {String? author}) =>
           ProgressPhotoModel(

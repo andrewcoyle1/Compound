@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/goal/goal_setup_cubit.dart';
 import 'package:compound/onboarding/logic/body_units.dart';
@@ -11,14 +13,30 @@ import 'package:compound/onboarding/logic/goal_rules.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/onboarding/view/onboarding_widgets.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/widgets/number_wheel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
+import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:program_repository/program_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
-/// Setting the first goal: objective, target weight, weekly rate, summary.
+/// Setting a goal: objective, target weight, weekly rate, summary. In
+/// onboarding, or [isStandalone] from Settings and Progress, where
+/// [editsCurrentGoal] edits the running goal (Swift `showWeightGoalFlow`).
 class GoalSetupPage extends StatelessWidget {
-  const new({super.key});
+  const new({
+    this.isStandalone = false,
+    this.editsCurrentGoal = false,
+    super.key,
+  });
+
+  /// Opened after onboarding: the flow closes once the goal is saved.
+  final bool isStandalone;
+
+  /// Whether to edit the running goal rather than start a new one.
+  final bool editsCurrentGoal;
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +46,29 @@ class GoalSetupPage extends StatelessWidget {
     if (profile == null) return const SizedBox.shrink();
     return BlocProvider(
       create: (context) {
+        final users = context.read<UserRepository>();
+        final body = context.read<BodyRepository>();
+        final nutrition = context.read<NutritionRepository>();
+        final checkIns = context.read<CheckInRepository>();
+        final programs = context.read<ProgramRepository>();
+        final dismissals = context.read<ProposalDismissals>();
         final cubit = GoalSetupCubit(
-          userRepository: context.read<UserRepository>(),
-          bodyRepository: context.read<BodyRepository>(),
+          userRepository: users,
+          bodyRepository: body,
           analyticsRepository: context.read<AnalyticsRepository>(),
           profile: profile,
+          isStandalone: isStandalone,
+          editsCurrentGoal: editsCurrentGoal,
+          applyToDietPlan: (goal) => applyGoalToDietPlan(
+            goal,
+            uid: profile.userId,
+            users: users,
+            nutrition: nutrition,
+            body: body,
+            checkIns: checkIns,
+            programs: programs,
+            dismissals: dismissals,
+          ),
         );
         unawaited(cubit.load());
         return cubit;
@@ -52,6 +88,7 @@ class GoalSetupView extends StatelessWidget {
     final state = context.watch<GoalSetupCubit>().state;
     final onBack = state.question == GoalQuestion.objective ? null : cubit.back;
     final objective = state.objective;
+    final step = state.isStandalone ? null : OnboardingStep.goalSetting;
 
     final question = state.status == GoalSetupStatus.loading
         ? const Scaffold(
@@ -59,9 +96,11 @@ class GoalSetupView extends StatelessWidget {
           )
         : switch (state.question) {
             GoalQuestion.objective => OnboardingQuestion(
-              step: OnboardingStep.goalSetting,
+              step: step,
               title: l10n.onboardingObjectiveTitle,
-              subtitle: l10n.onboardingObjectiveSubtitle,
+              subtitle: state.isStandalone
+                  ? l10n.goalChooseOne
+                  : l10n.onboardingObjectiveSubtitle,
               onContinue: state.canContinueObjective
                   ? cubit.objectiveContinued
                   : null,
@@ -76,7 +115,7 @@ class GoalSetupView extends StatelessWidget {
               ],
             ),
             GoalQuestion.targetWeight => OnboardingQuestion(
-              step: OnboardingStep.goalSetting,
+              step: step,
               title: l10n.onboardingTargetTitle,
               onBack: onBack,
               onContinue: state.canContinueTarget
@@ -85,15 +124,16 @@ class GoalSetupView extends StatelessWidget {
               children: _target(context, state),
             ),
             GoalQuestion.rate => OnboardingQuestion(
-              step: OnboardingStep.goalSetting,
+              step: step,
               title: l10n.onboardingRateTitle,
               onBack: onBack,
               onContinue: cubit.rateContinued,
               children: _rate(context, state),
             ),
             GoalQuestion.summary => OnboardingQuestion(
-              step: OnboardingStep.goalSetting,
+              step: step,
               title: l10n.onboardingSummaryTitle,
+              continueLabel: state.isStandalone ? l10n.goalComplete : null,
               onBack: onBack,
               isLoading:
                   state.status == GoalSetupStatus.saving ||
@@ -106,7 +146,11 @@ class GoalSetupView extends StatelessWidget {
     return BlocListener<GoalSetupCubit, GoalSetupState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, current) {
-        if (current.status == GoalSetupStatus.saved) onboardingSaved();
+        if (current.status == GoalSetupStatus.saved) {
+          onboardingSaved();
+          // Standalone is a flow of its own, so it closes once saved.
+          if (current.isStandalone) Navigator.of(context).pop();
+        }
         if (current.status == GoalSetupStatus.failure) {
           unawaited(
             showOnboardingFailure(
@@ -247,8 +291,11 @@ class GoalSetupView extends StatelessWidget {
     final steps = ((rules.maximum - rules.minimum) / GoalTimeline.rateStep)
         .round();
     return [
+      MethodInfoHeader(
+        title: l10n.onboardingWeeklyRate,
+        info: MethodInfo.weightChangeRate(l10n),
+      ),
       AppSection(
-        header: l10n.onboardingWeeklyRate,
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.l),
@@ -305,8 +352,11 @@ class GoalSetupView extends StatelessWidget {
           AppListRow(title: monthly),
         ],
       ),
+      MethodInfoHeader(
+        title: l10n.onboardingTargetAndTimeline,
+        info: MethodInfo.goalTimeline(l10n),
+      ),
       AppSection(
-        header: l10n.onboardingTargetAndTimeline,
         children: [
           AppListRow(
             title: l10n.onboardingEstimatedTarget('${target.kcal.round()}'),
@@ -351,8 +401,11 @@ class GoalSetupView extends StatelessWidget {
           ),
         ],
       ),
+      MethodInfoHeader(
+        title: l10n.onboardingWeightDetails,
+        info: MethodInfo.weightChangeRate(l10n),
+      ),
       AppSection(
-        header: l10n.onboardingWeightDetails,
         children: [
           if (current != null)
             AppListRow(
@@ -378,8 +431,11 @@ class GoalSetupView extends StatelessWidget {
           ],
         ],
       ),
+      MethodInfoHeader(
+        title: l10n.onboardingTimeline,
+        info: MethodInfo.goalTimeline(l10n),
+      ),
       AppSection(
-        header: l10n.onboardingTimeline,
         footer: weeks > 0 ? l10n.onboardingTimelineDetail(rate) : null,
         children: [
           AppListRow(

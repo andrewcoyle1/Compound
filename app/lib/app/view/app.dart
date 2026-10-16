@@ -13,6 +13,7 @@ import 'package:compound/coach/coach.dart';
 import 'package:compound/create_exercise/create_exercise.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
+import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/launch/launch.dart';
@@ -483,6 +484,7 @@ class _AppViewState extends State<AppView> {
       ...sharingRoutes,
       ...progressRootRoutes,
       ...coachRoutes,
+      ...goalEditingRoutes,
       // Over the tabs, as the Swift app's sheet.
       GoRoute(
         path: LogWeightPage.path,

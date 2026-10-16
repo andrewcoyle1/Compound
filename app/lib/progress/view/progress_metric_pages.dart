@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -215,8 +216,8 @@ class StepsPage extends StatelessWidget {
 
 /// Progress toward the weight goal (Swift `GoalProgressView`): how far the
 /// trend weight has come from the start to the target, and each weigh-in
-/// since the goal was set with the progress it stood at. Setting or
-/// changing the goal waits for a goal editor outside onboarding.
+/// since the goal was set with the progress it stood at. Change Goal edits
+/// or replaces the goal, and Set Goal sets one when there is none.
 class GoalProgressPage extends StatelessWidget {
   const new({this.allData = false, super.key});
 
@@ -261,11 +262,24 @@ class GoalProgressPage extends StatelessWidget {
               : l10n.goalProgressNoEntries,
           info: MethodInfo.goalProgress(l10n),
           add: goal == null ? null : logWeightAction(context),
+          actions: [
+            if (goal != null)
+              ProgressMetricAction(
+                label: l10n.goalProgressChangeGoal,
+                icon: AppSymbols.edit,
+                onPressed: () => unawaited(openWeightGoal(context, goal)),
+              ),
+          ],
           chart: goal == null
               ? ProgressMessage(
                   title: l10n.goalProgressNoGoal,
                   message: l10n.goalProgressNoGoalMessage,
                   icon: AppSymbols.goal,
+                  action: ProgressMetricAction(
+                    label: l10n.goalProgressSetGoal,
+                    icon: AppSymbols.goal,
+                    onPressed: () => unawaited(openWeightGoal(context, null)),
+                  ),
                 )
               : GoalProgressHeader(
                   goal: goal,

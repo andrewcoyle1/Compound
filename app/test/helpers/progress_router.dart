@@ -1,4 +1,5 @@
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
+import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/progress/progress.dart';
@@ -31,6 +32,16 @@ GoRouter progressRouter(String location) => GoRouter(
     ...progressRootRoutes,
     _stub(LogWeightPage.path, LogWeightPage.name),
     _stub(AddMealPage.path, AddMealPage.name),
+    // The goal and diet flows, with the query that says which goal flow.
+    for (final (path, name) in [
+      (WeightGoalRoute.path, WeightGoalRoute.name),
+      (DietPlanRoute.path, DietPlanRoute.name),
+    ])
+      GoRoute(
+        path: path,
+        name: name,
+        builder: (_, state) => Text('$name screen ${state.uri.query}'.trim()),
+      ),
   ],
 );
 

@@ -58,6 +58,8 @@ dependencies:
   http: ^1.6.0
   image_repository:
     path: packages/image_repository
+  # The system's rating prompt, Settings' Rate row and ReviewMoment (MIT).
+  in_app_review: 2.0.12
   intl: ^0.20.2
   material_ui: ^1.1.1
   mobile_scanner: ^7.4.2
@@ -65,6 +67,8 @@ dependencies:
     path: packages/notifications_repository
   nutrition_repository:
     path: packages/nutrition_repository
+  # About's version and a new profile's creation_version (BSD-3).
+  package_info_plus: 10.2.2
   path_provider: ^2.1.5
   program_repository:
     path: packages/program_repository

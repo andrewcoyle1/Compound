@@ -3,7 +3,9 @@ import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
+import 'package:compound/review/review_moment.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
+import 'package:compound/settings/account/view/save_account_page.dart';
 import 'package:compound/settings/general/view/about_page.dart';
 import 'package:compound/settings/general/view/customise_analytics_page.dart';
 import 'package:compound/settings/general/view/legal_page.dart';
@@ -32,8 +34,12 @@ void main() {
   );
   late AppBloc appBloc;
   late AuthRepository authRepository;
+  late AnalyticsRecorder analytics;
+  late FakeStoreReview store;
 
   setUp(() {
+    analytics = AnalyticsRecorder();
+    store = FakeStoreReview();
     appBloc = MockAppBloc();
     authRepository = MockAuthRepository();
     when(() => appBloc.stream).thenAnswer((_) => const Stream.empty());
@@ -61,6 +67,8 @@ void main() {
       const SizedBox(),
       appBloc: appBloc,
       authRepository: authRepository,
+      analyticsRepository: analytics,
+      reviews: ReviewPrompter(review: store),
       // The screens the rows open read these.
       userRepository: InMemoryUserRepository(),
       bodyRepository: body ?? InMemoryBodyRepository(),
@@ -97,7 +105,10 @@ void main() {
       expect(find.text('Sign Out'), findsOneWidget);
     });
 
-    testWidgets('an anonymous account is not offered Sign Out', (tester) async {
+    // SettingsPresenterTests: "an anonymous account is offered the upgrade
+    // instead of log out" and "saving an anonymous account opens sign in".
+    testWidgets('an anonymous account is offered Save Account instead of '
+        'Sign Out', (tester) async {
       await pumpSettings(
         tester,
         user: const AuthUser(uid: 'uid', isAnonymous: true),
@@ -106,6 +117,27 @@ void main() {
       expect(find.text('Not saved'), findsOneWidget);
       expect(find.text('Not provided'), findsOneWidget);
       expect(find.text('Sign Out'), findsNothing);
+      await tester.tap(find.text('Save Account'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SaveAccountPage), findsOneWidget);
+      expect(analytics.names, contains('Settings_SaveAccount_Press'));
+    });
+
+    // "The ratings row opens no modal of its own": straight to the store.
+    testWidgets('Rate Compound asks the store for a rating', (tester) async {
+      await pumpSettings(tester);
+      await tester.tap(find.text('Rate Compound'));
+      await tester.pumpAndSettle();
+      expect(store.requests, 1);
+      expect(find.byType(Dialog), findsNothing);
+      expect(analytics.names, contains('ProfileView_Ratings_Pressed'));
+    });
+
+    testWidgets('offers the developer tools outside production', (
+      tester,
+    ) async {
+      await pumpSettings(tester);
+      expect(find.text('Developer Settings'), findsOneWidget);
     });
 
     for (final (row, page) in [

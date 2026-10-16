@@ -1,5 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/settings/training/view/workout_settings_screen.dart';
 import 'package:compound_models/compound_models.dart';
 
@@ -20,8 +22,11 @@ class SmartProgressionSettingsPage extends StatelessWidget {
       screen: 'SmartProgressionSettingsView',
       title: l10n.workoutSettingsSmartProgression,
       sections: (context, settings, change) => [
+        MethodInfoHeader(
+          title: l10n.smartProgressionBehaviorHeader,
+          info: MethodInfo.smartProgression(l10n),
+        ),
         AppSection(
-          header: l10n.smartProgressionBehaviorHeader,
           children: [
             SettingsMenuRow<InitialLogFillOption>(
               title: l10n.smartProgressionInitialLogFill,

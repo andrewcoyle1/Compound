@@ -15,6 +15,10 @@ import 'package:compound_models/compound_models.dart';
 /// Swift only queries them (`creation_date`, `user_id`), and one by choice:
 /// `fcm_token`, Swift's legacy public copy of the push token, which Flutter
 /// writes only to the private settings.
+///
+/// Three are Flutter's own: `is_anonymous`, `email` and `auth_providers`,
+/// written when Settings' Save Account links an anonymous account, which
+/// Swift never updates (`swift-findings.md`).
 enum UserField<T extends Object> {
   /// `submitted_first_name`.
   submittedFirstName<String>(UserModelKeys.submittedFirstName),
@@ -118,7 +122,17 @@ enum UserField<T extends Object> {
   username<String>(UserModelKeys.username),
 
   /// `weekly_session_goal`, 1 to 7.
-  weeklySessionGoal<int>(UserModelKeys.weeklySessionGoal);
+  weeklySessionGoal<int>(UserModelKeys.weeklySessionGoal),
+
+  /// `is_anonymous`: false once Save Account links the account.
+  isAnonymous<bool>(UserModelKeys.isAnonymous),
+
+  /// `email`: the linked provider's address.
+  email<String>(UserModelKeys.email),
+
+  /// `auth_providers`: the whole list of linked providers, as Swift's
+  /// `AuthProviderOption` raw values ("apple", "google").
+  authProviders<List<String>>(UserModelKeys.authProviders);
 
   new(this.key);
 

@@ -9,12 +9,18 @@ import 'package:purchases_repository/purchases_repository.dart';
 /// The store account owns an active Pro Annual entitlement when `premium` is
 /// `true` (the default, as the Swift Mock build starts with "Simulate
 /// Premium" on). Buying adds an entitlement for that product; restoring
-/// returns what the account owns. Set [failure] to make the next purchase or
-/// restore throw it, to show the cancelled, pending or failed paywall states.
+/// returns what the account owns. Queue [failures] to make the next
+/// purchases or restores throw them in turn, and set [failedLoads] to make
+/// the next product loads fail, so every paywall state can be shown.
 /// {@endtemplate}
 class FakePurchasesRepository implements PurchasesRepository {
   /// {@macro fake_purchases_repository}
-  new({bool premium = true, this.products = sampleProducts, this.failure}) {
+  new({
+    bool premium = true,
+    this.products = sampleProducts,
+    Iterable<PurchasesFailure> failures = const [],
+    this.failedLoads = 0,
+  }) : failures = [...failures] {
     if (premium) _buy(sampleProducts.first.id);
     _state = PurchasesState(entitlements: List.unmodifiable(_owned));
   }
@@ -41,8 +47,13 @@ class FakePurchasesRepository implements PurchasesRepository {
   /// What the store sells.
   final List<SubscriptionProduct> products;
 
-  /// Thrown by the next [purchase] or [restore], then cleared.
-  PurchasesFailure? failure;
+  /// Thrown in turn by the next [purchase]s and [restore]s, one each. A
+  /// purchase failing with [ProductAlreadyOwned] leaves the account owning
+  /// the product, as the store's would, so restoring then finds it.
+  final List<PurchasesFailure> failures;
+
+  /// How many of the next [getProducts] calls throw a [PurchasesFailure].
+  int failedLoads;
 
   final _owned = <PurchasedEntitlement>[];
   final _controller = StreamController<PurchasesState>.broadcast();
@@ -90,9 +101,7 @@ class FakePurchasesRepository implements PurchasesRepository {
   }
 
   void _throwFailure() {
-    final failure = this.failure;
-    this.failure = null;
-    if (failure != null) throw failure;
+    if (failures.isNotEmpty) throw failures.removeAt(0);
   }
 
   @override
@@ -113,17 +122,22 @@ class FakePurchasesRepository implements PurchasesRepository {
   }
 
   @override
-  Future<List<SubscriptionProduct>> getProducts(
-    List<String> productIds,
-  ) async => [
-    for (final product in products)
-      if (productIds.contains(product.id)) product,
-  ];
+  Future<List<SubscriptionProduct>> getProducts(List<String> productIds) async {
+    if (failedLoads > 0) {
+      failedLoads--;
+      throw const PurchasesFailure('The store did not answer.');
+    }
+    return [
+      for (final product in products)
+        if (productIds.contains(product.id)) product,
+    ];
+  }
 
   @override
   Future<List<PurchasedEntitlement>> purchase(
     SubscriptionProduct product,
   ) async {
+    if (failures.firstOrNull is ProductAlreadyOwned) _buy(product.id);
     _throwFailure();
     if (!products.contains(product)) throw ProductNotFound(product.id);
     _buy(product.id);

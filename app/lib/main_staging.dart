@@ -47,6 +47,43 @@ const _workoutLogged = int.fromEnvironment('STAGING_WORKOUT_LOGGED');
 /// `/workout-summary/staging-finished-workout`.
 const _workoutFinished = bool.fromEnvironment('STAGING_WORKOUT_FINISHED');
 
+/// `false` starts staging without a subscription. The sample user, already
+/// signed in, reaches the tabs, where the coach's See Plans and Settings'
+/// Subscription row open the paywall; anyone who signs in, or an account
+/// still in onboarding (`STAGING_ONBOARDING`), is held at "Why
+/// Subscribe?".
+const _premium = bool.fromEnvironment('STAGING_PREMIUM', defaultValue: true);
+
+/// What the fake store does, in turn, comma-separated: `cancelled`,
+/// `pending`, `failed` or `owned` for the next purchases and restores, and
+/// `loadFailed` or `noProducts` for loading the plans. Each later purchase
+/// or restore succeeds, so every paywall state can be seen in one run.
+const _purchases = String.fromEnvironment('STAGING_PURCHASES');
+
+/// The fake store for [_premium] and [_purchases].
+FakePurchasesRepository stagingPurchases() {
+  final outcomes = _purchases.split(',').map((outcome) => outcome.trim());
+  return FakePurchasesRepository(
+    // Redundant only while the define is unset.
+    // ignore: avoid_redundant_argument_values
+    premium: _premium,
+    products: outcomes.contains('noProducts')
+        ? const []
+        : FakePurchasesRepository.sampleProducts,
+    failedLoads: outcomes.where((outcome) => outcome == 'loadFailed').length,
+    failures: [
+      for (final outcome in outcomes)
+        ?switch (outcome) {
+          'cancelled' => const PurchaseCancelled(),
+          'pending' => const PurchasePending(),
+          'failed' => const PurchasesFailure('Staging: the store refused.'),
+          'owned' => const ProductAlreadyOwned(),
+          _ => null,
+        },
+    ],
+  );
+}
+
 /// The staging flavor, which is the Swift app's old Mock configuration:
 /// in-memory repositories and no Firebase, for previews and demos. Starts
 /// signed in as the seeded sample user; signing out and back in stays in
@@ -149,9 +186,9 @@ Future<void> main() async {
       ),
       stravaRepository: stravaRepository,
       stravaAuthorizer: FakeStravaAuthorizer(),
-      // Premium, as the Swift Mock build starts with "Simulate Premium" on,
-      // so the coach is usable here. Staging has no store.
-      purchasesRepository: FakePurchasesRepository(),
+      // Premium unless `STAGING_PREMIUM=false`, as the Swift Mock build
+      // starts with "Simulate Premium" on. Staging has no store.
+      purchasesRepository: stagingPurchases(),
       coachRepository: coachRepository,
       activeSessionStore: activeSessionStore,
       // Nothing reaches the platform: reminders and the rest timer's

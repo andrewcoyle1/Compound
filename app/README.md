@@ -63,9 +63,18 @@ there are two, in the same gitignored `app/dart_defines.json`:
 The app passes the one for the running platform to `RevenueCatPurchasesRepository.init`. They
 belong to the RevenueCat apps for the Flutter bundle ids (`com.andrewcoyle.compound.flutter.dev`
 on iOS, `com.andrewcoyle.compound.dev` on Android), not the Swift app's `revenueCatDevAPIKey`.
-Without a key, purchases are off: the user is treated as not premium (unless the app passes the
-development override, Swift's "Simulate Premium") and the paywall can't load products. The
-staging flavor uses `FakePurchasesRepository` and needs no key.
+The development flavor starts RevenueCat only when the running platform's key is set, and
+otherwise uses the premium `FakePurchasesRepository`, so nothing reaches RevenueCat without a key.
+The app logs RevenueCat in with the Firebase uid at every sign-in (`AppBloc`).
+
+The staging flavor uses `FakePurchasesRepository` and needs no key. Two defines reach every
+paywall state:
+
+- `--dart-define=STAGING_PREMIUM=false` starts without a subscription. The sample user reaches the
+  tabs (the coach's See Plans and Settings › Subscription open the paywall); signing in again, or
+  an account still in onboarding (`STAGING_ONBOARDING`), is held at "Why Subscribe?".
+- `--dart-define=STAGING_PURCHASES=cancelled,pending,failed,owned,loadFailed,noProducts` (any
+  of them, in order): what the next purchases and restores do, and whether the plans load.
 
 ---
 

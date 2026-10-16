@@ -55,6 +55,11 @@ class SettingsCubit extends Cubit<SettingsStatus> {
   /// `ProfileView_Disappear`.
   void disappeared() => _analytics.disappear('ProfileView');
 
+  /// `ProfileView_Subscription_Press`, before the store's subscription
+  /// page (a subscriber) or the paywall opens.
+  void subscriptionPressed() =>
+      _analytics.analytic('ProfileView_Subscription_Press');
+
   /// `ProfileView_Support_Press`.
   void supportPressed() => _analytics.analytic('ProfileView_Support_Press');
 

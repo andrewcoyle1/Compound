@@ -6,8 +6,14 @@ import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/metric_detail/models/metric_readings.dart';
+import 'package:compound/metric_detail/view/metric_chart.dart';
+import 'package:compound/metric_detail/view/metric_detail_view.dart'
+    show MetricChartPanel;
 import 'package:compound/programs/view/program_widgets.dart'
     show confirmDestructive;
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/training_library/bloc/exercise_history_bloc.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/cubit/delete_exercise_cubit.dart';
@@ -27,9 +33,8 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 /// One exercise from the library (Swift `ExerciseModelDetailView`): what
-/// it is and how it is done, and the sessions it was logged in. The user's
-/// own exercise can be deleted. The Charts and Records tabs wait for the
-/// estimated one-rep max's method info.
+/// it is and how it is done, the sessions it was logged in, its charts and
+/// its records. The user's own exercise can be deleted.
 class ExerciseDetailPage extends StatelessWidget {
   const new({required this.exerciseId, super.key});
 
@@ -108,6 +113,8 @@ class ExerciseDetailView extends StatelessWidget {
         children: [
           ExerciseAbout(exercise: exercise, library: library),
           _History(weightUnit: weightUnit),
+          _Charts(weightUnit: weightUnit),
+          _Records(weightUnit: weightUnit),
         ],
       ),
       TrainingLibraryLoaded() => Center(
@@ -129,7 +136,7 @@ class ExerciseDetailView extends StatelessWidget {
         context.watch<DeleteExerciseCubit>().state ==
         DeleteExerciseStatus.deleting;
     final scaffold = DefaultTabController(
-      length: 2,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           actions: [
@@ -171,6 +178,8 @@ class ExerciseDetailView extends StatelessWidget {
                   tabs: [
                     Tab(text: l10n.exerciseAboutTab),
                     Tab(text: l10n.exerciseHistoryTab),
+                    Tab(text: l10n.exerciseChartsTab),
+                    Tab(text: l10n.exerciseRecordsTab),
                   ],
                 ),
         ),
@@ -533,4 +542,304 @@ class _History extends StatelessWidget {
     l10n.repCount(performance.totalReps),
     AppFormat.weight(performance.heaviestWeightKg, weightUnit, locale: locale),
   );
+}
+
+/// The tabs that read the history: loading, a failure with Try Again, Not
+/// Logged Yet, or [builder] with the stats.
+class _StatsTab extends StatelessWidget {
+  const new({required this.builder});
+
+  final Widget Function(ExerciseDetailStats stats) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (context.watch<ExerciseHistoryBloc>().state) {
+      ExerciseHistoryLoading() => const Center(
+        child: CircularProgressIndicator.adaptive(),
+      ),
+      ExerciseHistoryFailure() => LibraryFailure(
+        message: l10n.exerciseHistoryLoadFailure,
+        onRetry: () => context.read<ExerciseHistoryBloc>().add(
+          const ExerciseHistorySubscriptionRequested(),
+        ),
+      ),
+      ExerciseHistoryLoaded(:final stats) when stats.isEmpty => Center(
+        child: LibraryEmptyState(
+          icon: AppSymbols.history,
+          title: l10n.exerciseNotLoggedTitle,
+          message: l10n.exerciseNotLoggedMessage,
+        ),
+      ),
+      ExerciseHistoryLoaded(:final stats) => builder(stats),
+    };
+  }
+}
+
+/// Charts: each session's heaviest set as a line, and its reps as bars,
+/// over a month, six months or a year (Swift `weightSeries` and
+/// `repsSeries`).
+class _Charts extends StatefulWidget {
+  const new({required this.weightUnit});
+
+  final AppWeightUnit weightUnit;
+
+  @override
+  State<_Charts> createState() => _ChartsState();
+}
+
+class _ChartsState extends State<_Charts> {
+  static const List<MetricRange> _ranges = [
+    MetricRange.month,
+    MetricRange.sixMonths,
+    MetricRange.year,
+  ];
+
+  MetricRange _weightRange = MetricRange.month;
+  MetricRange _repsRange = MetricRange.month;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final color = context.appColors.exercises;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final unit = widget.weightUnit;
+    return _StatsTab(
+      builder: (stats) {
+        final sessions = stats.chronological;
+        return ListView(
+          padding: const EdgeInsets.all(AppSpacing.l),
+          children: [
+            _ChartSection(
+              title: l10n.exerciseTopSet,
+              child: MetricChartPanel(
+                title: l10n.exerciseTopSet,
+                ranges: _ranges,
+                range: _weightRange,
+                today: today,
+                onRangeSelected: (range) =>
+                    setState(() => _weightRange = range),
+                value: (v) =>
+                    '${AppFormat.number(v, locale: locale)} ${unit.symbol}',
+                series: [
+                  MetricChartSeries(
+                    label: l10n.exerciseTopSet,
+                    color: color,
+                    isLine: true,
+                    points: [
+                      for (final p in sessions)
+                        (
+                          date: p.date.toLocal(),
+                          value: switch (unit) {
+                            AppWeightUnit.kilograms => p.heaviestWeightKg,
+                            AppWeightUnit.pounds =>
+                              p.heaviestWeightKg * AppFormat.poundsPerKilogram,
+                          },
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            _ChartSection(
+              title: l10n.exerciseRepsPerSession,
+              child: MetricChartPanel(
+                title: l10n.exerciseRepsPerSession,
+                ranges: _ranges,
+                range: _repsRange,
+                today: today,
+                onRangeSelected: (range) => setState(() => _repsRange = range),
+                value: (v) =>
+                    '${AppFormat.number(v, locale: locale)} '
+                    '${l10n.exerciseRepsUnit}',
+                series: [
+                  MetricChartSeries(
+                    label: l10n.metricReps,
+                    color: color,
+                    isBar: true,
+                    points: [
+                      for (final p in sessions)
+                        (date: p.date.toLocal(), value: p.totalReps.toDouble()),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ChartSection extends StatelessWidget {
+  const new({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: AppSpacing.s,
+    children: [
+      Semantics(
+        header: true,
+        child: Text(
+          title,
+          style: AppTextStyles.sectionTitle.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+      AppCard(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.l),
+          child: child,
+        ),
+      ),
+    ],
+  );
+}
+
+/// Records: the heaviest set with the best estimated one-rep max, the
+/// sessions that set a new best estimate, and the all-time totals (Swift
+/// `ExerciseModelDetailView`'s records).
+class _Records extends StatelessWidget {
+  const new({required this.weightUnit});
+
+  final AppWeightUnit weightUnit;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final colors = context.appColors;
+    final secondary = AppTextStyles.rowDetail.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+    String weight(double kg) =>
+        AppFormat.weight(kg, weightUnit, locale: locale);
+    String date(DateTime at) => DateFormat.yMMMd(locale).format(at.toLocal());
+    return _StatsTab(
+      builder: (stats) {
+        final best = stats.heaviest;
+        final records = stats.oneRepMaxRecords;
+        return ListView(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.l),
+          children: [
+            MethodInfoHeader(
+              title: l10n.exercisePersonalBest,
+              info: MethodInfo.estimatedOneRepMax(l10n),
+            ),
+            AppSection(
+              children: [
+                if (best == null)
+                  AppListRow(title: l10n.exerciseNoWorkingSets)
+                else
+                  Padding(
+                    padding: const EdgeInsets.all(AppSpacing.l),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: AppSpacing.xs,
+                            children: [
+                              Text(
+                                '${weight(best.heaviestWeightKg)} × '
+                                '${l10n.repCount(best.repsAtHeaviest)}',
+                                style: AppTextStyles.metric,
+                              ),
+                              Row(
+                                spacing: AppSpacing.xs,
+                                children: [
+                                  Icon(
+                                    AppSymbols.personalRecord,
+                                    color: colors.personalRecord,
+                                    size: AppIconSize.small.of(context),
+                                  ),
+                                  Flexible(
+                                    child: Text(
+                                      l10n.exerciseAchievedOn(date(best.date)),
+                                      style: secondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        AppStat(
+                          value: weight(stats.bestOneRepMaxKg),
+                          label: l10n.exerciseOneRepMaxLabel,
+                          size: AppStatSize.small,
+                          alignment: CrossAxisAlignment.end,
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            MethodInfoHeader(
+              title: l10n.exerciseRecentRecords,
+              info: MethodInfo.estimatedOneRepMax(l10n),
+            ),
+            AppSection(
+              children: [
+                if (records.isEmpty)
+                  AppListRow(title: l10n.exerciseNoRecords)
+                else
+                  for (final record in records)
+                    AppListRow(
+                      title: date(record.date),
+                      accessory: AppListRowValue(
+                        weight(record.bestOneRepMaxKg),
+                      ),
+                    ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            MethodInfoHeader(
+              title: l10n.exerciseAllTimeStats,
+              info: MethodInfo.tonnage(l10n),
+            ),
+            AppSection(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.l),
+                  child: Row(
+                    children: [
+                      for (final (value, label) in [
+                        (
+                          AppFormat.number(stats.totalSets, locale: locale),
+                          l10n.exerciseTotalSets,
+                        ),
+                        (
+                          AppFormat.number(stats.totalReps, locale: locale),
+                          l10n.exerciseTotalReps,
+                        ),
+                        (weight(stats.totalVolumeKg), l10n.exerciseTotalVolume),
+                      ])
+                        Expanded(
+                          child: AppStat(
+                            value: value,
+                            label: label,
+                            size: AppStatSize.small,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:compound_maths/compound_maths.dart' show estimatedOneRepMax;
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 
@@ -22,9 +23,13 @@ final class const ExercisePerformance({
 
   /// The reps done at [heaviestWeightKg].
   required final int repsAtHeaviest,
+
+  /// The best estimated one-rep max of its sets; 0 when none has one.
+  final double bestOneRepMaxKg = 0,
 }) extends Equatable {
   @override
   List<Object> get props => [
+    bestOneRepMaxKg,
     sessionId,
     date,
     workoutName,
@@ -39,9 +44,8 @@ final class const ExercisePerformance({
 /// What the exercise detail's History tab shows, from the finished sessions
 /// that included the exercise (Swift `ExerciseModelDetailStats`). Warm-ups
 /// and sets never marked done are left out.
-///
-/// The estimated one-rep max and the records built on it wait for the
-/// Records tab (`MethodInfo.estimatedOneRepMax`).
+/// The Charts tab plots each performance; the Records tab reads the
+/// all-time figures and the one-rep-max records.
 final class const ExerciseDetailStats({
   /// In the order the sessions were read.
   final List<ExercisePerformance> performances = const [],
@@ -68,6 +72,7 @@ final class const ExerciseDetailStats({
     var volume = 0.0;
     var heaviest = 0.0;
     var repsAtHeaviest = 0;
+    var bestOneRepMax = 0.0;
     for (final set in sets) {
       reps += set.reps ?? 0;
       volume += set.volumeKg ?? 0;
@@ -77,6 +82,8 @@ final class const ExerciseDetailStats({
       final weight = set.loadKg;
       if (set.isSubSet || setReps == null || setReps < 1) continue;
       if (weight == null || weight <= 0) continue;
+      final oneRepMax = estimatedOneRepMax(weight, setReps, rpe: set.rpe) ?? 0;
+      if (oneRepMax > bestOneRepMax) bestOneRepMax = oneRepMax;
       if (weight > heaviest ||
           (weight == heaviest && setReps > repsAtHeaviest)) {
         heaviest = weight;
@@ -92,6 +99,7 @@ final class const ExerciseDetailStats({
       volumeKg: volume,
       heaviestWeightKg: heaviest,
       repsAtHeaviest: repsAtHeaviest,
+      bestOneRepMaxKg: bestOneRepMax,
     );
   }
 
@@ -100,6 +108,58 @@ final class const ExerciseDetailStats({
   /// Newest first, as the History tab reads.
   List<ExercisePerformance> get mostRecentFirst =>
       [...performances]..sort((a, b) => b.date.compareTo(a.date));
+
+  /// Oldest first, as the charts and records read.
+  List<ExercisePerformance> get chronological =>
+      [...performances]..sort((a, b) => a.date.compareTo(b.date));
+
+  /// Working sets over every performance.
+  int get totalSets => performances.fold(0, (sum, p) => sum + p.workingSets);
+
+  /// Reps over every performance.
+  int get totalReps => performances.fold(0, (sum, p) => sum + p.totalReps);
+
+  /// Weight × reps over every performance.
+  double get totalVolumeKg =>
+      performances.fold(0, (sum, p) => sum + p.volumeKg);
+
+  /// The best estimated one-rep max ever; 0 with none.
+  double get bestOneRepMaxKg => performances.fold(
+    0,
+    (best, p) => p.bestOneRepMaxKg > best ? p.bestOneRepMaxKg : best,
+  );
+
+  /// The heaviest set ever, more reps winning a tie, in the order read
+  /// (Swift `heaviestSetKg`, `repsAtHeaviestSet`, `heaviestSetDate`); null
+  /// when nothing was lifted.
+  ExercisePerformance? get heaviest {
+    ExercisePerformance? best;
+    for (final p in performances) {
+      if (p.heaviestWeightKg <= 0) continue;
+      if (best == null ||
+          p.heaviestWeightKg > best.heaviestWeightKg ||
+          (p.heaviestWeightKg == best.heaviestWeightKg &&
+              p.repsAtHeaviest > best.repsAtHeaviest)) {
+        best = p;
+      }
+    }
+    return best;
+  }
+
+  /// The performances whose estimated one-rep max beat every one before,
+  /// newest first; equalling a best is no record
+  /// (`ExerciseModelDetailPresenter.oneRMRecords`).
+  List<ExercisePerformance> get oneRepMaxRecords {
+    var best = 0.0;
+    final records = <ExercisePerformance>[];
+    for (final p in chronological) {
+      if (p.bestOneRepMaxKg > best) {
+        best = p.bestOneRepMaxKg;
+        records.add(p);
+      }
+    }
+    return records.reversed.toList();
+  }
 
   @override
   List<Object> get props => [performances];

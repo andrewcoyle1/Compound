@@ -187,6 +187,22 @@ void main() {
         expect(find.text('Plate'), findsWidgets);
       });
 
+      // Swift `AddMealView`'s "Show all nutrients".
+      testWidgets('shows every nutrient the plate records', (tester) async {
+        await pumpLogger(tester, meal: draft);
+        expect(find.text('Fiber'), findsNothing);
+        await tester.scrollUntilVisible(find.text('Show all nutrients'), 200);
+        await tester.tap(find.text('Show all nutrients'));
+        await tester.pumpAndSettle();
+        expect(find.text('Carbohydrates'), findsWidgets);
+        await tester.scrollUntilVisible(find.text('Fiber'), 200);
+        expect(find.text('Fiber'), findsOneWidget);
+        await tester.scrollUntilVisible(
+          find.text('None of the foods on this plate record vitamins data.'),
+          200,
+        );
+      });
+
       testWidgets('an item is corrected in the amount sheet', (tester) async {
         await pumpLogger(tester, meal: draft);
         await tester.tap(find.text('Rolled Oats'));

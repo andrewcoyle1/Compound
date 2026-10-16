@@ -6,9 +6,12 @@ import 'package:compound/app/app.dart';
 import 'package:compound/app/document_id.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/add_meal/bloc/add_meal_bloc.dart';
+import 'package:compound/nutrition/add_meal/logic/nutrient_breakdown.dart';
 import 'package:compound/nutrition/add_meal/view/amount_sheets.dart';
 import 'package:compound/nutrition/add_meal/view/food_picker.dart';
 import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
+import 'package:compound/nutrition/foods/view/create_food_pages.dart'
+    show nutrientFieldLabel;
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
@@ -290,6 +293,14 @@ class _PlateView extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.xl),
+          _AllNutrients(
+            nutrients: scopedNutrients(
+              meal,
+              state.meals ?? const [],
+              state.scope,
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: AppBottomCta(
@@ -306,6 +317,112 @@ class _PlateView extends StatelessWidget {
     );
   }
 }
+
+/// Show all nutrients: every nutrient the plate's foods record at the
+/// chosen scope, by category, values only; only the four macros have
+/// targets (Swift `AddMealView`'s `breakdownSection`).
+class _AllNutrients extends StatelessWidget {
+  const new({required this.nutrients});
+
+  final Map<NutrientKey, double> nutrients;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final secondary = AppTextStyles.rowDetail.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+      child: AppCard(
+        child: ExpansionTile(
+          key: const Key('AddMeal.allNutrients'),
+          shape: const Border(),
+          collapsedShape: const Border(),
+          leading: const Icon(AppSymbols.nutrition),
+          title: Text(l10n.addMealShowAllNutrients),
+          expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final category in NutrientCategory.values) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.l,
+                  AppSpacing.m,
+                  AppSpacing.l,
+                  AppSpacing.xs,
+                ),
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    nutrientCategoryName(l10n, category),
+                    style: AppTextStyles.sectionTitle,
+                  ),
+                ),
+              ),
+              if (breakdown(nutrients, category) case final rows
+                  when rows.isNotEmpty)
+                for (final (key, value) in rows)
+                  AppListRow(
+                    title: nutrientKeyName(l10n, key),
+                    accessory: AppListRowValue(
+                      formatNutrient(key, value, locale: locale),
+                    ),
+                  )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.l,
+                    vertical: AppSpacing.s,
+                  ),
+                  child: Text(
+                    l10n.addMealNoneRecorded(
+                      nutrientCategoryName(l10n, category).toLowerCase(),
+                    ),
+                    style: secondary,
+                  ),
+                ),
+            ],
+            const SizedBox(height: AppSpacing.m),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A category's heading (Swift `Macros.name`).
+String nutrientCategoryName(AppLocalizations l10n, NutrientCategory category) =>
+    switch (category) {
+      NutrientCategory.protein => l10n.nutrientCategoryProtein,
+      NutrientCategory.fat => l10n.nutrientCategoryFat,
+      NutrientCategory.carbs => l10n.nutrientCategoryCarbs,
+      NutrientCategory.vitamins => l10n.nutrientCategoryVitamins,
+      NutrientCategory.minerals => l10n.nutrientCategoryMinerals,
+      NutrientCategory.other => l10n.nutrientCategoryOther,
+    };
+
+/// A nutrient's name (Swift `NutrientKey.name`).
+String nutrientKeyName(AppLocalizations l10n, NutrientKey key) => switch (key) {
+  NutrientKey.calories => l10n.foodDetailCalories,
+  NutrientKey.protein => l10n.foodFieldProtein,
+  NutrientKey.carbs => l10n.foodDetailCarbohydrates,
+  NutrientKey.fatTotal => l10n.foodDetailTotalFat,
+  NutrientKey.addedSugars => l10n.nutrientAddedSugars,
+  NutrientKey.sugar => l10n.nutrientSugar,
+  NutrientKey.vitaminB6Mg => l10n.nutrientVitaminB6,
+  NutrientKey.vitaminB12Mcg => l10n.nutrientVitaminB12,
+  NutrientKey.thiaminMg => l10n.nutrientThiamin,
+  NutrientKey.niacinMg => l10n.nutrientNiacin,
+  NutrientKey.riboflavinMg => l10n.nutrientRiboflavin,
+  NutrientKey.pantothenicAcidMg => l10n.nutrientPantothenicAcid,
+  NutrientKey.chlorideMg => l10n.foodDetailChloride,
+  NutrientKey.chromiumMcg => l10n.foodDetailChromium,
+  NutrientKey.molybdenumMcg => l10n.foodDetailMolybdenum,
+  NutrientKey.iodineMcg => l10n.foodDetailIodine,
+  NutrientKey.biotinMcg => l10n.nutrientBiotin,
+  _ => nutrientFieldLabel(l10n, key),
+};
 
 /// A plate item: tap to correct its amount, swipe to take it off.
 class _PlateItem extends StatelessWidget {

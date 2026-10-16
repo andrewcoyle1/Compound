@@ -1,6 +1,9 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/integrations/link_opener.dart';
+import 'package:compound/l10n/l10n.dart';
+import 'package:compound/metric_detail/view/metric_chart.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,6 +41,7 @@ void main() {
         restSeconds: 90,
         warmupSetCount: 1,
         notes: 'Squeeze.',
+        linkUrl: ' https://example.com/plank ',
         supersetGroupId: 'g',
         substituteExerciseIds: const ['dips'],
       ),
@@ -61,6 +65,7 @@ void main() {
     String location, {
     ExercisePickerRequest request = const ExercisePickerRequest(),
     List<WorkoutSessionModel> sessions = const [],
+    LinkOpener linkOpener = const LinkOpener(),
   }) async {
     // Wide enough for the whole filter bar, tall enough for the sections.
     tester.view
@@ -79,6 +84,7 @@ void main() {
       workoutSessionRepository: InMemoryWorkoutSessionRepository(
         sessions: sessions,
       ),
+      linkOpener: linkOpener,
     );
     await tester.pumpAndSettle();
   }
@@ -233,6 +239,101 @@ void main() {
       expect(find.text('2 sets · 8 reps · top 110 kg'), findsOneWidget);
     });
 
+    group('Charts and Records', () {
+      final now = DateTime.now();
+      // Calendar days, so every hour of the day gives the same sessions.
+      WorkoutSessionModel plankSession(
+        String id,
+        int daysAgo,
+        List<WorkoutSetModel> sets,
+      ) {
+        final at = DateTime(now.year, now.month, now.day - daysAgo, 9);
+        return WorkoutSessionModel(
+          id: id,
+          authorId: 'friend',
+          name: 'Session $id',
+          dateCreated: at,
+          dateModified: at,
+          endedAt: at.add(const Duration(hours: 1)),
+          exercises: [
+            WorkoutExerciseModel(
+              id: 'x$id',
+              authorId: 'friend',
+              templateId: 'plank',
+              name: 'Plank',
+              trackingMode: TrackingMode.weightReps,
+              index: 1,
+              sets: sets,
+            ),
+          ],
+        );
+      }
+
+      final sessions = [
+        plankSession('a', 10, [fixtureSet()]),
+        plankSession('b', 3, [fixtureSet(weightKg: 90)]),
+        plankSession('c', 1, [fixtureSet(reps: 3, weightKg: 120)]),
+      ];
+
+      testWidgets('charts the top set and the reps', (tester) async {
+        await pump(tester, '/training/exercises/plank', sessions: sessions);
+        await tester.tap(find.text('Charts'));
+        await tester.pumpAndSettle();
+        // The section's title and the series' label.
+        expect(find.text('Top Set'), findsNWidgets(2));
+        expect(find.text('Reps Per Session'), findsOneWidget);
+        expect(find.byType(MetricChart), findsNWidgets(2));
+        // Month, six months and year only.
+        expect(find.text('W'), findsNothing);
+        await tester.tap(find.text('Y').first);
+        await tester.pumpAndSettle();
+        expect(find.byType(MetricChart), findsNWidgets(2));
+        await tester.tap(find.text('6M').last);
+        await tester.pumpAndSettle();
+        expect(find.byType(MetricChart), findsNWidgets(2));
+      });
+
+      testWidgets('lists the best, the records and the totals', (tester) async {
+        await pump(tester, '/training/exercises/plank', sessions: sessions);
+        await tester.tap(find.text('Records'));
+        await tester.pumpAndSettle();
+        expect(find.text('Personal Best'), findsOneWidget);
+        expect(find.text('120 kg × 3 reps'), findsOneWidget);
+        expect(find.textContaining('Achieved on '), findsOneWidget);
+        expect(find.text('1RM'), findsOneWidget);
+        // 3 × 120 → 132; 5 × 100 → 116.7; 5 × 90 is no record.
+        expect(find.text('132 kg'), findsNWidgets(2));
+        expect(find.text('116.7 kg'), findsOneWidget);
+        expect(find.text('Total Sets'), findsOneWidget);
+        expect(find.text('13'), findsOneWidget);
+        expect(find.text('1,310 kg'), findsOneWidget);
+      });
+
+      testWidgets('say when the exercise was never logged', (tester) async {
+        await pump(tester, '/training/exercises/plank');
+        await tester.tap(find.text('Charts'));
+        await tester.pumpAndSettle();
+        expect(find.text('Not Logged Yet'), findsOneWidget);
+        await tester.tap(find.text('Records'));
+        await tester.pumpAndSettle();
+        expect(find.text('Not Logged Yet'), findsOneWidget);
+      });
+
+      testWidgets('a set with no weight has no personal best', (tester) async {
+        await pump(
+          tester,
+          '/training/exercises/plank',
+          sessions: [
+            plankSession('a', 1, [fixtureSet(weightKg: null)]),
+          ],
+        );
+        await tester.tap(find.text('Records'));
+        await tester.pumpAndSettle();
+        expect(find.text('No working sets logged yet.'), findsOneWidget);
+        expect(find.text('No records yet.'), findsOneWidget);
+      });
+    });
+
     testWidgets('says when the exercise is gone', (tester) async {
       await pump(tester, '/training/exercises/gone');
       expect(
@@ -347,10 +448,22 @@ void main() {
       expect(find.text('Superset A'), findsNWidgets(2));
       expect(find.text('Squeeze.'), findsOneWidget);
       expect(find.text('Dips'), findsWidgets);
+      expect(find.text('8–10 reps'), findsOneWidget);
+      // Plank's second set and Dips' only one.
+      expect(find.text('8–12 reps'), findsNWidgets(2));
+      expect(find.bySemanticsLabel(RegExp('Set 2, 8–12 reps')), findsOneWidget);
 
       await tester.tap(find.text('Plank'));
       await tester.pumpAndSettle();
       expect(find.text('Definition'), findsOneWidget);
+    });
+
+    testWidgets("opens an exercise's link with Watch", (tester) async {
+      final links = LinkRecorder();
+      await pump(tester, '/training/workouts/mine', linkOpener: links);
+      expect(find.bySemanticsLabel('Watch Plank'), findsOneWidget);
+      await tester.tap(find.text('Watch'));
+      expect(links.opened, [Uri.parse('https://example.com/plank')]);
     });
 
     testWidgets('a bundled template plans its muscles', (tester) async {
@@ -366,5 +479,37 @@ void main() {
         findsOneWidget,
       );
     });
+  });
+
+  group(SetTargetLabel, () {
+    test('describes a range, a ceiling, a floor or nothing', () async {
+      final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+      String describe(int? min, int? max) => SetTargetLabel.describe(
+        l10n,
+        SetTarget(id: 's', setNumber: 1, minReps: min, maxReps: max),
+        locale: 'en',
+      );
+      expect(describe(8, 12), '8–12 reps');
+      expect(describe(null, 12), '1–12 reps');
+      expect(describe(8, null), '8+ reps');
+      expect(describe(null, null), 'No target set');
+    });
+  });
+
+  // Swift `WorkoutTemplateDetailPresenterTests`' "only a web link opens".
+  test('only a web link opens', () {
+    WorkoutTemplateExercise slot(String? link) => WorkoutTemplateExercise(
+      id: 'a',
+      exercise: fixtureLibraryExercise('bench'),
+      setTargets: const [],
+      setRestTimers: false,
+      linkUrl: link,
+    );
+    expect(planLink(slot(null)), isNull);
+    expect(
+      planLink(slot(' https://example.com/bench ')),
+      Uri.parse('https://example.com/bench'),
+    );
+    expect(planLink(slot('javascript:alert(1)')), isNull);
   });
 }

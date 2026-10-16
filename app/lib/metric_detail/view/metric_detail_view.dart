@@ -86,14 +86,13 @@ class MetricDetailView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
-        _RangePicker(range: range, onSelected: onRangeSelected),
-        const SizedBox(height: AppSpacing.l),
-        _Chart(
+        MetricChartPanel(
           title: title,
           series: series,
           range: range,
           today: today,
           value: value,
+          onRangeSelected: onRangeSelected,
         ),
         const SizedBox(height: AppSpacing.xl),
         AppSection(
@@ -157,10 +156,70 @@ String metricDayText(
       : DateFormat.yMMMd(locale).format(date);
 }
 
+/// The range picker over a metric's chart, with its header: what a
+/// metric screen and an exercise's Charts tab share (Swift `ChartScreen`'s
+/// chart).
+class MetricChartPanel extends StatelessWidget {
+  const new({
+    required this.title,
+    required this.series,
+    required this.range,
+    required this.today,
+    required this.value,
+    required this.onRangeSelected,
+    this.ranges = MetricRange.values,
+    super.key,
+  });
+
+  /// The chart's name, for its accessibility summary.
+  final String title;
+
+  /// Every reading of each series.
+  final List<MetricChartSeries> series;
+
+  /// The range shown, one of [ranges].
+  final MetricRange range;
+
+  /// Today, at midnight: the chart's window ends on it.
+  final DateTime today;
+
+  /// A value as shown, with its unit.
+  final String Function(double) value;
+
+  /// Called with the range the user picks.
+  final ValueChanged<MetricRange> onRangeSelected;
+
+  /// The ranges offered.
+  final List<MetricRange> ranges;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _RangePicker(range: range, ranges: ranges, onSelected: onRangeSelected),
+        const SizedBox(height: AppSpacing.l),
+        _Chart(
+          title: title,
+          series: series,
+          range: range,
+          today: today,
+          value: value,
+        ),
+      ],
+    );
+  }
+}
+
 class _RangePicker extends StatelessWidget {
-  const new({required this.range, required this.onSelected});
+  const new({
+    required this.range,
+    required this.ranges,
+    required this.onSelected,
+  });
 
   final MetricRange range;
+  final List<MetricRange> ranges;
   final ValueChanged<MetricRange> onSelected;
 
   @override
@@ -169,7 +228,7 @@ class _RangePicker extends StatelessWidget {
     return SegmentedButton<MetricRange>(
       showSelectedIcon: false,
       segments: [
-        for (final range in MetricRange.values)
+        for (final range in ranges)
           ButtonSegment(
             value: range,
             label: Text(switch (range) {

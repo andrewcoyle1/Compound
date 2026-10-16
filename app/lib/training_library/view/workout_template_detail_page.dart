@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
+import 'package:compound/integrations/link_opener.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/mesocycle_design_page.dart';
@@ -28,7 +29,7 @@ import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart'
     show workoutCopyName;
 import 'package:training_library_repository/training_library_repository.dart'
-    show TrainingLibraryRepository;
+    show TrainingLibraryRepository, WorkoutEditorRules;
 import 'package:training_session/training_session.dart' show weekOf;
 
 /// One workout template (Swift `WorkoutTemplateDetailView`): the muscles it
@@ -405,7 +406,7 @@ class _Plan extends StatelessWidget {
         AppSection(
           header: l10n.workoutExercisesHeader(exercises.length),
           children: [
-            for (final exercise in exercises)
+            for (final exercise in exercises) ...[
               _ExerciseRow(
                 exercise: exercise,
                 supersetLetter: letters[exercise.supersetGroupId],
@@ -414,6 +415,9 @@ class _Plan extends StatelessWidget {
                   allExercises,
                 ),
               ),
+              if (planLink(exercise) case final link?)
+                _WatchRow(name: exercise.exercise.name, link: link),
+            ],
           ],
         ),
       ],
@@ -618,6 +622,15 @@ class _ExerciseRow extends StatelessWidget {
                         color: scheme.onSurface,
                       ),
                     ),
+                    if (exercise.setTargets.isNotEmpty)
+                      Wrap(
+                        spacing: AppSpacing.s,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          for (final target in exercise.setTargets)
+                            SetTargetLabel(target),
+                        ],
+                      ),
                     Text(
                       templateTargetsText(context, exercise.setTargets),
                       style: secondary,
@@ -648,6 +661,103 @@ class _ExerciseRow extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// An exercise's demonstration link, when it is a web address: trimmed,
+/// `http` or `https` only (Swift `WorkoutTemplateExercise.planLink`).
+Uri? planLink(WorkoutTemplateExercise exercise) =>
+    switch (WorkoutEditorRules.validatedLink(exercise.linkUrl ?? '')) {
+      final link? => Uri.parse(link),
+      null => null,
+    };
+
+/// Watch: opens the exercise's link outside the app (Swift's `Link` row).
+class _WatchRow extends StatelessWidget {
+  const new({required this.name, required this.link});
+
+  final String name;
+  final Uri link;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Semantics(
+      label: l10n.templateWatchLabel(name),
+      button: true,
+      excludeSemantics: true,
+      child: AppListRowButton(
+        title: l10n.templateWatch,
+        icon: AppSymbols.openExternally,
+        onPressed: () => unawaited(context.read<LinkOpener>().open(link)),
+      ),
+    );
+  }
+}
+
+/// "1  8–12 reps": a set's number in a small badge beside its rep target
+/// (Swift `SetTargetLabel`).
+class SetTargetLabel extends StatelessWidget {
+  const new(this.target, {super.key});
+
+  final SetTarget target;
+
+  /// "8–12 reps", "1–12 reps" with only a ceiling, "8+ reps" with only a
+  /// floor (`SetTarget.repTargetDescription`).
+  static String describe(
+    AppLocalizations l10n,
+    SetTarget target, {
+    String? locale,
+  }) => switch ((target.minReps, target.maxReps)) {
+    (final min?, final max?) => l10n.templateRepRange(
+      AppFormat.repRange(min, max, locale: locale),
+    ),
+    (null, final max?) => l10n.templateRepRange(
+      AppFormat.repRange(1, max, locale: locale),
+    ),
+    (final min?, null) => l10n.templateRepFloor(min),
+    (null, null) => l10n.templateNoTarget,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final description = describe(l10n, target, locale: locale);
+    return Semantics(
+      label: l10n.templateSetLabel(target.setNumber, description),
+      excludeSemantics: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: AppSpacing.xs,
+        children: [
+          DecoratedBox(
+            decoration: ShapeDecoration(
+              shape: const StadiumBorder(),
+              color: scheme.surfaceContainerHighest,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xs,
+                vertical: AppSpacing.xxs,
+              ),
+              child: Text(
+                '${target.setNumber}',
+                style: AppTextStyles.label.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+          ),
+          Text(
+            description,
+            style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
+          ),
+        ],
       ),
     );
   }

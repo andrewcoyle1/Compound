@@ -11,7 +11,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/add_meal/view/amount_sheets.dart';
 import 'package:compound/nutrition/bloc/nutrition_day_bloc.dart';
-import 'package:compound/nutrition/cubit/meal_draft_cubit.dart';
 import 'package:compound/nutrition/foods/view/food_detail_page.dart';
 import 'package:compound/nutrition/foods/view/foods_page.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
@@ -25,6 +24,8 @@ import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/profile/profile.dart';
+import 'package:compound/settings/nutrition/view/food_log_settings_page.dart'
+    show FoodLogSettingsPage;
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:flutter/services.dart';
@@ -85,7 +86,6 @@ class NutritionView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<NutritionDayBloc>().state;
-    final draft = context.watch<MealDraftCubit>().state;
     final search = context.watch<NutritionSearchCubit>().state;
     return MultiBlocListener(
       listeners: [
@@ -179,30 +179,6 @@ class NutritionView extends StatelessWidget {
             const ProfileButton(),
           ],
         ),
-        // The unlogged meal, one tap from being reopened
-        // (`MealAccessoryView`).
-        bottomNavigationBar: draft == null
-            ? null
-            : SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.s),
-                  child: AppCard(
-                    style: AppCardStyle.tile,
-                    child: ListTile(
-                      leading: const Icon(AppSymbols.meal),
-                      title: Text(
-                        l10n.nutritionDraftMeal(
-                          draft.items.length,
-                          AppFormat.kcal(draft.macros.calories.round()),
-                        ),
-                      ),
-                      trailing: const Icon(AppSymbols.disclosure),
-                      onTap: () => AddMealPage.show(context, draft),
-                    ),
-                  ),
-                ),
-              ),
         // The search over the user's foods and recipes sits above the day,
         // and its results replace the day while it has a query.
         body: Column(
@@ -384,6 +360,15 @@ class _Day extends StatelessWidget {
                     onPressed: () => unawaited(
                       showTimelineActions(context, state.selectedDay),
                     ),
+                  ),
+                  // Swift's `onCustomiseFoodLogPressed`, which logs no
+                  // event of its own.
+                  AppListRowButton(
+                    key: const Key('Nutrition.customizeFoodLog'),
+                    title: l10n.nutritionCustomizeFoodLog,
+                    icon: AppSymbols.settings,
+                    onPressed: () =>
+                        unawaited(context.pushNamed(FoodLogSettingsPage.name)),
                   ),
                 ],
               ),

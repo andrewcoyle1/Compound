@@ -734,6 +734,138 @@ void main() {
     });
   });
 
+  group('swappingInPlace (SetTrackerPresenterTests)', () {
+    final replacement = library(
+      'dumbbell-press',
+      name: 'Dumbbell Press',
+      variations: [
+        variation('db', [ref(m.EquipmentKind.freeWeight, 'dumbbells')]),
+        variation('bar', [ref(m.EquipmentKind.loadableBar, 'barbell')]),
+      ],
+    );
+    m.WorkoutExerciseModel swap(
+      m.WorkoutExerciseModel old, {
+      bool keep = true,
+      m.ExerciseModel? to,
+    }) => swappingInPlace(
+      old,
+      replacement: to ?? replacement,
+      keepLoggedSets: keep,
+      authorId: author,
+      now: start,
+      gym: null,
+      preference: null,
+      newId: Ids().call,
+    );
+
+    test('swapping an exercise starts its sets fresh', () {
+      final old = exercise(
+        'e1',
+        chosenVariationId: 'variation-1',
+        group: 'g',
+        sets: [set('s1', weightKg: 100), set('s2', index: 2, weightKg: 100)],
+      );
+      final swapped = swap(old);
+      expect(swapped.id, 'e1');
+      expect(swapped.supersetGroupId, 'g');
+      expect(swapped.templateId, 'dumbbell-press');
+      expect(swapped.name, 'Dumbbell Press');
+      expect(swapped.sets, hasLength(3));
+      expect(swapped.sets.every((s) => s.weightKg == null), isTrue);
+      // The old equipment choice goes; the replacement starts on its own.
+      expect(swapped.chosenVariationId, 'db');
+      expect(swapped.setTargets.single.minReps, 8);
+      expect(swapped.setTargets.single.maxReps, 12);
+    });
+
+    test('measured the same way, the logged sets stay', () {
+      final old = exercise(
+        'e1',
+        sets: [
+          set('s1', done: true, weightKg: 100),
+          set('s2', index: 2),
+          set('s3', index: 3),
+        ],
+      );
+      expect(measuresAlike(old, replacement), isTrue);
+      final swapped = swap(old);
+      expect(swapped.sets, hasLength(3));
+      expect(swapped.sets.first.id, 's1');
+      expect(swapped.sets.first.completedAt, isNotNull);
+      expect(
+        swapped.sets
+            .skip(1)
+            .every((s) => s.completedAt == null && s.weightKg == null),
+        isTrue,
+      );
+      expect(swapped.sets.map((s) => s.index), [1, 2, 3]);
+    });
+
+    test('measured differently, discarding starts it fresh', () {
+      final old = exercise(
+        'e1',
+        mode: m.TrackingMode.timeOnly,
+        sets: [set('s1', done: true), set('s2', index: 2)],
+      );
+      expect(measuresAlike(old, replacement), isFalse);
+      final perSide = library(
+        'lunge',
+        metrics: const [m.TrackableExerciseMetric.repsPerSide],
+      );
+      expect(
+        measuresAlike(exercise('e2', mode: m.TrackingMode.repsOnly), perSide),
+        isFalse,
+      );
+      final swapped = swap(old, keep: false);
+      expect(swapped.sets, hasLength(3));
+      expect(swapped.sets.every((s) => s.completedAt == null), isTrue);
+    });
+
+    test('open warm-ups are not counted; all logged adds nothing', () {
+      final swapped = swap(
+        exercise(
+          'e1',
+          sets: [
+            set('w1', warmup: true),
+            set('s1', index: 2, done: true),
+            set('s2', index: 3),
+            set('s3', index: 4),
+          ],
+        ),
+      );
+      expect(swapped.sets, hasLength(3));
+      expect(swapped.sets.where((s) => s.completedAt == null), hasLength(2));
+      expect(swapped.sets.any((s) => s.isWarmup), isFalse);
+      final allDone = swap(exercise('e1', sets: [set('s1', done: true)]));
+      expect(allDone.sets.map((s) => s.id), ['s1']);
+    });
+
+    test('kept split when it was and something was kept', () {
+      final perSide = library(
+        'lunge',
+        metrics: const [m.TrackableExerciseMetric.repsPerSide],
+      );
+      final split = exercise(
+        'e1',
+        mode: m.TrackingMode.repsOnly,
+        sets: [
+          set('l', side: 'left', done: true),
+          set('r', side: 'right', done: true),
+          set('l2', side: 'left', index: 2),
+          set('r2', side: 'right', index: 2),
+        ],
+      );
+      final swapped = swap(split, to: perSide);
+      expect(swapped.sets.map((s) => s.sideRawValue), [
+        'left',
+        'right',
+        'left',
+        'right',
+      ]);
+      expect(swapped.sets.take(2).map((s) => s.id), ['l', 'r']);
+    });
+  });
+
   test('withLibraryExercises takes the library copy; weekOf the week', () {
     final stale = library('bench', name: 'Old name');
     final template = _template([

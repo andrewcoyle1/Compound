@@ -879,6 +879,25 @@ void main() {
       expect(c.session.exercises, hasLength(3));
     });
 
+    test('swapping in place keeps the place and, when asked, the sets', () {
+      final c = controller(
+        session([
+          halfDone,
+          exercise('e2', index: 2, sets: [set('e2-s1')]),
+        ]),
+      )..swapInPlace('e1', replacement, keepLoggedSets: true);
+      final exercises = c.session.exercises;
+      expect(exercises, hasLength(2));
+      expect(exercises[0].id, 'e1');
+      expect(exercises[0].templateId, 'dumbbell-press');
+      expect(exercises[0].sets.first.completedAt, isNotNull);
+      c
+        ..swapInPlace('e2', replacement, keepLoggedSets: false)
+        ..swapInPlace('missing', replacement, keepLoggedSets: true);
+      expect(c.session.exercises[1].templateId, 'dumbbell-press');
+      expect(c.session.exercises, hasLength(2));
+    });
+
     test("the replacement takes the old exercise's place in a superset", () {
       final c = controller(
         session([

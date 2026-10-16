@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart';
+import 'package:compound/workout_tracker/logic/set_changes.dart';
 import 'package:compound/workout_tracker/logic/tracker_clock.dart';
+import 'package:compound/workout_tracker/view/set_table.dart';
 import 'package:compound/workout_tracker/view/tick.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
@@ -19,13 +20,17 @@ import 'package:training_session/training_session.dart';
 /// drop or mini-set is part of its set and only shows where it hangs from.
 class SetBadge extends StatelessWidget {
   const new({
+    required this.exercise,
     required this.set,
     required this.badge,
     required this.semanticsLabel,
+    required this.actions,
     super.key,
   });
 
+  final WorkoutExerciseModel exercise;
   final WorkoutSetModel set;
+  final SetTableActions actions;
   final String badge;
   final String semanticsLabel;
 
@@ -69,10 +74,7 @@ class SetBadge extends StatelessWidget {
       padding: EdgeInsets.zero,
       onSelected: (value) => switch (value) {
         final r.SetTypeChoice choice => unawaited(_changeType(context, choice)),
-        final r.SubSetKind kind => context.read<ActiveWorkoutCubit>().addSubSet(
-          set.id,
-          kind,
-        ),
+        final r.SubSetKind kind => actions.addSubSet(set.id, kind),
         _ => null,
       },
       itemBuilder: (_) => [
@@ -107,9 +109,8 @@ class SetBadge extends StatelessWidget {
   /// them is logged (`onSetTypeSelected`).
   Future<void> _changeType(BuildContext context, r.SetTypeChoice choice) async {
     final l10n = context.l10n;
-    final cubit = context.read<ActiveWorkoutCubit>();
     if (r.typeChoiceOf(rulesSet(set)) == choice) return;
-    final lost = cubit.state.loggedRowsLostBy(set.id, choice);
+    final lost = exercise.loggedRowsLostBy(set.id, choice);
     if (lost > 0) {
       final change = await confirmDestructive(
         context,
@@ -122,7 +123,7 @@ class SetBadge extends StatelessWidget {
       );
       if (!change) return;
     }
-    cubit.setSetType(set.id, choice);
+    actions.setSetType(set.id, choice);
   }
 }
 
@@ -162,14 +163,15 @@ Future<bool> confirmDestructive(
 /// it: "Delete Set 2? This also deletes its 2 drop sets."
 Future<void> deleteSet(
   BuildContext context,
+  SetTableActions actions,
+  WorkoutExerciseModel exercise,
   WorkoutSetModel set,
   String badge,
 ) async {
   final l10n = context.l10n;
-  final cubit = context.read<ActiveWorkoutCubit>();
   final message = TrackerText.subSetsDeleted(
     l10n,
-    cubit.state.subSetsRemovedBy(set.id),
+    exercise.subSetsRemovedBy(set.id),
   );
   if (message != null) {
     final delete = await confirmDestructive(
@@ -180,7 +182,7 @@ Future<void> deleteSet(
     );
     if (!delete) return;
   }
-  cubit.deleteSet(set.id);
+  actions.deleteSet(set.id);
 }
 
 /// The rest picker (`SetRestSheet`): minutes and seconds wheels opening on
@@ -295,10 +297,14 @@ class SetStopwatch extends StatefulWidget {
     required this.setId,
     required this.targetSeconds,
     required this.field,
+    required this.onStopped,
     super.key,
   });
 
   final String setId;
+
+  /// Hears the seconds held when it is stopped.
+  final ValueChanged<int> onStopped;
 
   /// The plan's seconds for a stretch or hold, else last time's.
   final int? targetSeconds;
@@ -321,10 +327,7 @@ class _SetStopwatchState extends State<SetStopwatch> {
       final seconds = _stopwatch.stop(_now());
       setState(() {});
       if (seconds == null) return;
-      context.read<ActiveWorkoutCubit>().stopwatchStopped(
-        widget.setId,
-        seconds,
-      );
+      widget.onStopped(seconds);
       unawaited(
         SemanticsService.sendAnnouncement(
           View.of(context),

@@ -12717,5 +12717,86 @@
                 "type": "String"
             }
         }
+    },
+    "sessionSuperset": "Superset…",
+    "@sessionSuperset": {
+        "description": "Session editor: exercise chip, pair it with another"
+    },
+    "sessionRemoveSuperset": "Remove Superset",
+    "@sessionRemoveSuperset": {
+        "description": "Session editor: exercise chip, leave a pair"
+    },
+    "sessionRemoveCircuit": "Remove Circuit",
+    "@sessionRemoveCircuit": {
+        "description": "Session editor: exercise chip, leave a group of three or more"
+    },
+    "sessionAddToGroup": "Add to Group",
+    "@sessionAddToGroup": {
+        "description": "Session editor: superset partner chooser title"
+    },
+    "sessionPairWith": "Pair '{name}' with:",
+    "@sessionPairWith": {
+        "description": "Session editor: superset partner chooser message",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "sessionNoExercisesAvailable": "No Exercises Available",
+    "@sessionNoExercisesAvailable": {
+        "description": "Session editor: no superset partner, title"
+    },
+    "sessionNoExercisesAvailableMessage": "Add more exercises to create a superset or circuit.",
+    "@sessionNoExercisesAvailableMessage": {
+        "description": "Session editor: no superset partner, message"
+    },
+    "sessionDiscardLoggedSetsTitle": "Discard Logged Sets?",
+    "@sessionDiscardLoggedSetsTitle": {
+        "description": "Session editor: swap to an exercise measured differently"
+    },
+    "sessionMeasuredDifferently": "{replacement} is measured differently, so the sets logged for {current} can't move to it.",
+    "@sessionMeasuredDifferently": {
+        "description": "Session editor: swap question message",
+        "placeholders": {
+            "replacement": {
+                "type": "String"
+            },
+            "current": {
+                "type": "String"
+            }
+        }
+    },
+    "sessionSwapAndDiscard": "Swap and Discard Sets",
+    "@sessionSwapAndDiscard": {
+        "description": "Session editor: swap question, destructive choice"
+    },
+    "sessionAddNote": "Add note",
+    "@sessionAddNote": {
+        "description": "Session editor: note button with no note"
+    },
+    "sessionEditNote": "Edit note",
+    "@sessionEditNote": {
+        "description": "Session editor: note button with a note"
+    },
+    "sessionAllSetsDone": "All sets done",
+    "@sessionAllSetsDone": {
+        "description": "Session editor: progress value when every set is logged"
+    },
+    "sessionSetProgress": "Set {done}/{total}",
+    "@sessionSetProgress": {
+        "description": "Session editor: exercise progress",
+        "placeholders": {
+            "done": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "trackerNoteSaveFailed": "Unable to Save Note",
+    "@trackerNoteSaveFailed": {
+        "description": "Exercise note could not be saved"
     }
 }

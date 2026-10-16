@@ -573,6 +573,81 @@ m.WorkoutExerciseModel addedExercise(
   );
 }
 
+/// Whether [replacement] is measured as [old] is, the same tracking mode and
+/// worked a side at a time or not, so [old]'s logged sets can move to it
+/// (`ExerciseTrackerPresenter.onSwapPressed`'s `measuredAlike`).
+bool measuresAlike(m.WorkoutExerciseModel old, m.ExerciseModel replacement) =>
+    old.trackingMode == replacement.trackingMode &&
+    rulesExercise(old).isPerSide == replacement.isPerSide;
+
+/// [old] swapped in place for [replacement], as a finished workout is
+/// corrected (`ExerciseTrackerPresenter.swap(_:to:keepingLoggedSets:)`).
+/// With [keepLoggedSets] the logged sets stay, followed by as many fresh
+/// working sets as were open (an open warm-up is not one); with nothing
+/// kept, three. The sets are numbered from one, kept split when [old] was
+/// and something was kept, the targets start over at the standard one, and
+/// the replacement is put on the equipment the session chooses in [gym].
+/// Its id, place, superset and notes stay.
+m.WorkoutExerciseModel swappingInPlace(
+  m.WorkoutExerciseModel old, {
+  required m.ExerciseModel replacement,
+  required bool keepLoggedSets,
+  required String authorId,
+  required DateTime now,
+  required m.GymProfileModel? gym,
+  required UnitPreference? preference,
+  IdGenerator newId = newUuid,
+}) {
+  final logged = keepLoggedSets
+      ? old.sets.where((set) => set.completedAt != null).toList()
+      : <m.WorkoutSetModel>[];
+  final rulesOld = rulesExercise(old);
+  final openCount = r.pairedSetCount(
+    rulesOld.sets.where((set) => set.completedAt == null && !set.isWarmup),
+  );
+  final fresh = logged.isEmpty || openCount > 0
+      ? defaultSets(
+          authorId: authorId,
+          now: now,
+          newId: newId,
+          targetCount: logged.isEmpty ? 3 : openCount,
+          perSide: replacement.isPerSide,
+        )
+      : <m.WorkoutSetModel>[];
+  var sets = [
+    for (final (index, set) in [...logged, ...fresh].indexed)
+      set.copyWith(index: index + 1),
+  ];
+  // Kept split if it was, so the fresh rows match the logged pairs above.
+  if (rulesOld.isSplit && logged.isNotEmpty) {
+    sets = modelSets(
+      r.splittingSides(sets.map(rulesSet).toList(), newId),
+      originals: sets,
+      now: now,
+    );
+  }
+  return takingLoad(
+    old.copyWith(
+      templateId: replacement.id,
+      name: replacement.name,
+      trackingMode: replacement.trackingMode,
+      imageName: replacement.sessionImageName,
+      sets: sets,
+      setTargets: [
+        m.SetTarget(
+          id: newId(),
+          setNumber: 1,
+          minReps: r.SetTarget.defaultRepRangeMin,
+          maxReps: r.SetTarget.defaultRepRangeMax,
+        ),
+      ],
+    ),
+    exercise: replacement,
+    gym: gym,
+    preference: preference,
+  );
+}
+
 /// Each template exercise with the library's current copy of it: a
 /// template keeps the copy taken when it was built, so equipment corrected
 /// since would never reach it.

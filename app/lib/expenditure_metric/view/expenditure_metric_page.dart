@@ -192,6 +192,10 @@ class _Detail extends StatelessWidget {
                     (date: day.date, value: day.intake),
                 ],
                 color: colors.calories,
+                // Bars under the expenditure line, averaged like any
+                // reading (Swift's combo chart).
+                isBar: true,
+                total: false,
               ),
               MetricChartSeries(
                 label: l10n.expenditureTitle,

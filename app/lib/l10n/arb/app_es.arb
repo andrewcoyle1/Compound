@@ -2916,5 +2916,9 @@
     "nutritionCustomizeFoodLog": "Personalizar registro de comidas",
     "mealDraftTitle": "Comida sin registrar",
     "mealDraftDetail": "{count, plural, =1{1 alimento · {calories}} other{{count} alimentos · {calories}}}",
-    "mealDraftLabel": "{count, plural, =1{Continuar comida en borrador, 1 alimento} other{Continuar comida en borrador, {count} alimentos}}"
+    "mealDraftLabel": "{count, plural, =1{Continuar comida en borrador, 1 alimento} other{Continuar comida en borrador, {count} alimentos}}",
+    "chartPreviousPeriod": "Periodo anterior",
+    "chartNextPeriod": "Periodo siguiente",
+    "contributionOfDays": "{count, plural, =1{de 1 día} other{de {count} días}}",
+    "contributionDaysLogged": "Días registrados, {range}"
 }

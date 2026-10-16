@@ -80,6 +80,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Sends [finder]'s question and lets the answer stream in, word by word.
+  Future<void> ask(WidgetTester tester, Finder finder) async {
+    await tap(tester, finder);
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('from Today: consent, a streamed answer, the saved chats, '
       'delete, open and withdraw', (tester) async {
     final users = await pumpApp(tester);
@@ -89,13 +96,21 @@ void main() {
     await tap(tester, find.text('Allow and Continue'));
 
     expect(find.text('How did my training go this week?'), findsOneWidget);
-    await tap(tester, find.text('How did my training go this week?'));
+    await ask(tester, find.text('How did my training go this week?'));
     expect(answers(), findsOneWidget);
     expect(
       (tester.widget(answers()) as CoachMessageBody).text,
       contains('bench press'),
     );
-    expect(find.text('How did my training go this week?'), findsNothing);
+    // The suggestions are gone, and the chat takes its saved title.
+    expect(find.text('Am I on track for my goal?'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('How did my training go this week?'),
+      ),
+      findsOneWidget,
+    );
 
     await tap(tester, find.byTooltip('More'));
     await tap(tester, find.text('Chats'));
@@ -110,7 +125,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Why has my weight stalled?'), findsNothing);
 
-    await tap(tester, find.text('How did my training go this week?'));
+    await ask(tester, find.text('How did my training go this week?'));
     expect(answers(), findsOneWidget);
     await tap(tester, find.byType(BackButton));
 
@@ -132,7 +147,7 @@ void main() {
     await tap(tester, find.text('Allow and Continue'));
 
     expect(find.text('Weight Trend'), findsOneWidget);
-    await tap(tester, find.text('Am I losing at the rate I planned?'));
+    await ask(tester, find.text('Am I losing at the rate I planned?'));
     expect(
       (tester.widget(answers()) as CoachMessageBody).text,
       contains('trend weight'),
@@ -157,7 +172,7 @@ void main() {
       find.byKey(const Key('Coach.draft')),
       'How is my week?',
     );
-    await tap(tester, find.byTooltip('Send'));
+    await ask(tester, find.byTooltip('Send'));
     expect(answers(), findsOneWidget);
 
     await tap(tester, find.byTooltip('More'));
@@ -178,6 +193,9 @@ void main() {
 
     await tap(tester, find.byTooltip('New Chat'));
     expect(find.text('Before You Ask'), findsOneWidget);
+    // Lets any snack bar's timer run out.
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
   });
 
   testWidgets('without Premium, the gate and no chat', (tester) async {
@@ -193,5 +211,8 @@ void main() {
       find.text("Plans aren't available in this version yet."),
       findsOneWidget,
     );
+    // The snack bar's own timer.
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
   });
 }

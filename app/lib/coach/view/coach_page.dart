@@ -71,9 +71,15 @@ class CoachView extends StatefulWidget {
 }
 
 class _CoachViewState extends State<CoachView> {
-  late final CoachCubit _cubit = context.read<CoachCubit>();
+  late final CoachCubit _cubit;
   final _draft = TextEditingController();
   final _scroll = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = context.read<CoachCubit>();
+  }
 
   @override
   void dispose() {

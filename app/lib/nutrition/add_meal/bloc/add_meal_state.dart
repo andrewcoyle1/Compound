@@ -9,11 +9,17 @@ enum FoodPickerMode {
   /// The user's foods and Open Food Facts.
   search,
 
+  /// A photo of the meal, read by the AI.
+  aiScanner,
+
   /// Energy and macros typed straight in.
   quickAdd,
 
   /// The user's recipes, foods and favourites.
   library,
+
+  /// The meal described in words, read by the AI.
+  describe,
 }
 
 /// Where the save has got to.

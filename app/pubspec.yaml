@@ -8,6 +8,8 @@ environment:
   flutter: ^3.47.0
 
 dependencies:
+  ai_repository:
+    path: packages/ai_repository
   analytics_repository:
     path: packages/analytics_repository
   app_ui:
@@ -17,6 +19,7 @@ dependencies:
   bloc: ^9.2.1
   body_repository:
     path: packages/body_repository
+  characters: ^1.4.1
   checkin_repository:
     path: packages/checkin_repository
   cloud_firestore: ^6.10.0

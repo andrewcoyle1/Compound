@@ -4,6 +4,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -55,7 +56,10 @@ void main() {
     analytics = AnalyticsRecorder();
   });
 
-  Future<void> pumpApp(WidgetTester tester) async {
+  Future<void> pumpApp(
+    WidgetTester tester, {
+    ShareSheet shareSheet = const ShareSheet(),
+  }) async {
     tester.view
       ..physicalSize = const Size(2400, 9000)
       ..devicePixelRatio = 3;
@@ -64,6 +68,7 @@ void main() {
       App(
         appVersion: const AppVersion(version: '1.4.0', build: '27'),
         storeReview: store,
+        shareSheet: shareSheet,
         analyticsRepository: analytics,
         purchasesRepository: purchases,
         programRepository: InMemoryProgramRepository(),
@@ -207,6 +212,25 @@ void main() {
         'DevSettingsView_ForceSignOut_Start',
         'DevSettingsView_ForceSignOut_Success',
       ]),
+    );
+  });
+
+  // DevSettingsPresenter.onSaveShareCardsPressed
+  testWidgets('the developer tools export the sample share card in both '
+      'formats', (tester) async {
+    final shares = ShareRecorder();
+    await pumpApp(tester, shareSheet: shares);
+    await go(tester, '/profile/settings/developer');
+    await tap(tester, find.text('Export Share Cards'));
+    for (var i = 0; i < 20 && shares.images.isEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+    }
+    expect(
+      [for (final (name, png) in shares.images) (name, png.isNotEmpty)],
+      [('compound-story.png', true), ('compound-square.png', true)],
     );
   });
 }

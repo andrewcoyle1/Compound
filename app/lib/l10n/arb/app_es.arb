@@ -2837,6 +2837,9 @@
     "devSettingsLibrary": "Biblioteca",
     "devSettingsExercises": "Ejercicios",
     "devSettingsWorkoutTemplates": "Plantillas de entrenamiento",
+    "devSettingsShareCard": "Tarjeta para compartir",
+    "devSettingsExportShareCards": "Exportar tarjetas para compartir",
+    "devSettingsExportShareCardsFooter": "Genera las tarjetas Historia y Cuadrada de una sesión de ejemplo y abre la hoja para compartir con ambas, para guardarlas en Fotos o enviarlas.",
     "accessoryResumeLabel": "{minutes, plural, =1{Reanudar entrenamiento, {name}, 1 minuto} other{Reanudar entrenamiento, {name}, {minutes} minutos}}",
     "accessorySkipRest": "Omitir descanso",
     "trackerDoNext": "Hacer a continuación",
@@ -2941,12 +2944,12 @@
     "reminderOfferMealMessage": "Compound puede recordarte registrar el desayuno, el almuerzo y la cena cada día. Puedes cambiarlo en Ajustes de notificaciones.",
     "reminderOfferMealAccept": "Activar recordatorios de comidas",
     "reminderOfferStreakTitle": "Recordatorio de racha",
+    "reminderOfferStreakMessage": "{weeks, plural, =1{Llevas una racha de {weeks} semana. Compound puede recordártelo por la tarde cuando el objetivo de la semana necesite una sesión ese día.} other{Llevas una racha de {weeks} semanas. Compound puede recordártelo por la tarde cuando el objetivo de la semana necesite una sesión ese día.}}",
     "reminderOfferStreakAccept": "Activar recordatorio de racha",
     "reminderOfferNotNow": "Ahora no",
     "reminderOfferSaveFailed": "No se pudo guardar el ajuste",
     "carouselActiveProgram": "Programa activo",
     "carouselAllWorkouts": "Todos los entrenamientos",
     "carouselLeft": "{count, plural, =1{Queda {count}} other{Quedan {count}}}",
-    "carouselRingTarget": "Objetivo: {count}",
-    "reminderOfferStreakMessage": "{weeks, plural, =1{Llevas una racha de {weeks} semana. Compound puede recordártelo por la tarde cuando el objetivo de la semana necesite una sesión ese día.} other{Llevas una racha de {weeks} semanas. Compound puede recordártelo por la tarde cuando el objetivo de la semana necesite una sesión ese día.}}"
+    "carouselRingTarget": "Objetivo: {count}"
 }

@@ -19,10 +19,19 @@ class ShareSheet {
     BuildContext context,
     Uint8List bytes, {
     required String name,
-  }) => SharePlus.instance.share(
+  }) => shareImages(context, [(name, bytes)]);
+
+  /// Shares PNG [images] together, each a name and its bytes.
+  Future<void> shareImages(
+    BuildContext context,
+    List<(String, Uint8List)> images,
+  ) => SharePlus.instance.share(
     ShareParams(
-      files: [XFile.fromData(bytes, mimeType: 'image/png', name: name)],
-      fileNameOverrides: [name],
+      files: [
+        for (final (name, bytes) in images)
+          XFile.fromData(bytes, mimeType: 'image/png', name: name),
+      ],
+      fileNameOverrides: [for (final (name, _) in images) name],
       sharePositionOrigin: _origin(context),
     ),
   );

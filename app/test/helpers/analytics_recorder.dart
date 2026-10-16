@@ -46,6 +46,12 @@ class ShareRecorder extends ShareSheet {
     Uint8List bytes, {
     required String name,
   }) async => images.add((name, bytes));
+
+  @override
+  Future<void> shareImages(
+    BuildContext context,
+    List<(String, Uint8List)> images,
+  ) async => this.images.addAll(images);
 }
 
 /// A [LinkOpener] that keeps the links it was asked to open.

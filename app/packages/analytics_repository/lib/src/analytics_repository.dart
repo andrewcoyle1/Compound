@@ -44,18 +44,50 @@ class AnalyticsRepository {
   void deleteUserProfile() =>
       _forEach((service) => service.deleteUserProfile());
 
+  /// Mixpanel's distinct id for this device, for RevenueCat's customer
+  /// profile (Swift `Constants.mixpanelDistinctId`); null without Mixpanel
+  /// or when it cannot say.
+  Future<String?> mixpanelDistinctId() =>
+      _read<MixpanelService>((service) => service.distinctId());
+
+  /// Firebase Analytics' app instance id, for RevenueCat's customer profile
+  /// (Swift `Constants.firebaseAnalyticsAppInstanceID`); null without
+  /// Firebase Analytics or when it cannot say.
+  Future<String?> firebaseAppInstanceId() =>
+      _read<FirebaseAnalyticsService>((service) => service.appInstanceId());
+
+  /// What the first service of type [T] answers; null when there is none or
+  /// it fails, which is logged.
+  Future<String?> _read<T extends AnalyticsService>(
+    Future<String?> Function(T service) read,
+  ) async {
+    for (final service in _services.whereType<T>()) {
+      try {
+        return await read(service);
+      } on Object catch (error, stackTrace) {
+        _log(service, error, stackTrace);
+        return null;
+      }
+    }
+    return null;
+  }
+
   void _forEach(Future<void> Function(AnalyticsService service) call) {
     for (final service in _services) {
       unawaited(
         Future.sync(() => call(service)).catchError(
-          (Object error, StackTrace stackTrace) => developer.log(
-            '${service.runtimeType} failed',
-            name: 'analytics',
-            error: error,
-            stackTrace: stackTrace,
-          ),
+          (Object error, StackTrace stackTrace) =>
+              _log(service, error, stackTrace),
         ),
       );
     }
   }
+
+  void _log(AnalyticsService service, Object error, StackTrace stackTrace) =>
+      developer.log(
+        '${service.runtimeType} failed',
+        name: 'analytics',
+        error: error,
+        stackTrace: stackTrace,
+      );
 }

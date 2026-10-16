@@ -417,6 +417,41 @@ void main() {
         await bloc.close();
       });
 
+      test("sends Mixpanel's and Firebase's ids with the email", () async {
+        final purchases = _MockPurchasesRepository();
+        when(() => purchases.states).thenAnswer((_) => const Stream.empty());
+        when(
+          () => purchases.logIn(
+            any(),
+            email: any(named: 'email'),
+            mixpanelDistinctId: any(named: 'mixpanelDistinctId'),
+            firebaseAppInstanceId: any(named: 'firebaseAppInstanceId'),
+          ),
+        ).thenAnswer((_) async => const []);
+        when(analyticsRepository.mixpanelDistinctId)
+            .thenAnswer((_) async => 'distinct');
+        when(analyticsRepository.firebaseAppInstanceId)
+            .thenAnswer((_) async => 'instance');
+        when(() => authRepository.user).thenAnswer((_) => Stream.value(user));
+        final bloc = AppBloc(
+          authRepository: authRepository,
+          userRepository: userRepository,
+          analyticsRepository: analyticsRepository,
+          purchasesRepository: purchases,
+          now: () => now,
+        )..add(const AppUserSubscriptionRequested());
+        await pumpEventQueue();
+        verify(
+          () => purchases.logIn(
+            'uid',
+            email: 'a@b.com',
+            mixpanelDistinctId: 'distinct',
+            firebaseAppInstanceId: 'instance',
+          ),
+        ).called(1);
+        await bloc.close();
+      });
+
       blocTest<AppBloc, AppState>(
         'a failed logIn is reported and leaves the gate open',
         setUp: () =>

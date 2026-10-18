@@ -313,6 +313,9 @@ milestones and the Firestore contract are in `docs/specs/flutter/`. Build agents
   `lib/firebase_options_development.dart.example`.
 - **Tests:** use the very_good_cli MCP `test` tool. A hook blocks `very_good test` and
   `very_good create` in the shell. Packages are held to 100% coverage.
+- **UI:** follow `docs/specs/flutter/ui-contract.md`. Reuse an `app_ui` widget before building one,
+  and put any new component in `app_ui`, not the screen. Feature code uses tokens only and no raw
+  Material buttons, rows, cards or dialogs; `scripts/flutter-ui-check.py` (CI) blocks new ones.
 - **Strings:** after adding English ARB messages, run `python3 scripts/arb-spanish.py`. It
   copies the Spanish from `Compound/Localizable.xcstrings`; translate whatever it lists by hand.
 - **CI:** `.github/workflows/flutter.yml` runs on PRs touching `app/`, `contracts/` or itself.

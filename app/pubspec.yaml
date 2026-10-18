@@ -1,6 +1,6 @@
 name: compound
 description: "Compound - training, nutrition and body-composition tracking."
-version: 1.0.0+1
+version: 1.1.0+1
 publish_to: none
 
 environment:
@@ -45,6 +45,7 @@ dependencies:
   firebase_core: ^4.15.0
   firebase_crashlytics: ^5.4.0
   firebase_messaging: ^16.7.0
+  firebase_remote_config: 6.7.0
   firebase_storage: 13.6.0
   flutter:
     sdk: flutter

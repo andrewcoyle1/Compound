@@ -104,6 +104,7 @@
 		4DD8F9F43F1E39F3422E21FB /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		507026F732DFE97ACA223A54 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		62184AF0EE58CD1F236DFE0C /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		5C0D0C1B2E9F4B7100A1B2C3 /* WorkoutSessionActivity-production.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = "WorkoutSessionActivity-production.entitlements"; sourceTree = "<group>"; };
 		65D878DEDAAE9977D73AB9A2 /* WorkoutSessionActivity-staging.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = "WorkoutSessionActivity-staging.entitlements"; sourceTree = "<group>"; };
 		68B5192B18D79901974E9DD7 /* WorkoutActivityChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutActivityChannel.swift; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -130,6 +131,7 @@
 		BBA190A27A98BCCDAEFEED24 /* HomeWidgets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeWidgets.swift; sourceTree = "<group>"; };
 		D33099E2CA3C52E18CB03FEA /* LiveActivityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityView.swift; sourceTree = "<group>"; };
 		DBA370496F9B05491E77D7C7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5C0D0C1A2E9F4B7100A1B2C3 /* Runner-production.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = "Runner-production.entitlements"; sourceTree = "<group>"; };
 		EF39D238690B3EC6DDACDE01 /* Runner-staging.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = "Runner-staging.entitlements"; sourceTree = "<group>"; };
 		F637F29632BA9F4B8A62AE0C /* AppIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -169,6 +171,7 @@
 				1D070155E783284D59699159 /* PrivacyInfo.xcprivacy */,
 				DBA370496F9B05491E77D7C7 /* Info.plist */,
 				839FA7DC31E3B7BFCA678B9C /* WorkoutSessionActivity-development.entitlements */,
+				5C0D0C1B2E9F4B7100A1B2C3 /* WorkoutSessionActivity-production.entitlements */,
 				65D878DEDAAE9977D73AB9A2 /* WorkoutSessionActivity-staging.entitlements */,
 			);
 			name = WorkoutSessionActivity;
@@ -255,6 +258,7 @@
 				97C147111CF9000F007C117D /* SceneDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				68B5192B18D79901974E9DD7 /* WorkoutActivityChannel.swift */,
+				5C0D0C1A2E9F4B7100A1B2C3 /* Runner-production.entitlements */,
 				EF39D238690B3EC6DDACDE01 /* Runner-staging.entitlements */,
 				F637F29632BA9F4B8A62AE0C /* AppIntents.swift */,
 				62184AF0EE58CD1F236DFE0C /* Localizable.xcstrings */,
@@ -471,7 +475,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Firebase config is gitignored (the repo is public): ios/flavors/<flavor>/GoogleService-Info.plist.\n# When the flavor has one, bundle it and register its REVERSED_CLIENT_ID as a URL scheme, which\n# Google Sign-In needs to return to the app. Flavors without one (staging, production) skip this.\nFLAVOR=\"${CONFIGURATION##*-}\"\nPLIST=\"${SRCROOT}/flavors/${FLAVOR}/GoogleService-Info.plist\"\nif [ ! -f \"$PLIST\" ]; then\n  echo \"No $PLIST: building without Firebase config.\"\n  exit 0\nfi\ncp \"$PLIST\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist\"\nSCHEME=$(/usr/libexec/PlistBuddy -c \"Print :REVERSED_CLIENT_ID\" \"$PLIST\")\nINFO=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\nif ! /usr/libexec/PlistBuddy -c \"Print :CFBundleURLTypes\" \"$INFO\" 2>/dev/null | grep -q \"$SCHEME\"; then\n  /usr/libexec/PlistBuddy -c \"Add :CFBundleURLTypes array\" \"$INFO\" 2>/dev/null || true\n  /usr/libexec/PlistBuddy -c \"Add :CFBundleURLTypes:0 dict\" \\\n    -c \"Add :CFBundleURLTypes:0:CFBundleURLSchemes array\" \\\n    -c \"Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string $SCHEME\" \"$INFO\"\nfi\n";
+			shellScript = "# Firebase config is gitignored (the repo is public): ios/flavors/<flavor>/GoogleService-Info.plist.\n# When the flavor has one, bundle it and register its REVERSED_CLIENT_ID as a URL scheme, which\n# Google Sign-In needs to return to the app. Flavors without one (staging) skip this.\nFLAVOR=\"${CONFIGURATION##*-}\"\nPLIST=\"${SRCROOT}/flavors/${FLAVOR}/GoogleService-Info.plist\"\nif [ ! -f \"$PLIST\" ]; then\n  echo \"No $PLIST: building without Firebase config.\"\n  exit 0\nfi\ncp \"$PLIST\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist\"\nSCHEME=$(/usr/libexec/PlistBuddy -c \"Print :REVERSED_CLIENT_ID\" \"$PLIST\")\nINFO=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\nif ! /usr/libexec/PlistBuddy -c \"Print :CFBundleURLTypes\" \"$INFO\" 2>/dev/null | grep -q \"$SCHEME\"; then\n  /usr/libexec/PlistBuddy -c \"Add :CFBundleURLTypes array\" \"$INFO\" 2>/dev/null || true\n  /usr/libexec/PlistBuddy -c \"Add :CFBundleURLTypes:0 dict\" \\\n    -c \"Add :CFBundleURLTypes:0:CFBundleURLSchemes array\" \\\n    -c \"Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string $SCHEME\" \"$INFO\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -558,12 +562,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = "";
+				APP_GROUP_ID = group.com.compound.app;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = "WorkoutSessionActivity/WorkoutSessionActivity-production.entitlements";
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = VRNWC32C76;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WorkoutSessionActivity/Info.plist;
@@ -647,10 +653,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = "";
+				APP_GROUP_ID = group.com.compound.app;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "Runner/Runner-production.entitlements";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = VRNWC32C76;
 				ENABLE_BITCODE = NO;
 				FLAVOR_APP_NAME = Compound;
 				FLUTTER_TARGET = lib/main_production.dart;
@@ -742,10 +751,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = "";
+				APP_GROUP_ID = group.com.compound.app;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "Runner/Runner-production.entitlements";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = VRNWC32C76;
 				ENABLE_BITCODE = NO;
 				FLAVOR_APP_NAME = Compound;
 				FLUTTER_TARGET = lib/main_production.dart;
@@ -832,10 +844,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = "";
+				APP_GROUP_ID = group.com.compound.app;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "Runner/Runner-production.entitlements";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = VRNWC32C76;
 				ENABLE_BITCODE = NO;
 				FLAVOR_APP_NAME = Compound;
 				FLUTTER_TARGET = lib/main_production.dart;
@@ -1514,12 +1529,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = "";
+				APP_GROUP_ID = group.com.compound.app;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = "WorkoutSessionActivity/WorkoutSessionActivity-production.entitlements";
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = VRNWC32C76;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WorkoutSessionActivity/Info.plist;
@@ -1548,12 +1565,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = "";
+				APP_GROUP_ID = group.com.compound.app;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = "WorkoutSessionActivity/WorkoutSessionActivity-production.entitlements";
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = VRNWC32C76;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;

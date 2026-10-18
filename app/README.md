@@ -27,9 +27,14 @@ $ flutter run --flavor development --target lib/main_development.dart
 # Staging
 $ flutter run --flavor staging --target lib/main_staging.dart
 
-# Production
-$ flutter run --flavor production --target lib/main_production.dart
+# Production (iOS only; dialed-c3cb5, the App Store app's ids)
+$ flutter run --flavor production --target lib/main_production.dart --dart-define-from-file=dart_defines.json
 ```
+
+Production reads `REVENUECAT_APPLE_API_KEY_PROD`, `MIXPANEL_TOKEN_PROD` and `STRAVA_CLIENT_ID_PROD`
+from the same gitignored `dart_defines.json` (the Swift app's `revenueCatProdAPIKey`, `mixpanelToken`
+and `stravaClientId`), and refuses to start without the RevenueCat key. Its Firebase config is
+gitignored like development's; `docs/specs/flutter/decisions.md` has the `flutterfire` command.
 
 _\*Compound works on iOS, Android, Web, and Windows._
 

@@ -35,7 +35,7 @@ jobs:
       min_coverage: 0
       # Firebase config is gitignored (public repo); the example has placeholder values, which is
       # all analysis and tests need. Runs after pub get, before format/analyze/test.
-      setup: cp lib/firebase_options_development.dart.example lib/firebase_options_development.dart
+      setup: cp lib/firebase_options_development.dart.example lib/firebase_options_development.dart && cp lib/firebase_options_production.dart.example lib/firebase_options_production.dart
 
   compound_models:
     name: compound_models

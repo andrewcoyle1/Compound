@@ -227,15 +227,15 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Feature | Swift | Milestone | Status | Flutter |
 |---|---|---|---|---|
 | Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | done | `auth_repository` (#86); Save Account links an anonymous account (#166); Apple on Android through Firebase's web flow (#191); Apple's button on both (#194); Google's branded button, matched to Apple's (#197) |
-| App Check | `AppCheckProviderFactory` | M1 | done | `main_development.dart`, debug token registered in M1; the production flavor isn't configured |
+| App Check | `AppCheckProviderFactory` | M1 | done | `main_development.dart`, debug token registered in M1; production: App Attest with a DeviceCheck fallback (#NNN) |
 | Offline data and sync | Sync engines | M1–M3 | done | Firestore cache + `writeLocally` (#111); Swift's `ensureOnline` pre-checks, at the same actions (`connectivity_repository`, #196); a finished workout stays on the device until the server confirms it (#196) |
 | Device-local preferences | `UserDefaults` | M5 | done | `device_store` on shared_preferences under Swift's keys (#170); review date and the editor's plates switch (#172) |
 | Per-exercise unit preferences | `ExerciseUnitPreferenceManager` | M3 | done | #163, on the device store (#170) |
 | Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |
 | Push notifications and deep links | `PushManager`, `DeepLink.swift` | M4 | partial | `notifications_repository` (#117), wiring (#127), inbox (#144), join links (#146), activity banner and clearing delivered pushes (#172); iOS pushes the system displayed cleared by identifier (#187); https workout pages routed in Dart, others' sessions opened over Social (#179; no Associated Domains or App Links, as Swift) |
 | Local reminders | `PushManager` (local) | M4 | done | come-back and meal reminders, rest-over, "Still training?" (#127, last asked on the device #170); permission prompt (#144); in-app reminder offers (`ReminderOfferFlow`, #176) |
-| Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); paywall, gate, RevenueCat logIn/logOut (#155); development runs the fake until the owner's keys; production not wired; logIn sends the email and the Mixpanel and Firebase Analytics ids (#177) |
-| A/B tests (Remote Config) | `ABTestManager` | M5 | done | `ab_test_repository` (#186): `notificationsTest` and `paywallTest` under Swift's keys and defaults, sent as Swift's user properties; development draws locally as Swift's dev, staging in memory, Remote Config for production (the production flavor isn't configured); `notificationsTest` drives nothing, as in Swift |
+| Purchases and paywall (RevenueCat) | `PurchaseManager` | M4 | partial | `purchases_repository` (#114); paywall, gate, RevenueCat logIn/logOut (#155); development runs the fake until the owner's keys; production uses the prod key and never the fake (#NNN); logIn sends the email and the Mixpanel and Firebase Analytics ids (#177) |
+| A/B tests (Remote Config) | `ABTestManager` | M5 | done | `ab_test_repository` (#186): `notificationsTest` and `paywallTest` under Swift's keys and defaults, sent as Swift's user properties; development draws locally as Swift's dev, staging in memory, Remote Config for production (#NNN); `notificationsTest` drives nothing, as in Swift |
 | App rating prompt | `ReviewMoment` | M5 | done | `ReviewMoment`, Rate row and food moments (#166); workout-finish moment and stored date (#172) |
 | HealthKit (iOS) and Health Connect (Android): steps, weight, workouts, meal import | `HealthKitManager`, `HKWorkoutManager` | M5 | partial | `health_repository` (#121), UI and native setup (#151); no live workout session (heart rate, active energy; iOS, M6); HealthKit capability is an owner TODO |
 | Live Activity and Dynamic Island (iOS); ongoing notification (Android) | `LiveActivityManager`, `WorkoutSessionActivity/` | M3 (Android), M6 (iOS) | done | Android ongoing notification (#127); no foreground service, by decision (#172); iOS (#184): `WorkoutSessionActivity` copied into `app/ios`, driven over `com.andrewcoyle.compound/live_activity`, buttons answered by `ActiveWorkoutCubit`; a button tapped after iOS has killed the app waits 10 s for Dart, then only clears its loading state |
@@ -273,8 +273,8 @@ None left: label OCR (#185) and A/B tests (#186) closed the last two.
   Sensitive, HealthKit and App Groups on the dev App IDs, with the entitlements in #188. Optionally the
   remote-notifications background mode (#117, #127). `compound://` is shared with the Swift app on one
   device (#127).
-- **HealthKit and Health Connect:** the HealthKit capability and entitlement for the production
-  bundle id (development is done, #188); the Play Console Health Connect declaration; a privacy policy page for the
+- **HealthKit and Health Connect:** the HealthKit capability on the production App ID (the
+  entitlement is in #NNN; development is done, #188); the Play Console Health Connect declaration; a privacy policy page for the
   rationale screen (#121, #151).
 - **RevenueCat paywall:** a paywall designed in RevenueCat's dashboard on the current offering, for
   the `revenueCat` arm of `paywallTest` (#186); without one RevenueCat shows its default template, and
@@ -291,11 +291,15 @@ None left: label OCR (#185) and A/B tests (#186) closed the last two.
 - **Legal URLs and store ids:** publish the Terms of Service and Privacy Policy (the stores need
   working links on the paywall, #155) and the disclaimer's links (#116, #128); store ids for Rate to
   open the listing (#166).
-- **Production flavor:** it throws at launch until the prod project is configured (#86); prod's
-  Apple provider already has its OAuth code flow (Services ID `com.andrewcoyle.compound.signin`), so
-  Sign in with Apple on Android needs nothing more there (#191); production
-  must use RevenueCat, never the fake (#155); Play Console account and closed test before Android 1.0
-  (plan, M3).
+- **Production flavor:** iOS is wired to `dialed-c3cb5` with the App Store app's ids, at the owner's
+  request on 18 Oct 2026 (#NNN). Before the first TestFlight upload, on the prod App IDs
+  (`com.andrewcoyle.compound` and `…WorkoutSessionActivity`): the App Group `group.com.compound.app`
+  on the extension's App ID as well as the app's, App Attest, Push, Time Sensitive, HealthKit and Sign
+  in with Apple on the app's (the Swift app already uses them, so this is likely a check, not a
+  change). App Check enforcement in prod accepts App Attest already. Prod's Apple provider has its
+  OAuth code flow (Services ID `com.andrewcoyle.compound.signin`), so Sign in with Apple on Android
+  needs nothing more there (#191). Android production is not configured: a prod Android app,
+  Play Console account and closed test before Android 1.0 (plan, M3).
 - **Translations and wording to review:**
   - Spanish written by hand: the label error and hint, "Describe your meal", "per 100ml" (#152);
     "{first} o {second}" (#156); the plural set confirmations (#158); "Siguiendo {name}" and the

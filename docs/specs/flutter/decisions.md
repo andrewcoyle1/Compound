@@ -293,6 +293,7 @@ why, and what would change it. Review these with the `feature/flutter` → `deve
 | 18 Oct 2026 | Owner review (#195) | Log Weight and Log Measurement are half sheets (0.6 height; full at large text); `AppSwipeActions` on about 20 rows with long press kept; relative times in comments and coach chats; a new exercise from the picker comes back ticked (differs from Swift); duplicates are "<name> (Copy)" | The owner's answers | — |
 | 18 Oct 2026 | Owner review (#194, #197) | Chart readout is Swift's floating callout; `AppScaffold` puts the app bar full width with the body in the readable column; share cards use the app icon; Apple's logo button and Google's branded button share one 56 pt frame; Android has a monochrome themed icon | The owner's answers; Apple's logo drawn from Apple's own file, as its guidelines direct | — |
 | 18 Oct 2026 | Tests (#193, #198) | Check-in tests take a fixed `now`; Social tests scroll to targets the recap banner can push off screen. The gym catalogue contract checks `bandColour` and `plateColour` are hex rather than exact values | Sunday-only failures; system colours vary by SDK | — |
+| 18 Oct 2026 | Production flavor (owner, #NNN) | At the owner's request, the iOS `production` flavor runs on prod `dialed-c3cb5` as the App Store app (`com.andrewcoyle.compound`, extension `…WorkoutSessionActivity`, `group.com.compound.app`), for a TestFlight build; supersedes M1 auth (#86). Swift's `.prod` choices: App Attest with a DeviceCheck fallback, no console logging, Mixpanel `prod`, RevenueCat's prod key (refuses to start without it, never the fake), Remote Config A/B tests. Both Firebase flavors share `firebase_app.dart`. Version 1.1.0, above Swift's 1.0 | The owner asked for it; a new version train can't collide with the Swift app's 1.0 build numbers and stays open whatever 1.0's review state | Android production is wanted |
 
 To regenerate the gitignored dev config, run this from `app/`:
 
@@ -306,3 +307,13 @@ flutterfire configure --project=compound-development --platforms=ios,android \
 
 It also adds two "FlutterFire" build phases to `project.pbxproj`; revert them, because the project's own
 script bundles the plist and skips it when the config is missing (CI).
+
+The production config (iOS only; it reuses prod's existing iOS app, which the Swift app uses):
+
+```bash
+flutterfire configure --project=dialed-c3cb5 --platforms=ios --ios-bundle-id=com.andrewcoyle.compound \
+  --out=lib/firebase_options_production.dart \
+  --ios-out=ios/flavors/production/GoogleService-Info.plist --ios-build-config=Release-production --yes
+```
+
+Revert its build phases the same way.

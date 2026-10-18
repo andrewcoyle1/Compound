@@ -105,38 +105,40 @@ final class const ExerciseDraft({
   final String description = '',
 }) extends Equatable {
   /// A copy of [exercise] to make a new exercise from (Exercise Settings'
-  /// Edit Duplicate): every field the flow asks for, under the same name.
-  /// An exercise with no metrics starts on reps, as nothing can be logged
-  /// without one.
-  factory duplicating(ExerciseModel exercise) => ExerciseDraft(
-    name: exercise.name,
-    metricA:
-        exercise.trackableMetrics.firstOrNull ?? TrackableExerciseMetric.reps,
-    metricB: exercise.trackableMetrics.skip(1).firstOrNull,
-    type: exercise.type,
-    laterality: exercise.laterality,
-    muscleGroups: exercise.muscleGroups,
-    isBodyweight: exercise.isBodyweight,
-    variations: [
-      for (final variation in exercise.equipmentVariations)
-        VariationDraft(
-          id: variation.id,
-          resistance: [
-            for (final ref in variation.resistanceEquipment)
-              (ref.kind, ref.equipmentId),
-          ],
-          support: [
-            for (final ref in variation.supportEquipment)
-              (ref.kind, ref.equipmentId),
-          ],
-        ),
-    ],
-    rangeOfMotion: exercise.rangeOfMotion,
-    stability: exercise.stability,
-    bodyweightContribution: exercise.bodyWeightContribution,
-    alternateNames: exercise.alternateNames,
-    description: exercise.description ?? '',
-  );
+  /// Edit Duplicate): every field the flow asks for, under [name] ("Bench
+  /// Press (Copy)"). An exercise with no metrics starts on reps, as nothing
+  /// can be logged without one.
+  factory duplicating(ExerciseModel exercise, {required String name}) =>
+      ExerciseDraft(
+        name: name,
+        metricA:
+            exercise.trackableMetrics.firstOrNull ??
+            TrackableExerciseMetric.reps,
+        metricB: exercise.trackableMetrics.skip(1).firstOrNull,
+        type: exercise.type,
+        laterality: exercise.laterality,
+        muscleGroups: exercise.muscleGroups,
+        isBodyweight: exercise.isBodyweight,
+        variations: [
+          for (final variation in exercise.equipmentVariations)
+            VariationDraft(
+              id: variation.id,
+              resistance: [
+                for (final ref in variation.resistanceEquipment)
+                  (ref.kind, ref.equipmentId),
+              ],
+              support: [
+                for (final ref in variation.supportEquipment)
+                  (ref.kind, ref.equipmentId),
+              ],
+            ),
+        ],
+        rangeOfMotion: exercise.rangeOfMotion,
+        stability: exercise.stability,
+        bodyweightContribution: exercise.bodyWeightContribution,
+        alternateNames: exercise.alternateNames,
+        description: exercise.description ?? '',
+      );
 
   /// The metrics in the order chosen, without a gap.
   List<TrackableExerciseMetric> get metrics => [metricA, ?metricB];

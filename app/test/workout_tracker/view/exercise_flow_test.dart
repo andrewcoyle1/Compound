@@ -242,7 +242,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const Key('CreateExercise.name')),
-        matching: find.text('One-Arm Row'),
+        matching: find.text('One-Arm Row (Copy)'),
       ),
       findsOneWidget,
     );

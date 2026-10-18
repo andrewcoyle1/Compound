@@ -12,7 +12,6 @@ import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -96,39 +95,69 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
         ),
         AppSection(
           children: [
-            MesocycleHeader(
-              mesocycle: mesocycle,
-              isDeload: view?.isDeload ?? false,
-              phase: view?.phase,
-              trailing: PopupMenuButton<void>(
-                icon: Icon(AppSymbols.more),
-                tooltip: l10n.programMesocycleOptions,
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    onTap: () => unawaited(
-                      MesocycleDesignPage.edit(context, mesocycle.id),
-                    ),
-                    child: Text(l10n.programInfo),
+            // Swift's swipe actions on the header, as its menu offers.
+            AppSwipeActions(
+              trailing: [
+                AppSwipeAction(
+                  label: l10n.programDelete,
+                  icon: AppSymbols.delete,
+                  isDestructive: true,
+                  onPressed: () => unawaited(_delete(context)),
+                ),
+                AppSwipeAction(
+                  label: l10n.programInfo,
+                  icon: AppSymbols.info,
+                  onPressed: () => unawaited(
+                    MesocycleDesignPage.edit(context, mesocycle.id),
                   ),
-                  PopupMenuItem(
-                    onTap: () => CoachPage.open(
-                      context,
-                      CoachContext(
-                        kind: CoachContextKind.mesocycle,
-                        id: mesocycle.id,
-                        title: mesocycle.name,
+                ),
+                AppSwipeAction(
+                  label: l10n.coachAskCoach,
+                  icon: AppSymbols.coach,
+                  onPressed: () => CoachPage.open(
+                    context,
+                    CoachContext(
+                      kind: CoachContextKind.mesocycle,
+                      id: mesocycle.id,
+                      title: mesocycle.name,
+                    ),
+                  ),
+                ),
+              ],
+              child: MesocycleHeader(
+                mesocycle: mesocycle,
+                isDeload: view?.isDeload ?? false,
+                phase: view?.phase,
+                trailing: PopupMenuButton<void>(
+                  icon: Icon(AppSymbols.more),
+                  tooltip: l10n.programMesocycleOptions,
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      onTap: () => unawaited(
+                        MesocycleDesignPage.edit(context, mesocycle.id),
+                      ),
+                      child: Text(l10n.programInfo),
+                    ),
+                    PopupMenuItem(
+                      onTap: () => CoachPage.open(
+                        context,
+                        CoachContext(
+                          kind: CoachContextKind.mesocycle,
+                          id: mesocycle.id,
+                          title: mesocycle.name,
+                        ),
+                      ),
+                      child: Text(l10n.coachAskCoach),
+                    ),
+                    PopupMenuItem(
+                      onTap: () => unawaited(_delete(context)),
+                      child: Text(
+                        l10n.programDeleteMesocycle,
+                        style: TextStyle(color: context.appColors.danger),
                       ),
                     ),
-                    child: Text(l10n.coachAskCoach),
-                  ),
-                  PopupMenuItem(
-                    onTap: () => unawaited(_delete(context)),
-                    child: Text(
-                      l10n.programDeleteMesocycle,
-                      style: TextStyle(color: context.appColors.danger),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             for (final item in view?.items ?? const <MicrocycleItem>[])
@@ -304,7 +333,7 @@ class const _MicrocycleMenu({
 }
 
 /// A day of the microcycle (Swift `MicrocycleItemRow`): the same circle on
-/// every day, filled when done. A long press offers Skip.
+/// every day, filled when done. A swipe or a long press offers Skip.
 class const _DayRow({
   required final MicrocycleItem item,
   required final VoidCallback onPressed,
@@ -329,33 +358,41 @@ class const _DayRow({
         : item.timing == MicrocycleTiming.future
         ? l10n.programDayUpcoming
         : l10n.programDayNotStarted;
-    return Semantics(
-      button: true,
-      value: value,
-      hint: item.canToggleRest
-          ? (item.isCompleted
-                ? l10n.programRestUntickHint
-                : l10n.programRestTickHint)
-          : null,
-      customSemanticsActions: {
-        CustomSemanticsAction(label: l10n.programSkip): ?onSkip,
-      },
-      child: InkWell(
-        onTap: onPressed,
-        onLongPress: onSkip == null
-            ? null
-            : () => unawaited(_offerSkip(context, onSkip)),
-        child: DayPlanRow(
-          plan: item.slot.dayPlan,
-          badge: badge,
-          trailing: ExcludeSemantics(
-            child: Icon(
-              item.isCompleted
-                  ? AppSymbols.success
-                  : item.isSkipped
-                  ? AppSymbols.skip
-                  : AppSymbols.choiceUnselected,
-              color: item.isCompleted ? scheme.primary : scheme.outline,
+    // Swift's swipe action, which the long press also offers.
+    return AppSwipeActions(
+      trailing: [
+        if (onSkip != null)
+          AppSwipeAction(
+            label: l10n.programSkip,
+            icon: AppSymbols.skip,
+            onPressed: onSkip,
+          ),
+      ],
+      child: Semantics(
+        button: true,
+        value: value,
+        hint: item.canToggleRest
+            ? (item.isCompleted
+                  ? l10n.programRestUntickHint
+                  : l10n.programRestTickHint)
+            : null,
+        child: InkWell(
+          onTap: onPressed,
+          onLongPress: onSkip == null
+              ? null
+              : () => unawaited(_offerSkip(context, onSkip)),
+          child: DayPlanRow(
+            plan: item.slot.dayPlan,
+            badge: badge,
+            trailing: ExcludeSemantics(
+              child: Icon(
+                item.isCompleted
+                    ? AppSymbols.success
+                    : item.isSkipped
+                    ? AppSymbols.skip
+                    : AppSymbols.choiceUnselected,
+                color: item.isCompleted ? scheme.primary : scheme.outline,
+              ),
             ),
           ),
         ),

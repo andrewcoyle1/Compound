@@ -203,56 +203,71 @@ class _DisclosureState extends State<_Disclosure> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(
-          button: true,
-          expanded: _expanded,
-          child: InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
-            child: MesocycleHeader(
-              mesocycle: widget.mesocycle,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  PopupMenuButton<void>(
-                    icon: Icon(AppSymbols.more),
-                    tooltip: l10n.programMesocycleOptions,
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        onTap: () => unawaited(
-                          MesocycleDesignPage.edit(
-                            context,
-                            widget.mesocycle.id,
-                          ),
-                        ),
-                        child: Text(l10n.programEditMesocycle),
-                      ),
-                      PopupMenuItem(
-                        onTap: () => unawaited(
-                          showShareToFollower(
-                            context,
-                            MesocycleSharePayload(widget.mesocycle),
-                          ),
-                        ),
-                        child: Text(l10n.shareWithFriends),
-                      ),
-                      if (onDelete != null)
+        // Swift's swipe to delete a saved mesocycle (`InactiveMesocycleView`).
+        AppSwipeActions(
+          trailing: [
+            if (onDelete != null)
+              AppSwipeAction(
+                label: l10n.programDelete,
+                icon: AppSymbols.delete,
+                isDestructive: true,
+                onPressed: onDelete,
+              ),
+          ],
+          child: Semantics(
+            button: true,
+            expanded: _expanded,
+            child: InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: MesocycleHeader(
+                mesocycle: widget.mesocycle,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    PopupMenuButton<void>(
+                      icon: Icon(AppSymbols.more),
+                      tooltip: l10n.programMesocycleOptions,
+                      itemBuilder: (_) => [
                         PopupMenuItem(
-                          onTap: onDelete,
-                          child: Text(
-                            l10n.programDeleteMesocycle,
-                            style: TextStyle(color: context.appColors.danger),
+                          onTap: () => unawaited(
+                            MesocycleDesignPage.edit(
+                              context,
+                              widget.mesocycle.id,
+                            ),
                           ),
+                          child: Text(l10n.programEditMesocycle),
                         ),
-                    ],
-                  ),
-                  ExcludeSemantics(
-                    child: AnimatedRotation(
-                      turns: _expanded ? 0.25 : 0,
-                      duration: AppMotion.quick.durationOf(context),
-                      child: Icon(AppSymbols.disclosure, color: scheme.outline),
+                        PopupMenuItem(
+                          onTap: () => unawaited(
+                            showShareToFollower(
+                              context,
+                              MesocycleSharePayload(widget.mesocycle),
+                            ),
+                          ),
+                          child: Text(l10n.shareWithFriends),
+                        ),
+                        if (onDelete != null)
+                          PopupMenuItem(
+                            onTap: onDelete,
+                            child: Text(
+                              l10n.programDeleteMesocycle,
+                              style: TextStyle(color: context.appColors.danger),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                ],
+                    ExcludeSemantics(
+                      child: AnimatedRotation(
+                        turns: _expanded ? 0.25 : 0,
+                        duration: AppMotion.quick.durationOf(context),
+                        child: Icon(
+                          AppSymbols.disclosure,
+                          color: scheme.outline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

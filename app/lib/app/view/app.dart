@@ -56,6 +56,7 @@ import 'package:compound/training_analytics/training_analytics_routes.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
+import 'package:compound/widgets/half_sheet_page.dart';
 import 'package:compound/workout_editor/workout_editor_routes.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
@@ -594,15 +595,12 @@ class _AppViewState extends State<AppView> {
       ...coachRoutes,
       ...paywallRoutes,
       ...goalEditingRoutes,
-      // Over the tabs, as the Swift app's sheet.
+      // Over the tabs, as the Swift app's half sheet.
       GoRoute(
         path: LogWeightPage.path,
         name: LogWeightPage.name,
-        pageBuilder: (_, state) => MaterialPage(
-          key: state.pageKey,
-          fullscreenDialog: true,
-          child: const LogWeightPage(),
-        ),
+        pageBuilder: (_, state) =>
+            HalfSheetPage(key: state.pageKey, child: const LogWeightPage()),
       ),
       // Over the tabs, as the Swift app's sheet; the week reviewed is the
       // query's, this week's without one.

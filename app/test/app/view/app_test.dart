@@ -758,8 +758,18 @@ void main() {
       await tester.tap(find.byTooltip('Log Weight'));
       await tester.pumpAndSettle();
       expect(find.byType(LogWeightView), findsOneWidget);
-      // It opens on the latest weigh-in.
-      expect(find.text('80 kg'), findsOneWidget);
+      // It opens on the latest weigh-in, over Scale Weight as a half sheet.
+      expect(
+        find.descendant(
+          of: find.byType(LogWeightView),
+          matching: find.text('80 kg'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
+      // The test window is short: drag the sheet up to full height.
+      await tester.drag(find.text('Date'), const Offset(0, -400));
+      await tester.pumpAndSettle();
       await tester.drag(
         find.byType(CupertinoPicker).first,
         const Offset(0, -64),

@@ -1,12 +1,12 @@
 @Timeout(Duration(seconds: 30))
 library;
 
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/workout_tracker/view/set_row_parts.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -141,10 +141,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(cubit.state.set(drops.first), isNotNull);
 
-    // Deleting the set asks, as its drops go with it.
-    await tester.longPress(find.byKey(ValueKey('cell-$setId-weight')));
+    // Deleting the set by swipe asks, as its drops go with it.
+    await tester.drag(
+      find.byKey(ValueKey('cell-$setId-weight')),
+      const Offset(-150, 0),
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Delete Set'));
+    await tester.tap(find.byIcon(AppSymbols.delete));
     await tester.pumpAndSettle();
     expect(find.text('Delete Set 1?'), findsOneWidget);
     expect(find.text('This also deletes its 2 drop sets.'), findsOneWidget);
@@ -159,9 +162,13 @@ void main() {
     final setId = (cubit.state.primaryAction! as r.LogSetAction).setId;
     final initial = cubit.state.card.single.restPicker[setId]!;
 
-    await tester.longPress(find.byKey(ValueKey('cell-$setId-reps')));
+    // The leading swipe opens it, as the long press does below.
+    await tester.drag(
+      find.byKey(ValueKey('cell-$setId-reps')),
+      const Offset(150, 0),
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Rest Timer…'));
+    await tester.tap(find.byIcon(AppSymbols.rest));
     await tester.pumpAndSettle();
     expect(find.byType(RestPickerSheet), findsOneWidget);
     expect(find.text('Set Rest'), findsOneWidget);

@@ -153,17 +153,29 @@ class _ExerciseTimersSection extends StatelessWidget {
       footer: l10n.timerDurationExerciseFooter,
       children: [
         for (final override in state.overrides)
-          AppListRowButton(
-            title: override.name,
-            subtitle: AppFormat.duration(Duration(seconds: override.seconds)),
-            accessory: AppListRowCustom(
-              IconButton(
-                icon: const Icon(AppSymbols.delete),
-                tooltip: l10n.timerDurationRemove,
+          // Swift's swipe to remove, beside the row's own button.
+          AppSwipeActions(
+            trailing: [
+              AppSwipeAction(
+                label: l10n.timerDurationRemove,
+                icon: AppSymbols.delete,
+                isDestructive: true,
                 onPressed: () => cubit.remove(override.id),
               ),
+            ],
+            child: AppListRowButton(
+              title: override.name,
+              subtitle: AppFormat.duration(Duration(seconds: override.seconds)),
+              accessory: AppListRowCustom(
+                IconButton(
+                  icon: const Icon(AppSymbols.delete),
+                  tooltip: l10n.timerDurationRemove,
+                  onPressed: () => cubit.remove(override.id),
+                ),
+              ),
+              onPressed: () =>
+                  edit(override.id, override.name, override.seconds),
             ),
-            onPressed: () => edit(override.id, override.name, override.seconds),
           ),
         AppListRowButton(
           title: l10n.timerDurationAddExercise,

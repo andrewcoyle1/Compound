@@ -26,7 +26,7 @@ import 'package:user_repository/user_repository.dart';
 /// sheet: one step at a time, its choices pinned under it. Opened from
 /// Today and the Nutrition Overview with the week it reviews.
 class CheckInPage extends StatelessWidget {
-  const new({required this.weekStart, super.key});
+  const new({required this.weekStart, super.key, this.now});
 
   static const path = '/check-in';
   static const name = 'checkIn';
@@ -43,6 +43,9 @@ class CheckInPage extends StatelessWidget {
 
   /// The ISO week the check-in reviews, which completing it records.
   final DateTime weekStart;
+
+  /// The moment the check-in runs at; now when null. For tests.
+  final DateTime Function()? now;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +64,7 @@ class CheckInPage extends StatelessWidget {
         dismissals: context.read<ProposalDismissals>(),
         uid: state.user.uid,
         weekStart: weekStart,
+        now: now ?? DateTime.now,
       )..add(const WeeklyCheckInStarted()),
       child: const CheckInView(),
     );

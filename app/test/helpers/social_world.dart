@@ -1,5 +1,7 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
@@ -43,4 +45,22 @@ final class SocialWorld {
   final CircleBloc circle;
 
   UserModel get viewer => circle.state.viewer!;
+}
+
+/// Scrolls the Social dashboard until [finder] is on screen. Its banners
+/// vary by day (the week's recap shows on the week's first day), so a test
+/// scrolls to what it needs rather than assume where it sits.
+Future<void> revealOnDashboard(WidgetTester tester, Finder finder) async {
+  for (var i = 0; i < 20 && finder.evaluate().isEmpty; i++) {
+    await tester.drag(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      ),
+      const Offset(0, -200),
+    );
+    await tester.pump();
+  }
+  await tester.ensureVisible(finder.first);
+  await tester.pump();
 }

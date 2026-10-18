@@ -178,10 +178,9 @@ void main() {
 
   testWidgets('a feed card shares its workout as an image', (tester) async {
     await pump(tester, '/social');
-    final more = find.bySemanticsLabel('More actions').first;
-    await tester.ensureVisible(more);
-    await tester.pump();
-    await tester.tap(more);
+    final more = find.bySemanticsLabel('More actions');
+    await revealOnDashboard(tester, more);
+    await tester.tap(more.first);
     await settle(tester);
     await tester.tap(find.text('Share Image'));
     await tester.pumpAndSettle();

@@ -99,3 +99,43 @@ struct FoodLogSettings: DataSyncModelProtocol {
         FoodLogSettings(authorId: "mock_user_123")
     }
 }
+
+extension FoodLogSettings {
+    /// Every field but the author falls back to its default, so a document missing one — saved
+    /// before the field existed — still decodes. Decoded strictly, such a document vanished: the
+    /// screen showed defaults and the next save overwrote the user's settings with them.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(authorId: try container.decode(String.self, forKey: .authorId))
+        id = container.decode(.id, or: id)
+        showOverages = container.decode(.showOverages, or: showOverages)
+        showsFoodTimestamps = container.decode(.showsFoodTimestamps, or: showsFoodTimestamps)
+        showHourlyMacroTotals = container.decode(.showHourlyMacroTotals, or: showHourlyMacroTotals)
+        showCalendarWeekBanner = container.decode(.showCalendarWeekBanner, or: showCalendarWeekBanner)
+        premove = container.decode(.premove, or: premove)
+        timestampSide = container.decode(.timestampSide, or: timestampSide)
+        showAddFoodsButton = container.decode(.showAddFoodsButton, or: showAddFoodsButton)
+        startHour = container.decode(.startHour, or: startHour)
+        endHour = container.decode(.endHour, or: endHour)
+        hideFoodDetails = container.decode(.hideFoodDetails, or: hideFoodDetails)
+        hideEmptyHours = container.decode(.hideEmptyHours, or: hideEmptyHours)
+        showBrandedFoods = container.decode(.showBrandedFoods, or: showBrandedFoods)
+        showOpenFoodFactsFoods = container.decode(.showOpenFoodFactsFoods, or: showOpenFoodFactsFoods)
+        showFoodImageInTimeline = container.decode(.showFoodImageInTimeline, or: showFoodImageInTimeline)
+        showCaloriesInTimeline = container.decode(.showCaloriesInTimeline, or: showCaloriesInTimeline)
+        showMacrosInTimeline = container.decode(.showMacrosInTimeline, or: showMacrosInTimeline)
+        showFoodImageInLogger = container.decode(.showFoodImageInLogger, or: showFoodImageInLogger)
+        showCaloriesInLogger = container.decode(.showCaloriesInLogger, or: showCaloriesInLogger)
+        showMacrosInLogger = container.decode(.showMacrosInLogger, or: showMacrosInLogger)
+        showPortionInLogger = container.decode(.showPortionInLogger, or: showPortionInLogger)
+        showCaloriesRing = container.decode(.showCaloriesRing, or: showCaloriesRing)
+        showProteinRing = container.decode(.showProteinRing, or: showProteinRing)
+        showFatRing = container.decode(.showFatRing, or: showFatRing)
+        showCarbsRing = container.decode(.showCarbsRing, or: showCarbsRing)
+        autoSetCurrentTime = container.decode(.autoSetCurrentTime, or: autoSetCurrentTime)
+        favouriteMeasurements = container.decode(.favouriteMeasurements, or: favouriteMeasurements)
+        favouriteFoodIds = container.decode(.favouriteFoodIds, or: favouriteFoodIds)
+        favouriteRecipeIds = container.decode(.favouriteRecipeIds, or: favouriteRecipeIds)
+        quickAddEnabled = container.decode(.quickAddEnabled, or: quickAddEnabled)
+    }
+}

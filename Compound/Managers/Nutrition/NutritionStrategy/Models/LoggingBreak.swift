@@ -11,7 +11,7 @@ import Foundation
 /// anyone asks are "is one open" and "when did it start". While it is open the expenditure
 /// estimate freezes at `startDate` and no check-in comes due, which is the whole point — a break
 /// from logging that still nagged weekly would not be a break.
-struct LoggingBreak: DataSyncModelProtocol {
+struct LoggingBreak: DataSyncModelProtocol, ReplacesClearedFields {
 
     var id: String = LoggingBreak.documentId
     let authorId: String
@@ -33,7 +33,7 @@ struct LoggingBreak: DataSyncModelProtocol {
         self.endDate = endDate
     }
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case authorId = "author_id"
         case startDate = "start_date"

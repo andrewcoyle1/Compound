@@ -39,7 +39,10 @@ void main() {
     await tester.pumpApp(
       InheritedGoRouter(
         goRouter: router,
-        child: CheckInPage(weekStart: DateTime(2026, 10, 12)),
+        child: CheckInPage(
+          weekStart: DateTime(2026, 10, 12),
+          now: () => data.now,
+        ),
       ),
       appBloc: appBloc,
       userRepository: data.users,
@@ -128,7 +131,14 @@ void main() {
       data = StagingData(
         withPlan: false,
         loggingBreaks: [
-          LoggingBreak(authorId: uid, startDate: DateTime(2026, 10, 14)),
+          LoggingBreak(
+            authorId: uid,
+            startDate: DateTime(
+              stagingNow.year,
+              stagingNow.month,
+              stagingNow.day - 1,
+            ),
+          ),
         ],
         measurements: const [],
       );

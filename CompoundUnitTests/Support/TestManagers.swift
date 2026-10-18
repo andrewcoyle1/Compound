@@ -24,26 +24,28 @@ enum TestManagers {
         "\(name)-\(UUID().uuidString)"
     }
 
+    /// `firestoreSaves` applies each save as Firestore would (`FirestoreSaveSemantics`) rather than
+    /// replacing the stored document, for tests of what a save leaves behind.
     static func collectionEngine<T: DataSyncModelProtocol>(
         _ collection: [T],
-        key name: String = "collection"
+        key name: String = "collection",
+        firestoreSaves: Bool = false
     ) -> CollectionSyncEngine<T> {
-        CollectionSyncEngine<T>(
-            remote: MockRemoteCollectionService(collection: collection),
-            managerKey: key(name),
-            enableLocalPersistence: false
-        )
+        let mock = MockRemoteCollectionService(collection: collection)
+        return firestoreSaves
+            ? CollectionSyncEngine<T>(remote: FirestoreSemanticsCollectionService(mock), managerKey: key(name), enableLocalPersistence: false)
+            : CollectionSyncEngine<T>(remote: mock, managerKey: key(name), enableLocalPersistence: false)
     }
 
     static func documentEngine<T: DataSyncModelProtocol>(
         _ document: T?,
-        key name: String = "document"
+        key name: String = "document",
+        firestoreSaves: Bool = false
     ) -> DocumentSyncEngine<T> {
-        DocumentSyncEngine<T>(
-            remote: MockRemoteDocumentService(document: document),
-            managerKey: key(name),
-            enableLocalPersistence: false
-        )
+        let mock = MockRemoteDocumentService(document: document)
+        return firestoreSaves
+            ? DocumentSyncEngine<T>(remote: FirestoreSemanticsDocumentService(mock), managerKey: key(name), enableLocalPersistence: false)
+            : DocumentSyncEngine<T>(remote: mock, managerKey: key(name), enableLocalPersistence: false)
     }
 
     static func userManager(

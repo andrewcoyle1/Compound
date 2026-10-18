@@ -90,7 +90,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Nutrition | RecipeStart | `Recipes/RecipeStart` | M3 | done | #145 |
 | Nutrition | TimelineActions | `TimelineActions` | M3 | done | #142 |
 | Onboarding | Welcome | `0 - WelcomeView` | M3 | done | the sign-in page stands in (#86, #116); a non-premium user is held at `/subscribe` (#155) |
-| Onboarding | Auth | `2 - AuthView` | M3 | done | `sign_in/` (#86): Apple, Google and anonymous; Apple on Android through Firebase's web flow (#191); Apple's button on both (#194) |
+| Onboarding | Auth | `2 - AuthView` | M3 | done | `sign_in/` (#86): Apple, Google and anonymous; Apple on Android through Firebase's web flow (#191); Apple's button on both (#194); Google's branded button, matched to Apple's (#197) |
 | Onboarding | Subscription | `3 - Subscription` | M3 | done | #155, `/subscribe` (Why Subscribe) and `/subscribe/plans` |
 | Onboarding | NamePhoto | `4 - CompleteAccountSetup/1 - NamePhoto` | M3 | done | #116; photo (#161) |
 | Onboarding | Gender | `4 - CompleteAccountSetup/2 - Gender` | M3 | done | #116; Fill from Apple Health on iOS (#151) |
@@ -226,7 +226,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 
 | Feature | Swift | Milestone | Status | Flutter |
 |---|---|---|---|---|
-| Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | done | `auth_repository` (#86); Save Account links an anonymous account (#166); Apple on Android through Firebase's web flow (#191); Apple's button on both (#194) |
+| Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | done | `auth_repository` (#86); Save Account links an anonymous account (#166); Apple on Android through Firebase's web flow (#191); Apple's button on both (#194); Google's branded button, matched to Apple's (#197) |
 | App Check | `AppCheckProviderFactory` | M1 | done | `main_development.dart`, debug token registered in M1; the production flavor isn't configured |
 | Offline data and sync | Sync engines | M1–M3 | done | Firestore cache + `writeLocally` (#111); no `ensureOnline` pre-checks (#146, #148, by decision) |
 | Device-local preferences | `UserDefaults` | M5 | done | `device_store` on shared_preferences under Swift's keys (#170); review date and the editor's plates switch (#172) |

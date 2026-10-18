@@ -170,7 +170,7 @@ class _GymProfileViewState extends State<GymProfileView> {
             break;
         }
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: switch (widget.title) {
             final title? => Text(title),

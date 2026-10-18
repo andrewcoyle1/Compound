@@ -158,7 +158,7 @@ class _ChallengeDetailViewState extends State<ChallengeDetailView> {
               .progressRead(state.challenge!.id, state.progress),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(challenge?.title ?? ''),
           actions: [

@@ -172,6 +172,9 @@ void main() {
 
     testWidgets('a filter matching nothing says so', (tester) async {
       await pump(tester, '/training/exercises');
+      // The filter bar scrolls within the readable column.
+      await tester.ensureVisible(find.text('Library'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Library'));
       await tester.pumpAndSettle();
       await tester.tap(

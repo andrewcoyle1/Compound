@@ -58,7 +58,7 @@ class _MacrocyclesPageState extends State<MacrocyclesPage> {
       icon: AppSymbols.macrocycle,
       onPressed: () => open(macrocycle.id),
     );
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(l10n.programMacrocyclesTitle),
         actions: [

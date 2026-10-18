@@ -78,9 +78,9 @@ class _WeightListEditorPageState extends State<WeightListEditorPage>
     final l10n = context.l10n;
     final list = widget.list;
     final item = GymEditorRules.item(watchGym(context), list, widget.itemId);
-    if (item == null) return Scaffold(appBar: AppBar());
+    if (item == null) return AppScaffold(appBar: AppBar());
     final weights = GymEditorRules.weights(list, item, _unit);
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(GymEditorRules.nameOf(item)),
         actions: [

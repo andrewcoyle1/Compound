@@ -85,7 +85,7 @@ class ExercisePickerView extends StatelessWidget {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) unawaited(_confirmDiscard(context));
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: CloseButton(onPressed: () => _close(context)),
           title: Text(

@@ -74,7 +74,7 @@ class MuscleGroupPickerView extends StatelessWidget {
     return ScreenAnalytics(
       appeared: cubit.appeared,
       disappeared: cubit.disappeared,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

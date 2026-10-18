@@ -7,8 +7,8 @@ import 'package:app_ui/app_ui.dart';
 /// Sections alternate left and right, so reading order runs across then
 /// down.
 ///
-/// Give its route a [AppContentWidth.dashboard] column through
-/// [AppPageTransitionsTheme.maxWidths].
+/// Give its screen a [AppContentWidth.dashboard] column through
+/// [AppScaffold.maxWidth].
 /// {@endtemplate}
 class AppDashboard extends StatelessWidget {
   /// {@macro app_dashboard}

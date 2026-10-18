@@ -42,7 +42,7 @@ class FoodPickerView extends StatelessWidget {
     final bloc = context.read<AddMealBloc>();
     final state = context.watch<AddMealBloc>().state;
     final count = state.meal.items.length;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         // Picks land on the plate as they are made, so there is nothing to
         // cancel: close goes back to the plate.

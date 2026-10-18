@@ -494,7 +494,7 @@ class ProgressSectionsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<ProgressBloc>().state;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: Text(title)),
       body: switch (state.status) {
         ProgressStatus.loading => const Center(

@@ -174,7 +174,7 @@ class _PaywallViewState extends State<PaywallView> {
           },
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: widget.isOnboarding
               ? null

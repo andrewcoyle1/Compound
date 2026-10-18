@@ -127,7 +127,7 @@ class _CoachChatsViewState extends State<CoachChatsView> {
         ),
         null => null,
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(l10n.coachChatsTitle),
           actions: [

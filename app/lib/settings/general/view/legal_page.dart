@@ -35,7 +35,7 @@ class LegalView extends StatelessWidget {
     final l10n = context.l10n;
     return OnDispose(
       onDispose: context.read<ScreenTrackingCubit>().disappeared,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(l10n.settingsLegal)),
         body: SafeArea(
           child: ListView(

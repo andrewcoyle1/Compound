@@ -158,7 +158,7 @@ class _SocialProfileViewState extends State<SocialProfileView> {
     // saves.
     final user = stateUser?.userId == viewer?.userId ? viewer : stateUser;
     if (user == null || viewer == null) {
-      return Scaffold(
+      return AppScaffold(
         appBar: AppBar(title: Text(l10n.profileTitle)),
         body: const Center(child: CircularProgressIndicator.adaptive()),
       );
@@ -191,7 +191,7 @@ class _SocialProfileViewState extends State<SocialProfileView> {
           ),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: widget.isPresentedModally
               ? CloseButton(onPressed: () => context.pop())

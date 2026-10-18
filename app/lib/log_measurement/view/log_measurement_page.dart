@@ -91,7 +91,7 @@ class LogMeasurementView extends StatelessWidget {
             break;
         }
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: CloseButton(onPressed: () => _dismiss(context)),
           title: Text(

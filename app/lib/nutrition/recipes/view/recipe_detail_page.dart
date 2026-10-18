@@ -110,7 +110,7 @@ class RecipeDetailView extends StatelessWidget {
           ),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(recipe?.name ?? ''),
           actions: [
@@ -359,7 +359,7 @@ class _RecipeStartPageState extends State<RecipeStartPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final recipe = widget.recipe;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: Text(recipe.name)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),

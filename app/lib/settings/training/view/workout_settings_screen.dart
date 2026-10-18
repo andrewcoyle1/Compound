@@ -96,7 +96,7 @@ class _WorkoutSettingsViewState extends State<_WorkoutSettingsView> {
         ..showSnackBar(
           SnackBar(content: Text(context.l10n.workoutSettingsSaveFailed)),
         ),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(widget.title)),
         body: settings == null
             ? const Center(child: CircularProgressIndicator.adaptive())

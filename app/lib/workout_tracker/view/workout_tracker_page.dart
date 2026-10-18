@@ -286,7 +286,7 @@ class _NoWorkout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           tooltip: l10n.trackerMinimize,
@@ -368,7 +368,7 @@ class _Tracker extends StatelessWidget {
     final l10n = context.l10n;
     final cubit = context.read<ActiveWorkoutCubit>();
     final session = state.session!;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           tooltip: l10n.trackerMinimize,

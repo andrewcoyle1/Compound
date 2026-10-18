@@ -52,7 +52,7 @@ class UnitsView extends StatelessWidget {
         listener: (context, _) => ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(l10n.unitsSaveFailed))),
-        child: Scaffold(
+        child: AppScaffold(
           appBar: AppBar(title: Text(l10n.settingsUnits)),
           body: SafeArea(
             child: ListView(

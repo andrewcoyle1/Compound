@@ -76,7 +76,7 @@ class ExpenditureMetricView extends StatelessWidget {
         ? balance.days.isEmpty
         : expenditure.isEmpty;
     void logMeal() => unawaited(openMealLogger(context, date: DateTime.now()));
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(allData ? l10n.metricAllRecordedData : title),
         actions: [

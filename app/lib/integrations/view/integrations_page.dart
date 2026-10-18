@@ -69,7 +69,7 @@ class IntegrationsView extends StatelessWidget {
     return BlocListener<StravaCubit, StravaState>(
       listenWhen: (previous, current) => current.noticeId != previous.noticeId,
       listener: showStravaNotice,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(l10n.integrationsTitle)),
         body: SafeArea(
           child: ListView(

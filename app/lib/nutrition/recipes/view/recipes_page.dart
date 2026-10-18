@@ -55,7 +55,7 @@ class RecipesView extends StatelessWidget {
     final recipes = state.visibleRecipes;
     void create() => unawaited(CreateRecipePage.show(context));
 
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(l10n.recipesTitle),
         actions: [

@@ -47,7 +47,7 @@ class WeeklyTargetsView extends StatelessWidget {
     final cubit = context.read<WeeklyTargetsCubit>();
     final state = context.watch<WeeklyTargetsCubit>().state;
     final text = EditorText(l10n);
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: EditorTitle(
           title: l10n.editorWeeklyTargets,

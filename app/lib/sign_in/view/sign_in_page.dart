@@ -1,7 +1,7 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sign_in/cubit/sign_in_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:material_ui/material_ui.dart';
 
 class SignInPage extends StatelessWidget {
   const new({super.key});
@@ -33,7 +33,7 @@ class SignInView extends StatelessWidget {
       listener: (context, _) => ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(l10n.signInFailure))),
-      child: Scaffold(
+      child: AppScaffold(
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -49,9 +49,9 @@ class SignInView extends StatelessWidget {
                 ),
                 const Spacer(),
                 // Native on iOS, Firebase's web flow on Android.
-                FilledButton(
+                AppSignInWithAppleButton(
+                  label: l10n.signInWithAppleButton,
                   onPressed: enabled ? cubit.signInWithApple : null,
-                  child: Text(l10n.signInWithAppleButton),
                 ),
                 FilledButton(
                   onPressed: enabled ? cubit.signInWithGoogle : null,

@@ -32,6 +32,8 @@ void main() {
     String location, {
     UserModel? profile,
   }) async {
+    // Tall enough for the feed's header below the circle and the week.
+    tester.useSize(const Size(800, 1200));
     world = (await tester.runAsync(SocialWorld.create))!;
     final appBloc = MockAppBloc();
     when(() => appBloc.stream).thenAnswer((_) => const Stream.empty());
@@ -132,6 +134,8 @@ void main() {
     testWidgets('asks for a username and opens the profile from a face', (
       tester,
     ) async {
+      // Tall enough for the feed's header below the circle and the week.
+      tester.useSize(const Size(800, 1200));
       world = (await tester.runAsync(SocialWorld.create))!;
       world.circle.add(
         CircleViewerChanged(

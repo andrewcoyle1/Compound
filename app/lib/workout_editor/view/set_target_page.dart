@@ -118,7 +118,7 @@ class SetTargetView extends StatelessWidget {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) unawaited(_confirmDiscard(context));
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: IconButton(
             key: const Key('SetTarget.close'),

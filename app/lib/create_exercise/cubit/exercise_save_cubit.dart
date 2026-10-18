@@ -2,14 +2,24 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/create_exercise/logic/exercise_draft.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:equatable/equatable.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart' show newUuid;
 
 /// Where the create is.
 enum ExerciseSaveStatus { reviewing, saving, saved, failed }
 
+/// Where the create is, and once saved the exercise, for a picker to tick.
+final class const ExerciseSaveState({
+  final ExerciseSaveStatus status = ExerciseSaveStatus.reviewing,
+  final ExerciseModel? created,
+}) extends Equatable {
+  @override
+  List<Object?> get props => [status, created];
+}
+
 /// The last step (Swift `ExerciseSavePresenter`): the review, and Create.
-class ExerciseSaveCubit extends Cubit<ExerciseSaveStatus> {
+class ExerciseSaveCubit extends Cubit<ExerciseSaveState> {
   /// The uid is the signed-in user's, who owns the exercise; without one
   /// nothing is written.
   new({
@@ -19,7 +29,7 @@ class ExerciseSaveCubit extends Cubit<ExerciseSaveStatus> {
     required this._analytics,
     this._now = DateTime.now,
     this._newId = newUuid,
-  }) : super(ExerciseSaveStatus.reviewing);
+  }) : super(const ExerciseSaveState());
 
   static const _screen = 'ExerciseSaveView';
 
@@ -34,14 +44,10 @@ class ExerciseSaveCubit extends Cubit<ExerciseSaveStatus> {
 
   void disappeared() => _analytics.disappear(_screen);
 
-  /// The exercise once [create] has stored it, for a picker to tick.
-  ExerciseModel? get created => _created;
-  ExerciseModel? _created;
-
   /// Stores the exercise between `CreateExercise_Start` and `_Success` or a
   /// severe `_Fail`. A second tap mid-save does nothing.
   Future<void> create() async {
-    if (state == ExerciseSaveStatus.saving) return;
+    if (state.status == ExerciseSaveStatus.saving) return;
     _analytics.analytic('CreateExercise_Start');
     final uid = _uid;
     if (uid == null) {
@@ -49,22 +55,23 @@ class ExerciseSaveCubit extends Cubit<ExerciseSaveStatus> {
         'CreateExercise_Fail',
         'No signed-in user to own the exercise',
       );
-      emit(ExerciseSaveStatus.failed);
+      emit(const ExerciseSaveState(status: ExerciseSaveStatus.failed));
       return;
     }
-    emit(ExerciseSaveStatus.saving);
+    emit(const ExerciseSaveState(status: ExerciseSaveStatus.saving));
     try {
       final exercise = _draft.toModel(id: _newId(), authorId: uid, now: _now());
       await _library.saveUserExercise(exercise);
-      _created = exercise;
       _analytics.analytic('CreateExercise_Success');
-      emit(ExerciseSaveStatus.saved);
+      emit(
+        ExerciseSaveState(status: ExerciseSaveStatus.saved, created: exercise),
+      );
     } on Object catch (error) {
       _analytics.severe('CreateExercise_Fail', error);
-      emit(ExerciseSaveStatus.failed);
+      emit(const ExerciseSaveState(status: ExerciseSaveStatus.failed));
     }
   }
 
   /// Back to the review after a failure was shown.
-  void failureShown() => emit(ExerciseSaveStatus.reviewing);
+  void failureShown() => emit(const ExerciseSaveState());
 }

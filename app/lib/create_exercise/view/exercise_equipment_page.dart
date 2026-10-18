@@ -54,7 +54,7 @@ class ExerciseEquipmentView extends StatelessWidget {
     return ScreenAnalytics(
       appeared: cubit.appeared,
       disappeared: cubit.disappeared,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(l10n.createExerciseSelectEquipment)),
         body: SafeArea(
           bottom: false,
@@ -254,7 +254,7 @@ class _EquipmentPickerViewState extends State<EquipmentPickerView> {
             .toLowerCase()
             .compareTo(l10n.equipmentKindName(b).toLowerCase()),
       );
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(leading: const CloseButton(), title: Text(widget.title)),
       body: SafeArea(
         bottom: false,

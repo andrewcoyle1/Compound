@@ -130,7 +130,7 @@ class _CreateRecipeViewState extends State<CreateRecipeView>
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) unawaited(_close());
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(AppSymbols.close),
@@ -370,7 +370,7 @@ class _IngredientPickerView extends StatelessWidget {
       unawaited(CreateFoodPage.show(context));
     }
 
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: CloseButton(onPressed: () => Navigator.of(context).pop()),
         title: Text(l10n.createRecipeAddIngredient),
@@ -566,7 +566,7 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
           (current.status == CreateRecipeStatus.created ||
               current.status == CreateRecipeStatus.failed),
       listener: (_, state) => unawaited(_done(state)),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(capitalizedName(state.name))),
         body: ListView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,

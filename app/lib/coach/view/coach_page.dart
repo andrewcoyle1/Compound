@@ -138,7 +138,7 @@ class _CoachViewState extends State<CoachView> {
           listener: (_, _) => _scrollToEnd(),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         backgroundColor: context.appColors.canvas,
         appBar: AppBar(
           title: Text(title),

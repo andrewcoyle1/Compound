@@ -42,6 +42,8 @@ class FirebaseAuthRepository({
     );
   });
 
+  /// Apple's native sheet on iOS; on Android, Firebase's web flow (the
+  /// project's Apple provider needs its Services ID and key for that).
   @override
   Future<void> signInWithApple() => _guard(() async {
     final provider = AppleAuthProvider()

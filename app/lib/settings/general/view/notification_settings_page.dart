@@ -98,7 +98,7 @@ class _NotificationSettingsViewState extends State<NotificationSettingsView> {
               }),
             ),
           ),
-        child: Scaffold(
+        child: AppScaffold(
           appBar: AppBar(title: Text(l10n.settingsNotificationSettings)),
           body: SafeArea(
             child: ListView(

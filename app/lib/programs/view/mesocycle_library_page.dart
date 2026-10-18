@@ -61,7 +61,7 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
     final active = state.activeMesocycle;
     final inactive = state.inactiveMesocycles;
     final templates = PrebuiltCatalogue.instance.mesocycles;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(l10n.programMesocyclesTitle),
         actions: [

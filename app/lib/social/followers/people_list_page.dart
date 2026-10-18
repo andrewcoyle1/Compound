@@ -130,7 +130,7 @@ class _PeopleListViewState extends State<PeopleListView> {
           ],
         ),
       ),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(switch (request.kind) {
             PeopleListKind.followers => l10n.socialFollowers,

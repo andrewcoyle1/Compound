@@ -22,10 +22,10 @@ MaterialApp(theme: AppTheme.light, darkTheme: AppTheme.dark, …);
 | `Chip` (+ `chipTapTarget`) | `AppChip` (44 pt target when `onPressed` is set) |
 | `ListRow`, `ListRowButton`, `ListRowToggle`, `SelectableRow` | `AppListRow`, `AppListRowButton`, `AppListRowToggle`, `AppSelectableRow`, inside an `AppSection` |
 | `NumberField` | `AppNumberField`, `AppNumberField.units` |
-| `.bottomCTA { CallToActionButton … }` | `Scaffold(bottomNavigationBar: AppBottomCta(children: [AppCtaButton(…)]))` |
+| `.bottomCTA { CallToActionButton … }` | `AppScaffold(bottomNavigationBar: AppBottomCta(children: [AppCtaButton(…)]))` |
 | `InlineMessage` | `AppInlineMessage` |
 | `OnboardingStepScaffold` | `AppOnboardingStepScaffold` |
-| `readableContentWidth` (set once at the root) | `AppPageTransitionsTheme` as `ThemeData.pageTransitionsTheme`, which puts each page in an `AppReadableWidth` column |
+| `readableContentWidth`, `preferredReadableContentWidth` | `AppScaffold` (and its `maxWidth`) in place of `Scaffold`: the app bar spans the window, the body and bottom CTA sit in an `AppReadableWidth` column |
 | `Dashboard` | `AppDashboard(sections: […])` |
 | `horizontalSizeClass == .regular` | `context.isRegularWidth` |
 

@@ -89,7 +89,7 @@ class WeightMetricView extends StatelessWidget {
           ],
         ),
       ),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(allData ? l10n.metricAllRecordedData : title),
           actions: [

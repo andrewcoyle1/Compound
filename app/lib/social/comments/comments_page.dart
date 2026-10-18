@@ -139,7 +139,7 @@ class _CommentsViewState extends State<CommentsView> {
           listener: (_, _) => _focus.requestFocus(),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(l10n.socialComments)),
         body: SafeArea(
           child: Column(

@@ -98,7 +98,7 @@ class FoodDetailView extends StatelessWidget {
           ),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(food?.name ?? ''),
           actions: [

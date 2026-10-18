@@ -72,7 +72,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           listener: (context, state) => _showNotice(context, state.notice!),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(l10n.inboxTitle),
           actions: [

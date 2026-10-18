@@ -34,7 +34,7 @@ class ExerciseAnalyticsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: Text(l10n.progressExercises)),
       body: TrainingAnalyticsBody(
         title: l10n.progressExercises,

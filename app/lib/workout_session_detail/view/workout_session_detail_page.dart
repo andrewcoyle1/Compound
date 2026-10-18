@@ -166,7 +166,7 @@ class WorkoutSessionDetailView extends StatelessWidget {
           ),
           child: _LoadedView(state: loaded, isWorkoutSummary: isWorkoutSummary),
         ),
-        _ => Scaffold(
+        _ => AppScaffold(
           appBar: AppBar(
             automaticallyImplyLeading: !isWorkoutSummary,
             actions: [
@@ -283,7 +283,7 @@ class _LoadedView extends StatelessWidget {
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) unawaited(_endEditing(context));
         },
-        child: Scaffold(
+        child: AppScaffold(
           appBar: AppBar(
             automaticallyImplyLeading: !isWorkoutSummary && !edit.isEditing,
             leading: edit.isEditing

@@ -182,7 +182,7 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
     final library = [...mesocycles]
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     final canSave = draft.canSave && !_saving;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(existing == null ? l10n.programNewMacrocycle : draft.name),
         actions: [

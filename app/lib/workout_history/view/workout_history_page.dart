@@ -41,7 +41,7 @@ class WorkoutHistoryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<WorkoutHistoryBloc>().state;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: Text(context.l10n.workoutHistoryTitle)),
       body: switch (state) {
         WorkoutHistoryLoading() => const Center(

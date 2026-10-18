@@ -98,7 +98,7 @@ class _SettingsViewState extends State<SettingsView> {
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(l10n.settingsSignOutFailed)));
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(l10n.settingsTitle)),
         body: SafeArea(
           child: ListView(

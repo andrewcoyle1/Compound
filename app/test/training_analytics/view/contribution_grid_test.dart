@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/training_analytics/view/workout_consistency_page.dart'
     show ContributionGrid;
+import 'package:compound/widgets/chart_callout.dart';
 import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter_test/flutter_test.dart';
 
@@ -71,6 +72,14 @@ void main() {
     await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
     expect(find.text('2 workouts'), findsOneWidget);
     expect(find.text('Wed, Oct 14, 2026'), findsOneWidget);
+    // Floating over the header, kept inside the grid at its edge.
+    await tester.pumpAndSettle();
+    final callout = tester.getRect(find.byType(ChartCalloutSummary));
+    expect(
+      callout.right,
+      lessThanOrEqualTo(tester.getRect(find.byType(ContributionGrid)).right),
+    );
+    expect(callout.bottom, lessThan(cell(tester, row: 0).dy));
 
     await gesture.moveTo(cell(tester, row: 1));
     await tester.pump();
@@ -89,7 +98,7 @@ void main() {
     await gesture.moveTo(cell(tester, row: 0));
     await tester.pump();
     await gesture.up();
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('1 workout'), findsNothing);
     expect(find.textContaining('Days Logged, '), findsOneWidget);
   });

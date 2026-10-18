@@ -38,7 +38,7 @@ class AboutView extends StatelessWidget {
     final version = context.read<AppVersion?>();
     return OnDispose(
       onDispose: context.read<ScreenTrackingCubit>().disappeared,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(l10n.aboutTitle)),
         body: SafeArea(
           child: ListView(

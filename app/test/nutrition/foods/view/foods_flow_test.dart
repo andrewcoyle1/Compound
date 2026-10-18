@@ -20,6 +20,7 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../../helpers/app_repositories.dart';
 import '../../../helpers/reminder_offers.dart';
 
 // The whole app on the staging flavor's in-memory data, signed in as the
@@ -42,6 +43,8 @@ void main() {
     );
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         deviceStore: offersShownDevice(),
         purchasesRepository: FakePurchasesRepository(),
         programRepository: InMemoryProgramRepository(),
@@ -399,11 +402,15 @@ void main() {
       await pumpApp(tester, meals: [meal]);
       await reveal(tester, find.text('Soup'));
 
-      await tester.drag(find.text('Soup'), const Offset(400, 0));
+      await tester.drag(find.text('Soup'), const Offset(200, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(AppSymbols.logAgain));
       await tester.pumpAndSettle();
       expect(await nutrition.watchMeals(uid).first, hasLength(2));
 
-      await tester.drag(find.text('Bread').first, const Offset(-400, 0));
+      await tester.drag(find.text('Bread').first, const Offset(-200, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(AppSymbols.delete));
       await tester.pumpAndSettle();
       final meals = await nutrition.watchMeals(uid).first;
       expect(

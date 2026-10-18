@@ -24,6 +24,7 @@ Future<void> showShareToFollower(BuildContext context, SharePayload payload) {
         create: (context) => ShareToFollowerCubit(
           social: context.read<SocialRepository>(),
           analytics: context.read<AnalyticsRepository>(),
+          connectivity: context.read(),
           viewer: viewer,
           payload: payload,
           following: circle.followingUsers,

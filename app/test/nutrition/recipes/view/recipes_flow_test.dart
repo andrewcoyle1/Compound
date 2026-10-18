@@ -17,6 +17,7 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../../helpers/app_repositories.dart';
 import '../../../helpers/reminder_offers.dart';
 
 // The whole app on the staging flavor's in-memory data, signed in as the
@@ -41,6 +42,8 @@ void main() {
     );
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         deviceStore: offersShownDevice(),
         purchasesRepository: FakePurchasesRepository(),
         programRepository: InMemoryProgramRepository(),

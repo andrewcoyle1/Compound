@@ -16,7 +16,6 @@ import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/shell/app_tab.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -435,44 +434,39 @@ class _PlateItem extends StatelessWidget {
     final l10n = context.l10n;
     final bloc = context.read<AddMealBloc>();
     final macros = item.macros;
-    return Dismissible(
-      key: ValueKey(item.itemId),
-      direction: DismissDirection.endToStart,
-      background: ColoredBox(
-        color: Theme.of(context).colorScheme.error,
-        child: Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: Icon(
-              AppSymbols.delete,
-              color: Theme.of(context).colorScheme.onError,
-            ),
-          ),
+    Future<void> edit() async {
+      final edited = await showItemAmountSheet(context, item);
+      if (edited == null) return;
+      unawaited(HapticFeedback.successNotification());
+      bloc.add(AddMealItemChanged(edited));
+    }
+
+    // Swift's two swipe actions, neither on a full swipe.
+    return AppSwipeActions(
+      trailing: [
+        AppSwipeAction(
+          label: l10n.nutritionDeleteItem,
+          icon: AppSymbols.delete,
+          isDestructive: true,
+          onPressed: () => bloc.add(AddMealItemRemoved(item.itemId)),
         ),
-      ),
-      onDismissed: (_) => bloc.add(AddMealItemRemoved(item.itemId)),
-      child: Semantics(
-        customSemanticsActions: {
-          CustomSemanticsAction(label: l10n.addMealRemoveItem): () =>
-              bloc.add(AddMealItemRemoved(item.itemId)),
-        },
-        child: AppListRowButton(
-          title: item.displayName,
-          subtitle: [
-            AppFormat.kcal(macros.calories.round()),
-            [
-              AppFormat.number(item.amount, maxFractionDigits: 2),
-              item.unit,
-            ].join(' '),
-          ].join(' · '),
-          onPressed: () async {
-            final edited = await showItemAmountSheet(context, item);
-            if (edited == null) return;
-            unawaited(HapticFeedback.successNotification());
-            bloc.add(AddMealItemChanged(edited));
-          },
+        AppSwipeAction(
+          label: l10n.editorEdit,
+          icon: AppSymbols.edit,
+          onPressed: () => unawaited(edit()),
         ),
+      ],
+      trailingFullSwipe: false,
+      child: AppListRowButton(
+        title: item.displayName,
+        subtitle: [
+          AppFormat.kcal(macros.calories.round()),
+          [
+            AppFormat.number(item.amount, maxFractionDigits: 2),
+            item.unit,
+          ].join(' '),
+        ].join(' · '),
+        onPressed: () => unawaited(edit()),
       ),
     );
   }

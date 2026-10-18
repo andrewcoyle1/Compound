@@ -31,28 +31,6 @@ class const EditorTitle({
   }
 }
 
-/// What shows behind a row swiped away.
-class const DeleteBackground({required final String label, super.key})
-    extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: context.appColors.danger,
-      child: Align(
-        alignment: AlignmentDirectional.centerEnd,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.only(end: AppSpacing.l),
-          child: Icon(
-            AppSymbols.delete,
-            semanticLabel: label,
-            color: Theme.of(context).colorScheme.onError,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// A set number or RIR in a capsule that grows with its text.
 class const NumberBadge(final String text, {super.key})
     extends StatelessWidget {

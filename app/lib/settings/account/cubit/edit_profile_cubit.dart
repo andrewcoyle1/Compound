@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_repository/image_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -29,6 +30,7 @@ class EditProfileCubit extends Cubit<EditProfileState> {
     required this._analytics,
     required this._images,
     required this._picker,
+    required this._connectivity,
     required UserModel? user,
   }) : super(EditProfileState.from(user));
 
@@ -36,6 +38,10 @@ class EditProfileCubit extends Cubit<EditProfileState> {
   final AnalyticsRepository _analytics;
   final ImageRepository _images;
   final PhotoPicker _picker;
+
+  /// A new photo is an upload, which needs the server; the rest of the
+  /// profile does not.
+  final ConnectivityRepository _connectivity;
 
   /// Where the profile photo is stored (`UserManager.updateProfileImage`).
   static String profilePhotoPath(String uid) => 'users/$uid/profile';
@@ -139,13 +145,16 @@ class EditProfileCubit extends Cubit<EditProfileState> {
   Future<void> savePressed() async {
     final uid = state.uid;
     if (uid == null || !state.canSave) return;
+    if (state.pickedPhoto != null && !_connectivity.ensureOnline()) {
+      return;
+    }
     emit(state.copyWith(status: EditProfileStatus.saving));
     _analytics.analytic('AccountView_SaveProfile_Start');
     try {
       final photo = state.pickedPhoto;
       await _userRepository.updateUserFields(uid, [
-        // The upload needs the server; offline it fails and nothing is
-        // written, as Swift asks for a connection first.
+        // The upload needs the server, checked above as Swift does; if
+        // the network drops meanwhile it fails and nothing is written.
         if (photo != null)
           UserField.submittedProfileImage(
             await _images.upload(photo, profilePhotoPath(uid)),

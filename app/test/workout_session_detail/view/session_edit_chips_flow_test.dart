@@ -104,6 +104,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         purchasesRepository: FakePurchasesRepository(),
         authRepository: InMemoryAuthRepository(
           user: InMemoryAuthRepository.sampleUser,

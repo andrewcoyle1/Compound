@@ -141,9 +141,37 @@ extension FirestoreContractTests {
         let text = try Self.jsonText(try GymCatalogueContract.catalogue())
         let url = Self.root.appendingPathComponent("gym_equipment_catalogue.json")
         if ProcessInfo.processInfo.environment["RECORD_CONTRACTS"] == "1" { try Self.write(try GymCatalogueContract.catalogue(), to: url) }
+        // Band and plate colours are iOS system colours turned into hex when the profile is made, so
+        // their values follow the appearance, the OS and the SDK the tests were built with (Xcode 26.6
+        // on CI, 27 here). Each must be a hex colour; everything else must match exactly.
+        let stored = try JSONSerialization.jsonObject(with: Data(contentsOf: url))
+        let made = try JSONSerialization.jsonObject(with: Data(text.utf8))
+        var colours: [String] = []
         #expect(
-            text == (try String(contentsOf: url, encoding: .utf8)),
+            try Self.jsonText(Self.withoutSystemColours(made, collecting: &colours))
+                == (try Self.jsonText(Self.withoutSystemColours(stored, collecting: &colours))),
             "The catalogue changed: re-record with RECORD_CONTRACTS=1, then regenerate the Dart copy"
         )
+        let hex = /^#[0-9A-F]{6}$/
+        #expect(!colours.isEmpty && colours.allSatisfy { $0.wholeMatch(of: hex) != nil }, "System colours: \(colours)")
+    }
+
+    /// `object` with every `bandColour` and `plateColour` value replaced by a placeholder, the values
+    /// collected.
+    private static func withoutSystemColours(_ object: Any, collecting colours: inout [String]) -> Any {
+        if let dictionary = object as? [String: Any] {
+            var copy: [String: Any] = [:]
+            for (key, value) in dictionary {
+                if ["bandColour", "plateColour"].contains(key), let colour = value as? String {
+                    colours.append(colour)
+                    copy[key] = "#SYSTEM"
+                } else {
+                    copy[key] = withoutSystemColours(value, collecting: &colours)
+                }
+            }
+            return copy
+        }
+        if let array = object as? [Any] { return array.map { withoutSystemColours($0, collecting: &colours) } }
+        return object
     }
 }

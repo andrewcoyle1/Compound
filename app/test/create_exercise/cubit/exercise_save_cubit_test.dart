@@ -49,9 +49,11 @@ void main() {
 
   test('the exercise belongs to the signed-in user', () async {
     final cubit = build();
+    expect(cubit.state.created, isNull);
     await cubit.create();
-    expect(cubit.state, ExerciseSaveStatus.saved);
+    expect(cubit.state.status, ExerciseSaveStatus.saved);
     final stored = library.saved.single;
+    expect(cubit.state.created, stored);
     expect(stored.id, 'new-id');
     expect(stored.authorId, 'user-42');
     expect(stored.isSystemExercise, isFalse);
@@ -62,19 +64,19 @@ void main() {
     final cubit = build();
     library.gate = Completer();
     final first = cubit.create();
-    expect(cubit.state, ExerciseSaveStatus.saving);
+    expect(cubit.state.status, ExerciseSaveStatus.saving);
     await cubit.create();
     library.gate!.complete();
     await first;
     expect(library.saved, hasLength(1));
-    expect(cubit.state, ExerciseSaveStatus.saved);
+    expect(cubit.state.status, ExerciseSaveStatus.saved);
   });
 
   test('nothing is stored when nobody is signed in', () async {
     final cubit = build(uid: null);
     await cubit.create();
     expect(library.saved, isEmpty);
-    expect(cubit.state, ExerciseSaveStatus.failed);
+    expect(cubit.state.status, ExerciseSaveStatus.failed);
   });
 
   test('a failed save stores nothing', () async {
@@ -82,9 +84,9 @@ void main() {
     library.fails = true;
     await cubit.create();
     expect(library.saved, isEmpty);
-    expect(cubit.state, ExerciseSaveStatus.failed);
+    expect(cubit.state.status, ExerciseSaveStatus.failed);
     cubit.failureShown();
-    expect(cubit.state, ExerciseSaveStatus.reviewing);
+    expect(cubit.state.status, ExerciseSaveStatus.reviewing);
   });
 
   test('creating an exercise reports start then success', () async {

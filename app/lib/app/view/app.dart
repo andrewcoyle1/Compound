@@ -17,6 +17,7 @@ import 'package:compound/app/widget_snapshot.dart';
 import 'package:compound/challenges/challenges.dart';
 import 'package:compound/check_in/check_in.dart';
 import 'package:compound/coach/coach.dart';
+import 'package:compound/connectivity/offline_alert_cubit.dart';
 import 'package:compound/create_exercise/create_exercise.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
@@ -56,13 +57,14 @@ import 'package:compound/training_analytics/training_analytics_routes.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
+import 'package:compound/widgets/half_sheet_page.dart';
 import 'package:compound/workout_editor/workout_editor_routes.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:device_store/device_store.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -92,7 +94,18 @@ class const App({
   /// Subscriptions: whether the user is premium. Required, with no
   /// fallback, so an entry point can never grant premium by leaving it out.
   required final PurchasesRepository purchasesRepository,
+
+  /// Follows, the feed, likes and comments. Required, with no in-memory
+  /// default, so release builds do not carry `fake_cloud_firestore`.
+  required final SocialRepository socialRepository,
+
+  /// The AI coach. Required, as [socialRepository] is.
+  required final CoachRepository coachRepository,
   final AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
+
+  /// Whether there is a network, for the actions that need the server;
+  /// always online when left out.
+  final ConnectivityRepository? connectivityRepository,
   // Empty and offline when left out, for tests that never log food.
   final FoodRepository? foodRepository,
   final OpenFoodFacts? openFoodFacts,
@@ -130,10 +143,6 @@ class const App({
   /// Siri and Shortcuts (iOS); none when left out.
   final AppIntentsRepository? appIntentsRepository,
 
-  /// Follows, the feed, likes and comments; an empty in-memory world when
-  /// left out, for tests that never open Social.
-  final SocialRepository? socialRepository,
-
   /// Where photos are uploaded; in memory when left out.
   final ImageRepository? imageRepository,
 
@@ -147,10 +156,6 @@ class const App({
   /// The AI food scanners' callables; staging's canned answers when left
   /// out.
   final AiRepository? aiRepository,
-
-  /// The AI coach; one that answers nothing when left out, for tests that
-  /// never open it.
-  final CoachRepository? coachRepository,
 
   /// Apple Health or Health Connect; one that is never available when
   /// left out.
@@ -198,18 +203,11 @@ class const App({
         RepositoryProvider.value(value: programRepository),
         RepositoryProvider.value(value: trainingLibraryRepository),
         RepositoryProvider.value(value: analyticsRepository),
-        RepositoryProvider.value(value: purchasesRepository),
-        RepositoryProvider<CoachRepository>(
-          create: (_) =>
-              coachRepository ??
-              CoachRepository(
-                firestore: FakeFirebaseFirestore(),
-                users: userRepository,
-                coachChat: (_, {chatId, context}) => Stream.error(
-                  const CoachException(CoachFailure.unavailable),
-                ),
-              ),
+        RepositoryProvider<ConnectivityRepository>(
+          create: (_) => connectivityRepository ?? FakeConnectivityRepository(),
         ),
+        RepositoryProvider.value(value: purchasesRepository),
+        RepositoryProvider.value(value: coachRepository),
         RepositoryProvider<FoodRepository>(
           create: (_) => foodRepository ?? InMemoryFoodRepository(),
         ),
@@ -272,15 +270,7 @@ class const App({
         RepositoryProvider<AppIntentsRepository>(
           create: (_) => appIntentsRepository ?? FakeAppIntentsRepository(),
         ),
-        RepositoryProvider<SocialRepository>(
-          create: (_) =>
-              socialRepository ??
-              SocialRepository(
-                firestore: FakeFirebaseFirestore(),
-                callFunction: (_, _) async => null,
-                users: userRepository,
-              ),
-        ),
+        RepositoryProvider.value(value: socialRepository),
         RepositoryProvider(
           create: (_) => TrainingSetupService(
             programs: programRepository,
@@ -387,6 +377,14 @@ class const App({
           BlocProvider(
             create: (context) => InviteCubit(
               social: context.read(),
+              analytics: analyticsRepository,
+              connectivity: context.read(),
+            ),
+          ),
+          BlocProvider(
+            lazy: false,
+            create: (context) => OfflineAlertCubit(
+              connectivity: context.read(),
               analytics: analyticsRepository,
             ),
           ),
@@ -594,15 +592,12 @@ class _AppViewState extends State<AppView> {
       ...coachRoutes,
       ...paywallRoutes,
       ...goalEditingRoutes,
-      // Over the tabs, as the Swift app's sheet.
+      // Over the tabs, as the Swift app's half sheet.
       GoRoute(
         path: LogWeightPage.path,
         name: LogWeightPage.name,
-        pageBuilder: (_, state) => MaterialPage(
-          key: state.pageKey,
-          fullscreenDialog: true,
-          child: const LogWeightPage(),
-        ),
+        pageBuilder: (_, state) =>
+            HalfSheetPage(key: state.pageKey, child: const LogWeightPage()),
       ),
       // Over the tabs, as the Swift app's sheet; the week reviewed is the
       // query's, this week's without one.
@@ -996,12 +991,37 @@ class _AppViewState extends State<AppView> {
                   current.resultId != previous.resultId,
               listener: _onInvite,
             ),
+            // An action that needs the server, tried offline.
+            BlocListener<OfflineAlertCubit, int>(
+              listener: (_, _) => _showOfflineAlert(),
+            ),
           ],
           child: ActivityBannerOverlay(
             onOpen: () => _router.goNamed(NotificationsPage.name),
             child: child!,
           ),
         ),
+      ),
+    );
+  }
+
+  /// "You're offline" (Swift's `showOfflineAlert`), over whatever is
+  /// showing.
+  void _showOfflineAlert() {
+    final context = _router.routerDelegate.navigatorKey.currentContext;
+    if (context == null) return;
+    final l10n = context.l10n;
+    showAdaptiveDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: Text(l10n.offlineTitle),
+        content: Text(l10n.offlineMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.settingsOk),
+          ),
+        ],
       ),
     );
   }

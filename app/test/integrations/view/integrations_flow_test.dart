@@ -38,6 +38,8 @@ void main() {
   Widget app() {
     final firestore = FakeFirebaseFirestore();
     return App(
+      socialRepository: emptySocialRepository(),
+      coachRepository: silentCoachRepository(),
       purchasesRepository: FakePurchasesRepository(),
       programRepository: InMemoryProgramRepository(),
       trainingLibraryRepository: library,

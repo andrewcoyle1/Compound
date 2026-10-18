@@ -14,6 +14,9 @@ import 'package:compound/progress_photos/progress_photos.dart';
 import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound_models/compound_models.dart'
     show ExerciseWeightUnit, WorkoutSessionModel, WorkoutSessionModelKeys;
+// A dev dependency on purpose: only this entry point uses the in-memory
+// Firestore, so the development and production builds never depend on it.
+// ignore: depend_on_referenced_packages
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:health_repository/health_repository.dart';
@@ -119,12 +122,14 @@ Future<void> main() async {
   // Followed people with workouts, likes and comments, a follow request,
   // followers and every handle reserved, over an in-memory Firestore.
   final socialRepository = await inMemorySocialRepository(
+    firestore: FakeFirebaseFirestore(),
     users: userRepository,
     now: now,
   );
   // The sample chat, and canned answers streamed word by word once the
   // coach is allowed to read the data.
   final coachRepository = await inMemoryCoachRepository(
+    firestore: FakeFirebaseFirestore(),
     users: userRepository,
     now: now,
   );

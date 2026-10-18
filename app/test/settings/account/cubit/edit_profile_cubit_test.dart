@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/settings/account/cubit/edit_profile_cubit.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_repository/image_repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -36,6 +37,8 @@ class _FailingImages extends InMemoryImageRepository {
 }
 
 void main() {
+  late FakeConnectivityRepository connectivity;
+  late List<void> blocked;
   late AnalyticsRepository analytics;
   late UserRepository users;
   late List<(String, LogType)> events;
@@ -46,6 +49,9 @@ void main() {
   setUpAll(() => registerFallbackValue(const AnalyticsEvent('fallback')));
 
   setUp(() {
+    connectivity = FakeConnectivityRepository();
+    blocked = [];
+    connectivity.blocked.listen(blocked.add);
     analytics = _MockAnalyticsRepository();
     users = _MockUserRepository();
     events = [];
@@ -70,6 +76,7 @@ void main() {
   EditProfileCubit build([
     UserModel? user = const UserModel(userId: 'user-1'),
   ]) => EditProfileCubit(
+    connectivity: connectivity,
     userRepository: users,
     analytics: analytics,
     images: images,
@@ -485,6 +492,38 @@ void main() {
       await build(const UserModel(userId: 'user-1', submittedFirstName: 'Ann'))
           .savePressed();
       expect(writes.single.containsKey('submitted_profile_image'), isFalse);
+    });
+
+    // testOfflineANewPhotoSaysYoureOfflineAndSavesNothing
+    test("offline a new photo says you're offline and saves nothing", () async {
+      connectivity.offline = true;
+      picker.photo = photo;
+      final cubit = build(
+        const UserModel(userId: 'user-1', submittedFirstName: 'Ann'),
+      );
+      await cubit.photoPressed();
+
+      await cubit.savePressed();
+      await pumpEventQueue();
+
+      expect(images.images, isEmpty);
+      expect(writes, isEmpty);
+      expect(cubit.state.status, isNot(EditProfileStatus.saving));
+      expect(blocked, hasLength(1));
+    });
+
+    // testOfflineAProfileEditIsQueuedWithoutWaiting
+    test('offline a profile edit without a photo is still saved', () async {
+      connectivity.offline = true;
+      final cubit = build(
+        const UserModel(userId: 'user-1', submittedFirstName: 'Ann'),
+      );
+
+      await cubit.savePressed();
+
+      expect(writes, hasLength(1));
+      expect(cubit.state.status, EditProfileStatus.saved);
+      expect(blocked, isEmpty);
     });
   });
 }

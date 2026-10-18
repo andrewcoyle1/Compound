@@ -94,7 +94,8 @@ class ActiveSessionController {
        _customRestSeconds = {...state.customRestSeconds},
        _baseline = {...state.progressionBaseline},
        _acknowledged = {...state.acknowledgedNoteTemplateIds},
-       _lastSeen = state.lastSeenSetCompletion {
+       _lastSeen = state.lastSeenSetCompletion,
+       _saved = state.saved {
     if (!environment.settings.addSmartWarmUps) _dropOpenWarmUps();
     // Before anything the user does, so an edited set can be told from a
     // filled-in one; a resumed workout keeps the baseline it began with.
@@ -110,7 +111,8 @@ class ActiveSessionController {
     _loadHistory(null);
   }
 
-  /// The workout kept in [store], carried on; `null` when none is. A rest
+  /// The workout kept in [store], carried on; `null` when none is, or when
+  /// it is a finished one waiting for the server (`WorkoutFinisher`). A rest
   /// that ran out while the app was gone is ended once, keeping its start
   /// (`HKWorkoutManager.restoreAfterLaunch`).
   static Future<ActiveSessionController?> resume({
@@ -121,7 +123,9 @@ class ActiveSessionController {
     void Function(Object error, StackTrace stackTrace)? onSaveError,
   }) async {
     final state = await store.load();
-    if (state == null) return null;
+    if (state == null || state.saved == SavedFinish.awaitingServer) {
+      return null;
+    }
     final controller = ActiveSessionController(
       state: state,
       environment: environment,
@@ -171,6 +175,10 @@ class ActiveSessionController {
   final Set<String> _acknowledged;
   DateTime? _lastSeen;
 
+  /// Carried through untouched, so a refused workout finished again is not
+  /// sent to Health or Strava twice.
+  final SavedFinish? _saved;
+
   final Map<String, m.WorkoutExerciseModel?> _previous = {};
   final Map<String, r.ProgressionSuggestion> _suggestions = {};
 
@@ -198,6 +206,7 @@ class ActiveSessionController {
     progressionBaseline: Map.unmodifiable(_baseline),
     acknowledgedNoteTemplateIds: Set.unmodifiable(_acknowledged),
     lastSeenSetCompletion: _lastSeen,
+    saved: _saved,
   );
 
   TrackerEnvironment get environment => _environment;

@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/social/logic/people.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:social_repository/social_repository.dart';
 
@@ -41,6 +42,7 @@ class ShareToFollowerCubit extends Cubit<ShareToFollowerState> {
   new({
     required this._social,
     required this._analytics,
+    required this._connectivity,
     required this._viewer,
     required this._payload,
     required List<UserModel> following,
@@ -48,6 +50,7 @@ class ShareToFollowerCubit extends Cubit<ShareToFollowerState> {
 
   final SocialRepository _social;
   final AnalyticsRepository _analytics;
+  final ConnectivityRepository _connectivity;
   final UserModel _viewer;
   final SharePayload _payload;
 
@@ -68,7 +71,7 @@ class ShareToFollowerCubit extends Cubit<ShareToFollowerState> {
 
   /// Sends to everyone ticked, in the list's order.
   Future<void> sendPressed() async {
-    if (!state.canSend) return;
+    if (!state.canSend || !_connectivity.ensureOnline()) return;
     final ids = [
       for (final user in state.recipients)
         if (state.selectedIds.contains(user.userId)) user.userId,

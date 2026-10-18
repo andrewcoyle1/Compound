@@ -1,6 +1,7 @@
 import 'package:compound/sharing/cubit/share_to_follower_cubit.dart';
 import 'package:compound/sharing/cubit/shared_item_cubit.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:program_repository/program_repository.dart';
@@ -13,6 +14,8 @@ class _MockSocial extends Mock implements SocialRepository;
 
 /// Ported from `MesocycleSharingTests`.
 void main() {
+  late FakeConnectivityRepository connectivity;
+  late List<void> blocked;
   final now = DateTime(2026, 10, 15, 12);
   late _MockSocial social;
   late AnalyticsRecorder analytics;
@@ -26,6 +29,9 @@ void main() {
   });
 
   setUp(() {
+    connectivity = FakeConnectivityRepository();
+    blocked = [];
+    connectivity.blocked.listen(blocked.add);
     social = _MockSocial();
     analytics = AnalyticsRecorder();
   });
@@ -63,6 +69,7 @@ void main() {
 
     ShareToFollowerCubit build(List<UserModel> following) =>
         ShareToFollowerCubit(
+          connectivity: connectivity,
           social: social,
           analytics: analytics,
           viewer: me,
@@ -142,6 +149,27 @@ void main() {
       expect(analytics.names.last, 'ShareToFollowerView_Send_Fail');
       cubit.disappeared();
       expect(analytics.names.last, 'ShareToFollowerView_Disappear');
+    });
+
+    // MesocycleSharingTests.testOfflineSendSaysYoureOfflineAndSendsNothing
+    test("offline a send says you're offline and sends nothing", () async {
+      connectivity.offline = true;
+      final cubit = build(const [
+        UserModel(userId: 'amy', followingIds: ['me']),
+      ])..recipientPressed('amy');
+
+      await cubit.sendPressed();
+      await pumpEventQueue();
+
+      verifyNever(
+        () => social.sendShare(
+          any(),
+          recipientIds: any(named: 'recipientIds'),
+          viewer: me,
+        ),
+      );
+      expect(cubit.state.status, isNot(ShareSendStatus.sending));
+      expect(blocked, hasLength(1));
     });
   });
 

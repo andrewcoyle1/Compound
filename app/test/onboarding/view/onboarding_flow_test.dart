@@ -17,6 +17,8 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/app_repositories.dart';
+
 /// Each step's screen, reached through the router from a profile that
 /// resumes there, in memory as the staging flavor runs.
 void main() {
@@ -44,6 +46,8 @@ void main() {
     nutrition = InMemoryNutritionRepository();
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         purchasesRepository: FakePurchasesRepository(),
         authRepository: InMemoryAuthRepository(
           user: InMemoryAuthRepository.anonymousUser,

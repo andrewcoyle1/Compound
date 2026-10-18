@@ -360,7 +360,7 @@ void main() {
   });
 
   group('from the exercise picker', () {
-    testWidgets('the new exercise appears unticked, ready to add', (
+    testWidgets('the new exercise comes back ticked, ready to add', (
       tester,
     ) async {
       await pump(tester, '/launcher');
@@ -374,8 +374,7 @@ void main() {
       await tap(tester, cta('FinalExerciseDetails.next'));
       await tap(tester, cta('ExerciseSave.create'));
 
-      expect(find.text('Select at least one exercise'), findsOneWidget);
-      await tap(tester, find.text('Zercher Hold'));
+      expect(find.text('1 exercise selected'), findsOneWidget);
       await tap(tester, find.byTooltip('Add'));
       final created = (await library.watchUserExercises('friend').first)
           .firstWhere((exercise) => exercise.name == 'Zercher Hold');

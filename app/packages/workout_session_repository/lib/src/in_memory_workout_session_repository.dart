@@ -55,6 +55,20 @@ class InMemoryWorkoutSessionRepository implements WorkoutSessionRepository {
     _changes.add(null);
   }
 
+  /// Stored at once, as the in-memory server never refuses.
+  @override
+  Future<({Future<void> confirmed})> saveSessionConfirmed(
+    String uid,
+    WorkoutSessionModel session,
+  ) async {
+    await saveSession(uid, session);
+    return (confirmed: Future<void>.value());
+  }
+
+  @override
+  Future<bool> sessionOnServer(String uid, String id) async =>
+      _indexOf(uid, id) >= 0;
+
   @override
   Future<void> deleteSession(String uid, String id) async {
     final index = _indexOf(uid, id);

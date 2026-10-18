@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/l10n/l10n.dart';
@@ -562,6 +564,64 @@ void main() {
       );
     });
 
+    test('a save the server refuses is kept for the tracker to offer '
+        'again', () async {
+      final refusing = _RefusingSessions();
+      cubit = ActiveWorkoutCubit(
+        sessions: refusing,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        wait: (_) async {},
+      );
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+      // Saved on the device: the summary shows, the copy waits.
+      expect(cubit.state.finishedSession, isNotNull);
+      expect((await store.load())?.saved, SavedFinish.awaitingServer);
+
+      refusing.server.completeError(Exception('permission-denied'));
+      await settle();
+
+      expect((await store.load())?.saved, SavedFinish.refused);
+      expect(cubit.state.isActive, isTrue);
+      final fail = verify(() => analytics.trackEvent(captureAny())).captured
+          .cast<LoggableEvent>()
+          .where((e) => e.eventName == 'WorkoutTrackerView_FinishWorkout_Fail');
+      expect(fail.single.parameters, {'reason': 'server_refused'});
+    });
+
+    test('a finished workout still waiting for the server after a relaunch '
+        'is not offered, and is forgotten once the server has it', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+      cubit.flush();
+      await settle();
+      final kept = (await store.load())!;
+      await sessions.saveSession(uid, kept.session);
+      await store.save(
+        ActiveSessionState(
+          session: kept.session,
+          saved: SavedFinish.awaitingServer,
+        ),
+      );
+      await cubit.close();
+
+      cubit = build();
+      await cubit.userChanged(uid);
+      expect(cubit.state.isActive, isFalse);
+      await settle();
+      expect(await store.load(), isNull);
+    });
+
     test('discarding forgets the workout', () async {
       await cubit.userChanged(uid);
       await cubit.start(template: template, eventPrefix: 'x');
@@ -1023,6 +1083,47 @@ void main() {
       expect(stored!.stravaActivityId, isNotNull);
     });
 
+    test('a workout the server refused, finished again, is not sent to '
+        'Health or Strava again', () async {
+      await cubit.userChanged(uid);
+      await settle();
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+      cubit.flush();
+      await settle();
+      final kept = (await store.load())!;
+      await store.save(
+        ActiveSessionState(session: kept.session, saved: SavedFinish.refused),
+      );
+      await cubit.close();
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        wait: (_) async {},
+        health: HealthRepository(
+          platform: health,
+          body: InMemoryBodyRepository(),
+          nutrition: InMemoryNutritionRepository(),
+        ),
+        strava: strava,
+      );
+      await cubit.userChanged(uid);
+      expect(cubit.state.isActive, isTrue);
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      expect(await sessions.session(uid, kept.session.id), isNotNull);
+      expect(health.writtenWorkouts, isEmpty);
+      expect(stravaApi.uploads, isEmpty);
+      expect(await store.load(), isNull);
+    });
+
     test(
       'a refusal is noted, and the workout is not saved to Health',
       () async {
@@ -1053,4 +1154,20 @@ class _FailingSessions extends InMemoryWorkoutSessionRepository {
   @override
   Future<void> saveSession(String uid, WorkoutSessionModel session) =>
       Future.error(Exception('denied'));
+}
+
+/// Saves on the device; the server answers when the test says.
+class _RefusingSessions extends InMemoryWorkoutSessionRepository {
+  new() : super(sessions: const []);
+
+  final server = Completer<void>();
+
+  @override
+  Future<({Future<void> confirmed})> saveSessionConfirmed(
+    String uid,
+    WorkoutSessionModel session,
+  ) async {
+    await saveSession(uid, session);
+    return (confirmed: server.future);
+  }
 }

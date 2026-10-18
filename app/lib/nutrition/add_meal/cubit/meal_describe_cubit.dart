@@ -3,20 +3,27 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:characters/characters.dart';
 import 'package:compound/nutrition/add_meal/cubit/food_photo_scanner_cubit.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:equatable/equatable.dart';
 
 /// The picker's Describe tab (Swift `MealDescribePresenter`): a meal
 /// described in words is sent to `mealDescribe`, and the foods it finds can
 /// be added all at once or one at a time through the amount sheet.
 class MealDescribeCubit extends Cubit<MealDescribeState> {
-  new({required this._ai, required this._analytics})
-    : super(const MealDescribeState());
+  new({
+    required this._ai,
+    required this._analytics,
+    required this._connectivity,
+  }) : super(const MealDescribeState());
 
   /// The longest description, in characters as the field counts them.
   static const characterLimit = 500;
 
   final AiRepository _ai;
   final AnalyticsRepository _analytics;
+
+  /// Checked before an action that needs the server (`ensureOnline`).
+  final ConnectivityRepository _connectivity;
 
   /// The field now reads [text], held to [characterLimit].
   void textChanged(String text) {
@@ -33,7 +40,7 @@ class MealDescribeCubit extends Cubit<MealDescribeState> {
   /// Analyze: the description goes to the model, forgetting the last
   /// answer. Nothing is sent without a description, or while one is out.
   Future<void> analyse() async {
-    if (!state.canAnalyse) return;
+    if (!state.canAnalyse || !_connectivity.ensureOnline()) return;
     final text = state.text;
     emit(MealDescribeState(text: text, status: EstimateStatus.analysing));
     _track('MealDescribe_Submit', {'text_length': text.characters.length});

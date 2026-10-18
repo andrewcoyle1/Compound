@@ -14,6 +14,10 @@ class OfflineFirestore extends Fake implements FirebaseFirestore {
   /// The paths written, in order (a batch as `batch`).
   final writes = <String>[];
 
+  /// What every document's `snapshots` emits, as (exists, has pending
+  /// writes, from cache).
+  final snapshots = StreamController<(bool, bool, bool)>.broadcast();
+
   /// Fails every write so far, and every later one, with [code].
   void refuse(String code) => _server.completeError(
     FirebaseException(plugin: 'cloud_firestore', code: code),
@@ -73,6 +77,39 @@ class _Document extends Fake
 
   @override
   Future<void> delete() => _firestore._write(path);
+
+  @override
+  Stream<DocumentSnapshot<Map<String, dynamic>>> snapshots({
+    bool includeMetadataChanges = false,
+    ListenSource source = ListenSource.defaultSource,
+  }) => _firestore.snapshots.stream.map(
+    (s) => _Snapshot(
+      exists: s.$1,
+      metadata: _Metadata(hasPendingWrites: s.$2, isFromCache: s.$3),
+    ),
+  );
+}
+
+// Sealed as above.
+// ignore: subtype_of_sealed_class
+class _Snapshot extends Fake implements DocumentSnapshot<Map<String, dynamic>> {
+  new({required this.exists, required this.metadata});
+
+  @override
+  final bool exists;
+
+  @override
+  final SnapshotMetadata metadata;
+}
+
+class _Metadata extends Fake implements SnapshotMetadata {
+  new({required this.hasPendingWrites, required this.isFromCache});
+
+  @override
+  final bool hasPendingWrites;
+
+  @override
+  final bool isFromCache;
 }
 
 class _Batch extends Fake implements WriteBatch {

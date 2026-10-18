@@ -66,6 +66,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         appVersion: const AppVersion(version: '1.4.0', build: '27'),
         storeReview: store,
         shareSheet: shareSheet,

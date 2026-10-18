@@ -5089,10 +5089,6 @@
     "@addMealAddFood": {
         "description": "Opens the food picker"
     },
-    "addMealRemoveItem": "Remove",
-    "@addMealRemoveItem": {
-        "description": "Removes an item from the plate"
-    },
     "nutritionLogMeal": "Log Meal",
     "@nutritionLogMeal": {
         "description": "Opens the meal logger"
@@ -8494,8 +8490,6 @@
     "@gymAddMachineMenu": {},
     "gymAddMachine": "Add Machine",
     "@gymAddMachine": {},
-    "gymMachineActions": "Machine actions",
-    "@gymMachineActions": {},
     "gymDuplicate": "Duplicate",
     "@gymDuplicate": {},
     "gymDeleteMachineTitle": "Delete Machine?",
@@ -13111,5 +13105,89 @@
     "siriFooter": "Add these to the Shortcuts app to run them from your Home Screen or Action button.",
     "@siriFooter": {
         "description": "Siri screen: footer"
+    },
+    "offlineTitle": "You're offline",
+    "@offlineTitle": {
+        "description": "Alert title when an action that needs the server is tried without a network"
+    },
+    "offlineMessage": "This needs an internet connection. Try again when you're back online.",
+    "@offlineMessage": {
+        "description": "Alert message when an action that needs the server is tried without a network"
+    },
+    "aiScanOffline": "You're offline. Connect to the internet to analyze this photo.",
+    "@aiScanOffline": {
+        "description": "A meal photo taken without a network, so it was not analyzed"
+    },
+    "exerciseCopyName": "{name} (Copy)",
+    "@exerciseCopyName": {
+        "description": "Edit Duplicate: the copy's name",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "relativeSecondsAgo": "{count, plural, =0{now} =1{1 second ago} other{{count} seconds ago}}",
+    "@relativeSecondsAgo": {
+        "description": "Relative time under a minute (Swift .relative(presentation: .named))",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "relativeMinutesAgo": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+    "@relativeMinutesAgo": {
+        "description": "Relative time in minutes",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "relativeHoursAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+    "@relativeHoursAgo": {
+        "description": "Relative time in hours",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "relativeDaysAgo": "{count, plural, =1{yesterday} other{{count} days ago}}",
+    "@relativeDaysAgo": {
+        "description": "Relative time in calendar days; 1 is yesterday",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "relativeWeeksAgo": "{count, plural, =1{last week} other{{count} weeks ago}}",
+    "@relativeWeeksAgo": {
+        "description": "Relative time in calendar weeks",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "relativeMonthsAgo": "{count, plural, =1{last month} other{{count} months ago}}",
+    "@relativeMonthsAgo": {
+        "description": "Relative time in calendar months",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "relativeYearsAgo": "{count, plural, =1{last year} other{{count} years ago}}",
+    "@relativeYearsAgo": {
+        "description": "Relative time in calendar years",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
     }
 }

@@ -8,6 +8,7 @@ import 'package:compound/social/feed/feed_session_card.dart';
 import 'package:compound/social/social.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -274,10 +275,15 @@ void main() {
         settings: {sampleUserId: sampleUserSettings(now: now)},
       );
       social = (await tester.runAsync(
-        () => inMemorySocialRepository(users: users, now: now),
+        () => inMemorySocialRepository(
+          firestore: FakeFirebaseFirestore(),
+          users: users,
+          now: now,
+        ),
       ))!;
       await tester.pumpWidget(
         App(
+          coachRepository: silentCoachRepository(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
           trainingLibraryRepository: InMemoryTrainingLibraryRepository(),

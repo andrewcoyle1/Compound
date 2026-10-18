@@ -1,5 +1,6 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:social_repository/social_repository.dart';
@@ -23,7 +24,11 @@ final class SocialWorld {
     final sessions = InMemoryWorkoutSessionRepository(
       sessions: sampleWorkoutSessions(uid: sampleUserId, now: at),
     );
-    final social = await inMemorySocialRepository(users: users, now: at);
+    final social = await inMemorySocialRepository(
+      firestore: FakeFirebaseFirestore(),
+      users: users,
+      now: at,
+    );
     final circle = CircleBloc(
       social: social,
       sessions: sessions,

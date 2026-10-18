@@ -21,6 +21,7 @@ import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/app_repositories.dart';
 import '../../helpers/library_fixtures.dart';
 
 /// The tracker's loading and equipment, through the whole app on the
@@ -71,6 +72,8 @@ void main() {
     );
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         purchasesRepository: FakePurchasesRepository(),
         authRepository: InMemoryAuthRepository(
           user: InMemoryAuthRepository.sampleUser,

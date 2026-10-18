@@ -214,9 +214,21 @@ void main() {
         expect(drafts.state?.items.single.amount, 80);
       });
 
-      testWidgets('an item swipes off', (tester) async {
+      testWidgets('a swipe deletes an item or edits it', (tester) async {
         await pumpLogger(tester, meal: draft);
-        await tester.drag(find.text('Rolled Oats'), const Offset(-600, 0));
+        await tester.drag(find.text('Rolled Oats'), const Offset(-200, 0));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(AppSymbols.edit));
+        await tester.pumpAndSettle();
+        expect(find.byType(ItemAmountSheet), findsOneWidget);
+        await tester.enterText(find.byType(TextField), '80');
+        await tester.tap(find.text('Save'));
+        await tester.pumpAndSettle();
+        expect(drafts.state?.items.single.amount, 80);
+
+        await tester.drag(find.text('Rolled Oats'), const Offset(-200, 0));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(AppSymbols.delete));
         await tester.pumpAndSettle();
         expect(find.text('Nothing on the plate yet'), findsOneWidget);
       });

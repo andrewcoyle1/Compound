@@ -1,4 +1,5 @@
 export 'analytics_recorder.dart';
+export 'app_repositories.dart';
 export 'display_size.dart';
 export 'expenditure_fixtures.dart';
 export 'fake_store_review.dart';

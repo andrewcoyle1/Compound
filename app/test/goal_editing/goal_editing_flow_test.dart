@@ -27,6 +27,8 @@ void main() {
   late StagingData data;
 
   Widget app() => App(
+    socialRepository: emptySocialRepository(),
+    coachRepository: silentCoachRepository(),
     purchasesRepository: FakePurchasesRepository(),
     authRepository: InMemoryAuthRepository(
       user: InMemoryAuthRepository.sampleUser,

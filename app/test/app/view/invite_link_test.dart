@@ -3,6 +3,7 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/social/profile/social_profile_page.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -34,11 +35,16 @@ void main() {
       settings: {sampleUserId: sampleUserSettings(now: now)},
     );
     final social = (await tester.runAsync(
-      () => inMemorySocialRepository(users: users, now: now),
+      () => inMemorySocialRepository(
+        firestore: FakeFirebaseFirestore(),
+        users: users,
+        now: now,
+      ),
     ))!;
     shares = ShareRecorder();
     await tester.pumpWidget(
       App(
+        coachRepository: silentCoachRepository(),
         purchasesRepository: FakePurchasesRepository(),
         programRepository: InMemoryProgramRepository(),
         trainingLibraryRepository: InMemoryTrainingLibraryRepository(),

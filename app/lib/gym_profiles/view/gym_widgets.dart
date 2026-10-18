@@ -7,7 +7,6 @@ import 'package:compound/gym_profiles/view/gym_text.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -116,8 +115,8 @@ class GymListHeader extends StatelessWidget {
   }
 }
 
-/// A row that swipes away to delete, with the same delete as a screen
-/// reader action.
+/// A row with Swift's swipe to delete (`onDelete`), which a screen reader
+/// also offers as an action.
 class DeletableRow extends StatelessWidget {
   const new({
     required this.id,
@@ -132,27 +131,17 @@ class DeletableRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Dismissible(
+    return AppSwipeActions(
       key: ValueKey(id),
-      direction: DismissDirection.endToStart,
-      background: ColoredBox(
-        color: scheme.error,
-        child: Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: Icon(AppSymbols.delete, color: scheme.onError),
-          ),
+      trailing: [
+        AppSwipeAction(
+          label: context.l10n.gymDelete,
+          icon: AppSymbols.delete,
+          isDestructive: true,
+          onPressed: onDelete,
         ),
-      ),
-      onDismissed: (_) => onDelete(),
-      child: Semantics(
-        customSemanticsActions: {
-          CustomSemanticsAction(label: context.l10n.gymDelete): onDelete,
-        },
-        child: child,
-      ),
+      ],
+      child: child,
     );
   }
 }

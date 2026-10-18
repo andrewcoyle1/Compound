@@ -19,6 +19,7 @@ import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,6 +32,7 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/app_repositories.dart';
 import '../../helpers/display_size.dart';
 import '../../helpers/reminder_offers.dart';
 
@@ -49,6 +51,8 @@ void main() {
     testWidgets('signs in, then out, through the router', (tester) async {
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -98,6 +102,8 @@ void main() {
       final nutrition = InMemoryNutritionRepository();
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: programs,
@@ -231,6 +237,8 @@ void main() {
       final liveActivity = FakeLiveActivityRepository();
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -273,6 +281,8 @@ void main() {
       final body = InMemoryBodyRepository();
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(
@@ -348,6 +358,8 @@ void main() {
       final intents = FakeAppIntentsRepository();
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -380,6 +392,8 @@ void main() {
         'shows their profile over the tabs', (tester) async {
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -415,6 +429,8 @@ void main() {
       final notifications = FakeNotificationsRepository();
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -459,10 +475,15 @@ void main() {
         'waiting', (tester) async {
       final users = seededUsers();
       final social = (await tester.runAsync(
-        () => inMemorySocialRepository(users: users, now: DateTime.now()),
+        () => inMemorySocialRepository(
+          firestore: FakeFirebaseFirestore(),
+          users: users,
+          now: DateTime.now(),
+        ),
       ))!;
       await tester.pumpWidget(
         App(
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -494,6 +515,8 @@ void main() {
     testWidgets('switches between the five tabs', (tester) async {
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -548,6 +571,8 @@ void main() {
       tester.useSize(const Size(1366, 1024));
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -605,6 +630,8 @@ void main() {
     ) async {
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -649,6 +676,8 @@ void main() {
     ) async {
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -720,6 +749,8 @@ void main() {
       );
       await tester.pumpWidget(
         App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
           deviceStore: offersShownDevice(),
           purchasesRepository: FakePurchasesRepository(),
           programRepository: InMemoryProgramRepository(),
@@ -758,8 +789,18 @@ void main() {
       await tester.tap(find.byTooltip('Log Weight'));
       await tester.pumpAndSettle();
       expect(find.byType(LogWeightView), findsOneWidget);
-      // It opens on the latest weigh-in.
-      expect(find.text('80 kg'), findsOneWidget);
+      // It opens on the latest weigh-in, over Scale Weight as a half sheet.
+      expect(
+        find.descendant(
+          of: find.byType(LogWeightView),
+          matching: find.text('80 kg'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
+      // The test window is short: drag the sheet up to full height.
+      await tester.drag(find.text('Date'), const Offset(0, -400));
+      await tester.pumpAndSettle();
       await tester.drag(
         find.byType(CupertinoPicker).first,
         const Offset(0, -64),

@@ -14,9 +14,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
-/// The review, and Create (Swift `ExerciseSaveView`). There is no "Create &
-/// Add": the flow closes, and the new exercise is in the library and any
-/// open picker, unticked, as in Swift.
+/// The review, and Create (Swift `ExerciseSaveView`). Create closes the
+/// flow with the new exercise, which a picker that opened it ticks (Swift
+/// leaves it unticked; the owner asked for this).
 class ExerciseSavePage extends StatelessWidget {
   const new({required this.draft, super.key});
 
@@ -45,12 +45,12 @@ class ExerciseSaveView extends StatelessWidget {
 
   static Future<void> _done(
     BuildContext context,
-    ExerciseSaveStatus status,
+    ExerciseSaveState state,
   ) async {
     final l10n = context.l10n;
-    if (status == ExerciseSaveStatus.saved) {
+    if (state.status == ExerciseSaveStatus.saved) {
       unawaited(HapticFeedback.successNotification());
-      CreateExerciseFlow.close(context);
+      CreateExerciseFlow.close(context, state.created);
       return;
     }
     unawaited(HapticFeedback.errorNotification());
@@ -66,7 +66,7 @@ class ExerciseSaveView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<ExerciseSaveCubit>();
-    final status = context.watch<ExerciseSaveCubit>().state;
+    final status = context.watch<ExerciseSaveCubit>().state.status;
     final library = switch (context.watch<TrainingLibraryBloc>().state) {
       TrainingLibraryLoaded(:final library) => library,
       _ => null,
@@ -74,11 +74,11 @@ class ExerciseSaveView extends StatelessWidget {
     return ScreenAnalytics(
       appeared: cubit.appeared,
       disappeared: cubit.disappeared,
-      child: BlocListener<ExerciseSaveCubit, ExerciseSaveStatus>(
+      child: BlocListener<ExerciseSaveCubit, ExerciseSaveState>(
         listenWhen: (previous, current) =>
-            current == ExerciseSaveStatus.saved ||
-            current == ExerciseSaveStatus.failed,
-        listener: (context, status) => unawaited(_done(context, status)),
+            current.status == ExerciseSaveStatus.saved ||
+            current.status == ExerciseSaveStatus.failed,
+        listener: (context, state) => unawaited(_done(context, state)),
         child: AppScaffold(
           appBar: AppBar(title: Text(l10n.createExerciseSave)),
           body: SafeArea(

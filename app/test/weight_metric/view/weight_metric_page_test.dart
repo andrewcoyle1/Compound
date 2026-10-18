@@ -209,7 +209,7 @@ void main() {
         bodyRepository: repository,
         allData: true,
       );
-      await tester.drag(find.text('73 kg'), const Offset(-500, 0));
+      await tester.drag(find.text('73 kg'), const Offset(-700, 0));
       await tester.pumpAndSettle();
       expect(find.text('73 kg'), findsNothing);
       final entry = (await repository.watchMeasurements(uid).first).single;
@@ -240,7 +240,7 @@ void main() {
         bodyRepository: repository,
         allData: true,
       );
-      await tester.drag(find.text('73 kg'), const Offset(-500, 0));
+      await tester.drag(find.text('73 kg'), const Offset(-700, 0));
       await tester.pumpAndSettle();
       expect(find.text('Unable to Delete Entry'), findsOneWidget);
       await tester.tap(find.text('OK'));

@@ -56,16 +56,38 @@ class FirestoreWorkoutSessionRepository implements WorkoutSessionRepository {
   }
 
   @override
-  Future<void> saveSession(String uid, WorkoutSessionModel session) {
+  Future<void> saveSession(String uid, WorkoutSessionModel session) =>
+      saveSessionConfirmed(uid, session);
+
+  /// The write's own future is the server's answer: cloud_firestore
+  /// completes it on the server's acknowledgement and fails it with a
+  /// refusal.
+  @override
+  Future<({Future<void> confirmed})> saveSessionConfirmed(
+    String uid,
+    WorkoutSessionModel session,
+  ) async {
     final document = _sessions(uid).doc(session.id);
-    return writeLocally(
-      document.path,
-      () => document.set(
-        _toFirestore(session.toFirestore()),
-        SetOptions(merge: true),
-      ),
-      _onWriteError,
+    final confirmed = document.set(
+      _toFirestore(session.toFirestore()),
+      SetOptions(merge: true),
     );
+    await writeLocally(document.path, () => confirmed, _onWriteError);
+    return (confirmed: confirmed);
+  }
+
+  /// The first snapshot with nothing pending that came from the server: a
+  /// refused write has been rolled back by then, so the session is there
+  /// only if the server has it.
+  @override
+  Future<bool> sessionOnServer(String uid, String id) async {
+    final snapshot = await _sessions(uid)
+        .doc(id)
+        .snapshots(includeMetadataChanges: true)
+        .firstWhere(
+          (s) => !s.metadata.hasPendingWrites && !s.metadata.isFromCache,
+        );
+    return snapshot.exists;
   }
 
   /// An `update`, as [updateWeekStreakCount] is.

@@ -670,7 +670,7 @@ packages:
     source: hosted
     version: "4.2.5"
   firebase_remote_config:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: firebase_remote_config
       sha256: fa518445638fa3903e359ac544bd3243e72ada025728c8dbfa4b28ae939e8b38

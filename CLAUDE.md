@@ -299,7 +299,13 @@ milestones and the Firestore contract are in `docs/specs/flutter/`. Build agents
     `com.andrewcoyle.compound.dev` (since 16 Oct 2026), so it replaces the Swift dev app on a device
     and shares its App ID, App Group (`group.com.compound.app`), Firebase iOS app and RevenueCat app.
   - `staging` uses in-memory fakes and no Firebase.
-  - `production` is not configured yet.
+  - `production` (iOS only, since 18 Oct 2026, at the owner's request) uses the prod project
+    `dialed-c3cb5` and the App Store app's ids: `com.andrewcoyle.compound`, its extension
+    `com.andrewcoyle.compound.WorkoutSessionActivity` and `group.com.compound.app`. App Attest with a
+    DeviceCheck fallback, RevenueCat (it refuses to start without `REVENUECAT_APPLE_API_KEY_PROD`),
+    Remote Config A/B tests. Keys come from `*_PROD` entries in `dart_defines.json`. Build with
+    `flutter build ios --release --flavor production -t lib/main_production.dart --dart-define-from-file=dart_defines.json`.
+    Agents may read only prod's iOS app config, never write there. Android production is not configured.
   - Run with `flutter run --flavor development -t lib/main_development.dart` from `app/`.
 - **Firebase config is gitignored** because the repo is public: `lib/firebase_options_*.dart`,
   `google-services.json` and `GoogleService-Info.plist`. Regenerate them with

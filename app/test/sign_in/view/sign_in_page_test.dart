@@ -1,3 +1,4 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:flutter/foundation.dart';
@@ -38,6 +39,8 @@ void main() {
       ) async {
         debugDefaultTargetPlatformOverride = platform;
         await pump(tester);
+        expect(find.byType(AppSignInWithAppleButton), findsOneWidget);
+        expect(find.byType(AppSignInWithGoogleButton), findsOneWidget);
         await tester.tap(find.text('Continue with Apple'));
         verify(cubit.signInWithApple).called(1);
         await tester.tap(find.text('Continue with Google'));

@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:app_ui/src/widgets/app_sign_in_button.dart';
 
 /// {@template app_sign_in_with_apple_button}
 /// Apple's "Continue with Apple" button, drawn as Apple's Human Interface
@@ -12,6 +13,8 @@ import 'package:app_ui/app_ui.dart';
 ///   (left-aligned, medium), as tall as the button;
 /// - the title 43% of the button's height, as the system button's is;
 /// - 56 points tall with capsule ends, as the Swift app's.
+///
+/// [AppSignInWithGoogleButton] shares its size, shape and title size.
 ///
 /// While [isLoading] a spinner takes the logo and title's place.
 /// {@endtemplate}
@@ -34,74 +37,27 @@ class AppSignInWithAppleButton extends StatelessWidget {
   /// Whether sign-in is under way.
   final bool isLoading;
 
-  /// The Swift app's height.
-  static const double height = 56;
+  /// The Swift app's height, shared with [AppSignInWithGoogleButton].
+  static const double height = AppSignInButton.height;
 
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final background = dark ? Colors.white : Colors.black;
     final foreground = dark ? Colors.black : Colors.white;
-    final onTap = isLoading ? null : onPressed;
-    return Semantics(
-      button: true,
-      enabled: onTap != null,
+    return AppSignInButton(
       label: label,
-      excludeSemantics: true,
-      child: Material(
-        color: background,
-        shape: const StadiumBorder(),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          splashColor: foreground.withValues(alpha: 0.2),
-          highlightColor: foreground.withValues(alpha: 0.1),
-          child: SizedBox(
-            height: height,
-            width: double.infinity,
-            child: isLoading
-                ? Center(
-                    child: SizedBox.square(
-                      dimension: AppIconSize.small.of(context),
-                      child: CircularProgressIndicator.adaptive(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(foreground),
-                      ),
-                    ),
-                  )
-                : FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CustomPaint(
-                          size: const Size(
-                            height * _AppleLogoPainter.width / 44,
-                            height,
-                          ),
-                          painter: _AppleLogoPainter(foreground),
-                        ),
-                        Text(
-                          label,
-                          // Like the system button, the title keeps its
-                          // proportion to the button rather than scaling
-                          // with the text size setting.
-                          textScaler: TextScaler.noScaling,
-                          style: TextStyle(
-                            color: foreground,
-                            fontSize: height * 0.43,
-                            fontWeight: FontWeight.w500,
-                            height: 1,
-                          ),
-                        ),
-                        // Balances the logo file's leading padding.
-                        const SizedBox(width: AppSpacing.m),
-                      ],
-                    ),
-                  ),
-          ),
+      onPressed: onPressed,
+      isLoading: isLoading,
+      background: dark ? Colors.white : Colors.black,
+      foreground: foreground,
+      leading: [
+        CustomPaint(
+          size: const Size(height * _AppleLogoPainter.width / 44, height),
+          painter: _AppleLogoPainter(foreground),
         ),
-      ),
+      ],
+      // Balances the logo file's leading padding.
+      trailing: const [SizedBox(width: AppSpacing.m)],
     );
   }
 }

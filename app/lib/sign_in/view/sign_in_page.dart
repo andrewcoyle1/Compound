@@ -53,9 +53,9 @@ class SignInView extends StatelessWidget {
                   label: l10n.signInWithAppleButton,
                   onPressed: enabled ? cubit.signInWithApple : null,
                 ),
-                FilledButton(
+                AppSignInWithGoogleButton(
+                  label: l10n.signInWithGoogleButton,
                   onPressed: enabled ? cubit.signInWithGoogle : null,
-                  child: Text(l10n.signInWithGoogleButton),
                 ),
                 TextButton(
                   onPressed: enabled ? cubit.signInAnonymously : null,

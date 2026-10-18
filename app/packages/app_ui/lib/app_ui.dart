@@ -27,5 +27,6 @@ export 'src/widgets/app_readable_width.dart';
 export 'src/widgets/app_section.dart';
 export 'src/widgets/app_selectable_row.dart';
 export 'src/widgets/app_sign_in_with_apple_button.dart';
+export 'src/widgets/app_sign_in_with_google_button.dart';
 export 'src/widgets/app_stat.dart';
 export 'src/widgets/app_stat_tile.dart';

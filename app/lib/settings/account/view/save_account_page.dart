@@ -73,7 +73,7 @@ class SaveAccountView extends StatelessWidget {
                 isLoading: busy,
                 onPressed: cubit.applePressed,
               ),
-              AppCtaButton(
+              AppSignInWithGoogleButton(
                 label: l10n.signInWithGoogleButton,
                 isLoading: busy,
                 onPressed: cubit.googlePressed,

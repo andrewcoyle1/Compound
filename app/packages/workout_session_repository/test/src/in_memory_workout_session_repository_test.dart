@@ -31,6 +31,19 @@ void main() {
       );
     });
 
+    test(
+      'saveSessionConfirmed stores at once, and the server has it',
+      () async {
+        final write = await subject.saveSessionConfirmed(
+          'me',
+          session('d', 'me'),
+        );
+        await expectLater(write.confirmed, completes);
+        expect(await subject.sessionOnServer('me', 'd'), isTrue);
+        expect(await subject.sessionOnServer('me', 'b'), isFalse);
+      },
+    );
+
     group('session', () {
       test("returns the user's session with that id", () async {
         expect((await subject.session('me', 'c'))?.id, 'c');

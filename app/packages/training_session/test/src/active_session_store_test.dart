@@ -24,6 +24,7 @@ final _full = ActiveSessionState(
   },
   acknowledgedNoteTemplateIds: const {'template-e1'},
   lastSeenSetCompletion: DateTime.utc(2026, 10, 15, 9, 2),
+  saved: SavedFinish.refused,
 );
 
 void _expectSame(ActiveSessionState? read, ActiveSessionState expected) {
@@ -41,6 +42,7 @@ void _expectSame(ActiveSessionState? read, ActiveSessionState expected) {
     read.acknowledgedNoteTemplateIds,
     expected.acknowledgedNoteTemplateIds,
   );
+  expect(read.saved, expected.saved);
 }
 
 void main() {
@@ -60,6 +62,8 @@ void main() {
         {..._full.toJson(), 'rest_end': 'yesterday'},
         {..._full.toJson(), 'paused_seconds': null},
         {..._full.toJson(), 'session': <String, Object?>{}},
+        {..._full.toJson(), 'saved': 'sent'},
+        {..._full.toJson(), 'saved': 1},
       ]) {
         expect(() => ActiveSessionState.fromJson(json), throwsFormatException);
       }

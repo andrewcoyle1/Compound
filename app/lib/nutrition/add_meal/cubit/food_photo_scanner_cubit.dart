@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_repository/image_repository.dart';
 
@@ -19,6 +20,9 @@ enum EstimateStatus {
 
   /// The call failed or the answer could not be read.
   failed,
+
+  /// There was no network, so nothing was sent.
+  offline,
 }
 
 /// Whether the AI tab may use the camera (Swift `CameraAccess`, less
@@ -38,12 +42,19 @@ enum CameraState {
 /// meal is sent to `foodAnalyze`, and the foods it finds can be added all
 /// at once or one at a time through the amount sheet.
 class FoodPhotoScannerCubit extends Cubit<FoodPhotoScannerState> {
-  new({required this._ai, required this._picker, required this._analytics})
-    : super(const FoodPhotoScannerState());
+  new({
+    required this._ai,
+    required this._picker,
+    required this._analytics,
+    required this._connectivity,
+  }) : super(const FoodPhotoScannerState());
 
   final AiRepository _ai;
   final PhotoPicker _picker;
   final AnalyticsRepository _analytics;
+
+  /// Checked before an action that needs the server (`ensureOnline`).
+  final ConnectivityRepository _connectivity;
 
   /// Takes a photo and analyses it. A cancel leaves the tab as it was.
   Future<void> takePhoto() async {
@@ -63,7 +74,16 @@ class FoodPhotoScannerCubit extends Cubit<FoodPhotoScannerState> {
   }
 
   /// Sends [photo] to the model, forgetting the last shot's outcome.
+  /// Offline the photo stays on screen, saying why nothing follows.
   Future<void> analyse(Uint8List photo) async {
+    if (!_connectivity.ensureOnline()) {
+      if (!isClosed) {
+        emit(
+          FoodPhotoScannerState(photo: photo, status: EstimateStatus.offline),
+        );
+      }
+      return;
+    }
     emit(FoodPhotoScannerState(photo: photo, status: EstimateStatus.analysing));
     _track('FoodPhotoScanner_Capture');
     try {

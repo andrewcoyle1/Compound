@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/nutrition/add_meal/cubit/barcode_scanner_cubit.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -13,6 +14,8 @@ class _MockFoodRepository extends Mock implements FoodRepository;
 class _FakeFood extends Fake implements FoodModel;
 
 void main() {
+  late FakeConnectivityRepository connectivity;
+  late List<void> blocked;
   const uid = 'uid';
   const code = '5010029000061';
   final mine = FoodModel(
@@ -39,6 +42,9 @@ void main() {
   setUpAll(() => registerFallbackValue(_FakeFood()));
 
   setUp(() {
+    connectivity = FakeConnectivityRepository();
+    blocked = [];
+    connectivity.blocked.listen(blocked.add);
     openFoodFacts = _MockOpenFoodFacts();
     foods = _MockFoodRepository();
     analytics = RecordingAnalytics();
@@ -48,6 +54,7 @@ void main() {
   });
 
   BarcodeScannerCubit build() => BarcodeScannerCubit(
+    connectivity: connectivity,
     uid: uid,
     openFoodFacts: openFoodFacts,
     foodRepository: foods,
@@ -151,5 +158,23 @@ void main() {
       act: (cubit) => cubit.detected(code, library: const []),
       verify: (cubit) => expect(cubit.state.status, BarcodeStatus.unavailable),
     );
+
+    // testOfflineABarcodeIsFoundLocallyOrSaysYoureOffline
+    test("offline the user's own food is still found; anything else says "
+        "you're offline and looks nothing up", () async {
+      connectivity.offline = true;
+      final cubit = build();
+
+      await cubit.detected(code, library: [mine]);
+      expect(cubit.state.food, mine);
+
+      cubit.rescan();
+      await cubit.detected('222', library: [mine]);
+      await pumpEventQueue();
+
+      expect(cubit.state, const BarcodeScannerState(code: '222'));
+      verifyNever(() => openFoodFacts.lookupBarcode(any()));
+      expect(blocked, hasLength(1));
+    });
   });
 }

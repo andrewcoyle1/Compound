@@ -1,4 +1,5 @@
 import 'package:compound/social/invite/invite_cubit.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -10,12 +11,17 @@ import '../../helpers/helpers.dart';
 class _MockSocial extends Mock implements SocialRepository;
 
 void main() {
+  late FakeConnectivityRepository connectivity;
+  late List<void> blocked;
   final now = DateTime(2026, 10, 15, 12);
   late SocialRepository social;
   late UserModel viewer;
   late AnalyticsRecorder analytics;
 
   setUp(() async {
+    connectivity = FakeConnectivityRepository();
+    blocked = [];
+    connectivity.blocked.listen(blocked.add);
     viewer = sampleUser(now: now);
     social = await inMemorySocialRepository(
       firestore: FakeFirebaseFirestore(),
@@ -28,7 +34,11 @@ void main() {
   group(InviteCubit, () {
     // InviteTests.testAcceptingOpensTheInviterWithAFollowingToast
     test('accepting answers with the inviter and what happened', () async {
-      final cubit = InviteCubit(social: social, analytics: analytics);
+      final cubit = InviteCubit(
+        connectivity: connectivity,
+        social: social,
+        analytics: analytics,
+      );
       await cubit.accept('push 2345', viewer: viewer);
       final result = cubit.state.result! as InviteAccepted;
       expect(result.inviter.userId, 'user1');
@@ -51,7 +61,11 @@ void main() {
       );
       when(() => mock.users(['user1'], viewer: viewer))
           .thenAnswer((_) async => const [UserModel(userId: 'user1')]);
-      final cubit = InviteCubit(social: mock, analytics: analytics);
+      final cubit = InviteCubit(
+        connectivity: connectivity,
+        social: mock,
+        analytics: analytics,
+      );
       await cubit.accept('PUSH2345', viewer: viewer);
       expect(
         (cubit.state.result! as InviteAccepted).acceptance.youFollow,
@@ -61,7 +75,11 @@ void main() {
 
     // InviteTests.testARefusedInviteExplainsWhyAndOpensNothing
     test('a refused invite says why', () async {
-      final cubit = InviteCubit(social: social, analytics: analytics);
+      final cubit = InviteCubit(
+        connectivity: connectivity,
+        social: social,
+        analytics: analytics,
+      );
       await cubit.accept('NOPE', viewer: viewer);
       expect(
         cubit.state.result,
@@ -88,7 +106,11 @@ void main() {
       );
       when(() => mock.users(['gone'], viewer: viewer))
           .thenAnswer((_) async => const []);
-      final cubit = InviteCubit(social: mock, analytics: analytics);
+      final cubit = InviteCubit(
+        connectivity: connectivity,
+        social: mock,
+        analytics: analytics,
+      );
       await cubit.accept('PUSH2345', viewer: viewer);
       expect(
         cubit.state.result,
@@ -101,7 +123,11 @@ void main() {
     });
 
     test("shares the viewer's link, creating the invite once", () async {
-      final cubit = InviteCubit(social: social, analytics: analytics);
+      final cubit = InviteCubit(
+        connectivity: connectivity,
+        social: social,
+        analytics: analytics,
+      );
       await cubit.shareRequested(
         sampleUserId,
         pressedEvent: 'SocialView_InviteFriend_Press',
@@ -115,16 +141,50 @@ void main() {
       expect(analytics.names, ['SocialView_InviteFriend_Press']);
     });
 
+    // InviteTests.testOfflineAcceptSaysYoureOfflineAndCallsNothing, and
+    // SettingsPresenterTests.testOfflineInviteSaysYoureOfflineInsteadOfSharing
+    test("offline neither accepting nor sharing starts; each says you're "
+        'offline', () async {
+      connectivity.offline = true;
+      final mock = _MockSocial();
+      final cubit = InviteCubit(
+        connectivity: connectivity,
+        social: mock,
+        analytics: analytics,
+      );
+
+      await cubit.accept('PUSH2345', viewer: viewer);
+      await cubit.shareRequested(
+        sampleUserId,
+        pressedEvent: 'ProfileView_InviteFriend_Press',
+      );
+      await pumpEventQueue();
+
+      verifyNever(() => mock.acceptInvite(any()));
+      verifyNever(() => mock.myInvite(any()));
+      expect(cubit.state, const InviteState());
+      expect(analytics.names, isEmpty);
+      expect(blocked, hasLength(2));
+    });
+
     test('a failed invite says so', () async {
       final mock = _MockSocial();
       when(() => mock.myInvite(any())).thenThrow(StateError('x'));
-      final cubit = InviteCubit(social: mock, analytics: analytics);
+      final cubit = InviteCubit(
+        connectivity: connectivity,
+        social: mock,
+        analytics: analytics,
+      );
       await cubit.shareRequested(sampleUserId);
       expect(cubit.state.result, const InviteShareFailed());
     });
 
     test('a second request while busy is ignored', () async {
-      final cubit = InviteCubit(social: social, analytics: analytics);
+      final cubit = InviteCubit(
+        connectivity: connectivity,
+        social: social,
+        analytics: analytics,
+      );
       final first = cubit.shareRequested(sampleUserId);
       await cubit.shareRequested(sampleUserId);
       await cubit.accept('PUSH2345', viewer: viewer);

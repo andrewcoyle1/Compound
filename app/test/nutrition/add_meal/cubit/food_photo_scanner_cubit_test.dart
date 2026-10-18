@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:compound/nutrition/add_meal/cubit/food_photo_scanner_cubit.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
@@ -17,20 +18,25 @@ String _json({String name = 'Scrambled Eggs', String extra = ''}) =>
   "proteinGrams": 14, "carbGrams": 2, "fatGrams": 17 $extra
 }]}''';
 
-// Swift `FoodPhotoScannerPresenterTests`, case for case, less "offline a
-// photo is not sent": Flutter has no offline pre-check.
+// Swift `FoodPhotoScannerPresenterTests`, case for case.
 void main() {
+  late FakeConnectivityRepository connectivity;
+  late List<void> blocked;
   late FakeAi ai;
   late FakePhotoPicker picker;
   late RecordingAnalytics analytics;
 
   setUp(() {
+    connectivity = FakeConnectivityRepository();
+    blocked = [];
+    connectivity.blocked.listen(blocked.add);
     ai = FakeAi()..json = _json();
     picker = FakePhotoPicker();
     analytics = RecordingAnalytics();
   });
 
   FoodPhotoScannerCubit build() => FoodPhotoScannerCubit(
+    connectivity: connectivity,
     ai: ai.repository,
     picker: picker,
     analytics: analytics,
@@ -232,5 +238,22 @@ void main() {
 
       expect(ai.calls, isEmpty);
     });
+
+    // testOfflineAPhotoIsNotSentAndSaysYoureOffline
+    test(
+      'offline a photo is not sent; it stays on screen saying why',
+      () async {
+        connectivity.offline = true;
+        final cubit = build();
+
+        await cubit.takePhoto();
+        await pumpEventQueue();
+
+        expect(ai.calls, isEmpty);
+        expect(cubit.state.status, EstimateStatus.offline);
+        expect(cubit.state.photo, isNotNull);
+        expect(blocked, hasLength(1));
+      },
+    );
   });
 }

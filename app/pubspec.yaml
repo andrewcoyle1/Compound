@@ -32,6 +32,8 @@ dependencies:
     path: packages/compound_maths
   compound_models:
     path: packages/compound_models
+  connectivity_repository:
+    path: packages/connectivity_repository
   cupertino_ui: ^1.1.3
   device_store:
     path: packages/device_store

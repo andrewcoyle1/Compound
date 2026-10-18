@@ -17,6 +17,7 @@ import 'package:compound/app/widget_snapshot.dart';
 import 'package:compound/challenges/challenges.dart';
 import 'package:compound/check_in/check_in.dart';
 import 'package:compound/coach/coach.dart';
+import 'package:compound/connectivity/offline_alert_cubit.dart';
 import 'package:compound/create_exercise/create_exercise.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
@@ -61,6 +62,7 @@ import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:device_store/device_store.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -99,6 +101,10 @@ class const App({
   /// The AI coach. Required, as [socialRepository] is.
   required final CoachRepository coachRepository,
   final AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
+
+  /// Whether there is a network, for the actions that need the server;
+  /// always online when left out.
+  final ConnectivityRepository? connectivityRepository,
   // Empty and offline when left out, for tests that never log food.
   final FoodRepository? foodRepository,
   final OpenFoodFacts? openFoodFacts,
@@ -196,6 +202,9 @@ class const App({
         RepositoryProvider.value(value: programRepository),
         RepositoryProvider.value(value: trainingLibraryRepository),
         RepositoryProvider.value(value: analyticsRepository),
+        RepositoryProvider<ConnectivityRepository>(
+          create: (_) => connectivityRepository ?? FakeConnectivityRepository(),
+        ),
         RepositoryProvider.value(value: purchasesRepository),
         RepositoryProvider.value(value: coachRepository),
         RepositoryProvider<FoodRepository>(
@@ -367,6 +376,14 @@ class const App({
           BlocProvider(
             create: (context) => InviteCubit(
               social: context.read(),
+              analytics: analyticsRepository,
+              connectivity: context.read(),
+            ),
+          ),
+          BlocProvider(
+            lazy: false,
+            create: (context) => OfflineAlertCubit(
+              connectivity: context.read(),
               analytics: analyticsRepository,
             ),
           ),
@@ -991,12 +1008,37 @@ class _AppViewState extends State<AppView> {
                   current.resultId != previous.resultId,
               listener: _onInvite,
             ),
+            // An action that needs the server, tried offline.
+            BlocListener<OfflineAlertCubit, int>(
+              listener: (_, _) => _showOfflineAlert(),
+            ),
           ],
           child: ActivityBannerOverlay(
             onOpen: () => _router.goNamed(NotificationsPage.name),
             child: child!,
           ),
         ),
+      ),
+    );
+  }
+
+  /// "You're offline" (Swift's `showOfflineAlert`), over whatever is
+  /// showing.
+  void _showOfflineAlert() {
+    final context = _router.routerDelegate.navigatorKey.currentContext;
+    if (context == null) return;
+    final l10n = context.l10n;
+    showAdaptiveDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: Text(l10n.offlineTitle),
+        content: Text(l10n.offlineMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.settingsOk),
+          ),
+        ],
       ),
     );
   }

@@ -192,6 +192,7 @@ class _PhotoTab extends StatelessWidget {
       ai: context.read<AiRepository>(),
       picker: context.read<PhotoPicker>(),
       analytics: context.read<AnalyticsRepository>(),
+      connectivity: context.read(),
     ),
     child: const _PhotoView(),
   );
@@ -268,11 +269,13 @@ class _PhotoView extends StatelessWidget {
                 switch (state.status) {
                   EstimateStatus.idle ||
                   EstimateStatus.analysing => _Working(l10n.aiScanAnalyzing),
-                  EstimateStatus.failed => Padding(
+                  EstimateStatus.failed || EstimateStatus.offline => Padding(
                     padding: const EdgeInsets.all(AppSpacing.l),
                     child: AppInlineMessage(
                       kind: AppInlineMessageKind.error,
-                      text: l10n.aiScanFailed,
+                      text: state.status == EstimateStatus.offline
+                          ? l10n.aiScanOffline
+                          : l10n.aiScanFailed,
                       kindLabel: l10n.addMealErrorLabel,
                     ),
                   ),
@@ -310,6 +313,7 @@ class _DescribeTab extends StatelessWidget {
     create: (context) => MealDescribeCubit(
       ai: context.read<AiRepository>(),
       analytics: context.read<AnalyticsRepository>(),
+      connectivity: context.read(),
     ),
     child: const _DescribeView(),
   );
@@ -403,8 +407,10 @@ class _DescribeView extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.l),
           switch (state.status) {
+            // Offline, the alert says why; nothing was sent.
             EstimateStatus.idle ||
-            EstimateStatus.analysing => const SizedBox.shrink(),
+            EstimateStatus.analysing ||
+            EstimateStatus.offline => const SizedBox.shrink(),
             EstimateStatus.failed => Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
               child: AppInlineMessage(

@@ -22,6 +22,7 @@ import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:device_store/device_store.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -68,6 +69,7 @@ extension PumpApp on WidgetTester {
     TrainingLibraryRepository? trainingLibraryRepository,
     ProgramRepository? programRepository,
     AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
+    ConnectivityRepository? connectivityRepository,
     FoodRepository? foodRepository,
     OpenFoodFacts? openFoodFacts,
     CheckInRepository? checkInRepository,
@@ -130,6 +132,9 @@ extension PumpApp on WidgetTester {
             value: programRepository ?? InMemoryProgramRepository(),
           ),
           RepositoryProvider.value(value: analyticsRepository),
+          RepositoryProvider<ConnectivityRepository>.value(
+            value: connectivityRepository ?? FakeConnectivityRepository(),
+          ),
           RepositoryProvider<FoodRepository>.value(
             value: foodRepository ?? InMemoryFoodRepository(),
           ),
@@ -276,6 +281,7 @@ extension PumpApp on WidgetTester {
                   InviteCubit(
                     social: context.read(),
                     analytics: analyticsRepository,
+                    connectivity: context.read(),
                   ),
             ),
             BlocProvider<StravaCubit>(

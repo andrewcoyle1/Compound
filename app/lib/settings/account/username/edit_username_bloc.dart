@@ -2,6 +2,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/social/logic/restartable.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:social_repository/social_repository.dart';
 
@@ -91,6 +92,7 @@ class EditUsernameBloc extends Bloc<EditUsernameEvent, EditUsernameState> {
   new({
     required this._social,
     required this._analytics,
+    required this._connectivity,
     required String? current,
     this._debounce = const Duration(milliseconds: 300),
   }) : super(
@@ -108,6 +110,9 @@ class EditUsernameBloc extends Bloc<EditUsernameEvent, EditUsernameState> {
   final SocialRepository _social;
   final AnalyticsRepository _analytics;
   final Duration _debounce;
+
+  /// Claiming waits for the server, so Save does not start offline.
+  final ConnectivityRepository _connectivity;
 
   void appeared() => _analytics.trackScreenView(
     const AnalyticsEvent('EditUsernameView_Appear'),
@@ -166,7 +171,7 @@ class EditUsernameBloc extends Bloc<EditUsernameEvent, EditUsernameState> {
     EditUsernameSavePressed event,
     Emitter<EditUsernameState> emit,
   ) async {
-    if (!state.canSave) return;
+    if (!state.canSave || !_connectivity.ensureOnline()) return;
     emit(state.copyWith(isSaving: true));
     _analytics.trackEvent(const AnalyticsEvent('EditUsernameView_Save_Start'));
     void failed(Object error) => _analytics.trackEvent(

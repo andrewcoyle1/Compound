@@ -2994,5 +2994,8 @@
     "siriRecipes": "Recetas",
     "siriRecipesPhrase": "“Muestra mis recetas en Compound”",
     "siriOpenShortcuts": "Abrir Atajos",
-    "siriFooter": "Añádelos a la app Atajos para ejecutarlos desde tu pantalla de inicio o el botón de acción."
+    "siriFooter": "Añádelos a la app Atajos para ejecutarlos desde tu pantalla de inicio o el botón de acción.",
+    "aiScanOffline": "No tienes conexión. Conéctate a internet para analizar esta foto.",
+    "offlineTitle": "No tienes conexión",
+    "offlineMessage": "Esto necesita conexión a internet. Vuelve a intentarlo cuando tengas conexión."
 }

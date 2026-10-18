@@ -1,5 +1,6 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
 
@@ -12,12 +13,17 @@ class BarcodeScannerCubit extends Cubit<BarcodeScannerState> {
     required this._openFoodFacts,
     required this._foodRepository,
     required this._analyticsRepository,
+    required this._connectivity,
   }) : super(const BarcodeScannerState());
 
   final String _uid;
   final OpenFoodFacts _openFoodFacts;
   final FoodRepository _foodRepository;
   final AnalyticsRepository _analyticsRepository;
+
+  /// Checked before going to Open Food Facts (`ensureOnline`); a code in
+  /// the library needs no network.
+  final ConnectivityRepository _connectivity;
 
   /// [code] was read by the camera or typed. The same code again does
   /// nothing until [rescan], since the camera reports a code it can see
@@ -32,6 +38,13 @@ class BarcodeScannerCubit extends Cubit<BarcodeScannerState> {
         parameters: {'code': barcode},
       ),
     );
+    // Offline the code stays, so the camera seeing it again does not
+    // repeat this; Scan Again clears it.
+    if (!library.any((food) => food.barcode == barcode) &&
+        !_connectivity.ensureOnline()) {
+      if (!isClosed) emit(BarcodeScannerState(code: barcode));
+      return;
+    }
     try {
       final (food, source) = await lookUpBarcode(
         barcode,

@@ -5,6 +5,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/nutrition/add_meal/cubit/food_photo_scanner_cubit.dart'
     show CameraState;
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:image_repository/image_repository.dart';
@@ -22,6 +23,7 @@ class LabelScannerCubit extends Cubit<LabelScannerState> {
     required this._analytics,
     required this._picker,
     required this._reader,
+    required this._connectivity,
   }) : super(const LabelScannerState());
 
   final String _uid;
@@ -30,6 +32,9 @@ class LabelScannerCubit extends Cubit<LabelScannerState> {
   final AnalyticsRepository _analytics;
   final PhotoPicker _picker;
   final LabelTextReader _reader;
+
+  /// Checked before an action that needs the server (`ensureOnline`).
+  final ConnectivityRepository _connectivity;
 
   /// Scan Label or Choose from Library: the photo's text is read on the
   /// device into [LabelScannerState.text] for the label field (Swift's
@@ -80,6 +85,7 @@ class LabelScannerCubit extends Cubit<LabelScannerState> {
     final label = text.trim();
     if (label.isEmpty) return;
     if (state.status case LabelStatus.parsing || LabelStatus.reading) return;
+    if (!_connectivity.ensureOnline()) return;
     emit(const LabelScannerState(status: LabelStatus.parsing));
     _track('BarcodeScanner_ParseLabel');
     try {

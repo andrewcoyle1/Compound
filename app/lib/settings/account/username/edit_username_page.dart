@@ -31,6 +31,7 @@ class EditUsernamePage extends StatelessWidget {
       create: (context) => EditUsernameBloc(
         social: context.read<SocialRepository>(),
         analytics: context.read<AnalyticsRepository>(),
+        connectivity: context.read(),
         current: viewer.username,
       )..appeared(),
       child: EditUsernameView(viewer: viewer),

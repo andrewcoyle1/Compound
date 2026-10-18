@@ -45,6 +45,7 @@ class PeopleListPage extends StatelessWidget {
       create: (context) => PeopleListCubit(
         social: context.read<SocialRepository>(),
         analytics: context.read<AnalyticsRepository>(),
+        connectivity: context.read(),
       )..appeared(),
       child: PeopleListView(request: request),
     );

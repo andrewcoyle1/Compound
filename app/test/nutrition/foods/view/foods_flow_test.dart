@@ -399,11 +399,15 @@ void main() {
       await pumpApp(tester, meals: [meal]);
       await reveal(tester, find.text('Soup'));
 
-      await tester.drag(find.text('Soup'), const Offset(400, 0));
+      await tester.drag(find.text('Soup'), const Offset(200, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(AppSymbols.logAgain));
       await tester.pumpAndSettle();
       expect(await nutrition.watchMeals(uid).first, hasLength(2));
 
-      await tester.drag(find.text('Bread').first, const Offset(-400, 0));
+      await tester.drag(find.text('Bread').first, const Offset(-200, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(AppSymbols.delete));
       await tester.pumpAndSettle();
       final meals = await nutrition.watchMeals(uid).first;
       expect(

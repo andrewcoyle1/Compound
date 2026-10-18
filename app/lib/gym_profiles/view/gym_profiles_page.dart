@@ -12,7 +12,6 @@ import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/stored_image.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -194,57 +193,33 @@ class _GymRow extends StatelessWidget {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final onFavourite = this.onFavourite;
-    Widget background(Color color, IconData icon, Alignment alignment) =>
-        ColoredBox(
-          color: color,
-          child: Align(
-            alignment: alignment,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: Icon(icon, color: scheme.onPrimary),
-            ),
-          ),
-        );
-    return Dismissible(
-      key: ValueKey(gym.id),
-      direction: onFavourite == null
-          ? DismissDirection.endToStart
-          : DismissDirection.horizontal,
-      background: background(
-        scheme.primary,
-        AppSymbols.favourite,
-        Alignment.centerLeft,
-      ),
-      secondaryBackground: background(
-        scheme.error,
-        AppSymbols.delete,
-        Alignment.centerRight,
-      ),
-      confirmDismiss: (direction) async {
-        if (direction == DismissDirection.endToStart) {
-          onDelete();
-        } else {
-          onFavourite?.call();
-        }
-        return false;
-      },
-      child: Semantics(
-        customSemanticsActions: {
-          CustomSemanticsAction(label: l10n.gymDelete): onDelete,
-          CustomSemanticsAction(label: l10n.gymFavourite): ?onFavourite,
-        },
-        child: AppListRowButton(
-          key: Key('GymProfiles.${gym.id}'),
-          title: gym.name,
-          subtitle: l10n.editorActiveEquipment(
-            TrainingLibrary.activeEquipmentCount(gym),
-          ),
-          icon: gym.imageUrl == null ? AppSymbols.gym : null,
-          thumbnail: gym.imageUrl == null
-              ? null
-              : StoredThumbnail(gym.imageUrl),
-          onPressed: () => unawaited(GymProfilePage.push(context, gym)),
+    return AppSwipeActions(
+      // Swift's two trailing actions, neither on a full swipe.
+      trailing: [
+        AppSwipeAction(
+          label: l10n.gymDelete,
+          icon: AppSymbols.delete,
+          isDestructive: true,
+          onPressed: onDelete,
         ),
+        if (onFavourite != null)
+          AppSwipeAction(
+            label: l10n.gymFavourite,
+            icon: AppSymbols.favourite,
+            tint: scheme.primary,
+            onPressed: onFavourite,
+          ),
+      ],
+      trailingFullSwipe: false,
+      child: AppListRowButton(
+        key: Key('GymProfiles.${gym.id}'),
+        title: gym.name,
+        subtitle: l10n.editorActiveEquipment(
+          TrainingLibrary.activeEquipmentCount(gym),
+        ),
+        icon: gym.imageUrl == null ? AppSymbols.gym : null,
+        thumbnail: gym.imageUrl == null ? null : StoredThumbnail(gym.imageUrl),
+        onPressed: () => unawaited(GymProfilePage.push(context, gym)),
       ),
     );
   }

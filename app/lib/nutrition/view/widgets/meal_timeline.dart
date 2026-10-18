@@ -4,7 +4,6 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
-import 'package:flutter/semantics.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// [time] as the device prints a time of day: `1:00 PM`, or `13:00` with
@@ -217,71 +216,43 @@ class MealCard extends StatelessWidget {
 
   Widget _actionable(BuildContext context, MealItemModel item, Widget child) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final onDelete = onDeleteItem;
     final onOpen = onOpenMeal;
     final onAgain = onLogAgain;
     if (onDelete == null && onOpen == null && onAgain == null) return child;
-    Widget swipeBackground(
-      Color color,
-      Color onColor,
-      IconData icon,
-      AlignmentGeometry alignment,
-    ) => ColoredBox(
-      color: color,
-      child: Align(
-        alignment: alignment,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-          child: Icon(icon, color: onColor),
-        ),
-      ),
-    );
-    final direction = switch ((onDelete != null, onAgain != null)) {
-      (true, true) => DismissDirection.horizontal,
-      (true, false) => DismissDirection.endToStart,
-      (false, true) => DismissDirection.startToEnd,
-      (false, false) => DismissDirection.none,
-    };
-    return Dismissible(
-      key: ValueKey(item.itemId),
-      direction: direction,
-      background: swipeBackground(
-        scheme.primary,
-        scheme.onPrimary,
-        AppSymbols.logAgain,
-        AlignmentDirectional.centerStart,
-      ),
-      secondaryBackground: swipeBackground(
-        scheme.error,
-        scheme.onError,
-        AppSymbols.delete,
-        AlignmentDirectional.centerEnd,
-      ),
-      // Nothing slides away: a deleted food leaves when the meal log says
-      // it has gone, and if the delete fails it stays.
-      confirmDismiss: (direction) async {
-        if (direction == DismissDirection.endToStart) {
-          onDelete?.call(item);
-        } else {
-          onAgain?.call();
-        }
-        return false;
-      },
-      // The same actions for anyone who cannot swipe.
-      child: Semantics(
-        customSemanticsActions: {
-          CustomSemanticsAction(label: l10n.nutritionViewMeal): ?onOpen,
-          CustomSemanticsAction(label: l10n.nutritionLogMealAgain): ?onAgain,
-          if (onDelete != null)
-            CustomSemanticsAction(label: l10n.nutritionDeleteItem): () =>
-                onDelete(item),
-        },
-        child: InkWell(
-          onTap: onOpen,
-          onLongPress: () => unawaited(_showMenu(context, item)),
-          child: child,
-        ),
+    // Swift's swipe actions, none on a full swipe, and the long press's
+    // menu for anyone who cannot swipe; screen readers get them all.
+    return AppSwipeActions(
+      leading: [
+        if (onAgain != null)
+          AppSwipeAction(
+            label: l10n.nutritionLogAgain,
+            icon: AppSymbols.logAgain,
+            tint: Theme.of(context).colorScheme.primary,
+            onPressed: onAgain,
+          ),
+        if (onOpen != null)
+          AppSwipeAction(
+            label: l10n.nutritionMeal,
+            icon: AppSymbols.meal,
+            onPressed: onOpen,
+          ),
+      ],
+      trailing: [
+        if (onDelete != null)
+          AppSwipeAction(
+            label: l10n.nutritionDeleteItem,
+            icon: AppSymbols.delete,
+            isDestructive: true,
+            onPressed: () => onDelete(item),
+          ),
+      ],
+      leadingFullSwipe: false,
+      trailingFullSwipe: false,
+      child: InkWell(
+        onTap: onOpen,
+        onLongPress: () => unawaited(_showMenu(context, item)),
+        child: child,
       ),
     );
   }

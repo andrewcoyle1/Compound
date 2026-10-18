@@ -13,7 +13,6 @@ import 'package:compound/social/logic/people.dart';
 import 'package:compound/social/social_routes.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -305,92 +304,81 @@ class const _GroupRow({
             ),
           )
         : null;
-    return Dismissible(
-      key: ValueKey('dismiss-${group.id}'),
-      direction: DismissDirection.endToStart,
-      background: ColoredBox(
-        color: scheme.error,
-        child: Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: Icon(AppSymbols.delete, color: scheme.onError),
-          ),
+    return AppSwipeActions(
+      trailing: [
+        AppSwipeAction(
+          label: l10n.inboxDelete,
+          icon: AppSymbols.delete,
+          isDestructive: true,
+          onPressed: () => bloc.add(InboxGroupDeleted(group)),
         ),
-      ),
-      onDismissed: (_) => bloc.add(InboxGroupDeleted(group)),
-      child: Semantics(
-        customSemanticsActions: {
-          CustomSemanticsAction(label: l10n.inboxDelete): () =>
-              bloc.add(InboxGroupDeleted(group)),
-        },
-        child: Padding(
-          padding: const EdgeInsets.only(right: AppSpacing.l),
-          child: Row(
-            spacing: AppSpacing.m,
-            children: [
-              Expanded(
-                child: Semantics(
-                  value: group.isRead ? null : l10n.inboxUnread,
-                  button: true,
-                  child: InkWell(
-                    onTap: opening == null
-                        ? () => bloc.add(InboxGroupPressed(group))
-                        : null,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.l,
-                        AppSpacing.s,
-                        0,
-                        AppSpacing.s,
-                      ),
-                      child: Row(
-                        spacing: AppSpacing.m,
-                        children: [
-                          if (opening == group.newest.id)
-                            const SizedBox.square(
-                              dimension: AppSpacing.xxl,
-                              child: Padding(
-                                padding: EdgeInsets.all(AppSpacing.s),
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          else
-                            _StackedAvatars(urls: group.avatarUrls),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              spacing: AppSpacing.xs,
-                              children: [
-                                Text(
-                                  notificationGroupTitle(l10n, group),
-                                  style: AppTextStyles.rowTitle.copyWith(
-                                    fontWeight: group.isRead
-                                        ? FontWeight.w400
-                                        : FontWeight.w600,
-                                    color: group.isRead
-                                        ? scheme.onSurfaceVariant
-                                        : null,
-                                  ),
-                                ),
-                                Text(
-                                  date,
-                                  style: AppTextStyles.label.copyWith(
-                                    color: scheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
+      ],
+      child: Padding(
+        padding: const EdgeInsets.only(right: AppSpacing.l),
+        child: Row(
+          spacing: AppSpacing.m,
+          children: [
+            Expanded(
+              child: Semantics(
+                value: group.isRead ? null : l10n.inboxUnread,
+                button: true,
+                child: InkWell(
+                  onTap: opening == null
+                      ? () => bloc.add(InboxGroupPressed(group))
+                      : null,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.l,
+                      AppSpacing.s,
+                      0,
+                      AppSpacing.s,
+                    ),
+                    child: Row(
+                      spacing: AppSpacing.m,
+                      children: [
+                        if (opening == group.newest.id)
+                          const SizedBox.square(
+                            dimension: AppSpacing.xxl,
+                            child: Padding(
+                              padding: EdgeInsets.all(AppSpacing.s),
+                              child: CircularProgressIndicator(),
                             ),
+                          )
+                        else
+                          _StackedAvatars(urls: group.avatarUrls),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: AppSpacing.xs,
+                            children: [
+                              Text(
+                                notificationGroupTitle(l10n, group),
+                                style: AppTextStyles.rowTitle.copyWith(
+                                  fontWeight: group.isRead
+                                      ? FontWeight.w400
+                                      : FontWeight.w600,
+                                  color: group.isRead
+                                      ? scheme.onSurfaceVariant
+                                      : null,
+                                ),
+                              ),
+                              Text(
+                                date,
+                                style: AppTextStyles.label.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-              ?followBack,
-            ],
-          ),
+            ),
+            ?followBack,
+          ],
         ),
       ),
     );

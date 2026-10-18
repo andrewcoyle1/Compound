@@ -239,11 +239,16 @@ class _Targets extends StatelessWidget {
           ),
         ),
         for (final target in targets)
-          Dismissible(
+          AppSwipeActions(
             key: ValueKey(target.id),
-            direction: DismissDirection.endToStart,
-            background: DeleteBackground(label: l10n.editorDelete),
-            onDismissed: (_) => cubit.deleteSet(target.id),
+            trailing: [
+              AppSwipeAction(
+                label: l10n.editorDelete,
+                icon: AppSymbols.delete,
+                isDestructive: true,
+                onPressed: () => cubit.deleteSet(target.id),
+              ),
+            ],
             child: _TargetRow(target: target, plansSets: cubit.state.plansSets),
           ),
         Align(
@@ -540,11 +545,16 @@ class _ExercisePlan extends StatelessWidget {
           header: l10n.editorSubstitutions,
           children: [
             for (final substitute in cubit.state.substitutes)
-              Dismissible(
+              AppSwipeActions(
                 key: ValueKey(substitute.id),
-                direction: DismissDirection.endToStart,
-                background: DeleteBackground(label: l10n.editorRemove),
-                onDismissed: (_) => cubit.substitutionRemoved(substitute.id),
+                trailing: [
+                  AppSwipeAction(
+                    label: l10n.editorRemove,
+                    icon: AppSymbols.delete,
+                    isDestructive: true,
+                    onPressed: () => cubit.substitutionRemoved(substitute.id),
+                  ),
+                ],
                 child: AppListRow(
                   title: substitute.name,
                   thumbnail: ExerciseImage(substitute),

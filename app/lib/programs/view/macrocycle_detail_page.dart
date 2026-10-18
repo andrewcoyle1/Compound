@@ -8,7 +8,6 @@ import 'package:compound/programs/cubit/macrocycle_draft_cubit.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -252,48 +251,33 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                     onReorderItem: cubit.moved,
                     children: [
                       for (final (index, mesocycle) in entries)
-                        Dismissible(
+                        AppSwipeActions(
                           key: ValueKey('$index-${mesocycle.id}'),
-                          direction: DismissDirection.endToStart,
-                          onDismissed: (_) => cubit.removed(index),
-                          background: ColoredBox(
-                            color: context.appColors.danger,
-                            child: Align(
-                              alignment: AlignmentDirectional.centerEnd,
-                              child: Padding(
-                                padding: const EdgeInsets.all(AppSpacing.l),
-                                child: Icon(
-                                  AppSymbols.delete,
-                                  color: scheme.onError,
+                          trailing: [
+                            AppSwipeAction(
+                              label: l10n.programDelete,
+                              icon: AppSymbols.delete,
+                              isDestructive: true,
+                              onPressed: () => cubit.removed(index),
+                            ),
+                          ],
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsetsDirectional.only(
+                                  start: AppSpacing.l,
+                                  top: AppSpacing.s,
+                                ),
+                                child: Text(
+                                  l10n.programMesocycleNumber(index + 1),
+                                  style: AppTextStyles.label.copyWith(
+                                    color: scheme.onSurfaceVariant,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                          child: Semantics(
-                            customSemanticsActions: {
-                              CustomSemanticsAction(
-                                label: l10n.programDelete,
-                              ): () =>
-                                  cubit.removed(index),
-                            },
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.only(
-                                    start: AppSpacing.l,
-                                    top: AppSpacing.s,
-                                  ),
-                                  child: Text(
-                                    l10n.programMesocycleNumber(index + 1),
-                                    style: AppTextStyles.label.copyWith(
-                                      color: scheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ),
-                                MesocycleHeader(mesocycle: mesocycle),
-                              ],
-                            ),
+                              MesocycleHeader(mesocycle: mesocycle),
+                            ],
                           ),
                         ),
                     ],

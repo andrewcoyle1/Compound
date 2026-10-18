@@ -11,7 +11,6 @@ import 'package:compound/coach/view/coach_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/relative_time.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -160,52 +159,32 @@ class _CoachChatsViewState extends State<CoachChatsView> {
                     AppSection(
                       children: [
                         for (final chat in chats)
-                          Dismissible(
-                            key: ValueKey(chat.id),
-                            direction: DismissDirection.endToStart,
-                            background: ColoredBox(
-                              color: scheme.error,
-                              child: Align(
-                                alignment: AlignmentDirectional.centerEnd,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.l,
-                                  ),
-                                  child: Icon(
-                                    AppSymbols.delete,
-                                    color: scheme.onError,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            confirmDismiss: (_) async {
-                              unawaited(_cubit.deleteChat(chat));
-                              return false;
-                            },
-                            child: Semantics(
-                              customSemanticsActions: {
-                                CustomSemanticsAction(
-                                  label: l10n.coachDelete,
-                                ): () =>
+                          AppSwipeActions(
+                            trailing: [
+                              AppSwipeAction(
+                                label: l10n.coachDelete,
+                                icon: AppSymbols.delete,
+                                isDestructive: true,
+                                onPressed: () =>
                                     unawaited(_cubit.deleteChat(chat)),
-                              },
-                              child: RelativeTimeBuilder(
-                                date: chat.updatedAt,
-                                builder: (context, updated) => AppListRowButton(
-                                  key: Key('CoachChats.${chat.id}'),
-                                  title: chat.title,
-                                  subtitle: updated,
-                                  icon: AppSymbols.coach,
-                                  onPressed: () {
-                                    _cubit.chatPressed();
-                                    _open(
-                                      CoachRequest.forChat(
-                                        chat,
-                                        widget.coachContext,
-                                      ),
-                                    );
-                                  },
-                                ),
+                              ),
+                            ],
+                            child: RelativeTimeBuilder(
+                              date: chat.updatedAt,
+                              builder: (context, updated) => AppListRowButton(
+                                key: Key('CoachChats.${chat.id}'),
+                                title: chat.title,
+                                subtitle: updated,
+                                icon: AppSymbols.coach,
+                                onPressed: () {
+                                  _cubit.chatPressed();
+                                  _open(
+                                    CoachRequest.forChat(
+                                      chat,
+                                      widget.coachContext,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),

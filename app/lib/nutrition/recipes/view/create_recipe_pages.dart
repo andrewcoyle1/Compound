@@ -15,7 +15,6 @@ import 'package:compound/programs/view/program_widgets.dart'
     show confirmDestructive;
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/stored_image.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -272,60 +271,48 @@ class _IngredientRow extends StatelessWidget {
       IngredientAmountUnit.units => l10n.createRecipeUnits,
       _ => unitLabel(unit),
     };
-    final scheme = Theme.of(context).colorScheme;
-    return Dismissible(
-      key: ValueKey('dismiss-${ingredient.id}'),
-      direction: DismissDirection.endToStart,
-      background: ColoredBox(
-        color: scheme.error,
-        child: Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: Icon(AppSymbols.delete, color: scheme.onError),
+    return AppSwipeActions(
+      trailing: [
+        AppSwipeAction(
+          label: remove,
+          icon: AppSymbols.delete,
+          isDestructive: true,
+          onPressed: () => cubit.ingredientRemoved(index),
+        ),
+      ],
+      child: Row(
+        children: [
+          Expanded(
+            child: AppListRow(
+              title: ingredient.name,
+              subtitle: ingredient.ingredient.description,
+              thumbnail: StoredThumbnail(ingredient.ingredient.imageUrl),
+            ),
           ),
-        ),
-      ),
-      onDismissed: (_) => cubit.ingredientRemoved(index),
-      child: Semantics(
-        customSemanticsActions: {
-          CustomSemanticsAction(label: remove): () =>
-              cubit.ingredientRemoved(index),
-        },
-        child: Row(
-          children: [
-            Expanded(
-              child: AppListRow(
-                title: ingredient.name,
-                subtitle: ingredient.ingredient.description,
-                thumbnail: StoredThumbnail(ingredient.ingredient.imageUrl),
-              ),
+          SizedBox(
+            width: 120,
+            child: AppNumberField(
+              key: Key('CreateRecipe.amount.${ingredient.id}'),
+              value: ingredient.amount,
+              prompt: l10n.createRecipeAmount,
+              onChanged: (amount) =>
+                  cubit.ingredientAmountChanged(index, amount),
             ),
-            SizedBox(
-              width: 120,
-              child: AppNumberField(
-                key: Key('CreateRecipe.amount.${ingredient.id}'),
-                value: ingredient.amount,
-                prompt: l10n.createRecipeAmount,
-                onChanged: (amount) =>
-                    cubit.ingredientAmountChanged(index, amount),
-              ),
-            ),
-            DropdownButton<IngredientAmountUnit>(
-              key: Key('CreateRecipe.unit.${ingredient.id}'),
-              value: ingredient.unit,
-              underline: const SizedBox.shrink(),
-              items: [
-                for (final unit in IngredientAmountUnit.values)
-                  DropdownMenuItem(value: unit, child: Text(label(unit))),
-              ],
-              onChanged: (unit) {
-                if (unit != null) cubit.ingredientUnitChanged(index, unit);
-              },
-            ),
-            const SizedBox(width: AppSpacing.s),
-          ],
-        ),
+          ),
+          DropdownButton<IngredientAmountUnit>(
+            key: Key('CreateRecipe.unit.${ingredient.id}'),
+            value: ingredient.unit,
+            underline: const SizedBox.shrink(),
+            items: [
+              for (final unit in IngredientAmountUnit.values)
+                DropdownMenuItem(value: unit, child: Text(label(unit))),
+            ],
+            onChanged: (unit) {
+              if (unit != null) cubit.ingredientUnitChanged(index, unit);
+            },
+          ),
+          const SizedBox(width: AppSpacing.s),
+        ],
       ),
     );
   }

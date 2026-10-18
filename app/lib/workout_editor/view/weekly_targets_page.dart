@@ -72,11 +72,16 @@ class WeeklyTargetsView extends StatelessWidget {
             ),
             for (final variation in state.variations) ...[
               const SizedBox(height: AppSpacing.l),
-              Dismissible(
+              AppSwipeActions(
                 key: ValueKey(variation.id),
-                direction: DismissDirection.endToStart,
-                background: DeleteBackground(label: l10n.editorDelete),
-                onDismissed: (_) => cubit.delete(variation),
+                trailing: [
+                  AppSwipeAction(
+                    label: l10n.editorDelete,
+                    icon: AppSymbols.delete,
+                    isDestructive: true,
+                    onPressed: () => cubit.delete(variation),
+                  ),
+                ],
                 child: AppSection(
                   children: [
                     AppListRow(

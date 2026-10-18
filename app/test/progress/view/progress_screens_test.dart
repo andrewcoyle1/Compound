@@ -192,7 +192,7 @@ void main() {
       );
       await pumpAt(tester, '/progress/body-metrics/waist/data', body: body);
 
-      await tester.drag(find.text('84 cm'), const Offset(-500, 0));
+      await tester.drag(find.text('84 cm'), const Offset(-700, 0));
       await tester.pumpAndSettle();
 
       final stored = (await body.watchMeasurements(uid).first).single;
@@ -229,7 +229,7 @@ void main() {
       expect(find.byTooltip('Add'), findsNothing);
 
       await tapText(tester, 'Show All Data');
-      await tester.drag(find.text('18.5 %'), const Offset(-500, 0));
+      await tester.drag(find.text('18.5 %'), const Offset(-700, 0));
       await tester.pumpAndSettle();
       final stored = (await body.watchMeasurements(uid).first).single;
       expect(stored.bodyFatPercentage, isNull);
@@ -452,7 +452,7 @@ void main() {
       expect(find.byType(ContributionGrid), findsOneWidget);
 
       await tapText(tester, 'Show All Data');
-      await tester.drag(find.text('70 kg'), const Offset(-500, 0));
+      await tester.drag(find.text('70 kg'), const Offset(-700, 0));
       await tester.pumpAndSettle();
       final stored = (await body.watchMeasurements(uid).first).single;
       expect(stored.weightKg, isNull);
@@ -482,7 +482,7 @@ void main() {
       ).thenThrow(Exception('offline'));
       await pumpAt(tester, '/progress/weigh-in-consistency/data', body: body);
 
-      await tester.drag(find.text('70 kg'), const Offset(-500, 0));
+      await tester.drag(find.text('70 kg'), const Offset(-700, 0));
       await tester.pumpAndSettle();
       expect(find.text('Unable to Delete Entry'), findsOneWidget);
       await tester.tap(find.text('OK'));

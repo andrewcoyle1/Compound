@@ -126,23 +126,23 @@ class _DefineWorkoutViewState extends State<DefineWorkoutView> {
           if (state.isEditing || state.isSelectingSuperset) {
             return KeyedSubtree(key: ValueKey(exercise.id), child: row);
           }
-          return Dismissible(
+          return AppSwipeActions(
             key: ValueKey(exercise.id),
-            direction: DismissDirection.endToStart,
-            background: ColoredBox(
-              color: context.appColors.danger,
-              child: Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.l),
-                  child: Icon(
-                    AppSymbols.delete,
-                    color: Theme.of(context).colorScheme.onError,
-                  ),
-                ),
+            trailing: [
+              AppSwipeAction(
+                label: l10n.editorDelete,
+                icon: AppSymbols.delete,
+                isDestructive: true,
+                onPressed: () => cubit.removeExercise(exercise.id),
               ),
-            ),
-            onDismissed: (_) => cubit.removeExercise(exercise.id),
+              if (exercise.supersetGroupId != null)
+                AppSwipeAction(
+                  label: l10n.editorRemoveFromSuperset,
+                  icon: AppSymbols.superset,
+                  onPressed: () => cubit.removedFromSuperset(exercise.id),
+                ),
+            ],
+            trailingFullSwipe: false,
             child: row,
           );
         },

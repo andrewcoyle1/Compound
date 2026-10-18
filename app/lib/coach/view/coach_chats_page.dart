@@ -10,11 +10,10 @@ import 'package:compound/coach/cubit/coach_cubit.dart';
 import 'package:compound/coach/view/coach_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
-import 'package:flutter/semantics.dart';
+import 'package:compound/widgets/relative_time.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 /// The coach's saved chats and the permission behind them (Swift
 /// `CoachChatsView`), from the coach's menu and from Settings.
@@ -103,7 +102,6 @@ class _CoachChatsViewState extends State<CoachChatsView> {
     final l10n = context.l10n;
     final state = context.watch<CoachChatsCubit>().state;
     final chats = state.chats;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final scheme = Theme.of(context).colorScheme;
     return BlocListener<CoachChatsCubit, CoachChatsState>(
       listenWhen: (previous, current) => current.noticeId != previous.noticeId,
@@ -161,41 +159,22 @@ class _CoachChatsViewState extends State<CoachChatsView> {
                     AppSection(
                       children: [
                         for (final chat in chats)
-                          Dismissible(
-                            key: ValueKey(chat.id),
-                            direction: DismissDirection.endToStart,
-                            background: ColoredBox(
-                              color: scheme.error,
-                              child: Align(
-                                alignment: AlignmentDirectional.centerEnd,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.l,
-                                  ),
-                                  child: Icon(
-                                    AppSymbols.delete,
-                                    color: scheme.onError,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            confirmDismiss: (_) async {
-                              unawaited(_cubit.deleteChat(chat));
-                              return false;
-                            },
-                            child: Semantics(
-                              customSemanticsActions: {
-                                CustomSemanticsAction(
-                                  label: l10n.coachDelete,
-                                ): () =>
+                          AppSwipeActions(
+                            trailing: [
+                              AppSwipeAction(
+                                label: l10n.coachDelete,
+                                icon: AppSymbols.delete,
+                                isDestructive: true,
+                                onPressed: () =>
                                     unawaited(_cubit.deleteChat(chat)),
-                              },
-                              child: AppListRowButton(
+                              ),
+                            ],
+                            child: RelativeTimeBuilder(
+                              date: chat.updatedAt,
+                              builder: (context, updated) => AppListRowButton(
                                 key: Key('CoachChats.${chat.id}'),
                                 title: chat.title,
-                                subtitle: DateFormat.yMMMd(locale)
-                                    .add_jm()
-                                    .format(chat.updatedAt.toLocal()),
+                                subtitle: updated,
                                 icon: AppSymbols.coach,
                                 onPressed: () {
                                   _cubit.chatPressed();

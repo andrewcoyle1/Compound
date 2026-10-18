@@ -12,7 +12,6 @@ import 'package:compound/gym_profiles/view/stack_machine_editor.dart';
 import 'package:compound/gym_profiles/view/weight_list_editor.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/widgets/stored_image.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_repository/image_repository.dart';
@@ -392,7 +391,7 @@ String _stacks(AppLocalizations l10n, List<WeightStack> ranges) {
 
 /// One piece of equipment: its name, what is available, an edit link and
 /// the switch that includes it in this gym. A machine also offers
-/// Duplicate, and Delete when the user made it, on a long press.
+/// Duplicate, and Delete when the user made it, on a swipe or a long press.
 class _EquipmentRow extends StatelessWidget {
   const new({required this.list, required this.item, super.key});
 
@@ -528,11 +527,29 @@ class _EquipmentRow extends StatelessWidget {
       ),
     );
     if (!list.isMachine) return row;
-    return Semantics(
-      customSemanticsActions: {
-        CustomSemanticsAction(label: l10n.gymMachineActions): () =>
-            unawaited(_machineActions(context)),
-      },
+    final cubit = context.read<GymProfileEditorCubit>();
+    // Swift's swipe actions, neither on a full swipe; the long press offers
+    // the same.
+    return AppSwipeActions(
+      trailing: [
+        AppSwipeAction(
+          label: l10n.gymDuplicate,
+          icon: AppSymbols.duplicate,
+          tint: scheme.primary,
+          onPressed: () {
+            cubit.duplicateMachine(list, item.id);
+            unawaited(HapticFeedback.successNotification());
+          },
+        ),
+        if (GymEditorRules.isCustom(list, item))
+          AppSwipeAction(
+            label: l10n.gymDelete,
+            icon: AppSymbols.delete,
+            isDestructive: true,
+            onPressed: () => unawaited(_confirmDelete(context, cubit)),
+          ),
+      ],
+      trailingFullSwipe: false,
       child: InkWell(
         onLongPress: () => unawaited(_machineActions(context)),
         child: row,

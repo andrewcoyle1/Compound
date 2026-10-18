@@ -108,13 +108,19 @@ class ExercisePickerView extends StatelessWidget {
           child: ExerciseList(
             onExercisePressed: context.read<ExercisePickerCubit>().toggled,
             isSelected: (exercise) => state.isSelected(exercise.id),
-            // As in Swift, a new exercise isn't added for the caller: it
-            // appears here, unticked, once created.
-            onCreateExercise: () => unawaited(CreateExercisePage.open(context)),
+            // Unlike Swift, a new exercise comes back ticked (the owner's
+            // call).
+            onCreateExercise: () => unawaited(_create(context)),
           ),
         ),
       ),
     );
+  }
+
+  static Future<void> _create(BuildContext context) async {
+    final cubit = context.read<ExercisePickerCubit>();
+    final created = await CreateExercisePage.open(context);
+    if (created != null && !cubit.isClosed) cubit.toggled(created);
   }
 
   static Future<void> _close(BuildContext context) async {

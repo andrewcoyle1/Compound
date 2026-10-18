@@ -551,7 +551,9 @@ void main() {
       expect(find.text('food log settings'), findsOneWidget);
     });
 
-    testWidgets('a food swipes away, and a failure says so', (tester) async {
+    testWidgets('a swipe deletes a food, and a failure says so', (
+      tester,
+    ) async {
       final repository = MockNutritionRepository();
       when(() => repository.watchMeals(uid))
           .thenAnswer((_) => Stream.value(sampleMeals));
@@ -565,11 +567,17 @@ void main() {
       when(() => repository.deleteMeal(any(), any()))
           .thenAnswer((_) async => throw Exception('refused'));
       await pumpRouted(tester, repository: repository);
-      final first = find.descendant(
-        of: find.byType(MealCard),
-        matching: find.byType(Dismissible),
+      final first = find
+          .descendant(
+            of: find.byType(MealCard),
+            matching: find.byType(AppSwipeActions),
+          )
+          .first;
+      await tester.drag(first, const Offset(-200, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(of: first, matching: find.byIcon(AppSymbols.delete)),
       );
-      await tester.drag(first.first, const Offset(-600, 0));
       await tester.pumpAndSettle();
       expect(find.text('Unable to Remove Food'), findsOneWidget);
     });

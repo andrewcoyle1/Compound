@@ -1,7 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
-import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart' show DateFormat;
 
 /// Every entry of a metric, as given (newest first), like Health's "All
@@ -86,31 +85,17 @@ class MetricAllDataView extends StatelessWidget {
   Widget _deletable(BuildContext context, int index, Widget row) {
     final onDelete = this.onDelete;
     if (onDelete == null) return row;
-    final scheme = Theme.of(context).colorScheme;
-    return Dismissible(
-      key: ValueKey(entries[index]),
-      direction: DismissDirection.endToStart,
-      background: ColoredBox(
-        color: scheme.error,
-        child: Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: Icon(AppSymbols.delete, color: scheme.onError),
-          ),
+    // Swift's swipe to delete (`onDelete`), a full swipe included.
+    return AppSwipeActions(
+      trailing: [
+        AppSwipeAction(
+          label: context.l10n.metricDeleteEntry,
+          icon: AppSymbols.delete,
+          isDestructive: true,
+          onPressed: () => onDelete(index),
         ),
-      ),
-      confirmDismiss: (_) async {
-        onDelete(index);
-        return false;
-      },
-      child: Semantics(
-        customSemanticsActions: {
-          CustomSemanticsAction(label: context.l10n.metricDeleteEntry): () =>
-              onDelete(index),
-        },
-        child: row,
-      ),
+      ],
+      child: row,
     );
   }
 }

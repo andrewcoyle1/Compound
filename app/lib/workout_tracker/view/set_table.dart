@@ -11,7 +11,6 @@ import 'package:compound/workout_tracker/view/set_row_parts.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound/workout_tracker/view/unit_menu.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart';
 import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
@@ -414,14 +413,29 @@ class SetTableRow extends StatelessWidget {
         ),
       ),
     );
-    return Semantics(
-      customSemanticsActions: {
+    // Swift's swipe actions, neither on a full swipe: the rest timer
+    // leading (live tracker only), delete trailing. The long press offers
+    // the same.
+    return AppSwipeActions(
+      leading: [
         if (onCustomRest != null)
-          CustomSemanticsAction(label: l10n.trackerRestTimer): () =>
-              unawaited(_restTimer(context)),
-        CustomSemanticsAction(label: TrackerText.deleteTitle(l10n, set)): () =>
-            unawaited(deleteSet(context, actions, exercise, set, badge)),
-      },
+          AppSwipeAction(
+            label: l10n.trackerRestTimer,
+            icon: AppSymbols.rest,
+            onPressed: () => unawaited(_restTimer(context)),
+          ),
+      ],
+      trailing: [
+        AppSwipeAction(
+          label: TrackerText.deleteTitle(l10n, set),
+          icon: AppSymbols.delete,
+          isDestructive: true,
+          onPressed: () =>
+              unawaited(deleteSet(context, actions, exercise, set, badge)),
+        ),
+      ],
+      leadingFullSwipe: false,
+      trailingFullSwipe: false,
       child: GestureDetector(
         onLongPress: () => unawaited(_menu(context, badge)),
         child: ColoredBox(

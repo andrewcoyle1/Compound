@@ -385,7 +385,14 @@ void main() {
       expect(find.text('Edit'), findsOneWidget);
 
       // A swipe deletes too.
-      await tester.drag(find.text('Ab Row'), const Offset(-600, 0));
+      await tester.drag(find.text('Ab Row'), const Offset(-200, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AppSwipeActions),
+          matching: find.byIcon(AppSymbols.delete),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(find.text('0 Exercises'), findsOneWidget);
     });

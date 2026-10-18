@@ -178,15 +178,16 @@ void main() {
     await tap(tester, find.byTooltip('Close'));
     await back(tester);
 
-    // Duplicate, then delete the copy, found by searching.
+    // Duplicate by swipe, then delete the copy from the long press, found
+    // by searching.
     await tester.enterText(
       find.byKey(const Key('GymProfile.search')),
       'hammer',
     );
     await tester.pumpAndSettle();
-    await tester.longPress(find.text('Hammer Pulldown'));
+    await tester.drag(find.text('Hammer Pulldown'), const Offset(-200, 0));
     await tester.pumpAndSettle();
-    await tap(tester, find.text('Duplicate'));
+    await tap(tester, find.byIcon(AppSymbols.duplicate));
     expect(find.text('Hammer Pulldown 2'), findsOneWidget);
     await tester.ensureVisible(find.text('Hammer Pulldown 2'));
     await tester.longPress(find.text('Hammer Pulldown 2'));
@@ -235,9 +236,10 @@ void main() {
 
     await tester.drag(
       find.text('Platinum Gym Malahide'),
-      const Offset(-500, 0),
+      const Offset(-200, 0),
     );
     await tester.pumpAndSettle();
+    await tap(tester, find.byIcon(AppSymbols.delete));
     expect(find.text('Delete Gym Profile?'), findsOneWidget);
     await tap(tester, find.text('Delete').last);
     expect(find.text('No Gym Profiles'), findsOneWidget);
@@ -321,7 +323,7 @@ void main() {
     expect(find.text('Thick'), findsOneWidget);
     expect(find.text('Up to 33 kg'), findsOneWidget);
     // Swiped away again.
-    await tester.drag(find.text('Thick'), const Offset(-500, 0));
+    await tester.drag(find.text('Thick'), const Offset(-700, 0));
     await tester.pumpAndSettle();
     expect(find.text('Thick'), findsNothing);
     await back(tester);

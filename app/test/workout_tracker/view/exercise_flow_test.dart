@@ -21,6 +21,7 @@ import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/app_repositories.dart';
 import '../../helpers/library_fixtures.dart';
 
 /// The exercise's menu through the whole app on the staging data: Swap,
@@ -54,6 +55,8 @@ void main() {
     units = UnitPreferenceStore();
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         purchasesRepository: FakePurchasesRepository(),
         authRepository: InMemoryAuthRepository(
           user: InMemoryAuthRepository.sampleUser,

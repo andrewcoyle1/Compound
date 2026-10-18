@@ -17,9 +17,10 @@ them. Each method's doc comment cites the Swift lines it follows.
 - Writes complete once Firestore has them locally (`writeLocally`); a server refusal goes to
   `onWriteError`. Documents are written whole with a plain `set`, as Swift does. Reserving a
   username is the exception: it waits for the server, whose answer decides whether it is taken.
-- `inMemorySocialRepository` is the same class over an in-memory Firestore seeded with
-  `sampleSocial`, Swift's mock social world around `mock_user_123`, with `stagingCallFunction`
-  playing the two callables.
+- `inMemorySocialRepository(firestore:, …)` is the same class over the in-memory Firestore it is
+  given (`FakeFirebaseFirestore`, a dev dependency here and in the app, so release builds never
+  carry it), seeded with `sampleSocial`, Swift's mock social world around `mock_user_123`, with
+  `stagingCallFunction` playing the two callables.
 - `social_rules.dart`: `Username`, `InviteCode`, `FollowingQueries`, display names and
   `commentNotifications`.
 

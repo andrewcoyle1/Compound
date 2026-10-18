@@ -4,6 +4,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -12,6 +13,8 @@ import 'package:purchases_repository/purchases_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
+
+import '../../helpers/app_repositories.dart';
 
 // The whole app on the staging flavor's in-memory data, signed in as the
 // sample user: Ask Coach from Today and Weight Trend, consent, a streamed
@@ -36,10 +39,15 @@ void main() {
     );
     // As staging wires it.
     final coach = (await tester.runAsync(
-      () => inMemoryCoachRepository(users: users, now: now),
+      () => inMemoryCoachRepository(
+        firestore: FakeFirebaseFirestore(),
+        users: users,
+        now: now,
+      ),
     ))!;
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
         purchasesRepository: purchases ?? FakePurchasesRepository(),
         coachRepository: coach,
         programRepository: InMemoryProgramRepository(),

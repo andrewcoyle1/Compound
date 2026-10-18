@@ -19,6 +19,7 @@ import 'package:compound/integrations/integrations.dart';
 import 'package:compound/notifications/notifications.dart';
 import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:device_store/device_store.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
@@ -162,6 +163,7 @@ Future<void> main() async {
     }
     return App(
       appVersion: await AppVersion.load(),
+      connectivityRepository: ConnectivityRepository(),
       // The flavor's bundle id (iOS) and package name (Android), the same
       // here, which Health reports as the source of what this app wrote.
       healthRepository: HealthRepository(

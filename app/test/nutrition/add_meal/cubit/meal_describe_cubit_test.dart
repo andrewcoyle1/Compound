@@ -1,5 +1,6 @@
 import 'package:compound/nutrition/add_meal/cubit/food_photo_scanner_cubit.dart';
 import 'package:compound/nutrition/add_meal/cubit/meal_describe_cubit.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 
@@ -12,21 +13,28 @@ const _json = '''
   {"id": "2", "name": "Banana", "amountGrams": 120, "calories": 105}
 ]}''';
 
-// Swift `MealDescribePresenterTests`, case for case, less "offline a
-// description is not sent": Flutter has no offline pre-check. The amount
+// Swift `MealDescribePresenterTests`, case for case. The amount
 // sheet's confirm is the widget flow's.
 void main() {
+  late FakeConnectivityRepository connectivity;
+  late List<void> blocked;
   late FakeAi ai;
   late RecordingAnalytics analytics;
 
   setUp(() {
+    connectivity = FakeConnectivityRepository();
+    blocked = [];
+    connectivity.blocked.listen(blocked.add);
     ai = FakeAi()..json = _json;
     analytics = RecordingAnalytics();
   });
 
   MealDescribeCubit build([String text = 'Porridge and a banana']) =>
-      MealDescribeCubit(ai: ai.repository, analytics: analytics)
-        ..textChanged(text);
+      MealDescribeCubit(
+        connectivity: connectivity,
+        ai: ai.repository,
+        analytics: analytics,
+      )..textChanged(text);
 
   group(MealDescribeCubit, () {
     test('a description is broken into items', () async {
@@ -178,6 +186,19 @@ void main() {
       await failure;
 
       expect(ai.calls, hasLength(2));
+    });
+
+    // testOfflineADescriptionIsNotSentAndSaysYoureOffline
+    test('offline a description is not sent, and says so', () async {
+      connectivity.offline = true;
+      final cubit = build();
+
+      await cubit.analyse();
+      await pumpEventQueue();
+
+      expect(ai.calls, isEmpty);
+      expect(cubit.state.status, EstimateStatus.idle);
+      expect(blocked, hasLength(1));
     });
   });
 }

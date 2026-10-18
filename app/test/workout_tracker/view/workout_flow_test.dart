@@ -17,6 +17,7 @@ import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/app_repositories.dart';
 import '../../helpers/display_size.dart';
 
 void main() {
@@ -34,6 +35,8 @@ void main() {
     final store = InMemoryActiveSessionStore();
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         purchasesRepository: FakePurchasesRepository(),
         authRepository: InMemoryAuthRepository(
           user: InMemoryAuthRepository.sampleUser,
@@ -169,6 +172,8 @@ void main() {
     );
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         purchasesRepository: FakePurchasesRepository(),
         authRepository: InMemoryAuthRepository(
           user: InMemoryAuthRepository.sampleUser,

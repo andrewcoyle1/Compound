@@ -16,6 +16,8 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../helpers/app_repositories.dart';
+
 /// Every pick returns [photo], as the staging flavor's sample picker does.
 class _Picker implements PhotoPicker {
   final photo = Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xD9]);
@@ -48,6 +50,8 @@ void main() {
     );
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         programRepository: InMemoryProgramRepository(),
         trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
         authRepository: InMemoryAuthRepository(

@@ -186,6 +186,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
   }
 
   Future<void> _resume(String uid) async {
+    // A finished workout that was waiting for the server when the app was
+    // killed is not offered; it is settled once the server answers.
+    unawaited(_afterServer(uid, _finisher().settleKept(uid)));
     ActiveSessionController? controller;
     try {
       controller = await ActiveSessionController.resume(
@@ -1085,40 +1088,34 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
     );
     _track('WorkoutTrackerView_FinishWorkout_Start');
     var retried = false;
-    final result =
-        await WorkoutFinisher(
-          sessions: _sessions,
-          users: _users,
-          store: _store,
-          backoff: _backoff,
-          wait: _wait,
-          clock: _clock,
-        ).finish(
-          session,
-          history: _history,
-          weeklySessionGoal: _user?.weeklySessionGoal,
-          privateSettings: _private,
-          firstWeekday: firstWeekday,
-          currentUid: () => _uid,
-          // Each attempt that fails, as Swift's `saveFinishedWorkout`.
-          onAttemptFailed: (error, {required isTransient}) => _track(
-            'finish_workout_save_error',
-            parameters: {'error': '$error', 'is_transient': isTransient},
-            type: LogType.severe,
-          ),
-          onProgress: (progress) {
-            if (progress == SaveProgress.retrying) retried = true;
-            if (isClosed) return;
-            emit(
-              _copy(saveNotice: progress, saveNoticeId: state.saveNoticeId + 1),
-            );
-          },
-        );
+    final result = await _finisher().finish(
+      session,
+      history: _history,
+      weeklySessionGoal: _user?.weeklySessionGoal,
+      privateSettings: _private,
+      firstWeekday: firstWeekday,
+      currentUid: () => _uid,
+      // Each attempt that fails, as Swift's `saveFinishedWorkout`.
+      onAttemptFailed: (error, {required isTransient}) => _track(
+        'finish_workout_save_error',
+        parameters: {'error': '$error', 'is_transient': isTransient},
+        type: LogType.severe,
+      ),
+      onProgress: (progress) {
+        if (progress == SaveProgress.retrying) retried = true;
+        if (isClosed) return;
+        emit(_copy(saveNotice: progress, saveNoticeId: state.saveNoticeId + 1));
+      },
+    );
     await _programFinished(uid, session, saved: result.saved);
     if (result.saved) {
+      // The device keeps the workout until the server has it.
+      unawaited(_afterServer(uid, result.onServer!));
       _track('Workout_Finished', parameters: _finishedParameters(session));
       _track('WorkoutTrackerView_FinishWorkout_Success');
       await _askForReview(session, firstWeekday: firstWeekday);
+      // Once only: a refused workout finished again already went.
+      if (result.sentBefore) return;
       await _exportToHealth(session);
       // Last, because Strava is polled until it has made the activity.
       // Only a saved workout: one that failed to save would be on Strava
@@ -1137,6 +1134,34 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
       type: LogType.severe,
     );
     // Still on the device: offered again to resume.
+    if (!isClosed && _uid == uid && _controller == null) await _resume(uid);
+  }
+
+  WorkoutFinisher _finisher() => WorkoutFinisher(
+    sessions: _sessions,
+    users: _users,
+    store: _store,
+    backoff: _backoff,
+    wait: _wait,
+    clock: _clock,
+  );
+
+  /// The server's answer for a finished workout kept on the device: a
+  /// refusal keeps it, and the tracker offers it again, as after a save
+  /// that failed. An answer that cannot be had leaves it waiting.
+  Future<void> _afterServer(String uid, Future<bool?> answer) async {
+    final bool? stored;
+    try {
+      stored = await answer;
+    } on Object {
+      return;
+    }
+    if (stored != false) return;
+    _track(
+      'WorkoutTrackerView_FinishWorkout_Fail',
+      parameters: {'reason': 'server_refused'},
+      type: LogType.severe,
+    );
     if (!isClosed && _uid == uid && _controller == null) await _resume(uid);
   }
 

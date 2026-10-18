@@ -70,6 +70,8 @@ void main() {
   late InMemoryTrainingLibraryRepository library;
 
   Widget app({StravaRepository? strava}) => App(
+    socialRepository: emptySocialRepository(),
+    coachRepository: silentCoachRepository(),
     purchasesRepository: FakePurchasesRepository(),
     authRepository: InMemoryAuthRepository(
       user: InMemoryAuthRepository.sampleUser,

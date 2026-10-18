@@ -1,15 +1,17 @@
 /// Finishing a workout (`WorkoutFinishing.swift` and the tracker's retry,
 /// `WorkoutTrackerPresenter+Finish`): the session saved, retried while the
-/// failure could pass, the device's copy forgotten once it is stored, and
-/// the weekly streak stamped on the session and copied to the private
+/// failure could pass, the device's copy forgotten once the server has it,
+/// and the weekly streak stamped on the session and copied to the private
 /// settings for the streak reminder.
 ///
 /// "Saved" means Firestore has the session in its local cache and durable
 /// write queue: the repositories' writes do not wait for the server
 /// (`writeLocally`), so finishing works offline, as Swift's sync engine
 /// does. The retry therefore only sees an error raised while starting the
-/// write; a refusal by the server later goes to the repository's
-/// `onWriteError`, reported as a severe event, and cannot be retried here.
+/// write. Unlike Swift, the device keeps its copy
+/// ([SavedFinish.awaitingServer]) until the server confirms the save, so a
+/// refusal by the server leaves the workout for the tracker to offer again
+/// ([SavedFinish.refused]) rather than losing it.
 ///
 /// Only what a standalone session needs: a mesocycle's rest days, moving
 /// the macrocycle on, Strava, Apple Health and the Live Activity are later
@@ -95,8 +97,20 @@ enum SaveProgress {
 
 /// How finishing went.
 class const FinishResult({
-  /// The session is stored and the device has forgotten it.
+  /// The session is saved on this device; the server's answer is
+  /// [onServer].
   required final bool saved,
+
+  /// Once the server answers for the saved session: true when it has it
+  /// and the device has forgotten it, false when it refused it and the
+  /// device keeps it for the tracker to offer again. Offline it waits;
+  /// after a relaunch [WorkoutFinisher.settleKept] answers instead. `null`
+  /// when not saved.
+  final Future<bool>? onServer,
+
+  /// The session was saved before and refused, and is finished again:
+  /// Health and Strava already have it.
+  final bool sentBefore = false,
 
   /// The streak stamped, when the save worked and stamping did.
   final maths.WeeklyStreak? streak,
@@ -197,7 +211,7 @@ class const StreakRecord({
 /// Stores a finished workout and does what follows.
 class WorkoutFinisher {
   /// Writes through `sessions` and `users`, and forgets the workout in
-  /// `store` once it is saved.
+  /// `store` once the server has it.
   new({
     required this._sessions,
     required this._users,
@@ -220,7 +234,8 @@ class WorkoutFinisher {
   /// Saves [session] (already ended, `ActiveSessionController.finish`),
   /// retrying a failure that could pass while [currentUid] is still its
   /// author: a retry after sign-out would write it into whoever signed in
-  /// next. Once saved, the device forgets it and the streak is stamped,
+  /// next. Once saved, the device's copy waits for the server
+  /// ([FinishResult.onServer]) and the streak is stamped,
   /// counting [history] (the user's other sessions) with it, by the stored
   /// [weeklySessionGoal], against [privateSettings].
   Future<FinishResult> finish(
@@ -234,7 +249,13 @@ class WorkoutFinisher {
     void Function(Object error, {required bool isTransient})? onAttemptFailed,
   }) async {
     final uid = session.authorId;
-    Future<_Outcome> tryOnce() => _attempt(session, onAttemptFailed);
+    Future<void>? confirmed;
+    Future<_Outcome> tryOnce() async {
+      final (outcome, server) = await _attempt(session, onAttemptFailed);
+      confirmed = server;
+      return outcome;
+    }
+
     var outcome = await tryOnce();
     if (outcome == _Outcome.transient) {
       var attempt = 2;
@@ -256,7 +277,20 @@ class WorkoutFinisher {
       onProgress?.call(SaveProgress.failed);
       return const FinishResult(saved: false);
     }
-    await _store.clear();
+    // Only the copy of this session: a workout started meanwhile is not
+    // touched.
+    final kept = await _store.load();
+    final ours = kept?.session.id == session.id;
+    final sentBefore = ours && kept!.saved != null;
+    if (ours) {
+      await _store.save(
+        ActiveSessionState(session: session, saved: SavedFinish.awaitingServer),
+      );
+    }
+    final onServer = _settle(
+      session.id,
+      confirmed!.then((_) => true, onError: (Object _) => false),
+    );
 
     // Best-effort, after the save: a session without it reads as before.
     final record = StreakRecord.of(
@@ -284,24 +318,73 @@ class WorkoutFinisher {
         );
       }
     } on Object catch (error) {
-      return FinishResult(saved: true, streakError: error);
+      return FinishResult(
+        saved: true,
+        onServer: onServer,
+        sentBefore: sentBefore,
+        streakError: error,
+      );
     }
-    return FinishResult(saved: true, streak: record.streak);
+    return FinishResult(
+      saved: true,
+      onServer: onServer,
+      sentBefore: sentBefore,
+      streak: record.streak,
+    );
   }
 
-  /// One try at the save; a failure is reported to [onFailed] each time,
-  /// as Swift's `finish_workout_save_error` is logged per attempt.
-  Future<_Outcome> _attempt(
+  /// [uid]'s finished workout kept from before a relaunch while it waited
+  /// for the server, settled once the server answers, as
+  /// [FinishResult.onServer] is; `null` when none is waiting.
+  Future<bool?> settleKept(String uid) async {
+    final kept = await _store.load();
+    if (kept == null ||
+        kept.saved != SavedFinish.awaitingServer ||
+        kept.session.authorId != uid) {
+      return null;
+    }
+    final id = kept.session.id;
+    return await _settle(id, _sessions.sessionOnServer(uid, id));
+  }
+
+  /// Once [onServer] answers: the device forgets session [id] when the
+  /// server has it, or keeps it for the tracker when it refused it. A copy
+  /// no longer waiting (finished again, discarded or replaced) is left.
+  Future<bool> _settle(String id, Future<bool> onServer) async {
+    final stored = await onServer;
+    final kept = await _store.load();
+    if (kept != null &&
+        kept.session.id == id &&
+        kept.saved == SavedFinish.awaitingServer) {
+      await (stored
+          ? _store.clear()
+          : _store.save(
+              ActiveSessionState(
+                session: kept.session,
+                saved: SavedFinish.refused,
+              ),
+            ));
+    }
+    return stored;
+  }
+
+  /// One try at the save, with the server's answer when it worked; a
+  /// failure is reported to [onFailed] each time, as Swift's
+  /// `finish_workout_save_error` is logged per attempt.
+  Future<(_Outcome, Future<void>?)> _attempt(
     m.WorkoutSessionModel session,
     void Function(Object error, {required bool isTransient})? onFailed,
   ) async {
     try {
-      await _sessions.saveSession(session.authorId, session);
-      return _Outcome.saved;
+      final write = await _sessions.saveSessionConfirmed(
+        session.authorId,
+        session,
+      );
+      return (_Outcome.saved, write.confirmed);
     } on Object catch (error) {
       final transient = isTransientWriteFailure(error);
       onFailed?.call(error, isTransient: transient);
-      return transient ? _Outcome.transient : _Outcome.permanent;
+      return (transient ? _Outcome.transient : _Outcome.permanent, null);
     }
   }
 }

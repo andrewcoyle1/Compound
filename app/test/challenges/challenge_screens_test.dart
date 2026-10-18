@@ -9,6 +9,7 @@ import 'package:compound/challenges/view/create_challenge_page.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/social/profile/social_profile_page.dart';
 import 'package:compound/social/social.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -44,7 +45,11 @@ void main() {
     ))!;
     challenges = ChallengesCubit(social: world.social, analytics: analytics)
       ..viewerChanged(sampleUserId);
-    invites = InviteCubit(social: world.social, analytics: analytics);
+    invites = InviteCubit(
+      connectivity: FakeConnectivityRepository(),
+      social: world.social,
+      analytics: analytics,
+    );
     final appBloc = MockAppBloc();
     when(() => appBloc.stream).thenAnswer((_) => const Stream.empty());
     when(() => appBloc.state).thenReturn(

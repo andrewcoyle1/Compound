@@ -1,5 +1,6 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:social_repository/social_repository.dart';
 
@@ -16,11 +17,17 @@ final class const PeopleListState({
 /// A list of people (`FollowersListPresenter`): the reader's own followers
 /// can be removed, through the `removeFollower` function.
 class PeopleListCubit extends Cubit<PeopleListState> {
-  new({required this._social, required this._analytics})
-    : super(const PeopleListState());
+  new({
+    required this._social,
+    required this._analytics,
+    required this._connectivity,
+  }) : super(const PeopleListState());
 
   final SocialRepository _social;
   final AnalyticsRepository _analytics;
+
+  /// Removing calls a function, so it does not start offline.
+  final ConnectivityRepository _connectivity;
 
   void appeared() => _analytics.trackScreenView(
     const AnalyticsEvent('FollowersListView_Appear'),
@@ -33,6 +40,7 @@ class PeopleListCubit extends Cubit<PeopleListState> {
   /// Removes [followerId], dropping them from the list once the function
   /// answers.
   Future<void> removeConfirmed(String followerId) async {
+    if (!_connectivity.ensureOnline()) return;
     _analytics
       ..trackEvent(const AnalyticsEvent('FollowersListView_RemoveFollower'))
       ..trackEvent(

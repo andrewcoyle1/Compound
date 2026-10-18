@@ -38,6 +38,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         purchasesRepository: purchases,
         linkOpener: linkOpener,
         programRepository: InMemoryProgramRepository(),

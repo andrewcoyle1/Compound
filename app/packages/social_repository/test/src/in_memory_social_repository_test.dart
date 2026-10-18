@@ -59,6 +59,7 @@ void main() {
 
     setUp(() async {
       subject = await inMemorySocialRepository(
+        firestore: FakeFirebaseFirestore(),
         users: InMemoryUserRepository(users: {sampleUserId: viewer}),
         now: now,
       );

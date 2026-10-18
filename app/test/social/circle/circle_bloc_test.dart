@@ -6,6 +6,7 @@ import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/logic/circle_week.dart';
 import 'package:compound/social/logic/people.dart';
 import 'package:device_store/device_store.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:social_repository/social_repository.dart';
@@ -31,7 +32,11 @@ void main() {
   setUp(() async {
     viewer = sampleUser(now: now);
     users = InMemoryUserRepository(users: {sampleUserId: viewer});
-    social = await inMemorySocialRepository(users: users, now: now);
+    social = await inMemorySocialRepository(
+      firestore: FakeFirebaseFirestore(),
+      users: users,
+      now: now,
+    );
     events = [];
     analytics = _MockAnalytics();
     when(() => analytics.trackEvent(any())).thenAnswer(

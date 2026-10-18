@@ -1,6 +1,7 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound_models/compound_models.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:social_repository/social_repository.dart';
 
@@ -55,11 +56,17 @@ final class const InviteState({
 /// `InviteShareFlow`) and accepting someone else's, from a
 /// `compound://join/` link or a typed code (`InviteAcceptFlow`).
 class InviteCubit extends Cubit<InviteState> {
-  new({required this._social, required this._analytics})
-    : super(const InviteState());
+  new({
+    required this._social,
+    required this._analytics,
+    required this._connectivity,
+  }) : super(const InviteState());
 
   final SocialRepository _social;
   final AnalyticsRepository _analytics;
+
+  /// Both need the server: neither starts offline (`ensureOnline`).
+  final ConnectivityRepository _connectivity;
 
   void _emit(InviteResult result) =>
       emit(InviteState(result: result, resultId: state.resultId + 1));
@@ -67,7 +74,7 @@ class InviteCubit extends Cubit<InviteState> {
   /// Reads [uid]'s invite, creating it the first time, for the share sheet.
   /// [pressedEvent] names the button, as each Swift screen tracks its own.
   Future<void> shareRequested(String uid, {String? pressedEvent}) async {
-    if (state.isBusy) return;
+    if (state.isBusy || !_connectivity.ensureOnline()) return;
     if (pressedEvent != null) {
       _analytics.trackEvent(AnalyticsEvent(pressedEvent));
     }
@@ -84,7 +91,7 @@ class InviteCubit extends Cubit<InviteState> {
 
   /// Accepts invite [code] for [viewer] and reads the inviter's profile.
   Future<void> accept(String code, {required UserModel viewer}) async {
-    if (state.isBusy) return;
+    if (state.isBusy || !_connectivity.ensureOnline()) return;
     _analytics.trackEvent(const AnalyticsEvent('Invite_Accept_Start'));
     emit(
       InviteState(result: state.result, resultId: state.resultId, isBusy: true),

@@ -9,6 +9,8 @@ import 'package:compound/social/profile/social_profile_cubit.dart';
 import 'package:compound/social/search/people_search_bloc.dart';
 import 'package:compound/social/search/social_cubit.dart';
 import 'package:compound/social/weekly_goal/weekly_goal_cubit.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:social_repository/social_repository.dart';
@@ -24,6 +26,8 @@ class _MockUsers extends Mock implements UserRepository;
 class _FakeEvent extends Fake implements LoggableEvent;
 
 void main() {
+  late FakeConnectivityRepository connectivity;
+  late List<void> blocked;
   final now = DateTime.utc(2026, 10, 15, 12);
   late UserModel viewer;
   late InMemoryUserRepository users;
@@ -48,9 +52,16 @@ void main() {
   });
 
   setUp(() async {
+    connectivity = FakeConnectivityRepository();
+    blocked = [];
+    connectivity.blocked.listen(blocked.add);
     viewer = sampleUser(now: now);
     users = InMemoryUserRepository(users: {sampleUserId: viewer});
-    social = await inMemorySocialRepository(users: users, now: now);
+    social = await inMemorySocialRepository(
+      firestore: FakeFirebaseFirestore(),
+      users: users,
+      now: now,
+    );
     failing = _MockSocial();
     events = [];
     analytics = _MockAnalytics();
@@ -231,7 +242,11 @@ void main() {
   group(PeopleListCubit, () {
     blocTest<PeopleListCubit, PeopleListState>(
       'removes a follower through the function',
-      build: () => PeopleListCubit(social: social, analytics: analytics),
+      build: () => PeopleListCubit(
+        connectivity: connectivity,
+        social: social,
+        analytics: analytics,
+      ),
       act: (cubit) => cubit.removeConfirmed('user3'),
       expect: () => [
         const PeopleListState(removing: true),
@@ -239,12 +254,32 @@ void main() {
       ],
     );
 
+    // FollowersListRemoveTests.testOfflineRemoveSaysYoureOfflineAndKeepsTheRow
+    blocTest<PeopleListCubit, PeopleListState>(
+      "offline removing says you're offline and keeps the row",
+      build: () => PeopleListCubit(
+        connectivity: connectivity..offline = true,
+        social: failing,
+        analytics: analytics,
+      ),
+      act: (cubit) => cubit.removeConfirmed('user3'),
+      expect: () => const <PeopleListState>[],
+      verify: (_) {
+        verifyNever(() => failing.removeFollower(any()));
+        expect(blocked, hasLength(1));
+      },
+    );
+
     blocTest<PeopleListCubit, PeopleListState>(
       'says when removing failed',
       setUp: () =>
           when(() => failing.removeFollower(any()))
               .thenThrow(Exception('offline')),
-      build: () => PeopleListCubit(social: failing, analytics: analytics),
+      build: () => PeopleListCubit(
+        connectivity: connectivity,
+        social: failing,
+        analytics: analytics,
+      ),
       act: (cubit) {
         cubit
           ..appeared()
@@ -310,6 +345,7 @@ void main() {
 
   group(EditUsernameBloc, () {
     EditUsernameBloc build([SocialRepository? with_]) => EditUsernameBloc(
+      connectivity: connectivity,
       social: with_ ?? social,
       analytics: analytics,
       current: viewer.username,
@@ -378,6 +414,27 @@ void main() {
         ..appeared()
         ..disappeared();
       expect(events, contains('EditUsernameView_Save_Success'));
+      await bloc.close();
+    });
+
+    // UsernameTests.testOfflineSaveSaysYoureOfflineAndClaimsNothing
+    test("offline Save says you're offline and claims nothing", () async {
+      final bloc = build(failing);
+      when(
+        () => failing.isUsernameAvailable(any(), viewer: any(named: 'viewer')),
+      ).thenAnswer((_) async => true);
+      bloc.add(EditUsernameTextChanged('alice_new', viewer));
+      await bloc.stream.firstWhere((s) => s.canSave);
+      connectivity.offline = true;
+
+      bloc.add(EditUsernameSavePressed(viewer));
+      await pumpEventQueue();
+
+      verifyNever(
+        () => failing.claimUsername(any(), viewer: any(named: 'viewer')),
+      );
+      expect(bloc.state.isSaving, isFalse);
+      expect(blocked, hasLength(1));
       await bloc.close();
     });
 

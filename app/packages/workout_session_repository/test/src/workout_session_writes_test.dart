@@ -50,6 +50,22 @@ void main() {
         });
       }
 
+      test('saveSessionConfirmed is confirmed once the server has it, '
+          'and sessionOnServer then finds it', () async {
+        final model = WorkoutSessionModel.fromFirestore(
+          modelFixture('workout_session', 'full'),
+        );
+        expect(
+          await subject.sessionOnServer(model.authorId, model.id),
+          isFalse,
+        );
+
+        final write = await subject.saveSessionConfirmed(model.authorId, model);
+
+        await expectLater(write.confirmed, completes);
+        expect(await subject.sessionOnServer(model.authorId, model.id), isTrue);
+      });
+
       test('reads back as the session saved', () async {
         final model = WorkoutSessionModel.fromFirestore(
           modelFixture('workout_session', 'full'),

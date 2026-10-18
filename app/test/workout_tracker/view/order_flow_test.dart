@@ -19,6 +19,8 @@ import 'package:training_session/training_session.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/app_repositories.dart';
+
 /// The workout's order and the card beyond its sets, through the whole app
 /// on the staging data: the strip's menu, Do Later, the progression note,
 /// Last tap-to-fill, last time's note, Workout Settings and the bar over
@@ -72,6 +74,8 @@ void main() {
     ];
     await tester.pumpWidget(
       App(
+        socialRepository: emptySocialRepository(),
+        coachRepository: silentCoachRepository(),
         purchasesRepository: FakePurchasesRepository(),
         authRepository: InMemoryAuthRepository(
           user: InMemoryAuthRepository.sampleUser,

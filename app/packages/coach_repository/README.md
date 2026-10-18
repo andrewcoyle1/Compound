@@ -17,5 +17,6 @@ caller's to check (`purchases_repository`).
 - `watchConsent`, `giveConsent` (`coach_consent: true` and `coach_consent_at`) and
   `withdrawConsent` (`coach_consent: false`, then every chat deleted) go through
   `UserRepository.mergePrivateSettings`.
-- `inMemoryCoachRepository(users:, now:)` is the same class over an in-memory Firestore with the
-  sample chat; its coach refuses without consent and saves each exchange as the function does.
+- `inMemoryCoachRepository(firestore:, users:, now:)` is the same class over the in-memory
+  Firestore it is given (`FakeFirebaseFirestore`, a dev dependency, so release builds never carry
+  it), with the sample chat; its coach refuses without consent and saves each exchange as the function does.

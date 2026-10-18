@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -54,6 +56,59 @@ void main() {
           (path, 'permission-denied'),
       ]);
     });
+
+    test('saveSessionConfirmed completes offline; the server refuses '
+        'it later', () async {
+      final session = WorkoutSessionModel.fromFirestore(
+        modelFixture('workout_session', 'full'),
+      );
+      final write = await subject.saveSessionConfirmed('u', session);
+      Object? answer;
+      unawaited(
+        write.confirmed.then(
+          (_) => answer = 'stored',
+          onError: (Object e) => answer = e,
+        ),
+      );
+      await pumpEventQueue();
+      expect(answer, isNull);
+
+      firestore.refuse('permission-denied');
+      await pumpEventQueue();
+
+      expect(
+        answer,
+        isA<FirebaseException>().having(
+          (e) => e.code,
+          'code',
+          'permission-denied',
+        ),
+      );
+      expect(refused, [
+        ('users/u/workout_sessions/${session.id}', 'permission-denied'),
+      ]);
+    });
+
+    test(
+      'sessionOnServer waits for the server to answer for every write',
+      () async {
+        bool? answer;
+        unawaited(subject.sessionOnServer('u', 's').then((a) => answer = a));
+        await pumpEventQueue();
+        // Saved here, still on its way.
+        firestore.snapshots.add((true, true, true));
+        await pumpEventQueue();
+        expect(answer, isNull);
+        // Nothing pending, but from the cache: the server has not said.
+        firestore.snapshots.add((true, false, true));
+        await pumpEventQueue();
+        expect(answer, isNull);
+        // Refused: rolled back, and the server has no such session.
+        firestore.snapshots.add((false, false, false));
+        await pumpEventQueue();
+        expect(answer, isFalse);
+      },
+    );
 
     test(
       'updateEditedSession completes offline; not-found is reported',

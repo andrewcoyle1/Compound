@@ -15,6 +15,23 @@ abstract interface class WorkoutSessionRepository {
   /// the sync engine's `saveDocument` is `setData(merge: true)`).
   Future<void> saveSession(String uid, WorkoutSessionModel session);
 
+  /// Saves [session] as [saveSession] does, for a finished workout whose
+  /// device copy is kept until the server has it. Completes, as
+  /// [saveSession] does, once the device has the session; `confirmed` then
+  /// completes once the server has stored it, or fails with its refusal
+  /// (which also goes to `onWriteError`). Offline, `confirmed` waits, and a
+  /// relaunch loses it: [sessionOnServer] answers then.
+  Future<({Future<void> confirmed})> saveSessionConfirmed(
+    String uid,
+    WorkoutSessionModel session,
+  );
+
+  /// Whether the server holds the session [id] of [uid], once it has
+  /// answered for every write to it this device is still sending: false
+  /// when it refused the save. Offline it waits. After a relaunch, as
+  /// [saveSessionConfirmed]'s answer did not survive it.
+  Future<bool> sessionOnServer(String uid, String id);
+
   /// Writes only what editing a finished workout changes
   /// (`WorkoutSessionDetailPresenter.saveChanges` and the timing sheets):
   /// [EditedSessionFields], with a cleared `notes` deleted, as an `update`.

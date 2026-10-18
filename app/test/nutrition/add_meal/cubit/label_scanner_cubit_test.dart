@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:compound/nutrition/add_meal/cubit/food_photo_scanner_cubit.dart'
     show CameraState;
 import 'package:compound/nutrition/add_meal/cubit/label_scanner_cubit.dart';
+import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:image_repository/image_repository.dart';
@@ -40,10 +41,11 @@ String _label({String measurementMethod = 'weight'}) =>
 
 // Swift `BarcodeScannerPresenterTests`, label mode, case for case. The
 // label's decoding (volume, nutrients left out, an unknown method) is
-// `ai_repository`'s and tested there; "offline a label is not sent" is
-// left out (no offline pre-check), and "saving stores it and resumes
+// `ai_repository`'s and tested there, and "saving stores it and resumes
 // scanning" has no standalone Save to Library here.
 void main() {
+  late FakeConnectivityRepository connectivity;
+  late List<void> blocked;
   const uid = 'user-1';
   late FakeAi ai;
   late FoodRepository foods;
@@ -54,6 +56,9 @@ void main() {
   setUpAll(() => registerFallbackValue(_FakeFood()));
 
   setUp(() {
+    connectivity = FakeConnectivityRepository();
+    blocked = [];
+    connectivity.blocked.listen(blocked.add);
     ai = FakeAi()..json = _label();
     foods = _MockFoodRepository();
     analytics = RecordingAnalytics();
@@ -63,6 +68,7 @@ void main() {
   });
 
   LabelScannerCubit build() => LabelScannerCubit(
+    connectivity: connectivity,
     uid: uid,
     ai: ai.repository,
     foodRepository: foods,
@@ -376,6 +382,19 @@ void main() {
       await cubit.scan(PhotoSource.camera);
 
       expect(reader.photos, isEmpty);
+    });
+
+    // testOfflineALabelIsNotSentAndSaysYoureOffline
+    test('offline a label is not sent, and says so', () async {
+      connectivity.offline = true;
+      final cubit = build();
+
+      await cubit.parse('Energy 46kcal');
+      await pumpEventQueue();
+
+      expect(ai.calls, isEmpty);
+      expect(cubit.state, const LabelScannerState());
+      expect(blocked, hasLength(1));
     });
   });
 }

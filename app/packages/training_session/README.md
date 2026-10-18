@@ -21,8 +21,12 @@ puts `compound_models` (the Firestore shapes) onto them and keeps the workout un
   ran out meanwhile.
 - `ActiveSessionController.finish` ends the session (paused time recorded, only logged sets kept,
   each stamped with its unit and load count) and keeps it on the device; `WorkoutFinisher` saves
-  it, retries a failure that could pass, forgets it once stored, and stamps the weekly streak on
-  the session and in the private settings. Standalone sessions only: a mesocycle's rest days,
+  it, retries a failure that could pass, and stamps the weekly streak on the session and in the
+  private settings. The device keeps its copy (`SavedFinish.awaitingServer`, never opened in the
+  tracker) until the server confirms the save, then forgets it; a refusal turns it into
+  `SavedFinish.refused`, which the tracker offers again and which is not sent to Health or Strava
+  a second time. After a relaunch `WorkoutFinisher.settleKept` asks the server
+  (`sessionOnServer`) instead. Unlike Swift, which forgets it once Firestore has queued it. Standalone sessions only: a mesocycle's rest days,
   moving the macrocycle on, Strava, Apple Health and the Live Activity come later.
 - Words (titles, toasts, spoken labels, the bar's chip) are the app's: the controller answers with
   the decisions they are worded from (`LogResult`, `SetCorrection`, `UndoName`, `SaveProgress`).

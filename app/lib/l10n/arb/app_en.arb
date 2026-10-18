@@ -13106,6 +13106,18 @@
     "@siriFooter": {
         "description": "Siri screen: footer"
     },
+    "offlineTitle": "You're offline",
+    "@offlineTitle": {
+        "description": "Alert title when an action that needs the server is tried without a network"
+    },
+    "offlineMessage": "This needs an internet connection. Try again when you're back online.",
+    "@offlineMessage": {
+        "description": "Alert message when an action that needs the server is tried without a network"
+    },
+    "aiScanOffline": "You're offline. Connect to the internet to analyze this photo.",
+    "@aiScanOffline": {
+        "description": "A meal photo taken without a network, so it was not analyzed"
+    },
     "exerciseCopyName": "{name} (Copy)",
     "@exerciseCopyName": {
         "description": "Edit Duplicate: the copy's name",

@@ -30,6 +30,7 @@ class EditProfilePage extends StatelessWidget {
       create: (context) => EditProfileCubit(
         userRepository: context.read<UserRepository>(),
         analytics: context.read<AnalyticsRepository>(),
+        connectivity: context.read(),
         images: context.read<ImageRepository>(),
         picker: context.read<PhotoPicker>(),
         user: state is AppAuthenticated ? state.profile : null,

@@ -10,6 +10,17 @@ import 'dart:io';
 import 'package:compound_models/compound_models.dart' as m;
 import 'package:training_rules/training_rules.dart' as r;
 
+/// Where a finished workout kept on the device stands with the server.
+enum SavedFinish {
+  /// Saved on this device and handed to Health and Strava; kept until the
+  /// server has it, and not opened in the tracker meanwhile.
+  awaitingServer,
+
+  /// The server refused it. The tracker offers it again; finishing it
+  /// again does not send it to Health or Strava a second time.
+  refused,
+}
+
 /// Everything needed to carry on with a workout after the app is killed.
 class const ActiveSessionState({
   /// The session, as it would be saved.
@@ -43,6 +54,10 @@ class const ActiveSessionState({
 
   /// Up to when the screen has seen the logged sets.
   final DateTime? lastSeenSetCompletion,
+
+  /// For a finished workout saved before, where it stands with the server;
+  /// `null` for one never saved.
+  final SavedFinish? saved,
 }) {
   /// Reads [toJson]'s output; throws a [FormatException] for anything else.
   factory fromJson(Map<String, Object?> json) {
@@ -78,6 +93,11 @@ class const ActiveSessionState({
           json['acknowledged_note_template_ids']! as List,
         ),
         lastSeenSetCompletion: date('last_seen_set_completion'),
+        saved: switch (json['saved']) {
+          null => null,
+          final String name => SavedFinish.values.byName(name),
+          final other => throw FormatException('Not a saved state', other),
+        },
       );
     } on FormatException {
       rethrow;
@@ -106,6 +126,7 @@ class const ActiveSessionState({
     },
     'acknowledged_note_template_ids': acknowledgedNoteTemplateIds.toList(),
     'last_seen_set_completion': ?_date(lastSeenSetCompletion),
+    'saved': ?saved?.name,
   };
 
   static r.SuggestedSet _baseline(Map<String, Object?> set) => r.SuggestedSet(

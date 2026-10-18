@@ -184,7 +184,11 @@ void main() {
     late CoachRepository repository;
 
     setUp(() async {
-      repository = await inMemoryCoachRepository(users: users, now: now);
+      repository = await inMemoryCoachRepository(
+        firestore: FakeFirebaseFirestore(),
+        users: users,
+        now: now,
+      );
     });
 
     test('holds the sample chat for the sample user', () async {

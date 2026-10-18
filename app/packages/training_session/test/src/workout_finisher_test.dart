@@ -23,6 +23,24 @@ class _Sessions extends InMemoryWorkoutSessionRepository {
   Exception? streakError;
   int saveAttempts = 0;
 
+  /// The server's answer to each save; at once when null.
+  Completer<void>? server;
+
+  /// What [sessionOnServer] answers after a relaunch.
+  final onServer = Completer<bool>();
+
+  @override
+  Future<({Future<void> confirmed})> saveSessionConfirmed(
+    String uid,
+    m.WorkoutSessionModel session,
+  ) async {
+    final write = await super.saveSessionConfirmed(uid, session);
+    return (confirmed: server?.future ?? write.confirmed);
+  }
+
+  @override
+  Future<bool> sessionOnServer(String uid, String id) => onServer.future;
+
   @override
   Future<void> saveSession(String uid, m.WorkoutSessionModel session) async {
     saveAttempts++;
@@ -117,8 +135,10 @@ void main() {
       final result = await finish();
 
       expect(result.saved, isTrue);
+      expect(result.sentBefore, isFalse);
       expect(sessions.saveAttempts, 1);
       expect(progress, isEmpty);
+      expect(await result.onServer, isTrue);
       expect(await store.load(), isNull);
       expect((await sessions.session(author, 'session-1'))?.endedAt, isNotNull);
     });
@@ -139,6 +159,7 @@ void main() {
         SaveProgress.retrying,
         SaveProgress.saved,
       ]);
+      expect(await result.onServer, isTrue);
       expect(await store.load(), isNull);
     });
 
@@ -148,6 +169,7 @@ void main() {
       final result = await finish();
 
       expect(result.saved, isFalse);
+      expect(result.onServer, isNull);
       expect(sessions.saveAttempts, 1);
       expect(progress, [SaveProgress.failed]);
       // Still on the device, for Training to offer again.
@@ -194,6 +216,107 @@ void main() {
       expect(result.saved, isFalse);
       expect(sessions.saveAttempts, 1);
       expect(progress, [SaveProgress.retrying]);
+    });
+  });
+
+  group('the server', () {
+    test('the device keeps the workout until the server has it', () async {
+      sessions.server = Completer();
+
+      final result = await finish();
+
+      expect(result.saved, isTrue);
+      // Offline: the summary does not wait, only the clean-up.
+      expect((await store.load())?.saved, SavedFinish.awaitingServer);
+      // Not offered in the tracker meanwhile.
+      expect(
+        await ActiveSessionController.resume(
+          store: store,
+          environment: TrackerEnvironment(
+            authorId: author,
+            settings: settings(),
+          ),
+        ),
+        isNull,
+      );
+      sessions.server!.complete();
+      expect(await result.onServer, isTrue);
+      expect(await store.load(), isNull);
+    });
+
+    test('a refusal keeps it for the tracker, and finishing it again does '
+        'not send it to Health or Strava again', () async {
+      sessions.server = Completer();
+
+      final result = await finish();
+      sessions.server!.completeError(_firestore('permission-denied'));
+
+      expect(await result.onServer, isFalse);
+      final kept = await store.load();
+      expect(kept?.saved, SavedFinish.refused);
+      expect(kept?.session.id, workout.id);
+      final controller = await ActiveSessionController.resume(
+        store: store,
+        environment: TrackerEnvironment(authorId: author, settings: settings()),
+      );
+      expect(controller?.session.id, workout.id);
+      await controller!.finish();
+      expect((await store.load())?.saved, SavedFinish.refused);
+
+      sessions.server = null;
+      final again = await finish();
+      expect(again.sentBefore, isTrue);
+      expect(await again.onServer, isTrue);
+      expect(await store.load(), isNull);
+    });
+
+    test('a workout started meanwhile is left alone', () async {
+      sessions.server = Completer();
+      final next = ActiveSessionState(session: _finished('session-2', _now));
+      await store.save(next);
+
+      final result = await finish();
+      expect((await store.load())?.session.id, 'session-2');
+      sessions.server!.complete();
+      expect(await result.onServer, isTrue);
+      expect((await store.load())?.session.id, 'session-2');
+      expect((await store.load())?.saved, isNull);
+    });
+
+    group('settleKept, after a relaunch', () {
+      Future<void> keep(String authorId) => store.save(
+        ActiveSessionState(
+          session: m.WorkoutSessionModel.fromFirestore({
+            ...workout.toFirestore(),
+            m.WorkoutSessionModelKeys.authorId: authorId,
+          }),
+          saved: SavedFinish.awaitingServer,
+        ),
+      );
+
+      test('answers nothing with none waiting', () async {
+        expect(await finisher().settleKept(author), isNull);
+        await store.clear();
+        expect(await finisher().settleKept(author), isNull);
+        await keep('someone-else');
+        expect(await finisher().settleKept(author), isNull);
+      });
+
+      test('forgets the workout once the server has it', () async {
+        await keep(author);
+        final settled = finisher().settleKept(author);
+        sessions.onServer.complete(true);
+        expect(await settled, isTrue);
+        expect(await store.load(), isNull);
+      });
+
+      test('keeps it for the tracker when the server refused it', () async {
+        await keep(author);
+        final settled = finisher().settleKept(author);
+        sessions.onServer.complete(false);
+        expect(await settled, isFalse);
+        expect((await store.load())?.saved, SavedFinish.refused);
+      });
     });
   });
 

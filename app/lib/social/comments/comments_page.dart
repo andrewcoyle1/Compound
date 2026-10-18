@@ -246,79 +246,87 @@ class _CommentRow extends StatelessWidget {
       cursor = end;
     }
     spans.add(TextSpan(text: comment.text.substring(cursor)));
-    return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(
-        AppSpacing.l + (isReply ? AppControlSize.thumbnail : 0),
-        AppSpacing.s,
-        AppSpacing.s,
-        0,
+    void report() => unawaited(
+      showReportSheet(
+        context,
+        ReportedContent(
+          type: ReportContentType.comment,
+          id: comment.id,
+          authorId: comment.authorId,
+        ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: AppSpacing.s,
-        children: [
-          UserAvatar(
-            imageUrl: comment.authorImageUrl,
-            size: AppControlSize.thumbnail,
+    );
+    // Swift's swipe actions: Reply leading; Delete on one's own comment,
+    // else Report, trailing. The row's buttons do the same.
+    return AppSwipeActions(
+      leading: [
+        AppSwipeAction(
+          label: l10n.commentsReply,
+          icon: AppSymbols.reply,
+          tint: scheme.primary,
+          onPressed: () => cubit.replyPressed(comment),
+        ),
+      ],
+      trailing: [
+        if (isOwn)
+          AppSwipeAction(
+            label: l10n.commentsDelete,
+            icon: AppSymbols.delete,
+            isDestructive: true,
+            onPressed: () => unawaited(_confirmDelete(context)),
+          )
+        else if (viewerId != null)
+          AppSwipeAction(
+            label: l10n.reportCommentAction,
+            icon: AppSymbols.report,
+            tint: context.appColors.warning,
+            onPressed: report,
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: AppSpacing.xxs,
-              children: [
-                Row(
-                  spacing: AppSpacing.s,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        comment.authorName ?? l10n.socialUnknown,
-                        style: AppTextStyles.rowDetail.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    RelativeTimeBuilder(
-                      date: comment.dateCreated,
-                      builder: (context, text) => Text(text, style: secondary),
-                    ),
-                  ],
-                ),
-                Text.rich(
-                  TextSpan(children: spans),
-                  style: AppTextStyles.rowDetail,
-                ),
-                Row(
-                  children: [
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: scheme.onSurfaceVariant,
-                        textStyle: AppTextStyles.label,
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(
-                          AppControlSize.row,
-                          AppControlSize.row,
-                        ),
-                      ),
-                      onPressed: () => cubit.replyPressed(comment),
-                      child: Text(l10n.commentsReply),
-                    ),
-                    if (isOwn) ...[
-                      const SizedBox(width: AppSpacing.m),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: context.appColors.danger,
-                          textStyle: AppTextStyles.label,
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(
-                            AppControlSize.row,
-                            AppControlSize.row,
+      ],
+      child: Padding(
+        padding: EdgeInsetsDirectional.fromSTEB(
+          AppSpacing.l + (isReply ? AppControlSize.thumbnail : 0),
+          AppSpacing.s,
+          AppSpacing.s,
+          0,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: AppSpacing.s,
+          children: [
+            UserAvatar(
+              imageUrl: comment.authorImageUrl,
+              size: AppControlSize.thumbnail,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: AppSpacing.xxs,
+                children: [
+                  Row(
+                    spacing: AppSpacing.s,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          comment.authorName ?? l10n.socialUnknown,
+                          style: AppTextStyles.rowDetail.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        onPressed: () => _confirmDelete(context),
-                        child: Text(l10n.commentsDelete),
                       ),
-                    ] else if (viewerId != null) ...[
-                      const SizedBox(width: AppSpacing.m),
+                      RelativeTimeBuilder(
+                        date: comment.dateCreated,
+                        builder: (context, text) =>
+                            Text(text, style: secondary),
+                      ),
+                    ],
+                  ),
+                  Text.rich(
+                    TextSpan(children: spans),
+                    style: AppTextStyles.rowDetail,
+                  ),
+                  Row(
+                    children: [
                       TextButton(
                         style: TextButton.styleFrom(
                           foregroundColor: scheme.onSurfaceVariant,
@@ -329,63 +337,85 @@ class _CommentRow extends StatelessWidget {
                             AppControlSize.row,
                           ),
                         ),
-                        onPressed: () => unawaited(
-                          showReportSheet(
-                            context,
-                            ReportedContent(
-                              type: ReportContentType.comment,
-                              id: comment.id,
-                              authorId: comment.authorId,
+                        onPressed: () => cubit.replyPressed(comment),
+                        child: Text(l10n.commentsReply),
+                      ),
+                      if (isOwn) ...[
+                        const SizedBox(width: AppSpacing.m),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: context.appColors.danger,
+                            textStyle: AppTextStyles.label,
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(
+                              AppControlSize.row,
+                              AppControlSize.row,
                             ),
                           ),
+                          onPressed: () => _confirmDelete(context),
+                          child: Text(l10n.commentsDelete),
                         ),
-                        child: Text(l10n.reportCommentAction),
-                      ),
+                      ] else if (viewerId != null) ...[
+                        const SizedBox(width: AppSpacing.m),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: scheme.onSurfaceVariant,
+                            textStyle: AppTextStyles.label,
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(
+                              AppControlSize.row,
+                              AppControlSize.row,
+                            ),
+                          ),
+                          onPressed: report,
+                          child: Text(l10n.reportCommentAction),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          Semantics(
-            label: isLiked ? l10n.commentsUnlike : l10n.commentsLike,
-            value: l10n.socialLikes(likes),
-            button: true,
-            excludeSemantics: true,
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: viewerId == null
-                  ? null
-                  : () async {
-                      if (!await cubit.likePressed(comment, viewerId)) {
-                        unawaited(HapticFeedback.heavyImpact());
-                      }
-                    },
-              child: SizedBox(
-                width: AppControlSize.row,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
-                  child: Column(
-                    children: [
-                      Icon(
-                        isLiked ? AppSymbols.heartFilled : AppSymbols.heart,
-                        color: isLiked
-                            ? scheme.primary
-                            : scheme.onSurfaceVariant,
-                        size: AppIconSize.small.of(context),
-                      ),
-                      if (likes > 0)
-                        Text(
-                          AppFormat.number(likes, locale: locale),
-                          style: secondary,
+            Semantics(
+              label: isLiked ? l10n.commentsUnlike : l10n.commentsLike,
+              value: l10n.socialLikes(likes),
+              button: true,
+              excludeSemantics: true,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: viewerId == null
+                    ? null
+                    : () async {
+                        if (!await cubit.likePressed(comment, viewerId)) {
+                          unawaited(HapticFeedback.heavyImpact());
+                        }
+                      },
+                child: SizedBox(
+                  width: AppControlSize.row,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
+                    child: Column(
+                      children: [
+                        Icon(
+                          isLiked ? AppSymbols.heartFilled : AppSymbols.heart,
+                          color: isLiked
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
+                          size: AppIconSize.small.of(context),
                         ),
-                    ],
+                        if (likes > 0)
+                          Text(
+                            AppFormat.number(likes, locale: locale),
+                            style: secondary,
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

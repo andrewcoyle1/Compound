@@ -153,31 +153,44 @@ class _PeopleListViewState extends State<PeopleListView> {
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
                   children: [
                     for (final user in people)
-                      UserRow(
-                        user: user,
-                        onPressed: () =>
-                            SocialNavigation.openProfile(context, user),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          spacing: AppSpacing.xs,
-                          children: [
-                            if (user.userId != circle.viewer?.userId)
-                              FollowButton(
-                                state: circle.followState(user.userId),
-                                onPressed: () => context.read<CircleBloc>().add(
-                                  CircleFollowPressed(user),
+                      // Swift's swipe to remove a follower, beside the
+                      // row's own button.
+                      AppSwipeActions(
+                        trailing: [
+                          if (request.canRemove && !state.removing)
+                            AppSwipeAction(
+                              label: l10n.socialRemove,
+                              icon: AppSymbols.delete,
+                              isDestructive: true,
+                              onPressed: () => _confirmRemove(user),
+                            ),
+                        ],
+                        child: UserRow(
+                          user: user,
+                          onPressed: () =>
+                              SocialNavigation.openProfile(context, user),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            spacing: AppSpacing.xs,
+                            children: [
+                              if (user.userId != circle.viewer?.userId)
+                                FollowButton(
+                                  state: circle.followState(user.userId),
+                                  onPressed: () => context
+                                      .read<CircleBloc>()
+                                      .add(CircleFollowPressed(user)),
                                 ),
-                              ),
-                            if (request.canRemove)
-                              IconButton(
-                                tooltip: l10n.socialRemove,
-                                color: context.appColors.danger,
-                                onPressed: state.removing
-                                    ? null
-                                    : () => _confirmRemove(user),
-                                icon: const Icon(AppSymbols.delete),
-                              ),
-                          ],
+                              if (request.canRemove)
+                                IconButton(
+                                  tooltip: l10n.socialRemove,
+                                  color: context.appColors.danger,
+                                  onPressed: state.removing
+                                      ? null
+                                      : () => _confirmRemove(user),
+                                  icon: const Icon(AppSymbols.delete),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                   ],

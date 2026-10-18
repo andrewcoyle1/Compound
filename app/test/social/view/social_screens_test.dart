@@ -275,6 +275,24 @@ void main() {
       expect(find.text('Hi @maya.chen'), findsNothing);
     });
 
+    testWidgets('swipes reply, report or delete', (tester) async {
+      await pump(
+        tester,
+        '/sessions/user1/user1-sample-session-push-b/comments',
+      );
+      await tester.drag(find.text('Great session! 💪'), const Offset(200, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(AppSymbols.reply));
+      await tester.pumpAndSettle();
+      expect(find.text('Replying to Charlie Nguyen'), findsOneWidget);
+
+      await tester.drag(find.text('Great session! 💪'), const Offset(-200, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(AppSymbols.report).last);
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsOneWidget);
+    });
+
     testWidgets('starts an empty thread', (tester) async {
       await pump(tester, '/sessions/user4/nothing/comments');
       expect(find.text('No Comments Yet'), findsOneWidget);

@@ -74,12 +74,12 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Nutrition | MealDetail | `MealLog/MealDetail` | M3 | done | #142, `/nutrition/meal/:mealId` |
 | Nutrition | MealItemAmountView | `MealLog/MealItemAmountView` | M3 | done | #126 (plate); #142 (timeline) |
 | Nutrition | NutritionLibraryPicker | `MealLog/NutritionLibraryPicker` | M3 | done | #126, #145, #152: Swift's six tabs in order |
-| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | done | #126 barcode mode; label mode (#152); torch (#180); on-device label OCR from a photo (#185): Vision on iOS, ML Kit on Android, not Swift's live scanner |
+| Nutrition | BarcodeScanner | `MealLog/NutritionLibraryPicker/BarcodeScanner` | M3 | done | #126 barcode mode; label mode (#152); torch (#180); on-device label OCR from a photo (#185): Vision on iOS, ML Kit on Android, not Swift's live scanner; Swift's offline pre-check (`ensureOnline`, #196) |
 | Nutrition | FoodItemQuickAdd | `MealLog/NutritionLibraryPicker/FoodItemQuickAdd` | M3 | done | #126 |
 | Nutrition | FoodItemSearch | `MealLog/NutritionLibraryPicker/FoodItemSearch` | M3 | done | #126; recipes (#145) |
 | Nutrition | FoodLibrary | `MealLog/NutritionLibraryPicker/FoodLibrary` | M3 | done | #126; Recipes / Foods / Favorites (#145) |
-| Nutrition | FoodPhotoScanner | `MealLog/NutritionLibraryPicker/FoodPhotoScanner` | M3 | done | #152, the AI tab (system camera from Take Photo, no live preview, by decision) |
-| Nutrition | MealDescribe | `MealLog/NutritionLibraryPicker/MealDescribe` | M3 | done | #152, the Describe tab |
+| Nutrition | FoodPhotoScanner | `MealLog/NutritionLibraryPicker/FoodPhotoScanner` | M3 | done | #152, the AI tab (system camera from Take Photo, no live preview, by decision); Swift's offline pre-check (`ensureOnline`, #196) |
+| Nutrition | MealDescribe | `MealLog/NutritionLibraryPicker/MealDescribe` | M3 | done | #152, the Describe tab; Swift's offline pre-check (`ensureOnline`, #196) |
 | Nutrition | RecipeAmount | `MealLog/RecipeAmount` | M3 | done | #145 |
 | Nutrition | NutritionOverview | `NutritionOverview` | M3 | done | #130, `/nutrition/overview` |
 | Nutrition | Recipes | `Recipes` | M3 | done | #145, `/nutrition/recipes` |
@@ -117,9 +117,9 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Profile | About | `Subviews/About` | M5 | done | #128; version and build (#166) |
 | Profile | Licences | `Subviews/About/Licences` | M5 | done | #128 (`LicensePage`) |
 | Profile | AppIcon | `Subviews/AppIcon` | M6 | done | #181: Compound's icon on iOS (light and dark) and Android (adaptive); no alternate-icon row, as Swift hides it (one icon); Android 13+ themed (monochrome) layer (#194) |
-| Profile | EditProfile | `Subviews/EditProfile` | M5 | done | #128; photo (#150) |
+| Profile | EditProfile | `Subviews/EditProfile` | M5 | done | #128; photo (#150); Swift's offline pre-check (`ensureOnline`, #196) |
 | Profile | DeleteAccount | `Subviews/EditProfile/DeleteAccount` | M5 | done | #128 ("Account Deleted" is a snack bar) |
-| Profile | EditUsername | `Subviews/EditProfile/EditUsername` | M5 | done | #131, `/username` |
+| Profile | EditUsername | `Subviews/EditProfile/EditUsername` | M5 | done | #131, `/username`; Swift's offline pre-check (`ensureOnline`, #196) |
 | Profile | CustomiseAnalytics | `Subviews/GeneralSettings/CustomiseAnalytics` | M5 | done | #128 |
 | Profile | Integrations | `Subviews/GeneralSettings/Integrations` | M5 | done | #151, `/profile/settings/integrations` |
 | Profile | Siri | `Subviews/GeneralSettings/Siri` | M6 | done | #187, `/profile/settings/siri`: the five App Shortcuts and what to say, Open Shortcuts (`shortcuts://`) for Swift's `ShortcutsLink`; iOS only |
@@ -158,12 +158,12 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Profile | TimerDuration | `Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration` | M5 | done | #128; rest ⓘ (#166) |
 | Profile | SmartProgressionSettings | `Subviews/TrainingSettings/WorkoutSettings/SmartProgressionSettings` | M5 | done | #128; ⓘ (#166) |
 | Profile | Tutorials | `Subviews/Tutorials` | M5 | dropped | decisions.md (#144): Swift hides the row; no tutorials exist |
-| Sharing | ShareToFollower | `ShareToFollower` | M5 | done | #148 (pushed dialog) |
+| Sharing | ShareToFollower | `ShareToFollower` | M5 | done | #148 (pushed dialog); Swift's offline pre-check (`ensureOnline`, #196) |
 | Sharing | SharedItem | `SharedItem` | M5 | done | #148, `/shares/:shareId` |
-| Social | Social | `Compound/Core/Social` | M5 | done | #131; bell and badges (#144); challenges and invites (#146) |
+| Social | Social | `Compound/Core/Social` | M5 | done | #131; bell and badges (#144); challenges and invites (#146); Swift's offline pre-check (`ensureOnline`, #196) |
 | Social | WeeklyGoal | `CircleGoals/WeeklyGoal` | M5 | done | #131 |
 | Social | SocialProfile | `SocialProfile` | M5 | done | #131; Share Profile (#146); Strava This Year (#151); Report and the Following line (#159) |
-| Social | FollowersList | `SocialProfile/FollowersList` | M5 | done | #131 |
+| Social | FollowersList | `SocialProfile/FollowersList` | M5 | done | #131; Swift's offline pre-check (`ensureOnline`, #196) |
 | Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | done | #131; Share Image and Share with Friends (#148); Save as Template and Report (#159); text Share with the web link (#179) |
 | Social | Comments | `WorkoutSessionRow/Comments` | M5 | done | #131; Report (#159) |
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | #90, five tabs, per-tab stacks, deep-link paths |
@@ -209,7 +209,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Training | WorkoutHistory | `Session/WorkoutHistory` | M3 | done | #93, `/training/history` |
 | Training | WorkoutNotes | `Session/WorkoutNotes` | M3 | done | #125 notes sheet |
 | Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | #93, #125, #147, #148, #151; editing, start time, duration and Delete (#162), Swift's full edit mode (#171); Copy Link (#179) |
-| Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | done | #125, #127 (`/workout`, Finish at); Gym Settings (#140); Workout Settings (#165); rest-complete sound (#172); iPad toolbar: pause, finish and notes on the bar from `AppContentWidth.twoColumns` (#181) |
+| Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | done | #125, #127 (`/workout`, Finish at); Gym Settings (#140); Workout Settings (#165); rest-complete sound (#172); iPad toolbar: pause, finish and notes on the bar from `AppContentWidth.twoColumns` (#181); a finished workout stays on the device until the server confirms it, unlike Swift (#196) |
 | Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | done | #138; Create Gym Profile (#140) |
 | Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | done | #138 |
 | Training | DefineWorkoutWrapper | `Workouts/CreateWorkout/DefineWorkoutWrapper` | M3 | done | #138 |
@@ -228,7 +228,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 |---|---|---|---|---|
 | Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | done | `auth_repository` (#86); Save Account links an anonymous account (#166); Apple on Android through Firebase's web flow (#191); Apple's button on both (#194) |
 | App Check | `AppCheckProviderFactory` | M1 | done | `main_development.dart`, debug token registered in M1; the production flavor isn't configured |
-| Offline data and sync | Sync engines | M1–M3 | done | Firestore cache + `writeLocally` (#111); no `ensureOnline` pre-checks (#146, #148, by decision) |
+| Offline data and sync | Sync engines | M1–M3 | done | Firestore cache + `writeLocally` (#111); Swift's `ensureOnline` pre-checks, at the same actions (`connectivity_repository`, #196); a finished workout stays on the device until the server confirms it (#196) |
 | Device-local preferences | `UserDefaults` | M5 | done | `device_store` on shared_preferences under Swift's keys (#170); review date and the editor's plates switch (#172) |
 | Per-exercise unit preferences | `ExerciseUnitPreferenceManager` | M3 | done | #163, on the device store (#170) |
 | Analytics events (Mixpanel, Firebase, Crashlytics) | `LogManager` | M3 | done | `analytics_repository` (#96) |

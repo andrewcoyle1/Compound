@@ -984,6 +984,41 @@ t("users/goals: target, rate and objective can be edited; the start cannot", asy
     await assertFails(updateDoc(goal, { goal_id: "other" }));
 });
 
+// The iOS app's save for a `ReplacesClearedFields` model: every declared field as a merge field,
+// a cleared one as deleteField(). The goal's frozen fields are written unchanged, so make no diff.
+t("users: a whole-model save clears fields and replaces maps, and the rules accept it", async () => {
+    const save = (path, data) => setDoc(doc(db(ALICE), path), data, { mergeFields: Object.keys(data) });
+    const read = async (path) => (await getDoc(doc(db(ALICE), path))).data();
+    const start = new Date(0);
+    await seed(`users/${ALICE}/goals/g`, {
+        user_id: ALICE, goal_id: "g", objective: { loseWeight: {} }, starting_weight_kg: 80,
+        target_weight_kg: 72, weekly_change_kg: 0.5, created_at: start, status: "active", flutter_only: 1,
+    });
+    await assertSucceeds(save(`users/${ALICE}/goals/g`, {
+        user_id: ALICE, goal_id: "g", objective: { gainWeight: {} }, starting_weight_kg: 80,
+        target_weight_kg: 85, weekly_change_kg: 0.25, created_at: start, status: "active", completed_at: deleteField(),
+    }));
+    const goal = await read(`users/${ALICE}/goals/g`);
+    assert.deepEqual(goal.objective, { gainWeight: {} });
+    assert.equal(goal.flutter_only, 1);
+
+    for (const [path, owned, cleared] of [
+        ["body_measurements/e", { id: "e", author_id: ALICE }, "weight_kg"],
+        ["logging_break/logging_break", { id: "logging_break", author_id: ALICE }, "end_date"],
+        ["exercise_settings/bench", { id: "bench", author_id: ALICE }, "note"],
+        ["workout_settings/workout_settings", { id: "workout_settings", author_id: ALICE }, "superset_transition_rest_seconds"],
+        ["nutrition_strategy_settings/nutrition_strategy_settings", { id: "nutrition_strategy_settings", author_id: ALICE }, "calculation_start_date"],
+    ]) {
+        await seed(`users/${ALICE}/${path}`, { ...owned, [cleared]: 1 });
+        await assertSucceeds(save(`users/${ALICE}/${path}`, { ...owned, [cleared]: deleteField() }));
+        assert.equal(cleared in await read(`users/${ALICE}/${path}`), false, path);
+    }
+
+    await seed(`users/${ALICE}/foods/f`, { ingredient_id: "f", author_id: ALICE, nutrients: { calories: 380, sodium_mg: 6 } });
+    await assertSucceeds(save(`users/${ALICE}/foods/f`, { ingredient_id: "f", author_id: ALICE, nutrients: { calories: 380 } }));
+    assert.deepEqual((await read(`users/${ALICE}/foods/f`)).nutrients, { calories: 380 });
+});
+
 t("users/goals: starting a new goal creates its own document", async () => {
     await seed(`users/${ALICE}/goals/${ALICE}`, { user_id: ALICE, starting_weight_kg: 80.6, status: "active" });
     await assertSucceeds(setDoc(doc(db(ALICE), `users/${ALICE}/goals/new-goal`), {

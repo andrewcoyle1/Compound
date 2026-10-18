@@ -99,21 +99,21 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Core/Profile` | 185 | 12,592 | Settings (behind the profile's gear) and every settings screen (training, nutrition, general, edit profile, legal) |
 | `Compound/Core/Sharing` | 8 | 526 | Share-to-follower and shared-item viewer |
 | `Compound/Core/TabBar` | 5 | 518 | Tab bar, DeepLink parsing, tab selection |
-| `Compound/Core/Training` | 270 | 26,650 | Training tab: workouts, tracker, programs, history, create flows |
+| `Compound/Core/Training` | 270 | 26,644 | Training tab: workouts, tracker, programs, history, create flows |
 | `Compound/Components` | 81 | 8,322 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
-| `Compound/Managers` | 311 | 39,260 | App-owned managers, models and services (see Managers table) |
+| `Compound/Managers` | 312 | 39,559 | App-owned managers, models and services (see Managers table) |
 | `Compound/Root` | 22 | 3,710 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
 | `Compound/Utilities` | 14 | 1,157 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
-| `Compound/Extensions` | 14 | 682 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
+| `Compound/Extensions` | 15 | 710 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
 | `Compound/SupportingFiles` | 318 | 10,255 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 781 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 263 | 2,614 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 366 | 107,554 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUnitTests` | 367 | 107,872 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 9 | 1,149 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
-| `functions` | 20 | 27,997 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
+| `functions` | 19 | 28,034 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 7 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 69 | 18,202 | Specs, reviews, audits, this map |
+| `docs` | 68 | 18,202 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
@@ -598,7 +598,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 **`CompoundUnitTests/Extensions`** (2): `CollectionAndStringExtensionTests`, `DateExtensionTests`
 
-**`CompoundUnitTests/Managers`** (32): `ABTestManagerTests`, `AIManagerTests`, `ActivityNotificationManagerTests`, `AdjustLastSetRepsIntentTests`, `AppIntentsTests`, `AppStateTests`, `CoachParityTests`, `HKWorkoutManagerPauseTests`, `HKWorkoutManagerRestAlertTests`, `HKWorkoutManagerRestTests`, `HealthKitManagerTests`, `ImageUploadManagerTests`, `LiveActivityEventNameTests`, `LiveActivityIntentHandlerTests`, `LiveActivityPhaseTests`, `LiveActivityPieceTests`, `LiveActivityScenarioTests`, `LiveActivitySetTargetLabelTests`, `PremiumAccessTests`, `PushManagerTests`, `PushPendingDeepLinkTests`, `ReportManagerTests`, `RestDurationRulesTests`, `RestOverAlertTests`, `RestOverMessageTests`, `StepsManagerTests`, `StravaManagerTests`, `StravaStrengthFileTests`, `WorkoutLocationTypeDescriptionTests`, `WorkoutRelaunchRecoveryTests`, `WorkoutSettingsDecodingTests`, `WorkoutSettingsLockScreenTests`
+**`CompoundUnitTests/Managers`** (33): `ABTestManagerTests`, `AIManagerTests`, `ActivityNotificationManagerTests`, `AdjustLastSetRepsIntentTests`, `AppIntentsTests`, `AppStateTests`, `ClearedFieldSaveTests`, `CoachParityTests`, `HKWorkoutManagerPauseTests`, `HKWorkoutManagerRestAlertTests`, `HKWorkoutManagerRestTests`, `HealthKitManagerTests`, `ImageUploadManagerTests`, `LiveActivityEventNameTests`, `LiveActivityIntentHandlerTests`, `LiveActivityPhaseTests`, `LiveActivityPieceTests`, `LiveActivityScenarioTests`, `LiveActivitySetTargetLabelTests`, `PremiumAccessTests`, `PushManagerTests`, `PushPendingDeepLinkTests`, `ReportManagerTests`, `RestDurationRulesTests`, `RestOverAlertTests`, `RestOverMessageTests`, `StepsManagerTests`, `StravaManagerTests`, `StravaStrengthFileTests`, `WorkoutLocationTypeDescriptionTests`, `WorkoutRelaunchRecoveryTests`, `WorkoutSettingsDecodingTests`, `WorkoutSettingsLockScreenTests`
 
 **`CompoundUnitTests/Managers/FirestoreCost`** (2): `DataAccessLogTests`, `FollowingQueriesTests`
 
@@ -744,7 +744,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [functions/index.js](functions/index.js) | 1182 |
 | [functions/index.test.js](functions/index.test.js) | 933 |
 | [functions/lib.js](functions/lib.js) | 979 |
-| [functions/rules.test.js](functions/rules.test.js) | 434 |
+| [functions/rules.test.js](functions/rules.test.js) | 471 |
 | [functions/scripts/coach-eval.js](functions/scripts/coach-eval.js) | 92 |
 | [functions/scripts/migrateEquipmentVariations.js](functions/scripts/migrateEquipmentVariations.js) | 177 |
 | [functions/scripts/migrateMesocycleNames.js](functions/scripts/migrateMesocycleNames.js) | 160 |

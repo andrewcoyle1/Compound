@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// Every image the apps show is loaded from the download URL saved with its document; a download
+// URL carries its own token and is served without these rules. So these rules decide who may
+// upload, replace, delete, list and read by path, and nothing the apps display depends on read.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    // A JPEG or other image under 10 MB. The apps upload JPEGs of at most 1280 px.
+    function isImage() {
+      return request.resource.contentType.matches('image/.+')
+        && request.resource.size < 10 * 1024 * 1024;
+    }
+    // Shared photos sit beside a top-level document that may not exist yet: both apps upload the
+    // photo before saving the document, and private foods and recipes live under the user instead.
+    // So the photo is the writer's unless a top-level document names someone else as its author.
+    function notSomeoneElses(collection, id) {
+      let path = /databases/(default)/documents/$(collection)/$(id);
+      return !firestore.exists(path) || firestore.get(path).data.author_id == request.auth.uid;
+    }
+
+    // A user's own files: profile picture (users/{uid}/profile), progress photos, workout
+    // template and gym images. Progress photos are body photos: only their owner reads them.
+    match /users/{uid}/{allPaths=**} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isImage();
+      allow delete: if isOwner(uid);
+    }
+
+    // The profile picture, readable by path to anyone signed in.
+    match /users/{uid}/profile {
+      allow read: if signedIn();
+    }
+
+    // Exercise, food and recipe photos, at the top level by id.
+    match /exercises/{id} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && isImage() && notSomeoneElses('exercise_templates', id);
+      allow delete: if signedIn() && notSomeoneElses('exercise_templates', id);
+    }
+    match /ingredient_templates/{id} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && isImage() && notSomeoneElses('ingredient_templates', id);
+      allow delete: if signedIn() && notSomeoneElses('ingredient_templates', id);
+    }
+    match /recipe_templates/{id} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && isImage() && notSomeoneElses('recipe_templates', id);
+      allow delete: if signedIn() && notSomeoneElses('recipe_templates', id);
+    }
+
+    // Everything else is closed. The older exercise_templates/, workout_templates/ and
+    // gym_profiles/ folders are no longer written; their files still load from saved URLs.
+  }
+}

@@ -10,7 +10,8 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-dialedin 'node --test rules.test.js'"
+    "test:rules": "firebase emulators:exec --only firestore --project demo-dialedin 'node --test rules.test.js'",
+    "test:storage-rules": "firebase emulators:exec --only firestore,storage --project demo-dialedin 'node --test storage.rules.test.js'"
   },
   "engines": {
     "node": "22"

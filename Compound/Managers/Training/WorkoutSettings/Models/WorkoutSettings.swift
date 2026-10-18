@@ -1,6 +1,6 @@
 import Foundation
 
-struct WorkoutSettings: DataSyncModelProtocol {
+struct WorkoutSettings: DataSyncModelProtocol, ReplacesClearedFields {
 
     var id: String = "workout_settings"
     var authorId: String
@@ -103,7 +103,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
     /// Global default rest duration in seconds. Used by the workout tracker.
     var defaultRestDurationSeconds: Int = 90
     
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case authorId = "author_id"
         case keepAlive = "keep_alive"
@@ -149,6 +149,50 @@ struct WorkoutSettings: DataSyncModelProtocol {
         WorkoutSettings(authorId: "mock_user_123")
     }
     
+}
+
+extension WorkoutSettings {
+    /// Every field but the author falls back to its default, so a document missing one — saved
+    /// before the field existed — still decodes. Decoded strictly, such a document vanished: the
+    /// screen showed defaults and the next save overwrote the user's settings with them.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(authorId: try container.decode(String.self, forKey: .authorId))
+        id = container.decode(.id, or: id)
+        keepAlive = container.decode(.keepAlive, or: keepAlive)
+        showWorkoutTimer = container.decode(.showWorkoutTimer, or: showWorkoutTimer)
+        showBodyweightContribution = container.decode(.showBodyweightContribution, or: showBodyweightContribution)
+        showOnLockScreen = container.decode(.showOnLockScreen, or: showOnLockScreen)
+        setPlanning = container.decode(.setPlanning, or: setPlanning)
+        exerciseAutoNext = container.decode(.exerciseAutoNext, or: exerciseAutoNext)
+        propagateChanges = container.decode(.propagateChanges, or: propagateChanges)
+        rirTracking = container.decode(.rirTracking, or: rirTracking)
+        addSmartWarmUps = container.decode(.addSmartWarmUps, or: addSmartWarmUps)
+        supersetAutoScroll = container.decode(.supersetAutoScroll, or: supersetAutoScroll)
+        useRestTimers = container.decode(.useRestTimers, or: useRestTimers)
+        restAfterLastWarmUp = container.decode(.restAfterLastWarmUp, or: restAfterLastWarmUp)
+        restBetweenExercises = container.decode(.restBetweenExercises, or: restBetweenExercises)
+        restBetweenSideSets = container.decode(.restBetweenSideSets, or: restBetweenSideSets)
+        supersetTransitionRestSeconds = container.decode(.supersetTransitionRestSeconds, or: supersetTransitionRestSeconds)
+        intraSetRestSeconds = container.decode(.intraSetRestSeconds, or: intraSetRestSeconds)
+        intraSetRestMyoSeconds = container.decode(.intraSetRestMyoSeconds, or: intraSetRestMyoSeconds)
+        intraSetRestPauseSeconds = container.decode(.intraSetRestPauseSeconds, or: intraSetRestPauseSeconds)
+        intraSetRestClusterSeconds = container.decode(.intraSetRestClusterSeconds, or: intraSetRestClusterSeconds)
+        restTimerPlaySound = container.decode(.restTimerPlaySound, or: restTimerPlaySound)
+        restTimerVibrate = container.decode(.restTimerVibrate, or: restTimerVibrate)
+        warmUpRestScaling = container.decode(.warmUpRestScaling, or: warmUpRestScaling)
+        betweenExercisesRestScaling = container.decode(.betweenExercisesRestScaling, or: betweenExercisesRestScaling)
+        sideSetRestScaling = container.decode(.sideSetRestScaling, or: sideSetRestScaling)
+        restDurationsByExerciseType = container.decode(.restDurationsByExerciseType, or: restDurationsByExerciseType)
+        defaultRestDurationSeconds = container.decode(.defaultRestDurationSeconds, or: defaultRestDurationSeconds)
+        previousWorkoutReference = container.decode(.previousWorkoutReference, or: previousWorkoutReference)
+        smartProgressionApplyInSession = container.decode(.smartProgressionApplyInSession, or: smartProgressionApplyInSession)
+        smartProgressionInitialLogFill = container.decode(.smartProgressionInitialLogFill, or: smartProgressionInitialLogFill)
+        smartProgressionAdjustmentMode = container.decode(.smartProgressionAdjustmentMode, or: smartProgressionAdjustmentMode)
+        amrapRaisesTarget = container.decode(.amrapRaisesTarget, or: amrapRaisesTarget)
+        amrapAddsWeightAtTarget = container.decode(.amrapAddsWeightAtTarget, or: amrapAddsWeightAtTarget)
+        amrapAddsWeight = container.decode(.amrapAddsWeight, or: amrapAddsWeight)
+    }
 }
 
 /// Which past session the tracker's "Prev" column and smart progression reason from.

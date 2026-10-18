@@ -14,8 +14,9 @@ typealias DocumentSyncEngine = SwiftfulDataManagers.DocumentSyncEngine
 typealias CollectionSyncEngine = SwiftfulDataManagers.CollectionSyncEngine
 typealias CollectionGroupSyncEngine = SwiftfulDataManagers.CollectionGroupSyncEngine
 typealias DataSyncModelProtocol = SwiftfulDataManagers.DataSyncModelProtocol
-typealias FirebaseRemoteDocumentService = SwiftfulDataManagersFirebase.FirebaseRemoteDocumentService
-typealias FirebaseRemoteCollectionService = SwiftfulDataManagersFirebase.FirebaseRemoteCollectionService
+// The app's own services, which wrap the package's to save `ReplacesClearedFields` models whole.
+typealias FirebaseRemoteDocumentService = FirestoreDocumentService
+typealias FirebaseRemoteCollectionService = FirestoreCollectionService
 typealias FirebaseRemoteCollectionGroupService = SwiftfulDataManagersFirebase.FirebaseRemoteCollectionGroupService
 typealias MockRemoteDocumentService = SwiftfulDataManagers.MockRemoteDocumentService
 typealias MockRemoteCollectionService = SwiftfulDataManagers.MockRemoteCollectionService

@@ -1,13 +1,13 @@
 import Foundation
 
-struct ExerciseSettingsModel: DataSyncModelProtocol {
+struct ExerciseSettingsModel: DataSyncModelProtocol, ReplacesClearedFields {
 
     var id: String           // exerciseTemplateId
     var authorId: String
     var note: String?
     var restDurationOverride: Int?
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case authorId = "author_id"
         case note

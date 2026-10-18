@@ -13,6 +13,8 @@ import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
+import '../../helpers/app_repositories.dart';
+
 /// The reminder offers end to end on the staging flavor's in-memory data:
 /// meal reminders on the first visit to Nutrition, the streak reminder on
 /// Today at a two-week streak, each once per device, the answer saved to
@@ -26,6 +28,8 @@ void main() {
   late InMemoryDeviceStore store;
 
   Widget app() => App(
+    socialRepository: emptySocialRepository(),
+    coachRepository: silentCoachRepository(),
     purchasesRepository: FakePurchasesRepository(),
     programRepository: InMemoryProgramRepository(),
     trainingLibraryRepository: InMemoryTrainingLibraryRepository(),

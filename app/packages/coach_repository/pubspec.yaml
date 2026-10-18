@@ -12,15 +12,13 @@ dependencies:
   cloud_functions: ^6.5.0
   compound_models:
     path: ../compound_models
-  # The staging flavor's Firestore: the fake coach writes chats as the
-  # function does, so staging runs the real repository over it.
-  fake_cloud_firestore: ^4.3.0
   flutter:
     sdk: flutter
   user_repository:
     path: ../user_repository
 
 dev_dependencies:
+  fake_cloud_firestore: ^4.3.0
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.5

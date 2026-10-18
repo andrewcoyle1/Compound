@@ -2,18 +2,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coach_repository/src/coach_chat_call.dart';
 import 'package:coach_repository/src/coach_repository.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:user_repository/user_repository.dart';
 
-/// A [CoachRepository] for the staging flavor: the real repository over an
-/// in-memory Firestore holding [signedInUid]'s sample chat (Swift
-/// `CoachChat.mocks`), answered by [stagingCoachChat].
+/// A [CoachRepository] for the staging flavor: the real repository over
+/// [firestore], an in-memory one (`FakeFirebaseFirestore`, which the staging
+/// entry point brings, so release builds never depend on it), given
+/// [signedInUid]'s sample chat (Swift `CoachChat.mocks`) and answered by
+/// [stagingCoachChat].
 Future<CoachRepository> inMemoryCoachRepository({
+  required FirebaseFirestore firestore,
   required UserRepository users,
   required DateTime now,
   String signedInUid = sampleUserId,
 }) async {
-  final firestore = FakeFirebaseFirestore();
   final asked = now.subtract(const Duration(days: 1));
   await firestore
       .doc('users/$signedInUid/coach_chats/chat-1')

@@ -62,7 +62,6 @@ import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
 import 'package:device_store/device_store.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -92,6 +91,13 @@ class const App({
   /// Subscriptions: whether the user is premium. Required, with no
   /// fallback, so an entry point can never grant premium by leaving it out.
   required final PurchasesRepository purchasesRepository,
+
+  /// Follows, the feed, likes and comments. Required, with no in-memory
+  /// default, so release builds do not carry `fake_cloud_firestore`.
+  required final SocialRepository socialRepository,
+
+  /// The AI coach. Required, as [socialRepository] is.
+  required final CoachRepository coachRepository,
   final AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
   // Empty and offline when left out, for tests that never log food.
   final FoodRepository? foodRepository,
@@ -130,10 +136,6 @@ class const App({
   /// Siri and Shortcuts (iOS); none when left out.
   final AppIntentsRepository? appIntentsRepository,
 
-  /// Follows, the feed, likes and comments; an empty in-memory world when
-  /// left out, for tests that never open Social.
-  final SocialRepository? socialRepository,
-
   /// Where photos are uploaded; in memory when left out.
   final ImageRepository? imageRepository,
 
@@ -147,10 +149,6 @@ class const App({
   /// The AI food scanners' callables; staging's canned answers when left
   /// out.
   final AiRepository? aiRepository,
-
-  /// The AI coach; one that answers nothing when left out, for tests that
-  /// never open it.
-  final CoachRepository? coachRepository,
 
   /// Apple Health or Health Connect; one that is never available when
   /// left out.
@@ -199,17 +197,7 @@ class const App({
         RepositoryProvider.value(value: trainingLibraryRepository),
         RepositoryProvider.value(value: analyticsRepository),
         RepositoryProvider.value(value: purchasesRepository),
-        RepositoryProvider<CoachRepository>(
-          create: (_) =>
-              coachRepository ??
-              CoachRepository(
-                firestore: FakeFirebaseFirestore(),
-                users: userRepository,
-                coachChat: (_, {chatId, context}) => Stream.error(
-                  const CoachException(CoachFailure.unavailable),
-                ),
-              ),
-        ),
+        RepositoryProvider.value(value: coachRepository),
         RepositoryProvider<FoodRepository>(
           create: (_) => foodRepository ?? InMemoryFoodRepository(),
         ),
@@ -272,15 +260,7 @@ class const App({
         RepositoryProvider<AppIntentsRepository>(
           create: (_) => appIntentsRepository ?? FakeAppIntentsRepository(),
         ),
-        RepositoryProvider<SocialRepository>(
-          create: (_) =>
-              socialRepository ??
-              SocialRepository(
-                firestore: FakeFirebaseFirestore(),
-                callFunction: (_, _) async => null,
-                users: userRepository,
-              ),
-        ),
+        RepositoryProvider.value(value: socialRepository),
         RepositoryProvider(
           create: (_) => TrainingSetupService(
             programs: programRepository,

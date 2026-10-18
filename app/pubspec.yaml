@@ -36,7 +36,6 @@ dependencies:
   device_store:
     path: packages/device_store
   equatable: ">=2.1.0 <4.0.0"
-  fake_cloud_firestore: ^4.3.0
   file_selector: ^1.1.0
   firebase_analytics: ^12.6.0
   firebase_app_check: ^0.4.8
@@ -104,6 +103,9 @@ dev_dependencies:
   bloc_lint: ^0.4.2
   bloc_test: ^10.0.0
   bloc_tools: ^0.1.0-dev.24
+  # Staging's in-memory Firestore, imported only by main_staging.dart, so the
+  # development and production builds never depend on it.
+  fake_cloud_firestore: ^4.3.0
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.5

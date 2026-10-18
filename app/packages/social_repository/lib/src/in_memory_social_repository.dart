@@ -1,23 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:social_repository/src/sample_social.dart';
 import 'package:social_repository/src/social_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
-/// A [SocialRepository] for the staging flavor: the real repository over an
-/// in-memory Firestore seeded with [sampleSocial], so every query, write and
-/// listener behaves as it does against Firestore, other users' documents
-/// included. The signed-in user's own profile stays in [users].
+/// A [SocialRepository] for the staging flavor: the real repository over
+/// [firestore], an in-memory one (`FakeFirebaseFirestore`, which the staging
+/// entry point brings, so release builds never depend on it) seeded here
+/// with [sampleSocial]. Every query, write and listener then behaves as it
+/// does against Firestore, other users' documents included. The signed-in
+/// user's own profile stays in [users].
 ///
 /// The two callables are played by [stagingCallFunction] for [signedInUid].
 Future<SocialRepository> inMemorySocialRepository({
+  required FirebaseFirestore firestore,
   required UserRepository users,
   required DateTime now,
   String signedInUid = sampleUserId,
 }) async {
-  final firestore = FakeFirebaseFirestore();
   for (final MapEntry(key: path, value: data) in sampleSocial(
     uid: signedInUid,
     now: now,

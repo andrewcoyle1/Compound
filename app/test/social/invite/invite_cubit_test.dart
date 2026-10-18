@@ -1,4 +1,5 @@
 import 'package:compound/social/invite/invite_cubit.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:social_repository/social_repository.dart';
@@ -17,6 +18,7 @@ void main() {
   setUp(() async {
     viewer = sampleUser(now: now);
     social = await inMemorySocialRepository(
+      firestore: FakeFirebaseFirestore(),
       users: InMemoryUserRepository(users: {sampleUserId: viewer}),
       now: now,
     );

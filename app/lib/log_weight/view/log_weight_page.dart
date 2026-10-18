@@ -79,7 +79,7 @@ class LogWeightView extends StatelessWidget {
             break;
         }
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           // Always shown, even when opened directly with nothing below.
           leading: CloseButton(onPressed: () => _dismiss(context)),

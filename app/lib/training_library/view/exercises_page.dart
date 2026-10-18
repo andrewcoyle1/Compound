@@ -45,7 +45,7 @@ class ExercisesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: Text(context.l10n.trainingExercisesRow)),
       body: SafeArea(
         bottom: false,

@@ -58,7 +58,7 @@ class WorkoutsView extends StatelessWidget {
       TrainingLibraryLoaded(:final library) => library,
       _ => null,
     };
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         actions: [
           IconButton(

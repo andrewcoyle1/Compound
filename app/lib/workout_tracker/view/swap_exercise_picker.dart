@@ -53,7 +53,7 @@ class SwapExercisePickerView extends StatelessWidget {
     final header = AppTextStyles.sectionTitle.copyWith(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: const CloseButton(),
         title: Text(l10n.swapExerciseTitle),

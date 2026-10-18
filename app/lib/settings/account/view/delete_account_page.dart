@@ -103,7 +103,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
       ),
       child: PopScope(
         canPop: !deleting,
-        child: Scaffold(
+        child: AppScaffold(
           appBar: AppBar(
             title: Text(l10n.settingsDeleteAccount),
             automaticallyImplyLeading: !deleting,

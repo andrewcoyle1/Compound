@@ -112,7 +112,7 @@ class CheckInView extends StatelessWidget {
                   current.status == WeeklyCheckInStatus.finished),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: CloseButton(
             onPressed: () {

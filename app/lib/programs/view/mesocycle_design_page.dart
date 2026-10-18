@@ -68,7 +68,7 @@ class _MesocycleDesignPageState extends State<MesocycleDesignPage> {
             .where((m) => m.id == widget.mesocycleId)
             .firstOrNull;
     if (app is! AppAuthenticated || mesocycle == null) {
-      return Scaffold(
+      return AppScaffold(
         appBar: AppBar(),
         body: programs.status == ProgramsStatus.loading
             ? const Center(child: CircularProgressIndicator.adaptive())
@@ -197,7 +197,7 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) unawaited(_closePressed(context));
         },
-        child: Scaffold(
+        child: AppScaffold(
           appBar: AppBar(
             leading: isEditing
                 ? IconButton(

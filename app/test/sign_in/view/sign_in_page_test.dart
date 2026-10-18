@@ -32,25 +32,21 @@ void main() {
       BlocProvider.value(value: cubit, child: const SignInView()),
     );
 
-    testWidgets('offers Google and no account, but not Apple off iOS', (
-      tester,
-    ) async {
-      await pump(tester);
-      expect(find.text('Continue with Apple'), findsNothing);
-
-      await tester.tap(find.text('Continue with Google'));
-      verify(cubit.signInWithGoogle).called(1);
-      await tester.tap(find.text('Continue without an account'));
-      verify(cubit.signInAnonymously).called(1);
-    });
-
-    testWidgets('offers Apple on iOS', (tester) async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      await pump(tester);
-      await tester.tap(find.text('Continue with Apple'));
-      verify(cubit.signInWithApple).called(1);
-      debugDefaultTargetPlatformOverride = null;
-    });
+    for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
+      testWidgets('offers Apple, Google and no account on ${platform.name}', (
+        tester,
+      ) async {
+        debugDefaultTargetPlatformOverride = platform;
+        await pump(tester);
+        await tester.tap(find.text('Continue with Apple'));
+        verify(cubit.signInWithApple).called(1);
+        await tester.tap(find.text('Continue with Google'));
+        verify(cubit.signInWithGoogle).called(1);
+        await tester.tap(find.text('Continue without an account'));
+        verify(cubit.signInAnonymously).called(1);
+        debugDefaultTargetPlatformOverride = null;
+      });
+    }
 
     testWidgets('disables the buttons while signing in', (tester) async {
       when(() => cubit.state).thenReturn(SignInStatus.inProgress);

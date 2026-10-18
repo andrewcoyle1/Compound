@@ -14,8 +14,8 @@ had listed, Swift's `ReminderOfferFlow`, which reopens Today, Nutrition and Loca
 
 | | done | partial | todo | dropped | total |
 |---|---|---|---|---|---|
-| Screen modules | 190 | 4 | 1 | 3 | 198 |
-| Platform features | 19 | 5 | 0 | 1 | 25 |
+| Screen modules | 191 | 3 | 1 | 3 | 198 |
+| Platform features | 20 | 4 | 0 | 1 | 25 |
 
 The open work is grouped under [Remaining work](#remaining-work) at the end: follow-up slices, what waits on the owner, and M6.
 
@@ -49,7 +49,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Analytics | NutritionTargetChart | `Subviews/NutritionTargetChart` | M4 | done | #137; Create Diet Plan (#154) |
 | Analytics | ProgressCarousel | `Subviews/ProgressCarousel` | M4 | done | #137; Weekly Workouts' program targets and Active Program toggle (#176) |
 | Analytics | WeighInConsistency | `Subviews/WeighInConsistency` | M4 | done | #137 |
-| Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | done | #133; month labels, weekday initials and press-and-hold readout (#168) |
+| Analytics | WorkoutConsistency | `Subviews/WorkoutConsistency` | M4 | done | #133; month labels, weekday initials and press-and-hold readout (#168), in Swift's floating callout (#194) |
 | AppView | App | `Compound/Core/AppView` | M1 | partial | redirect and shell (#86, #90), profile gate and launch retry (#116), push token, reminders and held links (#127), first-page inbox read (#144), subscription gate (#155), in-app activity banner (#172); widget snapshot on backgrounding and Live Activity buttons (#184) |
 | Challenges | ChallengeDetail | `ChallengeDetail` | M5 | done | #146, `/challenges/:challengeId` |
 | Challenges | CreateChallenge | `CreateChallenge` | M5 | done | #146, `/challenges/new` |
@@ -90,7 +90,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Nutrition | RecipeStart | `Recipes/RecipeStart` | M3 | done | #145 |
 | Nutrition | TimelineActions | `TimelineActions` | M3 | done | #142 |
 | Onboarding | Welcome | `0 - WelcomeView` | M3 | done | the sign-in page stands in (#86, #116); a non-premium user is held at `/subscribe` (#155) |
-| Onboarding | Auth | `2 - AuthView` | M3 | partial | `sign_in/` (#86): Google and anonymous; Apple shows on iOS only, so an Apple-only account can't sign in on Android |
+| Onboarding | Auth | `2 - AuthView` | M3 | done | `sign_in/` (#86): Apple, Google and anonymous; Apple on Android through Firebase's web flow (#191); Apple's button on both (#194) |
 | Onboarding | Subscription | `3 - Subscription` | M3 | done | #155, `/subscribe` (Why Subscribe) and `/subscribe/plans` |
 | Onboarding | NamePhoto | `4 - CompleteAccountSetup/1 - NamePhoto` | M3 | done | #116; photo (#161) |
 | Onboarding | Gender | `4 - CompleteAccountSetup/2 - Gender` | M3 | done | #116; Fill from Apple Health on iOS (#151) |
@@ -116,7 +116,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Profile | Settings | `Compound/Core/Profile` | M5 | done | #128, `/profile/settings`; Weight Goal and Nutrition Plan (#154), Subscription (#155), Save Account, Rate and Developer Settings (#166); Siri row, iOS only (#187) |
 | Profile | About | `Subviews/About` | M5 | done | #128; version and build (#166) |
 | Profile | Licences | `Subviews/About/Licences` | M5 | done | #128 (`LicensePage`) |
-| Profile | AppIcon | `Subviews/AppIcon` | M6 | done | #181: Compound's icon on iOS (light and dark) and Android (adaptive); no alternate-icon row, as Swift hides it (one icon) |
+| Profile | AppIcon | `Subviews/AppIcon` | M6 | done | #181: Compound's icon on iOS (light and dark) and Android (adaptive); no alternate-icon row, as Swift hides it (one icon); Android 13+ themed (monochrome) layer (#194) |
 | Profile | EditProfile | `Subviews/EditProfile` | M5 | done | #128; photo (#150) |
 | Profile | DeleteAccount | `Subviews/EditProfile/DeleteAccount` | M5 | done | #128 ("Account Deleted" is a snack bar) |
 | Profile | EditUsername | `Subviews/EditProfile/EditUsername` | M5 | done | #131, `/username` |
@@ -226,7 +226,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 
 | Feature | Swift | Milestone | Status | Flutter |
 |---|---|---|---|---|
-| Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | partial | `auth_repository` (#86); Save Account links an anonymous account (#166); Apple on iOS only, none on Android |
+| Sign in: Apple, Google, anonymous, account linking | SwiftfulAuthenticating | M1 | done | `auth_repository` (#86); Save Account links an anonymous account (#166); Apple on Android through Firebase's web flow (#191); Apple's button on both (#194) |
 | App Check | `AppCheckProviderFactory` | M1 | done | `main_development.dart`, debug token registered in M1; the production flavor isn't configured |
 | Offline data and sync | Sync engines | M1–M3 | done | Firestore cache + `writeLocally` (#111); no `ensureOnline` pre-checks (#146, #148, by decision) |
 | Device-local preferences | `UserDefaults` | M5 | done | `device_store` on shared_preferences under Swift's keys (#170); review date and the editor's plates switch (#172) |
@@ -248,7 +248,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Reporting and moderation | `ReportManager` | M5 | done | #159: comments, feed cards and profiles |
 | Haptics and sound effects | `HapticManager`, `SoundEffectManager` | M3 | done | haptics across slices; check-in weigh-in (#172); rest-complete sound over a method channel (#172) |
 | Spanish localisation, 100% | `Localizable.xcstrings` | M1 | done | `scripts/arb-spanish.py`, CI check |
-| iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | done | #181: every page route in a 700 pt column (`AppPageTransitionsTheme`), Today an `AppDashboard` (two columns from 740 pt), Today and Progress 1,100 pt (#103's grids kept) |
+| iPad and wide layouts | `ContentWidth`, `Dashboard` | M6 | done | #181: Today an `AppDashboard` (two columns from 740 pt), Today and Progress 1,100 pt (#103's grids kept); #194: every screen an `AppScaffold`, its app bar across the window and its body and bottom CTA in a 700 pt column |
 | Mac (Catalyst) | Catalyst | M6 | dropped | the owner dropped Mac for now (16 Oct 2026); a Flutter macOS build can be revisited later. The macOS folder was removed (#82) |
 | Methods & Sources (citations) | `Components/Science` | M4 | done | `science/method_info.dart`: all 31 (#154, #166) |
 
@@ -291,9 +291,9 @@ None left: label OCR (#185) and A/B tests (#186) closed the last two.
 - **Legal URLs and store ids:** publish the Terms of Service and Privacy Policy (the stores need
   working links on the paywall, #155) and the disclaimer's links (#116, #128); store ids for Rate to
   open the listing (#166).
-- **Sign in with Apple on Android:** an Apple Services ID and return URL in Apple Developer and
-  Firebase. Without it an account created with Apple on iOS can't sign in on Android (Auth, Sign in).
-- **Production flavor:** it throws at launch until the prod project is configured (#86); production
+- **Production flavor:** it throws at launch until the prod project is configured (#86); prod's
+  Apple provider already has its OAuth code flow (Services ID `com.andrewcoyle.compound.signin`), so
+  Sign in with Apple on Android needs nothing more there (#191); production
   must use RevenueCat, never the fake (#155); Play Console account and closed test before Android 1.0
   (plan, M3).
 - **Translations and wording to review:**
@@ -305,12 +305,12 @@ None left: label OCR (#185) and A/B tests (#186) closed the last two.
     barcode scanner on a device (#126); `NSPhotoLibraryUsageDescription` is English only (#150).
   - Edit Duplicate keeps the original's name; Swift has no "(Copy)" wording (#163).
 - **Design calls logged for review:** week paging instead of Swift's year-long calendar scroller
-  (#164); rolling chart windows instead of calendar periods, the readout in the header instead of a
-  floating callout, and touch-only readouts with no per-bucket screen-reader values (#168); strip
+  (#164); rolling chart windows instead of calendar periods, and touch-only readouts with no
+  per-bucket screen-reader values (#168; the readout is Swift's floating callout since #194); strip
   reordering by menu, not drag (#165); Developer Settings as a Settings row, not Today's toolbar
   (#166); the paywall gate not applied at every launch (#155).
-- **Brand assets** for `app_ui`: the share cards draw a glyph (#148), and the gym editor shows no
-  header without a photo (#161).
+- **Brand assets** for `app_ui`: the share cards show the app icon (`AppImages.appIcon`, #194); the
+  gym editor still shows no header without a photo (#161).
 - **FoodPackaging** stays `todo` until the public food database is switched on (#142).
 - **Swift `GoalManager` objective-merge bug** (#154): `updateGoal` merge-saves the whole goal, so
   changing a goal's objective in Swift stores two objective keys and the goal stops decoding in both

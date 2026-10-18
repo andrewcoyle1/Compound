@@ -116,7 +116,7 @@ class ProgressMetricView extends StatelessWidget {
           ],
         ),
       ),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(allData ? l10n.metricAllRecordedData : metric.title),
           actions: [

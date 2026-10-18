@@ -173,7 +173,7 @@ class ProgressPhotosView extends StatelessWidget {
               _alert(context, l10n.progressPhotosLoadFailed),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(l10n.progressPhotosTitle),
           actions: [

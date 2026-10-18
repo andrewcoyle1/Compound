@@ -180,7 +180,7 @@ class WorkoutTemplateDetailView extends StatelessWidget {
         DeleteWorkoutStatus.deleting;
     return BlocListener<DeleteWorkoutCubit, DeleteWorkoutStatus>(
       listener: (context, status) => unawaited(_deleted(context, status)),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           actions: [
             if (ownWorkout != null)

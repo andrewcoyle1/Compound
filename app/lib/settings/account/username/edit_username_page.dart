@@ -116,7 +116,7 @@ class _EditUsernameViewState extends State<EditUsernameView> {
           listener: _onFailure,
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(l10n.usernameTitle),
           actions: [

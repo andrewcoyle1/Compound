@@ -21,7 +21,7 @@ class LaunchPage extends StatelessWidget {
     final failed =
         state is AppAuthenticated &&
         state.profileStatus == AppProfileStatus.failure;
-    return Scaffold(
+    return AppScaffold(
       body: SafeArea(
         child: Center(
           child: failed

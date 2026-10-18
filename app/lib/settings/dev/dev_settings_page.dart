@@ -70,7 +70,7 @@ class DevSettingsView extends StatelessWidget {
     const gap = SizedBox(height: AppSpacing.xl);
     return OnDispose(
       onDispose: cubit.disappeared,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(l10n.devSettingsTitle)),
         body: SafeArea(
           child: ListView(

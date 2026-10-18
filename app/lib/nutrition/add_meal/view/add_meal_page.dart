@@ -198,7 +198,7 @@ class _PlateView extends StatelessWidget {
     final state = context.watch<AddMealBloc>().state;
     final meal = state.meal;
     final time = TimeOfDay.fromDateTime(meal.date.toLocal());
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         // Closing keeps the plate as a draft.
         leading: CloseButton(onPressed: () => _dismiss(context)),

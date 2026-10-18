@@ -133,7 +133,7 @@ class NutritionView extends StatelessWidget {
           ),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(l10n.tabNutrition),
           actions: [

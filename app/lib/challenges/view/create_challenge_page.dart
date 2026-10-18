@@ -128,7 +128,7 @@ class _CreateChallengeViewState extends State<CreateChallengeView> {
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) unawaited(_cancel());
         },
-        child: Scaffold(
+        child: AppScaffold(
           appBar: AppBar(
             leading: IconButton(
               tooltip: l10n.socialClose,

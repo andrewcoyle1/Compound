@@ -38,7 +38,7 @@ class MuscleGroupsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(l10n.progressMuscleGroups),
         actions: [

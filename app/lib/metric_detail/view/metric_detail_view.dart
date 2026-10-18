@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
 import 'package:compound/metric_detail/view/metric_chart.dart';
+import 'package:compound/widgets/chart_callout.dart';
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:intl/intl.dart' show DateFormat;
 
@@ -255,9 +256,10 @@ class _RangePicker extends StatelessWidget {
 /// The header (each series' average over the window, and its dates) and
 /// the plot, read to a screen reader as one summary. Swiping pages to the
 /// window before or after, which screen readers get as actions; pressing
-/// and holding swaps the header for the bucket under the finger (Swift
-/// QuickCharts' scrolling and selection). Windows stay rolling, as #98 set
-/// them: a page is the range's length earlier.
+/// and holding shows the bucket under the finger in a callout over the
+/// header (Swift QuickCharts' scrolling, selection and `chartCallout`).
+/// Windows stay rolling, as #98 set them: a page is the range's length
+/// earlier.
 class _Chart extends StatefulWidget {
   const new({
     required this.title,
@@ -368,28 +370,16 @@ class _ChartState extends State<_Chart> {
     );
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final selected = _selected;
-    final header = selected == null
-        ? [
-            Text(
-              (series.first.isTotal
-                      ? l10n.metricDailyAverage
-                      : l10n.metricAverage)
-                  .toUpperCase(),
-              style: AppTextStyles.label.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-            for (final a in averages)
-              _SeriesLine(series: a.series, value: value(a.average)),
-            Text('$from – $to', style: secondary),
-          ]
-        : [
-            for (final s in visible)
-              if (s.points.where((p) => p.date == selected).firstOrNull
-                  case final point?)
-                _SeriesLine(series: s, value: value(point.value)),
-            Text(bucketText(range, selected, locale), style: secondary),
-          ];
+    final header = [
+      Text(
+        (series.first.isTotal ? l10n.metricDailyAverage : l10n.metricAverage)
+            .toUpperCase(),
+        style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
+      ),
+      for (final a in averages)
+        _SeriesLine(series: a.series, value: value(a.average)),
+      Text('$from – $to', style: secondary),
+    ];
     return Semantics(
       container: true,
       label: summary,
@@ -412,7 +402,16 @@ class _ChartState extends State<_Chart> {
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: AppSpacing.xs,
             children: [
-              ...header,
+              // Hidden under the callout while a bucket is picked, keeping
+              // its room so nothing moves (Swift's `RangeHeader`).
+              Opacity(
+                opacity: selected == null ? 1 : 0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.xs,
+                  children: header,
+                ),
+              ),
               const SizedBox(height: AppSpacing.s),
               if (averages.isEmpty)
                 SizedBox(
@@ -433,6 +432,24 @@ class _ChartState extends State<_Chart> {
                   },
                   selected: selected,
                   onSelected: (date) => setState(() => _selected = date),
+                  callout: selected == null
+                      ? null
+                      : ChartCalloutSummary(
+                          rows: [
+                            for (final s in visible)
+                              if (s.points
+                                      .where((p) => p.date == selected)
+                                      .firstOrNull
+                                  case final point?)
+                                (
+                                  name: s.label,
+                                  color: s.color,
+                                  value: value(point.value),
+                                ),
+                          ],
+                          footer: bucketText(range, selected, locale),
+                          noData: l10n.progressNoData,
+                        ),
                 ),
             ],
           ),
@@ -442,7 +459,7 @@ class _ChartState extends State<_Chart> {
   }
 }
 
-/// A bucket's dates under the readout (QuickCharts' `bucketDescription`):
+/// A bucket's dates in the callout (QuickCharts' `bucketDescription`):
 /// "Sat, Sep 19" for a day, "Sep 14 – 20" for a week, "September 2026" for
 /// a month.
 String bucketText(MetricRange range, DateTime bucket, String locale) {

@@ -96,7 +96,7 @@ class _EditProfileViewState extends State<EditProfileView> {
             break;
         }
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: CloseButton(
             onPressed: () {

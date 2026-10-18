@@ -52,7 +52,7 @@ class FoodsView extends StatelessWidget {
       unawaited(CreateFoodPage.show(context));
     }
 
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(l10n.foodsTitle),
         actions: [

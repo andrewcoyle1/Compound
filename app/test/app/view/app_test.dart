@@ -564,8 +564,10 @@ void main() {
       expect(find.widgetWithText(AppBar, 'Social'), findsOneWidget);
     });
 
-    testWidgets('on a wide window, centres each screen in a readable column '
-        'and gives Today a dashboard', (tester) async {
+    testWidgets('on a wide window, spans the app bar across it, centres '
+        'each screen in a readable column and gives Today a dashboard', (
+      tester,
+    ) async {
       tester.useSize(const Size(1366, 1024));
       await tester.pumpWidget(
         App(
@@ -587,7 +589,28 @@ void main() {
       await tester.pumpAndSettle();
       double barWidth(String title) =>
           tester.getSize(find.widgetWithText(AppBar, title)).width;
-      expect(barWidth('Today'), AppContentWidth.dashboard);
+      // The width a screen's content gets: its column.
+      double columnWidth(String title) {
+        final column = find
+            .descendant(
+              of: find.ancestor(
+                of: find.widgetWithText(AppBar, title),
+                matching: find.byType(Scaffold),
+              ),
+              matching: find.byType(AppReadableWidth),
+            )
+            .first;
+        return tester
+            .getSize(
+              find
+                  .descendant(of: column, matching: find.byType(MediaQuery))
+                  .first,
+            )
+            .width;
+      }
+
+      expect(barWidth('Today'), 1366);
+      expect(columnWidth('Today'), AppContentWidth.dashboard);
 
       await tester.tap(
         find.descendant(
@@ -596,7 +619,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(barWidth('Training'), AppContentWidth.readable);
+      expect(barWidth('Training'), 1366);
+      expect(columnWidth('Training'), AppContentWidth.readable);
       // The tab bar still spans the window.
       expect(tester.getSize(find.byType(NavigationBar)).width, 1366);
     });

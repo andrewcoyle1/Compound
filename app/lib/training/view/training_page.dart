@@ -85,7 +85,7 @@ class TrainingView extends StatelessWidget {
     );
     final today = startOfDay(DateTime.now());
     void open(DateTime day) => unawaited(openWorkoutsOn(context, day));
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(l10n.tabTraining),
         actions: [

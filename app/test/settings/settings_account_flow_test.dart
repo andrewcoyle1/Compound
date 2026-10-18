@@ -140,6 +140,32 @@ void main() {
     );
   });
 
+  // Flutter tests run as Android, where Apple goes through Firebase's web
+  // flow; the staging fake links it the same way.
+  testWidgets('an anonymous account is saved with Apple on Android', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await go(tester, '/profile/settings');
+    await tap(tester, find.text('Save Account'));
+    await tap(tester, find.text('Continue with Apple'));
+
+    expect(find.text('Save Account'), findsNothing);
+    expect(find.text('Apple'), findsOneWidget);
+    final saved = await users.watchUser(anonymous.uid).first;
+    expect(saved?.isAnonymous, isFalse);
+    expect(saved?.authProviders, ['apple']);
+    expect(
+      analytics.names,
+      containsAllInOrder([
+        'AuthView_Appear',
+        'Auth_AppleAuth_Start',
+        'Auth_AppleAuth_Success',
+        'AuthView_Disappear',
+      ]),
+    );
+  });
+
   testWidgets('Rate Compound asks the store, About states the version, and '
       "Methods & Sources lists Swift's 31", (tester) async {
     await pumpApp(tester);

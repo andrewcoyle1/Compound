@@ -59,7 +59,7 @@ class const NameWorkoutPage({final String? workoutId, super.key})
         builder: (context, state) {
           final workoutId = this.workoutId;
           if (workoutId != null && state is! TrainingLibraryLoaded) {
-            return Scaffold(
+            return AppScaffold(
               appBar: AppBar(),
               body: const Center(child: CircularProgressIndicator.adaptive()),
             );
@@ -133,7 +133,7 @@ class _NameWorkoutViewState extends State<NameWorkoutView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<WorkoutWizardCubit>().state;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           key: const Key('NameWorkout.close'),
@@ -238,7 +238,7 @@ class _ChooseGymProfileViewState extends State<ChooseGymProfileView> {
       TrainingLibraryLoaded(:final library) => library.gyms,
       _ => const <GymProfileModel>[],
     };
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: Text(l10n.editorChooseGym)),
       body: SafeArea(
         bottom: false,
@@ -346,7 +346,7 @@ class _DefineWorkoutWrapperViewState extends State<DefineWorkoutWrapperView> {
           (current.status == WorkoutWizardStatus.saved ||
               current.status == WorkoutWizardStatus.failed),
       listener: (context, state) => unawaited(_done(context, state)),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(state.name)),
         body: SafeArea(
           bottom: false,

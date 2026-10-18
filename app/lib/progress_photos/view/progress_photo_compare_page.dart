@@ -49,7 +49,7 @@ class _ProgressPhotoComparePageState extends State<ProgressPhotoComparePage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final comparison = widget.comparison;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: Text(l10n.progressPhotosCompare)),
       body: SafeArea(
         child: Align(

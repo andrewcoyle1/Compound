@@ -75,7 +75,7 @@ class NutritionOverviewView extends StatelessWidget {
           }),
         );
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(l10n.nutritionOverviewTitle)),
         body: state.failed
             ? Center(

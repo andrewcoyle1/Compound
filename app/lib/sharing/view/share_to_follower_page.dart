@@ -94,7 +94,7 @@ class _ShareToFollowerViewState extends State<ShareToFollowerView> {
           previous.status != current.status ||
           previous.failureId != current.failureId,
       listener: _onStatus,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: IconButton(
             tooltip: l10n.socialClose,

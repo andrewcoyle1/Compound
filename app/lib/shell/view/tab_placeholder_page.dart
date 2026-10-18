@@ -15,7 +15,7 @@ class TabPlaceholderPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(tab.label(l10n)),
         actions: const [ProfileButton()],

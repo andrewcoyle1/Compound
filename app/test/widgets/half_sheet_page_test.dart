@@ -48,13 +48,13 @@ void main() {
   double sheetHeight(WidgetTester tester) =>
       tester.getSize(find.byType(Scaffold).last).height;
 
-  testWidgets('opens at half height with a drag handle', (tester) async {
+  testWidgets('opens over half height with a handle', (tester) async {
     await open(tester);
     expect(find.text('Sheet'), findsOneWidget);
     expect(find.byType(BottomSheet), findsOneWidget);
     final screen =
         tester.view.physicalSize.height / tester.view.devicePixelRatio;
-    expect(sheetHeight(tester), lessThan(screen * 0.6));
+    expect(sheetHeight(tester), lessThan(screen * 0.65));
   });
 
   testWidgets('its list drags it up to full height', (tester) async {

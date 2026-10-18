@@ -5089,10 +5089,6 @@
     "@addMealAddFood": {
         "description": "Opens the food picker"
     },
-    "addMealRemoveItem": "Remove",
-    "@addMealRemoveItem": {
-        "description": "Removes an item from the plate"
-    },
     "nutritionLogMeal": "Log Meal",
     "@nutritionLogMeal": {
         "description": "Opens the meal logger"
@@ -8494,8 +8490,6 @@
     "@gymAddMachineMenu": {},
     "gymAddMachine": "Add Machine",
     "@gymAddMachine": {},
-    "gymMachineActions": "Machine actions",
-    "@gymMachineActions": {},
     "gymDuplicate": "Duplicate",
     "@gymDuplicate": {},
     "gymDeleteMachineTitle": "Delete Machine?",

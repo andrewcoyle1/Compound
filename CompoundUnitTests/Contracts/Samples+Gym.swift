@@ -13,8 +13,6 @@
 
 import Foundation
 import FirebaseFirestore
-import Testing
-import UIKit
 @testable import Compound
 
 // MARK: - Equipment items
@@ -284,19 +282,12 @@ enum GymCatalogueContract {
 
     /// Every list of a new profile. The catalogue gives each nested entry a random id, made per
     /// launch, so each becomes `<item id>_<n>`, references to it included; nothing else changes.
-    ///
-    /// Band colours are system colours turned into hex as the profile is made, so they follow the
-    /// simulator's appearance. The catalogue is recorded in dark, which the fixture and the Dart copy
-    /// hold; pinning it keeps a light-mode simulator (CI's default) from failing the contract.
+
     static func catalogue() throws -> [String: [[String: Any]]] {
-        var made: GymProfileModel?
-        UITraitCollection(userInterfaceStyle: .dark).performAsCurrent {
-            made = GymProfileModel(
-                id: "catalogue", authorId: "catalogue",
-                dateCreated: Date(timeIntervalSince1970: 0), dateModified: Date(timeIntervalSince1970: 0)
-            )
-        }
-        let profile = try #require(made)
+        let profile = GymProfileModel(
+            id: "catalogue", authorId: "catalogue",
+            dateCreated: Date(timeIntervalSince1970: 0), dateModified: Date(timeIntervalSince1970: 0)
+        )
         let encoded = try Firestore.Encoder().encode(profile)
         var lists: [String: [[String: Any]]] = [:]
         for key in listKeys {

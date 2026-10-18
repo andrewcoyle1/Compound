@@ -26,8 +26,8 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Components | AuthorHeader | `Views/User` | M2 | done | #131, social feed and profile |
 | Analytics | Analytics | `Compound/Core/Analytics` | M4 | done | #103, #130, #133, #137 (`progress/`) |
 | Analytics | BodyMetrics | `Subviews/BodyMetrics` | M4 | done | #137; Photos row (#150); Sync from Apple Health on Visual Body Fat (#151) |
-| Analytics | LogMeasurement | `Subviews/BodyMetrics/LogMeasurement` | M4 | done | #137, `/log-measurement/:kind` |
-| Analytics | LogWeight | `Subviews/BodyMetrics/LogMeasurement/LogWeightView` | M4 | done | #106; export to Health first (#151) |
+| Analytics | LogMeasurement | `Subviews/BodyMetrics/LogMeasurement` | M4 | done | #137, `/log-measurement/:kind`; half sheet (#195) |
+| Analytics | LogWeight | `Subviews/BodyMetrics/LogMeasurement/LogWeightView` | M4 | done | #106; export to Health first (#151); half sheet (#195) |
 | Analytics | ProgressPhotos | `Subviews/BodyMetrics/ProgressPhotos` | M4 | done | #150, `/progress/body-metrics/photos` and compare |
 | Analytics | ScaleWeight | `Subviews/BodyMetrics/ScaleWeight` | M4 | done | #98, #106, #137; Health import on appear (#151) |
 | Analytics | ExerciseAnalytics | `Subviews/ExerciseAnalytics` | M4 | done | #133; each exercise's own unit (#163) |
@@ -53,11 +53,11 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | AppView | App | `Compound/Core/AppView` | M1 | partial | redirect and shell (#86, #90), profile gate and launch retry (#116), push token, reminders and held links (#127), first-page inbox read (#144), subscription gate (#155), in-app activity banner (#172); widget snapshot on backgrounding and Live Activity buttons (#184) |
 | Challenges | ChallengeDetail | `ChallengeDetail` | M5 | done | #146, `/challenges/:challengeId` |
 | Challenges | CreateChallenge | `CreateChallenge` | M5 | done | #146, `/challenges/new` |
-| Coach | Coach | `Compound/Core/Coach` | M5 | done | #147, `/coach` and `/coach-chats`; See Plans opens the paywall (#155) |
+| Coach | Coach | `Compound/Core/Coach` | M5 | done | #147, `/coach` and `/coach-chats`; See Plans opens the paywall (#155); relative chat times, swipe to delete (#195) |
 | DevSettings | DevSettings | `Compound/Core/DevSettings` | M5 | done | #166, a Settings row outside production; A/B overrides, kept on the device (#186); seeding resets not needed (#166); share-card export through the share sheet (#177) |
-| Notifications | Notifications | `Compound/Core/Notifications` | M5 | done | #144, `/social/notifications`; share and challenge rows open (#146, #148); delivered pushes cleared on opening (#172) |
+| Notifications | Notifications | `Compound/Core/Notifications` | M5 | done | #144, `/social/notifications`; share and challenge rows open (#146, #148); delivered pushes cleared on opening (#172); swipe actions (#195) |
 | Notifications | NotificationSettings | `NotificationSettings` | M5 | done | #128; permission prompt (#144); reminders applied by #127 |
-| Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | done | #95, #126, #130, #142, #145, #147, #151; calendar header (#164); Customize Food Log row (#167); meal-reminder offer on the first visit (#176) |
+| Nutrition | Nutrition | `Compound/Core/Nutrition` | M3 | done | #95, #126, #130, #142, #145, #147, #151; calendar header (#164); Customize Food Log row (#167); meal-reminder offer on the first visit (#176); swipe actions: Log Again, Meal, Delete (#195) |
 | Nutrition | CheckIn | `CheckIn` | M3 | done | #130, `/check-in`; Ask Coach (#147) |
 | Nutrition | IngredientListBuilder | `Components/IngredientListBuilder` | M3 | done | #142, #145 |
 | Nutrition | MealAccessory | `Components/MealAccessory` | M3 | done | #126; over every tab, hidden during a workout (#167); draft kept on the device per account (#170) |
@@ -69,7 +69,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Nutrition | FoodPackaging | `Foods/CreateFood/FoodPackaging` | M3 | todo | deferred by #142: unreachable in Swift (public contribution switched off), photos only |
 | Nutrition | PortionDefinition | `Foods/CreateFood/PortionDefinition` | M3 | done | #142 (the serving option, the only one Swift offers) |
 | Nutrition | FoodDetail | `Foods/FoodDetail` | M3 | done | #142, `/nutrition/foods/:foodId`; picture (#161) |
-| Nutrition | AddMeal | `MealLog/AddMeal` | M3 | done | #126, `/log-meal`; Show all nutrients (#167); draft on the device (#170) |
+| Nutrition | AddMeal | `MealLog/AddMeal` | M3 | done | #126, `/log-meal`; Show all nutrients (#167); draft on the device (#170); swipe Delete and Edit (#195) |
 | Nutrition | IngredientAmount | `MealLog/IngredientAmount` | M3 | done | #126 (amount sheet) |
 | Nutrition | MealDetail | `MealLog/MealDetail` | M3 | done | #142, `/nutrition/meal/:mealId` |
 | Nutrition | MealItemAmountView | `MealLog/MealItemAmountView` | M3 | done | #126 (plate); #142 (timeline) |
@@ -83,7 +83,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Nutrition | RecipeAmount | `MealLog/RecipeAmount` | M3 | done | #145 |
 | Nutrition | NutritionOverview | `NutritionOverview` | M3 | done | #130, `/nutrition/overview` |
 | Nutrition | Recipes | `Recipes` | M3 | done | #145, `/nutrition/recipes` |
-| Nutrition | CreateRecipe | `Recipes/CreateRecipe` | M3 | done | #145, `/create-recipe` |
+| Nutrition | CreateRecipe | `Recipes/CreateRecipe` | M3 | done | #145, `/create-recipe`; swipe to delete ingredients (#195) |
 | Nutrition | RecipeIngredientAmount | `Recipes/CreateRecipe/RecipeIngredientAmount` | M3 | done | #145 |
 | Nutrition | RecipePreparation | `Recipes/CreateRecipe/RecipePreparation` | M3 | done | #145; photo (#161) |
 | Nutrition | RecipeDetail | `Recipes/RecipeDetail` | M3 | done | #145, `/nutrition/recipes/:id`; picture (#161) |
@@ -134,8 +134,8 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Profile | TimelineFoodTiles | `Subviews/NutritionSettings/FoodLogSettings/TimelineFoodTiles` | M5 | done | #128 |
 | Profile | StrategySettings | `Subviews/NutritionSettings/StrategySettings` | M5 | done | #128 |
 | Profile | ExerciseAssessment | `Subviews/TrainingSettings/ExerciseAssessment` | M5 | dropped | decisions.md (#144): Swift hides the row; the assessment unlocks nothing |
-| Profile | GymProfiles | `Subviews/TrainingSettings/GymProfiles` | M5 | done | #140, `/profile/settings/gym-profiles` |
-| Profile | GymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile` | M5 | done | #140; gym photo and equipment thumbnails (#161) |
+| Profile | GymProfiles | `Subviews/TrainingSettings/GymProfiles` | M5 | done | #140, `/profile/settings/gym-profiles`; swipe Delete and Favorite (#195) |
+| Profile | GymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile` | M5 | done | #140; gym photo and equipment thumbnails (#161); machine swipe actions (#195) |
 | Profile | AddGymMachine | `Subviews/TrainingSettings/GymProfiles/GymProfile/AddGymMachine` | M5 | done | #140 |
 | Profile | CreateGymProfile | `Subviews/TrainingSettings/GymProfiles/GymProfile/CreateGymProfile` | M5 | done | #140; also onboarding and Choose Gym Profile |
 | Profile | EditBand | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand` | M5 | done | #140, shared editor |
@@ -155,7 +155,7 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Profile | EditWeightRange | `Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange` | M5 | done | #140 |
 | Profile | WorkoutSettings | `Subviews/TrainingSettings/WorkoutSettings` | M5 | done | #128 |
 | Profile | RestTimerSettings | `Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings` | M5 | done | #128 |
-| Profile | TimerDuration | `Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration` | M5 | done | #128; rest ⓘ (#166) |
+| Profile | TimerDuration | `Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration` | M5 | done | #128; rest ⓘ (#166); swipe to remove (#195) |
 | Profile | SmartProgressionSettings | `Subviews/TrainingSettings/WorkoutSettings/SmartProgressionSettings` | M5 | done | #128; ⓘ (#166) |
 | Profile | Tutorials | `Subviews/Tutorials` | M5 | dropped | decisions.md (#144): Swift hides the row; no tutorials exist |
 | Sharing | ShareToFollower | `ShareToFollower` | M5 | done | #148 (pushed dialog) |
@@ -163,9 +163,9 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Social | Social | `Compound/Core/Social` | M5 | done | #131; bell and badges (#144); challenges and invites (#146) |
 | Social | WeeklyGoal | `CircleGoals/WeeklyGoal` | M5 | done | #131 |
 | Social | SocialProfile | `SocialProfile` | M5 | done | #131; Share Profile (#146); Strava This Year (#151); Report and the Following line (#159) |
-| Social | FollowersList | `SocialProfile/FollowersList` | M5 | done | #131 |
+| Social | FollowersList | `SocialProfile/FollowersList` | M5 | done | #131; swipe to remove (#195) |
 | Social | WorkoutSessionRow | `WorkoutSessionRow` | M5 | done | #131; Share Image and Share with Friends (#148); Save as Template and Report (#159); text Share with the web link (#179) |
-| Social | Comments | `WorkoutSessionRow/Comments` | M5 | done | #131; Report (#159) |
+| Social | Comments | `WorkoutSessionRow/Comments` | M5 | done | #131; Report (#159); relative times, swipe actions (#195) |
 | TabBar | TabBar | `Compound/Core/TabBar` | M1 | done | #90, five tabs, per-tab stacks, deep-link paths |
 | Today | Today | `Compound/Core/Today` | M2 | done | #101, #133, #134, #147, #151; planned and rest-day checklist states, step goal and social pulse (#164); streak-reminder offer at a two-week streak, step goal saved by field (#176) |
 | Today | WeeklyReview | `WeeklyReview` | M2 | done | #133, `/today/weekly-review`; share card (#148), From Strava (#151), Ask Coach (#147) |
@@ -176,13 +176,13 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Training | CreateExercise | `Exercises/CreateExercise` | M3 | done | #141, `/create-exercise` |
 | Training | EquipmentPicker | `Exercises/CreateExercise/EquipmentPicker` | M3 | done | #141 |
 | Training | ExerciseEquipment | `Exercises/CreateExercise/ExerciseEquipment` | M3 | done | #141 |
-| Training | ExerciseSave | `Exercises/CreateExercise/ExerciseSave` | M3 | done | #141 |
+| Training | ExerciseSave | `Exercises/CreateExercise/ExerciseSave` | M3 | done | #141; a new exercise comes back ticked in the picker (#195) |
 | Training | FinalExerciseDetails | `Exercises/CreateExercise/FinalExerciseDetails` | M3 | done | #141 |
 | Training | MuscleGroupPicker | `Exercises/CreateExercise/MuscleGroupPicker` | M3 | done | #141 |
 | Training | ExerciseListBuilder | `Exercises/ExerciseListBuilder` | M3 | done | #120 (filters); Create Exercise row (#141) |
 | Training | ExerciseModelDetail | `Exercises/ExerciseModelDetail` | M3 | done | #120 About and History; Delete (#141); Ask Coach (#147); Charts and Records (#167) |
 | Training | Exercises | `Exercises/Exercises` | M3 | done | #120, `/training/exercises`; Create Exercise (#141) |
-| Training | ActiveMesocycle | `Programs/ActiveMesocycle` | M3 | done | #134, #136; Ask Coach (#147) |
+| Training | ActiveMesocycle | `Programs/ActiveMesocycle` | M3 | done | #134, #136; Ask Coach (#147); swipe actions (#195) |
 | Training | CreateMesocycle | `Programs/CreateMesocycle` | M3 | done | #136; onboarding's Build My Own (#138) |
 | Training | EditDayOrder | `Programs/CreateMesocycle/EditDayOrder` | M3 | done | #136 |
 | Training | EditDeload | `Programs/CreateMesocycle/EditDeload` | M3 | done | #136 |
@@ -194,14 +194,14 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Training | RenameWorkoutTemplateModel | `Programs/CreateMesocycle/RenameWorkoutTemplateModel` | M3 | done | #136 |
 | Training | ImportProgram | `Programs/ImportProgram` | M3 | done | #136: xlsx, csv and the app's JSON |
 | Training | Macrocycles | `Programs/Macrocycles` | M3 | done | #134, #136 |
-| Training | MacrocycleDetail | `Programs/Macrocycles/MacrocycleDetail` | M3 | done | #134 |
+| Training | MacrocycleDetail | `Programs/Macrocycles/MacrocycleDetail` | M3 | done | #134; swipe to delete (#195) |
 | Training | MesocycleLibrary | `Programs/MesocycleLibrary` | M3 | done | #134, #136 |
-| Training | InactiveMesocycle | `Programs/MesocycleLibrary/InactiveMesocycle` | M3 | done | #134 |
+| Training | InactiveMesocycle | `Programs/MesocycleLibrary/InactiveMesocycle` | M3 | done | #134; swipe to delete (#195) |
 | Training | MesocycleDisclosureGroup | `Programs/MesocycleLibrary/MesocycleDisclosureGroup` | M3 | done | #134; Edit (#136); Share with Friends (#148) |
 | Training | PrebuiltMesocycleDetail | `Programs/MesocycleLibrary/PrebuiltMesocycleDetail` | M3 | done | #134 |
 | Training | ExerciseTracker | `Session/ExerciseTracker` | M3 | done | #125; Swap (#163); Do Next/Do Later, reordering, progression note, Last tap-to-fill, previous-note hint (#165) |
-| Training | ExerciseSettings | `Session/ExerciseTracker/ExerciseSettings` | M3 | done | #163: units, rest timer, side-set rest, note, Edit Duplicate |
-| Training | SetTrackerRow | `Session/ExerciseTracker/SetTrackerRow` | M3 | done | #125; set types, sub-sets, Split L/R, per-row rest (#158); unit menus (#163) |
+| Training | ExerciseSettings | `Session/ExerciseTracker/ExerciseSettings` | M3 | done | #163: units, rest timer, side-set rest, note, Edit Duplicate; the copy is named "(Copy)" (#195) |
+| Training | SetTrackerRow | `Session/ExerciseTracker/SetTrackerRow` | M3 | done | #125; set types, sub-sets, Split L/R, per-row rest (#158); unit menus (#163); swipe actions (#195) |
 | Training | PlateCalculator | `Session/ExerciseTracker/SetTrackerRow/PlateCalculator` | M3 | done | #156 |
 | Training | SetKeyboard | `Session/ExerciseTracker/SetTrackerRow/SetKeyboard` | M3 | done | #125; bands, ± and the loading bar (#156); stopwatch (#158) |
 | Training | SwapExercisePicker | `Session/ExerciseTracker/SwapExercisePicker` | M3 | done | #163 |
@@ -211,12 +211,12 @@ The open work is grouped under [Remaining work](#remaining-work) at the end: fol
 | Training | WorkoutSessionDetail | `Session/WorkoutSessionDetail` | M3 | partial | #93, #125, #147, #148, #151; editing, start time, duration and Delete (#162), Swift's full edit mode (#171); Copy Link (#179) |
 | Training | WorkoutTracker | `Session/WorkoutTracker` | M3 | done | #125, #127 (`/workout`, Finish at); Gym Settings (#140); Workout Settings (#165); rest-complete sound (#172); iPad toolbar: pause, finish and notes on the bar from `AppContentWidth.twoColumns` (#181) |
 | Training | ChooseGymProfile | `Workouts/CreateWorkout/ChooseGymProfile` | M3 | done | #138; Create Gym Profile (#140) |
-| Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | done | #138 |
+| Training | DefineWorkout | `Workouts/CreateWorkout/DefineWorkout` | M3 | done | #138; swipe Delete and Remove from superset (#195) |
 | Training | DefineWorkoutWrapper | `Workouts/CreateWorkout/DefineWorkoutWrapper` | M3 | done | #138 |
 | Training | ExercisesPicker | `Workouts/CreateWorkout/ExercisesPicker` | M3 | done | #120 `/exercise-picker`; substitutions (#138) |
 | Training | NameWorkout | `Workouts/CreateWorkout/NameWorkout` | M3 | done | #138, `create-workout`, `edit-workout/:id` |
-| Training | SetTarget | `Workouts/CreateWorkout/SetTarget` | M3 | done | #138; session scope (#163) |
-| Training | WeeklyTargets | `Workouts/CreateWorkout/SetTarget/WeeklyTargets` | M3 | done | #138 |
+| Training | SetTarget | `Workouts/CreateWorkout/SetTarget` | M3 | done | #138; session scope (#163); swipe to delete sets and substitutions (#195) |
+| Training | WeeklyTargets | `Workouts/CreateWorkout/SetTarget/WeeklyTargets` | M3 | done | #138; swipe to delete (#195) |
 | Training | WorkoutTemplateDetail | `Workouts/WorkoutTemplateDetail` | M3 | done | #120, #134, #136, #138, #148; per-set targets and Watch link (#167) |
 | Training | Workouts | `Workouts/Workouts` | M3 | done | #120, `/training/workouts`; New Workout (#138) |
 
@@ -303,7 +303,7 @@ None left: label OCR (#185) and A/B tests (#186) closed the last two.
     (#165); the label scan hint, Scan Label, "Reading label…" and the two camera messages (#185).
   - Native strings: the camera usage text and its Spanish `InfoPlist.strings`, and a try of the
     barcode scanner on a device (#126); `NSPhotoLibraryUsageDescription` is English only (#150).
-  - Edit Duplicate keeps the original's name; Swift has no "(Copy)" wording (#163).
+  - Spanish by hand: the relative times' plurals and "(copia)" (#195).
 - **Design calls logged for review:** week paging instead of Swift's year-long calendar scroller
   (#164); rolling chart windows instead of calendar periods, and touch-only readouts with no
   per-bucket screen-reader values (#168; the readout is Swift's floating callout since #194); strip

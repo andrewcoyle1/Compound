@@ -7,6 +7,7 @@ import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/training_analytics/bloc/training_analytics_bloc.dart';
 import 'package:compound/training_analytics/view/training_analytics_widgets.dart';
 import 'package:compound/training_analytics/view/training_metric_pages.dart';
+import 'package:compound/widgets/chart_callout.dart';
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -42,7 +43,7 @@ class _WorkoutConsistencyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(
           allData ? l10n.metricAllRecordedData : l10n.progressWorkouts,
@@ -151,6 +152,9 @@ class ContributionGrid extends StatefulWidget {
 class _ContributionGridState extends State<ContributionGrid> {
   DateTime? _selected;
 
+  /// Where the picked day's week sits across the grid.
+  double _anchorX = 0;
+
   DateTime _weekStart(DateTime date) {
     final offset = (date.weekday - widget.firstWeekday + 7) % 7;
     return DateTime(date.year, date.month, date.day - offset);
@@ -218,40 +222,28 @@ class _ContributionGridState extends State<ContributionGrid> {
                 .length;
             final selected = _selected;
             final dates = DateFormat.yMMMd(locale);
-            final header = selected == null
-                ? [
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: AppFormat.number(daysLogged, locale: locale),
-                            style: AppTextStyles.metric,
-                          ),
-                          TextSpan(text: ' ${l10n.contributionOfDays(span)}'),
-                        ],
-                      ),
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
+            final header = [
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: AppFormat.number(daysLogged, locale: locale),
+                      style: AppTextStyles.metric,
                     ),
-                    Text(
-                      l10n.contributionDaysLogged(
-                        '${dates.format(first)} – ${dates.format(today)}',
-                      ),
-                      style: labelStyle,
-                    ),
-                  ]
-                : [
-                    Text(switch (counts[selected] ?? 0) {
-                      0 => l10n.progressNoData,
-                      final count =>
-                        widget.countText?.call(count) ?? l10n.calendarLogged,
-                    }, style: AppTextStyles.metric),
-                    Text(
-                      DateFormat.yMMMEd(locale).format(selected),
-                      style: labelStyle,
-                    ),
-                  ];
+                    TextSpan(text: ' ${l10n.contributionOfDays(span)}'),
+                  ],
+                ),
+                style: AppTextStyles.rowDetail.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                l10n.contributionDaysLogged(
+                  '${dates.format(first)} – ${dates.format(today)}',
+                ),
+                style: labelStyle,
+              ),
+            ];
 
             DateTime? dayAt(Offset position) {
               final week = (position.dx / ContributionGrid._step).floor();
@@ -266,76 +258,127 @@ class _ContributionGridState extends State<ContributionGrid> {
               return day.isAfter(today) ? null : day;
             }
 
-            void pick(Offset position) {
+            void pick(Offset position, Offset global) {
               final day = dayAt(position);
-              if (day != _selected) setState(() => _selected = day);
+              if (day == _selected) return;
+              // The callout centres on the day's week, wherever the grid
+              // has scrolled to.
+              final week = (position.dx / ContributionGrid._step).floor();
+              final box = context.findRenderObject()! as RenderBox;
+              setState(() {
+                _selected = day;
+                _anchorX =
+                    box.globalToLocal(global).dx +
+                    week * ContributionGrid._step +
+                    ContributionGrid._cell / 2 -
+                    position.dx;
+              });
             }
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: AppSpacing.xs,
               children: [
-                ...header,
+                // Hidden under the callout while a day is picked, keeping
+                // its room so nothing moves.
+                Opacity(
+                  opacity: selected == null ? 1 : 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: AppSpacing.xs,
+                    children: header,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.s),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: monthRow),
-                      child: SizedBox(
-                        width: lettersWidth,
-                        child: Column(
-                          children: [
-                            for (final w in weekdays)
-                              SizedBox(
-                                height: ContributionGrid._step,
-                                child: Align(
-                                  alignment: AlignmentDirectional.centerStart,
-                                  child: Text(
-                                    w,
-                                    style: labelStyle,
-                                    textScaler: TextScaler.noScaling,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(top: monthRow),
+                          child: SizedBox(
+                            width: lettersWidth,
+                            child: Column(
+                              children: [
+                                for (final w in weekdays)
+                                  SizedBox(
+                                    height: ContributionGrid._step,
+                                    child: Align(
+                                      alignment:
+                                          AlignmentDirectional.centerStart,
+                                      child: Text(
+                                        w,
+                                        style: labelStyle,
+                                        textScaler: TextScaler.noScaling,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            reverse: true,
+                            child: GestureDetector(
+                              onLongPressStart: (d) =>
+                                  pick(d.localPosition, d.globalPosition),
+                              onLongPressMoveUpdate: (d) =>
+                                  pick(d.localPosition, d.globalPosition),
+                              onLongPressEnd: (_) =>
+                                  setState(() => _selected = null),
+                              child: SizedBox(
+                                width:
+                                    weeks * ContributionGrid._step -
+                                    ContributionGrid._gap,
+                                height:
+                                    monthRow +
+                                    7 * ContributionGrid._step -
+                                    ContributionGrid._gap,
+                                child: CustomPaint(
+                                  painter: _GridPainter(
+                                    weeks: weeks,
+                                    first: first,
+                                    today: today,
+                                    days: counts.keys.toSet(),
+                                    color: widget.color,
+                                    top: monthRow,
+                                    selected: selected,
+                                    ringColor: scheme.onSurface,
+                                    labelStyle: labelStyle,
+                                    textScaler: textScaler,
+                                    locale: locale,
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        reverse: true,
-                        child: GestureDetector(
-                          onLongPressStart: (d) => pick(d.localPosition),
-                          onLongPressMoveUpdate: (d) => pick(d.localPosition),
-                          onLongPressEnd: (_) =>
-                              setState(() => _selected = null),
-                          child: SizedBox(
-                            width:
-                                weeks * ContributionGrid._step -
-                                ContributionGrid._gap,
-                            height:
-                                monthRow +
-                                7 * ContributionGrid._step -
-                                ContributionGrid._gap,
-                            child: CustomPaint(
-                              painter: _GridPainter(
-                                weeks: weeks,
-                                first: first,
-                                today: today,
-                                days: counts.keys.toSet(),
-                                color: widget.color,
-                                top: monthRow,
-                                selected: selected,
-                                ringColor: scheme.onSurface,
-                                labelStyle: labelStyle,
-                                textScaler: textScaler,
-                                locale: locale,
                               ),
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                    Positioned.fill(
+                      child: ChartCallout(
+                        anchorX: _anchorX,
+                        child: selected == null
+                            ? null
+                            : ChartCalloutSummary(
+                                rows: [
+                                  if (counts[selected] case final count?)
+                                    (
+                                      name: null,
+                                      color: null,
+                                      value:
+                                          widget.countText?.call(count) ??
+                                          l10n.calendarLogged,
+                                    ),
+                                ],
+                                footer: DateFormat.yMMMEd(locale)
+                                    .format(selected),
+                                noData: l10n.progressNoData,
+                              ),
                       ),
                     ),
                   ],

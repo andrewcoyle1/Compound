@@ -88,7 +88,7 @@ class const ImportProgramPage({
               library: library.allExercises,
             ),
           ),
-          _ => const Scaffold(
+          _ => const AppScaffold(
             body: Center(child: CircularProgressIndicator.adaptive()),
           ),
         },
@@ -131,7 +131,7 @@ class const ImportProgramView({
       // A file read is not swiped away; Close still closes.
       child: PopScope(
         canPop: !hasFile,
-        child: Scaffold(
+        child: AppScaffold(
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(AppSymbols.close),
@@ -391,7 +391,7 @@ class _LibraryPickerState extends State<_LibraryPicker> {
         if (words.any((word) => exercise.name.toLowerCase().contains(word)))
           exercise,
     ]..sort((a, b) => a.name.compareTo(b.name));
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(AppSymbols.close),

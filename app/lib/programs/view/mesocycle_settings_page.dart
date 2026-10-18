@@ -78,7 +78,7 @@ class _MesocycleSettingsPageState extends State<MesocycleSettingsPage> {
           (current.status == MesocycleDesignStatus.succeeded ||
               current.status == MesocycleDesignStatus.failed),
       listener: (_, state) => unawaited(_done(state)),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

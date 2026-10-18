@@ -79,7 +79,7 @@ class ExerciseSaveView extends StatelessWidget {
             current == ExerciseSaveStatus.saved ||
             current == ExerciseSaveStatus.failed,
         listener: (context, status) => unawaited(_done(context, status)),
-        child: Scaffold(
+        child: AppScaffold(
           appBar: AppBar(title: Text(l10n.createExerciseSave)),
           body: SafeArea(
             bottom: false,

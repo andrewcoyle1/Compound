@@ -97,7 +97,7 @@ class WeeklyReviewView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<WeeklyReviewBloc>().state;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(l10n.weeklyReviewTitle),
         actions: [

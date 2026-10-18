@@ -128,7 +128,7 @@ class _SharedItemViewState extends State<SharedItemView> {
           current.answered != previous.answered ||
           current.noticeId != previous.noticeId,
       listener: _onChange,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(switch (share?.payload) {
             TemplateSharePayload(:final template) => template.name,

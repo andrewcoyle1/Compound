@@ -56,7 +56,7 @@ class SaveAccountView extends StatelessWidget {
       },
       child: OnDispose(
         onDispose: cubit.disappeared,
-        child: Scaffold(
+        child: AppScaffold(
           appBar: AppBar(title: Text(l10n.settingsSaveAccount)),
           body: SafeArea(
             child: ListView(
@@ -68,7 +68,7 @@ class SaveAccountView extends StatelessWidget {
           ),
           bottomNavigationBar: AppBottomCta(
             children: [
-              AppCtaButton(
+              AppSignInWithAppleButton(
                 label: l10n.signInWithAppleButton,
                 isLoading: busy,
                 onPressed: cubit.applePressed,

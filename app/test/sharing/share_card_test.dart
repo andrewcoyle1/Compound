@@ -229,6 +229,12 @@ void main() {
       );
       final image = (await tester.runAsync(() => _decode(png!)))!;
       expect((image.width, image.height), (width, height));
+      // The app icon's pale background, top left, over the dark gradient.
+      final inset = ((format == ShareCardFormat.story ? 28 : 20) + 4) * 3;
+      final pixels = (await tester.runAsync(image.toByteData))!;
+      final at = (inset * width + inset) * 4;
+      expect(pixels.getUint8(at), greaterThan(200));
+      expect(pixels.getUint8(at + 1), greaterThan(200));
     });
   }
 }

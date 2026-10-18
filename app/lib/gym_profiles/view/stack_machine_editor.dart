@@ -89,9 +89,9 @@ class _StackMachineEditorState extends State<StackMachineEditorPage>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final machine = _machine(watchGym(context));
-    if (machine == null) return Scaffold(appBar: AppBar());
+    if (machine == null) return AppScaffold(appBar: AppBar());
     final stacks = GymEditorRules.stacks(machine, _unit);
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(machine.name),
         actions: [

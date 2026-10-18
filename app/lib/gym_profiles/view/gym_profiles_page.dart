@@ -116,7 +116,7 @@ class GymProfilesView extends StatelessWidget {
         ),
         GymProfilesStatus.idle => null,
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           title: Text(l10n.gymProfilesTitle),
           actions: [
@@ -296,7 +296,7 @@ class CreateGymProfileView extends StatelessWidget {
     final canSave = context.select<GymSetupCubit, bool>(
       (cubit) => cubit.state.canSave,
     );
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: Text(l10n.onboardingGymTitle)),
       body: SafeArea(
         bottom: false,

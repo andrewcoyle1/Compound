@@ -91,7 +91,7 @@ class GoalSetupView extends StatelessWidget {
     final step = state.isStandalone ? null : OnboardingStep.goalSetting;
 
     final question = state.status == GoalSetupStatus.loading
-        ? const Scaffold(
+        ? const AppScaffold(
             body: Center(child: CircularProgressIndicator.adaptive()),
           )
         : switch (state.question) {

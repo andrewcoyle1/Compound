@@ -85,7 +85,7 @@ class TrainingMetricView extends StatelessWidget {
     final hasEntries =
         state.status == TrainingAnalyticsStatus.loaded &&
         metric.points.isNotEmpty;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text(allData ? l10n.metricAllRecordedData : metric.title),
         actions: [

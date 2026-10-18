@@ -80,42 +80,59 @@ void main() {
     });
   });
 
-  group('AppPageTransitionsTheme', () {
-    testWidgets('puts every page in a column, as wide as its route allows', (
+  group('AppScaffold', () {
+    testWidgets('spans the app bar across the window, the rest in a column', (
       tester,
     ) async {
       tester.view
         ..physicalSize = const Size(1366, 1024)
         ..devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      final navigator = GlobalKey<NavigatorState>();
-      await tester.pumpWidget(
-        MaterialApp(
-          navigatorKey: navigator,
-          theme: AppTheme.light.copyWith(
-            pageTransitionsTheme: const AppPageTransitionsTheme(
-              maxWidths: {'today': AppContentWidth.dashboard},
-            ),
-          ),
-          home: const Placeholder(),
+      await tester.pumpApp(
+        AppScaffold(
+          appBar: AppBar(title: const Text('Title')),
+          body: const SizedBox.expand(key: Key('body')),
+          bottomNavigationBar: const SizedBox(height: 44, key: Key('cta')),
+          backgroundColor: Colors.red,
         ),
+        scaffold: false,
       );
+      expect(tester.getSize(find.byType(AppBar)).width, 1366);
       expect(
-        tester.getSize(find.byType(Placeholder)).width,
+        tester.getSize(find.byKey(const Key('body'))).width,
         AppContentWidth.readable,
       );
-
-      navigator.currentState!.push(
-        MaterialPageRoute<void>(
-          settings: const RouteSettings(name: 'today'),
-          builder: (_) => const SizedBox.expand(key: Key('today')),
-        ),
-      );
-      await tester.pumpAndSettle();
       expect(
-        tester.getSize(find.byKey(const Key('today'))).width,
+        tester.getSize(find.byKey(const Key('cta'))).width,
+        AppContentWidth.readable,
+      );
+      expect(
+        tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
+        Colors.red,
+      );
+    });
+
+    testWidgets('takes a wider column, and leaves out what is not given', (
+      tester,
+    ) async {
+      tester.view
+        ..physicalSize = const Size(1366, 1024)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpApp(
+        const AppScaffold(
+          maxWidth: AppContentWidth.dashboard,
+          body: SizedBox.expand(key: Key('body')),
+        ),
+        scaffold: false,
+      );
+      expect(
+        tester.getSize(find.byKey(const Key('body'))).width,
         AppContentWidth.dashboard,
       );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.appBar, isNull);
+      expect(scaffold.bottomNavigationBar, isNull);
     });
   });
 }

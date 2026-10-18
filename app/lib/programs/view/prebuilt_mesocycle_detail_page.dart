@@ -84,7 +84,7 @@ class _PrebuiltMesocycleDetailPageState
     final secondary = AppTextStyles.label.copyWith(
       color: scheme.onSurfaceVariant,
     );
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: mesocycle == null ? null : Text(mesocycle.name)),
       body: SafeArea(
         bottom: false,

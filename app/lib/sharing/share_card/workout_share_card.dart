@@ -1,6 +1,6 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sharing/share_card/share_card_content.dart';
-import 'package:flutter/material.dart';
 
 /// The two shapes a workout card comes in, in points; three times this in
 /// pixels (`WorkoutShareCardView.Format`).
@@ -228,7 +228,8 @@ class ShareCardFrame extends StatelessWidget {
   }
 }
 
-/// "Compound" with a mark, top left of every card.
+/// The app icon and "Compound", top left of every card (Swift's
+/// `appMark`). `renderShareCard` loads the icon before drawing.
 class ShareCardMark extends StatelessWidget {
   const new({super.key});
 
@@ -237,18 +238,9 @@ class ShareCardMark extends StatelessWidget {
     return Row(
       spacing: 8,
       children: [
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: const Icon(
-            Icons.fitness_center_rounded,
-            size: 16,
-            color: Colors.white,
-          ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: const Image(image: AppImages.appIcon, width: 24, height: 24),
         ),
         const Text(
           'Compound',

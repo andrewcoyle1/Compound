@@ -3,14 +3,12 @@ import 'dart:math' as math;
 import 'package:app_ui/app_ui.dart';
 
 /// {@template app_readable_width}
-/// Centres [child] in a column at most [maxWidth] wide, painting the margins
-/// either side in the scaffold's background, so on a tablet or desktop a
-/// screen's rows, cards and charts keep phone-like proportions (Swift's
-/// `readableContentWidth`). Narrower than [maxWidth], [child] fills the
-/// width unchanged.
+/// Centres [child] in a column at most [maxWidth] wide, so on a tablet or
+/// desktop a screen's rows, cards and charts keep phone-like proportions
+/// (Swift's `readableContentWidth`). Narrower than [maxWidth], [child] fills
+/// the width unchanged.
 ///
-/// Apply it to every page at once with [AppPageTransitionsTheme] rather than
-/// screen by screen.
+/// Screens get it through [AppScaffold] rather than using it directly.
 /// {@endtemplate}
 class AppReadableWidth extends StatelessWidget {
   /// {@macro app_readable_width}
@@ -20,7 +18,7 @@ class AppReadableWidth extends StatelessWidget {
     super.key,
   });
 
-  /// The screen.
+  /// The content.
   final Widget child;
 
   /// The widest the column grows.
@@ -41,20 +39,65 @@ class AppReadableWidth extends StatelessWidget {
           right: math.max<double>(0, padding.right - gutter),
         );
         final media = MediaQuery.of(context);
-        return ColoredBox(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: gutter),
-            child: MediaQuery(
-              data: media.copyWith(
-                padding: inset(media.padding),
-                viewPadding: inset(media.viewPadding),
-              ),
-              child: child,
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: gutter),
+          child: MediaQuery(
+            data: media.copyWith(
+              padding: inset(media.padding),
+              viewPadding: inset(media.viewPadding),
             ),
+            child: child,
           ),
         );
       },
+    );
+  }
+}
+
+/// {@template app_scaffold}
+/// A routed screen's [Scaffold]: the app bar spans the window, as Swift's
+/// navigation bar does, while [body] and [bottomNavigationBar] (the bottom
+/// CTA) sit in an [AppReadableWidth] column [maxWidth] wide. Every screen
+/// uses it in place of [Scaffold]; only the page holding the tab bar,
+/// which spans the window, does not.
+/// {@endtemplate}
+class AppScaffold extends StatelessWidget {
+  /// {@macro app_scaffold}
+  const new({
+    this.appBar,
+    this.body,
+    this.bottomNavigationBar,
+    this.backgroundColor,
+    this.maxWidth = AppContentWidth.readable,
+    super.key,
+  });
+
+  /// The top bar, as wide as the window.
+  final PreferredSizeWidget? appBar;
+
+  /// The screen's content, in the column.
+  final Widget? body;
+
+  /// The bottom CTA, in the column.
+  final Widget? bottomNavigationBar;
+
+  /// The background, which fills the window.
+  final Color? backgroundColor;
+
+  /// The column's width: [AppContentWidth.dashboard] for a tab root laid
+  /// out as an [AppDashboard] (Swift's `preferredReadableContentWidth`).
+  final double maxWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget? column(Widget? child) => child == null
+        ? null
+        : AppReadableWidth(maxWidth: maxWidth, child: child);
+    return Scaffold(
+      appBar: appBar,
+      backgroundColor: backgroundColor,
+      body: column(body),
+      bottomNavigationBar: column(bottomNavigationBar),
     );
   }
 }

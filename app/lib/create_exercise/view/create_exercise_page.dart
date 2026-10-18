@@ -142,7 +142,7 @@ class CreateExerciseView extends StatelessWidget {
     return ScreenAnalytics(
       appeared: cubit.appeared,
       disappeared: cubit.disappeared,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: CloseButton(
             // Anything typed is lost on closing, so it asks first.

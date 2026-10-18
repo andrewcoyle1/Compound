@@ -210,7 +210,7 @@ class _CreateFoodViewState extends State<CreateFoodView>
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) unawaited(_close());
       },
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(AppSymbols.close),
@@ -385,7 +385,7 @@ class _PortionDefinitionViewState extends State<PortionDefinitionView>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<CreateFoodCubit>().state;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(title: Text(l10n.createFoodTitle)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
@@ -539,7 +539,7 @@ class _FoodDefinitionViewState extends State<FoodDefinitionView>
           (current.status == CreateFoodStatus.created ||
               current.status == CreateFoodStatus.failed),
       listener: (_, state) => unawaited(_done(state)),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(l10n.createFoodTitle)),
         body: ListView(
           padding: const EdgeInsets.all(AppSpacing.l),

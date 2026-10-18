@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:app_ui/app_ui.dart';
 import 'package:flutter/rendering.dart';
 
 /// The pixel density cards are drawn at: a 360-point card comes out 1080
@@ -34,7 +34,8 @@ Future<ImageProvider?> loadShareCardImage(
 /// Draws [card], [size] points, to a PNG at [shareCardScale] without
 /// putting it on screen (Swift's `ImageRenderer`), in [context]'s text
 /// direction and locale. Pictures in it must already be loaded
-/// ([loadShareCardImage]). Null when drawing fails.
+/// ([loadShareCardImage]); the app icon at the top is loaded here.
+/// Null when drawing fails.
 Future<Uint8List?> renderShareCard(
   BuildContext context,
   Widget card, {
@@ -43,7 +44,9 @@ Future<Uint8List?> renderShareCard(
   final view = View.of(context);
   final direction = Directionality.of(context);
   final locale = Localizations.localeOf(context);
+  final icon = precacheImage(AppImages.appIcon, context);
   try {
+    await icon;
     final boundary = RenderRepaintBoundary();
     final renderView = RenderView(
       view: view,

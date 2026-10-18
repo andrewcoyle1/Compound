@@ -92,7 +92,7 @@ class _NameMesocyclePageState extends State<NameMesocyclePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: widget.inPlace
             ? null
@@ -221,7 +221,7 @@ class _MesocycleIconPageState extends State<MesocycleIconPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
+    return AppScaffold(
       backgroundColor: context.appColors.canvas,
       appBar: AppBar(title: Text(l10n.programCreateMesocycle)),
       body: SafeArea(

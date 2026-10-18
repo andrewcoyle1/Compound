@@ -144,7 +144,7 @@ class ExerciseDetailView extends StatelessWidget {
         DeleteExerciseStatus.deleting;
     final scaffold = DefaultTabController(
       length: 4,
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(
           actions: [
             if (exercise != null)

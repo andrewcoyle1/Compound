@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
+import 'package:compound/widgets/chart_callout.dart';
 
 /// One series on a metric chart: what it is called, its points in the unit
 /// shown, its colour, and whether it is drawn as a line, as bars or as dots.
@@ -38,7 +39,8 @@ class const MetricChartSeries({
 ///
 /// Pressing and holding picks the nearest plotted bucket, marked with a
 /// stick, and tells [onSelected] its date, then null on letting go (Swift
-/// QuickCharts' `chartXSelection`).
+/// QuickCharts' `chartXSelection`). While one is picked, [callout] floats
+/// above the plot over it ([ChartCallout]).
 class MetricChart extends StatefulWidget {
   const new({
     required this.series,
@@ -47,8 +49,12 @@ class MetricChart extends StatefulWidget {
     required this.bucketDays,
     this.selected,
     this.onSelected,
+    this.callout,
     super.key,
   });
+
+  /// What the bucket picked holds, shown in a [ChartCallout].
+  final Widget? callout;
 
   /// The bucket picked, marked with a stick.
   final DateTime? selected;
@@ -102,26 +108,45 @@ class _MetricChartState extends State<MetricChart> {
           ? null
           : (details) => _pick(details.localPosition),
       onLongPressEnd: onSelected == null ? null : (_) => onSelected(null),
-      child: SizedBox(
-        height: AppChartHeight.regular,
-        child: CustomPaint(
-          size: Size.infinite,
-          painter: _MetricChartPainter(
-            series: widget.series,
-            start: widget.start,
-            end: widget.end,
-            bucketDays: widget.bucketDays,
-            selected: widget.selected,
-            plotted: _plotted,
-            gridColor: scheme.outlineVariant,
-            stickColor: scheme.onSurfaceVariant,
-            labelStyle: AppTextStyles.label.copyWith(
-              color: scheme.onSurfaceVariant,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          SizedBox(
+            height: AppChartHeight.regular,
+            width: double.infinity,
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: _MetricChartPainter(
+                series: widget.series,
+                start: widget.start,
+                end: widget.end,
+                bucketDays: widget.bucketDays,
+                selected: widget.selected,
+                plotted: _plotted,
+                gridColor: scheme.outlineVariant,
+                stickColor: scheme.onSurfaceVariant,
+                labelStyle: AppTextStyles.label.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+                textScaler: MediaQuery.textScalerOf(context),
+                locale: locale,
+              ),
             ),
-            textScaler: MediaQuery.textScalerOf(context),
-            locale: locale,
           ),
-        ),
+          Positioned.fill(
+            child: ChartCallout(
+              // A bucket is only picked from a painted chart, so its x is
+              // already known.
+              anchorX: _plotted
+                  .firstWhere(
+                    (point) => point.$1 == widget.selected,
+                    orElse: () => (DateTime(0), 0),
+                  )
+                  .$2,
+              child: widget.selected == null ? null : widget.callout,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
+import 'package:compound/widgets/chart_callout.dart';
 import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter/semantics.dart'
     show CustomSemanticsAction, SemanticsAction;
@@ -263,17 +264,39 @@ void main() {
         chart.centerLeft + const Offset(4, 0),
       );
       await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
-      expect(find.text('Fri, Oct 9'), findsOneWidget);
-      expect(find.text('AVERAGE'), findsNothing);
-      expect(find.text('80 kg'), findsWidgets);
+      await tester.pumpAndSettle();
+      // In a callout above the plot, kept inside the chart at its edge,
+      // with the header hidden beneath it.
+      final callout = find.byType(ChartCalloutSummary);
+      expect(
+        find.descendant(of: callout, matching: find.text('Fri, Oct 9')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: callout, matching: find.text('Scale')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: callout, matching: find.text('80 kg')),
+        findsOneWidget,
+      );
+      final rect = tester.getRect(callout);
+      expect(rect.left, greaterThanOrEqualTo(chart.left));
+      expect(rect.bottom, lessThan(chart.top));
+      final header = find.ancestor(
+        of: find.text('AVERAGE'),
+        matching: find.byType(Opacity),
+      );
+      expect(tester.widget<Opacity>(header.first).opacity, 0);
 
       await gesture.moveTo(chart.centerRight - const Offset(60, 0));
       await tester.pump();
       expect(find.text('Thu, Oct 15'), findsOneWidget);
+      expect(tester.getRect(callout).right, lessThanOrEqualTo(chart.right));
 
       await gesture.up();
-      await tester.pump();
-      expect(find.text('AVERAGE'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(tester.widget<Opacity>(header.first).opacity, 1);
       expect(find.text('Thu, Oct 15'), findsNothing);
     });
 

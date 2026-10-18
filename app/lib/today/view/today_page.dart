@@ -119,7 +119,8 @@ class TodayView extends StatelessWidget {
           listener: (context, _) => unawaited(showStepsAccessFailed(context)),
         ),
       ],
-      child: Scaffold(
+      child: AppScaffold(
+        maxWidth: AppContentWidth.dashboard,
         appBar: AppBar(
           title: Text(l10n.tabToday),
           actions: const [AskCoachButton(CoachContext.today), ProfileButton()],

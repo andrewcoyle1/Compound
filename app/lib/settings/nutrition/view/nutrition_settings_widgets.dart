@@ -36,7 +36,7 @@ class SettingsDocumentScaffold<C extends SettingsDocumentCubit<T>, T>
         ..showSnackBar(
           SnackBar(content: Text(context.l10n.foodLogSettingsSaveFailed)),
         ),
-      child: Scaffold(
+      child: AppScaffold(
         appBar: AppBar(title: Text(title)),
         body: settings == null
             ? const Center(child: CircularProgressIndicator.adaptive())

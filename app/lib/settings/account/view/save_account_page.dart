@@ -41,9 +41,6 @@ class SaveAccountView extends StatelessWidget {
     final busy = context.select<SaveAccountCubit, bool>(
       (cubit) => cubit.state == SaveAccountStatus.inProgress,
     );
-    // Sign in with Apple is iOS only until the Android web flow is set up,
-    // as on the sign-in screen.
-    final showApple = Theme.of(context).platform == TargetPlatform.iOS;
     return BlocListener<SaveAccountCubit, SaveAccountStatus>(
       listener: (context, status) {
         switch (status) {
@@ -71,12 +68,11 @@ class SaveAccountView extends StatelessWidget {
           ),
           bottomNavigationBar: AppBottomCta(
             children: [
-              if (showApple)
-                AppCtaButton(
-                  label: l10n.signInWithAppleButton,
-                  isLoading: busy,
-                  onPressed: cubit.applePressed,
-                ),
+              AppCtaButton(
+                label: l10n.signInWithAppleButton,
+                isLoading: busy,
+                onPressed: cubit.applePressed,
+              ),
               AppCtaButton(
                 label: l10n.signInWithGoogleButton,
                 isLoading: busy,

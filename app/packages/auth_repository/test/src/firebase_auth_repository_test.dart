@@ -249,6 +249,55 @@ void main() {
         );
       });
     }
+
+    test('signs in to the account that already owns the Apple credential, '
+        'using the credential Firebase returns', () async {
+      signInAnonymousUser();
+      final existing = AppleAuthProvider.credential('apple-token');
+      when(() => user.linkWithProvider(any())).thenThrow(
+        FirebaseAuthException(
+          code: 'credential-already-in-use',
+          credential: existing,
+        ),
+      );
+
+      await repository.signInWithApple();
+
+      verify(() => firebaseAuth.signInWithCredential(existing)).called(1);
+      verifyNever(() => firebaseAuth.signInWithProvider(any()));
+    });
+
+    test(
+      'throws SignInCancelled when the web page is closed while linking',
+      () async {
+        signInAnonymousUser();
+        when(() => user.linkWithProvider(any()))
+            .thenThrow(FirebaseAuthException(code: 'web-context-canceled'));
+        await expectLater(
+          repository.signInWithApple(),
+          throwsA(isA<SignInCancelled>()),
+        );
+      },
+    );
+
+    test(
+      'throws AuthFailure when the email belongs to another provider',
+      () async {
+        when(() => firebaseAuth.signInWithProvider(any())).thenThrow(
+          FirebaseAuthException(
+            code: 'account-exists-with-different-credential',
+          ),
+        );
+        await expectLater(
+          repository.signInWithApple(),
+          throwsA(
+            isA<AuthFailure>()
+                .having((f) => f.error, 'error', isA<FirebaseAuthException>())
+                .having((f) => f, 'type', isNot(isA<SignInCancelled>())),
+          ),
+        );
+      },
+    );
   });
 
   group('signInAnonymously', () {

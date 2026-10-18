@@ -157,7 +157,10 @@ class ExerciseSettingsView extends StatelessWidget {
                     onPressed: () => unawaited(
                       CreateExercisePage.open(
                         context,
-                        prefill: ExerciseDraft.duplicating(exercise),
+                        prefill: ExerciseDraft.duplicating(
+                          exercise,
+                          name: l10n.exerciseCopyName(exercise.name),
+                        ),
                       ),
                     ),
                   ),

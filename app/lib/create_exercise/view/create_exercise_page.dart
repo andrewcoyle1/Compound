@@ -17,8 +17,8 @@ import 'package:go_router/go_router.dart';
 /// Creating a custom exercise (Swift `CreateExerciseView`), over the tabs
 /// as Swift's full-screen cover with its own stack: the name and metrics,
 /// then the muscles, the equipment, the final details and a review. Create
-/// closes the whole flow; the exercise then appears in the library and the
-/// picker.
+/// closes the whole flow with the new exercise; it then appears in the
+/// library and the picker.
 class CreateExercisePage extends StatelessWidget {
   const new({this.prefill, super.key});
 
@@ -28,9 +28,12 @@ class CreateExercisePage extends StatelessWidget {
   /// The route name.
   static const name = 'createExercise';
 
-  /// Opens the flow, on a copy of an exercise when given [prefill].
-  static Future<void> open(BuildContext context, {ExerciseDraft? prefill}) =>
-      context.pushNamed(name, extra: prefill);
+  /// Opens the flow, on a copy of an exercise when given [prefill]. Completes
+  /// with the created exercise, or null when the flow was left.
+  static Future<ExerciseModel?> open(
+    BuildContext context, {
+    ExerciseDraft? prefill,
+  }) => context.pushNamed<ExerciseModel>(name, extra: prefill);
 
   /// What every step starts from: Edit Duplicate's copy.
   final ExerciseDraft? prefill;
@@ -58,9 +61,10 @@ class CreateExercisePage extends StatelessWidget {
 class CreateExerciseFlow extends StatefulWidget {
   const new({super.key});
 
-  /// Closes every step of the flow.
-  static void close(BuildContext context) =>
-      context.findAncestorStateOfType<_CreateExerciseFlowState>()!._close();
+  /// Closes every step of the flow, with the exercise Create made.
+  static void close(BuildContext context, [ExerciseModel? created]) => context
+      .findAncestorStateOfType<_CreateExerciseFlowState>()!
+      ._close(created);
 
   /// Leaves from the first step, asking first if anything was typed.
   static Future<void> leave(BuildContext context) =>
@@ -74,7 +78,7 @@ class _CreateExerciseFlowState extends State<CreateExerciseFlow> {
   final _steps = GlobalKey<NavigatorState>();
 
   // Past the cover's PopScope: the choice to leave has been made.
-  void _close() => Navigator.of(context).pop();
+  void _close([ExerciseModel? created]) => Navigator.of(context).pop(created);
 
   Future<void> _leave() async {
     if (!context.read<CreateExerciseCubit>().state.hasUnsavedChanges) {

@@ -34,6 +34,10 @@ class ExerciseSaveCubit extends Cubit<ExerciseSaveStatus> {
 
   void disappeared() => _analytics.disappear(_screen);
 
+  /// The exercise once [create] has stored it, for a picker to tick.
+  ExerciseModel? get created => _created;
+  ExerciseModel? _created;
+
   /// Stores the exercise between `CreateExercise_Start` and `_Success` or a
   /// severe `_Fail`. A second tap mid-save does nothing.
   Future<void> create() async {
@@ -50,10 +54,9 @@ class ExerciseSaveCubit extends Cubit<ExerciseSaveStatus> {
     }
     emit(ExerciseSaveStatus.saving);
     try {
-      final now = _now();
-      await _library.saveUserExercise(
-        _draft.toModel(id: _newId(), authorId: uid, now: now),
-      );
+      final exercise = _draft.toModel(id: _newId(), authorId: uid, now: _now());
+      await _library.saveUserExercise(exercise);
+      _created = exercise;
       _analytics.analytic('CreateExercise_Success');
       emit(ExerciseSaveStatus.saved);
     } on Object catch (error) {

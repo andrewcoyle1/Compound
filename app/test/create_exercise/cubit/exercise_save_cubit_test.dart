@@ -49,9 +49,11 @@ void main() {
 
   test('the exercise belongs to the signed-in user', () async {
     final cubit = build();
+    expect(cubit.created, isNull);
     await cubit.create();
     expect(cubit.state, ExerciseSaveStatus.saved);
     final stored = library.saved.single;
+    expect(cubit.created, stored);
     expect(stored.id, 'new-id');
     expect(stored.authorId, 'user-42');
     expect(stored.isSystemExercise, isFalse);

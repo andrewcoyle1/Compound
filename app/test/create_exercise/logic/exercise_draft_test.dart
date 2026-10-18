@@ -171,12 +171,13 @@ void main() {
 
     test('a duplicate copies the exercise into the flow', () {
       final stored = draft.toModel(id: 'e1', authorId: 'u', now: now);
-      expect(ExerciseDraft.duplicating(stored), draft);
+      expect(ExerciseDraft.duplicating(stored, name: draft.name), draft);
+      expect(ExerciseDraft.duplicating(stored, name: 'Copy').name, 'Copy');
       final bare = ExerciseModel.fromFirestore(
         {...stored.toFirestore(), 'trackable_metrics': <String>[]}
           ..remove('description'),
       );
-      final copy = ExerciseDraft.duplicating(bare);
+      final copy = ExerciseDraft.duplicating(bare, name: 'x');
       expect(copy.metrics, [TrackableExerciseMetric.reps]);
       expect(copy.description, '');
     });

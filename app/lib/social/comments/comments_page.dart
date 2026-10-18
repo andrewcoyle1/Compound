@@ -9,10 +9,10 @@ import 'package:compound/social/comments/comments_cubit.dart';
 import 'package:compound/social/report/report_cubit.dart';
 import 'package:compound/social/report/report_sheet.dart';
 import 'package:compound/social/view/people_widgets.dart';
+import 'package:compound/widgets/relative_time.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:social_repository/social_repository.dart';
 
 /// A workout's comments (Swift `CommentsView`), pushed from a feed card.
@@ -277,11 +277,9 @@ class _CommentRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Text(
-                      DateFormat.MMMd(locale)
-                          .add_jm()
-                          .format(comment.dateCreated.toLocal()),
-                      style: secondary,
+                    RelativeTimeBuilder(
+                      date: comment.dateCreated,
+                      builder: (context, text) => Text(text, style: secondary),
                     ),
                   ],
                 ),

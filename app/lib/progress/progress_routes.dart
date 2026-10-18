@@ -5,6 +5,7 @@ import 'package:compound/progress/view/body_metrics_pages.dart';
 import 'package:compound/progress/view/nutrition_analytics_pages.dart';
 import 'package:compound/progress/view/progress_metric_pages.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
+import 'package:compound/widgets/half_sheet_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -103,15 +104,14 @@ final progressRoutes = <RouteBase>[
   ),
 ];
 
-/// The logger for one circumference, over the tabs as Swift's sheet; an
-/// unknown circumference opens the waist's.
+/// The logger for one circumference, over the tabs as Swift's half sheet;
+/// an unknown circumference opens the waist's.
 final progressRootRoutes = <RouteBase>[
   GoRoute(
     path: LogMeasurementPage.path,
     name: LogMeasurementPage.name,
-    pageBuilder: (_, state) => MaterialPage(
+    pageBuilder: (_, state) => HalfSheetPage(
       key: state.pageKey,
-      fullscreenDialog: true,
       child: LogMeasurementPage(
         kind:
             BodyMeasurementKind.tryParse(

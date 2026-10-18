@@ -14,9 +14,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
-/// The review, and Create (Swift `ExerciseSaveView`). There is no "Create &
-/// Add": the flow closes, and the new exercise is in the library and any
-/// open picker, unticked, as in Swift.
+/// The review, and Create (Swift `ExerciseSaveView`). Create closes the
+/// flow with the new exercise, which a picker that opened it ticks (Swift
+/// leaves it unticked; the owner asked for this).
 class ExerciseSavePage extends StatelessWidget {
   const new({required this.draft, super.key});
 
@@ -50,7 +50,10 @@ class ExerciseSaveView extends StatelessWidget {
     final l10n = context.l10n;
     if (status == ExerciseSaveStatus.saved) {
       unawaited(HapticFeedback.successNotification());
-      CreateExerciseFlow.close(context);
+      CreateExerciseFlow.close(
+        context,
+        context.read<ExerciseSaveCubit>().created,
+      );
       return;
     }
     unawaited(HapticFeedback.errorNotification());

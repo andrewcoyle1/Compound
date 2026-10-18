@@ -2994,5 +2994,13 @@
     "siriRecipes": "Recetas",
     "siriRecipesPhrase": "“Muestra mis recetas en Compound”",
     "siriOpenShortcuts": "Abrir Atajos",
-    "siriFooter": "Añádelos a la app Atajos para ejecutarlos desde tu pantalla de inicio o el botón de acción."
+    "siriFooter": "Añádelos a la app Atajos para ejecutarlos desde tu pantalla de inicio o el botón de acción.",
+    "exerciseCopyName": "{name} (copia)",
+    "relativeSecondsAgo": "{count, plural, =0{ahora} =1{hace 1 segundo} other{hace {count} segundos}}",
+    "relativeMinutesAgo": "{count, plural, =1{hace 1 minuto} other{hace {count} minutos}}",
+    "relativeHoursAgo": "{count, plural, =1{hace 1 hora} other{hace {count} horas}}",
+    "relativeDaysAgo": "{count, plural, =1{ayer} =2{anteayer} other{hace {count} días}}",
+    "relativeWeeksAgo": "{count, plural, =1{la semana pasada} other{hace {count} semanas}}",
+    "relativeMonthsAgo": "{count, plural, =1{el mes pasado} other{hace {count} meses}}",
+    "relativeYearsAgo": "{count, plural, =1{el año pasado} other{hace {count} años}}"
 }

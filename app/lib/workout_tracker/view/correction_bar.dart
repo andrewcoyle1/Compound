@@ -45,25 +45,22 @@ class CorrectionBar extends StatelessWidget {
       spacing: AppSpacing.s,
       children: [
         if (correction.correctsReps) ...[
-          IconButton.filledTonal(
-            tooltip: l10n.trackerRemoveRep,
+          AppIconButton(
+            icon: AppSymbols.decrease,
+            semanticLabel: l10n.trackerRemoveRep,
             onPressed: correction.canRemoveRep
                 ? () => cubit.correctReps(correction.setId, -1)
                 : null,
-            icon: const Icon(AppSymbols.decrease),
           ),
-          IconButton.filledTonal(
-            tooltip: l10n.trackerAddRep,
+          AppIconButton(
+            icon: AppSymbols.add,
+            semanticLabel: l10n.trackerAddRep,
             onPressed: () => cubit.correctReps(correction.setId, 1),
-            icon: const Icon(AppSymbols.add),
           ),
         ],
-        TextButton(
+        AppTextButton(
+          label: l10n.trackerUndo,
           onPressed: state.undoName == null ? null : cubit.undo,
-          child: Text(
-            l10n.trackerUndo,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
         ),
       ],
     );
@@ -83,8 +80,7 @@ class CorrectionBar extends StatelessWidget {
           Flexible(
             child: Text(
               title,
-              style: AppTextStyles.label.copyWith(
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.label.semibold.copyWith(
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
@@ -93,10 +89,11 @@ class CorrectionBar extends StatelessWidget {
       ),
     );
     return Padding(
+      // In line with the button under it.
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.m,
+        AppSpacing.l,
         AppSpacing.s,
-        AppSpacing.m,
+        AppSpacing.l,
         0,
       ),
       child: AppCard(

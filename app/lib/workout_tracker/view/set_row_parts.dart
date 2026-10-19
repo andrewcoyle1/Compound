@@ -46,8 +46,7 @@ class SetBadge extends StatelessWidget {
       children: [
         Text(
           badge,
-          style: AppTextStyles.rowDetail.copyWith(
-            fontWeight: FontWeight.w600,
+          style: AppTextStyles.rowDetail.semibold.copyWith(
             color: set.isWarmup ? colors.warmup : scheme.onSurface,
           ),
           semanticsLabel: semanticsLabel,
@@ -58,9 +57,8 @@ class SetBadge extends StatelessWidget {
               chip,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.label.copyWith(
+              style: AppTextStyles.label.semibold.copyWith(
                 color: rules.isSubSet ? colors.warmup : scheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -85,20 +83,16 @@ class SetBadge extends StatelessWidget {
             child: Text(TrackerText.setType(l10n, choice)),
           ),
         if (r.ActiveWorkout.offersDrop(rules))
-          PopupMenuItem<Object>(
+          AppMenuItem<Object>(
             value: r.SubSetKind.drop,
-            child: ListTile(
-              leading: const Icon(AppSymbols.add),
-              title: Text(l10n.trackerAddDrop),
-            ),
+            icon: AppSymbols.add,
+            label: l10n.trackerAddDrop,
           ),
         if (r.ActiveWorkout.offersMiniSet(rules))
-          PopupMenuItem<Object>(
+          AppMenuItem<Object>(
             value: r.SubSetKind.mini,
-            child: ListTile(
-              leading: const Icon(AppSymbols.add),
-              title: Text(l10n.trackerAddMiniSet),
-            ),
+            icon: AppSymbols.add,
+            label: l10n.trackerAddMiniSet,
           ),
       ],
       child: label,
@@ -134,30 +128,13 @@ Future<bool> confirmDestructive(
   required String title,
   required String message,
   required String action,
-}) async {
-  final l10n = context.l10n;
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content: Text(message),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(l10n.trackerCancel),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          style: TextButton.styleFrom(
-            foregroundColor: context.appColors.danger,
-          ),
-          child: Text(action),
-        ),
-      ],
-    ),
-  );
-  return confirmed ?? false;
-}
+}) => AppDialog.confirmDestructive(
+  context,
+  title: title,
+  message: message,
+  confirmLabel: action,
+  cancelLabel: context.l10n.trackerCancel,
+);
 
 /// Deletes [set], asking first when its drops or mini-sets would go with
 /// it: "Delete Set 2? This also deletes its 2 drop sets."
@@ -189,10 +166,8 @@ Future<void> deleteSet(
 /// [initialSeconds]. Save returns the rest, `0` meaning none set by hand;
 /// Close returns `null`.
 Future<int?> showRestPicker(BuildContext context, int initialSeconds) =>
-    showModalBottomSheet<int>(
+    showAppSheet<int>(
       context: context,
-      useSafeArea: true,
-      showDragHandle: true,
       builder: (_) => RestPickerSheet(initialSeconds: initialSeconds),
     );
 
@@ -230,60 +205,45 @@ class _RestPickerSheetState extends State<RestPickerSheet> {
         ],
       ),
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-          child: Row(
-            children: [
-              IconButton(
-                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                icon: const Icon(AppSymbols.close),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              Expanded(
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    l10n.trackerSetRest,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.rowTitle.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+    return AppScaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
+        ),
+        title: Text(l10n.trackerSetRest),
+        actions: [
+          AppToolbarButton.confirm(
+            key: const ValueKey('rest-save'),
+            semanticLabel: l10n.trackerSave,
+            onPressed: () =>
+                Navigator.of(context).pop(_minutes * 60 + _seconds),
+          ),
+        ],
+      ),
+      body: ListView(
+        children: [
+          SizedBox(
+            height: scale.scale(180),
+            child: Row(
+              children: [
+                wheel(
+                  key: const ValueKey('rest-minutes'),
+                  selected: _minutes,
+                  label: l10n.trackerRestMinutes,
+                  onChanged: (value) => _minutes = value,
                 ),
-              ),
-              TextButton(
-                key: const ValueKey('rest-save'),
-                onPressed: () =>
-                    Navigator.of(context).pop(_minutes * 60 + _seconds),
-                child: Text(l10n.trackerSave),
-              ),
-            ],
+                wheel(
+                  key: const ValueKey('rest-seconds'),
+                  selected: _seconds,
+                  label: l10n.trackerRestSeconds,
+                  onChanged: (value) => _seconds = value,
+                ),
+              ],
+            ),
           ),
-        ),
-        SizedBox(
-          height: scale.scale(180),
-          child: Row(
-            children: [
-              wheel(
-                key: const ValueKey('rest-minutes'),
-                selected: _minutes,
-                label: l10n.trackerRestMinutes,
-                onChanged: (value) => _minutes = value,
-              ),
-              wheel(
-                key: const ValueKey('rest-seconds'),
-                selected: _seconds,
-                label: l10n.trackerRestSeconds,
-                onChanged: (value) => _seconds = value,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.l),
-      ],
+        ],
+      ),
     );
   }
 }

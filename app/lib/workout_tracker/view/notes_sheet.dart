@@ -11,19 +11,17 @@ class const NoteField({
   final String? hint,
 });
 
-/// The notes sheet (`WorkoutNotesView`): one field per note, Cancel and
-/// [saveLabel]. Returns each field's text, in order, or `null` when
-/// cancelled.
+/// The notes sheet (`WorkoutNotesView`): one field per note, with close at
+/// the leading edge and [saveLabel]'s confirm at the trailing edge. Returns
+/// each field's text, in order, or `null` when closed.
 Future<List<String>?> showNotesSheet(
   BuildContext context, {
   required String title,
   required String saveLabel,
   required List<NoteField> fields,
-}) => showModalBottomSheet<List<String>>(
+}) => showAppSheet<List<String>>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
+  size: AppSheetSize.full,
   builder: (_) =>
       _NotesSheet(title: title, saveLabel: saveLabel, fields: fields),
 );
@@ -61,49 +59,27 @@ class _NotesSheetState extends State<_NotesSheet> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.l,
-          0,
-          AppSpacing.l,
-          AppSpacing.l,
+    return AppScaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
         ),
+        title: Text(widget.title),
+        actions: [
+          AppToolbarButton.confirm(
+            semanticLabel: widget.saveLabel,
+            onPressed: () => Navigator.of(context)
+                .pop([for (final controller in _controllers) controller.text]),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.l),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: AppSpacing.m,
           children: [
-            Row(
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l10n.trackerCancel),
-                ),
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      widget.title,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.rowTitle.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop([
-                    for (final controller in _controllers) controller.text,
-                  ]),
-                  child: Text(
-                    widget.saveLabel,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
             for (final (index, field) in widget.fields.indexed) ...[
               if (field.hint case final hint?)
                 Text(

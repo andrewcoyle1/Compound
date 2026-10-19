@@ -106,12 +106,14 @@ class SetTableHeadings extends StatelessWidget {
     final l10n = context.l10n;
     final style = AppTextStyles.label.copyWith(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
-      fontWeight: FontWeight.w600,
     );
     final mode = member.exercise.trackingMode;
-    Widget heading(SetField field) => Text(
+    // A heading that opens its unit's menu is underlined.
+    Widget heading(SetField field, {bool menu = false}) => Text(
       _heading(l10n, field, member),
-      style: style,
+      style: menu
+          ? style.copyWith(decoration: TextDecoration.underline)
+          : style,
       textAlign: TextAlign.center,
     );
     // The plain headings are left to the cells' own labels; the unit menus
@@ -131,7 +133,7 @@ class SetTableHeadings extends StatelessWidget {
                 weightUnitName(l10n, member.weightUnit),
               ),
               onSelected: (unit) => unawaited(_weight(context, unit)),
-              child: _MenuHeading(child: heading(field)),
+              child: _MenuHeading(child: heading(field, menu: true)),
             ),
             SetField.distance => UnitMenu<DistanceUnit>(
               key: ValueKey('distance-unit-${member.exercise.id}'),
@@ -142,7 +144,7 @@ class SetTableHeadings extends StatelessWidget {
                 distanceUnitName(l10n, member.distanceUnit),
               ),
               onSelected: (unit) => unawaited(_distance(context, unit)),
-              child: _MenuHeading(child: heading(field)),
+              child: _MenuHeading(child: heading(field, menu: true)),
             ),
             SetField.reps ||
             SetField.duration => ExcludeSemantics(child: heading(field)),
@@ -202,8 +204,7 @@ String _heading(
   SetField.duration => l10n.trackerColumnTime,
 };
 
-/// A heading that opens its unit's menu: underlined, with a row's height
-/// to tap.
+/// A heading that opens its unit's menu, with a row's height to tap.
 class _MenuHeading extends StatelessWidget {
   const new({required this.child});
 
@@ -212,12 +213,7 @@ class _MenuHeading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ConstrainedBox(
     constraints: const BoxConstraints(minHeight: AppControlSize.row),
-    child: Center(
-      child: DefaultTextStyle.merge(
-        style: const TextStyle(decoration: TextDecoration.underline),
-        child: child,
-      ),
-    ),
+    child: Center(child: child),
   );
 }
 
@@ -403,12 +399,17 @@ class SetTableRow extends StatelessWidget {
         toggled: isLogged,
         label: isLogged ? l10n.trackerLoggedValue : logLabel,
         excludeSemantics: true,
-        child: IconButton(
+        // A bare glyph, as Swift's circle: a 44 pt target with no fill.
+        child: InkResponse(
           key: ValueKey('done-${set.id}'),
-          onPressed: () => cubit.toggleSet(set.id),
-          icon: Icon(
-            isLogged ? AppSymbols.success : AppSymbols.choiceUnselected,
-            color: isLogged ? colors.success : scheme.onSurfaceVariant,
+          onTap: () => cubit.toggleSet(set.id),
+          child: SizedBox.square(
+            dimension: AppControlSize.row,
+            child: Icon(
+              isLogged ? AppSymbols.success : AppSymbols.choiceUnselected,
+              size: AppIconSize.medium.of(context),
+              color: isLogged ? colors.success : scheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),
@@ -493,30 +494,31 @@ class SetTableRow extends StatelessWidget {
   /// The long press: the rest for this set, and delete.
   Future<void> _menu(BuildContext context, String badge) async {
     final l10n = context.l10n;
-    final danger = context.appColors.danger;
-    final action = await showModalBottomSheet<_RowAction>(
+    final action = await showAppSheet<_RowAction>(
       context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (onCustomRest != null)
-              ListTile(
-                leading: const Icon(AppSymbols.rest),
-                title: Text(l10n.trackerRestTimer),
-                onTap: () => Navigator.of(context).pop(_RowAction.rest),
+      size: AppSheetSize.compact,
+      builder: (context) => ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [
+          AppSection(
+            children: [
+              if (onCustomRest != null)
+                AppListRowButton(
+                  title: l10n.trackerRestTimer,
+                  icon: AppSymbols.rest,
+                  accessory: null,
+                  onPressed: () => Navigator.of(context).pop(_RowAction.rest),
+                ),
+              AppListRowButton(
+                title: TrackerText.deleteTitle(l10n, set),
+                icon: AppSymbols.delete,
+                accessory: null,
+                destructive: true,
+                onPressed: () => Navigator.of(context).pop(_RowAction.delete),
               ),
-            ListTile(
-              leading: Icon(AppSymbols.delete, color: danger),
-              title: Text(
-                TrackerText.deleteTitle(l10n, set),
-                style: TextStyle(color: danger),
-              ),
-              onTap: () => Navigator.of(context).pop(_RowAction.delete),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
     if (!context.mounted) return;
@@ -574,8 +576,9 @@ class _Cell extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: AppControlSize.row - 8),
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+          // No fill, as Swift's cells: a canvas fill drew black boxes on a
+          // dark card. The cell being typed into is outlined.
           decoration: ShapeDecoration(
-            color: context.appColors.canvas,
             shape: RoundedSuperellipseBorder(
               borderRadius: const BorderRadius.all(
                 Radius.circular(AppRadius.s),

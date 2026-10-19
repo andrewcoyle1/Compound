@@ -94,6 +94,15 @@ void main() {
     });
   });
 
+  group('AppTextStyleWeight', () {
+    test('semibold keeps the style and changes only its weight', () {
+      final label = AppTextStyles.label;
+      expect(label.semibold.fontWeight, FontWeight.w600);
+      expect(label.semibold.fontSize, label.fontSize);
+      expect(label.semibold.fontFamily, label.fontFamily);
+    });
+  });
+
   group('AppIconSize', () {
     testWidgets('scales with the text size', (tester) async {
       late double size;

@@ -12,6 +12,7 @@ import 'package:compound/progress/logic/progress_carousel.dart';
 import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_maths/compound_maths.dart'
     show Macros, comparedAverages, zeroMacros;
 import 'package:compound_models/compound_models.dart' show Mesocycle;
@@ -605,6 +606,22 @@ class _DailyNutrition extends StatelessWidget {
     final remainingText = remaining == null
         ? AppFormat.placeholder
         : _whole(remaining, locale);
+    final leading = showsRemaining
+        ? (value: consumedText, label: l10n.carouselConsumed)
+        : (value: remainingText, label: l10n.carouselRemaining);
+    final trailing = (
+      value: calories == null
+          ? AppFormat.placeholder
+          : _whole(calories, locale),
+      label: l10n.carouselTarget,
+    );
+    final scaler = MediaQuery.textScalerOf(context);
+    final stats = _wordWidth(context, [
+      for (final stat in [leading, trailing]) ...[
+        (stat.value, AppTextStyles.metric),
+        (stat.label, AppTextStyles.label),
+      ],
+    ]);
     return _Page(
       title: l10n.carouselDailyNutrition,
       toggle: _Toggle<bool>(
@@ -615,23 +632,16 @@ class _DailyNutrition extends StatelessWidget {
         onChanged: onChanged,
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        spacing: AppSpacing.l,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: AppStat(
-                    alignment: CrossAxisAlignment.center,
-                    value: showsRemaining ? consumedText : remainingText,
-                    label: showsRemaining
-                        ? l10n.carouselConsumed
-                        : l10n.carouselRemaining,
-                  ),
-                ),
+          Expanded(
+            child: _Trio(
+              leading: AppStat(
+                alignment: CrossAxisAlignment.center,
+                value: leading.value,
+                label: leading.label,
               ),
-              _CalorieGauge(
+              centre: _CalorieGauge(
                 fraction: fraction,
                 showsRemaining: showsRemaining,
                 value: showsRemaining ? remainingText : consumedText,
@@ -640,19 +650,14 @@ class _DailyNutrition extends StatelessWidget {
                     : l10n.carouselConsumed,
                 color: colors.calories,
               ),
-              Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: AppStat(
-                    alignment: CrossAxisAlignment.center,
-                    value: calories == null
-                        ? AppFormat.placeholder
-                        : _whole(calories, locale),
-                    label: l10n.carouselTarget,
-                  ),
-                ),
+              trailing: AppStat(
+                alignment: CrossAxisAlignment.center,
+                value: trailing.value,
+                label: trailing.label,
               ),
-            ],
+              rowWidth: 2 * stats + scaler.scale(_CalorieGauge.diameter),
+              pairWidth: 2 * stats,
+            ),
           ),
           Row(
             spacing: AppSpacing.l,
@@ -776,86 +781,122 @@ class _CalorieGauge extends StatelessWidget {
   final String label;
   final Color color;
 
+  /// Its size at the default text size.
+  static const double diameter = 150;
+
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Semantics(
-      label: label,
-      value: value,
-      child: ExcludeSemantics(
-        child: SizedBox.square(
-          dimension: 150,
-          child: CustomPaint(
-            painter: _GaugePainter(
-              from: showsRemaining ? fraction : 0,
-              to: showsRemaining ? 1 : fraction,
-              color: color,
-              track: scheme.outlineVariant,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FittedBox(child: Text(value, style: AppTextStyles.display)),
-                  Text(
-                    label,
-                    style: AppTextStyles.label.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+    return ProgressArc(
+      sweep: ArcSweep.gauge,
+      from: showsRemaining ? fraction : 0,
+      value: showsRemaining ? 1 : fraction,
+      color: color,
+      diameter: diameter,
+      semanticLabel: label,
+      semanticValue: value,
+      child: Column(
+        children: [
+          Text(value, style: AppTextStyles.display),
+          Text(
+            label,
+            style: AppTextStyles.label.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _GaugePainter extends CustomPainter {
-  new({
-    required this.from,
-    required this.to,
-    required this.color,
-    required this.track,
+/// The narrowest [texts] can be set without breaking a word: their longest
+/// word at the user's text size.
+///
+/// With [lines], the widest of them unwrapped instead.
+double _wordWidth(
+  BuildContext context,
+  List<(String, TextStyle)> texts, {
+  bool lines = false,
+}) {
+  final base = DefaultTextStyle.of(context).style;
+  var widest = 0.0;
+  for (final (text, style) in texts) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: base.merge(style)),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    widest = math.max(
+      widest,
+      lines ? painter.maxIntrinsicWidth : painter.minIntrinsicWidth,
+    );
+    painter.dispose();
+  }
+  return widest;
+}
+
+/// [centre] between [leading] and [trailing] in a row while that is
+/// [rowWidth] wide or less, the three at full size with no word broken;
+/// else [centre] above the other two, side by side while they fit
+/// [pairWidth], else one above the other. Words are never split and text
+/// never shrinks: the rings give way to the height left.
+class _Trio extends StatelessWidget {
+  const new({
+    required this.leading,
+    required this.centre,
+    required this.trailing,
+    required this.rowWidth,
+    required this.pairWidth,
+    this.rowAlignment = CrossAxisAlignment.center,
   });
 
-  final double from;
-  final double to;
-  final Color color;
-  final Color track;
+  final Widget leading;
+  final Widget centre;
+  final Widget trailing;
+  final double rowWidth;
+  final double pairWidth;
 
-  static const double _sweep = 1.5 * math.pi;
-  static const double _start = 0.75 * math.pi;
+  /// How the three line up in a row.
+  final CrossAxisAlignment rowAlignment;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final rect = (Offset.zero & size).deflate(4);
-    Paint stroke(Color c) => Paint()
-      ..color = c
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
-    canvas.drawArc(rect, _start, _sweep, false, stroke(track));
-    if (to > from) {
-      canvas.drawArc(
-        rect,
-        _start + _sweep * from,
-        _sweep * (to - from),
-        false,
-        stroke(color),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      const gap = AppSpacing.s;
+      final width = constraints.maxWidth;
+      if (rowWidth + 2 * gap <= width) {
+        return Row(
+          crossAxisAlignment: rowAlignment,
+          spacing: gap,
+          children: [
+            Expanded(child: leading),
+            centre,
+            Expanded(child: trailing),
+          ],
+        );
+      }
+      return Column(
+        spacing: AppSpacing.m,
+        children: [
+          Expanded(child: centre),
+          if (pairWidth + gap <= width)
+            Expanded(
+              child: Row(
+                spacing: gap,
+                children: [
+                  Expanded(child: leading),
+                  Expanded(child: trailing),
+                ],
+              ),
+            )
+          else ...[
+            Expanded(child: leading),
+            Expanded(child: trailing),
+          ],
+        ],
       );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_GaugePainter old) =>
-      old.from != from ||
-      old.to != to ||
-      old.color != color ||
-      old.track != track;
+    },
+  );
 }
 
 // MARK: - Energy balance
@@ -1003,6 +1044,42 @@ class _WeeklyWorkouts extends StatelessWidget {
       mesocycleId: activeProgram ? mesocycle?.id : null,
     );
     final target = mesocycle == null ? null : mesocycleTarget(mesocycle);
+    final rings = [
+      for (final (value, aim, title, colour, diameter) in [
+        (
+          tally.muscles,
+          target?.muscles,
+          l10n.carouselMuscles,
+          colors.muscleGroups,
+          _Ring.small,
+        ),
+        (tally.sets, target?.sets, l10n.statSets, colors.workouts, _Ring.large),
+        (
+          tally.exercises,
+          target?.exercises,
+          l10n.progressExercises,
+          colors.exercises,
+          _Ring.small,
+        ),
+      ])
+        _Ring(
+          value: value,
+          target: aim,
+          title: title,
+          colour: colour,
+          diameter: diameter,
+        ),
+    ];
+    final scaler = MediaQuery.textScalerOf(context);
+    // The narrowest each ring's caption goes without breaking a word.
+    // The middle one sits at its natural width in a row, unwrapped.
+    double words(_Ring ring, [_Ring? other]) => _wordWidth(context, [
+      for (final r in [ring, ?other]) ...[
+        (r.title, AppTextStyles.rowTitle),
+        if (r.target case final aim?)
+          (l10n.carouselRingTarget(aim), AppTextStyles.label),
+      ],
+    ], lines: other == null);
     return _Page(
       title: l10n.carouselWeeklyWorkouts,
       toggle: mesocycle == null
@@ -1015,36 +1092,15 @@ class _WeeklyWorkouts extends StatelessWidget {
                   : l10n.carouselAllWorkouts,
               onChanged: onChanged,
             ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: AppSpacing.s,
-        children: [
-          Expanded(
-            child: _Ring(
-              value: tally.muscles,
-              target: target?.muscles,
-              title: l10n.carouselMuscles,
-              colour: colors.muscleGroups,
-              diameter: 92,
-            ),
-          ),
-          _Ring(
-            value: tally.sets,
-            target: target?.sets,
-            title: l10n.statSets,
-            colour: colors.workouts,
-            diameter: 136,
-          ),
-          Expanded(
-            child: _Ring(
-              value: tally.exercises,
-              target: target?.exercises,
-              title: l10n.progressExercises,
-              colour: colors.exercises,
-              diameter: 92,
-            ),
-          ),
-        ],
+      child: _Trio(
+        leading: rings[0],
+        centre: rings[1],
+        trailing: rings[2],
+        rowWidth:
+            2 * math.max(scaler.scale(_Ring.small), words(rings[0], rings[2])) +
+            math.max(scaler.scale(_Ring.large), words(rings[1])),
+        pairWidth: 2 * words(rings[0], rings[2]),
+        rowAlignment: CrossAxisAlignment.start,
       ),
     );
   }
@@ -1067,6 +1123,12 @@ class _Ring extends StatelessWidget {
   final Color colour;
   final double diameter;
 
+  /// The side rings' size at the default text size.
+  static const double small = 92;
+
+  /// The middle ring's.
+  static const double large = 136;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -1074,72 +1136,60 @@ class _Ring extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final text = _whole(value, locale);
     final target = this.target;
-    final fraction = target == null || target <= 0
-        ? 0.0
-        : math.min(value / target, 1).toDouble();
     final secondary = AppTextStyles.label.copyWith(
       color: scheme.onSurfaceVariant,
     );
-    return Semantics(
-      label: title,
-      value: target == null
-          ? text
-          : l10n.progressOfTarget(text, _whole(target, locale)),
-      child: ExcludeSemantics(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.m,
-          children: [
-            SizedBox.square(
-              dimension: diameter,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CircularProgressIndicator(
-                    value: fraction,
-                    strokeWidth: 8,
-                    strokeCap: StrokeCap.round,
-                    color: colour,
-                    backgroundColor: scheme.outlineVariant,
-                  ),
-                  Center(
-                    child: FittedBox(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.m),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              text,
-                              style: AppTextStyles.metricLarge.copyWith(
-                                color: colour,
-                              ),
-                            ),
-                            if (target != null)
-                              Text(
-                                l10n.carouselLeft(math.max(target - value, 0)),
-                                style: secondary,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: AppSpacing.xxs,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: AppSpacing.m,
+      children: [
+        // Past the target, the ring laps itself. It gives way to the
+        // captions when height runs short.
+        Flexible(
+          child: ProgressArc(
+            value: target == null || target <= 0 ? 0 : value / target,
+            color: colour,
+            diameter: diameter,
+            semanticLabel: title,
+            semanticValue: target == null
+                ? text
+                : l10n.progressOfTarget(text, _whole(target, locale)),
+            child: Column(
               children: [
-                Text(title, style: AppTextStyles.rowTitle),
+                Text(
+                  text,
+                  style: AppTextStyles.metricLarge.copyWith(color: colour),
+                ),
                 if (target != null)
-                  Text(l10n.carouselRingTarget(target), style: secondary),
+                  Text(
+                    l10n.carouselLeft(math.max(target - value, 0)),
+                    style: secondary,
+                  ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
+        ExcludeSemantics(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: AppSpacing.xxs,
+            children: [
+              Text(
+                title,
+                style: AppTextStyles.rowTitle,
+                textAlign: TextAlign.center,
+              ),
+              if (target != null)
+                Text(
+                  l10n.carouselRingTarget(target),
+                  style: secondary,
+                  textAlign: TextAlign.center,
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -10,9 +10,11 @@ import 'package:compound/progress/bloc/progress_figures.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/progress/view/progress_card.dart';
+import 'package:compound/progress/view/progress_carousel.dart';
 import 'package:compound/progress/view/progress_metric_pages.dart';
 import 'package:compound/training_analytics/training_analytics.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -381,6 +383,36 @@ void main() {
       expect(all, greaterThan(0));
       expect(sets(), '$all of 7');
       expect(find.text('7 target'), findsOneWidget);
+    });
+
+    testWidgets('at 200% text on a phone, the gauge sits above '
+        'its figures', (tester) async {
+      await pumpView(tester, textScale: 2);
+      await nextPage(tester);
+      expect(
+        tester.getBottomLeft(find.byType(ProgressArc)).dy,
+        lessThanOrEqualTo(tester.getTopLeft(find.text('Target')).dy),
+      );
+    });
+
+    testWidgets('at 200% text with room, the rings grow in a row and no '
+        'caption breaks a word', (tester) async {
+      await pumpView(tester, textScale: 2, width: 800);
+      for (var page = 0; page < 3; page++) {
+        await nextPage(tester);
+      }
+      Finder inCarousel(Finder finder) =>
+          find.descendant(of: find.byType(ProgressCarousel), matching: finder);
+      final line = tester.getSize(inCarousel(find.text('Sets'))).height;
+      for (final word in ['Muscles', 'Exercises']) {
+        final caption = inCarousel(find.text(word));
+        // One word, one line, level with the others.
+        expect(tester.getSize(caption).height, line);
+      }
+      expect(
+        tester.getSize(inCarousel(find.byType(ProgressArc)).at(1)).width,
+        greaterThan(136),
+      );
     });
 
     testWidgets('weekly workouts without a program have no targets or '

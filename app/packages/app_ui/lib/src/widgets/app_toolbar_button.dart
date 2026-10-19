@@ -6,7 +6,8 @@ enum _Look { glyph, close, confirm, avatar }
 /// A button in an app bar, with a 44 pt tap target and its
 /// [semanticLabel] as tooltip and screen-reader label.
 ///
-/// - The default constructor is a bare glyph, such as Settings or Add.
+/// - The default constructor is a bare glyph, such as Settings or Add,
+///   with an optional count badge, such as the notifications bell's.
 /// - [AppToolbarButton.close] is a modal's dismiss button, at the leading
 ///   edge. No "Cancel" text button.
 /// - [AppToolbarButton.confirm] is a modal's confirm button, at the trailing
@@ -25,12 +26,14 @@ class AppToolbarButton extends StatelessWidget {
     required IconData icon,
     required String semanticLabel,
     required VoidCallback? onPressed,
+    int badgeCount = 0,
     Key? key,
   }) : this._(
          look: _Look.glyph,
          icon: icon,
          semanticLabel: semanticLabel,
          onPressed: onPressed,
+         badgeCount: badgeCount,
          key: key,
        );
 
@@ -87,6 +90,7 @@ class AppToolbarButton extends StatelessWidget {
     required this.semanticLabel,
     required this.onPressed,
     this.isSaving = false,
+    this.badgeCount = 0,
     this.image,
     this.initials,
     super.key,
@@ -105,6 +109,9 @@ class AppToolbarButton extends StatelessWidget {
 
   /// Whether a confirm button's save is in progress.
   final bool isSaving;
+
+  /// A glyph's count badge, such as unread notifications; hidden at zero.
+  final int badgeCount;
 
   /// An avatar's photo.
   final ImageProvider? image;
@@ -132,7 +139,12 @@ class AppToolbarButton extends StatelessWidget {
         onPressed: onPressed,
         tooltip: semanticLabel,
         iconSize: glyph,
-        icon: Icon(icon),
+        // The badge keeps its size at large text, as the glyph does.
+        icon: Badge(
+          label: Text('$badgeCount', textScaler: TextScaler.noScaling),
+          isLabelVisible: badgeCount > 0,
+          child: Icon(icon),
+        ),
         style: IconButton.styleFrom(
           foregroundColor: scheme.onSurface,
           minimumSize: const Size.square(AppControlSize.row),

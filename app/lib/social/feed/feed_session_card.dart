@@ -125,76 +125,45 @@ class _Actions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final like = context.watch<SessionLikeCubit>().state;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final viewer = this.viewer;
-    final style = TextButton.styleFrom(
-      foregroundColor: scheme.onSurfaceVariant,
-      minimumSize: const Size.fromHeight(AppControlSize.row),
-      textStyle: AppTextStyles.rowDetail,
-    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
       child: Row(
         children: [
           Expanded(
-            child: Semantics(
-              label: like.isLiked ? l10n.socialUnlike : l10n.socialLike,
-              value: l10n.socialLikes(like.count),
-              button: true,
-              excludeSemantics: true,
-              child: TextButton.icon(
-                style: style.copyWith(
-                  foregroundColor: WidgetStatePropertyAll(
-                    like.isLiked ? scheme.primary : scheme.onSurfaceVariant,
-                  ),
-                ),
-                onPressed: viewer == null
-                    ? null
-                    : () async {
-                        final cubit = context.read<SessionLikeCubit>();
-                        if (!await cubit.toggled(viewer)) {
-                          unawaited(HapticFeedback.heavyImpact());
-                        }
-                      },
-                icon: Icon(like.isLiked ? AppSymbols.liked : AppSymbols.like),
-                label: Text(AppFormat.number(like.count, locale: locale)),
-              ),
+            child: AppIconButton.plain(
+              icon: like.isLiked ? AppSymbols.liked : AppSymbols.like,
+              semanticLabel: like.isLiked ? l10n.socialUnlike : l10n.socialLike,
+              label: AppFormat.number(like.count, locale: locale),
+              selected: like.isLiked,
+              onPressed: viewer == null
+                  ? null
+                  : () async {
+                      final cubit = context.read<SessionLikeCubit>();
+                      if (!await cubit.toggled(viewer)) {
+                        unawaited(HapticFeedback.heavyImpact());
+                      }
+                    },
             ),
           ),
           Expanded(
-            child: Semantics(
-              label: l10n.socialComments,
-              button: true,
-              excludeSemantics: true,
-              child: TextButton(
-                style: style,
-                onPressed: () =>
-                    SocialNavigation.openComments(context, session),
-                child: const Icon(AppSymbols.comment),
-              ),
+            child: AppIconButton.plain(
+              icon: AppSymbols.comment,
+              semanticLabel: l10n.socialComments,
+              onPressed: () => SocialNavigation.openComments(context, session),
             ),
           ),
           Expanded(
-            child: Semantics(
-              label: l10n.shareWorkout,
-              button: true,
-              excludeSemantics: true,
-              child: TextButton(
-                style: style,
-                onPressed: () => unawaited(_share(context)),
-                child: Icon(AppSymbols.share),
-              ),
+            child: AppIconButton.plain(
+              icon: AppSymbols.share,
+              semanticLabel: l10n.shareWorkout,
+              onPressed: () => unawaited(_share(context)),
             ),
           ),
           Expanded(
-            child: _MoreMenu(
-              session: session,
-              author: author,
-              viewer: viewer,
-              style: style,
-            ),
+            child: _MoreMenu(session: session, author: author, viewer: viewer),
           ),
         ],
       ),
@@ -249,13 +218,11 @@ class _MoreMenu extends StatefulWidget {
     required this.session,
     required this.author,
     required this.viewer,
-    required this.style,
   });
 
   final WorkoutSessionModel session;
   final UserModel author;
   final UserModel? viewer;
-  final ButtonStyle style;
 
   @override
   State<_MoreMenu> createState() => _MoreMenuState();
@@ -346,18 +313,19 @@ class _MoreMenuState extends State<_MoreMenu> {
             child: Text(l10n.reportWorkoutMenu),
           ),
       ],
-      builder: (context, controller, _) => TextButton(
-        style: widget.style,
-        onPressed: _rendering
-            ? null
-            : () => controller.isOpen ? controller.close() : controller.open(),
-        child: _rendering
-            ? const SizedBox.square(
-                dimension: AppSpacing.l,
-                child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-              )
-            : Icon(AppSymbols.more, semanticLabel: l10n.socialMoreActions),
-      ),
+      builder: (context, controller, _) => _rendering
+          ? Center(
+              child: SizedBox.square(
+                dimension: AppIconSize.small.of(context),
+                child: const CircularProgressIndicator.adaptive(strokeWidth: 2),
+              ),
+            )
+          : AppIconButton.plain(
+              icon: AppSymbols.more,
+              semanticLabel: l10n.socialMoreActions,
+              onPressed: () =>
+                  controller.isOpen ? controller.close() : controller.open(),
+            ),
     );
   }
 }

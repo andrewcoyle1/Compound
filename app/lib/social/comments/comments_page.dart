@@ -87,21 +87,14 @@ class _CommentsViewState extends State<CommentsView> {
   Future<void> _showNotice(BuildContext context, CommentsState state) async {
     final l10n = context.l10n;
     unawaited(HapticFeedback.heavyImpact());
-    await showAdaptiveDialog<void>(
+    await showAppDialog<void>(
       context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(switch (state.notice) {
-          CommentsNotice.deleteFailed => l10n.commentsDeleteFailed,
-          _ => l10n.commentsPostFailed,
-        }),
-        content: Text(l10n.socialTryAgain),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.settingsOk),
-          ),
-        ],
-      ),
+      title: switch (state.notice) {
+        CommentsNotice.deleteFailed => l10n.commentsDeleteFailed,
+        _ => l10n.commentsPostFailed,
+      },
+      message: l10n.socialTryAgain,
+      actions: [AppDialogAction(label: l10n.settingsOk)],
     );
   }
 
@@ -146,44 +139,38 @@ class _CommentsViewState extends State<CommentsView> {
             children: [
               Expanded(
                 child: switch (state.status) {
-                  CommentsStatus.loading => const Center(
-                    child: CircularProgressIndicator.adaptive(),
+                  CommentsStatus.loading => AppLoadingView(
+                    label: l10n.launchLoading,
                   ),
-                  CommentsStatus.failed => Center(
-                    child: SingleChildScrollView(
-                      child: SocialEmptyState(
-                        icon: AppSymbols.warning,
-                        title: l10n.commentsLoadFailedTitle,
-                        message: l10n.commentsLoadFailedMessage,
-                        action: TextButton(
-                          onPressed: () => _cubit.load(
-                            viewer: circle.viewer,
-                            following: circle.visibleFollowing,
-                          ),
-                          child: Text(l10n.tryAgainButton),
-                        ),
-                      ),
+                  CommentsStatus.failed => AppErrorState(
+                    title: l10n.commentsLoadFailedTitle,
+                    description: l10n.commentsLoadFailedMessage,
+                    actionLabel: l10n.tryAgainButton,
+                    onAction: () => _cubit.load(
+                      viewer: circle.viewer,
+                      following: circle.visibleFollowing,
                     ),
                   ),
-                  CommentsStatus.loaded when state.comments.isEmpty => Center(
-                    child: SingleChildScrollView(
-                      child: SocialEmptyState(
-                        icon: AppSymbols.comment,
-                        title: l10n.commentsEmptyTitle,
-                        message: l10n.commentsEmptyMessage,
-                      ),
+                  CommentsStatus.loaded when state.comments.isEmpty =>
+                    AppEmptyState(
+                      icon: AppSymbols.comment,
+                      title: l10n.commentsEmptyTitle,
+                      description: l10n.commentsEmptyMessage,
                     ),
-                  ),
                   CommentsStatus.loaded => ListView(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
+                    padding: const EdgeInsets.all(AppSpacing.l),
                     children: [
-                      for (final comment in state.comments)
-                        _CommentRow(
-                          comment: comment,
-                          isReply: state.isReply(comment),
-                          known: known,
-                          viewerId: circle.viewer?.userId,
-                        ),
+                      AppSection(
+                        children: [
+                          for (final comment in state.comments)
+                            _CommentRow(
+                              comment: comment,
+                              isReply: state.isReply(comment),
+                              known: known,
+                              viewerId: circle.viewer?.userId,
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 },
@@ -240,7 +227,7 @@ class _CommentRow extends StatelessWidget {
         ..add(
           TextSpan(
             text: comment.text.substring(start, end),
-            style: TextStyle(color: scheme.primary),
+            style: AppTextStyles.rowDetail.copyWith(color: scheme.primary),
           ),
         );
       cursor = end;
@@ -303,116 +290,70 @@ class _CommentRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: AppSpacing.xxs,
                 children: [
-                  Row(
-                    spacing: AppSpacing.s,
-                    children: [
-                      Expanded(
-                        child: Text(
+                  // The time wraps under a long name rather than squeezing
+                  // it, at large text sizes.
+                  SizedBox(
+                    width: double.infinity,
+                    child: Wrap(
+                      spacing: AppSpacing.s,
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
                           comment.authorName ?? l10n.socialUnknown,
-                          style: AppTextStyles.rowDetail.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTextStyles.sectionTitle,
                         ),
-                      ),
-                      RelativeTimeBuilder(
-                        date: comment.dateCreated,
-                        builder: (context, text) =>
-                            Text(text, style: secondary),
-                      ),
-                    ],
+                        RelativeTimeBuilder(
+                          date: comment.dateCreated,
+                          builder: (context, text) =>
+                              Text(text, style: secondary),
+                        ),
+                      ],
+                    ),
                   ),
                   Text.rich(
                     TextSpan(children: spans),
                     style: AppTextStyles.rowDetail,
                   ),
-                  Row(
-                    children: [
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: scheme.onSurfaceVariant,
-                          textStyle: AppTextStyles.label,
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(
-                            AppControlSize.row,
-                            AppControlSize.row,
-                          ),
-                        ),
-                        onPressed: () => cubit.replyPressed(comment),
-                        child: Text(l10n.commentsReply),
-                      ),
-                      if (isOwn) ...[
-                        const SizedBox(width: AppSpacing.m),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: context.appColors.danger,
-                            textStyle: AppTextStyles.label,
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(
-                              AppControlSize.row,
-                              AppControlSize.row,
-                            ),
-                          ),
-                          onPressed: () => _confirmDelete(context),
-                          child: Text(l10n.commentsDelete),
-                        ),
-                      ] else if (viewerId != null) ...[
-                        const SizedBox(width: AppSpacing.m),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: scheme.onSurfaceVariant,
-                            textStyle: AppTextStyles.label,
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(
-                              AppControlSize.row,
-                              AppControlSize.row,
-                            ),
-                          ),
-                          onPressed: report,
-                          child: Text(l10n.reportCommentAction),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Semantics(
-              label: isLiked ? l10n.commentsUnlike : l10n.commentsLike,
-              value: l10n.socialLikes(likes),
-              button: true,
-              excludeSemantics: true,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: viewerId == null
-                    ? null
-                    : () async {
-                        if (!await cubit.likePressed(comment, viewerId)) {
-                          unawaited(HapticFeedback.heavyImpact());
-                        }
-                      },
-                child: SizedBox(
-                  width: AppControlSize.row,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
-                    child: Column(
+                  // Pulled back by the buttons' own padding, so the first
+                  // label lines up with the comment.
+                  Transform.translate(
+                    offset: const Offset(-AppSpacing.s, 0),
+                    child: Wrap(
                       children: [
-                        Icon(
-                          isLiked ? AppSymbols.heartFilled : AppSymbols.heart,
-                          color: isLiked
-                              ? scheme.primary
-                              : scheme.onSurfaceVariant,
-                          size: AppIconSize.small.of(context),
+                        AppTextButton(
+                          label: l10n.commentsReply,
+                          onPressed: () => cubit.replyPressed(comment),
                         ),
-                        if (likes > 0)
-                          Text(
-                            AppFormat.number(likes, locale: locale),
-                            style: secondary,
+                        if (isOwn)
+                          AppTextButton(
+                            label: l10n.commentsDelete,
+                            isDestructive: true,
+                            onPressed: () => _confirmDelete(context),
+                          )
+                        else if (viewerId != null)
+                          AppTextButton(
+                            label: l10n.reportCommentAction,
+                            onPressed: report,
                           ),
                       ],
                     ),
                   ),
-                ),
+                ],
               ),
+            ),
+            AppIconButton.plain(
+              icon: isLiked ? AppSymbols.heartFilled : AppSymbols.heart,
+              semanticLabel: isLiked ? l10n.commentsUnlike : l10n.commentsLike,
+              label: likes > 0 ? AppFormat.number(likes, locale: locale) : null,
+              selected: isLiked,
+              onPressed: viewerId == null
+                  ? null
+                  : () async {
+                      if (!await cubit.likePressed(comment, viewerId)) {
+                        unawaited(HapticFeedback.heavyImpact());
+                      }
+                    },
             ),
           ],
         ),
@@ -423,27 +364,14 @@ class _CommentRow extends StatelessWidget {
   Future<void> _confirmDelete(BuildContext context) async {
     final l10n = context.l10n;
     final cubit = context.read<CommentsCubit>();
-    final confirmed = await showAdaptiveDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(l10n.commentsDeleteTitle),
-        content: Text(l10n.commentsDeleteMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.commentsCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: context.appColors.danger,
-            ),
-            child: Text(l10n.commentsDelete),
-          ),
-        ],
-      ),
+    final confirmed = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.commentsDeleteTitle,
+      message: l10n.commentsDeleteMessage,
+      confirmLabel: l10n.commentsDelete,
+      cancelLabel: l10n.commentsCancel,
     );
-    if (confirmed ?? false) await cubit.deleteConfirmed(comment);
+    if (confirmed) await cubit.deleteConfirmed(comment);
   }
 }
 
@@ -469,91 +397,98 @@ class _InputBar extends StatelessWidget {
     );
     final parent = state.replyingTo;
     final canSend = state.draft.trim().isNotEmpty && viewer != null;
-    return Material(
-      color: context.appColors.surface,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.l,
-          AppSpacing.s,
-          AppSpacing.s,
-          AppSpacing.s,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (parent != null)
+    // A floating card under the thread, as Swift's composer capsule.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.l,
+        AppSpacing.s,
+        AppSpacing.l,
+        AppSpacing.s,
+      ),
+      child: AppCard(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            AppSpacing.xs,
+            AppSpacing.xs,
+            AppSpacing.xs,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (parent != null)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.commentsReplyingTo(
+                          parent.authorName ?? l10n.commentsCommentFallback,
+                        ),
+                        style: AppTextStyles.label.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    AppIconButton.plain(
+                      icon: AppSymbols.close,
+                      semanticLabel: l10n.commentsCancelReply,
+                      onPressed: cubit.cancelReplyPressed,
+                    ),
+                  ],
+                ),
+              if (suggestions.isNotEmpty)
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    spacing: AppSpacing.s,
+                    children: [
+                      for (final candidate in suggestions)
+                        Semantics(
+                          label: l10n.commentsMention(candidate.fullName),
+                          button: true,
+                          excludeSemantics: true,
+                          child: AppChip(
+                            label: candidate.label,
+                            onPressed: () => cubit.mentionPressed(candidate),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      l10n.commentsReplyingTo(
-                        parent.authorName ?? l10n.commentsCommentFallback,
+                    child: TextField(
+                      controller: controller,
+                      focusNode: focus,
+                      minLines: 1,
+                      maxLines: 4,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                        hintText: parent == null
+                            ? l10n.commentsAddComment
+                            : l10n.commentsAddReply,
+                        border: InputBorder.none,
+                        filled: false,
                       ),
-                      style: AppTextStyles.label.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      onChanged: cubit.draftChanged,
                     ),
                   ),
-                  IconButton(
-                    tooltip: l10n.commentsCancelReply,
-                    onPressed: cubit.cancelReplyPressed,
-                    icon: const Icon(AppSymbols.close),
+                  AppIconButton(
+                    icon: AppSymbols.send,
+                    semanticLabel: l10n.commentsSend,
+                    onPressed: canSend
+                        ? () async {
+                            await cubit.sendPressed(viewer);
+                            unawaited(HapticFeedback.lightImpact());
+                          }
+                        : null,
                   ),
                 ],
               ),
-            if (suggestions.isNotEmpty)
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  spacing: AppSpacing.s,
-                  children: [
-                    for (final candidate in suggestions)
-                      Semantics(
-                        label: l10n.commentsMention(candidate.fullName),
-                        button: true,
-                        excludeSemantics: true,
-                        child: OutlinedButton(
-                          onPressed: () => cubit.mentionPressed(candidate),
-                          child: Text(candidate.label),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    focusNode: focus,
-                    minLines: 1,
-                    maxLines: 4,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      hintText: parent == null
-                          ? l10n.commentsAddComment
-                          : l10n.commentsAddReply,
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                    onChanged: cubit.draftChanged,
-                  ),
-                ),
-                IconButton(
-                  tooltip: l10n.commentsSend,
-                  color: scheme.primary,
-                  onPressed: canSend
-                      ? () async {
-                          await cubit.sendPressed(viewer);
-                          unawaited(HapticFeedback.lightImpact());
-                        }
-                      : null,
-                  icon: const Icon(AppSymbols.send),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -94,9 +94,7 @@ class UserRow extends StatelessWidget {
                 children: [
                   Text(
                     listNameOf(user) ?? context.l10n.socialUnknown,
-                    style: AppTextStyles.rowTitle.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextStyles.rowTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -112,8 +110,8 @@ class UserRow extends StatelessWidget {
   }
 }
 
-/// The Follow, Following or Requested pill (`FollowButton`). Follow is the
-/// primary action, so it is filled; the others are outlined.
+/// The Follow, Following or Requested capsule (`FollowButton`). Follow is
+/// the primary action, so it is filled in the accent; the others are tinted.
 class FollowButton extends StatelessWidget {
   const new({required this.state, required this.onPressed, super.key});
 
@@ -123,19 +121,22 @@ class FollowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final label = Text(switch (state) {
-      FollowState.follow => l10n.socialFollow,
-      FollowState.following => l10n.socialFollowing,
-      FollowState.requested => l10n.socialRequested,
-    });
-    final button = state == FollowState.follow
-        ? FilledButton(onPressed: onPressed, child: label)
-        : OutlinedButton(onPressed: onPressed, child: label);
     return Semantics(
       hint: state == FollowState.requested
           ? l10n.socialCancelRequestHint
           : null,
-      child: button,
+      child: AppCtaButton(
+        label: switch (state) {
+          FollowState.follow => l10n.socialFollow,
+          FollowState.following => l10n.socialFollowing,
+          FollowState.requested => l10n.socialRequested,
+        },
+        size: AppCtaSize.compact,
+        variant: state == FollowState.follow
+            ? AppCtaVariant.primary
+            : AppCtaVariant.secondary,
+        onPressed: onPressed,
+      ),
     );
   }
 }
@@ -179,12 +180,7 @@ class AuthorHeader extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       if (name != null)
-                        Text(
-                          name,
-                          style: AppTextStyles.rowDetail.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        Text(name, style: AppTextStyles.sectionTitle),
                       UsernameLabel(username: author.username),
                     ],
                   ),
@@ -203,55 +199,6 @@ class AuthorHeader extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// A centred message with an icon, title, text and optional action: the
-/// `ContentUnavailableView` of the social screens.
-class SocialEmptyState extends StatelessWidget {
-  const new({
-    required this.icon,
-    required this.title,
-    this.message,
-    this.action,
-    super.key,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? message;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    final message = this.message;
-    final action = this.action;
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xl,
-        vertical: AppSpacing.xxl,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        spacing: AppSpacing.s,
-        children: [
-          Icon(icon, size: AppIconSize.large.of(context), color: secondary),
-          Text(
-            title,
-            style: AppTextStyles.sectionTitle,
-            textAlign: TextAlign.center,
-          ),
-          if (message != null)
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-          ?action,
-        ],
       ),
     );
   }

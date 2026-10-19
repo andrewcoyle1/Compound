@@ -17,24 +17,23 @@ Future<void> showShareToFollower(BuildContext context, SharePayload payload) {
   final circle = context.read<CircleBloc>().state;
   final viewer = circle.viewer;
   if (viewer == null) return Future.value();
-  return Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      fullscreenDialog: true,
-      builder: (_) => BlocProvider(
-        create: (context) => ShareToFollowerCubit(
-          social: context.read<SocialRepository>(),
-          analytics: context.read<AnalyticsRepository>(),
-          connectivity: context.read(),
-          viewer: viewer,
-          payload: payload,
-          following: circle.followingUsers,
-        )..appeared(),
-        child: ShareToFollowerView(
-          name: switch (payload) {
-            TemplateSharePayload(:final template) => template.name,
-            MesocycleSharePayload(:final mesocycle) => mesocycle.name,
-          },
-        ),
+  return showAppSheet<void>(
+    context: context,
+    size: AppSheetSize.full,
+    builder: (_) => BlocProvider(
+      create: (context) => ShareToFollowerCubit(
+        social: context.read<SocialRepository>(),
+        analytics: context.read<AnalyticsRepository>(),
+        connectivity: context.read(),
+        viewer: viewer,
+        payload: payload,
+        following: circle.followingUsers,
+      )..appeared(),
+      child: ShareToFollowerView(
+        name: switch (payload) {
+          TemplateSharePayload(:final template) => template.name,
+          MesocycleSharePayload(:final mesocycle) => mesocycle.name,
+        },
       ),
     ),
   );
@@ -96,29 +95,14 @@ class _ShareToFollowerViewState extends State<ShareToFollowerView> {
       listener: _onStatus,
       child: AppScaffold(
         appBar: AppBar(
-          leading: IconButton(
-            tooltip: l10n.socialClose,
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(AppSymbols.close),
-          ),
+          leading: AppToolbarButton.close(semanticLabel: l10n.socialClose),
           title: Text(l10n.shareToFollowerTitle(widget.name)),
           actions: [
-            if (state.status == ShareSendStatus.sending)
-              const Padding(
-                padding: EdgeInsets.all(AppSpacing.l),
-                child: SizedBox.square(
-                  dimension: AppSpacing.l,
-                  child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-                ),
-              )
-            else
-              TextButton(
-                onPressed: state.canSend ? _cubit.sendPressed : null,
-                child: Text(
-                  l10n.shareToFollowerSend,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
+            AppToolbarButton.confirm(
+              semanticLabel: l10n.shareToFollowerSend,
+              isSaving: state.status == ShareSendStatus.sending,
+              onPressed: state.canSend ? _cubit.sendPressed : null,
+            ),
           ],
         ),
         body: SafeArea(
@@ -126,10 +110,10 @@ class _ShareToFollowerViewState extends State<ShareToFollowerView> {
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
               if (state.recipients.isEmpty)
-                SocialEmptyState(
+                AppEmptyState(
                   icon: AppSymbols.friends,
                   title: l10n.shareToFollowerNoOneTitle,
-                  message: l10n.shareToFollowerNoOneMessage,
+                  description: l10n.shareToFollowerNoOneMessage,
                 )
               else
                 AppSection(

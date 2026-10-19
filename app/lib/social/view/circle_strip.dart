@@ -79,11 +79,6 @@ class _MemberCell extends StatelessWidget {
     final name = commonNameOf(member.user) ?? l10n.socialUnknown;
     final toGo = member.sessionsToGo;
     final onSetGoalPressed = this.onSetGoalPressed;
-    final pillStyle = OutlinedButton.styleFrom(
-      visualDensity: VisualDensity.compact,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-      textStyle: AppTextStyles.label.copyWith(fontWeight: FontWeight.w600),
-    );
     return Column(
       spacing: AppSpacing.xs,
       children: [
@@ -114,7 +109,6 @@ class _MemberCell extends StatelessWidget {
                       ? l10n.socialToGo(toGo)
                       : firstNameOf(member.user) ?? name,
                   style: AppTextStyles.label.copyWith(
-                    fontWeight: toGo != null ? FontWeight.w600 : null,
                     color: toGo != null
                         ? colors.warning
                         : member.trainedToday
@@ -133,10 +127,11 @@ class _MemberCell extends StatelessWidget {
             label: l10n.socialNudgeLabel(name),
             excludeSemantics: true,
             button: true,
-            child: OutlinedButton(
-              style: pillStyle,
+            child: AppCtaButton(
+              label: l10n.socialNudge,
+              size: AppCtaSize.compact,
+              variant: AppCtaVariant.secondary,
               onPressed: onNudgePressed,
-              child: Text(l10n.socialNudge, maxLines: 1),
             ),
           ),
         if (onSetGoalPressed != null)
@@ -144,10 +139,11 @@ class _MemberCell extends StatelessWidget {
             label: l10n.socialSetGoalLabel,
             excludeSemantics: true,
             button: true,
-            child: OutlinedButton(
-              style: pillStyle,
+            child: AppCtaButton(
+              label: l10n.socialSetGoal,
+              size: AppCtaSize.compact,
+              variant: AppCtaVariant.secondary,
               onPressed: onSetGoalPressed,
-              child: Text(l10n.socialSetGoal, maxLines: 1),
             ),
           ),
       ],

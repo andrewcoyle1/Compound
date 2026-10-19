@@ -107,7 +107,7 @@ void main() {
 
     await tester.tap(find.text('Maya Chen'));
     await tester.pump();
-    await tester.tap(find.text('Send'));
+    await tester.tap(find.byTooltip('Send'));
     await settle(tester);
     expect(find.text('Share ${template.name}'), findsNothing);
     final sent = (await tester.runAsync(

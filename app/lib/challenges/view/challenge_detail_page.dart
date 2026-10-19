@@ -87,27 +87,14 @@ class _ChallengeDetailViewState extends State<ChallengeDetailView> {
 
   Future<void> _confirmLeave(ChallengeModel challenge) async {
     final l10n = context.l10n;
-    final leave = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.challengeLeaveTitle(challenge.title)),
-        content: Text(l10n.challengeLeaveMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.commentsCancel),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.challengeLeave),
-          ),
-        ],
-      ),
+    final leave = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.challengeLeaveTitle(challenge.title),
+      message: l10n.challengeLeaveMessage,
+      confirmLabel: l10n.challengeLeave,
+      cancelLabel: l10n.commentsCancel,
     );
-    if (leave ?? false) await _cubit.leave();
+    if (leave) await _cubit.leave();
   }
 
   void _onLeave(BuildContext context, ChallengeDetailState state) {
@@ -162,37 +149,33 @@ class _ChallengeDetailViewState extends State<ChallengeDetailView> {
           title: Text(challenge?.title ?? ''),
           actions: [
             if (challenge != null && isMember)
-              PopupMenuButton<void>(
-                tooltip: l10n.socialMoreActions,
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    onTap: () => unawaited(_confirmLeave(challenge)),
-                    child: ListTile(
-                      leading: Icon(
-                        AppSymbols.leave,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      title: Text(l10n.challengeLeaveMenu),
+              MenuAnchor(
+                menuChildren: [
+                  MenuItemButton(
+                    leadingIcon: Icon(
+                      AppSymbols.leave,
+                      color: context.appColors.danger,
                     ),
+                    onPressed: () => unawaited(_confirmLeave(challenge)),
+                    child: Text(l10n.challengeLeaveMenu),
                   ),
                 ],
+                builder: (context, controller, _) => AppToolbarButton(
+                  icon: AppSymbols.more,
+                  semanticLabel: l10n.socialMoreActions,
+                  onPressed: () => controller.isOpen
+                      ? controller.close()
+                      : controller.open(),
+                ),
               ),
           ],
         ),
         body: switch ((challenge, state.notFound)) {
-          (_, true) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: AppInlineMessage(
-                kind: AppInlineMessageKind.error,
-                text: l10n.challengeNotFound,
-                kindLabel: l10n.errorLabel,
-              ),
-            ),
+          (_, true) => AppErrorState(
+            icon: AppSymbols.leader,
+            title: l10n.challengeNotFound,
           ),
-          (null, _) => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
+          (null, _) => AppLoadingView(label: l10n.launchLoading),
           (final ChallengeModel challenge, _) => _Standings(
             challenge: challenge,
             state: state,
@@ -345,11 +328,9 @@ class _StandingRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.rowTitle.copyWith(
-                    fontWeight: isOwn ? FontWeight.w600 : null,
-                  ),
+                  style: isOwn
+                      ? AppTextStyles.sectionTitle
+                      : AppTextStyles.rowTitle,
                 ),
               ),
               if (entry.isComplete)

@@ -453,6 +453,10 @@
     "@socialSessionsLoadFailed": {
         "description": "Profile workouts failed to load"
     },
+    "socialProfileNotFound": "This profile isn't available.",
+    "@socialProfileNotFound": {
+        "description": "A profile opened by link or id that could not be read"
+    },
     "socialNoWorkoutsTitle": "No Workouts Yet",
     "@socialNoWorkoutsTitle": {
         "description": "Profile with no workouts"

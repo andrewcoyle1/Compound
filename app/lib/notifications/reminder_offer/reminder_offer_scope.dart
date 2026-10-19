@@ -78,22 +78,22 @@ class ReminderOfferScope extends StatelessWidget {
         l10n.reminderOfferStreakAccept,
       ),
     };
-    final accepted = await showAdaptiveDialog<bool>(
+    final accepted = await showAppDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.reminderOfferNotNow),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(accept),
-          ),
-        ],
-      ),
+      title: title,
+      message: message,
+      actions: [
+        AppDialogAction(
+          label: l10n.reminderOfferNotNow,
+          value: false,
+          role: AppDialogRole.cancel,
+        ),
+        AppDialogAction(
+          label: accept,
+          value: true,
+          role: AppDialogRole.preferred,
+        ),
+      ],
     );
     if (accepted == null) return;
     await cubit.answer(offer, accepted: accepted);

@@ -137,19 +137,11 @@ class _SharedItemViewState extends State<SharedItemView> {
           }),
         ),
         body: switch ((share, state.notFound)) {
-          (_, true) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: AppInlineMessage(
-                kind: AppInlineMessageKind.error,
-                text: l10n.sharedItemNotFound,
-                kindLabel: l10n.errorLabel,
-              ),
-            ),
+          (_, true) => AppErrorState(
+            icon: AppSymbols.template,
+            title: l10n.sharedItemNotFound,
           ),
-          (null, _) => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
+          (null, _) => AppLoadingView(label: l10n.launchLoading),
           (final ShareModel share, _) => ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
@@ -212,11 +204,12 @@ class _SharedItemViewState extends State<SharedItemView> {
                               ? null
                               : _cubit.addToLibraryPressed,
                         ),
-                        TextButton(
+                        AppCtaButton(
+                          label: l10n.sharedItemDecline,
+                          variant: AppCtaVariant.plain,
                           onPressed: state.isWorking
                               ? null
                               : _cubit.declinePressed,
-                          child: Text(l10n.sharedItemDecline),
                         ),
                       ],
               ),

@@ -2,7 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/challenges/logic/challenge_standings.dart';
 import 'package:compound/challenges/view/challenge_ring.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:compound/social/view/people_widgets.dart';
+import 'package:compound/social/view/people_widgets.dart' show UserAvatar;
 
 /// "Challenges" under Social's leaderboard (`ChallengesDashboardSection`):
 /// one card per running challenge, with days left, the reader's ring and
@@ -25,49 +25,39 @@ class ChallengesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SocialSectionHeader(
-          title: l10n.challengesTitle,
-          action: Semantics(
-            label: l10n.challengesNewLabel,
-            excludeSemantics: true,
-            button: true,
-            child: TextButton(
-              onPressed: onCreatePressed,
-              child: Text(l10n.challengesNew),
-            ),
-          ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.l,
+        0,
+        AppSpacing.l,
+        AppSpacing.m,
+      ),
+      child: AppSection(
+        header: l10n.challengesTitle,
+        trailing: Semantics(
+          label: l10n.challengesNewLabel,
+          excludeSemantics: true,
+          button: true,
+          child: AppChip(label: l10n.challengesNew, onPressed: onCreatePressed),
         ),
-        if (cards.isEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.l,
-              0,
-              AppSpacing.l,
-              AppSpacing.m,
+        grouped: false,
+        children: [
+          if (cards.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+              child: Text(
+                l10n.challengesEmpty,
+                style: AppTextStyles.rowDetail.copyWith(color: secondary),
+              ),
             ),
-            child: Text(
-              l10n.challengesEmpty,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-            ),
-          ),
-        for (final card in cards)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.l,
-              0,
-              AppSpacing.l,
-              AppSpacing.m,
-            ),
-            child: _Card(
+          for (final card in cards)
+            _Card(
               card: card,
               viewerId: viewerId,
               onPressed: () => onCardPressed(card),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -110,11 +100,7 @@ class _Card extends StatelessWidget {
                       children: [
                         Text(
                           card.challenge.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.rowTitle.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTextStyles.sectionTitle,
                         ),
                         Text(
                           l10n.challengeDaysLeft(card.daysLeft),
@@ -126,7 +112,10 @@ class _Card extends StatelessWidget {
                           Row(
                             spacing: AppSpacing.xs,
                             children: [
-                              UserAvatar(imageUrl: entry.imageUrl, size: 20),
+                              UserAvatar(
+                                imageUrl: entry.imageUrl,
+                                size: AppIconSize.small.of(context),
+                              ),
                               Flexible(
                                 child: Text(
                                   l10n.challengeTopEntry(

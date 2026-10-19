@@ -5,11 +5,9 @@ import 'package:compound/l10n/l10n.dart';
 /// another device than the one with the app (`InviteCodeSheet`). Pops with
 /// the code typed, or null when closed.
 Future<String?> showInviteCodeSheet(BuildContext context) =>
-    showModalBottomSheet<String>(
+    showAppSheet<String>(
       context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
+      size: AppSheetSize.compact,
       builder: (_) => const InviteCodeSheet(),
     );
 
@@ -44,58 +42,41 @@ class _InviteCodeSheetState extends State<InviteCodeSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return AppScaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: AppToolbarButton.close(semanticLabel: l10n.socialClose),
+        title: Text(l10n.inviteEnterCode),
+        actions: [
+          AppToolbarButton.confirm(
+            semanticLabel: l10n.inviteJoin,
+            onPressed: _canJoin ? _join : null,
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
         children: [
-          Row(
+          AppSection(
+            footer: l10n.inviteCodeFooter,
             children: [
-              IconButton(
-                tooltip: l10n.socialClose,
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(AppSymbols.close),
-              ),
-              Expanded(
-                child: Text(
-                  l10n.inviteEnterCode,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.sectionTitle,
-                ),
-              ),
-              TextButton(
-                onPressed: _canJoin ? _join : null,
-                child: Text(
-                  l10n.inviteJoin,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: TextField(
+                  controller: _code,
+                  autofocus: true,
+                  autocorrect: false,
+                  textCapitalization: TextCapitalization.characters,
+                  textInputAction: TextInputAction.join,
+                  decoration: InputDecoration(
+                    hintText: l10n.inviteCode,
+                    border: InputBorder.none,
+                    filled: false,
+                  ),
+                  onSubmitted: (_) => _join(),
                 ),
               ),
             ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: AppSection(
-              footer: l10n.inviteCodeFooter,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    controller: _code,
-                    autofocus: true,
-                    autocorrect: false,
-                    textCapitalization: TextCapitalization.characters,
-                    textInputAction: TextInputAction.join,
-                    decoration: InputDecoration(
-                      hintText: l10n.inviteCode,
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                    onSubmitted: (_) => _join(),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

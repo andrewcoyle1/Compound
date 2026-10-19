@@ -102,21 +102,16 @@ class _SocialProfileViewState extends State<SocialProfileView> {
 
   void _showNotice(BuildContext context, SocialProfileState state) {
     final l10n = context.l10n;
-    showAdaptiveDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(switch (state.notice) {
+    unawaited(
+      showAppDialog<void>(
+        context: context,
+        title: switch (state.notice) {
           SocialProfileNotice.blockFailed => l10n.socialBlockFailed,
           SocialProfileNotice.unblockFailed => l10n.socialUnblockFailed,
           _ => l10n.socialFollowingLoadFailed,
-        }),
-        content: Text(l10n.socialTryAgain),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.settingsOk),
-          ),
-        ],
+        },
+        message: l10n.socialTryAgain,
+        actions: [AppDialogAction(label: l10n.settingsOk)],
       ),
     );
   }
@@ -124,27 +119,14 @@ class _SocialProfileViewState extends State<SocialProfileView> {
   Future<void> _confirmBlock(UserModel user, UserModel viewer) async {
     final l10n = context.l10n;
     final name = fullNameOf(user) ?? l10n.socialUser;
-    final confirmed = await showAdaptiveDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(l10n.socialBlockTitle(name)),
-        content: Text(l10n.socialBlockMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.commentsCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: context.appColors.danger,
-            ),
-            child: Text(l10n.socialBlock),
-          ),
-        ],
-      ),
+    final confirmed = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.socialBlockTitle(name),
+      message: l10n.socialBlockMessage,
+      confirmLabel: l10n.socialBlock,
+      cancelLabel: l10n.commentsCancel,
     );
-    if (confirmed ?? false) await _cubit.blockConfirmed(viewer);
+    if (confirmed) await _cubit.blockConfirmed(viewer);
   }
 
   @override
@@ -159,8 +141,21 @@ class _SocialProfileViewState extends State<SocialProfileView> {
     final user = stateUser?.userId == viewer?.userId ? viewer : stateUser;
     if (user == null || viewer == null) {
       return AppScaffold(
-        appBar: AppBar(title: Text(l10n.profileTitle)),
-        body: const Center(child: CircularProgressIndicator.adaptive()),
+        appBar: AppBar(
+          leading: widget.isPresentedModally
+              ? AppToolbarButton.close(
+                  semanticLabel: l10n.socialClose,
+                  onPressed: () => context.pop(),
+                )
+              : null,
+          title: Text(l10n.profileTitle),
+        ),
+        body: state.notFound
+            ? AppErrorState(
+                icon: AppSymbols.profile,
+                title: l10n.socialProfileNotFound,
+              )
+            : AppLoadingView(label: l10n.launchLoading),
       );
     }
     final summary = ProfileSummary(
@@ -194,7 +189,10 @@ class _SocialProfileViewState extends State<SocialProfileView> {
       child: AppScaffold(
         appBar: AppBar(
           leading: widget.isPresentedModally
-              ? CloseButton(onPressed: () => context.pop())
+              ? AppToolbarButton.close(
+                  semanticLabel: l10n.socialClose,
+                  onPressed: () => context.pop(),
+                )
               : null,
           title: Text(
             username == null || username.isEmpty
@@ -203,21 +201,20 @@ class _SocialProfileViewState extends State<SocialProfileView> {
           ),
           actions: [
             if (summary.isOwn)
-              IconButton(
-                icon: const Icon(AppSymbols.settings),
-                tooltip: l10n.settingsTitle,
+              AppToolbarButton(
+                icon: AppSymbols.settings,
+                semanticLabel: l10n.settingsTitle,
                 onPressed: () {
                   _cubit.settingsPressed();
                   unawaited(context.pushNamed(SettingsPage.name));
                 },
               )
             else
-              PopupMenuButton<void>(
-                tooltip: l10n.socialMoreActions,
-                icon: Icon(AppSymbols.more),
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    onTap: () => summary.isBlocked
+              MenuAnchor(
+                menuChildren: [
+                  MenuItemButton(
+                    leadingIcon: const Icon(AppSymbols.block),
+                    onPressed: () => summary.isBlocked
                         ? _cubit.unblockPressed(viewer)
                         : _confirmBlock(user, viewer),
                     child: Text(
@@ -228,8 +225,9 @@ class _SocialProfileViewState extends State<SocialProfileView> {
                             ),
                     ),
                   ),
-                  PopupMenuItem(
-                    onTap: () => unawaited(
+                  MenuItemButton(
+                    leadingIcon: const Icon(AppSymbols.report),
+                    onPressed: () => unawaited(
                       showReportSheet(
                         context,
                         ReportedContent(
@@ -242,6 +240,13 @@ class _SocialProfileViewState extends State<SocialProfileView> {
                     child: Text(l10n.reportMenu),
                   ),
                 ],
+                builder: (context, controller, _) => AppToolbarButton(
+                  icon: AppSymbols.more,
+                  semanticLabel: l10n.socialMoreActions,
+                  onPressed: () => controller.isOpen
+                      ? controller.close()
+                      : controller.open(),
+                ),
               ),
           ],
         ),
@@ -266,18 +271,24 @@ class _SocialProfileViewState extends State<SocialProfileView> {
                   selected: state.tab,
                   onChanged: _cubit.tabChanged,
                 ),
-                const SizedBox(height: AppSpacing.s),
-                if (state.tab == SocialProfileTab.progress) ...[
-                  _ThisWeek(summary: summary),
-                  _Consistency(summary: summary),
-                  // Strava's terms keep an athlete's data to the athlete:
-                  // the reader's own profile only.
-                  if (summary.isOwn)
-                    StravaYearSection(
-                      distanceUnit:
-                          summary.user.submittedDistanceUnitPreference,
-                    ),
-                ] else
+                const SizedBox(height: AppSpacing.l),
+                if (state.tab == SocialProfileTab.progress)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: AppSpacing.xl,
+                    children: [
+                      _ThisWeek(summary: summary),
+                      _Consistency(summary: summary),
+                      // Strava's terms keep an athlete's data to the
+                      // athlete: the reader's own profile only.
+                      if (summary.isOwn)
+                        StravaYearSection(
+                          distanceUnit:
+                              summary.user.submittedDistanceUnitPreference,
+                        ),
+                    ],
+                  )
+                else
                   _Activities(summary: summary, state: state),
               ],
             ],
@@ -337,10 +348,7 @@ class _Header extends StatelessWidget {
               ),
               Text(
                 l10n.highlightStreak(streak),
-                style: AppTextStyles.label.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: scheme.onSurface,
-                ),
+                style: AppTextStyles.label.copyWith(color: colors.workouts),
               ),
             ],
           ),
@@ -349,25 +357,17 @@ class _Header extends StatelessWidget {
         if (summary.isOwn)
           Semantics(
             hint: l10n.socialChangeGoalHint,
-            child: TextButton.icon(
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                textStyle: AppTextStyles.label.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+            child: AppChip(
+              icon: AppSymbols.goal,
+              label: user.weeklySessionGoal == null
+                  ? l10n.socialSetWeeklyGoal
+                  : l10n.socialGoalText(
+                      weeklySessionGoal(user.weeklySessionGoal),
+                    ),
               onPressed: () {
                 cubit.weeklyGoalPressed();
                 unawaited(showWeeklyGoalSheet(context, viewer));
               },
-              icon: Icon(AppSymbols.goal, size: AppIconSize.small.of(context)),
-              label: Text(
-                user.weeklySessionGoal == null
-                    ? l10n.socialSetWeeklyGoal
-                    : l10n.socialGoalText(
-                        weeklySessionGoal(user.weeklySessionGoal),
-                      ),
-              ),
             ),
           ),
       ],
@@ -449,18 +449,23 @@ class _Header extends StatelessWidget {
                 spacing: AppSpacing.s,
                 children: [
                   Expanded(
-                    child: OutlinedButton(
+                    child: AppCtaButton(
+                      label: l10n.profileEditProfile,
+                      size: AppCtaSize.compact,
+                      variant: AppCtaVariant.secondary,
                       onPressed: () {
                         cubit.editProfilePressed();
                         unawaited(context.pushNamed(EditProfilePage.name));
                       },
-                      child: Text(l10n.profileEditProfile),
                     ),
                   ),
                   // The invite link is the profile's shareable link:
                   // accepting it opens this profile.
                   Expanded(
-                    child: OutlinedButton(
+                    child: AppCtaButton(
+                      label: l10n.profileShareProfile,
+                      size: AppCtaSize.compact,
+                      variant: AppCtaVariant.secondary,
                       onPressed: () => unawaited(
                         context.read<InviteCubit>().shareRequested(
                           user.userId,
@@ -468,7 +473,6 @@ class _Header extends StatelessWidget {
                               'SocialProfileView_ShareProfile_Pressed',
                         ),
                       ),
-                      child: Text(l10n.profileShareProfile),
                     ),
                   ),
                 ],
@@ -522,14 +526,14 @@ class _Header extends StatelessWidget {
                       style: secondary,
                     ),
                   ),
-                  TextButton(
+                  AppTextButton(
+                    label: l10n.socialSeeAll,
                     onPressed: () => openPeople(
                       PeopleListRequest(
                         kind: PeopleListKind.mutual,
                         people: summary.mutualFollowers,
                       ),
                     ),
-                    child: Text(l10n.socialSeeAll),
                   ),
                 ],
               ),
@@ -600,41 +604,38 @@ class _ThisWeek extends StatelessWidget {
     final unit = WorkoutText.preferredWeightUnit(
       summary.viewer?.submittedWeightUnitPreference,
     );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return AppSection(
+      header: l10n.socialThisWeek,
       children: [
-        SocialSectionHeader(title: l10n.socialThisWeek),
-        AppCard(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: Wrap(
-              spacing: AppSpacing.xxl,
-              runSpacing: AppSpacing.s,
-              children: [
-                AppStat(
-                  value: AppFormat.number(
-                    summary.thisWeek.length,
-                    locale: locale,
-                  ),
-                  label: l10n.socialWorkouts,
-                  size: AppStatSize.small,
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.l),
+          child: Wrap(
+            spacing: AppSpacing.xxl,
+            runSpacing: AppSpacing.s,
+            children: [
+              AppStat(
+                value: AppFormat.number(
+                  summary.thisWeek.length,
+                  locale: locale,
                 ),
-                AppStat(
-                  value: AppFormat.duration(summary.thisWeekDuration),
-                  label: l10n.socialTime,
-                  size: AppStatSize.small,
+                label: l10n.socialWorkouts,
+                size: AppStatSize.small,
+              ),
+              AppStat(
+                value: AppFormat.duration(summary.thisWeekDuration),
+                label: l10n.socialTime,
+                size: AppStatSize.small,
+              ),
+              AppStat(
+                value: AppFormat.weight(
+                  summary.thisWeekVolumeKg,
+                  unit,
+                  locale: locale,
                 ),
-                AppStat(
-                  value: AppFormat.weight(
-                    summary.thisWeekVolumeKg,
-                    unit,
-                    locale: locale,
-                  ),
-                  label: l10n.statVolume,
-                  size: AppStatSize.small,
-                ),
-              ],
-            ),
+                label: l10n.statVolume,
+                size: AppStatSize.small,
+              ),
+            ],
           ),
         ),
       ],
@@ -659,64 +660,58 @@ class _Consistency extends StatelessWidget {
     final thisWeek = WorkoutSessionHighlights.weekStart(now, firstDay);
     final today = DateTime(now.year, now.month, now.day);
     const weeks = 12;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return AppSection(
+      header: l10n.socialConsistency,
       children: [
-        SocialSectionHeader(title: l10n.socialConsistency),
-        AppCard(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: Semantics(
-              label: l10n.socialTrainingDays(summary.trainingDays.length),
-              excludeSemantics: true,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  const gap = AppSpacing.xs;
-                  final side =
-                      (constraints.maxWidth - gap * (weeks - 1)) / weeks;
-                  return Row(
-                    spacing: gap,
-                    children: [
-                      for (var week = weeks - 1; week >= 0; week--)
-                        Column(
-                          spacing: gap,
-                          children: [
-                            for (var day = 0; day < 7; day++)
-                              () {
-                                final date = DateTime(
-                                  thisWeek.year,
-                                  thisWeek.month,
-                                  thisWeek.day - week * 7 + day,
-                                );
-                                final trained = summary.trainingDays.contains(
-                                  date,
-                                );
-                                return SizedBox.square(
-                                  dimension: side,
-                                  child: date.isAfter(today)
-                                      ? null
-                                      : DecoratedBox(
-                                          decoration: ShapeDecoration(
-                                            shape: RoundedSuperellipseBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    AppRadius.s / 2,
-                                                  ),
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.l),
+          child: Semantics(
+            label: l10n.socialTrainingDays(summary.trainingDays.length),
+            excludeSemantics: true,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const gap = AppSpacing.xs;
+                final side = (constraints.maxWidth - gap * (weeks - 1)) / weeks;
+                return Row(
+                  spacing: gap,
+                  children: [
+                    for (var week = weeks - 1; week >= 0; week--)
+                      Column(
+                        spacing: gap,
+                        children: [
+                          for (var day = 0; day < 7; day++)
+                            () {
+                              final date = DateTime(
+                                thisWeek.year,
+                                thisWeek.month,
+                                thisWeek.day - week * 7 + day,
+                              );
+                              final trained = summary.trainingDays.contains(
+                                date,
+                              );
+                              return SizedBox.square(
+                                dimension: side,
+                                child: date.isAfter(today)
+                                    ? null
+                                    : DecoratedBox(
+                                        decoration: ShapeDecoration(
+                                          shape: RoundedSuperellipseBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              AppRadius.s / 2,
                                             ),
-                                            color: trained
-                                                ? colors.workouts
-                                                : scheme
-                                                      .surfaceContainerHighest,
                                           ),
+                                          color: trained
+                                              ? colors.workouts
+                                              : scheme.surfaceContainerHighest,
                                         ),
-                                );
-                              }(),
-                          ],
-                        ),
-                    ],
-                  );
-                },
-              ),
+                                      ),
+                              );
+                            }(),
+                        ],
+                      ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -736,33 +731,36 @@ class _Activities extends StatelessWidget {
     final l10n = context.l10n;
     final firstDay = firstDayOfWeekIndex(context);
     final sessions = summary.sessions;
-    final Widget content;
-    if (state.isLoadingSessions && sessions.isEmpty) {
-      content = const Padding(
-        padding: EdgeInsets.all(AppSpacing.xl),
-        child: Center(child: CircularProgressIndicator.adaptive()),
-      );
-    } else if (state.loadSessionsFailed) {
-      content = SocialEmptyState(
-        icon: AppSymbols.warning,
-        title: l10n.socialSessionsLoadFailed,
-        message: l10n.commentsLoadFailedMessage,
-        action: TextButton(
-          onPressed: context.read<SocialProfileCubit>().loadSessions,
-          child: Text(l10n.tryAgainButton),
-        ),
-      );
-    } else if (sessions.isEmpty) {
-      content = SocialEmptyState(
-        icon: AppSymbols.workout,
-        title: l10n.socialNoWorkoutsTitle,
-        message: l10n.socialNoWorkoutsMessage,
-      );
-    } else {
-      content = Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.m,
-        children: [
+    return AppSection(
+      header: l10n.socialRecentWorkouts,
+      grouped: false,
+      children: [
+        if (state.isLoadingSessions && sessions.isEmpty)
+          AppCard(
+            child: Column(
+              children: [
+                AppPlaceholderRow(
+                  hasLeading: true,
+                  semanticLabel: l10n.launchLoading,
+                ),
+                const AppPlaceholderRow(),
+              ],
+            ),
+          )
+        else if (state.loadSessionsFailed)
+          AppErrorState(
+            title: l10n.socialSessionsLoadFailed,
+            description: l10n.commentsLoadFailedMessage,
+            actionLabel: l10n.tryAgainButton,
+            onAction: context.read<SocialProfileCubit>().loadSessions,
+          )
+        else if (sessions.isEmpty)
+          AppEmptyState(
+            icon: AppSymbols.workout,
+            title: l10n.socialNoWorkoutsTitle,
+            description: l10n.socialNoWorkoutsMessage,
+          )
+        else
           for (final session in sessions)
             FeedSessionCard(
               key: ValueKey(session.id),
@@ -770,14 +768,6 @@ class _Activities extends StatelessWidget {
               author: summary.user,
               viewer: summary.viewer,
             ),
-        ],
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SocialSectionHeader(title: l10n.socialRecentWorkouts),
-        content,
       ],
     );
   }

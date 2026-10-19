@@ -72,7 +72,7 @@ void main() {
   }
 
   Future<void> send(WidgetTester tester) async {
-    await tester.tap(find.text('Send'));
+    await tester.tap(find.byTooltip('Send'));
     await settle(tester);
   }
 
@@ -88,14 +88,14 @@ void main() {
     expect(find.text('Report Comment'), findsOneWidget);
     expect(find.text('Why are you reporting this comment?'), findsOneWidget);
 
-    await tester.tap(find.text('Send'));
+    await tester.tap(find.byTooltip('Send'));
     await tester.pump();
     expect(find.text('Choose a reason for the report.'), findsOneWidget);
 
     await tester.tap(find.text('Other'));
     await tester.pump();
     expect(find.text('Tell us what is wrong.'), findsOneWidget);
-    await tester.tap(find.text('Send'));
+    await tester.tap(find.byTooltip('Send'));
     await tester.pump();
     expect(find.text('Add a note saying what is wrong.'), findsOneWidget);
 

@@ -78,31 +78,16 @@ class _PeopleListViewState extends State<PeopleListView> {
 
   Future<void> _confirmRemove(UserModel user) async {
     final l10n = context.l10n;
-    final confirmed = await showAdaptiveDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(l10n.socialRemoveFollowerTitle),
-        content: Text(
-          l10n.socialRemoveFollowerMessage(
-            fullNameOf(user) ?? l10n.socialThisPerson,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.commentsCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: context.appColors.danger,
-            ),
-            child: Text(l10n.socialRemove),
-          ),
-        ],
+    final confirmed = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.socialRemoveFollowerTitle,
+      message: l10n.socialRemoveFollowerMessage(
+        fullNameOf(user) ?? l10n.socialThisPerson,
       ),
+      confirmLabel: l10n.socialRemove,
+      cancelLabel: l10n.commentsCancel,
     );
-    if (confirmed ?? false) await _cubit.removeConfirmed(user.userId);
+    if (confirmed) await _cubit.removeConfirmed(user.userId);
   }
 
   @override
@@ -118,18 +103,11 @@ class _PeopleListViewState extends State<PeopleListView> {
     return BlocListener<PeopleListCubit, PeopleListState>(
       listenWhen: (previous, current) =>
           previous.failureId != current.failureId,
-      listener: (context, _) => showAdaptiveDialog<void>(
+      listener: (context, _) => showAppDialog<void>(
         context: context,
-        builder: (context) => AlertDialog.adaptive(
-          title: Text(l10n.socialRemoveFollowerFailed),
-          content: Text(l10n.socialTryAgain),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.settingsOk),
-            ),
-          ],
-        ),
+        title: l10n.socialRemoveFollowerFailed,
+        message: l10n.socialTryAgain,
+        actions: [AppDialogAction(label: l10n.settingsOk)],
       ),
       child: AppScaffold(
         appBar: AppBar(
@@ -141,59 +119,58 @@ class _PeopleListViewState extends State<PeopleListView> {
         ),
         body: SafeArea(
           child: request.people.isEmpty
-              ? Center(
-                  child: SingleChildScrollView(
-                    child: SocialEmptyState(
-                      icon: AppSymbols.friends,
-                      title: l10n.socialNoFollowersTitle,
-                      message: l10n.socialNoFollowersMessage,
-                    ),
-                  ),
+              ? AppEmptyState(
+                  icon: AppSymbols.friends,
+                  title: l10n.socialNoFollowersTitle,
+                  description: l10n.socialNoFollowersMessage,
                 )
               : ListView(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
+                  padding: const EdgeInsets.all(AppSpacing.l),
                   children: [
-                    for (final user in people)
-                      // Swift's swipe to remove a follower, beside the
-                      // row's own button.
-                      AppSwipeActions(
-                        trailing: [
-                          if (request.canRemove && !state.removing)
-                            AppSwipeAction(
-                              label: l10n.socialRemove,
-                              icon: AppSymbols.delete,
-                              isDestructive: true,
-                              onPressed: () => _confirmRemove(user),
-                            ),
-                        ],
-                        child: UserRow(
-                          user: user,
-                          onPressed: () =>
-                              SocialNavigation.openProfile(context, user),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            spacing: AppSpacing.xs,
-                            children: [
-                              if (user.userId != circle.viewer?.userId)
-                                FollowButton(
-                                  state: circle.followState(user.userId),
-                                  onPressed: () => context
-                                      .read<CircleBloc>()
-                                      .add(CircleFollowPressed(user)),
-                                ),
-                              if (request.canRemove)
-                                IconButton(
-                                  tooltip: l10n.socialRemove,
-                                  color: context.appColors.danger,
-                                  onPressed: state.removing
-                                      ? null
-                                      : () => _confirmRemove(user),
-                                  icon: const Icon(AppSymbols.delete),
+                    AppSection(
+                      children: [
+                        for (final user in people)
+                          // Swift's swipe to remove a follower, beside the
+                          // row's own button.
+                          AppSwipeActions(
+                            trailing: [
+                              if (request.canRemove && !state.removing)
+                                AppSwipeAction(
+                                  label: l10n.socialRemove,
+                                  icon: AppSymbols.delete,
+                                  isDestructive: true,
+                                  onPressed: () => _confirmRemove(user),
                                 ),
                             ],
+                            child: UserRow(
+                              user: user,
+                              onPressed: () =>
+                                  SocialNavigation.openProfile(context, user),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: AppSpacing.xs,
+                                children: [
+                                  if (user.userId != circle.viewer?.userId)
+                                    FollowButton(
+                                      state: circle.followState(user.userId),
+                                      onPressed: () => context
+                                          .read<CircleBloc>()
+                                          .add(CircleFollowPressed(user)),
+                                    ),
+                                  if (request.canRemove)
+                                    AppIconButton(
+                                      icon: AppSymbols.delete,
+                                      semanticLabel: l10n.socialRemove,
+                                      onPressed: state.removing
+                                          ? null
+                                          : () => _confirmRemove(user),
+                                    ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                      ],
+                    ),
                   ],
                 ),
         ),

@@ -13,6 +13,10 @@ enum SocialProfileNotice { blockFailed, unblockFailed, followingFailed }
 final class const SocialProfileState({
   /// The profile as opened; null until read when only its id was known.
   final UserModel? user,
+
+  /// The profile opened by id could not be read: gone, blocked, or the
+  /// read failed.
+  final bool notFound = false,
   final List<UserModel> followers = const [],
 
   /// Someone else's newest sessions; the reader's own come from the circle.
@@ -29,6 +33,7 @@ final class const SocialProfileState({
 }) extends Equatable {
   SocialProfileState copyWith({
     UserModel? user,
+    bool? notFound,
     List<UserModel>? followers,
     List<WorkoutSessionModel>? sessions,
     bool? isLoadingSessions,
@@ -38,6 +43,7 @@ final class const SocialProfileState({
     List<UserModel>? following,
   }) => SocialProfileState(
     user: user ?? this.user,
+    notFound: notFound ?? this.notFound,
     followers: followers ?? this.followers,
     sessions: sessions ?? this.sessions,
     isLoadingSessions: isLoadingSessions ?? this.isLoadingSessions,
@@ -52,6 +58,7 @@ final class const SocialProfileState({
   @override
   List<Object?> get props => [
     user,
+    notFound,
     followers,
     sessions,
     isLoadingSessions,
@@ -95,16 +102,20 @@ class SocialProfileCubit extends Cubit<SocialProfileState> {
     _analytics.trackScreenView(
       const AnalyticsEvent('SocialProfileView_Appear'),
     );
-    var user = state.user;
+    // The reader's own profile is the viewer: no read, and none to fail.
+    var user = state.user ?? (_userId == viewer.userId ? viewer : null);
     if (user == null) {
       try {
         user = (await _social.users([_userId], viewer: viewer)).firstOrNull;
       } on Object {
         user = null;
       }
-      if (user == null) return;
-      emit(state.copyWith(user: user));
+      if (user == null) {
+        emit(state.copyWith(notFound: true));
+        return;
+      }
     }
+    if (state.user == null) emit(state.copyWith(user: user));
     final isOwn = user.userId == viewer.userId;
     final locked =
         (user.isPrivate ?? false) &&

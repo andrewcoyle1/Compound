@@ -604,10 +604,7 @@ class _LibraryTabState extends State<_LibraryTab> {
   /// `RecipeListBuilderView` with a plate.
   Widget _recipes(BuildContext context, AddMealState state) {
     final l10n = context.l10n;
-    final recipes = sortedByName([
-      for (final recipe in state.recipes)
-        if (matchesRecipeFilter(recipe, _filter.trim())) recipe,
-    ], (recipe) => recipe.name);
+    final recipes = searchRecipes(state.recipes, _filter);
     final create = AppSection(
       children: [
         AppListRowButton(
@@ -646,19 +643,14 @@ class _LibraryTabState extends State<_LibraryTab> {
   }
 
   /// `IngredientListBuilderView` with a plate: branded foods only when the
-  /// setting allows, matching on name or description.
+  /// setting allows, matching the filter best first.
   Widget _foods(BuildContext context, AddMealState state) {
     final l10n = context.l10n;
-    final needle = _filter.trim().toLowerCase();
-    bool has(String? text) =>
-        text != null && text.toLowerCase().contains(needle);
     final showBranded = state.effectiveSettings.showBrandedFoods;
-    final foods = sortedByName([
+    final foods = searchFoods([
       for (final food in state.foods)
-        if ((showBranded || food.brandName == null) &&
-            (needle.isEmpty || has(food.name) || has(food.description)))
-          food,
-    ], (food) => food.name);
+        if (showBranded || food.brandName == null) food,
+    ], _filter);
     if (state.foods.isEmpty) {
       return AppEmptyState(
         icon: AppSymbols.food,
@@ -670,7 +662,7 @@ class _LibraryTabState extends State<_LibraryTab> {
     }
     return _Sections(
       children: [
-        if (needle.isEmpty)
+        if (_filter.trim().isEmpty)
           AppSection(
             children: [
               AppListRowButton(
@@ -689,7 +681,7 @@ class _LibraryTabState extends State<_LibraryTab> {
           )
         else
           AppSection(
-            header: needle.isEmpty ? l10n.addMealFoods : null,
+            header: _filter.trim().isEmpty ? l10n.addMealFoods : null,
             children: [for (final food in foods) FoodRow(food: food)],
           ),
       ],

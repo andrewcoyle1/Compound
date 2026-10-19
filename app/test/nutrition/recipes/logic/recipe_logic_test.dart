@@ -72,18 +72,19 @@ void main() {
     expect(sortedByName(['b', 'A', 'c'], (s) => s), ['A', 'b', 'c']);
   });
 
-  test('the recipe filter matches name, description or an ingredient', () {
+  test('the recipe search matches name, description or an ingredient', () {
     final chilli = recipe(
       'c',
       name: 'Chilli',
       description: 'Hot',
       ingredients: [RecipeIngredientModel.forFood(food('beans'), 100)],
     );
-    expect(matchesRecipeFilter(chilli, 'CHIL'), isTrue);
-    expect(matchesRecipeFilter(chilli, 'hot'), isTrue);
-    expect(matchesRecipeFilter(chilli, 'bean'), isTrue);
-    expect(matchesRecipeFilter(chilli, 'rice'), isFalse);
-    expect(matchesRecipeFilter(recipe('x'), 'hot'), isFalse);
+    final other = recipe('x', name: 'Rice');
+    expect(searchRecipes([chilli, other], 'CHIL'), [chilli]);
+    expect(searchRecipes([chilli, other], 'hot'), [chilli]);
+    expect(searchRecipes([chilli, other], 'bean'), [chilli]);
+    expect(searchRecipes([chilli, other], 'rice'), [other]);
+    expect(searchRecipes([chilli, other], ''), [chilli, other]);
   });
 
   test('the weighed total counts grams only, or is absent', () {

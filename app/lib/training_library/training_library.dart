@@ -6,7 +6,6 @@ export 'cubit/exercise_picker_cubit.dart';
 export 'cubit/library_search_cubit.dart';
 export 'logic/exercise_detail_stats.dart';
 export 'logic/exercise_filters.dart';
-export 'logic/search_match.dart';
 export 'logic/template_summary.dart';
 export 'models/training_library.dart';
 export 'view/exercise_detail_page.dart';

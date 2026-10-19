@@ -9,7 +9,10 @@ library;
 import 'dart:math' as math;
 
 import 'package:compound/nutrition/logic/meal_day.dart';
+import 'package:compound/nutrition/recipes/logic/recipe_logic.dart'
+    show searchFoods;
 import 'package:compound_maths/compound_maths.dart' show Macros;
+import 'package:compound_models/compound_models.dart' show FuzzyMatch;
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart' show DietPlan;
@@ -238,21 +241,12 @@ int addedCount(List<MealItemModel> items, String ingredientId) => items
 
 // MARK: - Finding foods
 
-/// The user's foods matching [query] by name or brand, ignoring case, at
-/// most 20 (`FoodItemSearchPresenter.libraryResults`). A blank query finds
-/// nothing.
-List<FoodModel> libraryMatches(List<FoodModel> foods, String query) {
-  final needle = query.trim().toLowerCase();
-  if (needle.isEmpty) return const [];
-  return foods
-      .where(
-        (food) =>
-            food.name.toLowerCase().contains(needle) ||
-            (food.brandName?.toLowerCase().contains(needle) ?? false),
-      )
-      .take(20)
-      .toList();
-}
+/// The user's foods matching [query], best first, at most 20
+/// (`FoodItemSearchPresenter.libraryResults`). A blank query finds nothing.
+List<FoodModel> libraryMatches(List<FoodModel> foods, String query) =>
+    FuzzyMatch.isSearching(query)
+    ? searchFoods(foods, query).take(20).toList()
+    : const [];
 
 /// [online] less the foods already listed from the library above them
 /// (`FoodItemSearchPresenter.onlineResults`).

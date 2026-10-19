@@ -21,11 +21,10 @@ final class const RecipesState({
   final bool showImage = true,
 }) extends Equatable {
   /// The recipes shown (`RecipeListBuilderPresenter.userRecipeTemplates`
-  /// and `.filteredRecipeTemplates`): those matching the filter, by name.
-  List<RecipeTemplateModel> get visibleRecipes => sortedByName([
-    for (final recipe in recipes ?? const <RecipeTemplateModel>[])
-      if (filter.isEmpty || matchesRecipeFilter(recipe, filter)) recipe,
-  ], (recipe) => recipe.name);
+  /// and `.filteredRecipeTemplates`): those matching the filter, best first
+  /// and then by name.
+  List<RecipeTemplateModel> get visibleRecipes =>
+      searchRecipes(recipes ?? const [], filter);
 
   RecipesState copyWith({
     List<RecipeTemplateModel>? recipes,

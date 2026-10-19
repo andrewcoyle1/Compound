@@ -1,5 +1,4 @@
 import 'package:app_ui/app_ui.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 
 /// {@template app_carousel}
 /// [pages] the user swipes through one at a time, each the full width and
@@ -26,7 +25,14 @@ class AppCarousel extends StatefulWidget {
 }
 
 class _AppCarouselState extends State<AppCarousel> {
+  final _controller = PageController();
   var _page = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,17 +40,12 @@ class _AppCarouselState extends State<AppCarousel> {
     return Column(
       spacing: AppSpacing.m,
       children: [
-        CarouselSlider(
-          items: widget.pages,
-          // The package's own pan recognizer would compete with a parent
-          // list's vertical scroll; the page view's drag is enough.
-          disableGesture: true,
-          options: CarouselOptions(
-            height: MediaQuery.textScalerOf(context).scale(widget.height),
-            viewportFraction: 1,
-            enableInfiniteScroll: false,
-            disableCenter: true,
-            onPageChanged: (page, _) => setState(() => _page = page),
+        SizedBox(
+          height: MediaQuery.textScalerOf(context).scale(widget.height),
+          child: PageView(
+            controller: _controller,
+            onPageChanged: (page) => setState(() => _page = page),
+            children: widget.pages,
           ),
         ),
         ExcludeSemantics(

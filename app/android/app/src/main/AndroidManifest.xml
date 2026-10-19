@@ -79,6 +79,13 @@
                 <data android:scheme="compoundstrava"/>
             </intent-filter>
         </activity>
+        <!-- image_cropper's crop screen (uCrop), which needs an AppCompat theme: CropTheme in
+             values/styles.xml and values-night/styles.xml. Its colours are set per crop from the
+             app's theme. -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/CropTheme"/>
         <!-- flutter_local_notifications: show scheduled reminders, and reschedule them after a
              reboot or an update. -->
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />

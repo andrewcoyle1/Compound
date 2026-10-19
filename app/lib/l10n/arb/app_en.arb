@@ -13409,5 +13409,17 @@
     "devGallerySamplePin": "Pin",
     "@devGallerySamplePin": {
         "description": "Component gallery: sample swipe action"
+    },
+    "photoCropTitle": "Crop Photo",
+    "@photoCropTitle": {
+        "description": "Photo crop screen: its title, after a photo is taken or chosen"
+    },
+    "photoCropDone": "Done",
+    "@photoCropDone": {
+        "description": "Photo crop screen (iOS): keeps the crop"
+    },
+    "photoCropCancel": "Cancel",
+    "@photoCropCancel": {
+        "description": "Photo crop screen (iOS): discards the photo"
     }
 }

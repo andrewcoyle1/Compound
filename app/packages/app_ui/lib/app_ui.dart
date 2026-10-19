@@ -16,6 +16,7 @@ export 'src/widgets/app_bottom_cta.dart';
 export 'src/widgets/app_card.dart';
 export 'src/widgets/app_carousel.dart';
 export 'src/widgets/app_chip.dart';
+export 'src/widgets/app_confetti.dart';
 export 'src/widgets/app_cta_button.dart';
 export 'src/widgets/app_dashboard.dart';
 export 'src/widgets/app_dialog.dart';

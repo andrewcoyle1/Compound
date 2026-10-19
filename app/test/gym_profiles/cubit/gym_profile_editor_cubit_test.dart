@@ -323,7 +323,7 @@ void main() {
 
     test('adding an image opens the photo library', () async {
       await build().photoPressed();
-      expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+      expect(picker.picks, [(PhotoSource.library, PhotoSize.gymImage)]);
     });
 
     test('a photo is uploaded to Swift’s path and saved on the gym', () async {

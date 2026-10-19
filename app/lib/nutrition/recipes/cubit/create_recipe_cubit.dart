@@ -239,7 +239,10 @@ class CreateRecipeCubit extends Cubit<CreateRecipeState> {
   /// logged, and a cancel or a photo that cannot be read changes nothing.
   Future<void> photoPressed() async {
     try {
-      final photo = await _picker.pick(PhotoSource.library, PhotoSize.standard);
+      final photo = await _picker.pick(
+        PhotoSource.library,
+        PhotoSize.recipeImage,
+      );
       if (photo != null && !isClosed) emit(state.copyWith(photo: photo));
     } on Object catch (_) {}
   }

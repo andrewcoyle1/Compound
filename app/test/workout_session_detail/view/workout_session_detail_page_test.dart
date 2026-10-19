@@ -132,6 +132,41 @@ void main() {
       expect(find.text('44.1 lb × 10 reps'), findsNWidgets(2));
     });
 
+    group('confetti', () {
+      final burst = find.byWidgetPredicate(
+        (widget) => widget.runtimeType.toString() == 'ConfettiWidget',
+      );
+
+      testWidgets('bursts once as the summary of a workout opens', (
+        tester,
+      ) async {
+        when(() => sessions.session('friend', 's'))
+            .thenAnswer((_) async => session);
+        await tester.pumpApp(
+          WorkoutSessionDetailPage(
+            sessionId: 's',
+            session: session,
+            isWorkoutSummary: true,
+          ),
+          appBloc: appBloc,
+          userRepository: users,
+          workoutSessionRepository: sessions,
+        );
+        await tester.pump();
+        expect(burst, findsOneWidget);
+        await tester.pumpAndSettle();
+        expect(burst, findsNothing);
+      });
+
+      testWidgets('stays still for a past workout', (tester) async {
+        when(() => sessions.session('friend', 's'))
+            .thenAnswer((_) async => session);
+        await pump(tester);
+        await tester.pump();
+        expect(burst, findsNothing);
+      });
+    });
+
     testWidgets('links a workout on Strava for its author', (tester) async {
       final stored = WorkoutSessionModel.fromFirestore({
         ...session.toFirestore(),

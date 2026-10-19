@@ -13,7 +13,6 @@ import 'package:compound/social/logic/people.dart';
 import 'package:compound/social/social_routes.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -128,7 +127,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   static void _showNotice(BuildContext context, InboxNotice notice) {
     final l10n = context.l10n;
     if (notice == InboxNotice.answerFailed) {
-      unawaited(HapticFeedback.heavyImpact());
+      unawaited(AppHaptics.heavy());
     }
     final (title, message) = switch (notice) {
       InboxNotice.deleteFailed => (l10n.inboxDeleteFailed, l10n.socialTryAgain),
@@ -146,9 +145,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         l10n.socialTryAgain,
       ),
     };
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$title. $message')));
+    showAppSnackBar(context, '$title. $message', style: AppSnackBarStyle.error);
   }
 }
 
@@ -238,7 +235,7 @@ class const _RequestRow({required final FollowRequestModel request})
               label: l10n.inboxAccept,
               size: AppCtaSize.compact,
               onPressed: () {
-                unawaited(HapticFeedback.mediumImpact());
+                unawaited(AppHaptics.medium());
                 bloc.add(InboxRequestAnswered(request, accept: true));
               },
             ),

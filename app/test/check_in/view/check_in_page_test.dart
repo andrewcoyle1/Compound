@@ -6,7 +6,6 @@ import 'package:compound/check_in/check_in.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/science/view/method_info_button.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -90,16 +89,9 @@ void main() {
     });
 
     testWidgets('a saved weigh-in plays the success haptic', (tester) async {
-      final haptics = <Object?>[];
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        (call) async {
-          if (call.method == 'HapticFeedback.vibrate') {
-            haptics.add(call.arguments);
-          }
-          return null;
-        },
-      );
+      final haptics = <AppHaptic>[];
+      AppHaptics.debugPlay = haptics.add;
+      addTearDown(() => AppHaptics.debugPlay = null);
       data = StagingData(measurements: const []);
       await pumpPage(tester);
       await tapCta(tester, 'Continue');
@@ -107,7 +99,7 @@ void main() {
       expect(haptics, isEmpty);
       await tapCta(tester, 'Log Weight');
       await tester.pump();
-      expect(haptics, contains('HapticFeedbackType.successNotification'));
+      expect(haptics, contains(AppHaptic.success));
     });
 
     testWidgets('closes when dismissed', (tester) async {

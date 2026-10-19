@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:coach_repository/coach_repository.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:purchases_repository/purchases_repository.dart';
 

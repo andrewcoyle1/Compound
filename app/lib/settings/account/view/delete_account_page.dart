@@ -69,14 +69,11 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
   Future<void> _delete() {
     final l10n = context.l10n;
     // Taken now: by the time deletion finishes this screen is gone.
-    final messenger = ScaffoldMessenger.of(context);
+    final snackBars = AppSnackBarScope.of(context);
     return _cubit.deletePressed(
-      onDeleted: () => messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            '${l10n.deleteAccountDeleted}. ${l10n.deleteAccountDeletedMessage}',
-          ),
-        ),
+      onDeleted: () => snackBars.show(
+        '${l10n.deleteAccountDeleted}. ${l10n.deleteAccountDeletedMessage}',
+        style: AppSnackBarStyle.success,
       ),
     );
   }

@@ -56,9 +56,11 @@ class ChartSwatch extends StatelessWidget {
       ),
       ChartMark.bar => (
         const Size.square(AppSpacing.s),
+        // A bar in miniature, its corner scaled down with it, so it stays
+        // a square beside a dot's circle.
         const RoundedSuperellipseBorder(
           borderRadius: BorderRadius.all(
-            Radius.circular(AppChartMark.barCorner),
+            Radius.circular(AppChartMark.barCorner / 2),
           ),
         ),
       ),

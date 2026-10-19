@@ -85,7 +85,9 @@ enum AppGroup {
     }
 }
 
-/// The App Group slot the snapshot lives in.
+/// The App Group slot the snapshot lives in. The app writes it from Dart through the home_widget
+/// plugin (`PluginHomeWidgetRepository`), as the bytes `JSONEncoder` would, and reloads the widgets
+/// only when something they show changed.
 enum WidgetSnapshotStore {
 
     static let key = "widget.snapshot.v1"
@@ -100,24 +102,6 @@ enum WidgetSnapshotStore {
     static func read(from defaults: UserDefaults? = AppGroup.defaults) -> WidgetSnapshot? {
         guard let data = defaults?.data(forKey: key) else { return nil }
         return try? JSONDecoder().decode(WidgetSnapshot.self, from: data)
-    }
-
-    /// Writes and asks WidgetKit to reload, but only when something the widgets show changed.
-    static func write(_ snapshot: WidgetSnapshot, to defaults: UserDefaults? = AppGroup.defaults) {
-        guard let defaults, let data = try? JSONEncoder().encode(snapshot) else { return }
-        var previous = read(from: defaults)
-        previous?.updatedAt = snapshot.updatedAt
-        defaults.set(data, forKey: key)
-        if previous != snapshot {
-            WidgetCenter.shared.reloadAllTimelines()
-        }
-    }
-
-    /// On sign-out, so the home screen stops showing the previous account.
-    static func clear(from defaults: UserDefaults? = AppGroup.defaults) {
-        guard let defaults, defaults.data(forKey: key) != nil else { return }
-        defaults.removeObject(forKey: key)
-        WidgetCenter.shared.reloadAllTimelines()
     }
 }
 

@@ -91,11 +91,11 @@ class _WorkoutSettingsViewState extends State<_WorkoutSettingsView> {
     return BlocListener<WorkoutSettingsCubit, WorkoutSettingsState>(
       listenWhen: (previous, current) =>
           current.saveFailed && !previous.saveFailed,
-      listener: (context, _) => ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(context.l10n.workoutSettingsSaveFailed)),
-        ),
+      listener: (context, _) => showAppSnackBar(
+        context,
+        context.l10n.workoutSettingsSaveFailed,
+        style: AppSnackBarStyle.error,
+      ),
       child: AppScaffold(
         appBar: AppBar(title: Text(widget.title)),
         body: settings == null

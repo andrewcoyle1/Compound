@@ -1,7 +1,7 @@
 import 'package:ai_repository/ai_repository.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
-export '../../helpers/photos.dart' show FakePhotoPicker;
+export '../../helpers/photos.dart' show FakeLiveCamera, FakePhotoPicker;
 
 /// The AI callables, answering [json] as the model's `result` (or failing
 /// as `unavailable` when [fails]), and remembering every call.

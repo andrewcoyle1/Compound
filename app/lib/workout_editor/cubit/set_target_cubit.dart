@@ -1,9 +1,9 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:equatable/equatable.dart';
 import 'package:training_library_repository/training_library_repository.dart';
-import 'package:training_session/training_session.dart' show newUuid;
 
 /// What the targets editor offers beside the targets.
 sealed class SetTargetScope extends Equatable {
@@ -106,7 +106,7 @@ class SetTargetCubit extends Cubit<SetTargetState> {
     required WorkoutSettings settings,
     required this._analytics,
     List<ExerciseModel> library = const [],
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   }) : super(
          SetTargetState(
            exercise: exercise,

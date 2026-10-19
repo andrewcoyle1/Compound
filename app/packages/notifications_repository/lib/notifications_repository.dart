@@ -12,4 +12,5 @@ export 'src/home_widget.dart';
 export 'src/live_activity.dart';
 export 'src/local_reminders.dart';
 export 'src/notifications_repository.dart';
+export 'src/platform_links.dart';
 export 'src/quick_actions.dart';

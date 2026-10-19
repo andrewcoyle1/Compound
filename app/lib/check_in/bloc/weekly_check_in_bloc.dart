@@ -2,13 +2,13 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/log_weight/bloc/log_weight_bloc.dart'
     show LogWeightState;
 import 'package:compound/weight_metric/models/weight_metric.dart'
     show weighInsOf;
 import 'package:compound_maths/compound_maths.dart' show TargetProposal;
+import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health_repository/health_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';

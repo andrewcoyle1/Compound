@@ -189,7 +189,9 @@ Future<void> main() async {
       // with nothing leaving it, so staging drives the real ones, as the
       // Swift Mock build does.
       liveActivityRepository: await _liveActivity(),
-      homeWidgetRepository: MethodChannelHomeWidgetRepository(),
+      homeWidgetRepository: PluginHomeWidgetRepository(
+        appGroupId: 'group.com.andrewcoyle.compound.flutter.stg',
+      ),
       appIntentsRepository: MethodChannelAppIntentsRepository(),
       quickActionsRepository: PluginQuickActionsRepository(),
       // Two weeks of steps, a week of weigh-ins with body fat, two days of
@@ -216,6 +218,8 @@ Future<void> main() async {
       notificationsRepository: FakeNotificationsRepository(
         permissionState: PushPermission.authorized,
       ),
+      // compound:// links are the device's own, as in the other flavors.
+      platformLinks: AppLinksPlatformLinks(),
       authRepository: InMemoryAuthRepository(
         user: step == null ? InMemoryAuthRepository.sampleUser : anonymous,
       ),

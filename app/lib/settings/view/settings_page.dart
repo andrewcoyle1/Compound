@@ -94,9 +94,11 @@ class _SettingsViewState extends State<SettingsView> {
     return BlocListener<SettingsCubit, SettingsStatus>(
       listener: (context, status) {
         if (status != SettingsStatus.signOutFailure) return;
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(l10n.settingsSignOutFailed)));
+        showAppSnackBar(
+          context,
+          l10n.settingsSignOutFailed,
+          style: AppSnackBarStyle.error,
+        );
       },
       child: AppScaffold(
         appBar: AppBar(title: Text(l10n.settingsTitle)),

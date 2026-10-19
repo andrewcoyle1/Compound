@@ -33,9 +33,7 @@ GoRouter _router(String location, {ProgramFilePicker? pickFile}) => GoRouter(
               onPressed: () async {
                 final saved = await ImportProgramPage.open(context);
                 if (context.mounted && saved != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Imported ${saved.name}')),
-                  );
+                  showAppSnackBar(context, 'Imported ${saved.name}');
                 }
               },
               child: const Text('Open importer'),

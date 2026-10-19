@@ -4,7 +4,6 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:food_repository/src/open_food_facts.dart';
 import 'package:food_repository/src/open_food_facts_mapping.dart';
-import 'package:food_repository/src/random_id.dart';
 import 'package:http/http.dart' as http;
 import 'package:openfoodfacts/openfoodfacts.dart' as off;
 
@@ -25,7 +24,7 @@ class RemoteOpenFoodFacts implements OpenFoodFacts {
     DateTime Function()? now,
     String Function()? newId,
   }) : _now = now ?? (() => DateTime.now().toUtc()),
-       _newId = newId ?? randomUuid;
+       _newId = newId ?? newDocumentId;
 
   final FirebaseFunctions _functions;
   final DateTime Function() _now;

@@ -9,7 +9,6 @@ import 'package:compound/training_library/view/workout_template_detail_page.dart
 import 'package:compound/workout_editor/cubit/define_workout_cubit.dart';
 import 'package:compound/workout_editor/logic/editor_text.dart';
 import 'package:compound/workout_editor/view/set_target_page.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
@@ -192,7 +191,7 @@ class const _Header({
             size: AppCtaSize.compact,
             onPressed: state.canConfirmSuperset
                 ? () {
-                    unawaited(HapticFeedback.successNotification());
+                    unawaited(AppHaptics.success());
                     cubit.supersetConfirmed();
                   }
                 : null,
@@ -359,7 +358,7 @@ class const _ExerciseRow({
               ? null
               : state.isSelectingSuperset
               ? () {
-                  unawaited(HapticFeedback.selectionClick());
+                  unawaited(AppHaptics.selection());
                   cubit.supersetRowPressed(exercise.id);
                 }
               : () => unawaited(_open(context)),

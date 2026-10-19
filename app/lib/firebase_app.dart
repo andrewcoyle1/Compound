@@ -257,10 +257,13 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     ),
     userRepository: userRepository,
     notificationsRepository: notificationsRepository,
+    platformLinks: AppLinksPlatformLinks(),
     liveActivityRepository: liveActivityRepository,
     appIntentsRepository: MethodChannelAppIntentsRepository(),
     quickActionsRepository: PluginQuickActionsRepository(),
-    homeWidgetRepository: MethodChannelHomeWidgetRepository(
+    // Both Firebase flavors' `APP_GROUP_ID`, the Swift app's group.
+    homeWidgetRepository: PluginHomeWidgetRepository(
+      appGroupId: 'group.com.compound.app',
       onError: (error, stackTrace) =>
           unawaited(crashlytics.recordError(error, stackTrace)),
     ),
@@ -279,6 +282,7 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     imageRepository: FirebaseImageRepository(storage: FirebaseStorage.instance),
     photoPicker: DevicePhotoPicker(look: deviceCropLook),
     labelTextReader: const PlatformLabelTextReader(),
+    liveCamera: DeviceLiveCamera(),
     // The food photo, meal description and label callables are
     // us-central1 and enforce App Check.
     aiRepository: AiRepository(

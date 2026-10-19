@@ -105,13 +105,20 @@ abstract final class AppChartMark {
   static const double dotRadius = 3.5;
 
   /// The corner on the top of a bar, or of a stack of bars.
-  static const double barCorner = 2;
+  static const double barCorner = 4;
+
+  /// The gap between the segments of a stacked bar.
+  static const double stackGap = 1.5;
 
   /// The share of its bucket a bar fills, leaving a gap between bars.
   static const double barFill = 0.6;
 
   /// A gridline's stroke.
   static const double gridWidth = 1;
+
+  /// How tall the stub is that holds an empty bar's place in a card's
+  /// chart, so a day with nothing still reads as a day.
+  static const double stubHeight = 2;
 
   /// The stroke of the rule through the bucket picked.
   static const double ruleWidth = 1.5;

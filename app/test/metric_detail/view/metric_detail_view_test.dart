@@ -104,7 +104,21 @@ void main() {
         scale.withPoints([at(20, 72)]),
       ]);
       expect(find.text('No data in this range'), findsOneWidget);
-      expect(find.byType(CartesianChart), findsNothing);
+      // Over an empty plot, which still pages back to the reading.
+      expect(
+        tester.widget<CartesianChart>(find.byType(CartesianChart)).data.buckets,
+        isEmpty,
+      );
+      for (var week = 0; week < 2; week++) {
+        await tester.fling(
+          find.byType(CartesianChart),
+          const Offset(300, 0),
+          800,
+        );
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('No data in this range'), findsNothing);
+      expect(find.text('Average, Sep 25, 2026 – Oct 1, 2026'), findsOneWidget);
     });
 
     testWidgets('reports the range picked and the tap on all data', (
@@ -284,6 +298,29 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets('screen readers read the chart a bucket at a time', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpDetail(tester, [
+        scale,
+        MetricChartSeries(
+          label: 'Trend',
+          points: [at(1, 72.2), at(0, 72.1)],
+          color: const Color(0xFF0000FF),
+        ),
+      ]);
+      await tester.pumpAndSettle();
+      expect(find.semantics.byLabel('Tue, Oct 13. Scale, 73 kg'), findsOne);
+      expect(
+        find.semantics.byLabel('Thu, Oct 15. Scale, 72.4 kg. Trend, 72.1 kg'),
+        findsOne,
+      );
+      // The header is in the summary already.
+      expect(find.semantics.byLabel(RegExp('^Average, ')), findsNothing);
+      handle.dispose();
+    });
+
     // Swift QuickCharts' `chartXSelection`.
     testWidgets('holding the chart reads out the bucket under it', (
       tester,
@@ -314,6 +351,10 @@ void main() {
       );
       expect(
         find.descendant(of: callout, matching: find.text('80 kg')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: callout, matching: find.byType(ChartSwatch)),
         findsOneWidget,
       );
       final rect = tester.getRect(callout);

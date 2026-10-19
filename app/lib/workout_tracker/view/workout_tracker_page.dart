@@ -19,7 +19,6 @@ import 'package:compound/workout_tracker/view/set_keypad_view.dart';
 import 'package:compound/workout_tracker/view/tick.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:flutter/semantics.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:training_rules/training_rules.dart' as r;
@@ -120,7 +119,7 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
               current.finishedSession != null,
           listener: (context, state) {
             final session = state.finishedSession!;
-            unawaited(HapticFeedback.successNotification());
+            unawaited(AppHaptics.success());
             _cubit.summaryShown();
             context.pushReplacementNamed(
               WorkoutSessionDetailPage.summaryName,
@@ -163,7 +162,7 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
     );
     switch (state.effect) {
       case SetLoggedEffect(:final setId, :final allComplete):
-        unawaited(HapticFeedback.successNotification());
+        unawaited(AppHaptics.success());
         final set = state.set(setId);
         final exercise = state.exerciseHolding(setId);
         if (set != null && exercise != null) {
@@ -171,7 +170,7 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
         }
         if (allComplete) announce(l10n.trackerAllComplete);
       case LogRefusedEffect(:final problem):
-        unawaited(HapticFeedback.errorNotification());
+        unawaited(AppHaptics.error());
         unawaited(
           showAppDialog<void>(
             context: context,
@@ -181,22 +180,19 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
           ),
         );
       case SetDeletedEffect():
-        unawaited(HapticFeedback.successNotification());
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(l10n.trackerSetDeleted),
-              action: SnackBarAction(
-                label: l10n.trackerUndo,
-                onPressed: _cubit.undo,
-              ),
-            ),
-          );
+        unawaited(AppHaptics.success());
+        showAppSnackBar(
+          context,
+          l10n.trackerSetDeleted,
+          action: AppSnackBarAction(
+            label: l10n.trackerUndo,
+            onPressed: _cubit.undo,
+          ),
+        );
       case SelectionEffect():
-        unawaited(HapticFeedback.selectionClick());
+        unawaited(AppHaptics.selection());
       case SavedEffect():
-        unawaited(HapticFeedback.successNotification());
+        unawaited(AppHaptics.success());
       case RestOverEffect():
         // Sound and vibration asked for separately
         // (`announceRestCompletion`); the warning haptic, apart from a
@@ -205,10 +201,10 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
           unawaited(RestSound.play());
         }
         if (state.settings?.restTimerVibrate ?? true) {
-          unawaited(HapticFeedback.warningNotification());
+          unawaited(AppHaptics.warning());
         }
       case GymSaveFailedEffect():
-        unawaited(HapticFeedback.errorNotification());
+        unawaited(AppHaptics.error());
         unawaited(
           showAppDialog<void>(
             context: context,
@@ -218,7 +214,7 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
           ),
         );
       case BlockMovedEffect(:final position, :final count):
-        unawaited(HapticFeedback.selectionClick());
+        unawaited(AppHaptics.selection());
         announce(l10n.trackerPosition(position, count));
       case StillTrainingEffect(:final lastSet):
         unawaited(_askStillTraining(context, lastSet));

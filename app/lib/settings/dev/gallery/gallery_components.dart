@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/progress_photos/sample_photo.dart';
 import 'package:compound/settings/dev/gallery/component_gallery_page.dart';
 import 'package:compound/settings/dev/gallery/gallery_entry.dart';
 import 'package:go_router/go_router.dart';
@@ -684,8 +685,8 @@ List<Widget> galleryNavigation(BuildContext context) {
   ];
 }
 
-/// [showAppDialog] and [AppDialog], [showAppSheet] and [AppSheetPage], and
-/// [AppMenuItem].
+/// [showAppDialog] and [AppDialog], [showAppSnackBar] and [AppSnackBar],
+/// [showAppSheet] and [AppSheetPage], and [AppMenuItem].
 List<Widget> galleryOverlays(BuildContext context) {
   final l10n = context.l10n;
   final keep = AppDialogAction<void>(label: l10n.devGallerySampleKeepEditing);
@@ -746,6 +747,49 @@ List<Widget> galleryOverlays(BuildContext context) {
         ),
       ),
     ], note: 'On iOS an alert keeps the app theme, not the gallery switch.'),
+    galleryEntry(
+      'showAppSnackBar',
+      [
+        for (final style in AppSnackBarStyle.values)
+          AppListRowButton(
+            title: style.name,
+            onPressed: () => showAppSnackBar(
+              context,
+              l10n.devGallerySampleMessage,
+              style: style,
+            ),
+          ),
+        AppListRowButton(
+          title: 'action, stays until tapped',
+          onPressed: () => showAppSnackBar(
+            context,
+            l10n.trackerSetDeleted,
+            action: AppSnackBarAction(
+              label: l10n.trackerUndo,
+              onPressed: () {},
+            ),
+          ),
+        ),
+      ],
+      note:
+          'Drawn above the app by AppSnackBarScope (AppSnackBarScopeState '
+          'shows one after an await); AppSnackBarClearance keeps it above '
+          'the tab bar and a bottom CTA.',
+    ),
+    galleryEntry('AppSnackBar', [
+      for (final style in AppSnackBarStyle.values)
+        galleryBlock(
+          style.name,
+          AppSnackBar(message: l10n.devGallerySampleMessage, style: style),
+        ),
+      galleryBlock(
+        'action',
+        AppSnackBar(
+          message: l10n.trackerSetDeleted,
+          action: AppSnackBarAction(label: l10n.trackerUndo, onPressed: () {}),
+        ),
+      ),
+    ]),
     galleryEntry('showAppSheet', [
       for (final size in AppSheetSize.values)
         AppListRowButton(
@@ -858,7 +902,7 @@ List<Widget> galleryStates(BuildContext context) {
 }
 
 /// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppChip],
-/// [AppConfetti] and [AppInlineMessage].
+/// [AppConfetti], [AppInlineMessage] and [AppViewfinder].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
   final colors = context.appColors;
@@ -1005,6 +1049,25 @@ List<Widget> galleryContent(BuildContext context) {
             text: l10n.devGallerySampleMessage,
           ),
         ),
+    ]),
+    galleryEntry('AppViewfinder', [
+      galleryBlock('opening', const AppViewfinder()),
+      galleryBlock(
+        'live, action',
+        AppViewfinder(
+          preview: Image.asset(samplePhotoAsset, fit: BoxFit.cover),
+          caption: l10n.labelHoldInFrame,
+          action: AppIconButton(
+            icon: AppSymbols.torchOff,
+            semanticLabel: l10n.torchTurnOn,
+            onPressed: () {},
+          ),
+        ),
+      ),
+      galleryBlock(
+        'busy',
+        AppViewfinder(caption: l10n.labelReading, busy: true),
+      ),
     ]),
   ];
 }

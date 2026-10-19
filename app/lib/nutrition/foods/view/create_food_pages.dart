@@ -294,7 +294,7 @@ class _BarcodeSheetState extends State<_BarcodeSheet> {
   void _close(String code) {
     if (_closed || code.trim().isEmpty) return;
     _closed = true;
-    unawaited(HapticFeedback.successNotification());
+    unawaited(AppHaptics.success());
     Navigator.of(context).pop(code.trim());
   }
 
@@ -460,7 +460,7 @@ class _FoodDefinitionViewState extends State<FoodDefinitionView>
 
   Future<void> _done(CreateFoodState state) async {
     if (state.status == CreateFoodStatus.created) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       // Every step of the flow, its first included.
       Navigator.of(context)
         ..popUntil(
@@ -470,7 +470,7 @@ class _FoodDefinitionViewState extends State<FoodDefinitionView>
         ..pop(state.addToPlate ? state.created : null);
       return;
     }
-    unawaited(HapticFeedback.errorNotification());
+    unawaited(AppHaptics.error());
     final l10n = context.l10n;
     await showFailureAlert(
       context,

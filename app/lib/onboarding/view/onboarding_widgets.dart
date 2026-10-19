@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/logic/onboarding_step.dart';
-import 'package:flutter/services.dart';
 
 /// An onboarding question: [AppOnboardingStepScaffold] with the step's
 /// progress, the shared labels, and a back button inside a step. Without a
@@ -93,7 +92,7 @@ class OnboardingOptions<T> extends StatelessWidget {
             subtitle: subtitle?.call(option),
             selected: option == selected,
             onPressed: () {
-              unawaited(HapticFeedback.selectionClick());
+              unawaited(AppHaptics.selection());
               onSelected(option);
             },
           ),
@@ -110,7 +109,7 @@ Future<void> showOnboardingFailure(
   String? message,
   VoidCallback? onRetry,
 }) async {
-  unawaited(HapticFeedback.errorNotification());
+  unawaited(AppHaptics.error());
   final l10n = context.l10n;
   final material = MaterialLocalizations.of(context);
   final retry = await showAppDialog<bool>(
@@ -138,4 +137,4 @@ Future<void> showOnboardingFailure(
 }
 
 /// The success haptic Swift plays after every save.
-void onboardingSaved() => unawaited(HapticFeedback.successNotification());
+void onboardingSaved() => unawaited(AppHaptics.success());

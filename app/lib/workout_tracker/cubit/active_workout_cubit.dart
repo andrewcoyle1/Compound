@@ -58,7 +58,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
     UnitPreferenceStore? units,
     DeviceStore? device,
     this._clock = DateTime.now,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
     this._backoff = RetryBackoff.workoutSave,
     this._wait = _delay,
     this._programs,

@@ -13,7 +13,6 @@ import 'package:compound/sharing/view/share_to_follower_page.dart';
 import 'package:compound/workout_editor/view/define_workout_editor.dart';
 import 'package:compound_models/compound_models.dart'
     show MesocycleSharePayload;
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
@@ -159,11 +158,11 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
     // Activating from the settings page is that page's to answer.
     if (ModalRoute.of(context)?.isCurrent != true) return;
     if (state.status == MesocycleDesignStatus.succeeded) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       if (context.mounted) _close(context);
       return;
     }
-    unawaited(HapticFeedback.errorNotification());
+    unawaited(AppHaptics.error());
     if (!context.mounted) return;
     await showFailureAlert(context, switch (state.lastAction) {
       MesocycleDesignAction.activate => l10n.programActivateFailed,
@@ -347,7 +346,7 @@ class const _DayBar({
                     : AppCtaVariant.secondary,
                 onPressed: () {
                   if (day.workoutId != selected) {
-                    unawaited(HapticFeedback.selectionClick());
+                    unawaited(AppHaptics.selection());
                   }
                   cubit.selectDay(day.workoutId);
                 },

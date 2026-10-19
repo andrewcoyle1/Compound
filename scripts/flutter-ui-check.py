@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hold app/lib and compound_charts to the UI contract (docs/specs/flutter/ui-contract.md, rules 2 and 3).
+"""Hold app/lib and compound_charts to the UI contract (docs/specs/flutter/ui-contract.md, rules 2-4).
 
 Feature code styles nothing itself: colours, text styles, padding, radii and durations come from
 app_ui's tokens, and Material's buttons, rows and dialogs are wrapped once in app_ui. Every
@@ -18,6 +18,8 @@ ROOT = Path(__file__).resolve().parent.parent
 LIB = ROOT / 'app' / 'lib'
 # Charts draw on app_ui's tokens like any screen.
 CHARTS = ROOT / 'app' / 'packages' / 'compound_charts'
+# app_ui's widgets play haptics through AppHaptics too; only AppHaptics itself uses Flutter's.
+APP_UI = ROOT / 'app' / 'packages' / 'app_ui'
 
 # Not preceded by a letter, so `AppCard(` and `appColors.` don't count as `Card(` and `Colors.`.
 _ = r'(?<![A-Za-z_])'
@@ -47,6 +49,10 @@ RULES = {
     'material-card': (_ + r'Card\(', 'AppCard'),
     'material-dialog': (_ + r'(showDialog|showModalBottomSheet|showCupertinoDialog|AlertDialog|SimpleDialog)(<[^>]*>)?\(',
                         'an app_ui dialog or sheet (add one)'),
+    # Rule 4: haptics play through AppHaptics, which gives Android the iOS patterns.
+    'raw-haptic': (_ + r'HapticFeedback\.', 'AppHaptics'),
+    # Rule 3: snack bars are app_ui's, drawn above the tab bar.
+    'raw-snackbar': (_ + r'(SnackBar|SnackBarAction|showSnackBar)\(', 'showAppSnackBar'),
 }
 
 # Generated strings, and share cards, which render to fixed-size images like the Swift app's.
@@ -71,10 +77,17 @@ def scan():
             if rule == 'framework-import':
                 found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
     for path in sorted([*LIB.rglob('*.dart'), *(CHARTS / 'lib').rglob('*.dart')]):
-        if any(part in path.as_posix() for part in EXEMPT):
+        exempt = any(part in path.as_posix() for part in EXEMPT)
+        for rule, number, line in matches(path.read_text()):
+            # A share card's snack bar is still a screen's.
+            if not exempt or rule == 'raw-snackbar':
+                found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
+    for path in sorted((APP_UI / 'lib').rglob('*.dart')):
+        if path.name == 'app_haptics.dart':
             continue
         for rule, number, line in matches(path.read_text()):
-            found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
+            if rule == 'raw-haptic':
+                found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
     return found
 
 
@@ -127,6 +140,12 @@ def self_test():
         "import 'package:flutter/services.dart';": [],
         "// TextButton(onPressed: f) in a comment": [],
         "/// Uses [ListTile( in a doc comment": [],
+        "unawaited(HapticFeedback.successNotification());": ['raw-haptic'],
+        "unawaited(AppHaptics.success());": [],
+        "..showSnackBar(SnackBar(content: Text(message)));": ['raw-snackbar'] * 2,
+        "action: SnackBarAction(label: l10n.trackerUndo,": ['raw-snackbar'],
+        "showAppSnackBar(context, message, style: AppSnackBarStyle.error);": [],
+        "..hideCurrentSnackBar()": [],
     }
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]

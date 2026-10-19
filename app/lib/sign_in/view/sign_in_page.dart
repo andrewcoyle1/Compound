@@ -30,9 +30,11 @@ class SignInView extends StatelessWidget {
 
     return BlocListener<SignInCubit, SignInStatus>(
       listenWhen: (_, status) => status == SignInStatus.failure,
-      listener: (context, _) => ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.signInFailure))),
+      listener: (context, _) => showAppSnackBar(
+        context,
+        l10n.signInFailure,
+        style: AppSnackBarStyle.error,
+      ),
       child: AppScaffold(
         body: SafeArea(
           child: Padding(

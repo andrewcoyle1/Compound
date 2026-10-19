@@ -14,7 +14,6 @@ import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound_models/compound_models.dart'
     show EquipmentKind, FuzzyMatch;
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// The equipment the new exercise is done with, as one or more variations
@@ -307,7 +306,7 @@ class _EquipmentPickerViewState extends State<EquipmentPickerView> {
                                   title: name,
                                   selected: chosen.contains(key),
                                   onPressed: () {
-                                    unawaited(HapticFeedback.selectionClick());
+                                    unawaited(AppHaptics.selection());
                                     _cubit.toggled(key);
                                   },
                                 ),

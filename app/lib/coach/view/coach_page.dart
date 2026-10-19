@@ -11,7 +11,6 @@ import 'package:compound/coach/view/coach_message_body.dart';
 import 'package:compound/coach/view/coach_text.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/paywall/view/paywall_page.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:purchases_repository/purchases_repository.dart';
@@ -112,12 +111,12 @@ class _CoachViewState extends State<CoachView> {
         BlocListener<CoachCubit, CoachState>(
           listenWhen: (previous, current) =>
               current.sendFailures != previous.sendFailures,
-          listener: (_, _) => unawaited(HapticFeedback.errorNotification()),
+          listener: (_, _) => unawaited(AppHaptics.error()),
         ),
         BlocListener<CoachCubit, CoachState>(
           listenWhen: (previous, current) =>
               previous.isGivingConsent && current.gate == CoachGate.chat,
-          listener: (_, _) => unawaited(HapticFeedback.successNotification()),
+          listener: (_, _) => unawaited(AppHaptics.success()),
         ),
         BlocListener<CoachCubit, CoachState>(
           listenWhen: (previous, current) =>

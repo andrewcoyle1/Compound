@@ -10,7 +10,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// The muscles the new exercise works (Swift `MuscleGroupPickerView`).
@@ -61,7 +60,7 @@ class MuscleGroupPickerView extends StatelessWidget {
                     muscle: muscle,
                     selected: state.selected[muscle],
                     onPressed: () {
-                      unawaited(HapticFeedback.selectionClick());
+                      unawaited(AppHaptics.selection());
                       cubit.pressed(muscle);
                     },
                   ),

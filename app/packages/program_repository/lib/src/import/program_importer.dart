@@ -5,7 +5,6 @@ import 'package:compound_models/compound_models.dart';
 import 'package:program_repository/src/import/program_sheet.dart';
 import 'package:program_repository/src/import/program_sheet_parser.dart';
 import 'package:program_repository/src/import/sheet_readers.dart';
-import 'package:program_repository/src/program_rules.dart';
 
 /// A file read and parsed, before any name is matched (Swift
 /// `ProgramFile`).
@@ -157,7 +156,7 @@ ProgramImportResult buildProgramFromSheet(
   required ProgramImportStyle style,
   required ExerciseModel? Function(String) resolve,
   required DateTime now,
-  String Function() newId = newUuid,
+  String Function() newId = newDocumentId,
 }) {
   final unmatched = unmatchedProgramNames(sheet, resolve);
   if (unmatched.isNotEmpty) throw UnmatchedExercisesError(unmatched);
@@ -331,7 +330,7 @@ WorkoutTemplateModel _restDay(
 /// RPE; early RPE sets every set but the last, last RPE the last.
 List<SetTarget> programSetTargets(
   ProgramSheetRow row, {
-  String Function() newId = newUuid,
+  String Function() newId = newDocumentId,
 }) {
   final count = math.max(row.workingSets, 1);
   final hasRirColumns = row.rirPerSet.any((rir) => rir != null);
@@ -437,7 +436,7 @@ ProgramImportResult buildProgramFromMesocycles(
   required ProgramImportStyle style,
   required List<ExerciseModel> library,
   required DateTime now,
-  String Function() newId = newUuid,
+  String Function() newId = newDocumentId,
 }) {
   if (mesocycles.isEmpty) throw const NoExercisesError();
   final known = {for (final exercise in library) exercise.id};

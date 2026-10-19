@@ -323,7 +323,7 @@ m.WorkoutSessionModel plannedSession({
   Map<String, UnitPreference> unitPreferences = const {},
   String? mesocycleId,
   int? microcycleIndex,
-  IdGenerator newId = newUuid,
+  IdGenerator newId = m.newDocumentId,
 }) {
   final current = withLibraryExercises(template, library);
   final previous = history.lastForTemplate(current.workoutId);

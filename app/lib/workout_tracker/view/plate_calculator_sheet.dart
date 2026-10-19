@@ -7,7 +7,6 @@ import 'package:compound/workout_tracker/cubit/plate_calculator_cubit.dart';
 import 'package:compound/workout_tracker/view/plate_loading_view.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Opens the plate calculator on [setup]; the gym as edited on Done, or
@@ -110,7 +109,7 @@ class PlateCalculatorView extends StatelessWidget {
                     selected: bar.id == state.chosenBarId,
                     onPressed: () {
                       cubit.barChosen(bar.id);
-                      unawaited(HapticFeedback.selectionClick());
+                      unawaited(AppHaptics.selection());
                     },
                   ),
               ],
@@ -141,7 +140,7 @@ class PlateCalculatorView extends StatelessWidget {
                         selected: choice.isOn,
                         onPressed: () {
                           cubit.plateToggled(choice);
-                          unawaited(HapticFeedback.selectionClick());
+                          unawaited(AppHaptics.selection());
                         },
                       ),
                   ],

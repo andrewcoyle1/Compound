@@ -1,12 +1,12 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:body_repository/body_repository.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound/onboarding/logic/body_units.dart';
 import 'package:compound/onboarding/logic/diet_plan_builder.dart';
 import 'package:compound/onboarding/logic/goal_rules.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound_maths/compound_maths.dart' as maths;
+import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:user_repository/user_repository.dart';
 

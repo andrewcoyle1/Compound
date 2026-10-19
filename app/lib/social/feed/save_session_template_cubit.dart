@@ -27,7 +27,7 @@ class SaveSessionTemplateCubit extends Cubit<SaveSessionTemplateState> {
     required this._analytics,
     required this._session,
     this._now = DateTime.now,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   }) : super(const SaveSessionTemplateState());
 
   final TrainingLibraryRepository _library;

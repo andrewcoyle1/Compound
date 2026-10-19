@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
-import 'package:flutter/services.dart';
 
 /// One option of an [AppSegmentedControl].
 class AppSegment<T> {
@@ -120,7 +119,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
                         ? null
                         : () {
                             if (i == index) return;
-                            unawaited(HapticFeedback.selectionClick());
+                            unawaited(AppHaptics.selection());
                             onChanged(segment.value);
                           },
                   ),

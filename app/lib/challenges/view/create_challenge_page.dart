@@ -8,7 +8,6 @@ import 'package:compound/challenges/logic/challenge_standings.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/view/people_widgets.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_repository/social_repository.dart';
@@ -85,11 +84,11 @@ class _CreateChallengeViewState extends State<CreateChallengeView> {
     final l10n = context.l10n;
     switch (state.status) {
       case CreateChallengeStatus.created:
-        unawaited(HapticFeedback.successNotification());
+        unawaited(AppHaptics.success());
         context.read<ChallengesCubit>().added(state.created!);
         context.pop();
       case CreateChallengeStatus.failed:
-        unawaited(HapticFeedback.errorNotification());
+        unawaited(AppHaptics.error());
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(

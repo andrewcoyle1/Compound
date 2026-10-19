@@ -10,7 +10,6 @@ import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
@@ -122,10 +121,10 @@ class const ImportProgramView({
       listener: (context, state) {
         switch (state.status) {
           case ImportProgramStatus.saved:
-            unawaited(HapticFeedback.successNotification());
+            unawaited(AppHaptics.success());
             context.pop(state.saved);
           case ImportProgramStatus.loaded when state.error != null:
-            unawaited(HapticFeedback.errorNotification());
+            unawaited(AppHaptics.error());
           case _:
         }
       },
@@ -286,7 +285,7 @@ class const _UnmatchedRow({
         for (final exercise in suggestions)
           PopupMenuItem(
             value: () {
-              unawaited(HapticFeedback.selectionClick());
+              unawaited(AppHaptics.selection());
               cubit.suggestionPressed(name, exercise);
             },
             child: Text(l10n.importUseSuggestion(exercise.name)),
@@ -298,7 +297,7 @@ class const _UnmatchedRow({
         ),
         PopupMenuItem(
           value: () {
-            unawaited(HapticFeedback.selectionClick());
+            unawaited(AppHaptics.selection());
             cubit.createPressed(name);
           },
           child: Text(l10n.importCreateExercise(name)),

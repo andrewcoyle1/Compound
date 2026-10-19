@@ -10,7 +10,6 @@ import 'package:compound/create_exercise/view/create_exercise_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/view/exercise_detail_page.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
@@ -49,11 +48,11 @@ class ExerciseSaveView extends StatelessWidget {
   ) async {
     final l10n = context.l10n;
     if (state.status == ExerciseSaveStatus.saved) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       CreateExerciseFlow.close(context, state.created);
       return;
     }
-    unawaited(HapticFeedback.errorNotification());
+    unawaited(AppHaptics.error());
     await showFailureAlert(
       context,
       l10n.createExerciseFailed,

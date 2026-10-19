@@ -5,7 +5,6 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/report/report_cubit.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:social_repository/social_repository.dart';
 
@@ -37,14 +36,14 @@ Future<void> showReportSheet(
   await cubit.close();
   if (sent == null) return;
   if (sent) {
-    unawaited(HapticFeedback.mediumImpact());
+    unawaited(AppHaptics.medium());
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(content: Text(reportSentMessage(l10n, content.type))),
       );
   } else if (context.mounted) {
-    unawaited(HapticFeedback.heavyImpact());
+    unawaited(AppHaptics.heavy());
     await showAppDialog<void>(
       context: context,
       title: l10n.reportFailed,

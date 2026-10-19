@@ -12,7 +12,6 @@ import 'package:compound/nutrition/foods/view/create_food_pages.dart';
 import 'package:compound/nutrition/recipes/cubit/create_recipe_cubit.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/widgets/stored_image.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -320,7 +319,7 @@ class _IngredientPickerView extends StatelessWidget {
     context.read<FoodsCubit>().foodSelected(food);
     final ingredient = await showRecipeIngredientAmountSheet(context, food);
     if (ingredient == null) return;
-    unawaited(HapticFeedback.successNotification());
+    unawaited(AppHaptics.success());
     recipe.ingredientConfirmed(ingredient);
   }
 
@@ -491,7 +490,7 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
 
   Future<void> _done(CreateRecipeState state) async {
     if (state.status == CreateRecipeStatus.created) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       // Every step of the flow, its first included.
       Navigator.of(context)
         ..popUntil(
@@ -501,7 +500,7 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
         ..pop();
       return;
     }
-    unawaited(HapticFeedback.errorNotification());
+    unawaited(AppHaptics.error());
     final l10n = context.l10n;
     await showFailureAlert(
       context,

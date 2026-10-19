@@ -12,7 +12,6 @@ import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
@@ -278,9 +277,8 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
     }
   }
 
-  static Future<void> _feedback(bool ok) => ok
-      ? HapticFeedback.successNotification()
-      : HapticFeedback.errorNotification();
+  static Future<void> _feedback(bool ok) =>
+      ok ? AppHaptics.success() : AppHaptics.error();
 }
 
 /// The microcycle picker in the section header.

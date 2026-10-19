@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart' show withItems;
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/review/review_moment.dart';
 import 'package:compound/widgets/calendar/calendar_day_marker.dart';
 import 'package:compound_maths/compound_maths.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 

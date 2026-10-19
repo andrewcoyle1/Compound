@@ -1,10 +1,11 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:equatable/equatable.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart'
-    show newUuid, setTargetsForMicrocycle;
+    show setTargetsForMicrocycle;
 
 /// A week's override with an id of its own, so its row keeps its identity
 /// while its week is stepped.
@@ -75,7 +76,7 @@ class WeeklyTargetsCubit extends Cubit<WeeklyTargetsState> {
     required WorkoutTemplateExercise exercise,
     required this._onChange,
     required this._analytics,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   }) : super(
          WeeklyTargetsState(
            exercise: exercise,

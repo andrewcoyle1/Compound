@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:http/http.dart' as http;
-import 'package:strava_repository/src/random_id.dart';
 import 'package:strava_repository/src/strava_models.dart';
 import 'package:strava_repository/src/strava_strength_file.dart';
 
@@ -164,7 +164,7 @@ class RemoteStravaApi implements StravaApi {
   ) async {
     final request = http.Request('POST', _api.resolve('uploads'))
       ..headers['Authorization'] = 'Bearer $accessToken';
-    final boundary = _boundary?.call() ?? 'Compound-${randomUuid()}';
+    final boundary = _boundary?.call() ?? 'Compound-${newDocumentId()}';
     request
       ..headers['Content-Type'] = 'multipart/form-data; boundary=$boundary'
       ..bodyBytes = multipartBody(upload, boundary);

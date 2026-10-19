@@ -98,7 +98,7 @@ Ported from the Swift contract's Patterns table.
 | Destructive | Destructive styling (`AppDialogRole.destructive` in a dialog). Irreversible actions confirm first with `AppDialog.confirmDestructive`, which has a Cancel |
 | Sheets | `AppSheetPage` or `showAppSheet`, sized only `compact`, `half` or `full`; each drags to full height, opens at full height at large text, and has a drag handle |
 | Selection | Anything with a selected state announces it to screen readers |
-| Haptics | Success after every save, log, complete or finish; error when one fails; selection for pickers and segments |
+| Haptics | `AppHaptics`, never Flutter's `HapticFeedback`: `success` after every save, log, complete or finish; `error` when one fails; `selection` for pickers and segments; `warning`, `light`, `medium` and `heavy` where those fit. It plays the iOS patterns on Android too (`haptic_feedback`). Tests record them with `AppHaptics.debugPlay` |
 
 ## 5. Accessibility is part of done
 
@@ -181,12 +181,13 @@ screens never branch on platform themselves.
 
 `scripts/flutter-ui-check.py` runs in CI (`flutter.yml`, **UI contract** job) and enforces rules 2
 and 3 on `app/lib/` and `compound_charts/lib/` (and `framework-import` on `app/test/` and
-`compound_charts/test/`). Every screen was moved onto `app_ui` by 19 Oct 2026 (#212–#217), so
-there is no baseline: any match fails CI.
+`compound_charts/test/`). Its `raw-haptic` rule holds rule 4's haptics to `AppHaptics` there and in
+`app_ui/lib/`, where only `AppHaptics` itself calls `HapticFeedback`. Every screen was moved onto
+`app_ui` by 19 Oct 2026 (#212–#217), so there is no baseline: any match fails CI.
 
 ```bash
 python3 scripts/flutter-ui-check.py                  # what CI runs
 python3 scripts/flutter-ui-check.py --list text-style  # every match of one rule
 ```
 
-Rules 1 and 4–8 are checked in review.
+Rules 1 and 5–8, and the rest of 4, are checked in review.

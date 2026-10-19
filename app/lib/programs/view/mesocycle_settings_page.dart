@@ -11,7 +11,6 @@ import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/workout_editor/view/editor_widgets.dart'
     show CountStepper;
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// A page of the mesocycle editor (Swift `MesocycleSettingsView`): its
@@ -54,11 +53,11 @@ class _MesocycleSettingsPageState extends State<MesocycleSettingsPage> {
 
   Future<void> _done(MesocycleDesignState state) async {
     if (state.status == MesocycleDesignStatus.succeeded) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       if (mounted) Navigator.of(context).pop();
       return;
     }
-    unawaited(HapticFeedback.errorNotification());
+    unawaited(AppHaptics.error());
     if (!mounted) return;
     await showFailureAlert(
       context,

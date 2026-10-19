@@ -3,8 +3,8 @@ import 'package:bloc/bloc.dart';
 import 'package:compound/create_exercise/logic/exercise_draft.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/training_library/logic/exercise_filters.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:equatable/equatable.dart';
-import 'package:training_session/training_session.dart' show newUuid;
 
 /// The ways of doing the exercise, and whether it is bodyweight work.
 final class const ExerciseEquipmentState({
@@ -23,15 +23,18 @@ final class const ExerciseEquipmentState({
 /// The third step (Swift `ExerciseEquipmentPresenter`). There is always at
 /// least one variation to fill in.
 class ExerciseEquipmentCubit extends Cubit<ExerciseEquipmentState> {
-  new({required this._draft, required this._analytics, this._newId = newUuid})
-    : super(
-        ExerciseEquipmentState(
-          variations: _draft.variations.isEmpty
-              ? [VariationDraft(id: _newId())]
-              : _draft.variations,
-          isBodyweight: _draft.isBodyweight,
-        ),
-      );
+  new({
+    required this._draft,
+    required this._analytics,
+    this._newId = newDocumentId,
+  }) : super(
+         ExerciseEquipmentState(
+           variations: _draft.variations.isEmpty
+               ? [VariationDraft(id: _newId())]
+               : _draft.variations,
+           isBodyweight: _draft.isBodyweight,
+         ),
+       );
 
   static const _screen = 'ExerciseEquipmentView';
 

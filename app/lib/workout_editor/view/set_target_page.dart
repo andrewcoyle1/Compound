@@ -13,7 +13,6 @@ import 'package:compound/workout_editor/logic/editor_text.dart';
 import 'package:compound/workout_editor/view/editor_widgets.dart';
 import 'package:compound/workout_editor/view/set_plan_detail_sheet.dart';
 import 'package:compound/workout_editor/view/weekly_targets_page.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
@@ -102,7 +101,7 @@ class SetTargetView extends StatelessWidget {
     final cubit = context.read<SetTargetCubit>()..save();
     final saved = cubit.state.saved;
     if (saved == null) {
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
       return;
     }
     Navigator.of(context).pop(saved);

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:ai_repository/src/food_analysis_item.dart';
-import 'package:ai_repository/src/random_id.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound_models/compound_models.dart';
 
@@ -73,7 +72,7 @@ class AiRepository {
     DateTime Function()? now,
     String Function()? newId,
   }) : _now = now ?? (() => DateTime.now().toUtc()),
-       _newId = newId ?? randomUuid;
+       _newId = newId ?? newDocumentId;
 
   final CallFunction _callFunction;
   final DateTime Function() _now;

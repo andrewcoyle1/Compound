@@ -3,8 +3,8 @@ import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/integrations/link_opener.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:compound/metric_detail/view/metric_chart.dart';
 import 'package:compound/training_library/training_library.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -285,15 +285,15 @@ void main() {
         // The section's title and the series' label.
         expect(find.text('Top Set'), findsNWidgets(2));
         expect(find.text('Reps Per Session'), findsOneWidget);
-        expect(find.byType(MetricChart), findsNWidgets(2));
+        expect(find.byType(CartesianChart), findsNWidgets(2));
         // Month, six months and year only.
         expect(find.text('W'), findsNothing);
         await tester.tap(find.text('Y').first);
         await tester.pumpAndSettle();
-        expect(find.byType(MetricChart), findsNWidgets(2));
+        expect(find.byType(CartesianChart), findsNWidgets(2));
         await tester.tap(find.text('6M').last);
         await tester.pumpAndSettle();
-        expect(find.byType(MetricChart), findsNWidgets(2));
+        expect(find.byType(CartesianChart), findsNWidgets(2));
       });
 
       testWidgets('lists the best, the records and the totals', (tester) async {

@@ -1,9 +1,9 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:equatable/equatable.dart';
 import 'package:training_library_repository/training_library_repository.dart';
-import 'package:training_session/training_session.dart' show newUuid;
 
 /// Where the wizard's save is.
 enum WorkoutWizardStatus { editing, saving, saved, failed }
@@ -64,7 +64,7 @@ class WorkoutWizardCubit extends Cubit<WorkoutWizardState> {
     required this._analytics,
     WorkoutTemplateModel? template,
     this._now = DateTime.now,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   }) : super(
          WorkoutWizardState(
            name: template?.name ?? '',

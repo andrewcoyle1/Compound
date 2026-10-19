@@ -1,6 +1,7 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:equatable/equatable.dart';
 import 'package:image_repository/image_repository.dart';
 import 'package:program_repository/program_repository.dart';
@@ -106,7 +107,7 @@ class GymProfileEditorCubit extends Cubit<GymProfileEditorState> {
     required this._images,
     required this._picker,
     this._untitledName = 'Untitled Gym Profile',
-    this._newId = newUuid,
+    this._newId = newDocumentId,
     this._numbered,
     EquipmentScope? scope,
     this._onSaved,

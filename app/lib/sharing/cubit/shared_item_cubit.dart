@@ -1,6 +1,5 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:program_repository/program_repository.dart';

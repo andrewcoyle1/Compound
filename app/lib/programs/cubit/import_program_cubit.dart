@@ -98,7 +98,7 @@ class ImportProgramCubit extends Cubit<ImportProgramState> {
     required this._setup,
     required this._analytics,
     this._now = DateTime.now,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   }) : _matcher = ExerciseNameMatcher(_library),
        super(const ImportProgramState()) {
     _analytics.appear(_screen);

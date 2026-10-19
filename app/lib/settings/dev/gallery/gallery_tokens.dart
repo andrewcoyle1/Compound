@@ -263,6 +263,25 @@ List<Widget> galleryTokens(BuildContext context) {
           ),
         ),
     ]),
+    galleryEntry('AppChartMark', [
+      for (final (name, value) in [
+        ('lineWidth', AppChartMark.lineWidth),
+        ('sparkWidth', AppChartMark.sparkWidth),
+        ('dotRadius', AppChartMark.dotRadius),
+        ('barCorner', AppChartMark.barCorner),
+        ('stackGap', AppChartMark.stackGap),
+        ('barFill', AppChartMark.barFill),
+        ('gridWidth', AppChartMark.gridWidth),
+        ('ruleWidth', AppChartMark.ruleWidth),
+        ('areaOpacity', AppChartMark.areaOpacity),
+      ])
+        AppListRow(
+          title: name,
+          accessory: AppListRowValue(
+            AppFormat.number(value, maxFractionDigits: 1, locale: locale),
+          ),
+        ),
+    ]),
     galleryEntry('AppMotion', [const _Motion()]),
     galleryEntry('AppSymbols', [
       for (final (name, icon) in gallerySymbols)

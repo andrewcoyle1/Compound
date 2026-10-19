@@ -1,5 +1,4 @@
 import 'package:app_ui/app_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
@@ -16,16 +15,9 @@ void main() {
     testWidgets('reports a new choice, with the selection haptic', (
       tester,
     ) async {
-      final haptics = <String?>[];
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        (call) async {
-          if (call.method == 'HapticFeedback.vibrate') {
-            haptics.add(call.arguments as String?);
-          }
-          return null;
-        },
-      );
+      final haptics = <AppHaptic>[];
+      AppHaptics.debugPlay = haptics.add;
+      addTearDown(() => AppHaptics.debugPlay = null);
       final chosen = <String>[];
       await tester.pumpApp(
         AppSegmentedControl<String>(
@@ -38,7 +30,7 @@ void main() {
       expect(chosen, isEmpty);
       await tester.tap(find.text('Imperial'));
       expect(chosen, ['lb']);
-      expect(haptics, ['HapticFeedbackType.selectionClick']);
+      expect(haptics, [AppHaptic.selection]);
     });
 
     testWidgets('announces each option and which is selected', (tester) async {

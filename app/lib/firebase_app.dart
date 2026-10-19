@@ -257,6 +257,7 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     ),
     userRepository: userRepository,
     notificationsRepository: notificationsRepository,
+    platformLinks: AppLinksPlatformLinks(),
     liveActivityRepository: liveActivityRepository,
     appIntentsRepository: MethodChannelAppIntentsRepository(),
     // Both Firebase flavors' `APP_GROUP_ID`, the Swift app's group.

@@ -217,6 +217,8 @@ Future<void> main() async {
       notificationsRepository: FakeNotificationsRepository(
         permissionState: PushPermission.authorized,
       ),
+      // compound:// links are the device's own, as in the other flavors.
+      platformLinks: AppLinksPlatformLinks(),
       authRepository: InMemoryAuthRepository(
         user: step == null ? InMemoryAuthRepository.sampleUser : anonymous,
       ),

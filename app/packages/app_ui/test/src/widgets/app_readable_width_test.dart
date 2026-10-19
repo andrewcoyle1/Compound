@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
 
+void _goldenTap() {}
+
 void main() {
   group('AppReadableWidth', () {
     void sizeView(WidgetTester tester, Size size, {EdgeInsets? padding}) {
@@ -180,5 +182,58 @@ void main() {
         isSemantics(label: 'Today', isHeader: true),
       );
     });
+  });
+
+  group('AppScaffold golden', () {
+    final body = ListView(
+      padding: const EdgeInsets.all(AppSpacing.l),
+      children: const [
+        AppSection(
+          header: 'Account',
+          children: [
+            AppListRow(title: 'Email', accessory: AppListRowValue('a@b.com')),
+            AppListRow(title: 'Units', accessory: AppListRowMenu('Metric')),
+          ],
+        ),
+      ],
+    );
+    goldenStates(
+      'app_scaffold',
+      [
+        (
+          'Modal: close and confirm',
+          AppScaffold(
+            appBar: AppBar(
+              title: const Text('Edit Profile'),
+              leading: const AppToolbarButton.close(semanticLabel: 'Close'),
+              actions: const [
+                AppToolbarButton.confirm(
+                  semanticLabel: 'Save',
+                  onPressed: _goldenTap,
+                ),
+              ],
+            ),
+            body: body,
+          ),
+        ),
+        (
+          'Tab root: large title',
+          AppScaffold(
+            largeTitle: 'Settings',
+            actions: const [
+              AppToolbarButton(
+                icon: AppSymbols.add,
+                semanticLabel: 'Add',
+                onPressed: _goldenTap,
+              ),
+            ],
+            body: body,
+          ),
+        ),
+      ],
+      width: 375,
+      height: 360,
+      padded: false,
+    );
   });
 }

@@ -181,4 +181,86 @@ void main() {
       );
     });
   });
+
+  group('AppListRow golden', () {
+    Widget card(Widget row) => AppCard(child: row);
+    goldenStates('app_list_row', [
+      ('Title', card(const AppListRow(title: 'Units'))),
+      (
+        'Subtitle and chevron',
+        card(
+          const AppListRow(
+            title: 'Barbell Bench Press',
+            subtitle: 'Chest · Triceps · Shoulders',
+            accessory: AppListRowChevron(),
+          ),
+        ),
+      ),
+      (
+        'Icon and value',
+        card(
+          const AppListRow(
+            title: 'Body weight',
+            icon: AppSymbols.scaleWeight,
+            accessory: AppListRowValue('81.4 kg'),
+          ),
+        ),
+      ),
+      (
+        'Tinted icon and menu',
+        Builder(
+          builder: (context) => card(
+            AppListRow(
+              title: 'Protein target',
+              icon: AppSymbols.protein,
+              tint: context.appColors.protein,
+              accessory: const AppListRowMenu('High'),
+            ),
+          ),
+        ),
+      ),
+      (
+        'Thumbnail',
+        Builder(
+          builder: (context) => card(
+            AppListRow(
+              title: 'Overnight oats',
+              subtitle: '420 kcal',
+              thumbnail: ColoredBox(color: context.appColors.carbs),
+              accessory: const AppListRowChevron(),
+            ),
+          ),
+        ),
+      ),
+      (
+        'Checkmark',
+        card(
+          const AppListRow(
+            title: 'Kilograms',
+            accessory: AppListRowCheckmark(selected: true),
+          ),
+        ),
+      ),
+      (
+        'Destructive',
+        card(
+          const AppListRow(
+            title: 'Delete Account',
+            icon: AppSymbols.delete,
+            destructive: true,
+          ),
+        ),
+      ),
+      (
+        'Long title',
+        card(
+          const AppListRow(
+            title: 'Single-arm dumbbell row with a pause at the top',
+            subtitle: 'Back · Biceps',
+            accessory: AppListRowValue('3 × 10'),
+          ),
+        ),
+      ),
+    ]);
+  });
 }

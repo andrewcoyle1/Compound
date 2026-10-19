@@ -57,4 +57,28 @@ void main() {
       );
     });
   });
+
+  group('AppChip golden', () {
+    goldenStates('app_chip', [
+      ('Tag', const AppChip(label: 'Push')),
+      (
+        'Tag with icon',
+        const AppChip(label: 'Legs', icon: AppSymbols.muscleGroup),
+      ),
+      ('Selected', const AppChip(label: 'All', selected: true)),
+      (
+        'Tinted, selected',
+        Builder(
+          builder: (context) => AppChip(
+            label: 'Protein',
+            icon: AppSymbols.protein,
+            tint: context.appColors.protein,
+            selected: true,
+          ),
+        ),
+      ),
+      ('Button', AppChip(label: 'See All', onPressed: () {})),
+      ('Long label', const AppChip(label: 'Upper body hypertrophy')),
+    ], width: 200);
+  });
 }

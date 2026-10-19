@@ -56,4 +56,50 @@ void main() {
       );
     });
   });
+
+  group('AppTabBar golden', () {
+    const items = [
+      AppTabBarItem(
+        icon: AppSymbols.today,
+        selectedIcon: AppSymbols.todayFilled,
+        label: 'Today',
+      ),
+      AppTabBarItem(
+        icon: AppSymbols.workout,
+        selectedIcon: AppSymbols.workoutFilled,
+        label: 'Training',
+      ),
+      AppTabBarItem(
+        icon: AppSymbols.nutrition,
+        selectedIcon: AppSymbols.nutritionFilled,
+        label: 'Nutrition',
+      ),
+      AppTabBarItem(
+        icon: AppSymbols.analytics,
+        selectedIcon: AppSymbols.analyticsFilled,
+        label: 'Progress',
+      ),
+      AppTabBarItem(
+        icon: AppSymbols.friends,
+        selectedIcon: AppSymbols.friendsFilled,
+        label: 'Social',
+        badgeCount: 3,
+      ),
+    ];
+    goldenStates(
+      'app_tab_bar',
+      [
+        (
+          'First selected, a badge',
+          AppTabBar(items: items, selectedIndex: 0, onSelected: (_) {}),
+        ),
+        (
+          'Middle selected',
+          AppTabBar(items: items, selectedIndex: 2, onSelected: (_) {}),
+        ),
+      ],
+      width: 375,
+      padded: false,
+    );
+  });
 }

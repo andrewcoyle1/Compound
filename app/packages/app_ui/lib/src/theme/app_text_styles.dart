@@ -109,6 +109,14 @@ abstract final class AppTextStyles {
     FontWeight weight, {
     required double sfTracking,
   }) => TextStyle(
+    // Named, as Material's typography names it, rather than left to the
+    // engine's default: a component style (a button's label) replaces the
+    // ambient style instead of merging with it, so without a family it was
+    // set in whatever face the engine falls back to.
+    fontFamily: switch (defaultTargetPlatform) {
+      TargetPlatform.iOS || TargetPlatform.macOS => 'CupertinoSystemText',
+      _ => 'Roboto',
+    },
     fontSize: size,
     height: lineHeight / size,
     fontWeight: weight,

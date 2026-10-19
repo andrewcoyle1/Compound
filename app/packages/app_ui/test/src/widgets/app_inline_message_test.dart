@@ -43,4 +43,23 @@ void main() {
       scheme.onSurface,
     );
   });
+
+  group('AppInlineMessage golden', () {
+    goldenStates('app_inline_message', [
+      for (final (name, kind, text) in const [
+        ('Error', AppInlineMessageKind.error, 'Enter a weight above zero.'),
+        (
+          'Warning',
+          AppInlineMessageKind.warning,
+          'This is more than double your last weigh-in. Check the units.',
+        ),
+        (
+          'Info',
+          AppInlineMessageKind.info,
+          'Hold the barcode steady inside the frame.',
+        ),
+      ])
+        (name, AppInlineMessage(kind: kind, text: text, kindLabel: name)),
+    ]);
+  });
 }

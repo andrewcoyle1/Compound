@@ -76,11 +76,10 @@ class AppCtaButton extends StatelessWidget {
                 dimension: AppIconSize.small.of(context),
                 child: CircularProgressIndicator.adaptive(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(
-                    variant == AppCtaVariant.primary
-                        ? scheme.onPrimary
-                        : scheme.onSurface,
-                  ),
+                  // Loading disables the button, so the spinner takes the
+                  // disabled label colour: onPrimary would vanish on the
+                  // grey fill.
+                  valueColor: AlwaysStoppedAnimation(scheme.onSurfaceVariant),
                 ),
               ),
             ],

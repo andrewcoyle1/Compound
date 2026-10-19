@@ -173,4 +173,40 @@ void main() {
       expect(tester.getTopLeft(find.byType(BottomSheet)).dy, top);
     });
   });
+
+  group('AppSheetPage golden', () {
+    Widget sheet(AppSheetSize size) => Navigator(
+      pages: [
+        const MaterialPage<void>(child: SizedBox.expand()),
+        AppSheetPage<void>(
+          size: size,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: AppSection(
+              header: 'Log Weight',
+              children: [
+                AppListRow(
+                  title: 'Weight',
+                  accessory: AppListRowValue('81.4 kg'),
+                ),
+                AppListRow(title: 'Date', accessory: AppListRowValue('Today')),
+              ],
+            ),
+          ),
+        ),
+      ],
+      onDidRemovePage: (_) {},
+    );
+    goldenStates(
+      'app_sheet',
+      [
+        ('Compact', sheet(AppSheetSize.compact)),
+        ('Half', sheet(AppSheetSize.half)),
+        ('Full', sheet(AppSheetSize.full)),
+      ],
+      width: 375,
+      height: 560,
+      padded: false,
+    );
+  });
 }

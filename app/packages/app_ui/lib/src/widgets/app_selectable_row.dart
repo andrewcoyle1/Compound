@@ -41,10 +41,13 @@ class AppSelectableRow extends StatelessWidget {
       excludeSemantics: true,
       child: InkWell(
         onTap: onPressed,
-        child: AppListRow(
-          title: title,
-          subtitle: subtitle,
-          accessory: AppListRowCheckmark(selected: selected),
+        child: Opacity(
+          opacity: onPressed == null ? AppListRow.disabledOpacity : 1,
+          child: AppListRow(
+            title: title,
+            subtitle: subtitle,
+            accessory: AppListRowCheckmark(selected: selected),
+          ),
         ),
       ),
     );

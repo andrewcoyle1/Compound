@@ -263,4 +263,56 @@ void main() {
       handle.dispose();
     });
   });
+
+  group('AppSwipeActions golden', () {
+    const trailingOpen = Key('trailing open');
+    const leadingOpen = Key('leading open');
+    Widget row({Key? key}) => AppCard(
+      child: AppSwipeActions(
+        key: key,
+        leading: [
+          AppSwipeAction(
+            label: 'Pin',
+            icon: AppSymbols.pinnedNote,
+            onPressed: () {},
+          ),
+        ],
+        trailing: [
+          AppSwipeAction(
+            label: 'Delete',
+            icon: AppSymbols.delete,
+            isDestructive: true,
+            onPressed: () {},
+          ),
+          AppSwipeAction(label: 'Edit', onPressed: () {}),
+        ],
+        child: const AppListRow(title: 'Upper A', subtitle: 'Yesterday'),
+      ),
+    );
+    goldenStates(
+      'app_swipe_actions',
+      [
+        ('Closed', row()),
+        ('Trailing actions open', row(key: trailingOpen)),
+        ('Leading action open', row(key: leadingOpen)),
+      ],
+      pumpBeforeTest: (tester) async {
+        // Room for every cell, so each drag lands on its row.
+        tester.view.physicalSize = const Size(2000, 2000);
+        await tester.pumpAndSettle();
+        for (final (key, dx) in [(trailingOpen, -120.0), (leadingOpen, 60.0)]) {
+          final rows = find.byKey(key);
+          for (var i = 0; i < rows.evaluate().length; i++) {
+            // On the title: the row's middle falls between its two lines,
+            // which nothing there hit-tests.
+            await tester.dragFrom(
+              tester.getTopLeft(rows.at(i)) + const Offset(24, 20),
+              Offset(dx, 0),
+            );
+          }
+        }
+        await tester.pumpAndSettle();
+      },
+    );
+  });
 }

@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
 
+void _goldenTap() {}
+
 void main() {
   group('AppCtaButton', () {
     testWidgets('primary is a full-width filled button', (tester) async {
@@ -136,5 +138,109 @@ void main() {
       await tester.pumpApp(const AppBottomCta(children: []));
       expect(tester.getSize(find.byType(AppBottomCta)), Size.zero);
     });
+  });
+
+  group('AppCtaButton golden', () {
+    goldenStates('app_cta_button', [
+      ('Primary', const AppCtaButton(label: 'Continue', onPressed: _goldenTap)),
+      (
+        'Primary, disabled',
+        const AppCtaButton(label: 'Continue', onPressed: null),
+      ),
+      (
+        'Primary, loading',
+        const AppCtaButton(
+          label: 'Continue',
+          onPressed: _goldenTap,
+          isLoading: true,
+        ),
+      ),
+      (
+        'Long label',
+        const AppCtaButton(
+          label: 'Restart the macrocycle from week one',
+          onPressed: _goldenTap,
+        ),
+      ),
+      (
+        'Secondary',
+        const AppCtaButton(
+          label: 'Add to Library',
+          onPressed: _goldenTap,
+          variant: AppCtaVariant.secondary,
+        ),
+      ),
+      (
+        'Secondary, disabled',
+        const AppCtaButton(
+          label: 'Add to Library',
+          onPressed: null,
+          variant: AppCtaVariant.secondary,
+        ),
+      ),
+      (
+        'Plain',
+        const AppCtaButton(
+          label: 'Skip for now',
+          onPressed: _goldenTap,
+          variant: AppCtaVariant.plain,
+        ),
+      ),
+      (
+        'Compact primary and secondary',
+        const Wrap(
+          spacing: AppSpacing.s,
+          runSpacing: AppSpacing.s,
+          children: [
+            AppCtaButton(
+              label: 'Follow',
+              onPressed: _goldenTap,
+              size: AppCtaSize.compact,
+            ),
+            AppCtaButton(
+              label: 'Edit Profile',
+              onPressed: _goldenTap,
+              size: AppCtaSize.compact,
+              variant: AppCtaVariant.secondary,
+            ),
+          ],
+        ),
+      ),
+      (
+        'Compact, loading',
+        const AppCtaButton(
+          label: 'Follow',
+          onPressed: _goldenTap,
+          size: AppCtaSize.compact,
+          isLoading: true,
+        ),
+      ),
+    ], pumpBeforeTest: pumpOnceSettled);
+  });
+
+  group('AppBottomCta golden', () {
+    goldenStates('app_bottom_cta', [
+      (
+        'One action',
+        const AppBottomCta(
+          children: [
+            AppCtaButton(label: 'Start Workout', onPressed: _goldenTap),
+          ],
+        ),
+      ),
+      (
+        'With a plain second action',
+        const AppBottomCta(
+          children: [
+            AppCtaButton(label: 'Continue', onPressed: _goldenTap),
+            AppCtaButton(
+              label: 'Not now',
+              onPressed: _goldenTap,
+              variant: AppCtaVariant.plain,
+            ),
+          ],
+        ),
+      ),
+    ], padded: false);
   });
 }

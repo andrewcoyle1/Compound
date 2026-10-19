@@ -43,4 +43,24 @@ void main() {
       );
     });
   });
+
+  group('AppCard golden', () {
+    Widget content(String text) => Padding(
+      padding: const EdgeInsets.all(AppSpacing.l),
+      child: SizedBox(width: double.infinity, child: Text(text)),
+    );
+    goldenStates('app_card', [
+      ('Card', AppCard(child: content('A card on the canvas'))),
+      ('Tile', AppCard(style: AppCardStyle.tile, child: content('A tile'))),
+      (
+        'Tinted',
+        Builder(
+          builder: (context) => AppCard(
+            style: AppCardStyle.tinted(context.appColors.protein),
+            child: content('Tinted with protein'),
+          ),
+        ),
+      ),
+    ]);
+  });
 }

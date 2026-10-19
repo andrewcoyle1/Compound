@@ -15,6 +15,8 @@ final _pixel = Uint8List.fromList(const [
   0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
 ]);
 
+void _goldenTap() {}
+
 void main() {
   group('AppToolbarButton', () {
     testWidgets('a glyph is labelled, tappable and 44 pt', (tester) async {
@@ -156,5 +158,64 @@ void main() {
         expect(find.byIcon(AppSymbols.profile), findsOneWidget);
       });
     }
+  });
+
+  group('AppToolbarButton golden', () {
+    goldenStates(
+      'app_toolbar_button',
+      [
+        (
+          'Glyph, close',
+          const Row(
+            children: [
+              AppToolbarButton(
+                icon: AppSymbols.add,
+                semanticLabel: 'Add',
+                onPressed: _goldenTap,
+              ),
+              AppToolbarButton.close(
+                semanticLabel: 'Close',
+                onPressed: _goldenTap,
+              ),
+            ],
+          ),
+        ),
+        (
+          'Confirm: enabled, disabled, saving',
+          const Row(
+            children: [
+              AppToolbarButton.confirm(
+                semanticLabel: 'Save',
+                onPressed: _goldenTap,
+              ),
+              AppToolbarButton.confirm(semanticLabel: 'Save', onPressed: null),
+              AppToolbarButton.confirm(
+                semanticLabel: 'Save',
+                onPressed: _goldenTap,
+                isSaving: true,
+              ),
+            ],
+          ),
+        ),
+        (
+          'Avatar: initials, none',
+          const Row(
+            children: [
+              AppToolbarButton.avatar(
+                semanticLabel: 'Profile',
+                onPressed: _goldenTap,
+                initials: 'AC',
+              ),
+              AppToolbarButton.avatar(
+                semanticLabel: 'Profile',
+                onPressed: _goldenTap,
+              ),
+            ],
+          ),
+        ),
+      ],
+      width: 220,
+      pumpBeforeTest: pumpOnceSettled,
+    );
   });
 }

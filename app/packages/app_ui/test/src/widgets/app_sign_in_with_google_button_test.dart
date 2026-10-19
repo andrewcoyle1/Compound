@@ -139,4 +139,33 @@ void main() {
       });
     }
   });
+
+  group('AppSignInWithGoogleButton golden', () {
+    final button = AppSignInWithGoogleButton(
+      label: 'Sign in with Google',
+      onPressed: () {},
+    );
+    goldenStates('app_sign_in_with_google_button', [
+      ('Android', button),
+      ('iOS', onIos(button)),
+      (
+        'Loading',
+        AppSignInWithGoogleButton(
+          label: 'Sign in with Google',
+          onPressed: () {},
+          isLoading: true,
+        ),
+      ),
+      (
+        'Loading, iOS',
+        onIos(
+          AppSignInWithGoogleButton(
+            label: 'Sign in with Google',
+            onPressed: () {},
+            isLoading: true,
+          ),
+        ),
+      ),
+    ], pumpBeforeTest: pumpOnceSettled);
+  });
 }

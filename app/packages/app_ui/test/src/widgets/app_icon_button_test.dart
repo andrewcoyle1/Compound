@@ -40,4 +40,25 @@ void main() {
       );
     });
   });
+
+  group('AppIconButton golden', () {
+    goldenStates('app_icon_button', [
+      (
+        'Enabled',
+        AppIconButton(
+          icon: AppSymbols.edit,
+          semanticLabel: 'Edit',
+          onPressed: () {},
+        ),
+      ),
+      (
+        'Disabled',
+        const AppIconButton(
+          icon: AppSymbols.edit,
+          semanticLabel: 'Edit',
+          onPressed: null,
+        ),
+      ),
+    ], width: 160);
+  });
 }

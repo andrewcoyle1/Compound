@@ -69,4 +69,31 @@ void main() {
       expect(taps, 0);
     });
   });
+
+  group('AppSignInWithAppleButton golden', () {
+    goldenStates('app_sign_in_with_apple_button', [
+      (
+        'Enabled',
+        AppSignInWithAppleButton(label: 'Sign in with Apple', onPressed: () {}),
+      ),
+      (
+        'Loading',
+        AppSignInWithAppleButton(
+          label: 'Sign in with Apple',
+          onPressed: () {},
+          isLoading: true,
+        ),
+      ),
+      (
+        'Loading, iOS',
+        onIos(
+          AppSignInWithAppleButton(
+            label: 'Sign in with Apple',
+            onPressed: () {},
+            isLoading: true,
+          ),
+        ),
+      ),
+    ], pumpBeforeTest: pumpOnceSettled);
+  });
 }

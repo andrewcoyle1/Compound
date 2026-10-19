@@ -50,12 +50,14 @@ void main() {
         expect(AppTextStyles.rowDetail.letterSpacing, -0.23);
         expect(AppTextStyles.label.letterSpacing, 0);
         expect(AppTextStyles.textTheme.bodyMedium?.letterSpacing, -0.43);
+        expect(AppTextStyles.rowTitle.fontFamily, 'CupertinoSystemText');
       });
 
       test("keeps Roboto's own spacing on Android", () {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         expect(AppTextStyles.rowTitle.letterSpacing, 0);
         expect(AppTextStyles.rowDetail.letterSpacing, 0);
+        expect(AppTextStyles.rowTitle.fontFamily, 'Roboto');
       });
     });
 

@@ -73,19 +73,24 @@ class AppTabBar extends StatelessWidget {
           top: BorderSide(color: scheme.outlineVariant, width: 0.5),
         ),
       ),
-      child: NavigationBar(
-        height: scaler.scale(height),
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        selectedIndex: selectedIndex,
-        onDestinationSelected: onSelected,
-        destinations: [
-          for (final item in items)
-            NavigationDestination(
-              icon: _badged(item, item.icon),
-              selectedIcon: _badged(item, item.selectedIcon),
-              label: item.label,
-            ),
-        ],
+      // The badge's count too, which NavigationBar leaves to grow until it
+      // covers the tab's icon.
+      child: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: maxTextScale,
+        child: NavigationBar(
+          height: scaler.scale(height),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onSelected,
+          destinations: [
+            for (final item in items)
+              NavigationDestination(
+                icon: _badged(item, item.icon),
+                selectedIcon: _badged(item, item.selectedIcon),
+                label: item.label,
+              ),
+          ],
+        ),
       ),
     );
   }

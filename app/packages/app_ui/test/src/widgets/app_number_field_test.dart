@@ -25,6 +25,8 @@ class _HostState extends State<_Host> {
   );
 }
 
+void _goldenChanged(Object? _) {}
+
 void main() {
   group('AppNumberField.parse', () {
     test('reads either decimal separator', () {
@@ -119,5 +121,87 @@ void main() {
       await tester.pumpAndSettle();
       expect(picked, 'lb');
     });
+  });
+
+  testWidgets('puts its label above the value at accessibility sizes', (
+    tester,
+  ) async {
+    await tester.pumpApp(
+      const AppNumberField(
+        value: 2,
+        onChanged: _goldenChanged,
+        label: 'Rest between sets',
+      ),
+      textScale: 2,
+    );
+    final label = tester.getRect(find.text('Rest between sets'));
+    final value = tester.getRect(find.byType(TextField));
+    expect(value.top, greaterThanOrEqualTo(label.bottom));
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).textAlign,
+      TextAlign.start,
+    );
+  });
+
+  group('AppNumberField golden', () {
+    Widget card(Widget field) => AppCard(child: field);
+    goldenStates('app_number_field', [
+      (
+        'Empty, with prompt',
+        card(
+          const AppNumberField(
+            value: null,
+            onChanged: _goldenChanged,
+            prompt: 'Weight',
+            unit: 'kg',
+          ),
+        ),
+      ),
+      (
+        'Value and unit',
+        card(
+          const AppNumberField(
+            value: 81.4,
+            onChanged: _goldenChanged,
+            unit: 'kg',
+          ),
+        ),
+      ),
+      (
+        'Labelled',
+        card(
+          const AppNumberField(
+            value: 12,
+            onChanged: _goldenChanged,
+            label: 'Reps',
+          ),
+        ),
+      ),
+      (
+        'Unit menu',
+        card(
+          const AppNumberField.units(
+            value: 32.5,
+            onChanged: _goldenChanged,
+            label: 'Waist',
+            unit: 'in',
+            units: ['cm', 'in'],
+            onUnitChanged: _goldenChanged,
+            unitsLabel: 'Units',
+          ),
+        ),
+      ),
+      (
+        'Long label',
+        card(
+          const AppNumberField(
+            value: 2,
+            onChanged: _goldenChanged,
+            label: 'Rest between sets',
+            unit: 'min',
+          ),
+        ),
+      ),
+    ]);
   });
 }

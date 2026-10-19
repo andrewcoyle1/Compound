@@ -78,6 +78,10 @@ class AppListRow extends StatelessWidget {
   /// smallest accessibility size is 1.65 times the default).
   static const accessibilityTextScale = 1.6;
 
+  /// The opacity of a row that cannot be tapped (an [AppListRowButton] or
+  /// [AppSelectableRow] without `onPressed`).
+  static const disabledOpacity = 0.4;
+
   /// The title, localized or the user's own.
   final String title;
 

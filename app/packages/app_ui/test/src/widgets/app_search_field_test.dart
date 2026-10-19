@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
 
+void _goldenChanged(String _) {}
+
 void main() {
   group('AppSearchField', () {
     testWidgets('is a 44 pt capsule on the surface colour', (tester) async {
@@ -97,5 +99,27 @@ void main() {
         greaterThan(44),
       );
     });
+  });
+
+  group('AppSearchField golden', () {
+    goldenStates('app_search_field', [
+      (
+        'Empty',
+        const AppSearchField(
+          hint: 'Search exercises',
+          clearLabel: 'Clear',
+          onChanged: _goldenChanged,
+        ),
+      ),
+      (
+        'With text',
+        const AppSearchField(
+          hint: 'Search exercises',
+          clearLabel: 'Clear',
+          onChanged: _goldenChanged,
+          initialValue: 'Bench press',
+        ),
+      ),
+    ]);
   });
 }

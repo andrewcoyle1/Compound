@@ -121,12 +121,22 @@ class _AppNumberFieldState extends State<AppNumberField> {
       color: scheme.onSurfaceVariant,
     );
 
+    // At accessibility sizes the label goes above the value, as an
+    // AppListRow's value does: side by side, half a row broke a label
+    // such as "Rest between sets" in the middle of a word.
+    final stacked =
+        label != null &&
+        MediaQuery.textScalerOf(context)
+                .scale(AppTextStyles.rowTitle.fontSize!) >=
+            AppTextStyles.rowTitle.fontSize! *
+                AppListRow.accessibilityTextScale;
+
     Widget field = TextField(
       controller: _controller,
       focusNode: _focusNode,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,]'))],
-      textAlign: label == null ? TextAlign.start : TextAlign.end,
+      textAlign: label == null || stacked ? TextAlign.start : TextAlign.end,
       style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurface),
       decoration: InputDecoration.collapsed(
         hintText: widget.prompt,
@@ -135,25 +145,29 @@ class _AppNumberFieldState extends State<AppNumberField> {
       onChanged: (text) => widget.onChanged(AppNumberField.parse(text)),
     );
     if (label != null) {
+      final labelText = Text(
+        label,
+        style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurface),
+      );
       field = MergeSemantics(
-        child: Row(
-          // The label and the field each get up to half the row, so space a
-          // short label leaves goes between them and the value stays beside
-          // the unit.
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          spacing: AppSpacing.m,
-          children: [
-            // Flexible, so a long label at a large text size wraps rather
-            // than pushing the field out of the row.
-            Flexible(
-              child: Text(
-                label,
-                style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurface),
+        child: stacked
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [labelText, field],
+              )
+            : Row(
+                // The label and the field each get up to half the row, so
+                // space a short label leaves goes between them and the
+                // value stays beside the unit.
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: AppSpacing.m,
+                children: [
+                  // Flexible, so a long label wraps rather than pushing the
+                  // field out of the row.
+                  Flexible(child: labelText),
+                  Expanded(child: field),
+                ],
               ),
-            ),
-            Expanded(child: field),
-          ],
-        ),
       );
     }
 

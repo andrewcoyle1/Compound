@@ -83,11 +83,11 @@ class _EditProfileViewState extends State<EditProfileView> {
               ),
             );
           case EditProfileStatus.privacyFailure:
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(content: Text(l10n.editProfilePrivacyFailed)),
-              );
+            showAppSnackBar(
+              context,
+              l10n.editProfilePrivacyFailed,
+              style: AppSnackBarStyle.error,
+            );
           case EditProfileStatus.editing || EditProfileStatus.saving:
             break;
         }

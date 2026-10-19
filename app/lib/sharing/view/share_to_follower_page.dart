@@ -71,15 +71,11 @@ class _ShareToFollowerViewState extends State<ShareToFollowerView> {
     } else if (state.status == ShareSendStatus.failed) {
       final l10n = context.l10n;
       unawaited(AppHaptics.error());
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              '${l10n.shareToFollowerFailed}. ${l10n.socialTryAgain}',
-            ),
-          ),
-        );
+      showAppSnackBar(
+        context,
+        '${l10n.shareToFollowerFailed}. ${l10n.socialTryAgain}',
+        style: AppSnackBarStyle.error,
+      );
     }
   }
 

@@ -77,48 +77,51 @@ class AppTabBar extends StatelessWidget {
     // that far with them.
     final scaler = MediaQuery.textScalerOf(context)
         .clamp(maxScaleFactor: maxTextScale);
-    return ColoredBox(
-      color: context.appColors.canvas,
-      child: AppReadableWidth(
-        // The SafeArea takes the home indicator's inset off what it passes
-        // down, so NavigationBar does not leave room for it a second time.
-        child: SafeArea(
-          top: false,
-          minimum: const EdgeInsets.only(bottom: AppSpacing.s),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.l,
-              AppSpacing.s,
-              AppSpacing.l,
-              0,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ?accessory,
-                AppCard(
-                  // The badge's count too, which NavigationBar leaves to
-                  // grow until it covers the tab's icon.
-                  child: MediaQuery.withClampedTextScaling(
-                    maxScaleFactor: maxTextScale,
-                    child: NavigationBar(
-                      height: scaler.scale(height),
-                      labelBehavior:
-                          NavigationDestinationLabelBehavior.alwaysShow,
-                      selectedIndex: selectedIndex,
-                      onDestinationSelected: onSelected,
-                      destinations: [
-                        for (final item in items)
-                          NavigationDestination(
-                            icon: _badged(item, item.icon),
-                            selectedIcon: _badged(item, item.selectedIcon),
-                            label: item.label,
-                          ),
-                      ],
+    // Snack bars sit above the dock.
+    return AppSnackBarClearance(
+      child: ColoredBox(
+        color: context.appColors.canvas,
+        child: AppReadableWidth(
+          // The SafeArea takes the home indicator's inset off what it passes
+          // down, so NavigationBar does not leave room for it a second time.
+          child: SafeArea(
+            top: false,
+            minimum: const EdgeInsets.only(bottom: AppSpacing.s),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.l,
+                AppSpacing.s,
+                AppSpacing.l,
+                0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ?accessory,
+                  AppCard(
+                    // The badge's count too, which NavigationBar leaves to
+                    // grow until it covers the tab's icon.
+                    child: MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: maxTextScale,
+                      child: NavigationBar(
+                        height: scaler.scale(height),
+                        labelBehavior:
+                            NavigationDestinationLabelBehavior.alwaysShow,
+                        selectedIndex: selectedIndex,
+                        onDestinationSelected: onSelected,
+                        destinations: [
+                          for (final item in items)
+                            NavigationDestination(
+                              icon: _badged(item, item.icon),
+                              selectedIcon: _badged(item, item.selectedIcon),
+                              label: item.label,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

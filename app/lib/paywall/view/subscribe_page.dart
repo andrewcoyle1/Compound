@@ -74,9 +74,11 @@ class _SubscribeViewState extends State<SubscribeView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return BlocListener<SubscribeCubit, int>(
-      listener: (context, _) => ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.settingsSignOutFailed))),
+      listener: (context, _) => showAppSnackBar(
+        context,
+        l10n.settingsSignOutFailed,
+        style: AppSnackBarStyle.error,
+      ),
       child: OnboardingQuestion(
         step: OnboardingStep.subscription,
         title: l10n.subscribeTitle,

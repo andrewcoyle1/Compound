@@ -89,15 +89,11 @@ class _CreateChallengeViewState extends State<CreateChallengeView> {
         context.pop();
       case CreateChallengeStatus.failed:
         unawaited(AppHaptics.error());
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(
-                '${l10n.createChallengeFailed}. ${l10n.socialTryAgain}',
-              ),
-            ),
-          );
+        showAppSnackBar(
+          context,
+          '${l10n.createChallengeFailed}. ${l10n.socialTryAgain}',
+          style: AppSnackBarStyle.error,
+        );
       case CreateChallengeStatus.editing || CreateChallengeStatus.saving:
         break;
     }

@@ -373,17 +373,13 @@ Future<void> _saveCopy(BuildContext context, WorkoutTemplateModel day) async {
   }
   unawaited(AppHaptics.success());
   if (!context.mounted) return;
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(
-        content: Text(
-          l10n.programCopySaved(
-            workoutCopyName(day.name, library, l10n.programCopyName),
-          ),
-        ),
-      ),
-    );
+  showAppSnackBar(
+    context,
+    l10n.programCopySaved(
+      workoutCopyName(day.name, library, l10n.programCopyName),
+    ),
+    style: AppSnackBarStyle.success,
+  );
 }
 
 class _Plan extends StatelessWidget {

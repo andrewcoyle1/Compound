@@ -498,6 +498,30 @@ void main() {
             lessThanOrEqualTo(tester.getTopLeft(bar).dy),
           );
         }
+        // Whole rows only, the last clear of the toggle: all seven at the
+        // default size, the latest that fit at 200%.
+        final bars = find.descendant(
+          of: find.byType(ProgressCarousel),
+          matching: find.byType(BulletBar),
+        );
+        expect(bars.evaluate().length, beside ? 7 : inExclusiveRange(0, 7));
+        expect(
+          tester.getBottomLeft(bars.last).dy,
+          lessThan(tester.getTopLeft(find.text('Volume')).dy),
+        );
+        expect(
+          tester.getBottomLeft(bars.last).dy,
+          lessThanOrEqualTo(
+            tester
+                .getBottomLeft(
+                  find.descendant(
+                    of: find.byType(ProgressCarousel),
+                    matching: find.byType(SingleChildScrollView),
+                  ),
+                )
+                .dy,
+          ),
+        );
         expect(tester.takeException(), isNull);
       });
     }

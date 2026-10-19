@@ -722,6 +722,23 @@ class _CalorieGauge extends StatelessWidget {
   }
 }
 
+/// How tall [text] is in a record's row style, on one line or wrapped to
+/// [width].
+double _textHeight(BuildContext context, String text, {double? width}) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: text,
+      style: DefaultTextStyle.of(context).style.merge(AppTextStyles.rowDetail),
+    ),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    maxLines: width == null ? 1 : null,
+  )..layout(maxWidth: width ?? double.infinity);
+  final height = painter.height;
+  painter.dispose();
+  return height;
+}
+
 /// The narrowest [texts] can be set without breaking a word: their longest
 /// word at the user's text size.
 ///
@@ -1195,11 +1212,35 @@ class _RecentRecords extends StatelessWidget {
                         figure +
                         2 * AppSpacing.s <=
                     constraints.maxWidth;
+                // The page is a glance at the latest: as many whole rows
+                // as its height holds, never a row cut in half.
+                double height(ExerciseRecord record) {
+                  final measure = math.max(
+                    _textHeight(context, text(record), width: figure),
+                    scaler.scale(AppChartMark.bulletWidth),
+                  );
+                  return beside
+                      ? math.max(_textHeight(context, record.name), measure)
+                      : _textHeight(
+                              context,
+                              record.name,
+                              width: constraints.maxWidth,
+                            ) +
+                            AppSpacing.xxs +
+                            measure;
+                }
+
+                var used = -AppSpacing.m;
+                final shown = records.takeWhile((record) {
+                  used += AppSpacing.m + height(record);
+                  return used <= constraints.maxHeight;
+                }).toList();
                 return SingleChildScrollView(
                   child: Column(
                     spacing: AppSpacing.m,
                     children: [
-                      for (final record in records)
+                      for (final record
+                          in shown.isEmpty ? records.take(1) : shown)
                         Semantics(
                           label: record.name,
                           value: text(record),

@@ -1,3 +1,9 @@
+// Its goldens load alchemist's fonts, which would stay loaded for every
+// test after it in very_good's single optimised run and change their text
+// metrics, so this file runs in an isolate of its own.
+@Tags(['skip_very_good_optimization'])
+library;
+
 import 'dart:convert';
 import 'dart:io';
 

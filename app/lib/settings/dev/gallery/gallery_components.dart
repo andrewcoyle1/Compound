@@ -921,7 +921,7 @@ List<Widget> galleryStates(BuildContext context) {
 }
 
 /// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppChip],
-/// [AppConfetti], [AppInlineMessage] and [AppViewfinder].
+/// [AppConfetti], [AppInlineMessage], [AppMarkdownText] and [AppViewfinder].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
   final colors = context.appColors;
@@ -1068,6 +1068,18 @@ List<Widget> galleryContent(BuildContext context) {
             text: l10n.devGallerySampleMessage,
           ),
         ),
+    ]),
+    galleryEntry('AppMarkdownText', [
+      galleryBlock(
+        'an answer',
+        padded(
+          const AppMarkdownText(
+            '## What to try\n\nYour trend is down **0.1 kg a week**, '
+            '*slower* than planned.\n\n- Log every meal\n- Weigh in each '
+            'morning\n\n1. Check in on `Sunday`',
+          ),
+        ),
+      ),
     ]),
     galleryEntry('AppViewfinder', [
       galleryBlock('opening', const AppViewfinder()),

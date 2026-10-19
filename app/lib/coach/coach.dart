@@ -8,4 +8,5 @@ export 'view/ask_coach_button.dart';
 export 'view/coach_chats_page.dart';
 export 'view/coach_message_body.dart';
 export 'view/coach_page.dart';
+export 'view/coach_surface.dart';
 export 'view/coach_text.dart';

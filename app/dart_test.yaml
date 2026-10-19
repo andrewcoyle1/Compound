@@ -1,3 +1,5 @@
 tags:
   # Alchemist golden tests (ui-contract.md, rule 6).
   golden:
+  # Files very_good runs in their own isolate (coach_surface_test.dart).
+  skip_very_good_optimization:

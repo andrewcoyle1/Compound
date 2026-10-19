@@ -294,6 +294,7 @@ class _StatRow extends StatelessWidget {
       for (final stat in stats)
         AppStatTile(
           value: _quantity(context, stat.value, stat.unit),
+          size: AppStatSize.small,
           label: switch (stat.key) {
             CoachStatKey.weightTrend => l10n.coachStatWeightTrend,
             CoachStatKey.weightRatePerWeek => l10n.coachStatWeightRate,
@@ -345,7 +346,7 @@ class _StatRow extends StatelessWidget {
   }
 
   /// The narrowest a tile reads well in, at the default text size.
-  static const _tileWidth = 96.0;
+  static const _tileWidth = 100.0;
 }
 
 class _Actions extends StatelessWidget {

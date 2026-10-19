@@ -281,38 +281,17 @@ class NutritionTargetChart extends StatelessWidget {
         _Title(l10n.targetChartTitle, info: MethodInfo.macroSplit(l10n)),
         if (targets == null)
           Expanded(
-            child: Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: AppSpacing.s,
-                  children: [
-                    Icon(
-                      AppSymbols.meal,
-                      size: AppIconSize.hero.of(context),
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    Text(
-                      l10n.targetChartNoPlan,
-                      style: AppTextStyles.sectionTitle,
-                    ),
-                    Text(
-                      l10n.targetChartNoPlanMessage,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.rowDetail,
-                    ),
-                    FilledButton(
-                      onPressed: () {
-                        context.read<ProgressBloc>().add(
-                          const ProgressCreatePlanPressed(),
-                        );
-                        openDietPlan(context);
-                      },
-                      child: Text(l10n.targetChartCreatePlan),
-                    ),
-                  ],
-                ),
-              ),
+            child: AppEmptyState(
+              icon: AppSymbols.meal,
+              title: l10n.targetChartNoPlan,
+              description: l10n.targetChartNoPlanMessage,
+              actionLabel: l10n.targetChartCreatePlan,
+              onAction: () {
+                context.read<ProgressBloc>().add(
+                  const ProgressCreatePlanPressed(),
+                );
+                openDietPlan(context);
+              },
             ),
           )
         else ...[
@@ -487,12 +466,15 @@ class _Grid extends StatelessWidget {
                       child: Text(
                         letters(days[day]),
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.label.copyWith(
-                          fontWeight: day == selected ? FontWeight.bold : null,
-                          color: day == today
-                              ? scheme.primary
-                              : scheme.onSurfaceVariant,
-                        ),
+                        style:
+                            (day == selected
+                                    ? AppTextStyles.label.semibold
+                                    : AppTextStyles.label)
+                                .copyWith(
+                                  color: day == today
+                                      ? scheme.primary
+                                      : scheme.onSurfaceVariant,
+                                ),
                       ),
                     ),
                   ),
@@ -560,7 +542,7 @@ class _TargetCell extends StatelessWidget {
                 top: 0,
                 right: 0,
                 child: Icon(
-                  Icons.keyboard_arrow_up_rounded,
+                  AppSymbols.increase,
                   size: AppIconSize.small.of(context),
                   color: scheme.onSurfaceVariant,
                 ),

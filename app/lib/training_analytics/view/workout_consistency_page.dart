@@ -426,6 +426,8 @@ class _GridPainter extends CustomPainter {
   final TextScaler textScaler;
   final String locale;
 
+  static const double _corner = 3;
+
   @override
   void paint(Canvas canvas, Size size) {
     const step = ContributionGrid._step;
@@ -474,7 +476,7 @@ class _GridPainter extends CustomPainter {
           top + row * step,
           week * step + cell,
           top + row * step + cell,
-          const Radius.circular(3),
+          const Radius.circular(_corner),
         );
         canvas.drawRRect(rect, days.contains(day) ? filled : blank);
         if (day == selected) {

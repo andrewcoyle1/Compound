@@ -189,9 +189,9 @@ class _GymProfileViewState extends State<GymProfileView> {
             // A scoped editor, inside a workout, has neither (Swift
             // `GymProfileView`'s `isScoped`).
             if (widget.title == null) ...[
-              IconButton(
-                icon: const Icon(AppSymbols.add),
-                tooltip: l10n.gymAddMachineMenu,
+              AppToolbarButton(
+                icon: AppSymbols.add,
+                semanticLabel: l10n.gymAddMachineMenu,
                 onPressed: () => unawaited(_addMachine()),
               ),
               if (state.savingPhoto)
@@ -203,14 +203,12 @@ class _GymProfileViewState extends State<GymProfileView> {
                   ),
                 )
               else
-                IconButton(
+                AppToolbarButton(
                   key: const Key('GymProfile.photo'),
-                  icon: Icon(
-                    state.gym.imageUrl == null
-                        ? AppSymbols.addPhoto
-                        : AppSymbols.changePhoto,
-                  ),
-                  tooltip: state.gym.imageUrl == null
+                  icon: state.gym.imageUrl == null
+                      ? AppSymbols.addPhoto
+                      : AppSymbols.changePhoto,
+                  semanticLabel: state.gym.imageUrl == null
                       ? l10n.gymAddPhoto
                       : l10n.gymChangePhoto,
                   onPressed: () => unawaited(_cubit.photoPressed()),
@@ -255,21 +253,19 @@ class _GymProfileViewState extends State<GymProfileView> {
               ),
               GymListHeader(
                 title: l10n.gymEquipment,
-                trailing: SegmentedButton<GymEquipmentFilter>(
-                  showSelectedIcon: false,
+                trailing: AppSegmentedControl<GymEquipmentFilter>(
                   segments: [
-                    ButtonSegment(
+                    AppSegment(
                       value: GymEquipmentFilter.all,
-                      label: Text(l10n.gymFilterAll),
+                      label: l10n.gymFilterAll,
                     ),
-                    ButtonSegment(
+                    AppSegment(
                       value: GymEquipmentFilter.selected,
-                      label: Text(l10n.gymFilterSelected),
+                      label: l10n.gymFilterSelected,
                     ),
                   ],
-                  selected: {state.filter},
-                  onSelectionChanged: (selection) =>
-                      _cubit.filterChanged(selection.single),
+                  selected: state.filter,
+                  onChanged: _cubit.filterChanged,
                 ),
               ),
               for (final list in GymEquipmentList.values)
@@ -399,27 +395,38 @@ class _EquipmentRow extends StatelessWidget {
   Future<void> _machineActions(BuildContext context) async {
     final l10n = context.l10n;
     final cubit = context.read<GymProfileEditorCubit>();
-    final action = await showModalBottomSheet<_MachineAction>(
+    final action = await showAppSheet<_MachineAction>(
       context: context,
-      showDragHandle: true,
+      size: AppSheetSize.compact,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            0,
+            AppSpacing.l,
+            AppSpacing.l,
+          ),
           children: [
-            ListTile(
-              leading: const Icon(AppSymbols.duplicate),
-              title: Text(l10n.gymDuplicate),
-              onTap: () => Navigator.of(context).pop(_MachineAction.duplicate),
-            ),
-            if (GymEditorRules.isCustom(list, item))
-              ListTile(
-                leading: Icon(
-                  AppSymbols.delete,
-                  color: Theme.of(context).colorScheme.error,
+            AppSection(
+              children: [
+                AppListRowButton(
+                  title: l10n.gymDuplicate,
+                  icon: AppSymbols.duplicate,
+                  accessory: null,
+                  onPressed: () =>
+                      Navigator.of(context).pop(_MachineAction.duplicate),
                 ),
-                title: Text(l10n.gymDelete),
-                onTap: () => Navigator.of(context).pop(_MachineAction.delete),
-              ),
+                if (GymEditorRules.isCustom(list, item))
+                  AppListRowButton(
+                    title: l10n.gymDelete,
+                    icon: AppSymbols.delete,
+                    accessory: null,
+                    destructive: true,
+                    onPressed: () =>
+                        Navigator.of(context).pop(_MachineAction.delete),
+                  ),
+              ],
+            ),
           ],
         ),
       ),
@@ -441,29 +448,14 @@ class _EquipmentRow extends StatelessWidget {
     GymProfileEditorCubit cubit,
   ) async {
     final l10n = context.l10n;
-    final delete = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.gymDeleteMachineTitle),
-        content: Text(
-          l10n.gymDeleteMachineMessage(GymEditorRules.nameOf(item)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.gymCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(l10n.gymDelete),
-          ),
-        ],
-      ),
+    final delete = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.gymDeleteMachineTitle,
+      message: l10n.gymDeleteMachineMessage(GymEditorRules.nameOf(item)),
+      confirmLabel: l10n.gymDelete,
+      cancelLabel: l10n.gymCancel,
     );
-    if (delete ?? false) cubit.deleteMachine(list, item.id);
+    if (delete) cubit.deleteMachine(list, item.id);
   }
 
   @override
@@ -498,15 +490,12 @@ class _EquipmentRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 if (editLink != null)
-                  TextButton(
+                  AppTextButton(
                     key: Key('GymProfile.edit.${item.id}'),
+                    label: editLink,
                     onPressed: () =>
                         unawaited(openEquipmentEditor(context, list, item.id)),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 44),
-                    ),
-                    child: Text(editLink),
+                    inline: true,
                   ),
               ],
             ),

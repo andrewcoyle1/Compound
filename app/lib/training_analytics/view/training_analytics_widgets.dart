@@ -77,8 +77,8 @@ class TrainingAnalyticsBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<TrainingAnalyticsBloc>().state;
     return switch (state.status) {
-      TrainingAnalyticsStatus.loading => const Center(
-        child: CircularProgressIndicator.adaptive(),
+      TrainingAnalyticsStatus.loading => AppLoadingView(
+        label: context.l10n.launchLoading,
       ),
       TrainingAnalyticsStatus.failure => AnalyticsMessage(
         title: title,
@@ -110,40 +110,13 @@ class AnalyticsMessage extends StatelessWidget {
   final bool offersWorkout;
 
   @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: [
-            Icon(
-              AppSymbols.analytics,
-              size: AppIconSize.hero.of(context),
-              color: secondary,
-            ),
-            Text(
-              title,
-              style: AppTextStyles.sectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-            if (offersWorkout)
-              TextButton(
-                onPressed: () => openWorkouts(context),
-                child: Text(context.l10n.startWorkout),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => AppEmptyState(
+    icon: AppSymbols.analytics,
+    title: title,
+    description: message,
+    actionLabel: offersWorkout ? context.l10n.startWorkout : null,
+    onAction: offersWorkout ? () => openWorkouts(context) : null,
+  );
 }
 
 /// Opens the workouts list on the Training tab: sets and 1RMs come from
@@ -156,9 +129,9 @@ class StartWorkoutButton extends StatelessWidget {
   const new({super.key});
 
   @override
-  Widget build(BuildContext context) => IconButton(
-    icon: const Icon(AppSymbols.start),
-    tooltip: context.l10n.startWorkout,
+  Widget build(BuildContext context) => AppToolbarButton(
+    icon: AppSymbols.start,
+    semanticLabel: context.l10n.startWorkout,
     onPressed: () => openWorkouts(context),
   );
 }
@@ -199,7 +172,10 @@ class AnalyticsSectionHeader extends StatelessWidget {
           ),
           if (info != null) MethodInfoButton(info),
           if (onSeeAll != null)
-            TextButton(onPressed: onSeeAll, child: Text(context.l10n.seeAll)),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: AppSpacing.l),
+              child: AppChip(label: context.l10n.seeAll, onPressed: onSeeAll),
+            ),
         ],
       ),
     );

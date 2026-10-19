@@ -84,6 +84,14 @@ List<Widget> galleryButtons(BuildContext context) {
         AppTextButton(label: l10n.devGallerySampleTextAction, onPressed: null),
       ),
       galleryInline(
+        'inline',
+        AppTextButton(
+          label: l10n.devGallerySampleTextAction,
+          inline: true,
+          onPressed: galleryNoop,
+        ),
+      ),
+      galleryInline(
         'isSmall',
         AppTextButton(
           label: l10n.devGallerySampleTextAction,
@@ -829,6 +837,19 @@ List<Widget> galleryContent(BuildContext context) {
           initial: true,
           builder: (selected, update) => AppChip(
             label: l10n.devGallerySampleShortAction,
+            selected: selected,
+            onPressed: () => update(!selected),
+          ),
+        ),
+      ),
+      galleryInline(
+        'size: large, onPressed, selected',
+        GalleryLive(
+          initial: false,
+          builder: (selected, update) => AppChip(
+            label: l10n.devGallerySampleShortAction,
+            icon: AppSymbols.filter,
+            size: AppChipSize.large,
             selected: selected,
             onPressed: () => update(!selected),
           ),

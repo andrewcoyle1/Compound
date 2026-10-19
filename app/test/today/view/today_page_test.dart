@@ -10,6 +10,7 @@ import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/progress/view/progress_metric_pages.dart'
     show StepsPage;
+import 'package:compound/settings/dev/dev_settings_page.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/today/today.dart';
@@ -310,14 +311,14 @@ void main() {
       expect(find.text('15,000 steps'), findsOneWidget);
       await tester.tap(find.text('10,000 steps'));
       await tester.pumpAndSettle();
-      expect(find.text('Step goal: 10,000 a day.'), findsOneWidget);
+      expect(find.textContaining('Step goal: 10,000 a day.'), findsOneWidget);
 
       // Closing the choice changes nothing.
       await tester.longPress(find.text('Steps'));
       await tester.pumpAndSettle();
       await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
-      expect(find.text('Step goal: 10,000 a day.'), findsOneWidget);
+      expect(find.textContaining('Step goal: 10,000 a day.'), findsOneWidget);
     });
 
     testWidgets('says when the step goal could not be saved', (tester) async {
@@ -331,7 +332,7 @@ void main() {
       await tester.tap(find.text('12,000 steps'));
       await tester.pumpAndSettle();
       expect(find.text('Unable to Save Step Goal'), findsOneWidget);
-      expect(find.text('Step goal: 8,000 a day.'), findsOneWidget);
+      expect(find.textContaining('Step goal: 8,000 a day.'), findsOneWidget);
     });
 
     testWidgets('shows the checklist, protein reminder and streak', (
@@ -345,7 +346,7 @@ void main() {
       expect(find.text('Weigh In'), findsOneWidget);
       expect(find.text('Steps'), findsOneWidget);
       expect(find.text('Train'), findsNothing);
-      expect(find.text('Step goal: 8,000 a day.'), findsOneWidget);
+      expect(find.textContaining('Step goal: 8,000 a day.'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.textContaining('protein to go today'),
         200,
@@ -519,6 +520,33 @@ void main() {
       expect(card, findsNothing);
     });
 
+    testWidgets('hides getting started for good', (tester) async {
+      await pumpView(tester);
+      final header = find.text('Get Started · 3 of 4');
+      await tester.scrollUntilVisible(header, -200, scrollable: _list);
+      await tester.tap(find.byKey(const Key('Today.hideStarter')));
+      await tester.pump();
+      expect(header, findsNothing);
+      expect(find.text('Log your first meal'), findsNothing);
+    });
+
+    testWidgets('offers the quick logs and developer settings', (tester) async {
+      await pumpView(tester);
+      await tester.tap(find.byTooltip('Developer Settings'));
+      await tester.pump();
+      verify(() => router.pushNamed<Object?>(DevSettingsPage.name)).called(1);
+      await tester.tap(find.byTooltip('Log'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(MenuItemButton, 'Log Meal'), findsOneWidget);
+      expect(
+        find.widgetWithText(MenuItemButton, 'Start Empty Workout'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Log Weight'));
+      await tester.pumpAndSettle();
+      verify(() => router.pushNamed<Object?>(LogWeightPage.name)).called(1);
+    });
+
     testWidgets('has no review card when last week was empty', (tester) async {
       await pumpView(tester, sessions: const []);
       expect(find.text('Your weekly review is ready'), findsNothing);
@@ -529,7 +557,7 @@ void main() {
       when(() => repository.watchSessions(uid))
           .thenAnswer((_) => const Stream.empty());
       await pumpView(tester, workoutSessionRepository: repository);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppLoadingView), findsOneWidget);
     });
   });
 

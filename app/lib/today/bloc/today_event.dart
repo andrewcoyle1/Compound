@@ -56,3 +56,11 @@ final class const TodayStepGoalSelected(final int goal) extends TodayEvent {
 final class TodaySocialPulsePressed extends TodayEvent {
   const new();
 }
+
+/// Hide on the getting-started section, with [remaining] steps still to
+/// do.
+final class const TodayStarterDismissed(final int remaining)
+    extends TodayEvent {
+  @override
+  List<Object?> get props => [remaining];
+}

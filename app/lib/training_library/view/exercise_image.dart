@@ -35,6 +35,20 @@ class ExerciseImage extends StatelessWidget {
   }
 }
 
+/// The first letters of [name]'s first two words that start with one,
+/// capitalised: "Barbell Bench Press" → "BB", "45° Back Extension" → "BE"
+/// (Swift `ExerciseImageView.initials(of:)`).
+String initials(String name) => name
+    .split(' ')
+    .where((word) => word.isNotEmpty)
+    .map((word) => word.characters.first)
+    .where(_letter.hasMatch)
+    .take(2)
+    .join()
+    .toUpperCase();
+
+final _letter = RegExp(r'^\p{L}$', unicode: true);
+
 class _Initials extends StatelessWidget {
   const new(this.name);
 
@@ -43,21 +57,13 @@ class _Initials extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final letters = name
-        .split(' ')
-        .where((word) => word.isNotEmpty)
-        .take(2)
-        .map((word) => word[0].toUpperCase())
-        .join();
+    final letters = initials(name);
     return ColoredBox(
       color: AppColors.tintedSurface(scheme.primary),
       child: Center(
         child: Text(
           letters,
-          style: AppTextStyles.rowDetail.copyWith(
-            color: scheme.primary,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.sectionTitle.copyWith(color: scheme.primary),
         ),
       ),
     );

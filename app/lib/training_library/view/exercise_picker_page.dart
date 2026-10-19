@@ -87,16 +87,18 @@ class ExercisePickerView extends StatelessWidget {
       },
       child: AppScaffold(
         appBar: AppBar(
-          leading: CloseButton(onPressed: () => _close(context)),
+          leading: AppToolbarButton.close(
+            semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => _close(context),
+          ),
           title: Text(
             state.picked.isEmpty
                 ? l10n.pickerTitleEmpty
                 : l10n.pickerTitleCount(state.picked.length),
           ),
           actions: [
-            IconButton(
-              icon: const Icon(AppSymbols.selected),
-              tooltip: l10n.pickerAdd,
+            AppToolbarButton.confirm(
+              semanticLabel: l10n.pickerAdd,
               onPressed: state.canSave
                   ? () => _dismiss(context, state.picked)
                   : null,
@@ -131,21 +133,21 @@ class ExercisePickerView extends StatelessWidget {
 
   static Future<void> _confirmDiscard(BuildContext context) async {
     final l10n = context.l10n;
-    final discard = await showDialog<bool>(
+    final discard = await showAppDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.discardChangesTitle),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.keepEditingButton),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.discardChangesButton),
-          ),
-        ],
-      ),
+      title: l10n.discardChangesTitle,
+      actions: [
+        AppDialogAction(
+          label: l10n.keepEditingButton,
+          value: false,
+          role: AppDialogRole.cancel,
+        ),
+        AppDialogAction(
+          label: l10n.discardChangesButton,
+          value: true,
+          role: AppDialogRole.destructive,
+        ),
+      ],
     );
     if ((discard ?? false) && context.mounted) _dismiss(context, null);
   }

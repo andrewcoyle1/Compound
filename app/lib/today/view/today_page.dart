@@ -14,9 +14,12 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/notifications/reminder_offer/reminder_offer_cubit.dart';
 import 'package:compound/notifications/reminder_offer/reminder_offer_scope.dart';
+import 'package:compound/nutrition/add_meal/view/add_meal_page.dart'
+    show openMealLogger;
 import 'package:compound/profile/profile.dart';
 import 'package:compound/programs/logic/todays_workout.dart';
 import 'package:compound/programs/programs.dart';
+import 'package:compound/settings/dev/dev_settings_page.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/today/bloc/today_bloc.dart';
@@ -25,6 +28,8 @@ import 'package:compound/today/view/day_checklist_card.dart';
 import 'package:compound/today/view/streak_card.dart';
 import 'package:compound/today/view/today_text.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
+import 'package:compound/workout_tracker/workout_tracker.dart'
+    show startWorkout;
 import 'package:device_store/device_store.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -122,11 +127,20 @@ class TodayView extends StatelessWidget {
       child: AppScaffold(
         maxWidth: AppContentWidth.dashboard,
         largeTitle: l10n.tabToday,
-        actions: const [AskCoachButton(CoachContext.today), ProfileButton()],
+        actions: [
+          if (DevSettingsPage.isAvailable)
+            AppToolbarButton(
+              icon: AppSymbols.info,
+              semanticLabel: l10n.devSettingsTitle,
+              onPressed: () =>
+                  unawaited(context.pushNamed(DevSettingsPage.name)),
+            ),
+          const AskCoachButton(CoachContext.today),
+          const _LogMenu(),
+          const ProfileButton(),
+        ],
         body: switch (state.status) {
-          TodayStatus.loading => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
+          TodayStatus.loading => AppLoadingView(label: l10n.launchLoading),
           TodayStatus.failure => const _LoadFailure(),
           TodayStatus.loaded => _Day(state: state),
         },
@@ -192,11 +206,18 @@ class _Day extends StatelessWidget {
       child: SafeArea(
         child: AppDashboard(
           sections: [
-            if (starter.isNotEmpty)
+            if (starter.isNotEmpty && !state.starterDismissed)
               AppSection(
                 header: l10n.todayGetStarted(
                   starterTotal - starter.length,
                   starterTotal,
+                ),
+                trailing: AppChip(
+                  key: const Key('Today.hideStarter'),
+                  label: l10n.todayStarterHide,
+                  onPressed: () => context.read<TodayBloc>().add(
+                    TodayStarterDismissed(starter.length),
+                  ),
                 ),
                 children: [
                   for (final step in starter)
@@ -312,6 +333,45 @@ class _Day extends StatelessWidget {
   }
 }
 
+/// The + menu: the quick logs the other tabs keep behind their add button
+/// (Swift `TodayView`'s toolbar menu).
+class _LogMenu extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return MenuAnchor(
+      menuChildren: [
+        MenuItemButton(
+          leadingIcon: const Icon(AppSymbols.meal),
+          onPressed: () =>
+              unawaited(openMealLogger(context, date: DateTime.now())),
+          child: Text(l10n.nutritionLogMeal),
+        ),
+        MenuItemButton(
+          leadingIcon: const Icon(AppSymbols.scaleWeight),
+          onPressed: () => unawaited(context.pushNamed(LogWeightPage.name)),
+          child: Text(l10n.logWeightTitle),
+        ),
+        MenuItemButton(
+          leadingIcon: const Icon(AppSymbols.workout),
+          onPressed: () => unawaited(
+            startWorkout(context, eventPrefix: 'TodayView_StartBlankWorkout'),
+          ),
+          child: Text(l10n.startEmptyWorkout),
+        ),
+      ],
+      builder: (context, controller, _) => AppToolbarButton(
+        icon: AppSymbols.add,
+        semanticLabel: l10n.todayLogMenu,
+        onPressed: () =>
+            controller.isOpen ? controller.close() : controller.open(),
+      ),
+    );
+  }
+}
+
 /// Tells the bloc each time the checklist turns complete, and on arrival
 /// when it already is; the bloc marks the day once
 /// (`TodayView.onChange(of: checklist.isComplete, initial: true)`).
@@ -358,28 +418,8 @@ class _LoadFailure extends StatelessWidget {
   const new();
 
   @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: [
-            Icon(
-              AppSymbols.today,
-              size: AppIconSize.hero.of(context),
-              color: secondary,
-            ),
-            Text(
-              context.l10n.todayLoadFailure,
-              style: AppTextStyles.sectionTitle,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => AppErrorState(
+    icon: AppSymbols.today,
+    title: context.l10n.todayLoadFailure,
+  );
 }

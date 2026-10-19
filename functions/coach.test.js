@@ -28,7 +28,7 @@ test("a machine's base kept out of the load is kept out of what the coach reads"
 // MARK: - Request
 
 test("coach requests are checked at the boundary", () => {
-    assert.deepEqual(validateCoachRequest({ message: "  How am I doing?  " }), { chatId: null, message: "How am I doing?", context: null });
+    assert.deepEqual(validateCoachRequest({ message: "  How am I doing?  " }), { chatId: null, message: "How am I doing?", context: null, ui: null });
     assert.deepEqual(validateCoachRequest({ chatId: "abc_1-2", message: "hi", context: { kind: "exercise", id: "system-barbell-bench-press" } }).context,
         { kind: "exercise", id: "system-barbell-bench-press", date: null });
     assert.equal(validateCoachRequest({ message: "x", context: { kind: "nutrition_day", date: "2026-10-01" } }).context.date, "2026-10-01");

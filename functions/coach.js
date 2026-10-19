@@ -32,7 +32,11 @@ export const COACH_CONTEXT_KINDS = [
 
 // MARK: - Request
 
-/// The request, checked at the trust boundary: { chatId?, message, context?: { kind, id?, date? } }.
+/// The catalog version of generative UI blocks this server builds (`ui` in the request).
+export const COACH_UI_VERSION = 1;
+
+/// The request, checked at the trust boundary: { chatId?, message, context?: { kind, id?, date? }, ui? }.
+/// `ui` is the block catalog the app renders; any other value, or none, means text only.
 export function validateCoachRequest(data) {
     const message = typeof data?.message === "string" ? data.message.trim() : "";
     if (message.length < 1 || message.length > COACH_MAX_MESSAGE_CHARS) {
@@ -52,7 +56,7 @@ export function validateCoachRequest(data) {
         }
         context = { kind, id: id ?? null, date: date ?? null };
     }
-    return { chatId, message, context };
+    return { chatId, message, context, ui: data?.ui === COACH_UI_VERSION ? COACH_UI_VERSION : null };
 }
 
 /// Consent is the boolean the app writes; withdrawing sets it false, and the timestamp stays.
@@ -132,14 +136,18 @@ export function appendChatMessages(messages, added, cap = COACH_MAX_STORED_MESSA
     return [...(messages ?? []), ...added].slice(-cap);
 }
 
-/// The most recent turns that fit the budget, oldest first, as Genkit messages.
+/// The most recent turns that fit the budget, oldest first, as Genkit messages. A reply's blocks
+/// follow its text as one `[Shown: <fallback>]` line each.
 export function historyForModel(messages, budget = COACH_HISTORY_CHAR_BUDGET) {
     const kept = [];
     let used = 0;
     for (const message of [...(messages ?? [])].reverse()) {
-        used += message.text?.length ?? 0;
+        const text = message.blocks?.length
+            ? [message.text, ...message.blocks.map((block) => `[Shown: ${block.fallback}]`)].join("\n")
+            : message.text;
+        used += text?.length ?? 0;
         if (used > budget) break;
-        kept.unshift({ role: message.role === "assistant" ? "model" : "user", content: [{ text: message.text }] });
+        kept.unshift({ role: message.role === "assistant" ? "model" : "user", content: [{ text }] });
     }
     // A history must open with the user.
     while (kept.length > 0 && kept[0].role !== "user") kept.shift();
@@ -397,6 +405,9 @@ function mealTotals(meal) {
 
 // MARK: - Tools (pure: source and environment in, plain data out)
 
+/// get_body_metrics lists at most this many weigh-ins, the latest.
+export const WEIGH_IN_LIMIT = 60;
+
 export const COACH_TOOLS = {
     async get_profile_and_targets(source, env) {
         const [user, goals, plan, strategy] = await Promise.all([source.user(), source.goals(), source.dietPlan(), source.strategySettings()]);
@@ -589,7 +600,7 @@ export const COACH_TOOLS = {
             rangeDays: range,
             units: { weight: env.weightUnit, length: env.lengthUnit },
             trendNote: "The trend is the line on the app's Weight Trend screen: a Kalman filter over the weigh-ins (level and slope, with the real gap in days between readings), smoothed with the readings after each point. One weigh-in is taken to carry about 0.5% of body weight of noise (at least 0.3 kg); only the first weigh-in of a day counts; an odd reading is down-weighted, and one more than max(3 kg, 4%) off the trend is ignored unless the next weigh-in agrees.",
-            weighIns: shown.slice(-60).map(({ m, trend: t }) => ({ day: dayOf(m.at, env), weight: weight(m.weight_kg, env), trend: weight(t, env) })),
+            weighIns: shown.slice(-WEIGH_IN_LIMIT).map(({ m, trend: t }) => ({ day: dayOf(m.at, env), weight: weight(m.weight_kg, env), trend: weight(t, env) })),
             trendChangeInRange: shown.length >= 2 ? weight(shown[shown.length - 1].trend - shown[0].trend, env) : null,
             latestBodyFatPercent: bodyFat.length ? round(bodyFat[bodyFat.length - 1].body_fat_percentage, 1) : null,
             circumferences,
@@ -764,15 +775,22 @@ const TOOL_SPECS = {
     get_check_ins: { description: "The weekly nutrition check-in day and when the last check-ins were completed or skipped.", input: z.object({}) },
 };
 
-/// The tools on a Genkit instance. The caller's data reaches them through `context.coach`, which
-/// the model can neither see nor set.
+/// One tool's result per request and arguments, from `coach.cache`: a block asks for the same
+/// figures the model was given and gets the very same result.
+export function callCoachTool(coach, name, input = {}) {
+    const key = `${name}:${JSON.stringify(input, Object.keys(input).sort())}`;
+    if (!coach.cache.has(key)) coach.cache.set(key, COACH_TOOLS[name](coach.source, coach.env, input));
+    return coach.cache.get(key);
+}
+
+/// The tools on a Genkit instance. The caller's data reaches them through `context.coach`
+/// ({ source, env, cache, blocks }), which the model can neither see nor set.
 export function defineCoachTools(ai) {
     return Object.entries(TOOL_SPECS).map(([name, spec]) => ai.defineTool(
         { name, description: spec.description, inputSchema: spec.input, outputSchema: z.any() },
         async (input, { context }) => {
-            const { source, env } = context.coach;
             try {
-                return await COACH_TOOLS[name](source, env, input ?? {});
+                return await callCoachTool(context.coach, name, input ?? {});
             } catch (error) {
                 console.error(`coach tool ${name} failed: ${error.message}`);
                 return { error: "This data could not be read just now." };
@@ -794,7 +812,19 @@ const CONTEXT_LINES = {
     muscle_group: (c) => `The user opened the coach from the "${c.id}" muscle group; get_training_volume covers it.`,
 };
 
-export function coachSystemPrompt(env, context) {
+// Offered with `show_block`, only to an app that renders blocks.
+const UI_PROMPT = [
+    "Blocks: show_block puts a card under your answer. The app fills every figure in it from your tools; you choose only the kind and its settings. At most 4 per reply; one or two is usual, none is fine.",
+    "- trend_chart: a change over time. metric weight for weight, pace or \"am I on track\" questions; exercise_e1rm (with the exerciseId exactly as a tool returned it) for strength progress; expenditure for maintenance calories; steps for activity. rangeDays 7-365; 28-90 suits most questions.",
+    "- target_bars: one day's calories and macros against its targets, for questions about what the user ate today or on a day (day \"today\" or YYYY-MM-DD).",
+    "- stat_row: 1-3 headline figures, when a few numbers answer the question better than a chart.",
+    "- actions: 1-3 buttons that open a screen (log_weight, log_meal, start_workout, open_exercise, open_metric, open_check_in, open_diet_plan) when the next step is in the app. They only open screens; they change nothing.",
+    "- follow_ups: optional, 1-3 short questions the user might ask next (at most 80 characters; no figures about the user, such as weights, calories or decimals).",
+    "- No blocks for refusals, medical questions, or questions about you.",
+    "- With a block, keep the text short: the block carries the figures. Any figure you also write must match the tool results and what show_block says it shows. If show_block answers not shown, carry on without it.",
+];
+
+export function coachSystemPrompt(env, context, ui = null) {
     return [
         "You are Compound's coach: a knowledgeable, encouraging strength and nutrition coach for this one user, inside the Compound app.",
         `Today is ${env.today} (${env.timeZone}). Use ${env.weightUnit} for weight, ${env.distanceUnit} for distance and ${env.lengthUnit} for body measurements.${env.firstName ? ` The user's first name is ${env.firstName}.` : ""}`,
@@ -807,6 +837,7 @@ export function coachSystemPrompt(env, context) {
         "- You can only read data. You cannot log, edit, delete or change anything in the app (workouts, meals, targets, plans or settings). If asked, say so and tell the user where in the app to do it.",
         "- You have no access to Strava, progress photos, or other people's data, including friends and followers.",
         "- Be concise and concrete: short paragraphs or a few bullets, plain language, no tables unless asked. Answer the question first.",
+        ...(ui === COACH_UI_VERSION ? UI_PROMPT : []),
         context ? `Context: ${CONTEXT_LINES[context.kind](context)}` : "",
     ].filter(Boolean).join("\n");
 }
@@ -815,17 +846,20 @@ export function coachSystemPrompt(env, context) {
 export const coachRuntime = { reply: null };
 
 /// One reply: the system prompt, the recent turns and the message, with the tools bound to the
-/// caller's data. `onChunk` gets each piece of text as it arrives.
-export async function runCoach({ ai, model, tools, config, source, env, history, message, context, onChunk }) {
+/// caller's data. `onChunk` gets each piece of text as it arrives. With `blocks` (coach-blocks.js
+/// `coachBlocks`), the model is also offered `blockTool` and told how to use it; without, the
+/// request is exactly the text-only one.
+export async function runCoach({ ai, model, tools, blockTool = null, config, source, env, history, message, context, blocks = null, onChunk }) {
     const { stream, response } = ai.generateStream({
         model,
-        system: coachSystemPrompt(env, context),
+        system: coachSystemPrompt(env, context, blocks ? COACH_UI_VERSION : null),
         messages: history,
         prompt: message,
-        tools,
-        maxTurns: 8,
+        tools: blocks ? [...tools, blockTool] : tools,
+        // Each block is a tool call, so a reply with blocks may need a turn or two more.
+        maxTurns: blocks ? 12 : 8,
         config,
-        context: { coach: { source, env } },
+        context: { coach: { source, env, cache: new Map(), blocks } },
     });
     for await (const chunk of stream) {
         if (chunk.text) onChunk?.(chunk.text);

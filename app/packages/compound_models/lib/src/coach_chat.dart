@@ -51,6 +51,74 @@ abstract final class CoachMessageKeys {
 
   /// `created_at`.
   static const createdAt = 'created_at';
+
+  /// `blocks`: an assistant message's generative UI blocks, if any.
+  static const blocks = 'blocks';
+}
+
+/// Field names of a [CoachBlock], as the `coachChat` function writes them.
+abstract final class CoachBlockKeys {
+  /// `surfaceId`.
+  static const surfaceId = 'surfaceId';
+
+  /// `kind`.
+  static const kind = 'kind';
+
+  /// `as_of`.
+  static const asOf = 'as_of';
+
+  /// `fallback`.
+  static const fallback = 'fallback';
+
+  /// `messages`.
+  static const messages = 'messages';
+}
+
+/// One generative UI block under a coach reply, as saved: an A2UI v0.9
+/// surface on the `compound.coach.v1` catalog, and the plain text to show
+/// instead when it cannot be rendered (docs/specs/ai-coach.md, "Generative
+/// UI (v1)"). Only Flutter renders blocks; Swift ignores the field.
+class const CoachBlock({
+  /// The A2UI surface id, `<messageId>-<n>`.
+  required final String surfaceId,
+
+  /// The block kind, such as `trend_chart`, kept as the stored string so
+  /// a kind this build does not know still decodes and shows [fallback].
+  required final String kind,
+
+  /// The day its figures were read, `YYYY-MM-DD`: a saved chat replays
+  /// this snapshot.
+  required final String asOf,
+
+  /// What it shows, as plain text.
+  required final String fallback,
+
+  /// The A2UI messages, in order, exactly as streamed.
+  required final List<Map<String, Object?>> messages,
+}) {
+  /// Creates a [CoachBlock].
+  this;
+
+  /// Decodes strictly.
+  factory fromFirestore(Map<String, Object?> data) => CoachBlock(
+    surfaceId: data[CoachBlockKeys.surfaceId]! as String,
+    kind: data[CoachBlockKeys.kind]! as String,
+    asOf: data[CoachBlockKeys.asOf]! as String,
+    fallback: data[CoachBlockKeys.fallback]! as String,
+    messages: [
+      for (final message in data[CoachBlockKeys.messages]! as List<Object?>)
+        message! as Map<String, Object?>,
+    ],
+  );
+
+  /// The Firestore-shaped map the function writes.
+  Map<String, Object?> toFirestore() => {
+    CoachBlockKeys.surfaceId: surfaceId,
+    CoachBlockKeys.kind: kind,
+    CoachBlockKeys.asOf: asOf,
+    CoachBlockKeys.fallback: fallback,
+    CoachBlockKeys.messages: messages,
+  };
 }
 
 /// Who wrote a [CoachMessage] (Swift `CoachMessage.Role`).
@@ -80,6 +148,10 @@ class const CoachMessage({
 
   /// When it was written.
   required final DateTime createdAt,
+
+  /// The blocks shown under an assistant reply, in order; absent when
+  /// there were none.
+  final List<CoachBlock>? blocks,
 }) {
   /// Creates a [CoachMessage].
   this;
@@ -93,6 +165,11 @@ class const CoachMessage({
     ),
     text: data[CoachMessageKeys.text]! as String,
     createdAt: data[CoachMessageKeys.createdAt]! as DateTime,
+    blocks: (data[CoachMessageKeys.blocks] as List<Object?>?)
+        ?.map(
+          (block) => CoachBlock.fromFirestore(block! as Map<String, Object?>),
+        )
+        .toList(),
   );
 
   /// The Firestore-shaped map Swift writes.
@@ -101,6 +178,9 @@ class const CoachMessage({
     CoachMessageKeys.role: role.value,
     CoachMessageKeys.text: text,
     CoachMessageKeys.createdAt: createdAt,
+    CoachMessageKeys.blocks: ?blocks
+        ?.map((block) => block.toFirestore())
+        .toList(),
   };
 }
 

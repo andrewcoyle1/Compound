@@ -68,8 +68,7 @@ class MealHourHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final style = AppTextStyles.label.copyWith(
-      fontWeight: FontWeight.w600,
+    final style = AppTextStyles.label.semibold.copyWith(
       fontFeatures: const [FontFeature.tabularFigures()],
       color: scheme.onSurfaceVariant,
     );
@@ -117,9 +116,9 @@ class MealHourHeader extends StatelessWidget {
         else
           const Spacer(),
         if (onAdd != null)
-          IconButton(
-            icon: const Icon(AppSymbols.add),
-            tooltip: l10n.nutritionLogMealAt(_formatTime(context, hour)),
+          AppIconButton(
+            icon: AppSymbols.add,
+            semanticLabel: l10n.nutritionLogMealAt(_formatTime(context, hour)),
             onPressed: onAdd,
           ),
       ],
@@ -261,39 +260,40 @@ class MealCard extends StatelessWidget {
   Future<void> _showMenu(BuildContext context, MealItemModel item) async {
     final l10n = context.l10n;
     final onDelete = onDeleteItem;
-    final action = await showModalBottomSheet<VoidCallback>(
+    final action = await showAppSheet<VoidCallback>(
       context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (onOpenMeal case final open?)
-              ListTile(
-                leading: const Icon(AppSymbols.meal),
-                title: Text(l10n.nutritionViewMeal),
-                onTap: () => Navigator.of(context).pop(open),
-              ),
-            if (onLogAgain case final again?)
-              ListTile(
-                leading: const Icon(AppSymbols.logAgain),
-                title: Text(l10n.nutritionLogMealAgain),
-                onTap: () => Navigator.of(context).pop(again),
-              ),
-            if (onDelete != null)
-              ListTile(
-                leading: Icon(
-                  AppSymbols.delete,
-                  color: Theme.of(context).colorScheme.error,
+      size: AppSheetSize.compact,
+      builder: (context) => ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [
+          AppSection(
+            children: [
+              if (onOpenMeal case final open?)
+                AppListRowButton(
+                  icon: AppSymbols.meal,
+                  title: l10n.nutritionViewMeal,
+                  accessory: null,
+                  onPressed: () => Navigator.of(context).pop(open),
                 ),
-                title: Text(
-                  l10n.nutritionDeleteItem,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+              if (onLogAgain case final again?)
+                AppListRowButton(
+                  icon: AppSymbols.logAgain,
+                  title: l10n.nutritionLogMealAgain,
+                  accessory: null,
+                  onPressed: () => Navigator.of(context).pop(again),
                 ),
-                onTap: () => Navigator.of(context).pop(() => onDelete(item)),
-              ),
-          ],
-        ),
+              if (onDelete != null)
+                AppListRowButton(
+                  icon: AppSymbols.delete,
+                  title: l10n.nutritionDeleteItem,
+                  accessory: null,
+                  destructive: true,
+                  onPressed: () =>
+                      Navigator.of(context).pop(() => onDelete(item)),
+                ),
+            ],
+          ),
+        ],
       ),
     );
     action?.call();
@@ -326,17 +326,27 @@ class _MealItemLabel extends StatelessWidget {
       ],
       '${AppFormat.number(item.amount, maxFractionDigits: 2)} ${item.unit}',
     ].join(' · ');
+    // At accessibility sizes the text takes the row's width: the picture
+    // goes, and the pencil moves under the figures.
+    final large =
+        MediaQuery.textScalerOf(context).scale(1) >=
+        AppListRow.accessibilityTextScale;
+    final edit = onEdit == null
+        ? null
+        : AppIconButton(
+            icon: AppSymbols.edit,
+            semanticLabel: l10n.nutritionEditItem(item.displayName),
+            onPressed: onEdit,
+          );
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.l),
       child: Row(
         spacing: AppSpacing.m,
         children: [
-          if (details && settings.showFoodImageInTimeline)
-            Icon(
-              AppSymbols.meal,
-              size: AppIconSize.medium.of(context),
-              color: scheme.onSurfaceVariant,
-            ),
+          // A stand-in for the food's picture (Swift's
+          // `fork.knife.circle.fill`).
+          if (details && settings.showFoodImageInTimeline && !large)
+            const AppIconBadge(icon: AppSymbols.meal),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,8 +355,8 @@ class _MealItemLabel extends StatelessWidget {
                 Text(
                   item.displayName,
                   style: AppTextStyles.rowTitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  maxLines: large ? null : 1,
+                  overflow: large ? null : TextOverflow.ellipsis,
                 ),
                 // Wraps rather than truncating, so the figures always show.
                 Text(
@@ -355,15 +365,11 @@ class _MealItemLabel extends StatelessWidget {
                     color: scheme.onSurfaceVariant,
                   ),
                 ),
+                if (large) ?edit,
               ],
             ),
           ),
-          if (onEdit case final onEdit?)
-            IconButton(
-              icon: const Icon(AppSymbols.edit),
-              tooltip: l10n.nutritionEditItem(item.displayName),
-              onPressed: onEdit,
-            ),
+          if (!large) ?edit,
         ],
       ),
     );

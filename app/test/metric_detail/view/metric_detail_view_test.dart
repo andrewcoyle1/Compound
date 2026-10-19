@@ -84,9 +84,15 @@ void main() {
         ),
       ]);
       expect(find.text('Latest: Today'), findsOneWidget);
+      expect(find.text('72.4 kg'), findsWidgets);
+      // The rest are in Show More's sheet.
+      expect(find.text('Highest: Oct 13'), findsNothing);
+      await reveal(tester, find.text('Show More Weight Data'));
+      await tester.tap(find.text('Show More Weight Data'));
+      await tester.pumpAndSettle();
       expect(find.text('Highest: Oct 13'), findsOneWidget);
       expect(find.text('Lowest: Yesterday'), findsOneWidget);
-      expect(find.text('72.4 kg'), findsWidgets);
+      expect(find.text('Average'), findsOneWidget);
       expect(find.byType(MetricChart), findsOneWidget);
       // Each series in the header, the readings first.
       expect(find.text('Trend'), findsOneWidget);
@@ -143,13 +149,15 @@ void main() {
         unit: '',
         summary: const Text('Summary'),
       );
-      expect(find.text('DAILY AVERAGE'), findsOneWidget);
-      expect(find.text('Daily Average'), findsOneWidget);
+      expect(find.textContaining('Daily Average, '), findsOneWidget);
       // 5.5 sets today, rounded.
       expect(find.text('6'), findsWidgets);
+      expect(find.byType(MetricChart), findsOneWidget);
       await reveal(tester, find.text('Summary'));
       expect(find.text('Summary'), findsOneWidget);
-      expect(find.byType(MetricChart), findsOneWidget);
+      await tester.tap(find.text('Show More Weight Data'));
+      await tester.pumpAndSettle();
+      expect(find.text('Daily Average'), findsOneWidget);
     });
 
     testWidgets('draws a lone reading on a line', (tester) async {
@@ -180,39 +188,39 @@ void main() {
         color: const Color(0xFF000000),
       );
       await pumpDetail(tester, [weeks]);
-      expect(find.text('Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
+      expect(find.text('Average, Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
       expect(find.text('78 kg'), findsWidgets);
 
       await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
       await tester.pumpAndSettle();
-      expect(find.text('Oct 2, 2026 – Oct 8, 2026'), findsOneWidget);
+      expect(find.text('Average, Oct 2, 2026 – Oct 8, 2026'), findsOneWidget);
       expect(find.text('79 kg'), findsWidgets);
 
       await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
       await tester.pumpAndSettle();
-      expect(find.text('Sep 25, 2026 – Oct 1, 2026'), findsOneWidget);
+      expect(find.text('Average, Sep 25, 2026 – Oct 1, 2026'), findsOneWidget);
 
       // Nothing older: it stays.
       await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
       await tester.pumpAndSettle();
-      expect(find.text('Sep 25, 2026 – Oct 1, 2026'), findsOneWidget);
+      expect(find.text('Average, Sep 25, 2026 – Oct 1, 2026'), findsOneWidget);
 
       await tester.fling(find.byType(MetricChart), const Offset(-300, 0), 800);
       await tester.pumpAndSettle();
       await tester.fling(find.byType(MetricChart), const Offset(-300, 0), 800);
       await tester.pumpAndSettle();
-      expect(find.text('Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
+      expect(find.text('Average, Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
 
       // Nothing newer than today.
       await tester.fling(find.byType(MetricChart), const Offset(-300, 0), 800);
       await tester.pumpAndSettle();
-      expect(find.text('Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
+      expect(find.text('Average, Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
 
       // A new range starts again at today.
       await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
       await tester.pumpAndSettle();
       await pumpDetail(tester, [weeks], range: MetricRange.month);
-      expect(find.text('Sep 16, 2026 – Oct 15, 2026'), findsOneWidget);
+      expect(find.text('Average, Sep 16, 2026 – Oct 15, 2026'), findsOneWidget);
     });
 
     void perform(WidgetTester tester, Finder finder, String label) {
@@ -242,10 +250,10 @@ void main() {
       );
       perform(tester, chart, 'Previous period');
       await tester.pumpAndSettle();
-      expect(find.text('Oct 2, 2026 – Oct 8, 2026'), findsOneWidget);
+      expect(find.text('Average, Oct 2, 2026 – Oct 8, 2026'), findsOneWidget);
       perform(tester, chart, 'Next period');
       await tester.pumpAndSettle();
-      expect(find.text('Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
+      expect(find.text('Average, Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
       handle.dispose();
     });
 
@@ -285,7 +293,7 @@ void main() {
       expect(rect.left, greaterThanOrEqualTo(chart.left));
       expect(rect.bottom, lessThan(chart.top));
       final header = find.ancestor(
-        of: find.text('AVERAGE'),
+        of: find.textContaining('Average, '),
         matching: find.byType(Opacity),
       );
       expect(tester.widget<Opacity>(header.first).opacity, 0);
@@ -319,8 +327,8 @@ void main() {
           isLine: true,
         ),
       ], unit: 'kcal');
-      expect(find.text('AVERAGE'), findsOneWidget);
-      expect(find.text('DAILY AVERAGE'), findsNothing);
+      expect(find.textContaining('Average, '), findsOneWidget);
+      expect(find.textContaining('Daily Average'), findsNothing);
       expect(find.text('2,250 kcal'), findsWidgets);
       expect(find.byType(MetricChart), findsOneWidget);
     });

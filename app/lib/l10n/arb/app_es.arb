@@ -208,6 +208,8 @@
     "weightNoEntries": "No hay registros de peso",
     "weightLoadFailure": "No se pudieron cargar tus pesajes.",
     "metricShowAllData": "Mostrar todos los datos",
+    "metricShowMoreData": "Mostrar más datos de {title}",
+    "metricHeaderDates": "{average}, {from} – {to}",
     "metricAllRecordedData": "Todos los datos registrados",
     "metricLatest": "Último: {date}",
     "metricHighest": "Máximo: {date}",

@@ -12,8 +12,6 @@ import 'package:compound/nutrition/add_meal/view/food_picker.dart'
 import 'package:compound/nutrition/foods/cubit/create_food_cubit.dart';
 import 'package:compound/nutrition/foods/logic/create_food.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart' show EnergyUnit;
-import 'package:compound/programs/view/program_widgets.dart'
-    show confirmDestructive;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -89,7 +87,6 @@ class _FoodImageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final side = MediaQuery.textScalerOf(context).scale(120);
     final photo = this.photo;
     return Center(
@@ -99,42 +96,31 @@ class _FoodImageButton extends StatelessWidget {
         excludeSemantics: true,
         child: InkWell(
           key: const Key('CreateFood.image'),
-          borderRadius: BorderRadius.circular(AppRadius.m),
+          customBorder: const CircleBorder(),
           onTap: () =>
               unawaited(context.read<CreateFoodCubit>().photoPressed()),
           child: SizedBox.square(
             dimension: side,
             child: photo != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.m),
+                ? ClipOval(
                     child: Image.memory(
                       photo,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Icon(
-                        AppSymbols.meal,
-                        size: AppIconSize.hero.of(context),
-                        color: scheme.onSurfaceVariant,
+                      errorBuilder: (_, _, _) => const AppIconBadge(
+                        icon: AppSymbols.meal,
+                        size: AppIconSize.hero,
+                        filled: false,
                       ),
                     ),
                   )
-                : Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Icon(
-                        AppSymbols.meal,
-                        size: AppIconSize.hero.of(context),
-                        color: scheme.onSurfaceVariant,
-                      ),
-                      Positioned(
-                        right: AppSpacing.l,
-                        bottom: AppSpacing.l,
-                        child: Icon(
-                          AppSymbols.edit,
-                          size: AppIconSize.medium.of(context),
-                          color: scheme.primary,
-                        ),
-                      ),
-                    ],
+                // Swift's `fork.knife.circle` with a pencil badge.
+                : const Center(
+                    child: AppIconBadge(
+                      icon: AppSymbols.meal,
+                      size: AppIconSize.hero,
+                      filled: false,
+                      badge: AppSymbols.edit,
+                    ),
                   ),
           ),
         ),
@@ -173,7 +159,7 @@ class _CreateFoodViewState extends State<CreateFoodView>
   Future<void> _close() async {
     if (cubit.state.hasUnsavedChanges) {
       final l10n = context.l10n;
-      final discard = await confirmDestructive(
+      final discard = await AppDialog.confirmDestructive(
         context,
         title: l10n.createFoodDiscardTitle,
         confirmLabel: l10n.createFoodDiscard,
@@ -184,11 +170,8 @@ class _CreateFoodViewState extends State<CreateFoodView>
   }
 
   Future<void> _scan() async {
-    final code = await showModalBottomSheet<String>(
+    final code = await showAppSheet<String>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
       builder: (_) => const _BarcodeSheet(),
     );
     if (code != null) cubit.barcodeScanned(code);
@@ -199,9 +182,8 @@ class _CreateFoodViewState extends State<CreateFoodView>
     final l10n = context.l10n;
     final state = context.watch<CreateFoodCubit>().state;
     final barcode = state.barcode;
-    InputDecoration field(String hint, {String? helper}) => InputDecoration(
+    InputDecoration field(String hint) => InputDecoration(
       hintText: hint,
-      helperText: helper,
       border: InputBorder.none,
       filled: false,
     );
@@ -212,9 +194,8 @@ class _CreateFoodViewState extends State<CreateFoodView>
       },
       child: AppScaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(AppSymbols.close),
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          leading: AppToolbarButton.close(
+            semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
             onPressed: _close,
           ),
           title: Text(l10n.createFoodTitle),
@@ -226,17 +207,16 @@ class _CreateFoodViewState extends State<CreateFoodView>
             const SizedBox(height: AppSpacing.l),
             AppSection(
               header: l10n.createFoodName,
+              trailing: Text(l10n.createFoodRequired),
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                  // Not focused on opening, so the keyboard does not hide
+                  // the form (as Swift).
                   child: TextField(
                     key: const Key('CreateFood.name'),
-                    autofocus: true,
                     textCapitalization: TextCapitalization.words,
-                    decoration: field(
-                      l10n.createFoodNamePrompt,
-                      helper: l10n.createFoodRequired,
-                    ),
+                    decoration: field(l10n.createFoodNamePrompt),
                     onChanged: cubit.nameChanged,
                   ),
                 ),
@@ -341,9 +321,8 @@ class _BarcodeSheetState extends State<_BarcodeSheet> {
             textAlign: TextAlign.center,
             style: AppTextStyles.rowDetail,
           ),
-          TextButton.icon(
-            icon: const Icon(AppSymbols.edit),
-            label: Text(l10n.addMealBarcodeEnter),
+          AppTextButton(
+            label: l10n.addMealBarcodeEnter,
             onPressed: () async {
               final code = await enterBarcode(context, null);
               if (code != null && mounted) _close(code);

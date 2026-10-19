@@ -88,7 +88,7 @@ void main() {
       tester,
     ) async {
       await pumpLogger(tester);
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('home'), findsOneWidget);
       expect(drafts.state, isNull);
@@ -240,7 +240,7 @@ void main() {
         await tester.tap(find.text('Add Food'));
         await tester.pumpAndSettle();
         expect(find.byType(FoodPickerView), findsOneWidget);
-        await tester.tap(find.byType(CloseButton));
+        await tester.tap(find.byTooltip('Close'));
         await tester.pumpAndSettle();
         expect(find.text('Log Meal'), findsOneWidget);
       });
@@ -249,7 +249,7 @@ void main() {
         await pumpLogger(tester, meal: draft);
         await tester.tap(find.text('Day'));
         await tester.pumpAndSettle();
-        await tester.tap(find.byType(CloseButton));
+        await tester.tap(find.byTooltip('Close'));
         await tester.pumpAndSettle();
         expect(find.text('home'), findsOneWidget);
       });

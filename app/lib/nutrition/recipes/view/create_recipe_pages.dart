@@ -11,9 +11,6 @@ import 'package:compound/nutrition/foods/cubit/foods_cubit.dart';
 import 'package:compound/nutrition/foods/view/create_food_pages.dart';
 import 'package:compound/nutrition/recipes/cubit/create_recipe_cubit.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
-import 'package:compound/programs/view/program_widgets.dart'
-    show confirmDestructive;
-import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -84,12 +81,8 @@ Future<void> _push(
   );
 }
 
-InputDecoration _plain(String hint, {String? helper}) => InputDecoration(
-  hintText: hint,
-  helperText: helper,
-  border: InputBorder.none,
-  filled: false,
-);
+InputDecoration _plain(String hint) =>
+    InputDecoration(hintText: hint, border: InputBorder.none, filled: false);
 
 /// The name, servings, weight and ingredients.
 class CreateRecipeView extends StatefulWidget {
@@ -109,7 +102,7 @@ class _CreateRecipeViewState extends State<CreateRecipeView>
   Future<void> _close() async {
     if (cubit.state.hasUnsavedChanges) {
       final l10n = context.l10n;
-      final discard = await confirmDestructive(
+      final discard = await AppDialog.confirmDestructive(
         context,
         title: l10n.createRecipeDiscardTitle,
         confirmLabel: l10n.createRecipeDiscard,
@@ -124,7 +117,6 @@ class _CreateRecipeViewState extends State<CreateRecipeView>
     final l10n = context.l10n;
     final state = context.watch<CreateRecipeCubit>().state;
     final weight = state.ingredientsWeight;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     return PopScope(
       canPop: !state.hasUnsavedChanges,
       onPopInvokedWithResult: (didPop, _) {
@@ -132,9 +124,8 @@ class _CreateRecipeViewState extends State<CreateRecipeView>
       },
       child: AppScaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(AppSymbols.close),
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          leading: AppToolbarButton.close(
+            semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
             onPressed: _close,
           ),
           title: Text(l10n.createRecipeTitle),
@@ -145,17 +136,16 @@ class _CreateRecipeViewState extends State<CreateRecipeView>
           children: [
             AppSection(
               header: l10n.createRecipeName,
+              trailing: Text(l10n.createRecipeRequired),
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                  // Not focused on opening, so the keyboard does not hide
+                  // the form.
                   child: TextField(
                     key: const Key('CreateRecipe.name'),
-                    autofocus: true,
                     textCapitalization: TextCapitalization.words,
-                    decoration: _plain(
-                      l10n.createRecipeNamePrompt,
-                      helper: l10n.createRecipeRequired,
-                    ),
+                    decoration: _plain(l10n.createRecipeNamePrompt),
                     onChanged: cubit.nameChanged,
                   ),
                 ),
@@ -164,7 +154,7 @@ class _CreateRecipeViewState extends State<CreateRecipeView>
             const SizedBox(height: AppSpacing.l),
             AppSection(
               header: l10n.createRecipeServings,
-              footer: l10n.createRecipeRequired,
+              trailing: Text(l10n.createRecipeRequired),
               children: [
                 AppNumberField(
                   key: const Key('CreateRecipe.servings'),
@@ -188,33 +178,24 @@ class _CreateRecipeViewState extends State<CreateRecipeView>
               ],
             ),
             const SizedBox(height: AppSpacing.l),
-            Row(
+            AppSection(
+              header: l10n.createRecipeIngredients,
+              footer: weight == null
+                  ? null
+                  : l10n.createRecipeIngredientsWeight(AppFormat.grams(weight)),
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Semantics(
-                        header: true,
-                        child: Text(
-                          l10n.createRecipeIngredients,
-                          style: AppTextStyles.label.copyWith(color: secondary),
-                        ),
-                      ),
-                      if (weight != null)
-                        Text(
-                          l10n.createRecipeIngredientsWeight(
-                            AppFormat.grams(weight),
-                          ),
-                          style: AppTextStyles.label.copyWith(color: secondary),
-                        ),
-                    ],
+                for (final (index, ingredient) in state.ingredients.indexed)
+                  _IngredientRow(
+                    key: ValueKey(ingredient.id),
+                    index: index,
+                    ingredient: ingredient,
                   ),
-                ),
-                IconButton.filledTonal(
+                // Last, as Preparation's Add Step is.
+                AppListRowButton(
                   key: const Key('CreateRecipe.addIngredient'),
-                  icon: const Icon(AppSymbols.add),
-                  tooltip: l10n.createRecipeAddIngredient,
+                  title: l10n.createRecipeAddIngredient,
+                  icon: AppSymbols.add,
+                  accessory: null,
                   onPressed: () => unawaited(
                     _push(
                       context,
@@ -225,17 +206,6 @@ class _CreateRecipeViewState extends State<CreateRecipeView>
                 ),
               ],
             ),
-            if (state.ingredients.isNotEmpty)
-              AppSection(
-                children: [
-                  for (final (index, ingredient) in state.ingredients.indexed)
-                    _IngredientRow(
-                      key: ValueKey(ingredient.id),
-                      index: index,
-                      ingredient: ingredient,
-                    ),
-                ],
-              ),
           ],
         ),
         bottomNavigationBar: AppBottomCta(
@@ -372,12 +342,14 @@ class _IngredientPickerView extends StatelessWidget {
 
     return AppScaffold(
       appBar: AppBar(
-        leading: CloseButton(onPressed: () => Navigator.of(context).pop()),
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
+        ),
         title: Text(l10n.createRecipeAddIngredient),
         actions: [
-          IconButton(
-            icon: const Icon(AppSymbols.add),
-            tooltip: l10n.foodsCreate,
+          AppToolbarButton(
+            icon: AppSymbols.add,
+            semanticLabel: l10n.foodsCreate,
             onPressed: create,
           ),
         ],
@@ -399,7 +371,7 @@ class _IngredientPickerView extends StatelessWidget {
           ),
           Expanded(
             child: switch (state.foods) {
-              null => const Center(child: CircularProgressIndicator.adaptive()),
+              null => AppLoadingView(label: l10n.launchLoading),
               _ when foods.isNotEmpty => ListView(
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
@@ -424,24 +396,16 @@ class _IngredientPickerView extends StatelessWidget {
                   ),
                 ],
               ),
-              _ when state.filter.isNotEmpty => LibraryEmptyState(
+              _ when state.filter.isNotEmpty => AppEmptyState(
                 icon: AppSymbols.search,
                 title: l10n.foodsNoResults(state.filter),
               ),
-              _ => SingleChildScrollView(
-                child: Column(
-                  children: [
-                    LibraryEmptyState(
-                      icon: AppSymbols.food,
-                      title: l10n.foodsEmptyTitle,
-                      message: l10n.foodsEmptyMessage,
-                    ),
-                    FilledButton(
-                      onPressed: create,
-                      child: Text(l10n.foodsCreate),
-                    ),
-                  ],
-                ),
+              _ => AppEmptyState(
+                icon: AppSymbols.food,
+                title: l10n.foodsEmptyTitle,
+                description: l10n.foodsEmptyMessage,
+                actionLabel: l10n.foodsCreate,
+                onAction: create,
               ),
             },
           ),
@@ -472,31 +436,20 @@ class _PickerRow extends StatelessWidget {
     final calories =
         (food.nutrients.values[NutrientKey.calories] ?? 0) *
         food.rowNutrientScale;
-    return InkWell(
-      onTap: onPressed,
-      child: Row(
-        children: [
-          Expanded(
-            child: AppListRow(
-              title: food.name,
-              subtitle: [
-                ?food.brandName,
-                AppFormat.kcal(calories.round()),
-              ].join(' · '),
-              thumbnail:
-                  context.select<FoodsCubit, bool>(
-                    (cubit) => cubit.state.showFoodImage,
-                  )
-                  ? StoredThumbnail(food.imageUrl)
-                  : null,
-            ),
-          ),
-          IconButton(
-            icon: Icon(chosen ? AppSymbols.selected : AppSymbols.add),
-            tooltip: l10n.addMealQuickAddFood(food.name),
-            onPressed: onAdd,
-          ),
-        ],
+    return AppListRowButton(
+      title: food.name,
+      subtitle: [?food.brandName, AppFormat.kcal(calories.round())].join(' · '),
+      thumbnail:
+          context.select<FoodsCubit, bool>((cubit) => cubit.state.showFoodImage)
+          ? StoredThumbnail(food.imageUrl)
+          : null,
+      onPressed: onPressed,
+      accessory: AppListRowCustom(
+        AppIconButton(
+          icon: chosen ? AppSymbols.selected : AppSymbols.add,
+          semanticLabel: l10n.addMealQuickAddFood(food.name),
+          onPressed: onAdd,
+        ),
       ),
     );
   }
@@ -628,7 +581,7 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
                             index: index,
                             child: const Padding(
                               padding: EdgeInsets.all(AppSpacing.m),
-                              child: Icon(Icons.drag_handle_rounded),
+                              child: Icon(AppSymbols.reorder),
                             ),
                           ),
                           Expanded(
@@ -645,12 +598,17 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
                                   cubit.stepChanged(index, text),
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(AppSymbols.decrease),
-                            tooltip: l10n.recipePreparationRemoveStep(
-                              index + 1,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.s,
                             ),
-                            onPressed: () => _remove(index),
+                            child: AppIconButton(
+                              icon: AppSymbols.decrease,
+                              semanticLabel: l10n.recipePreparationRemoveStep(
+                                index + 1,
+                              ),
+                              onPressed: () => _remove(index),
+                            ),
                           ),
                         ],
                       ),

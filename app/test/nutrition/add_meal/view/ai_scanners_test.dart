@@ -103,7 +103,7 @@ void main() {
       await openTab(tester, 'AI');
       expect(find.textContaining("isn't stored by Compound"), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('FoodPicker.takePhoto')));
+      await tester.tap(find.text('Take Photo'));
       await tester.pumpAndSettle();
       expect(find.text('AI Estimate'), findsOneWidget);
       expect(find.text('Grilled Chicken Breast'), findsOneWidget);
@@ -160,7 +160,7 @@ void main() {
       final ai = FakeAi()..fails = true;
       await pumpLogger(tester, aiRepository: ai.repository);
       await openTab(tester, 'AI');
-      await tester.tap(find.byKey(const Key('FoodPicker.takePhoto')));
+      await tester.tap(find.text('Take Photo'));
       await tester.pumpAndSettle();
       expect(
         find.textContaining("Couldn't recognize the food"),
@@ -180,7 +180,7 @@ void main() {
       picker.error = const PhotoAccessDeniedException();
       await pumpLogger(tester);
       await openTab(tester, 'AI');
-      await tester.tap(find.byKey(const Key('FoodPicker.takePhoto')));
+      await tester.tap(find.text('Take Photo'));
       await tester.pumpAndSettle();
       expect(find.text('Camera Access Is Off'), findsOneWidget);
 
@@ -193,7 +193,7 @@ void main() {
       picker.error = Exception('no camera');
       await pumpLogger(tester);
       await openTab(tester, 'AI');
-      await tester.tap(find.byKey(const Key('FoodPicker.takePhoto')));
+      await tester.tap(find.text('Take Photo'));
       await tester.pumpAndSettle();
       expect(find.text('Camera Unavailable'), findsOneWidget);
     });

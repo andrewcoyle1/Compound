@@ -66,10 +66,7 @@ class AppChip extends StatelessWidget {
     final icon = this.icon;
     final style = large
         ? AppTextStyles.rowTitle.copyWith(color: foreground)
-        : AppTextStyles.label.copyWith(
-            fontWeight: FontWeight.w600,
-            color: foreground,
-          );
+        : AppTextStyles.label.semibold.copyWith(color: foreground);
     final chip = DecoratedBox(
       decoration: ShapeDecoration(
         shape: const StadiumBorder(),

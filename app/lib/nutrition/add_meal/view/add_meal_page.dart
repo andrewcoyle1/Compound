@@ -37,34 +37,25 @@ Future<void> openMealLogger(
   final draft = drafts.state;
   if (draft == null) return await AddMealPage.show(context, fresh);
   final l10n = context.l10n;
-  final choice = await showModalBottomSheet<bool>(
+  final choice = await showAppDialog<bool>(
     context: context,
-    showDragHandle: true,
-    builder: (context) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: Text(
-              l10n.addMealDraftTitle,
-              style: AppTextStyles.sectionTitle,
-            ),
-          ),
-          ListTile(
-            title: Text(l10n.addMealDraftContinue),
-            onTap: () => Navigator.of(context).pop(true),
-          ),
-          ListTile(
-            title: Text(
-              l10n.addMealDraftDiscard,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            onTap: () => Navigator.of(context).pop(false),
-          ),
-        ],
+    title: l10n.addMealDraftTitle,
+    actions: [
+      AppDialogAction(
+        label: l10n.addMealDraftContinue,
+        value: true,
+        role: AppDialogRole.preferred,
       ),
-    ),
+      AppDialogAction(
+        label: l10n.addMealDraftDiscard,
+        value: false,
+        role: AppDialogRole.destructive,
+      ),
+      AppDialogAction(
+        label: MaterialLocalizations.of(context).cancelButtonLabel,
+        role: AppDialogRole.cancel,
+      ),
+    ],
   );
   if (choice == null || !context.mounted) return;
   if (!choice) drafts.clear();
@@ -140,17 +131,15 @@ class AddMealView extends StatelessWidget {
                 _dismiss(context);
               case AddMealStatus.failure:
                 unawaited(HapticFeedback.errorNotification());
-                showDialog<void>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(context.l10n.addMealSaveFailedTitle),
-                    content: Text(context.l10n.addMealSaveFailedMessage),
+                unawaited(
+                  showAppDialog<void>(
+                    context: context,
+                    title: context.l10n.addMealSaveFailedTitle,
+                    message: context.l10n.addMealSaveFailedMessage,
                     actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
-                          MaterialLocalizations.of(context).okButtonLabel,
-                        ),
+                      AppDialogAction(
+                        label: MaterialLocalizations.of(context).okButtonLabel,
+                        role: AppDialogRole.preferred,
                       ),
                     ],
                   ),
@@ -200,17 +189,18 @@ class _PlateView extends StatelessWidget {
     return AppScaffold(
       appBar: AppBar(
         // Closing keeps the plate as a draft.
-        leading: CloseButton(onPressed: () => _dismiss(context)),
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonLabel,
+          onPressed: () => _dismiss(context),
+        ),
         title: Text(l10n.addMealTitle),
         actions: [
-          TextButton.icon(
-            icon: const Icon(AppSymbols.duration),
-            label: Text(
-              AppFormat.time(
-                meal.date.toLocal(),
-                use24HourFormat: context.use24HourFormat,
-                locale: context.dateLocale,
-              ),
+          AppChip(
+            icon: AppSymbols.duration,
+            label: AppFormat.time(
+              meal.date.toLocal(),
+              use24HourFormat: context.use24HourFormat,
+              locale: context.dateLocale,
             ),
             onPressed: () async {
               final picked = await showTimePicker(
@@ -233,6 +223,7 @@ class _PlateView extends StatelessWidget {
               );
             },
           ),
+          const SizedBox(width: AppSpacing.s),
         ],
       ),
       body: ListView(

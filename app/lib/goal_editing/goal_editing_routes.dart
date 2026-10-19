@@ -62,26 +62,15 @@ Future<void> openWeightGoal(BuildContext context, WeightGoal? goal) async {
     return;
   }
   final l10n = context.l10n;
-  final edit = await showAdaptiveDialog<bool>(
+  final edit = await showAppDialog<bool>(
     context: context,
-    builder: (context) => AlertDialog.adaptive(
-      title: Text(l10n.weightGoalTitle),
-      content: Text(l10n.weightGoalChoicesMessage),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(l10n.weightGoalEdit),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(l10n.weightGoalStartNew),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.weightGoalCancel),
-        ),
-      ],
-    ),
+    title: l10n.weightGoalTitle,
+    message: l10n.weightGoalChoicesMessage,
+    actions: [
+      AppDialogAction(label: l10n.weightGoalEdit, value: true),
+      AppDialogAction(label: l10n.weightGoalStartNew, value: false),
+      AppDialogAction(label: l10n.weightGoalCancel, role: AppDialogRole.cancel),
+    ],
   );
   if (edit == null || !context.mounted) return;
   open(edit: edit);

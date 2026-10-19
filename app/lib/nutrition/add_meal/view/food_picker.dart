@@ -46,7 +46,8 @@ class FoodPickerView extends StatelessWidget {
       appBar: AppBar(
         // Picks land on the plate as they are made, so there is nothing to
         // cancel: close goes back to the plate.
-        leading: CloseButton(
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
           onPressed: () => bloc.add(const AddMealPickerClosed()),
         ),
         title: Column(
@@ -183,52 +184,15 @@ class FoodRow extends StatelessWidget {
           portion.unit?.name ?? food.loggedUnitLabel,
         ].join(' '),
     ].join(' · ');
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return InkWell(
-      onTap: () => unawaited(pickFood(context, food)),
-      child: Padding(
-        padding: const EdgeInsets.only(left: AppSpacing.l),
-        child: Row(
-          children: [
-            // `FoodLibraryPickerRowView`'s image, on the logger setting.
-            if (settings.showFoodImageInLogger)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.m),
-                child: RowThumbnail(food.imageUrl),
-              ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: AppSpacing.xxs,
-                  children: [
-                    Text(food.name, style: AppTextStyles.rowTitle),
-                    if (detail.isNotEmpty)
-                      Text(
-                        detail,
-                        style: AppTextStyles.rowDetail.copyWith(
-                          color: secondary,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            if (count > 0)
-              Text(
-                AppFormat.number(count),
-                style: AppTextStyles.label.copyWith(color: secondary),
-                semanticsLabel: l10n.addMealOnPlate(count),
-              ),
-            IconButton(
-              icon: Icon(count > 0 ? AppSymbols.selected : AppSymbols.add),
-              tooltip: l10n.addMealQuickAddFood(food.name),
-              onPressed: () => quickAddFood(context, food),
-            ),
-          ],
-        ),
-      ),
+    return _PickerRow(
+      title: food.name,
+      detail: detail,
+      showsImage: settings.showFoodImageInLogger,
+      imageUrl: food.imageUrl,
+      count: count,
+      addLabel: l10n.addMealQuickAddFood(food.name),
+      onPressed: () => unawaited(pickFood(context, food)),
+      onAdd: () => quickAddFood(context, food),
     );
   }
 }
@@ -275,124 +239,75 @@ class RecipeRow extends StatelessWidget {
       if (settings.showPortionInLogger)
         l10n.recipeDetailServingCount(AppFormat.number(1), 1),
     ].join(' · ');
+    return _PickerRow(
+      title: recipe.name,
+      detail: detail,
+      showsImage: settings.showFoodImageInLogger,
+      imageUrl: recipe.imageUrl,
+      count: count,
+      addLabel: l10n.addMealQuickAddRecipe(recipe.name),
+      onPressed: () => unawaited(pickRecipe(context, recipe)),
+      onAdd: () {
+        unawaited(HapticFeedback.successNotification());
+        context.read<AddMealBloc>().add(AddMealRecipeQuickAdded(recipe));
+      },
+    );
+  }
+}
+
+/// A food or recipe in the picker: tap to choose its amount, + to add it
+/// as it is, which becomes a checkmark and the count once on the plate.
+class _PickerRow extends StatelessWidget {
+  const new({
+    required this.title,
+    required this.detail,
+    required this.showsImage,
+    required this.imageUrl,
+    required this.count,
+    required this.addLabel,
+    required this.onPressed,
+    required this.onAdd,
+  });
+
+  final String title;
+  final String detail;
+
+  /// Whether the logger setting shows images.
+  final bool showsImage;
+  final String? imageUrl;
+  final int count;
+  final String addLabel;
+  final VoidCallback onPressed;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return InkWell(
-      onTap: () => unawaited(pickRecipe(context, recipe)),
-      child: Padding(
-        padding: const EdgeInsets.only(left: AppSpacing.l),
-        child: Row(
+    return AppListRowButton(
+      title: title,
+      subtitle: detail.isEmpty ? null : detail,
+      // `FoodLibraryPickerRowView`'s image, on the logger setting.
+      thumbnail: showsImage ? StoredThumbnail(imageUrl) : null,
+      onPressed: onPressed,
+      accessory: AppListRowCustom(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: AppSpacing.xs,
           children: [
-            // `FoodLibraryPickerRowView`'s image, on the logger setting.
-            if (settings.showFoodImageInLogger)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.m),
-                child: RowThumbnail(recipe.imageUrl),
-              ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: AppSpacing.xxs,
-                  children: [
-                    Text(recipe.name, style: AppTextStyles.rowTitle),
-                    if (detail.isNotEmpty)
-                      Text(
-                        detail,
-                        style: AppTextStyles.rowDetail.copyWith(
-                          color: secondary,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
             if (count > 0)
               Text(
                 AppFormat.number(count),
                 style: AppTextStyles.label.copyWith(color: secondary),
                 semanticsLabel: l10n.addMealOnPlate(count),
               ),
-            IconButton(
-              icon: Icon(count > 0 ? AppSymbols.selected : AppSymbols.add),
-              tooltip: l10n.addMealQuickAddRecipe(recipe.name),
-              onPressed: () {
-                unawaited(HapticFeedback.successNotification());
-                context.read<AddMealBloc>().add(
-                  AddMealRecipeQuickAdded(recipe),
-                );
-              },
+            AppIconButton(
+              icon: count > 0 ? AppSymbols.selected : AppSymbols.add,
+              semanticLabel: addLabel,
+              onPressed: onAdd,
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// A list's section title.
-class _Header extends StatelessWidget {
-  const new(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(
-      AppSpacing.l,
-      AppSpacing.l,
-      AppSpacing.l,
-      AppSpacing.xs,
-    ),
-    child: Semantics(
-      header: true,
-      child: Text(
-        text,
-        style: AppTextStyles.label.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-    ),
-  );
-}
-
-/// An empty list's explanation.
-class _Empty extends StatelessWidget {
-  const new({
-    required this.icon,
-    required this.title,
-    this.message,
-    this.action,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? message;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    final message = this.message;
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        spacing: AppSpacing.s,
-        children: [
-          Icon(icon, size: AppIconSize.hero.of(context), color: secondary),
-          Text(
-            title,
-            style: AppTextStyles.sectionTitle,
-            textAlign: TextAlign.center,
-          ),
-          if (message != null)
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-          ?action,
-        ],
       ),
     );
   }
@@ -484,72 +399,75 @@ class _SearchView extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: ListView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: _Sections(
             children: [
               if (query.isEmpty)
                 if (recents.isEmpty)
-                  _Empty(
+                  AppEmptyState(
                     icon: AppSymbols.search,
                     title: l10n.addMealSearchEmptyTitle,
-                    message: l10n.addMealSearchEmptyMessage,
+                    description: l10n.addMealSearchEmptyMessage,
                   )
-                else ...[
-                  _Header(l10n.addMealRecent),
-                  for (final pick in recents)
-                    switch (pick) {
-                      RecentFood(:final food) => FoodRow(food: food),
-                      RecentRecipe(:final recipe) => RecipeRow(recipe: recipe),
-                    },
-                ]
-              else ...[
-                if (library.isNotEmpty) ...[
-                  _Header(l10n.addMealMyFoods),
-                  for (final food in library) FoodRow(food: food),
-                ],
-                if (recipes.isNotEmpty) ...[
-                  _Header(l10n.addMealMyRecipes),
-                  for (final recipe in recipes) RecipeRow(recipe: recipe),
-                ],
-                if (settings.showOpenFoodFactsFoods) ...[
-                  _Header(l10n.addMealOpenFoodFacts),
-                  switch (search.status) {
-                    FoodSearchStatus.searching => Padding(
-                      padding: const EdgeInsets.all(AppSpacing.l),
-                      child: Row(
-                        spacing: AppSpacing.s,
-                        children: [
-                          const SizedBox.square(
-                            dimension: AppSpacing.l,
-                            child: CircularProgressIndicator.adaptive(),
+                else
+                  AppSection(
+                    header: l10n.addMealRecent,
+                    children: [
+                      for (final pick in recents)
+                        switch (pick) {
+                          RecentFood(:final food) => FoodRow(food: food),
+                          RecentRecipe(:final recipe) => RecipeRow(
+                            recipe: recipe,
                           ),
-                          Text(l10n.addMealSearching),
-                        ],
-                      ),
+                        },
+                    ],
+                  )
+              else ...[
+                if (library.isNotEmpty)
+                  AppSection(
+                    header: l10n.addMealMyFoods,
+                    children: [for (final food in library) FoodRow(food: food)],
+                  ),
+                if (recipes.isNotEmpty)
+                  AppSection(
+                    header: l10n.addMealMyRecipes,
+                    children: [
+                      for (final recipe in recipes) RecipeRow(recipe: recipe),
+                    ],
+                  ),
+                if (settings.showOpenFoodFactsFoods)
+                  switch (search.status) {
+                    FoodSearchStatus.searching => AppSection(
+                      header: l10n.addMealOpenFoodFacts,
+                      children: [
+                        for (var i = 0; i < 3; i++)
+                          AppPlaceholderRow(
+                            semanticLabel: i == 0
+                                ? l10n.addMealSearching
+                                : null,
+                          ),
+                      ],
                     ),
-                    FoodSearchStatus.failure => Padding(
-                      padding: const EdgeInsets.all(AppSpacing.l),
-                      child: AppInlineMessage(
-                        kind: AppInlineMessageKind.error,
-                        text: l10n.addMealSearchFailed,
-                        kindLabel: l10n.addMealErrorLabel,
-                      ),
+                    FoodSearchStatus.failure => AppInlineMessage(
+                      kind: AppInlineMessageKind.error,
+                      text: l10n.addMealSearchFailed,
+                      kindLabel: l10n.addMealErrorLabel,
                     ),
                     FoodSearchStatus.idle when online.isEmpty =>
                       nothingSaved
-                          ? _Empty(
+                          ? AppEmptyState(
                               icon: AppSymbols.search,
                               title: l10n.addMealNoResults(query),
                             )
                           : const SizedBox.shrink(),
-                    FoodSearchStatus.idle => Column(
+                    FoodSearchStatus.idle => AppSection(
+                      header: l10n.addMealOpenFoodFacts,
                       children: [
                         for (final food in online) FoodRow(food: food),
                       ],
                     ),
-                  },
-                ] else if (nothingSaved)
-                  _Empty(
+                  }
+                else if (nothingSaved)
+                  AppEmptyState(
                     icon: AppSymbols.search,
                     title: l10n.addMealNoResults(query),
                   ),
@@ -560,6 +478,22 @@ class _SearchView extends StatelessWidget {
       ],
     );
   }
+}
+
+/// A picker list: its sections apart, as Swift's inset-grouped lists.
+class _Sections extends StatelessWidget {
+  const new({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => ListView.separated(
+    padding: const EdgeInsets.all(AppSpacing.l),
+    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+    itemCount: children.length,
+    separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.xl),
+    itemBuilder: (_, index) => children[index],
+  );
 }
 
 // MARK: - Library
@@ -674,34 +608,38 @@ class _LibraryTabState extends State<_LibraryTab> {
       for (final recipe in state.recipes)
         if (matchesRecipeFilter(recipe, _filter.trim())) recipe,
     ], (recipe) => recipe.name);
-    final create = ListTile(
-      key: const Key('FoodPicker.createRecipe'),
-      leading: const Icon(AppSymbols.add),
-      title: Text(l10n.recipesCreate),
-      onTap: () => unawaited(CreateRecipePage.show(context)),
+    final create = AppSection(
+      children: [
+        AppListRowButton(
+          key: const Key('FoodPicker.createRecipe'),
+          icon: AppSymbols.add,
+          title: l10n.recipesCreate,
+          accessory: null,
+          onPressed: () => unawaited(CreateRecipePage.show(context)),
+        ),
+      ],
     );
     if (state.recipes.isEmpty) {
-      return SingleChildScrollView(
-        child: _Empty(
-          icon: AppSymbols.recipe,
-          title: l10n.recipesEmptyTitle,
-          message: l10n.recipesEmptyMessage,
-          action: FilledButton(
-            onPressed: () => unawaited(CreateRecipePage.show(context)),
-            child: Text(l10n.recipesCreate),
-          ),
-        ),
+      return AppEmptyState(
+        icon: AppSymbols.recipe,
+        title: l10n.recipesEmptyTitle,
+        description: l10n.recipesEmptyMessage,
+        actionLabel: l10n.recipesCreate,
+        onAction: () => unawaited(CreateRecipePage.show(context)),
       );
     }
-    return ListView(
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+    return _Sections(
       children: [
-        if (_filter.trim().isEmpty) ...[create, _Header(l10n.recipesCustom)],
-        for (final recipe in recipes) RecipeRow(recipe: recipe),
+        if (_filter.trim().isEmpty) create,
         if (recipes.isEmpty)
-          _Empty(
+          AppEmptyState(
             icon: AppSymbols.search,
             title: l10n.addMealNoResults(_filter.trim()),
+          )
+        else
+          AppSection(
+            header: _filter.trim().isEmpty ? l10n.recipesCustom : null,
+            children: [for (final recipe in recipes) RecipeRow(recipe: recipe)],
           ),
       ],
     );
@@ -722,35 +660,37 @@ class _LibraryTabState extends State<_LibraryTab> {
           food,
     ], (food) => food.name);
     if (state.foods.isEmpty) {
-      return SingleChildScrollView(
-        child: _Empty(
-          icon: AppSymbols.food,
-          title: l10n.addMealLibraryEmptyTitle,
-          message: l10n.addMealLibraryEmptyMessage,
-          action: FilledButton(
-            onPressed: () => unawaited(_createFood(context)),
-            child: Text(l10n.foodsCreate),
-          ),
-        ),
+      return AppEmptyState(
+        icon: AppSymbols.food,
+        title: l10n.addMealLibraryEmptyTitle,
+        description: l10n.addMealLibraryEmptyMessage,
+        actionLabel: l10n.foodsCreate,
+        onAction: () => unawaited(_createFood(context)),
       );
     }
-    return ListView(
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+    return _Sections(
       children: [
-        if (needle.isEmpty) ...[
-          ListTile(
-            key: const Key('FoodPicker.createFood'),
-            leading: const Icon(AppSymbols.add),
-            title: Text(l10n.foodsCreate),
-            onTap: () => unawaited(_createFood(context)),
+        if (needle.isEmpty)
+          AppSection(
+            children: [
+              AppListRowButton(
+                key: const Key('FoodPicker.createFood'),
+                icon: AppSymbols.add,
+                title: l10n.foodsCreate,
+                accessory: null,
+                onPressed: () => unawaited(_createFood(context)),
+              ),
+            ],
           ),
-          _Header(l10n.addMealFoods),
-        ],
-        for (final food in foods) FoodRow(food: food),
         if (foods.isEmpty)
-          _Empty(
+          AppEmptyState(
             icon: AppSymbols.search,
             title: l10n.addMealNoResults(_filter.trim()),
+          )
+        else
+          AppSection(
+            header: needle.isEmpty ? l10n.addMealFoods : null,
+            children: [for (final food in foods) FoodRow(food: food)],
           ),
       ],
     );
@@ -764,12 +704,10 @@ class _LibraryTabState extends State<_LibraryTab> {
     final settings = state.effectiveSettings;
     if (settings.favouriteFoodIds.isEmpty &&
         settings.favouriteRecipeIds.isEmpty) {
-      return SingleChildScrollView(
-        child: _Empty(
-          icon: AppSymbols.heart,
-          title: l10n.addMealNoFavoritesTitle,
-          message: l10n.addMealNoFavoritesMessage,
-        ),
+      return AppEmptyState(
+        icon: AppSymbols.heart,
+        title: l10n.addMealNoFavoritesTitle,
+        description: l10n.addMealNoFavoritesMessage,
       );
     }
     final recipes = favourites(
@@ -786,17 +724,18 @@ class _LibraryTabState extends State<_LibraryTab> {
       id: (food) => food.ingredientId,
       name: (food) => food.name,
     );
-    return ListView(
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+    return _Sections(
       children: [
-        if (recipes.isNotEmpty) ...[
-          _Header(l10n.addMealLibraryRecipes),
-          for (final recipe in recipes) RecipeRow(recipe: recipe),
-        ],
-        if (foods.isNotEmpty) ...[
-          _Header(l10n.addMealLibraryFoods),
-          for (final food in foods) FoodRow(food: food),
-        ],
+        if (recipes.isNotEmpty)
+          AppSection(
+            header: l10n.addMealLibraryRecipes,
+            children: [for (final recipe in recipes) RecipeRow(recipe: recipe)],
+          ),
+        if (foods.isNotEmpty)
+          AppSection(
+            header: l10n.addMealLibraryFoods,
+            children: [for (final food in foods) FoodRow(food: food)],
+          ),
       ],
     );
   }
@@ -1109,19 +1048,15 @@ class _BarcodeView extends StatelessWidget {
             BarcodeStatus.found =>
               food == null
                   ? const SizedBox.shrink()
-                  : AppCard(
-                      style: AppCardStyle.tile,
-                      child: FoodRow(food: food),
-                    ),
+                  : AppSection(children: [FoodRow(food: food)]),
           },
           const SizedBox(height: AppSpacing.m),
           Wrap(
             alignment: WrapAlignment.center,
             spacing: AppSpacing.s,
             children: [
-              TextButton.icon(
-                icon: const Icon(AppSymbols.edit),
-                label: Text(l10n.addMealBarcodeEnter),
+              AppTextButton(
+                label: l10n.addMealBarcodeEnter,
                 onPressed: () async {
                   final code = await enterBarcode(context, state.code);
                   if (code != null && context.mounted) {
@@ -1132,9 +1067,8 @@ class _BarcodeView extends StatelessWidget {
               ),
               if (state.status != BarcodeStatus.scanning &&
                   state.status != BarcodeStatus.lookingUp)
-                TextButton.icon(
-                  icon: const Icon(AppSymbols.logAgain),
-                  label: Text(l10n.addMealBarcodeScanAgain),
+                AppTextButton(
+                  label: l10n.addMealBarcodeScanAgain,
                   onPressed: cubit.rescan,
                 ),
             ],
@@ -1148,7 +1082,9 @@ class _BarcodeView extends StatelessWidget {
 /// Typing a barcode, the fallback when the camera cannot read it; prefilled
 /// with whatever it did catch. Null when cancelled.
 Future<String?> enterBarcode(BuildContext context, String? scanned) =>
-    showDialog<String>(
+    // An AppDialog, as showAppDialog opens one, built by a widget that
+    // owns the field's controller.
+    showAdaptiveDialog<String>(
       context: context,
       builder: (_) => _BarcodeEntryDialog(scanned: scanned),
     );
@@ -1182,8 +1118,8 @@ class _BarcodeEntryDialogState extends State<_BarcodeEntryDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return AlertDialog(
-      title: Text(l10n.addMealBarcodeEnter),
+    return AppDialog<String>(
+      title: l10n.addMealBarcodeEnter,
       content: TextField(
         controller: _controller,
         autofocus: true,
@@ -1193,11 +1129,15 @@ class _BarcodeEntryDialogState extends State<_BarcodeEntryDialog> {
         onSubmitted: (_) => _submit(),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+        AppDialogAction(
+          label: MaterialLocalizations.of(context).cancelButtonLabel,
+          role: AppDialogRole.cancel,
         ),
-        TextButton(onPressed: _submit, child: Text(l10n.addMealBarcodeLookUp)),
+        AppDialogAction(
+          label: l10n.addMealBarcodeLookUp,
+          role: AppDialogRole.preferred,
+          onPressed: _submit,
+        ),
       ],
     );
   }

@@ -489,7 +489,18 @@ void main() {
 
     testWidgets('opens the Nutrition Overview for the day', (tester) async {
       await pumpRouted(tester);
-      await tester.tap(find.byTooltip('Nutrition Overview'));
+      // A row in the day's last section, as in Swift.
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('Nutrition.overview')),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(NutritionView),
+              matching: find.byType(Scrollable),
+            )
+            .last,
+      );
+      await tester.tap(find.byKey(const Key('Nutrition.overview')));
       await tester.pumpAndSettle();
       expect(find.textContaining('overview 2026-'), findsOneWidget);
     });

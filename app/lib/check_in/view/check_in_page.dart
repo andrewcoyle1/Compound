@@ -113,7 +113,8 @@ class CheckInView extends StatelessWidget {
       ],
       child: AppScaffold(
         appBar: AppBar(
-          leading: CloseButton(
+          leading: AppToolbarButton.close(
+            semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
             onPressed: () {
               context.read<WeeklyCheckInBloc>().add(
                 const WeeklyCheckInDismissPressed(),
@@ -133,19 +134,10 @@ class CheckInView extends StatelessWidget {
           ],
         ),
         body: switch (state.status) {
-          WeeklyCheckInStatus.failure => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Text(
-                l10n.checkInSaveFailed,
-                style: AppTextStyles.sectionTitle,
-                textAlign: TextAlign.center,
-              ),
-            ),
+          WeeklyCheckInStatus.failure => AppErrorState(
+            title: l10n.checkInSaveFailed,
           ),
-          _ when step == null => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
+          _ when step == null => AppLoadingView(label: l10n.launchLoading),
           _ => _Step(state: state, step: step),
         },
         bottomNavigationBar: step == null
@@ -180,18 +172,16 @@ Future<void> showFailureAlert(
   BuildContext context,
   String title, [
   String? message,
-]) => showDialog<void>(
+]) => showAppDialog<void>(
   context: context,
-  builder: (context) => AlertDialog(
-    title: Text(title),
-    content: message == null ? null : Text(message),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.of(context).pop(),
-        child: Text(MaterialLocalizations.of(context).okButtonLabel),
-      ),
-    ],
-  ),
+  title: title,
+  message: message,
+  actions: [
+    AppDialogAction(
+      label: MaterialLocalizations.of(context).okButtonLabel,
+      role: AppDialogRole.preferred,
+    ),
+  ],
 );
 
 class _Step extends StatelessWidget {

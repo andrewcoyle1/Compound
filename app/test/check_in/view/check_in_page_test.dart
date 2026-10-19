@@ -112,7 +112,7 @@ void main() {
 
     testWidgets('closes when dismissed', (tester) async {
       await pumpPage(tester);
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pump();
       verify(() => router.pop<Object?>()).called(1);
     });
@@ -120,7 +120,7 @@ void main() {
     testWidgets('closes to Today when opened directly', (tester) async {
       when(() => router.canPop()).thenReturn(false);
       await pumpPage(tester);
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pump();
       verify(() => router.go('/today')).called(1);
     });

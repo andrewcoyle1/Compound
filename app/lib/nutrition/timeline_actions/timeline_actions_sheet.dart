@@ -7,8 +7,6 @@ import 'package:compound/check_in/view/check_in_page.dart'
     show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/timeline_actions/timeline_day_cubit.dart';
-import 'package:compound/programs/view/program_widgets.dart'
-    show confirmDestructive;
 import 'package:compound/settings/nutrition/cubit/food_log_settings_cubit.dart';
 import 'package:compound/settings/nutrition/cubit/settings_document_cubit.dart';
 import 'package:compound_models/compound_models.dart';
@@ -24,10 +22,9 @@ Future<void> showTimelineActions(BuildContext context, DateTime day) {
   final uid = app is AppAuthenticated ? app.user.uid : null;
   final nutrition = context.read<NutritionRepository>();
   final analytics = context.read<AnalyticsRepository>();
-  return showModalBottomSheet<void>(
+  return showAppSheet<void>(
     context: context,
-    showDragHandle: true,
-    useSafeArea: true,
+    size: AppSheetSize.compact,
     builder: (_) => MultiBlocProvider(
       providers: [
         if (uid != null)
@@ -90,7 +87,7 @@ class TimelineActionsView extends StatelessWidget {
         );
       case TimelineDayAlert.confirmClear:
         // Destructive and not undoable, so it is confirmed first.
-        final confirmed = await confirmDestructive(
+        final confirmed = await AppDialog.confirmDestructive(
           context,
           title: l10n.timelineClearTitle,
           message: l10n.timelineClearMessage(state.meals.length),

@@ -1,9 +1,65 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:shimmer/shimmer.dart';
+
+/// How big an [AppSpinner] is drawn.
+enum AppSpinnerSize {
+  /// [AppIconSize.small]: inside a button, a row's accessory or beside a
+  /// line of text.
+  small,
+
+  /// [AppIconSize.medium]: on its own, for a screen or a section.
+  regular,
+}
+
+/// {@template app_spinner}
+/// The one activity indicator: twelve dots fading in turn around a circle,
+/// in the accent (or [color]), the same on both platforms. It grows with
+/// the text size.
+///
+/// Only the dots' opacity changes, nothing moves; with reduced motion
+/// (`MediaQuery.disableAnimations`) they hold still, so it also never keeps
+/// a test from settling. It is silent: [AppLoadingView], or the text beside
+/// it, says what is loading.
+/// {@endtemplate}
+class AppSpinner extends StatelessWidget {
+  /// {@macro app_spinner}
+  const new({this.size = AppSpinnerSize.regular, this.color, super.key});
+
+  /// How big it is drawn.
+  final AppSpinnerSize size;
+
+  /// The dots' colour; the accent when null. On a filled control, the
+  /// control's foreground.
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final spinner = ExcludeSemantics(
+      // Shrinks to fit a slot smaller than its size, such as a toolbar's.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: SpinKitFadingCircle(
+          color: color ?? Theme.of(context).colorScheme.primary,
+          size: switch (size) {
+            AppSpinnerSize.small => AppIconSize.small,
+            AppSpinnerSize.regular => AppIconSize.medium,
+          }.of(context),
+        ),
+      ),
+    );
+    return TickerMode(
+      enabled: !MediaQuery.disableAnimationsOf(context),
+      child: spinner,
+    );
+  }
+}
 
 /// {@template app_loading_view}
-/// A centred spinner for a whole screen's first load, and only that: a list
-/// or card that is loading shows [AppPlaceholderRow]s or [AppPlaceholder]s
-/// shaped like its content instead. Screen readers hear [label].
+/// A centred [AppSpinner] for a whole screen's first load, and only that: a
+/// list or card that is loading shows [AppPlaceholderRow]s or
+/// [AppPlaceholder]s shaped like its content instead. Screen readers hear
+/// [label].
 /// {@endtemplate}
 class AppLoadingView extends StatelessWidget {
   /// {@macro app_loading_view}
@@ -14,18 +70,16 @@ class AppLoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-    child: Semantics(
-      label: label,
-      liveRegion: true,
-      child: const CircularProgressIndicator.adaptive(),
-    ),
+    child: Semantics(label: label, liveRegion: true, child: const AppSpinner()),
   );
 }
 
 /// {@template app_placeholder}
 /// A grey rounded shape standing in for content that is still loading
-/// (Swift's `.redacted(reason: .placeholder)`). It holds still, as
-/// Swift's does, so it never keeps a test from settling.
+/// (Swift's `.redacted(reason: .placeholder)`), with a highlight sweeping
+/// across it in the reading direction. With reduced motion
+/// (`MediaQuery.disableAnimations`) it holds still, as Swift's does, which
+/// also keeps it from stopping a test settling.
 ///
 /// Give it the size of what it stands for: a line of text is as tall as the
 /// text's line, a chart as tall as the chart. [width] defaults to the space
@@ -58,19 +112,38 @@ class AppPlaceholder extends StatelessWidget {
   final String? semanticLabel;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    label: semanticLabel,
-    excludeSemantics: true,
-    child: DecoratedBox(
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final base = scheme.surfaceContainerHighest;
+    Widget shape = DecoratedBox(
       decoration: ShapeDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: base,
         shape: RoundedSuperellipseBorder(
           borderRadius: BorderRadius.all(Radius.circular(radius)),
         ),
       ),
       child: SizedBox(width: width, height: height),
-    ),
-  );
+    );
+    if (!MediaQuery.disableAnimationsOf(context)) {
+      shape = Shimmer.fromColors(
+        baseColor: base,
+        // Lighter than the shape in both modes: white in light, a lifted
+        // grey in dark.
+        highlightColor: scheme.surfaceBright,
+        // The package's own pace, calmer than a one-second sweep.
+        period: AppMotion.progress.duration * 1.5,
+        direction: Directionality.of(context) == TextDirection.rtl
+            ? ShimmerDirection.rtl
+            : ShimmerDirection.ltr,
+        child: shape,
+      );
+    }
+    return Semantics(
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: shape,
+    );
+  }
 }
 
 /// {@template app_placeholder_row}

@@ -164,7 +164,6 @@ void main() {
             child: const Text('Open'),
           ),
         ),
-        disableAnimations: true,
       );
       await tester.tap(find.text('Open'));
       await tester.pump();

@@ -212,7 +212,7 @@ class ProgressPhotosView extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       spacing: AppSpacing.s,
                       children: [
-                        const CircularProgressIndicator.adaptive(),
+                        const AppSpinner(),
                         Text(l10n.progressPhotosUploading),
                       ],
                     ),

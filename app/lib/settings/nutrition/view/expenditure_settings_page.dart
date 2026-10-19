@@ -259,7 +259,7 @@ class _EstimateSection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.l),
               child: estimate == null
-                  ? const Center(child: CircularProgressIndicator.adaptive())
+                  ? const Center(child: AppSpinner())
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       spacing: AppSpacing.xs,

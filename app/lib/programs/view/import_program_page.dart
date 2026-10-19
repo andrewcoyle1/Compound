@@ -88,9 +88,7 @@ class const ImportProgramPage({
               library: library.allExercises,
             ),
           ),
-          _ => const AppScaffold(
-            body: Center(child: CircularProgressIndicator.adaptive()),
-          ),
+          _ => const AppScaffold(body: Center(child: AppSpinner())),
         },
       ),
     );

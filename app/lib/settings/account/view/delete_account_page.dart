@@ -158,9 +158,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                     if (deleting)
                       const Padding(
                         padding: EdgeInsets.all(AppSpacing.l),
-                        child: Center(
-                          child: CircularProgressIndicator.adaptive(),
-                        ),
+                        child: Center(child: AppSpinner()),
                       )
                     else
                       AppListRowButton(

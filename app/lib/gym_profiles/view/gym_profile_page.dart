@@ -196,10 +196,7 @@ class _GymProfileViewState extends State<GymProfileView> {
               if (state.savingPhoto)
                 const Padding(
                   padding: EdgeInsets.all(AppSpacing.m),
-                  child: SizedBox.square(
-                    dimension: AppControlSize.icon,
-                    child: CircularProgressIndicator.adaptive(),
-                  ),
+                  child: AppSpinner(),
                 )
               else
                 AppToolbarButton(

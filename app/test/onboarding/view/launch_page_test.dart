@@ -44,6 +44,6 @@ void main() {
     await tester.tap(find.text('Sign Out'));
     verify(() => appBloc.add(const AppSignOutPressed())).called(1);
     expect(tester.takeException(), isNull);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(AppSpinner), findsNothing);
   });
 }

@@ -92,7 +92,7 @@ void main() {
         WeightMetric.scaleWeight,
         bodyRepository: repository,
       );
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppSpinner), findsOneWidget);
     });
 
     testWidgets('shows the chart, its readings and the way to all data', (

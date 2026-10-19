@@ -89,7 +89,7 @@ class _WeeklyGoalViewState extends State<WeeklyGoalView> {
             if (state.status == WeeklyGoalStatus.saving)
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                child: Center(child: CircularProgressIndicator.adaptive()),
+                child: Center(child: AppSpinner()),
               ),
           ],
         ),

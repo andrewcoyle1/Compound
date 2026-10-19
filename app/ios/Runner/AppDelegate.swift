@@ -1,4 +1,5 @@
 import AudioToolbox
+import CoreImage
 import Flutter
 import ImageIO
 import UIKit
@@ -40,15 +41,31 @@ import Vision
         name: "com.andrewcoyle.compound/label_text",
         binaryMessenger: registrar.messenger()
       ).setMethodCallHandler { call, result in
-        guard call.method == "read", let jpeg = call.arguments as? FlutterStandardTypedData else {
-          return result(FlutterMethodNotImplemented)
-        }
-        LabelText.read(jpeg.data) { outcome in
+        let answer: (Result<String, Error>) -> Void = { outcome in
           switch outcome {
           case .success(let text): result(text)
           case .failure(let error):
             result(FlutterError(code: "unreadable", message: error.localizedDescription, details: nil))
           }
+        }
+        switch call.method {
+        case "read":
+          guard let jpeg = call.arguments as? FlutterStandardTypedData else {
+            return result(FlutterMethodNotImplemented)
+          }
+          LabelText.read(jpeg.data, completion: answer)
+        case "readFrame":
+          guard let frame = call.arguments as? [String: Any],
+                let bytes = frame["bytes"] as? FlutterStandardTypedData,
+                let width = frame["width"] as? Int, let height = frame["height"] as? Int,
+                let bytesPerRow = frame["bytesPerRow"] as? Int,
+                let rotation = frame["rotation"] as? Int
+          else { return result(FlutterMethodNotImplemented) }
+          LabelText.readFrame(
+            bytes.data, width: width, height: height, bytesPerRow: bytesPerRow,
+            rotation: rotation, completion: answer)
+        default:
+          result(FlutterMethodNotImplemented)
         }
       }
     }
@@ -84,11 +101,37 @@ import Vision
 /// its transcripts.
 enum LabelText {
   static func read(_ jpeg: Data, completion: @escaping (Result<String, Error>) -> Void) {
+    recognise(VNImageRequestHandler(data: jpeg, orientation: orientation(of: jpeg)), completion)
+  }
+
+  /// One BGRA frame of the live camera (`DeviceLiveCamera`), turned clockwise by `rotation`
+  /// degrees to stand upright. The accurate recogniser still: on a Mac it read the sample label
+  /// in about 80 ms where the fast one took 10 ms but misread "1.1 g" and "kJ / 370", and frames
+  /// come only twice a second.
+  static func readFrame(
+    _ bytes: Data, width: Int, height: Int, bytesPerRow: Int, rotation: Int,
+    completion: @escaping (Result<String, Error>) -> Void
+  ) {
+    let image = CIImage(
+      bitmapData: bytes, bytesPerRow: bytesPerRow, size: CGSize(width: width, height: height),
+      format: .BGRA8, colorSpace: CGColorSpaceCreateDeviceRGB())
+    let orientation: CGImagePropertyOrientation =
+      switch rotation {
+      case 90: .right
+      case 180: .down
+      case 270: .left
+      default: .up
+      }
+    recognise(VNImageRequestHandler(ciImage: image, orientation: orientation), completion)
+  }
+
+  private static func recognise(
+    _ handler: VNImageRequestHandler, _ completion: @escaping (Result<String, Error>) -> Void
+  ) {
     DispatchQueue.global(qos: .userInitiated).async {
       let request = VNRecognizeTextRequest()
       request.recognitionLevel = .accurate
       request.usesLanguageCorrection = true
-      let handler = VNImageRequestHandler(data: jpeg, orientation: orientation(of: jpeg))
       let outcome = Result<String, Error> {
         try handler.perform([request])
         return (request.results ?? [])

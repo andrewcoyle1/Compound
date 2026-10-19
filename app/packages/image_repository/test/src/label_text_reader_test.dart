@@ -8,6 +8,13 @@ void main() {
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   const channel = MethodChannel(PlatformLabelTextReader.channelName);
+  final frame = LabelFrame(
+    bytes: Uint8List(8),
+    width: 2,
+    height: 1,
+    bytesPerRow: 8,
+    rotation: 90,
+  );
 
   group('PlatformLabelTextReader', () {
     tearDown(() => messenger.setMockMethodCallHandler(channel, null));
@@ -29,6 +36,27 @@ void main() {
     test('reads nothing as empty', () async {
       messenger.setMockMethodCallHandler(channel, (call) async => null);
       expect(await const PlatformLabelTextReader().read(jpeg), isEmpty);
+      expect(await const PlatformLabelTextReader().readFrame(frame), isEmpty);
+    });
+
+    test('sends a frame with its layout and trims its answer', () async {
+      final calls = <MethodCall>[];
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        calls.add(call);
+        return ' Energy 370 kcal\n';
+      });
+      expect(
+        await const PlatformLabelTextReader().readFrame(frame),
+        'Energy 370 kcal',
+      );
+      expect(calls.single.method, 'readFrame');
+      expect(calls.single.arguments, {
+        'bytes': frame.bytes,
+        'width': 2,
+        'height': 1,
+        'bytesPerRow': 8,
+        'rotation': 90,
+      });
     });
 
     test('passes on a platform failure', () async {
@@ -52,6 +80,10 @@ void main() {
       expect(
         await const SampleLabelTextReader(text: 'Fat 1 g').read(jpeg),
         'Fat 1 g',
+      );
+      expect(
+        await const SampleLabelTextReader().readFrame(frame),
+        SampleLabelTextReader.sampleLabel,
       );
     });
   });

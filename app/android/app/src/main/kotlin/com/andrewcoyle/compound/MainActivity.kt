@@ -31,12 +31,45 @@ class MainActivity : FlutterFragmentActivity() {
         // bundled Latin model, one line per printed line, as Vision does on iOS.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.andrewcoyle.compound/label_text")
             .setMethodCallHandler { call, result ->
-                val jpeg = call.arguments as? ByteArray
-                if (call.method != "read" || jpeg == null) {
-                    result.notImplemented()
-                    return@setMethodCallHandler
+                when (call.method) {
+                    "read" -> (call.arguments as? ByteArray)?.let { readLabelText(it, result) }
+                        ?: result.notImplemented()
+                    "readFrame" -> readLabelFrame(call.arguments as? Map<*, *>, result)
+                    else -> result.notImplemented()
                 }
-                readLabelText(jpeg, result)
+            }
+    }
+
+    // One NV21 frame of the live camera (`DeviceLiveCamera`), with the clockwise turn that
+    // stands it upright. NV21 rows carry no padding, so the width is the row length.
+    private fun readLabelFrame(frame: Map<*, *>?, result: MethodChannel.Result) {
+        val bytes = frame?.get("bytes") as? ByteArray
+        val width = frame?.get("width") as? Int
+        val height = frame?.get("height") as? Int
+        val rotation = frame?.get("rotation") as? Int
+        if (bytes == null || width == null || height == null || rotation == null) {
+            result.notImplemented()
+            return
+        }
+        val image = try {
+            InputImage.fromByteArray(bytes, width, height, rotation, InputImage.IMAGE_FORMAT_NV21)
+        } catch (error: Exception) {
+            result.error("unreadable", error.message, null)
+            return
+        }
+        recognise(image, result) {}
+    }
+
+    private fun recognise(image: InputImage, result: MethodChannel.Result, done: () -> Unit) {
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        recognizer.process(image)
+            .addOnSuccessListener { text ->
+                result.success(text.textBlocks.flatMap { it.lines }.joinToString("\n") { it.text })
+            }
+            .addOnFailureListener { error -> result.error("unreadable", error.message, null) }
+            .addOnCompleteListener {
+                recognizer.close()
+                done()
             }
     }
 
@@ -51,15 +84,6 @@ class MainActivity : FlutterFragmentActivity() {
             result.error("unreadable", error.message, null)
             return
         }
-        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-        recognizer.process(image)
-            .addOnSuccessListener { text ->
-                result.success(text.textBlocks.flatMap { it.lines }.joinToString("\n") { it.text })
-            }
-            .addOnFailureListener { error -> result.error("unreadable", error.message, null) }
-            .addOnCompleteListener {
-                recognizer.close()
-                file.delete()
-            }
+        recognise(image, result) { file.delete() }
     }
 }

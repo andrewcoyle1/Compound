@@ -141,7 +141,7 @@ void main() {
       await tester.pump();
       expect(find.text('Target: 9 sessions'), findsOneWidget);
 
-      await tester.tap(find.text('Create'));
+      await tester.tap(find.byTooltip('Create'));
       await settle(tester);
       expect(find.byType(CreateChallengePage), findsNothing);
       final created = challenges.state.challenges.firstWhere(
@@ -244,10 +244,10 @@ void main() {
 
       await tester.tap(find.text('Enter Invite Code'));
       await tester.pumpAndSettle();
-      expect(find.text('Join'), findsOneWidget);
+      expect(find.byTooltip('Join'), findsOneWidget);
       await tester.enterText(find.byType(TextField).last, 'push-2345');
       await tester.pump();
-      await tester.tap(find.text('Join'));
+      await tester.tap(find.byTooltip('Join'));
       await settle(tester);
       expect((invites.state.result! as InviteAccepted).inviter.userId, 'user1');
     });

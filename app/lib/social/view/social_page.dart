@@ -204,49 +204,47 @@ class _SearchResults extends StatelessWidget {
     }
     final results = search.results(circle.visibleFollowing);
     if (results.isEmpty && !search.isLoading && !search.failed) {
-      return SingleChildScrollView(
-        child: SocialEmptyState(
-          icon: AppSymbols.search,
-          title: l10n.socialNoResults(search.query.trim()),
-        ),
+      return AppEmptyState(
+        icon: AppSymbols.search,
+        title: l10n.socialNoResults(search.query.trim()),
       );
     }
     return ListView(
+      padding: const EdgeInsets.all(AppSpacing.l),
       children: [
-        SocialSectionHeader(
-          title: l10n.socialPeople,
-          action: search.isLoading
-              ? const Padding(
-                  padding: EdgeInsets.all(AppSpacing.s),
-                  child: SizedBox.square(
-                    dimension: AppSpacing.l,
-                    child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-                  ),
-                )
-              : null,
-        ),
         if (search.failed)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            padding: const EdgeInsets.only(bottom: AppSpacing.l),
             child: AppInlineMessage(
               kind: AppInlineMessageKind.warning,
               text: l10n.socialSearchFailed,
               kindLabel: l10n.errorLabel,
             ),
           ),
-        for (final user in results)
-          UserRow(
-            user: user,
-            onPressed: () {
-              context.read<SocialCubit>().pressed('SearchResult_Press');
-              SocialNavigation.openProfile(context, user);
-            },
-            trailing: FollowButton(
-              state: circle.followState(user.userId),
-              onPressed: () =>
-                  context.read<CircleBloc>().add(CircleFollowPressed(user)),
-            ),
-          ),
+        AppSection(
+          header: l10n.socialPeople,
+          children: [
+            if (search.isLoading && results.isEmpty)
+              for (var i = 0; i < 3; i++)
+                AppPlaceholderRow(
+                  hasLeading: true,
+                  semanticLabel: i == 0 ? l10n.launchLoading : null,
+                ),
+            for (final user in results)
+              UserRow(
+                user: user,
+                onPressed: () {
+                  context.read<SocialCubit>().pressed('SearchResult_Press');
+                  SocialNavigation.openProfile(context, user);
+                },
+                trailing: FollowButton(
+                  state: circle.followState(user.userId),
+                  onPressed: () =>
+                      context.read<CircleBloc>().add(CircleFollowPressed(user)),
+                ),
+              ),
+          ],
+        ),
       ],
     );
   }
@@ -290,6 +288,10 @@ class _Dashboard extends StatelessWidget {
       now: now,
     );
     final sessions = circle.sessions;
+    final suggestions = [
+      for (final user in context.watch<SocialCubit>().state)
+        if (!(viewer.followingIds?.contains(user.userId) ?? false)) user,
+    ];
     const gutter = EdgeInsets.fromLTRB(
       AppSpacing.l,
       0,
@@ -409,58 +411,77 @@ class _Dashboard extends StatelessWidget {
               ChallengeNavigation.openNew(context);
             },
           ),
-        SocialSectionHeader(
-          title: l10n.socialWorkoutFeed,
-          action: feed.isEmpty
-              ? null
-              : TextButton(
-                  onPressed: onFindPeople,
-                  child: Text(l10n.socialFindPeople),
-                ),
+        Padding(
+          padding: gutter,
+          child: AppSection(
+            header: l10n.socialWorkoutFeed,
+            trailing: feed.isEmpty
+                ? null
+                : AppChip(
+                    label: l10n.socialFindPeople,
+                    onPressed: onFindPeople,
+                  ),
+            grouped: false,
+            children: [
+              if (circle.isFeedLoading)
+                AppCard(
+                  child: Column(
+                    children: [
+                      AppPlaceholderRow(
+                        hasLeading: true,
+                        semanticLabel: l10n.launchLoading,
+                      ),
+                      const AppPlaceholderRow(),
+                    ],
+                  ),
+                )
+              else if (feed.isEmpty)
+                AppEmptyState(
+                  icon: AppSymbols.friends,
+                  title: l10n.socialNoActivityTitle,
+                  description: l10n.socialNoActivityMessage,
+                  actionLabel: l10n.socialFindPeople,
+                  onAction: onFindPeople,
+                )
+              else
+                for (final session in feed)
+                  if (circle.authorOf(session) case final author?)
+                    FeedSessionCard(
+                      key: ValueKey(session.id),
+                      entry: feedEntry(
+                        session,
+                        sessions,
+                        firstDayOfWeek: firstDay,
+                      ),
+                      author: author,
+                      viewer: viewer,
+                    ),
+            ],
+          ),
         ),
-        if (circle.isFeedLoading)
-          const Padding(
-            padding: EdgeInsets.all(AppSpacing.xxl),
-            child: Center(child: CircularProgressIndicator.adaptive()),
-          )
-        else if (feed.isEmpty) ...[
-          SocialEmptyState(
-            icon: AppSymbols.friends,
-            title: l10n.socialNoActivityTitle,
-            message: l10n.socialNoActivityMessage,
-            action: Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.s),
-              child: FilledButton(
-                onPressed: onFindPeople,
-                child: Text(l10n.socialFindPeople),
-              ),
+        if (!circle.isFeedLoading && feed.isEmpty && suggestions.isNotEmpty)
+          Padding(
+            padding: gutter,
+            child: AppSection(
+              children: [
+                for (final user in suggestions)
+                  UserRow(
+                    user: user,
+                    onPressed: () =>
+                        SocialNavigation.openProfile(context, user),
+                    trailing: FollowButton(
+                      state: circle.followState(user.userId),
+                      onPressed: () {
+                        cubit.pressed('SuggestedFollow_Press');
+                        context.read<CircleBloc>().add(
+                          CircleFollowPressed(user),
+                        );
+                      },
+                    ),
+                  ),
+              ],
             ),
           ),
-          for (final user in context.watch<SocialCubit>().state)
-            if (!(viewer.followingIds?.contains(user.userId) ?? false))
-              UserRow(
-                user: user,
-                onPressed: () => SocialNavigation.openProfile(context, user),
-                trailing: FollowButton(
-                  state: circle.followState(user.userId),
-                  onPressed: () {
-                    cubit.pressed('SuggestedFollow_Press');
-                    context.read<CircleBloc>().add(CircleFollowPressed(user));
-                  },
-                ),
-              ),
-        ] else
-          for (final session in feed)
-            if (circle.authorOf(session) case final author?)
-              Padding(
-                padding: gutter,
-                child: FeedSessionCard(
-                  key: ValueKey(session.id),
-                  entry: feedEntry(session, sessions, firstDayOfWeek: firstDay),
-                  author: author,
-                  viewer: viewer,
-                ),
-              ),
       ],
     );
   }
@@ -514,12 +535,7 @@ class _Banner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: AppSpacing.xxs,
               children: [
-                Text(
-                  text,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text(text, style: AppTextStyles.rowTitle),
                 if (detail != null)
                   Text(
                     detail,
@@ -542,11 +558,13 @@ class _Banner extends StatelessWidget {
                 ? content
                 : InkWell(onTap: onPressed, child: content),
           ),
-          IconButton(
-            tooltip: dismissLabel,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            onPressed: onDismissed,
-            icon: const Icon(AppSymbols.close),
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.s),
+            child: AppIconButton(
+              icon: AppSymbols.close,
+              semanticLabel: dismissLabel,
+              onPressed: onDismissed,
+            ),
           ),
         ],
       ),
@@ -577,7 +595,7 @@ class _Leaderboard extends StatelessWidget {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          title: Text(l10n.socialThisWeek, style: AppTextStyles.sectionTitle),
+          title: Text(l10n.socialThisWeek, style: AppTextStyles.rowTitle),
           childrenPadding: const EdgeInsets.fromLTRB(
             AppSpacing.s,
             0,
@@ -629,16 +647,14 @@ class _Leaderboard extends StatelessWidget {
                             ),
                             UserAvatar(
                               imageUrl: profileImageOf(standing.user),
-                              size: 32,
+                              size: AppControlSize.compact,
                             ),
                             Flexible(
                               child: Text(
                                 name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.rowDetail.copyWith(
-                                  fontWeight: isOwn ? FontWeight.w600 : null,
-                                ),
+                                style: isOwn
+                                    ? AppTextStyles.rowDetail.semibold
+                                    : AppTextStyles.rowDetail,
                               ),
                             ),
                             if (rank == 1 && standing.sessions > 0)
@@ -680,14 +696,11 @@ class _NotificationsButton extends StatelessWidget {
     final count = context.select<InboxBloc, int>(
       (bloc) => bloc.state.bellBadgeCount,
     );
-    return IconButton(
-      tooltip: context.l10n.socialNotificationsButton,
+    return AppToolbarButton(
+      icon: AppSymbols.notifications,
+      semanticLabel: context.l10n.socialNotificationsButton,
+      badgeCount: count,
       onPressed: () => context.pushNamed(NotificationsPage.name),
-      icon: Badge.count(
-        count: count,
-        isLabelVisible: count > 0,
-        child: const Icon(AppSymbols.notifications),
-      ),
     );
   }
 }

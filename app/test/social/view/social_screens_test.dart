@@ -220,6 +220,23 @@ void main() {
       expect(find.text('Charlie Nguyen'), findsOneWidget);
     });
 
+    testWidgets('opens the reader’s own profile by its id', (tester) async {
+      // The comparison's OWN_PROFILE spun forever: the reader is not among
+      // the profiles the social repository reads.
+      await pump(tester, '/people/$sampleUserId');
+
+      expect(find.byType(AppLoadingView), findsNothing);
+      expect(find.text('Edit Profile'), findsOneWidget);
+      expect(find.byTooltip('Settings'), findsOneWidget);
+    });
+
+    testWidgets('says so when a profile cannot be read', (tester) async {
+      await pump(tester, '/people/nobody');
+
+      expect(find.byType(AppLoadingView), findsNothing);
+      expect(find.text("This profile isn't available."), findsOneWidget);
+    });
+
     testWidgets('locks a private profile and blocks', (tester) async {
       await pump(tester, '/people/user2');
 

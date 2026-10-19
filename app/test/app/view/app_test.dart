@@ -418,7 +418,7 @@ void main() {
       expect(find.text('Edit Profile'), findsOneWidget);
 
       // Closing returns to the tab underneath.
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.byType(ProfilePage), findsNothing);
       expect(find.byType(AppShell), findsOneWidget);

@@ -67,6 +67,28 @@ void main() {
       ]);
     });
 
+    testWidgets('ungrouped children stand apart, without a shared card', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const AppSection(
+          header: 'Feed',
+          grouped: false,
+          children: [
+            AppCard(child: Text('One')),
+            AppCard(child: Text('Two')),
+          ],
+        ),
+      );
+      expect(find.byType(AppCard), findsNWidgets(2));
+      expect(find.byType(Divider), findsNothing);
+      expect(
+        tester.getTopLeft(find.text('Two')).dy -
+            tester.getBottomLeft(find.text('One')).dy,
+        AppSpacing.m,
+      );
+    });
+
     testWidgets('header and footer are optional', (tester) async {
       await tester.pumpApp(
         const AppSection(children: [AppListRow(title: 'One')]),
@@ -142,6 +164,18 @@ void main() {
           header: 'Workouts',
           trailing: AppChip(label: 'See All', onPressed: () {}),
           children: const [AppListRow(title: 'Upper A')],
+        ),
+      ),
+      (
+        'Ungrouped cards',
+        AppSection(
+          header: 'Workout Feed',
+          trailing: AppChip(label: 'Find People', onPressed: () {}),
+          grouped: false,
+          children: const [
+            AppCard(child: AppListRow(title: 'Push Day')),
+            AppCard(child: AppListRow(title: 'Pull Day')),
+          ],
         ),
       ),
       (

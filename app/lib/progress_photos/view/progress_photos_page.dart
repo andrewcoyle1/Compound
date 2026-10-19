@@ -5,8 +5,6 @@ import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:compound/programs/view/program_widgets.dart'
-    show confirmDestructive;
 import 'package:compound/progress_photos/cubit/progress_photos_cubit.dart';
 import 'package:compound/progress_photos/view/progress_photo_compare_page.dart';
 import 'package:compound/widgets/stored_image.dart';
@@ -81,7 +79,7 @@ class ProgressPhotosView extends StatelessWidget {
   ) async {
     final l10n = context.l10n;
     final cubit = context.read<ProgressPhotosCubit>();
-    final confirmed = await confirmDestructive(
+    final confirmed = await AppDialog.confirmDestructive(
       context,
       title: l10n.progressPhotosDeleteQuestion,
       confirmLabel: l10n.progressPhotosDelete,
@@ -92,31 +90,17 @@ class ProgressPhotosView extends StatelessWidget {
   Future<void> _askPose(BuildContext context) async {
     final l10n = context.l10n;
     final cubit = context.read<ProgressPhotosCubit>();
-    final pose = await showModalBottomSheet<ProgressPhotoPose>(
+    final pose = await showAppDialog<ProgressPhotoPose>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.l),
-              child: Text(
-                l10n.progressPhotosPoseQuestion,
-                style: AppTextStyles.sectionTitle,
-              ),
-            ),
-            for (final pose in ProgressPhotoPose.values)
-              ListTile(
-                title: Text(poseTitle(l10n, pose)),
-                onTap: () => Navigator.of(context).pop(pose),
-              ),
-            ListTile(
-              title: Text(l10n.progressPhotosCancel),
-              onTap: () => Navigator.of(context).pop(),
-            ),
-          ],
+      title: l10n.progressPhotosPoseQuestion,
+      actions: [
+        for (final pose in ProgressPhotoPose.values)
+          AppDialogAction(label: poseTitle(l10n, pose), value: pose),
+        AppDialogAction(
+          label: l10n.progressPhotosCancel,
+          role: AppDialogRole.cancel,
         ),
-      ),
+      ],
     );
     if (pose == null) {
       cubit.poseCancelled();
@@ -125,17 +109,12 @@ class ProgressPhotosView extends StatelessWidget {
     }
   }
 
-  void _alert(BuildContext context, String title) => showAdaptiveDialog<void>(
-    context: context,
-    builder: (context) => AlertDialog.adaptive(
-      title: Text(title),
-      content: Text(context.l10n.progressPhotosFailedMessage),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(context.l10n.settingsOk),
-        ),
-      ],
+  void _alert(BuildContext context, String title) => unawaited(
+    showAppDialog<void>(
+      context: context,
+      title: title,
+      message: context.l10n.progressPhotosFailedMessage,
+      actions: [AppDialogAction(label: context.l10n.settingsOk)],
     ),
   );
 
@@ -176,7 +155,8 @@ class ProgressPhotosView extends StatelessWidget {
         appBar: AppBar(
           title: Text(l10n.progressPhotosTitle),
           actions: [
-            TextButton(
+            AppTextButton(
+              label: l10n.progressPhotosCompare,
               onPressed: pair == null
                   ? null
                   : () {
@@ -201,25 +181,21 @@ class ProgressPhotosView extends StatelessWidget {
                         ),
                       );
                     },
-              child: Text(l10n.progressPhotosCompare),
             ),
-            IconButton(
-              icon: const Icon(AppSymbols.delete),
-              tooltip: l10n.progressPhotosDelete,
+            AppToolbarButton(
+              icon: AppSymbols.delete,
+              semanticLabel: l10n.progressPhotosDelete,
               onPressed: selected == null
                   ? null
                   : () => unawaited(_confirmDelete(context, selected)),
             ),
-            _AddPhotoMenu(
-              enabled: !state.isUploading,
-              child: const Icon(AppSymbols.add),
-            ),
+            _AddPhotoMenu(enabled: !state.isUploading),
           ],
         ),
         body: Stack(
           children: [
             if (!state.loaded)
-              const Center(child: CircularProgressIndicator.adaptive())
+              AppLoadingView(label: l10n.launchLoading)
             else if (state.photos.isEmpty)
               _Empty(enabled: !state.isUploading)
             else
@@ -253,55 +229,6 @@ class ProgressPhotosView extends StatelessWidget {
 /// The + menu: a camera item per pose, so the pose is known before the
 /// shutter, and the library, which asks the pose afterwards.
 class _AddPhotoMenu extends StatelessWidget {
-  const new({required this.enabled, required this.child});
-
-  final bool enabled;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final cubit = context.read<ProgressPhotosCubit>();
-    PopupMenuItem<void> item(
-      String label,
-      IconData icon,
-      Future<void> Function() onTap,
-    ) => PopupMenuItem(
-      onTap: () => unawaited(onTap()),
-      child: ListTile(leading: Icon(icon), title: Text(label)),
-    );
-    return PopupMenuButton<void>(
-      tooltip: l10n.progressPhotosAdd,
-      enabled: enabled,
-      itemBuilder: (_) => [
-        item(
-          l10n.progressPhotosTakeFront,
-          AppSymbols.camera,
-          () => cubit.cameraPressed(ProgressPhotoPose.front),
-        ),
-        item(
-          l10n.progressPhotosTakeSide,
-          AppSymbols.camera,
-          () => cubit.cameraPressed(ProgressPhotoPose.side),
-        ),
-        item(
-          l10n.progressPhotosTakeBack,
-          AppSymbols.camera,
-          () => cubit.cameraPressed(ProgressPhotoPose.back),
-        ),
-        item(
-          l10n.progressPhotosChooseFromLibrary,
-          AppSymbols.photoLibrary,
-          cubit.libraryPressed,
-        ),
-      ],
-      child: Padding(padding: const EdgeInsets.all(AppSpacing.s), child: child),
-    );
-  }
-}
-
-/// No photos yet: the same choices as the + menu, so it is not a dead end.
-class _Empty extends StatelessWidget {
   const new({required this.enabled});
 
   final bool enabled;
@@ -309,41 +236,91 @@ class _Empty extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: [
-            Icon(
-              AppSymbols.camera,
-              size: AppIconSize.hero.of(context),
-              color: secondary,
-            ),
-            Text(
-              l10n.progressPhotosEmptyTitle,
-              style: AppTextStyles.sectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              l10n.progressPhotosEmptyMessage,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-            _AddPhotoMenu(
-              enabled: enabled,
-              child: Text(
-                l10n.progressPhotosAdd,
-                style: AppTextStyles.rowTitle.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-          ],
-        ),
+    return MenuAnchor(
+      menuChildren: [
+        for (final (label, icon, action) in _addChoices(context))
+          MenuItemButton(
+            leadingIcon: Icon(icon),
+            onPressed: () => unawaited(action()),
+            child: Text(label),
+          ),
+      ],
+      builder: (context, controller, _) => AppToolbarButton(
+        icon: AppSymbols.add,
+        semanticLabel: l10n.progressPhotosAdd,
+        onPressed: enabled
+            ? () => controller.isOpen ? controller.close() : controller.open()
+            : null,
       ),
+    );
+  }
+}
+
+/// What the + menu offers: its label, glyph and action.
+List<(String, IconData, Future<void> Function())> _addChoices(
+  BuildContext context,
+) {
+  final l10n = context.l10n;
+  final cubit = context.read<ProgressPhotosCubit>();
+  return [
+    (
+      l10n.progressPhotosTakeFront,
+      AppSymbols.camera,
+      () => cubit.cameraPressed(ProgressPhotoPose.front),
+    ),
+    (
+      l10n.progressPhotosTakeSide,
+      AppSymbols.camera,
+      () => cubit.cameraPressed(ProgressPhotoPose.side),
+    ),
+    (
+      l10n.progressPhotosTakeBack,
+      AppSymbols.camera,
+      () => cubit.cameraPressed(ProgressPhotoPose.back),
+    ),
+    (
+      l10n.progressPhotosChooseFromLibrary,
+      AppSymbols.photoLibrary,
+      cubit.libraryPressed,
+    ),
+  ];
+}
+
+/// No photos yet: the same choices as the + menu, as a choice dialog, so it
+/// is not a dead end.
+class _Empty extends StatelessWidget {
+  const new({required this.enabled});
+
+  final bool enabled;
+
+  Future<void> _choose(BuildContext context) async {
+    final l10n = context.l10n;
+    final choices = _addChoices(context);
+    final chosen = await showAppDialog<int>(
+      context: context,
+      title: l10n.progressPhotosAdd,
+      actions: [
+        for (final (index, (label, _, _)) in choices.indexed)
+          AppDialogAction(label: label, value: index),
+        AppDialogAction(
+          label: l10n.progressPhotosCancel,
+          role: AppDialogRole.cancel,
+        ),
+      ],
+    );
+    if (chosen != null) await choices[chosen].$3();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AppEmptyState(
+      icon: AppSymbols.camera,
+      title: l10n.progressPhotosEmptyTitle,
+      description: l10n.progressPhotosEmptyMessage,
+      // Hidden while a photo uploads.
+      actionLabel: enabled ? l10n.progressPhotosAdd : null,
+      onAction: enabled ? () => unawaited(_choose(context)) : null,
     );
   }
 }
@@ -468,12 +445,7 @@ class _PhotoCell extends StatelessWidget {
                         horizontal: AppSpacing.s,
                         vertical: AppSpacing.xxs,
                       ),
-                      child: Text(
-                        pose,
-                        style: AppTextStyles.label.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: Text(pose, style: AppTextStyles.label.semibold),
                     ),
                   ),
                 ),

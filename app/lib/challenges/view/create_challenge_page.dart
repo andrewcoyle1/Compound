@@ -72,23 +72,13 @@ class _CreateChallengeViewState extends State<CreateChallengeView> {
       return;
     }
     final l10n = context.l10n;
-    final discard = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.discardChangesTitle),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.keepEditingButton),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.discardChangesButton),
-          ),
-        ],
-      ),
+    final discard = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.discardChangesTitle,
+      confirmLabel: l10n.discardChangesButton,
+      cancelLabel: l10n.keepEditingButton,
     );
-    if ((discard ?? false) && mounted) context.pop();
+    if (discard && mounted) context.pop();
   }
 
   void _onStatus(BuildContext context, CreateChallengeState state) {
@@ -130,29 +120,17 @@ class _CreateChallengeViewState extends State<CreateChallengeView> {
         },
         child: AppScaffold(
           appBar: AppBar(
-            leading: IconButton(
-              tooltip: l10n.socialClose,
+            leading: AppToolbarButton.close(
+              semanticLabel: l10n.socialClose,
               onPressed: _cancel,
-              icon: const Icon(AppSymbols.close),
             ),
             title: Text(l10n.createChallengeTitle),
             actions: [
-              if (state.status == CreateChallengeStatus.saving)
-                const Padding(
-                  padding: EdgeInsets.all(AppSpacing.l),
-                  child: SizedBox.square(
-                    dimension: AppSpacing.l,
-                    child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-                  ),
-                )
-              else
-                TextButton(
-                  onPressed: state.canCreate ? _cubit.createPressed : null,
-                  child: Text(
-                    l10n.createChallengeCreate,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
+              AppToolbarButton.confirm(
+                semanticLabel: l10n.createChallengeCreate,
+                isSaving: state.status == CreateChallengeStatus.saving,
+                onPressed: state.canCreate ? _cubit.createPressed : null,
+              ),
             ],
           ),
           body: SafeArea(
@@ -200,10 +178,10 @@ class _CreateChallengeViewState extends State<CreateChallengeView> {
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 if (state.candidates.isEmpty)
-                  SocialEmptyState(
+                  AppEmptyState(
                     icon: AppSymbols.friends,
                     title: l10n.createChallengeNoOneTitle,
-                    message: l10n.createChallengeNoOneMessage,
+                    description: l10n.createChallengeNoOneMessage,
                   )
                 else
                   AppSection(
@@ -259,20 +237,21 @@ class _TargetStepper extends StatelessWidget {
       accessory: AppListRowCustom(
         Row(
           mainAxisSize: MainAxisSize.min,
+          spacing: AppSpacing.s,
           children: [
-            IconButton(
-              tooltip: l10n.createChallengeTarget(target - 1),
+            AppIconButton(
+              icon: AppSymbols.decrease,
+              semanticLabel: l10n.createChallengeTarget(target - 1),
               onPressed: target > challengeTargetMin
                   ? () => cubit.targetChanged(target - 1)
                   : null,
-              icon: const Icon(AppSymbols.decrease),
             ),
-            IconButton(
-              tooltip: l10n.createChallengeTarget(target + 1),
+            AppIconButton(
+              icon: AppSymbols.add,
+              semanticLabel: l10n.createChallengeTarget(target + 1),
               onPressed: target < challengeTargetMax
                   ? () => cubit.targetChanged(target + 1)
                   : null,
-              icon: const Icon(AppSymbols.add),
             ),
           ],
         ),

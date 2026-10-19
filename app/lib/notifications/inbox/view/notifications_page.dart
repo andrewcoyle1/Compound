@@ -75,9 +75,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
         appBar: AppBar(
           title: Text(l10n.inboxTitle),
           actions: [
-            IconButton(
-              tooltip: l10n.settingsNotificationSettings,
-              icon: const Icon(AppSymbols.settings),
+            AppToolbarButton(
+              icon: AppSymbols.settings,
+              semanticLabel: l10n.settingsNotificationSettings,
               onPressed: () => context.pushNamed(NotificationSettingsPage.name),
             ),
           ],
@@ -87,7 +87,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           child: BlocBuilder<InboxBloc, InboxState>(
             builder: (context, state) {
               if (state.isLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return AppLoadingView(label: l10n.launchLoading);
               }
               return RefreshIndicator(
                 onRefresh: () async {
@@ -161,43 +161,50 @@ class const _InboxList({required final InboxState state})
     return ListView(
       // Pull to refresh needs a list that scrolls even when short.
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+      padding: const EdgeInsets.all(AppSpacing.l),
       children: [
         if (state.requests.isNotEmpty) ...[
-          SocialSectionHeader(title: l10n.inboxFollowRequests),
-          for (final request in state.requests) _RequestRow(request: request),
+          AppSection(
+            header: l10n.inboxFollowRequests,
+            children: [
+              for (final request in state.requests)
+                _RequestRow(request: request),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
         ],
         if (state.loadFailed)
-          SocialEmptyState(
-            icon: AppSymbols.warning,
+          AppErrorState(
             title: l10n.inboxLoadFailedTitle,
-            message: l10n.inboxLoadFailedMessage,
-            action: TextButton(
-              onPressed: () =>
-                  context.read<InboxBloc>().add(const InboxLoadRequested()),
-              child: Text(l10n.tryAgainButton),
-            ),
+            description: l10n.inboxLoadFailedMessage,
+            actionLabel: l10n.tryAgainButton,
+            onAction: () =>
+                context.read<InboxBloc>().add(const InboxLoadRequested()),
           )
         else if (groups.isEmpty)
-          SocialEmptyState(
-            icon: Icons.notifications_off_rounded,
+          AppEmptyState(
+            icon: AppSymbols.notifications,
             title: l10n.inboxEmptyTitle,
-            message: l10n.inboxEmptyMessage,
+            description: l10n.inboxEmptyMessage,
           )
         else ...[
-          for (final group in groups)
-            _GroupRow(
-              key: ValueKey(group.id),
-              group: group,
-              opening: state.openingId,
-              showsFollowBack: state.showsFollowBack(group.newest),
-            ),
+          AppSection(
+            children: [
+              for (final group in groups)
+                _GroupRow(
+                  key: ValueKey(group.id),
+                  group: group,
+                  opening: state.openingId,
+                  showsFollowBack: state.showsFollowBack(group.newest),
+                ),
+            ],
+          ),
           if (state.hasMore)
             Center(
-              child: TextButton(
+              child: AppTextButton(
+                label: l10n.inboxLoadMore,
                 onPressed: () =>
                     context.read<InboxBloc>().add(const InboxLoadMorePressed()),
-                child: Text(l10n.inboxLoadMore),
               ),
             ),
         ],
@@ -207,70 +214,43 @@ class const _InboxList({required final InboxState state})
 }
 
 /// A request to follow the reader's private profile, with Accept and
-/// Decline; the buttons wrap under the name when they no longer fit.
+/// Decline.
 class const _RequestRow({required final FollowRequestModel request})
     extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final bloc = context.read<InboxBloc>();
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.l,
-        vertical: AppSpacing.s,
+    // At accessibility sizes the row moves the buttons under the name.
+    return AppListRow(
+      title: request.requesterName,
+      subtitle: l10n.inboxWantsToFollow,
+      thumbnail: UserAvatar(
+        imageUrl: request.requesterImageUrl,
+        size: AppControlSize.thumbnail,
       ),
-      child: Wrap(
-        spacing: AppSpacing.m,
-        runSpacing: AppSpacing.s,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        alignment: WrapAlignment.spaceBetween,
-        children: [
-          MergeSemantics(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: AppSpacing.m,
-              children: [
-                UserAvatar(imageUrl: request.requesterImageUrl),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      request.requesterName,
-                      style: AppTextStyles.rowTitle.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      l10n.inboxWantsToFollow,
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+      accessory: AppListRowCustom(
+        Wrap(
+          spacing: AppSpacing.s,
+          runSpacing: AppSpacing.s,
+          children: [
+            AppCtaButton(
+              label: l10n.inboxAccept,
+              size: AppCtaSize.compact,
+              onPressed: () {
+                unawaited(HapticFeedback.mediumImpact());
+                bloc.add(InboxRequestAnswered(request, accept: true));
+              },
             ),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: AppSpacing.m,
-            children: [
-              FilledButton(
-                onPressed: () {
-                  unawaited(HapticFeedback.mediumImpact());
-                  bloc.add(InboxRequestAnswered(request, accept: true));
-                },
-                child: Text(l10n.inboxAccept),
-              ),
-              OutlinedButton(
-                onPressed: () =>
-                    bloc.add(InboxRequestAnswered(request, accept: false)),
-                child: Text(l10n.inboxDecline),
-              ),
-            ],
-          ),
-        ],
+            AppCtaButton(
+              label: l10n.inboxDecline,
+              size: AppCtaSize.compact,
+              variant: AppCtaVariant.secondary,
+              onPressed: () =>
+                  bloc.add(InboxRequestAnswered(request, accept: false)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -341,7 +321,7 @@ class const _GroupRow({
                             dimension: AppSpacing.xxl,
                             child: Padding(
                               padding: EdgeInsets.all(AppSpacing.s),
-                              child: CircularProgressIndicator(),
+                              child: CircularProgressIndicator.adaptive(),
                             ),
                           )
                         else
@@ -353,14 +333,11 @@ class const _GroupRow({
                             children: [
                               Text(
                                 notificationGroupTitle(l10n, group),
-                                style: AppTextStyles.rowTitle.copyWith(
-                                  fontWeight: group.isRead
-                                      ? FontWeight.w400
-                                      : FontWeight.w600,
-                                  color: group.isRead
-                                      ? scheme.onSurfaceVariant
-                                      : null,
-                                ),
+                                style: group.isRead
+                                    ? AppTextStyles.rowTitle.copyWith(
+                                        color: scheme.onSurfaceVariant,
+                                      )
+                                    : AppTextStyles.sectionTitle,
                               ),
                               Text(
                                 date,

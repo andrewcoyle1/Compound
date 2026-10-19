@@ -40,6 +40,29 @@ void main() {
       );
     });
 
+    testWidgets('a glyph shows its badge count, none at zero', (tester) async {
+      await tester.pumpApp(
+        const Row(
+          children: [
+            AppToolbarButton(
+              icon: AppSymbols.notifications,
+              semanticLabel: 'Notifications',
+              onPressed: _goldenTap,
+              badgeCount: 3,
+            ),
+            AppToolbarButton(
+              icon: AppSymbols.notifications,
+              semanticLabel: 'Notifications',
+              onPressed: _goldenTap,
+            ),
+          ],
+        ),
+      );
+      expect(find.text('3'), findsOneWidget);
+      final badges = tester.widgetList<Badge>(find.byType(Badge)).toList();
+      expect(badges.map((badge) => badge.isLabelVisible), [true, false]);
+    });
+
     testWidgets('close pops the route by default', (tester) async {
       await tester.pumpApp(
         Builder(
@@ -176,6 +199,25 @@ void main() {
               AppToolbarButton.close(
                 semanticLabel: 'Close',
                 onPressed: _goldenTap,
+              ),
+            ],
+          ),
+        ),
+        (
+          'Glyph with a badge',
+          const Row(
+            children: [
+              AppToolbarButton(
+                icon: AppSymbols.notifications,
+                semanticLabel: 'Notifications',
+                onPressed: _goldenTap,
+                badgeCount: 3,
+              ),
+              AppToolbarButton(
+                icon: AppSymbols.notifications,
+                semanticLabel: 'Notifications',
+                onPressed: _goldenTap,
+                badgeCount: 12,
               ),
             ],
           ),

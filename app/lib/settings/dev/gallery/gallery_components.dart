@@ -138,6 +138,24 @@ List<Widget> galleryButtons(BuildContext context) {
           onPressed: null,
         ),
       ),
+      galleryInline(
+        '.plain, label, selected',
+        AppIconButton.plain(
+          icon: AppSymbols.liked,
+          semanticLabel: l10n.devGallerySampleEdit,
+          label: '12',
+          selected: true,
+          onPressed: galleryNoop,
+        ),
+      ),
+      galleryInline(
+        '.plain',
+        AppIconButton.plain(
+          icon: AppSymbols.comment,
+          semanticLabel: l10n.devGallerySampleEdit,
+          onPressed: galleryNoop,
+        ),
+      ),
     ]),
     galleryEntry('AppToolbarButton', [
       galleryInline(
@@ -145,6 +163,15 @@ List<Widget> galleryButtons(BuildContext context) {
         AppToolbarButton(
           icon: AppSymbols.more,
           semanticLabel: l10n.devGallerySampleEdit,
+          onPressed: galleryNoop,
+        ),
+      ),
+      galleryInline(
+        'icon, badgeCount',
+        AppToolbarButton(
+          icon: AppSymbols.notifications,
+          semanticLabel: l10n.devGallerySampleEdit,
+          badgeCount: 3,
           onPressed: galleryNoop,
         ),
       ),
@@ -383,6 +410,14 @@ List<Widget> galleryRows(BuildContext context) {
         onPressed: galleryNoop,
       ),
       children: [AppListRow(title: l10n.devGallerySampleTitle)],
+    ),
+    AppSection(
+      header: 'AppSection: grouped false',
+      grouped: false,
+      children: [
+        AppCard(child: AppListRow(title: l10n.devGallerySampleTitle)),
+        AppCard(child: AppListRow(title: l10n.devGallerySampleTitle)),
+      ],
     ),
     galleryEntry('AppSwipeActions', [
       AppSwipeActions(

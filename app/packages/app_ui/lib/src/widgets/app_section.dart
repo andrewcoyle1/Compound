@@ -10,6 +10,10 @@ import 'package:app_ui/app_ui.dart';
 /// `onPressed` for an action such as "See All", "New" or "Hide", or a plain
 /// [Text] for a note such as "Required" or a count, which takes the footer's
 /// small secondary style.
+///
+/// With [grouped] false the children are not put on one card: they stand
+/// apart, [AppSpacing.m] between them, under the same header. Use it for a
+/// list of cards of their own, such as a feed's workouts.
 /// {@endtemplate}
 class AppSection extends StatelessWidget {
   /// {@macro app_section}
@@ -18,6 +22,7 @@ class AppSection extends StatelessWidget {
     this.header,
     this.trailing,
     this.footer,
+    this.grouped = true,
     super.key,
   });
 
@@ -32,6 +37,9 @@ class AppSection extends StatelessWidget {
 
   /// A note below the card.
   final String? footer;
+
+  /// Whether the children share one card, with dividers between them.
+  final bool grouped;
 
   static double _dividerIndent(Widget row, TextScaler scaler) => switch (row) {
     AppListRow(:final icon, :final thumbnail) ||
@@ -81,18 +89,27 @@ class AppSection extends StatelessWidget {
               ],
             ),
           ),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final (index, child) in children.indexed) ...[
-                if (index > 0)
-                  Divider(indent: _dividerIndent(children[index - 1], scaler)),
-                child,
+        if (grouped)
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final (index, child) in children.indexed) ...[
+                  if (index > 0)
+                    Divider(
+                      indent: _dividerIndent(children[index - 1], scaler),
+                    ),
+                  child,
+                ],
               ],
-            ],
+            ),
+          )
+        else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: AppSpacing.m,
+            children: children,
           ),
-        ),
         if (footer != null)
           Padding(
             padding: inset,

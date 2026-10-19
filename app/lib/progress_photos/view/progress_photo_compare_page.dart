@@ -141,9 +141,10 @@ class _ProgressPhotoComparePageState extends State<ProgressPhotoComparePage> {
                         left: width - 1,
                         top: 0,
                         bottom: 0,
-                        child: const SizedBox(
+                        // White in both modes, over the photos, as Swift's.
+                        child: SizedBox(
                           width: 2,
-                          child: ColoredBox(color: Colors.white),
+                          child: ColoredBox(color: AppColors.light.surface),
                         ),
                       ),
                     ],

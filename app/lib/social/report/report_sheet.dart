@@ -24,11 +24,10 @@ Future<void> showReportSheet(
   );
   final messenger = ScaffoldMessenger.of(context);
   final l10n = context.l10n;
-  final sending = await showModalBottomSheet<Future<bool>>(
+  final sending = await showAppSheet<Future<bool>>(
     context: context,
-    useSafeArea: true,
-    showDragHandle: true,
-    isScrollControlled: true,
+    // Full height: the reasons, a note and the keyboard.
+    size: AppSheetSize.full,
     builder: (_) => BlocProvider.value(
       value: cubit,
       child: ReportView(type: content.type),
@@ -46,18 +45,11 @@ Future<void> showReportSheet(
       );
   } else if (context.mounted) {
     unawaited(HapticFeedback.heavyImpact());
-    await showAdaptiveDialog<void>(
+    await showAppDialog<void>(
       context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(l10n.reportFailed),
-        content: Text(l10n.socialTryAgain),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.settingsOk),
-          ),
-        ],
-      ),
+      title: l10n.reportFailed,
+      message: l10n.socialTryAgain,
+      actions: [AppDialogAction(label: l10n.settingsOk)],
     );
   }
 }
@@ -81,9 +73,6 @@ class ReportView extends StatelessWidget {
     final l10n = context.l10n;
     final cubit = context.read<ReportCubit>();
     final state = context.watch<ReportCubit>().state;
-    final secondary = AppTextStyles.label.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
     final (title, prompt) = switch (type) {
       ReportContentType.comment => (
         l10n.reportCommentTitle,
@@ -99,79 +88,65 @@ class ReportView extends StatelessWidget {
       ),
     };
     final problem = state.problem;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.l,
-          0,
-          AppSpacing.l,
-          AppSpacing.xl,
+    return AppScaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: AppSpacing.s,
-          children: [
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(AppSymbols.close),
-                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                  onPressed: () => Navigator.of(context).pop(),
+        title: Text(title),
+        actions: [
+          AppToolbarButton.confirm(
+            semanticLabel: l10n.reportSend,
+            onPressed: () {
+              final sending = cubit.sendPressed();
+              if (sending != null) Navigator.of(context).pop(sending);
+            },
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [
+          AppSection(
+            header: prompt,
+            children: [
+              for (final reason in ReportReason.values)
+                AppSelectableRow(
+                  title: reportReasonName(l10n, reason),
+                  selected: state.reason == reason,
+                  onPressed: () => cubit.reasonSelected(reason),
                 ),
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.sectionTitle,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    final sending = cubit.sendPressed();
-                    if (sending != null) Navigator.of(context).pop(sending);
-                  },
-                  child: Text(l10n.reportSend),
-                ),
-              ],
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          TextField(
+            onChanged: cubit.noteChanged,
+            minLines: 3,
+            maxLines: 6,
+            decoration: InputDecoration(
+              labelText: l10n.reportNote,
+              helperText: state.reason == ReportReason.other
+                  ? l10n.reportNoteRequired
+                  : l10n.reportNoteOptional,
+              helperMaxLines: 2,
             ),
-            Text(prompt, style: secondary),
-            for (final reason in ReportReason.values)
-              AppSelectableRow(
-                title: reportReasonName(l10n, reason),
-                selected: state.reason == reason,
-                onPressed: () => cubit.reasonSelected(reason),
-              ),
+          ),
+          if (problem != null) ...[
             const SizedBox(height: AppSpacing.s),
-            TextField(
-              onChanged: cubit.noteChanged,
-              minLines: 3,
-              maxLines: 6,
-              decoration: InputDecoration(
-                labelText: l10n.reportNote,
-                helperText: state.reason == ReportReason.other
-                    ? l10n.reportNoteRequired
-                    : l10n.reportNoteOptional,
-                helperMaxLines: 2,
-              ),
+            AppInlineMessage(
+              kind: AppInlineMessageKind.error,
+              kindLabel: l10n.errorLabel,
+              text: switch (problem) {
+                ReportProblem.noReason => l10n.reportNoReason,
+                ReportProblem.noNote => l10n.reportNoNote,
+                ReportProblem.noteTooLong => l10n.reportNoteTooLong(
+                  ReportCubit.noteLimit,
+                ),
+              },
             ),
-            if (problem != null)
-              AppInlineMessage(
-                kind: AppInlineMessageKind.error,
-                kindLabel: l10n.errorLabel,
-                text: switch (problem) {
-                  ReportProblem.noReason => l10n.reportNoReason,
-                  ReportProblem.noNote => l10n.reportNoNote,
-                  ReportProblem.noteTooLong => l10n.reportNoteTooLong(
-                    ReportCubit.noteLimit,
-                  ),
-                },
-              ),
           ],
-        ),
+        ],
       ),
     );
   }

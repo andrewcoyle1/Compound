@@ -13,11 +13,9 @@ import 'package:user_repository/user_repository.dart';
 /// Opens the weekly goal sheet for [viewer] (Swift `WeeklyGoalView`, a
 /// half sheet), from the strip's Set goal and the own profile.
 Future<void> showWeeklyGoalSheet(BuildContext context, UserModel viewer) =>
-    showModalBottomSheet<void>(
+    showAppSheet<void>(
       context: context,
-      useSafeArea: true,
-      showDragHandle: true,
-      isScrollControlled: true,
+      size: AppSheetSize.compact,
       builder: (_) => BlocProvider(
         create: (_) => WeeklyGoalCubit(
           users: context.read<UserRepository>(),
@@ -59,17 +57,12 @@ class _WeeklyGoalViewState extends State<WeeklyGoalView> {
         Navigator.of(context).pop();
       case WeeklyGoalStatus.failed:
         unawaited(HapticFeedback.heavyImpact());
-        showAdaptiveDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog.adaptive(
-            title: Text(l10n.weeklyGoalSaveFailed),
-            content: Text(l10n.socialTryAgain),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.settingsOk),
-              ),
-            ],
+        unawaited(
+          showAppDialog<void>(
+            context: context,
+            title: l10n.weeklyGoalSaveFailed,
+            message: l10n.socialTryAgain,
+            actions: [AppDialogAction(label: l10n.settingsOk)],
           ),
         );
       case WeeklyGoalStatus.editing || WeeklyGoalStatus.saving:
@@ -88,38 +81,29 @@ class _WeeklyGoalViewState extends State<WeeklyGoalView> {
           previous.status != current.status ||
           previous.failureId != current.failureId,
       listener: _onStatus,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.l,
-          0,
-          AppSpacing.l,
-          AppSpacing.xl,
+      child: AppScaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: AppToolbarButton.close(semanticLabel: l10n.socialClose),
+          title: Text(l10n.weeklyGoalTitle),
+          actions: [
+            if (state.status == WeeklyGoalStatus.saving)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: Center(child: CircularProgressIndicator.adaptive()),
+              ),
+          ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: AppSpacing.l,
+        body: ListView(
+          padding: const EdgeInsets.all(AppSpacing.l),
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      l10n.weeklyGoalTitle,
-                      style: AppTextStyles.sectionTitle,
-                    ),
-                  ),
-                ),
-                if (state.status == WeeklyGoalStatus.saving)
-                  const CircularProgressIndicator.adaptive(),
-              ],
-            ),
             Text(
               selected == null
                   ? l10n.weeklyGoalPrompt
                   : l10n.profileSessionsAWeek(selected),
               style: AppTextStyles.rowTitle,
             ),
+            const SizedBox(height: AppSpacing.l),
             AppSegmentedControl<int>(
               segments: [
                 for (
@@ -134,6 +118,7 @@ class _WeeklyGoalViewState extends State<WeeklyGoalView> {
                   ? null
                   : (goal) => unawaited(_cubit.goalSelected(goal)),
             ),
+            const SizedBox(height: AppSpacing.l),
             Text(
               l10n.weeklyGoalFooter,
               style: AppTextStyles.label.copyWith(color: secondary),

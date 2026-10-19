@@ -89,6 +89,7 @@
     "socialTrainingDays": "{count, plural, =1{1 día de entrenamiento en las últimas 12 semanas} other{{count} días de entrenamiento en las últimas 12 semanas}}",
     "socialRecentWorkouts": "Entrenamientos recientes",
     "socialSessionsLoadFailed": "No se pudieron cargar los entrenamientos",
+    "socialProfileNotFound": "Este perfil no está disponible.",
     "socialNoWorkoutsTitle": "Aún no hay entrenamientos",
     "socialNoWorkoutsMessage": "Los entrenamientos terminados aparecen aquí.",
     "socialMoreActions": "Más acciones",

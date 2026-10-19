@@ -137,10 +137,7 @@ class _ActivityBannerOverlayState extends State<ActivityBannerOverlay> {
                                             notificationTitle(l10n, banner),
                                             maxLines: 3,
                                             overflow: TextOverflow.ellipsis,
-                                            style: AppTextStyles.rowDetail
-                                                .copyWith(
-                                                  fontWeight: FontWeight.w500,
-                                                ),
+                                            style: AppTextStyles.rowDetail,
                                           ),
                                         ),
                                       ],

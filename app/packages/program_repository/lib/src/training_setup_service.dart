@@ -18,7 +18,7 @@ class TrainingSetupService {
     required this._library,
     required this._users,
     this._now = DateTime.now,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   });
 
   final ProgramRepository _programs;
@@ -215,7 +215,7 @@ WorkoutTemplateModel? workoutTemplateFromSession(
   required String authorId,
   required String Function(String name) copyName,
   required DateTime now,
-  String Function() newId = newUuid,
+  String Function() newId = newDocumentId,
 }) {
   final logged = [...session.exercises]
     ..sort((a, b) => a.index.compareTo(b.index));

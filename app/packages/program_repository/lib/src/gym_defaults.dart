@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:compound_models/compound_models.dart';
-import 'package:program_repository/src/program_rules.dart';
 
 /// A new gym owned by [authorId]: the whole catalogue, as Swift's
 /// `GymProfileModel(authorId:name:)` starts one, set up for the unit the
@@ -12,7 +11,7 @@ GymProfileModel newGymProfile({
   required String name,
   required DateTime now,
   required WeightUnitPreference? weightUnit,
-  String Function() newId = newUuid,
+  String Function() newId = newDocumentId,
   String kilogramStackName = 'Kilogram stack',
 }) {
   final catalogue = GymEquipmentCatalogue.instance;
@@ -68,7 +67,7 @@ extension GymProfileAdapting on GymProfileModel {
   /// id).
   GymProfileModel adaptingDefaults(
     ExerciseWeightUnit unit, {
-    String Function() newId = newUuid,
+    String Function() newId = newDocumentId,
     String kilogramStackName = 'Kilogram stack',
   }) => switch (unit) {
     ExerciseWeightUnit.pounds => _copy(

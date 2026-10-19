@@ -8,6 +8,7 @@ import 'package:compound/programs/cubit/macrocycle_draft_cubit.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -99,7 +100,7 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
       AppAuthenticated(:final user) => user.uid,
       _ => '',
     },
-    newId: newUuid,
+    newId: newDocumentId,
     now: DateTime.now(),
   );
 

@@ -79,7 +79,7 @@ class MesocycleDesignCubit extends Cubit<MesocycleDesignState> {
     required this._service,
     required this._analytics,
     this._now = DateTime.now,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   }) : super(
          MesocycleDesignState(
            mesocycle: mesocycle,

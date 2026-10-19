@@ -1,5 +1,4 @@
 import 'package:compound_models/compound_models.dart';
-import 'package:food_repository/src/random_id.dart';
 
 /// A food as a meal item, and the portions it offers (Swift
 /// `FoodModel+MealItem.swift` and `FoodModel`'s portion helpers).
@@ -67,7 +66,7 @@ extension FoodMealItem on FoodModel {
     final base = logged * (unit?.grams ?? 1);
     final factor = base / 100;
     return MealItemModel(
-      itemId: itemId ?? randomUuid(),
+      itemId: itemId ?? newDocumentId(),
       sourceType: MealItemSourceType.ingredient,
       sourceId: ingredientId,
       displayName: name,

@@ -6,8 +6,8 @@ import 'package:compound/gym_profiles/view/gym_text.dart';
 import 'package:compound/gym_profiles/view/gym_widgets.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:program_repository/program_repository.dart' show newUuid;
 import 'package:training_library_repository/training_library_repository.dart';
 
 /// The stacks of one cable or pin-loaded machine, a unit at a time (Swift
@@ -331,7 +331,7 @@ class _AddWeightStackSheetState extends State<AddWeightStackSheet>
   String get screen => 'AddWeightStackView';
 
   late WeightStack _stack = GymEditorRules.newStack(
-    id: newUuid(),
+    id: newDocumentId(),
     unit: widget.unit,
   );
 

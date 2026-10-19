@@ -30,7 +30,6 @@ import 'package:compound/settings/nutrition/view/food_log_settings_page.dart'
     show FoodLogSettingsPage;
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/calendar/calendar.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -107,7 +106,7 @@ class NutritionView extends StatelessWidget {
           listenWhen: (previous, current) =>
               current.editFailures > previous.editFailures,
           listener: (context, _) {
-            unawaited(HapticFeedback.errorNotification());
+            unawaited(AppHaptics.error());
             unawaited(
               showFailureAlert(context, context.l10n.nutritionUpdateFoodFailed),
             );
@@ -117,7 +116,7 @@ class NutritionView extends StatelessWidget {
           listenWhen: (previous, current) =>
               current.logAgainFailures > previous.logAgainFailures,
           listener: (context, _) {
-            unawaited(HapticFeedback.errorNotification());
+            unawaited(AppHaptics.error());
             unawaited(
               showFailureAlert(context, context.l10n.nutritionLogMealFailed),
             );
@@ -314,7 +313,7 @@ class _Day extends StatelessWidget {
                       onEditItem: (item) =>
                           unawaited(_edit(context, meal, item)),
                       onLogAgain: () {
-                        unawaited(HapticFeedback.successNotification());
+                        unawaited(AppHaptics.success());
                         context.read<NutritionDayBloc>().add(
                           NutritionDayMealLoggedAgain(meal),
                         );
@@ -396,7 +395,7 @@ class _Day extends StatelessWidget {
     final bloc = context.read<NutritionDayBloc>();
     final edited = await showItemAmountSheet(context, item);
     if (edited == null) return;
-    unawaited(HapticFeedback.successNotification());
+    unawaited(AppHaptics.success());
     bloc.add(NutritionDayItemEdited(meal, edited));
   }
 }

@@ -8,7 +8,6 @@ import 'package:compound/workout_editor/cubit/weekly_targets_cubit.dart';
 import 'package:compound/workout_editor/logic/editor_text.dart';
 import 'package:compound/workout_editor/view/editor_widgets.dart';
 import 'package:compound/workout_editor/view/set_target_page.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
@@ -142,7 +141,7 @@ class WeeklyTargetsView extends StatelessWidget {
   }
 
   void _step(WeeklyTargetsCubit cubit, Variation variation, int delta) {
-    unawaited(HapticFeedback.selectionClick());
+    unawaited(AppHaptics.selection());
     cubit.step(variation, delta);
   }
 

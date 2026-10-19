@@ -116,7 +116,7 @@ class _PaywallViewState extends State<PaywallView> {
     final notice = state.notice;
     if (notice == null) return;
     if (notice != PaywallNotice.nothingToRestore) {
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
     }
     final (title, message) = switch (notice) {
       PaywallNotice.purchaseFailed => (
@@ -163,7 +163,7 @@ class _PaywallViewState extends State<PaywallView> {
           listenWhen: (previous, current) =>
               current.isComplete && !previous.isComplete,
           listener: (context, _) {
-            unawaited(HapticFeedback.successNotification());
+            unawaited(AppHaptics.success());
             // During onboarding the router moves on by itself.
             if (!widget.isOnboarding) context.pop(true);
           },
@@ -314,7 +314,7 @@ class _PlanCards extends StatelessWidget {
               subtitle: subtitle(product),
               selected: product == state.selected,
               onPressed: () {
-                unawaited(HapticFeedback.selectionClick());
+                unawaited(AppHaptics.selection());
                 cubit.productSelected(product);
               },
             ),

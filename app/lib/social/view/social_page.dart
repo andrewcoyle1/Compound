@@ -22,7 +22,6 @@ import 'package:compound/social/view/circle_strip.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound/social/weekly_goal/weekly_goal_sheet.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_repository/social_repository.dart';
@@ -309,7 +308,7 @@ class _Dashboard extends StatelessWidget {
               SocialNavigation.openProfile(context, member.user);
             },
             onNudgePressed: (member) {
-              unawaited(HapticFeedback.lightImpact());
+              unawaited(AppHaptics.light());
               context.read<CircleBloc>().add(CircleNudgePressed(member));
             },
             onSetGoalPressed: viewer.weeklySessionGoal == null

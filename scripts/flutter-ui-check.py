@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hold app/lib and compound_charts to the UI contract (docs/specs/flutter/ui-contract.md, rules 2 and 3).
+"""Hold app/lib and compound_charts to the UI contract (docs/specs/flutter/ui-contract.md, rules 2-4).
 
 Feature code styles nothing itself: colours, text styles, padding, radii and durations come from
 app_ui's tokens, and Material's buttons, rows and dialogs are wrapped once in app_ui. Every
@@ -18,6 +18,8 @@ ROOT = Path(__file__).resolve().parent.parent
 LIB = ROOT / 'app' / 'lib'
 # Charts draw on app_ui's tokens like any screen.
 CHARTS = ROOT / 'app' / 'packages' / 'compound_charts'
+# app_ui's widgets play haptics through AppHaptics too; only AppHaptics itself uses Flutter's.
+APP_UI = ROOT / 'app' / 'packages' / 'app_ui'
 
 # Not preceded by a letter, so `AppCard(` and `appColors.` don't count as `Card(` and `Colors.`.
 _ = r'(?<![A-Za-z_])'
@@ -47,6 +49,8 @@ RULES = {
     'material-card': (_ + r'Card\(', 'AppCard'),
     'material-dialog': (_ + r'(showDialog|showModalBottomSheet|showCupertinoDialog|AlertDialog|SimpleDialog)(<[^>]*>)?\(',
                         'an app_ui dialog or sheet (add one)'),
+    # Rule 4: haptics play through AppHaptics, which gives Android the iOS patterns.
+    'raw-haptic': (_ + r'HapticFeedback\.', 'AppHaptics'),
 }
 
 # Generated strings, and share cards, which render to fixed-size images like the Swift app's.
@@ -75,6 +79,12 @@ def scan():
             continue
         for rule, number, line in matches(path.read_text()):
             found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
+    for path in sorted((APP_UI / 'lib').rglob('*.dart')):
+        if path.name == 'app_haptics.dart':
+            continue
+        for rule, number, line in matches(path.read_text()):
+            if rule == 'raw-haptic':
+                found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
     return found
 
 
@@ -127,6 +137,8 @@ def self_test():
         "import 'package:flutter/services.dart';": [],
         "// TextButton(onPressed: f) in a comment": [],
         "/// Uses [ListTile( in a doc comment": [],
+        "unawaited(HapticFeedback.successNotification());": ['raw-haptic'],
+        "unawaited(AppHaptics.success());": [],
     }
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]

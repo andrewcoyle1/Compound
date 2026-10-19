@@ -291,7 +291,6 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     // foodSearch is a us-central1 callable that enforces App Check.
     openFoodFacts: RemoteOpenFoodFacts(
       functions: FirebaseFunctions.instanceFor(region: 'us-central1'),
-      client: http.Client(),
     ),
     // The social callables are us-central1 and enforce App Check.
     socialRepository: SocialRepository(

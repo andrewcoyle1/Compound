@@ -267,6 +267,7 @@ void main() {
   // in their history.
   group('a workout page link', () {
     late SocialRepository social;
+    late FakePlatformLinks opened;
 
     Future<void> pump(WidgetTester tester) async {
       final users = InMemoryUserRepository(
@@ -280,6 +281,7 @@ void main() {
           now: now,
         ),
       ))!;
+      opened = FakePlatformLinks();
       await tester.pumpWidget(
         App(
           coachRepository: silentCoachRepository(),
@@ -297,19 +299,14 @@ void main() {
           bodyRepository: InMemoryBodyRepository(),
           socialRepository: social,
           sessionWebLink: links,
+          platformLinks: opened,
         ),
       );
       await settle(tester);
     }
 
     Future<void> open(WidgetTester tester, String url) async {
-      await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
-        'flutter/navigation',
-        const JSONMethodCodec().encodeMethodCall(
-          MethodCall('pushRouteInformation', {'location': url}),
-        ),
-        (_) {},
-      );
+      opened.open(Uri.parse(url));
       await settle(tester);
     }
 

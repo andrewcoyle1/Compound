@@ -428,6 +428,7 @@ void main() {
       tester,
     ) async {
       final notifications = FakeNotificationsRepository();
+      final links = FakePlatformLinks();
       await tester.pumpWidget(
         App(
           socialRepository: emptySocialRepository(),
@@ -444,6 +445,7 @@ void main() {
           nutritionRepository: InMemoryNutritionRepository(),
           bodyRepository: InMemoryBodyRepository(),
           notificationsRepository: notifications,
+          platformLinks: links,
         ),
       );
       await tester.pumpAndSettle();
@@ -453,16 +455,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(NutritionView), findsOneWidget);
 
-      // As the engine sends a URL the app was opened with: whole.
-      await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
-        'flutter/navigation',
-        const JSONMethodCodec().encodeMethodCall(
-          const MethodCall('pushRouteInformation', {
-            'location': 'compound://tab/progress',
-          }),
-        ),
-        (_) {},
-      );
+      links.open(Uri.parse('compound://tab/progress'));
       await tester.pumpAndSettle();
       expect(find.byType(ProgressPage), findsOneWidget);
 

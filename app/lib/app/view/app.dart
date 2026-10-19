@@ -133,6 +133,9 @@ class const App({
   /// when left out.
   final NotificationsRepository? notificationsRepository,
 
+  /// The links the platform opens the app with; none when left out.
+  final PlatformLinks? platformLinks,
+
   /// The Live Activity (iOS); one that never shows when left out.
   final LiveActivityRepository? liveActivityRepository,
 
@@ -317,6 +320,7 @@ class const App({
               notifications: context.read(),
               users: userRepository,
               webLink: sessionWebLink,
+              platformLinks: platformLinks,
             ),
           ),
           BlocProvider(
@@ -731,16 +735,10 @@ class _AppViewState extends State<AppView> {
           },
         ),
     ],
-    redirect: (context, state) {
-      // A `compound://` URL from the platform (its own deep-link handling,
-      // which passes the whole URL): held until it can be routed, from
-      // Today meanwhile. The app's own locations never have a scheme.
-      if (state.uri.hasScheme) {
-        context.read<NotificationsCubit>().linkOpened(state.uri);
-        return AppTab.today.path;
-      }
-      return appRedirect(context.read<AppBloc>().state, state.uri);
-    },
+    // Links from outside the app come through `PlatformLinks` to the
+    // NotificationsCubit, not the router: Flutter's own deep linking is off.
+    redirect: (context, state) =>
+        appRedirect(context.read<AppBloc>().state, state.uri),
   );
 
   /// The app coming back to the front moves the come-back reminders out;

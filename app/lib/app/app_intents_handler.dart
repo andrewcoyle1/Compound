@@ -30,7 +30,7 @@ class AppIntents implements AppIntentHandler {
     required this._l10n,
     required this._firstWeekday,
     this._clock = DateTime.now,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   });
 
   final AppBloc _app;

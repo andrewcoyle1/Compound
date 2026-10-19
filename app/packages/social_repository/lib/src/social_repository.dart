@@ -3,7 +3,6 @@ import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:social_repository/src/random_id.dart';
 import 'package:social_repository/src/social_rules.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -155,7 +154,7 @@ class SocialRepository {
   }) : _call = callFunction,
        _onDecodeError = onDecodeError ?? _log,
        _now = now ?? (() => DateTime.now().toUtc()),
-       _newId = newId ?? randomUuid,
+       _newId = newId ?? newDocumentId,
        _newInviteCode = newInviteCode ?? InviteCode.random;
 
   final FirebaseFirestore _firestore;

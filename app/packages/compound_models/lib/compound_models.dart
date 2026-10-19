@@ -9,6 +9,7 @@ export 'src/check_in.dart';
 export 'src/circle.dart';
 export 'src/coach_chat.dart';
 export 'src/diet_plan.dart';
+export 'src/document_id.dart';
 export 'src/equipment_variation.dart';
 export 'src/exercise_model.dart';
 export 'src/exercise_settings_model.dart';

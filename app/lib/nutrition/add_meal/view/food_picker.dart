@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:ai_repository/ai_repository.dart';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/add_meal/bloc/add_meal_bloc.dart';
 import 'package:compound/nutrition/add_meal/bloc/food_search_bloc.dart';
@@ -20,12 +19,11 @@ import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/nutrition/recipes/view/create_recipe_pages.dart';
 import 'package:compound/widgets/stored_image.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:image_repository/image_repository.dart';
-import 'package:nutrition_repository/nutrition_repository.dart'
-    show FoodLogSettings;
 
 part 'ai_food_tabs.dart';
 part 'label_panel.dart';

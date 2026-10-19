@@ -6,6 +6,10 @@ publish_to: none
 environment:
   sdk: ^3.13.0
 
+dependencies:
+  # Document ids in Swift's UUID().uuidString form (MIT).
+  uuid: 4.6.0
+
 dev_dependencies:
   mocktail: ^1.0.5
   test: ^1.32.0

@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:compound_models/compound_models.dart';
-import 'package:food_repository/src/random_id.dart';
 
 /// An ingredient's amount as the nutrition maths counts it (Swift
 /// `NutritionScaling.baseAmount(of:)`).
@@ -56,7 +55,7 @@ extension RecipeMealItem on RecipeTemplateModel {
   MealItemModel mealItem(double servings, {String? itemId}) {
     final logged = servings.isFinite && servings > 0 ? servings : 0.0;
     return MealItemModel(
-      itemId: itemId ?? randomUuid(),
+      itemId: itemId ?? newDocumentId(),
       sourceType: MealItemSourceType.recipe,
       sourceId: recipeId,
       displayName: name,

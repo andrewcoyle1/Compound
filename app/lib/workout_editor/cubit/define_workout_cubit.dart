@@ -1,9 +1,9 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:equatable/equatable.dart';
 import 'package:training_library_repository/training_library_repository.dart';
-import 'package:training_session/training_session.dart' show newUuid;
 
 /// The list's modes: reordering and deleting, and choosing a superset; and
 /// whether the picker has opened on its own.
@@ -47,7 +47,7 @@ class DefineWorkoutCubit extends Cubit<DefineWorkoutState> {
     required this._read,
     required this._write,
     required this._analytics,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   }) : super(const DefineWorkoutState());
 
   final List<WorkoutTemplateExercise> Function() _read;

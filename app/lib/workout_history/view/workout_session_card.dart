@@ -5,7 +5,6 @@ import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_session_detail/view/workout_session_detail_page.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 /// One finished workout: its name and date, its highlights, totals and
 /// exercises, and its note. Opens the session detail. A port of the Swift
@@ -88,9 +87,12 @@ class WorkoutSessionCard extends StatelessWidget {
                     Text(session.name, style: AppTextStyles.sectionTitle),
                     if (header == null)
                       Text(
-                        DateFormat.yMMMEd(locale)
-                            .add_jm()
-                            .format(session.dateCreated.toLocal()),
+                        AppFormat.dateTime(
+                          session.dateCreated.toLocal(),
+                          use24HourFormat: context.use24HourFormat,
+                          style: AppDateStyle.weekdayMedium,
+                          locale: context.dateLocale,
+                        ),
                         style: secondary,
                       ),
                   ],

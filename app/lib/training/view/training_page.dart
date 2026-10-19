@@ -20,7 +20,6 @@ import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart' show DateFormat;
 
 /// The Training tab's root (Swift `TrainingView`): a search over exercises
 /// and workouts, the active mesocycle's schedule (or a way to choose one),
@@ -170,7 +169,11 @@ Future<String?> _chooseSession(
   List<WorkoutSessionModel> sessions,
 ) {
   final l10n = context.l10n;
-  final time = DateFormat.jm(Localizations.localeOf(context).toLanguageTag());
+  String time(DateTime at) => AppFormat.time(
+    at,
+    use24HourFormat: context.use24HourFormat,
+    locale: context.dateLocale,
+  );
   return showDialog<String>(
     context: context,
     builder: (context) => SimpleDialog(
@@ -186,7 +189,7 @@ Future<String?> _chooseSession(
             child: Text(
               l10n.trainingSessionChoice(
                 session.name,
-                time.format(session.dateCreated.toLocal()),
+                time(session.dateCreated.toLocal()),
               ),
             ),
           ),

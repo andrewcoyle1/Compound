@@ -7,7 +7,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/general/cubit/notification_settings_cubit.dart';
 import 'package:compound/settings/general/view/on_dispose.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -76,9 +75,11 @@ class _NotificationSettingsViewState extends State<NotificationSettingsView> {
     final cubit = context.read<NotificationSettingsCubit>();
     final state = context.watch<NotificationSettingsCubit>().state;
     final enabled = state.canChangeSwitches;
-    String hour(int hour) =>
-        DateFormat.j(Localizations.localeOf(context).toLanguageTag())
-            .format(DateTime(2000, 1, 1, hour));
+    String hour(int hour) => AppFormat.hour(
+      hour,
+      use24HourFormat: context.use24HourFormat,
+      locale: context.dateLocale,
+    );
     return OnDispose(
       onDispose: cubit.disappeared,
       child: BlocListener<NotificationSettingsCubit, NotificationSettingsState>(

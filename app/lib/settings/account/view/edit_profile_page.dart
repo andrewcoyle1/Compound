@@ -9,7 +9,6 @@ import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_repository/image_repository.dart';
-import 'package:intl/intl.dart';
 import 'package:user_repository/user_repository.dart';
 
 /// Edit Profile (Swift `EditProfileView`), opened from the profile. Save
@@ -220,7 +219,6 @@ class _ProfileSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<EditProfileCubit>();
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final dateOfBirth = state.dateOfBirth;
     // Live, so a handle chosen in its own editor shows on the way back.
     final username = context.select<AppBloc, String?>(
@@ -277,7 +275,10 @@ class _ProfileSection extends StatelessWidget {
           accessory: AppListRowValue(
             dateOfBirth == null
                 ? l10n.profileNotSet
-                : DateFormat.yMMMd(locale).format(dateOfBirth.toLocal()),
+                : AppFormat.date(
+                    dateOfBirth.toLocal(),
+                    locale: context.dateLocale,
+                  ),
           ),
           onPressed: () async {
             final now = DateTime.now();

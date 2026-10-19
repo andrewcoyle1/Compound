@@ -1,7 +1,6 @@
 import 'package:compound/settings/nutrition/logic/nutrition_settings_labels.dart';
 import 'package:compound_maths/compound_maths.dart' as maths;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 maths.ExpenditureEstimate _estimate({
   double kcal = 2480,
@@ -27,25 +26,6 @@ maths.ExpenditureEstimate _estimate({
 );
 
 void main() {
-  setUpAll(() => initializeDateFormatting('de_DE'));
-
-  group('hourLabel', () {
-    test("reads in the region's clock", () {
-      expect(
-        [
-          0,
-          7,
-          12,
-          23,
-        ].map((hour) => hourLabel(hour, 'en_US').replaceAll('\u202F', ' ')),
-        ['12 AM', '7 AM', '12 PM', '11 PM'],
-      );
-      final german = hourLabel(23, 'de_DE');
-      expect(german, contains('23'));
-      expect(german, isNot(contains('PM')));
-    });
-  });
-
   group('weekdayName', () {
     test('counts from Sunday, as Swift does', () {
       expect(

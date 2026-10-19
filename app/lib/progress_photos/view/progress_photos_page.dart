@@ -14,7 +14,6 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_repository/image_repository.dart';
-import 'package:intl/intl.dart';
 import 'package:user_repository/user_repository.dart' show WeightUnitPreference;
 
 /// Progress Photos (Swift `ProgressPhotosView`), under Body Metrics.
@@ -64,7 +63,7 @@ String photoCaption(
   AppWeightUnit unit,
 ) {
   final locale = Localizations.localeOf(context).toLanguageTag();
-  final date = DateFormat.yMMMd(locale).format(photo.date.toLocal());
+  final date = AppFormat.date(photo.date.toLocal(), locale: context.dateLocale);
   final weightKg = photo.weightKg;
   if (weightKg == null) return date;
   return context.l10n.progressPhotoCaption(
@@ -358,7 +357,6 @@ class _Photos extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     return SafeArea(
       child: Align(
         alignment: Alignment.topCenter,
@@ -376,7 +374,11 @@ class _Photos extends StatelessWidget {
               for (final (day, photos) in state.sections) ...[
                 const SizedBox(height: AppSpacing.xl),
                 Text(
-                  DateFormat.yMMMMEEEEd(locale).format(day),
+                  AppFormat.date(
+                    day,
+                    style: AppDateStyle.full,
+                    locale: context.dateLocale,
+                  ),
                   style: AppTextStyles.sectionTitle,
                 ),
                 const SizedBox(height: AppSpacing.s),

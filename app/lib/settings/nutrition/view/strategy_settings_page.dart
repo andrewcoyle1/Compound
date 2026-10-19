@@ -42,7 +42,6 @@ class StrategySettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<StrategySettingsCubit>();
-    final locale = Localizations.localeOf(context).toLanguageTag();
     Widget toggle(
       String key,
       String title, {
@@ -69,7 +68,7 @@ class StrategySettingsView extends StatelessWidget {
               value: s.checkInWeekday,
               // 1 to 7, Sunday first, as Swift's `Calendar` counts.
               options: const [1, 2, 3, 4, 5, 6, 7],
-              label: (weekday) => weekdayName(weekday, locale),
+              label: (weekday) => weekdayName(weekday, context.dateLocale),
               onChanged: (weekday) => unawaited(
                 cubit.set(
                   NutritionStrategySettingsKeys.checkInWeekday,

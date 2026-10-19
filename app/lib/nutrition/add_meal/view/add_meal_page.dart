@@ -206,11 +206,10 @@ class _PlateView extends StatelessWidget {
           TextButton.icon(
             icon: const Icon(AppSymbols.duration),
             label: Text(
-              MaterialLocalizations.of(context).formatTimeOfDay(
-                time,
-                alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(
-                  context,
-                ),
+              AppFormat.time(
+                meal.date.toLocal(),
+                use24HourFormat: context.use24HourFormat,
+                locale: context.dateLocale,
               ),
             ),
             onPressed: () async {

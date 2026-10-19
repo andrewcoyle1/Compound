@@ -13,7 +13,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_repository/health_repository.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:user_repository/user_repository.dart';
 
 /// Log Weight (Swift `LogWeightView`): the day, the unit, and the weight on
@@ -128,7 +127,6 @@ class _Form extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final bloc = context.read<LogWeightBloc>();
-    final locale = Localizations.localeOf(context).toLanguageTag();
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
@@ -137,7 +135,7 @@ class _Form extends StatelessWidget {
             AppListRowButton(
               title: l10n.logWeightDate,
               accessory: AppListRowValue(
-                DateFormat.yMMMd(locale).format(state.date),
+                AppFormat.date(state.date, locale: context.dateLocale),
               ),
               onPressed: () async {
                 final now = DateTime.now();

@@ -4,7 +4,6 @@ import 'package:compound/metric_detail/models/metric_readings.dart';
 import 'package:compound/metric_detail/view/metric_chart.dart';
 import 'package:compound/widgets/chart_callout.dart';
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
-import 'package:intl/intl.dart' show DateFormat;
 
 /// A metric's screen body (Swift `MetricDetailView`): the range picker, the
 /// average of what is on screen, the chart, the Latest, Highest, Lowest and
@@ -79,7 +78,8 @@ class MetricDetailView extends StatelessWidget {
       ),
       if (unit.isNotEmpty) unit,
     ].join(' ');
-    String day(DateTime date) => metricDayText(l10n, date, today, locale);
+    String day(DateTime date) =>
+        metricDayText(l10n, date, today, context.dateLocale);
 
     final latest = readings.latest;
     final highest = readings.highest;
@@ -154,8 +154,8 @@ String metricDayText(
     return l10n.metricYesterday;
   }
   return date.year == today.year
-      ? DateFormat.MMMd(locale).format(date)
-      : DateFormat.yMMMd(locale).format(date);
+      ? AppFormat.date(date, style: AppDateStyle.dayMonth, locale: locale)
+      : AppFormat.date(date, locale: locale);
 }
 
 /// The range picker over a metric's chart, with its header: what a
@@ -323,7 +323,6 @@ class _ChartState extends State<_Chart> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final series = widget.series;
     final range = widget.range;
     final value = widget.value;
@@ -351,9 +350,10 @@ class _ChartState extends State<_Chart> {
                 : MetricReadings(shown).average!,
           ),
     ];
-    final dates = DateFormat.yMMMd(locale);
-    final from = dates.format(start);
-    final to = dates.format(shownEnd);
+    String dates(DateTime date) =>
+        AppFormat.date(date, locale: context.dateLocale);
+    final from = dates(start);
+    final to = dates(shownEnd);
     final summary = l10n.chartSemanticSummary(
       widget.title,
       from,
@@ -447,7 +447,11 @@ class _ChartState extends State<_Chart> {
                                   value: value(point.value),
                                 ),
                           ],
-                          footer: bucketText(range, selected, locale),
+                          footer: bucketText(
+                            range,
+                            selected,
+                            context.dateLocale,
+                          ),
                           noData: l10n.progressNoData,
                         ),
                 ),
@@ -463,14 +467,22 @@ class _ChartState extends State<_Chart> {
 /// "Sat, Sep 19" for a day, "Sep 14 – 20" for a week, "September 2026" for
 /// a month.
 String bucketText(MetricRange range, DateTime bucket, String locale) {
-  final day = DateFormat.MMMd(locale);
+  String day(DateTime date) =>
+      AppFormat.date(date, style: AppDateStyle.dayMonth, locale: locale);
   return switch (range) {
-    MetricRange.week ||
-    MetricRange.month => DateFormat.MMMEd(locale).format(bucket),
+    MetricRange.week || MetricRange.month => AppFormat.date(
+      bucket,
+      style: AppDateStyle.weekdayDayMonth,
+      locale: locale,
+    ),
     MetricRange.sixMonths =>
-      '${day.format(bucket)} – '
-          '${day.format(DateTime(bucket.year, bucket.month, bucket.day + 6))}',
-    MetricRange.year => DateFormat.yMMMM(locale).format(bucket),
+      '${day(bucket)} – '
+          '${day(DateTime(bucket.year, bucket.month, bucket.day + 6))}',
+    MetricRange.year => AppFormat.date(
+      bucket,
+      style: AppDateStyle.monthYear,
+      locale: locale,
+    ),
   };
 }
 

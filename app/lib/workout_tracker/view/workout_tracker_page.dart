@@ -22,7 +22,6 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:training_rules/training_rules.dart' as r;
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -466,15 +465,17 @@ class _Title extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final session = state.session!;
     return Tick(
       builder: (context, now) {
         final clock = state.isPaused
             ? l10n.trackerPaused
             : AppFormat.duration(state.elapsedAt(now));
-        final date = DateFormat.MMMEd(locale)
-            .format(session.dateCreated.toLocal());
+        final date = AppFormat.date(
+          session.dateCreated.toLocal(),
+          style: AppDateStyle.weekdayDayMonth,
+          locale: context.dateLocale,
+        );
         return MergeSemantics(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

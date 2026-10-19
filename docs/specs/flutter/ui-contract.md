@@ -32,6 +32,7 @@ uses it and styles nothing itself.
 | `Duration(…)` on an animation | `AppMotion.quick` / `standard` / `emphasis` / `progress`, through `durationOf` so reduced motion is honoured |
 | `Icons.*` | `AppSymbols.*`: one concept, one icon. Add the concept there if it is missing |
 | Formatting a number by hand | `AppFormat` |
+| `DateFormat`, `formatTimeOfDay`, a date built by hand | `AppFormat.date` (with an `AppDateStyle`), `time`, `hour`, `dateTime`, passing `locale: context.dateLocale` and `use24HourFormat: context.use24HourFormat`: the app's language with the device's region and clock, as iOS does |
 
 - The accent is never written as its current value. Text on an accent fill is `onPrimary`.
 - Status colours are never the only signal: pair them with an icon or text.

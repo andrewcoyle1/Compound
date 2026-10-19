@@ -209,6 +209,24 @@ void main() {
       expect(find.text('Today'), findsNothing);
     });
 
+    testWidgets('writes dates and times as an Irish 24-hour phone does', (
+      tester,
+    ) async {
+      tester.platformDispatcher
+        ..localeTestValue = const Locale('en', 'IE')
+        ..alwaysUse24HourFormatTestValue = true;
+      // The root MediaQuery outlives a test, so it is told of the clock
+      // change, and of its undoing (tear-downs run last first).
+      addTearDown(tester.binding.handleMetricsChanged);
+      addTearDown(tester.platformDispatcher.clearAllTestValues);
+      tester.binding.handleMetricsChanged();
+      await pumpView(tester);
+
+      expect(find.text('21 Sept 2026'), findsOneWidget);
+      expect(find.text('07:00'), findsOneWidget);
+      expect(find.text('07:30'), findsOneWidget);
+    });
+
     testWidgets('turns the macro header to what is left, and back', (
       tester,
     ) async {

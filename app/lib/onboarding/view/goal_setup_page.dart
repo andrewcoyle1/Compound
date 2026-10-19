@@ -17,7 +17,7 @@ import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/widgets/number_wheel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart' show DateFormat, NumberFormat;
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -366,8 +366,10 @@ class GoalSetupView extends StatelessWidget {
           AppListRow(
             title: weeks > 0
                 ? l10n.onboardingEndDate(
-                    DateFormat.yMMMd(locale)
-                        .format(DateTime.now().add(Duration(days: weeks * 7))),
+                    AppFormat.date(
+                      DateTime.now().add(Duration(days: weeks * 7)),
+                      locale: context.dateLocale,
+                    ),
                   )
                 : l10n.onboardingNoEndDate,
           ),

@@ -129,6 +129,14 @@ void main() {
       expect(find.text('180 lb'), findsNothing);
     });
 
+    testWidgets('writes the date in the device region', (tester) async {
+      tester.platformDispatcher.localeTestValue = const Locale('en', 'GB');
+      addTearDown(tester.platformDispatcher.clearLocaleTestValue);
+      when(() => bloc.state).thenReturn(ready());
+      await pumpView(tester);
+      expect(find.text('15 Oct 2026'), findsOneWidget);
+    });
+
     testWidgets('shows the pound wheels in pounds', (tester) async {
       when(() => bloc.state).thenReturn(
         ready().copyWith(

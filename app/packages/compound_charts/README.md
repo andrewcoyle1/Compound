@@ -15,6 +15,10 @@ import 'package:compound_charts/compound_charts.dart';
 | `chartCallout` | `ChartCallout` |
 | `SeriesSummary` | `ChartCalloutSummary` |
 
+Charts draw in when first shown and morph when their data changes (`ChartDataTween`, also
+`ChartData.lerp`), from whatever is on screen, on one `AnimationController` that repaints the
+painter without rebuilding. Reduced motion shows the final frame at once.
+
 Every user-facing word is passed in already localized; the package holds no strings.
 
 Tests are held at 100% line coverage. Goldens follow `docs/specs/flutter/ui-contract.md`, rule 6,

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound_charts/compound_charts.dart';
+import 'package:compound_charts/src/cartesian_painter.dart';
 import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter_test/flutter_test.dart';
 
@@ -92,6 +93,40 @@ final ChartData _dots = ChartData(
 );
 
 final ChartData _empty = _week(const []);
+
+final ChartData _marked = _week([
+  ChartSeries(
+    label: 'Trend',
+    color: _green,
+    showsPoints: true,
+    points: _daily(_weekStart, [72.9, 72.6, 72.7, 72.3, 72.4, 72.1, 71.9]),
+  ),
+]);
+
+/// [_line] a week earlier, as paging back shows it.
+final ChartData _lastWeek = ChartData(
+  start: DateTime(2026, 10, 5),
+  end: _weekStart,
+  series: [
+    ChartSeries(
+      label: 'Weight',
+      color: _green,
+      points: _daily(DateTime(2026, 10, 5), [74, 73.8, 73.5, 73.6, 73.2]),
+    ),
+  ],
+);
+
+CartesianPainter _painter(WidgetTester tester) =>
+    tester
+            .widget<CustomPaint>(
+              find.byWidgetPredicate(
+                (w) => w is CustomPaint && w.painter is CartesianPainter,
+              ),
+            )
+            .painter!
+        as CartesianPainter;
+
+Duration _half(AppMotion motion) => motion.duration ~/ 2;
 
 void main() {
   group(CartesianChart, () {
@@ -189,6 +224,99 @@ void main() {
     });
   });
 
+  group('animation', () {
+    testWidgets('draws in over AppMotion.progress, then rests', (tester) async {
+      await tester.pumpApp(CartesianChart(data: _stacked));
+      expect(_painter(tester).reveal, 0);
+
+      await tester.pump(_half(AppMotion.progress));
+      final painter = _painter(tester);
+      expect(painter.progress.value, closeTo(0.5, 0.01));
+      expect(
+        painter.reveal,
+        closeTo(AppMotion.progress.curve.transform(0.5), 0.01),
+      );
+      // Only the reveal moves while drawing in.
+      expect(painter.shown, _stacked);
+
+      await tester.pumpAndSettle();
+      expect(_painter(tester).reveal, 1);
+    });
+
+    testWidgets('shows the first frame final under reduced motion', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        CartesianChart(data: _line),
+        disableAnimations: true,
+      );
+      expect(_painter(tester).reveal, 1);
+      expect(_painter(tester).progress.isAnimating, isFalse);
+
+      await tester.pumpApp(
+        CartesianChart(data: _bars),
+        disableAnimations: true,
+      );
+      expect(_painter(tester).shown, _bars);
+      expect(_painter(tester).progress.isAnimating, isFalse);
+    });
+
+    testWidgets('morphs to new data over AppMotion.standard', (tester) async {
+      await tester.pumpApp(CartesianChart(data: _line));
+      await tester.pumpAndSettle();
+      await tester.pumpApp(CartesianChart(data: _lastWeek));
+      expect(_painter(tester).shown, _line);
+      expect(_painter(tester).from, isNotNull);
+
+      await tester.pump(_half(AppMotion.standard));
+      final shown = _painter(tester).shown;
+      expect(shown.start.isAfter(_lastWeek.start), isTrue);
+      expect(shown.start.isBefore(_line.start), isTrue);
+
+      await tester.pumpAndSettle();
+      expect(_painter(tester).shown, _lastWeek);
+    });
+
+    testWidgets('morphs from what is on screen when interrupted', (
+      tester,
+    ) async {
+      await tester.pumpApp(CartesianChart(data: _line));
+      await tester.pump(_half(AppMotion.progress));
+      final revealed = _painter(tester).reveal;
+
+      await tester.pumpApp(CartesianChart(data: _marked));
+      expect(_painter(tester).reveal, revealed);
+      await tester.pump(_half(AppMotion.standard));
+      final midway = _painter(tester).shown;
+
+      await tester.pumpApp(CartesianChart(data: _bars));
+      expect(_painter(tester).shown, midway);
+      await tester.pumpAndSettle();
+      expect(_painter(tester).shown, _bars);
+      expect(_painter(tester).reveal, 1);
+    });
+
+    testWidgets('morphs to and from nothing', (tester) async {
+      await tester.pumpApp(CartesianChart(data: _area));
+      await tester.pumpAndSettle();
+      for (final data in [_empty, _area]) {
+        await tester.pumpApp(CartesianChart(data: data));
+        await tester.pump(_half(AppMotion.standard));
+        await tester.pumpAndSettle();
+        expect(_painter(tester).shown, data);
+      }
+    });
+
+    testWidgets('does not animate a rebuild with equal data', (tester) async {
+      await tester.pumpApp(CartesianChart(data: _line));
+      await tester.pumpAndSettle();
+      await tester.pumpApp(
+        CartesianChart(data: _week([_weight]), selected: _weekStart),
+      );
+      expect(_painter(tester).progress.isAnimating, isFalse);
+    });
+  });
+
   group('goldens', () {
     goldenStates('cartesian_chart', [
       ('line, a week of weigh-ins', CartesianChart(data: _line)),
@@ -196,6 +324,7 @@ void main() {
       ('bars from zero', CartesianChart(data: _bars)),
       ('stacked bars and a line', CartesianChart(data: _stacked)),
       ('dots, a year by month', CartesianChart(data: _dots)),
+      ('a line with point markers', CartesianChart(data: _marked)),
       (
         'a bucket picked',
         CartesianChart(data: _line, selected: DateTime(2026, 10, 15)),

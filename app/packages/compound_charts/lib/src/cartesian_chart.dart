@@ -8,6 +8,12 @@ import 'package:compound_charts/src/data.dart';
 /// the trailing edge and dates beneath that never collide. It has no
 /// semantics of its own; the caller gives it a summary.
 ///
+/// It draws in when first shown, over [AppMotion.progress]: bars grow,
+/// areas rise, lines draw from the leading edge and dots pop in. New [data]
+/// morphs from whatever is on screen over [AppMotion.standard], even part
+/// way through another animation ([ChartDataTween]). Reduced motion shows
+/// each at once.
+///
 /// Pressing and holding picks the nearest bucket, marked with a rule, and
 /// tells [onSelected] its date, then null on letting go (Swift QuickCharts'
 /// `chartXSelection`). While one is [selected], [callout] floats above the
@@ -42,12 +48,45 @@ class CartesianChart extends StatefulWidget {
   State<CartesianChart> createState() => _CartesianChartState();
 }
 
-class _CartesianChartState extends State<CartesianChart> {
+class _CartesianChartState extends State<CartesianChart>
+    with SingleTickerProviderStateMixin {
   final _labels = ChartLabels();
   final _geometry = ChartGeometry();
+  late final _controller = AnimationController(vsync: this);
+  late var _tween = ChartDataTween(widget.data, widget.data);
+  Curve _curve = AppMotion.progress.curve;
+  double _startReveal = 0;
+  ChartAxis? _from;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Drawn in once, when first shown.
+    if (_controller.isDismissed) {
+      _controller
+        ..duration = AppMotion.progress.durationOf(context)
+        ..forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(CartesianChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.data == oldWidget.data) return;
+    // From what is on screen, however far an animation had got.
+    final t = _curve.transform(_controller.value);
+    _tween = ChartDataTween(_tween.transform(t), widget.data);
+    _startReveal += (1 - _startReveal) * t;
+    _from = _geometry.axis;
+    _curve = AppMotion.standard.curve;
+    _controller
+      ..duration = AppMotion.standard.durationOf(context)
+      ..forward(from: 0);
+  }
 
   @override
   void dispose() {
+    _controller.dispose();
     _labels.dispose();
     super.dispose();
   }
@@ -92,7 +131,11 @@ class _CartesianChartState extends State<CartesianChart> {
             child: RepaintBoundary(
               child: CustomPaint(
                 painter: CartesianPainter(
-                  data: AlwaysStoppedAnimation(widget.data),
+                  data: _tween,
+                  progress: _controller,
+                  curve: _curve,
+                  startReveal: _startReveal,
+                  from: _from,
                   labels: _labels,
                   geometry: _geometry,
                   labelStyle: AppTextStyles.label.copyWith(

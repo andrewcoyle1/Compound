@@ -14,6 +14,7 @@ class AppTextButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.isDestructive = false,
+    this.isSmall = false,
     super.key,
   });
 
@@ -26,6 +27,10 @@ class AppTextButton extends StatelessWidget {
   /// Whether the action deletes or removes something.
   final bool isDestructive;
 
+  /// Whether the label is drawn at [AppTextStyles.label] size, for a link
+  /// in a footnote such as Terms of Service. The tap target stays 44 pt.
+  final bool isSmall;
+
   @override
   Widget build(BuildContext context) => TextButton(
     onPressed: onPressed,
@@ -34,6 +39,7 @@ class AppTextButton extends StatelessWidget {
           ? context.appColors.danger
           : Theme.of(context).colorScheme.primary,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+      textStyle: isSmall ? AppTextStyles.label : null,
     ),
     child: Text(label),
   );

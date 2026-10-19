@@ -176,7 +176,7 @@ class _NotificationSettingsViewState extends State<NotificationSettingsView> {
                     if (state.isStreakReminderEnabled)
                       AppListRowButton(
                         title: l10n.notificationSettingsRemindAt,
-                        accessory: AppListRowValue(hour(state.reminderHour)),
+                        accessory: AppListRowMenu(hour(state.reminderHour)),
                         onPressed: !enabled
                             ? null
                             : () => _chooseHour(
@@ -228,30 +228,23 @@ class _NotificationSettingsViewState extends State<NotificationSettingsView> {
     required String Function(int) label,
   }) async {
     final cubit = context.read<NotificationSettingsCubit>();
-    final hour = await showModalBottomSheet<int>(
+    final hour = await showAppSheet<int>(
       context: context,
-      showDragHandle: true,
-      useSafeArea: true,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        expand: false,
-        builder: (context, controller) => ListView(
-          controller: controller,
-          padding: const EdgeInsets.all(AppSpacing.l),
-          children: [
-            AppSection(
-              header: context.l10n.notificationSettingsRemindAt,
-              children: [
-                for (var hour = 0; hour < 24; hour++)
-                  AppSelectableRow(
-                    title: label(hour),
-                    selected: hour == selected,
-                    onPressed: () => Navigator.of(context).pop(hour),
-                  ),
-              ],
-            ),
-          ],
-        ),
+      builder: (context) => ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [
+          AppSection(
+            header: context.l10n.notificationSettingsRemindAt,
+            children: [
+              for (var hour = 0; hour < 24; hour++)
+                AppSelectableRow(
+                  title: label(hour),
+                  selected: hour == selected,
+                  onPressed: () => Navigator.of(context).pop(hour),
+                ),
+            ],
+          ),
+        ],
       ),
     );
     if (hour != null && hour != selected) {

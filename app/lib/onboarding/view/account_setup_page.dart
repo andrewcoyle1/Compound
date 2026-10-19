@@ -262,7 +262,12 @@ class AccountSetupView extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(child: Text(name)),
-                        Text(kcal(value), style: TextStyle(color: secondary)),
+                        Text(
+                          kcal(value),
+                          style: AppTextStyles.rowTitle.copyWith(
+                            color: secondary,
+                          ),
+                        ),
                       ],
                     ),
                     ExcludeSemantics(
@@ -407,11 +412,11 @@ class _NamePhoto extends StatelessWidget {
           ),
         ),
         if (state.canRemovePhoto)
-          TextButton(
+          AppTextButton(
             key: const Key('NamePhoto.remove'),
+            label: l10n.onboardingRemovePhoto,
             onPressed: cubit.removePhoto,
-            style: TextButton.styleFrom(foregroundColor: scheme.error),
-            child: Text(l10n.onboardingRemovePhoto),
+            isDestructive: true,
           ),
         if (state.photoLoadFailed)
           AppInlineMessage(
@@ -437,36 +442,22 @@ class _NameFields extends StatelessWidget {
       header: l10n.onboardingNameHeader,
       footer: l10n.onboardingNameFooter,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-          child: TextFormField(
-            initialValue: state.firstName,
-            autofocus: true,
-            textCapitalization: TextCapitalization.words,
-            autofillHints: const [AutofillHints.givenName],
-            decoration: InputDecoration(
-              labelText: l10n.onboardingFirstName,
-              border: InputBorder.none,
-              filled: false,
-            ),
-            onChanged: cubit.firstNameChanged,
-          ),
+        AppTextFieldRow(
+          label: l10n.onboardingFirstName,
+          initialValue: state.firstName,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          autofillHints: const [AutofillHints.givenName],
+          onChanged: cubit.firstNameChanged,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-          child: TextFormField(
-            initialValue: state.lastName,
-            textCapitalization: TextCapitalization.words,
-            autofillHints: const [AutofillHints.familyName],
-            textInputAction: TextInputAction.done,
-            decoration: InputDecoration(
-              labelText: l10n.onboardingLastName,
-              border: InputBorder.none,
-              filled: false,
-            ),
-            onChanged: cubit.lastNameChanged,
-            onFieldSubmitted: (_) => cubit.saveName(),
-          ),
+        AppTextFieldRow(
+          label: l10n.onboardingLastName,
+          initialValue: state.lastName,
+          textCapitalization: TextCapitalization.words,
+          autofillHints: const [AutofillHints.familyName],
+          textInputAction: TextInputAction.done,
+          onChanged: cubit.lastNameChanged,
+          onSubmitted: (_) => cubit.saveName(),
         ),
       ],
     );

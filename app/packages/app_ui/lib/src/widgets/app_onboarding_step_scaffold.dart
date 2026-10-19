@@ -73,7 +73,13 @@ class AppOnboardingStepScaffold extends StatelessWidget {
     final progress = this.progress;
     final subtitle = this.subtitle;
     final secondaryLabel = this.secondaryLabel;
-    return Scaffold(
+    // AppScaffold's large title: drawn at display size above the content,
+    // and in the app bar at the standard size once it scrolls away. A
+    // SliverAppBar.large drew both from the app bar theme's title style.
+    return AppScaffold(
+      largeTitle: title,
+      actions: actions,
+      leading: onBack == null ? null : BackButton(onPressed: onBack),
       // Above the keyboard, as SwiftUI's safe-area inset is: a Scaffold
       // leaves its bottom bar under it.
       bottomNavigationBar: Padding(
@@ -97,50 +103,37 @@ class AppOnboardingStepScaffold extends StatelessWidget {
           ],
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar.large(
-            title: Text(title),
-            actions: actions,
-            leading: onBack == null ? null : BackButton(onPressed: onBack),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            sliver: SliverToBoxAdapter(
-              child: Column(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.xl,
+          children: [
+            if (progress != null || subtitle != null)
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: AppSpacing.xl,
+                spacing: AppSpacing.m,
                 children: [
-                  if (progress != null || subtitle != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: AppSpacing.m,
-                      children: [
-                        if (progress != null)
-                          LinearProgressIndicator(
-                            value: progress,
-                            semanticsLabel: progressLabel,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(AppRadius.s),
-                            ),
-                          ),
-                        if (subtitle != null)
-                          Text(
-                            subtitle,
-                            style: AppTextStyles.rowDetail.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                          ),
-                      ],
+                  if (progress != null)
+                    LinearProgressIndicator(
+                      value: progress,
+                      semanticsLabel: progressLabel,
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(AppRadius.s),
+                      ),
                     ),
-                  ...children,
+                  if (subtitle != null)
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.rowDetail.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                 ],
               ),
-            ),
-          ),
-        ],
+            ...children,
+          ],
+        ),
       ),
     );
   }

@@ -101,6 +101,11 @@ abstract final class AppTextStyles {
   /// 12, regular: stat labels and chips.
   static TextStyle get label => _system(12, 16, FontWeight.w400, sfTracking: 0);
 
+  /// [style] in semibold, as Swift's `.fontWeight(.semibold)`: a token
+  /// picked out from the text around it, such as today's date in a strip.
+  static TextStyle emphasized(TextStyle style) =>
+      style.copyWith(fontWeight: FontWeight.w600);
+
   /// A system-font style. [sfTracking] is Apple's tracking for San Francisco
   /// at [size], in points, applied on iOS only.
   static TextStyle _system(

@@ -92,6 +92,7 @@ class AppSignInButton extends StatelessWidget {
                           label,
                           textScaler: TextScaler.noScaling,
                           style: TextStyle(
+                            fontFamily: AppTextStyles.rowTitle.fontFamily,
                             color: foreground,
                             fontSize: titleSize,
                             fontWeight: FontWeight.w500,

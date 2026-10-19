@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
 
+void _goldenTap() {}
+
 void main() {
   group('AppListRowButton', () {
     testWidgets('the whole row is one button with a chevron', (tester) async {
@@ -67,5 +69,53 @@ void main() {
       final icon = tester.widget<Icon>(find.byIcon(AppSymbols.delete));
       expect(icon.color, AppColors.light.danger);
     });
+  });
+
+  group('AppListRowButton golden', () {
+    Widget card(Widget row) => AppCard(child: row);
+    goldenStates('app_list_row_button', [
+      (
+        'Icon and chevron',
+        card(
+          const AppListRowButton(
+            title: 'Notifications',
+            icon: AppSymbols.notifications,
+            onPressed: _goldenTap,
+          ),
+        ),
+      ),
+      (
+        'Subtitle',
+        card(
+          const AppListRowButton(
+            title: 'Apple Health',
+            subtitle: 'Connected',
+            icon: AppSymbols.integrations,
+            onPressed: _goldenTap,
+          ),
+        ),
+      ),
+      (
+        'Destructive',
+        card(
+          const AppListRowButton(
+            title: 'Sign Out',
+            onPressed: _goldenTap,
+            accessory: null,
+            destructive: true,
+          ),
+        ),
+      ),
+      (
+        'Disabled',
+        card(
+          const AppListRowButton(
+            title: 'Export Data',
+            icon: AppSymbols.openExternally,
+            onPressed: null,
+          ),
+        ),
+      ),
+    ]);
   });
 }

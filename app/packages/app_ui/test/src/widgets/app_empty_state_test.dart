@@ -106,4 +106,32 @@ void main() {
       expect(find.byIcon(AppSymbols.sync), findsOneWidget);
     });
   });
+
+  group('AppEmptyState golden', () {
+    goldenStates('app_empty_state', [
+      (
+        'Empty, with an action',
+        AppEmptyState(
+          icon: AppSymbols.workout,
+          title: 'No workouts yet',
+          description: 'Workouts you finish will show here.',
+          actionLabel: 'Start a Workout',
+          onAction: () {},
+        ),
+      ),
+      (
+        'Empty, title only',
+        const AppEmptyState(icon: AppSymbols.search, title: 'No results'),
+      ),
+      (
+        'Error',
+        AppErrorState(
+          title: "Couldn't load your workouts",
+          description: 'Check your connection and try again.',
+          actionLabel: 'Try Again',
+          onAction: () {},
+        ),
+      ),
+    ], padded: false);
+  });
 }

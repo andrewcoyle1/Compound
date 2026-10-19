@@ -230,4 +230,55 @@ void main() {
       });
     }
   });
+
+  group('AppDialog golden', () {
+    const twoActions = AppDialog<bool>(
+      title: 'Discard changes?',
+      message: 'Your edits to this workout will be lost.',
+      actions: [
+        AppDialogAction(label: 'Cancel', role: AppDialogRole.cancel),
+        AppDialogAction(label: 'Keep Editing', role: AppDialogRole.preferred),
+      ],
+    );
+    const destructive = AppDialog<bool>(
+      title: 'Delete workout?',
+      message: 'This cannot be undone.',
+      actions: [
+        AppDialogAction(label: 'Cancel', role: AppDialogRole.cancel),
+        AppDialogAction(label: 'Delete', role: AppDialogRole.destructive),
+      ],
+    );
+    const threeActions = AppDialog<int>(
+      title: 'Save as template?',
+      actions: [
+        AppDialogAction(label: 'Cancel', role: AppDialogRole.cancel),
+        AppDialogAction(label: 'Save', role: AppDialogRole.preferred),
+        AppDialogAction(label: 'Save as Copy'),
+      ],
+    );
+    const withContent = AppDialog<void>(
+      title: 'Rename',
+      content: TextField(decoration: InputDecoration(hintText: 'Name')),
+      actions: [
+        AppDialogAction(label: 'Cancel', role: AppDialogRole.cancel),
+        AppDialogAction(label: 'Save', role: AppDialogRole.preferred),
+      ],
+    );
+    goldenStates(
+      'app_dialog',
+      [
+        ('Two actions', twoActions),
+        ('Destructive', destructive),
+        ('Three actions stack', threeActions),
+        ('With a field', withContent),
+        ('Two actions, iOS', onIos(twoActions)),
+        ('Destructive, iOS', onIos(destructive)),
+        ('Three actions stack, iOS', onIos(threeActions)),
+        ('With a field, iOS', onIos(withContent)),
+      ],
+      width: 390,
+      height: 340,
+      padded: false,
+    );
+  });
 }

@@ -109,4 +109,49 @@ void main() {
       expect(hidden, isTrue);
     });
   });
+
+  group('AppSection golden', () {
+    goldenStates('app_section', [
+      (
+        'Header, rows and footer',
+        const AppSection(
+          header: 'Rest',
+          footer: 'Applies to new workouts.',
+          children: [
+            AppListRow(
+              title: 'Compound lifts',
+              accessory: AppListRowValue('3:00'),
+            ),
+            AppListRow(title: 'Isolation', accessory: AppListRowValue('1:30')),
+          ],
+        ),
+      ),
+      (
+        'Icon rows indent the divider',
+        const AppSection(
+          header: 'Integrations',
+          children: [
+            AppListRow(title: 'Apple Health', icon: AppSymbols.integrations),
+            AppListRow(title: 'Strava', icon: AppSymbols.sync),
+          ],
+        ),
+      ),
+      (
+        'Trailing action',
+        AppSection(
+          header: 'Workouts',
+          trailing: AppChip(label: 'See All', onPressed: () {}),
+          children: const [AppListRow(title: 'Upper A')],
+        ),
+      ),
+      (
+        'Trailing note',
+        const AppSection(
+          header: 'Name',
+          trailing: Text('Required'),
+          children: [AppListRow(title: 'Push Day')],
+        ),
+      ),
+    ]);
+  });
 }

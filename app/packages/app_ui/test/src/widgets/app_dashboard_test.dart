@@ -49,4 +49,44 @@ void main() {
       expect(three.dy, greaterThan(one.dy));
     });
   });
+
+  group('AppDashboard golden', () {
+    const sections = [
+      AppSection(
+        header: 'Training',
+        children: [
+          AppListRow(
+            title: 'Upper A',
+            subtitle: 'Week 2 of 5',
+            accessory: AppListRowChevron(),
+          ),
+        ],
+      ),
+      AppSection(
+        header: 'Nutrition',
+        children: [
+          AppListRow(title: 'Calories', accessory: AppListRowValue('1,850')),
+        ],
+      ),
+      AppSection(
+        header: 'Body',
+        children: [
+          AppListRow(title: 'Weight', accessory: AppListRowValue('81.4 kg')),
+        ],
+      ),
+    ];
+    goldenStates(
+      'app_dashboard',
+      [('Phone: one column', const AppDashboard(sections: sections))],
+      height: 420,
+      padded: false,
+    );
+    goldenStates(
+      'app_dashboard_wide',
+      [('Wide: two columns', const AppDashboard(sections: sections))],
+      width: AppContentWidth.twoColumns,
+      height: 300,
+      padded: false,
+    );
+  });
 }

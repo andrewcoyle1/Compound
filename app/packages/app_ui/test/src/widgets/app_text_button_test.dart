@@ -35,4 +35,15 @@ void main() {
       expect(tester.widget<TextButton>(find.byType(TextButton)).enabled, false);
     });
   });
+
+  group('AppTextButton golden', () {
+    goldenStates('app_text_button', [
+      ('Enabled', AppTextButton(label: 'See All', onPressed: () {})),
+      (
+        'Destructive',
+        AppTextButton(label: 'Remove', onPressed: () {}, isDestructive: true),
+      ),
+      ('Disabled', const AppTextButton(label: 'Not now', onPressed: null)),
+    ], width: 220);
+  });
 }

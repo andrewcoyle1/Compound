@@ -67,7 +67,12 @@ abstract final class AppTheme {
   );
 
   static ThemeData _theme(ColorScheme scheme, AppColors colors) {
-    const pill = StadiumBorder();
+    // A capsule at one line, as on iOS. A label that wraps at a large text
+    // size keeps capsule-sized corners rather than turning the button into
+    // an oval that clips its text.
+    const pill = RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(AppControlSize.cta / 2)),
+    );
     const minimumSize = Size(AppControlSize.row, AppControlSize.row);
     return ThemeData(
       colorScheme: scheme,
@@ -175,15 +180,21 @@ abstract final class AppTheme {
         ),
       ),
       switchTheme: SwitchThemeData(
+        // Off, the thumb is the secondary label colour: the surface colour
+        // it used to be all but vanished on the dark track.
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? scheme.onPrimary
-              : colors.surface,
+              : scheme.onSurfaceVariant,
         ),
+        // Disabled and on, the accent is faded, so it no longer looks like
+        // a switch that can be turned off.
         trackColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? scheme.primary
-              : scheme.surfaceContainerHighest,
+          (states) => !states.contains(WidgetState.selected)
+              ? scheme.surfaceContainerHighest
+              : states.contains(WidgetState.disabled)
+              ? scheme.primary.withValues(alpha: 0.38)
+              : scheme.primary,
         ),
         trackOutlineColor: const WidgetStatePropertyAll(Color(0x00000000)),
       ),

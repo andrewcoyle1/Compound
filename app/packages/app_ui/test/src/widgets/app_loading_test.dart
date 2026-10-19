@@ -84,4 +84,19 @@ void main() {
       );
     });
   });
+
+  group('AppLoading golden', () {
+    goldenStates('app_loading', [
+      ('Loading view', const AppLoadingView(label: 'Loading')),
+      ('Loading view, iOS', onIos(const AppLoadingView(label: 'Loading'))),
+      ('Placeholder', const AppPlaceholder(height: 20, width: 120)),
+      ('Placeholder row', const AppCard(child: AppPlaceholderRow())),
+      (
+        'Placeholder row, leading, no subtitle',
+        const AppCard(
+          child: AppPlaceholderRow(hasLeading: true, hasSubtitle: false),
+        ),
+      ),
+    ], pumpBeforeTest: pumpOnceSettled);
+  });
 }

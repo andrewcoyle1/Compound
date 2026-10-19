@@ -107,7 +107,11 @@ void main() {
           switches.trackColor?.resolve({}),
           scheme.surfaceContainerHighest,
         );
-        expect(switches.thumbColor?.resolve({}), colors.surface);
+        expect(switches.thumbColor?.resolve({}), scheme.onSurfaceVariant);
+        expect(
+          switches.trackColor?.resolve({...on, WidgetState.disabled}),
+          scheme.primary.withValues(alpha: 0.38),
+        );
       });
 
       test('the tab bar marks the selected tab with the accent only', () {

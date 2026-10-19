@@ -79,4 +79,36 @@ void main() {
       expect(changed, isTrue);
     });
   });
+
+  group('AppListRowToggle golden', () {
+    Widget card(Widget row) => AppCard(child: row);
+    final on = card(
+      AppListRowToggle(title: 'Rest timer', value: true, onChanged: (_) {}),
+    );
+    final off = card(
+      AppListRowToggle(
+        title: 'Sounds',
+        subtitle: 'Play a sound when rest ends',
+        icon: AppSymbols.notifications,
+        value: false,
+        onChanged: (_) {},
+      ),
+    );
+    goldenStates('app_list_row_toggle', [
+      ('On', on),
+      ('Off, icon and subtitle', off),
+      (
+        'Disabled',
+        card(
+          const AppListRowToggle(
+            title: 'Live Activity',
+            value: true,
+            onChanged: null,
+          ),
+        ),
+      ),
+      ('On, iOS', onIos(on)),
+      ('Off, iOS', onIos(off)),
+    ]);
+  });
 }

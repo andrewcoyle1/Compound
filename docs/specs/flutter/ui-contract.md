@@ -110,6 +110,36 @@ Every `app_ui` widget has golden-image tests in light mode, dark mode and at 200
 change that makes a component look worse fails a test and agents get visual proof without a
 device.
 
+- **One image per widget**, its states as rows and light, dark and light at 200% text as columns.
+  Write them with `goldenStates` (`test/helpers/golden.dart`) in the widget's own test file;
+  `onIos(…)` draws a state in its iOS form where the widget adapts (alerts, switches, spinners).
+  A new widget, or a new state of one, gets a row in the same PR.
+- **Two sets of images**, made with [alchemist](https://pub.dev/packages/alchemist) beside each
+  test file:
+  - `goldens/ci/`: every text run and icon drawn as a solid block, without shadows. Text is laid
+    out in Roboto (which alchemist bundles) or else Flutter's test font, so line breaks are
+    real, but no glyph is drawn. These are what every test run compares, on a Mac and on CI's
+    Linux alike, because glyph rasterisation differs between the two and blocks do not. Up to 0.5% of pixels may
+    differ (`test/flutter_test_config.dart`), for the anti-aliasing an arm64 Mac and the x86
+    runner disagree on.
+  - `goldens/macos/`: the same images with real text (Nunito, Material Icons, and Roboto in place
+    of San Francisco, which may not be redistributed), for people to look at. They are made and
+    checked only on request, on a Mac.
+- **Run** (from `app/packages/app_ui`; the very_good MCP `test` tool takes the same options):
+
+  | To | Run |
+  |---|---|
+  | Check, as CI does | the package's tests, as usual |
+  | Update the CI images | `flutter test --tags golden --update-goldens test/src/widgets` |
+  | Update the readable images | the same, plus `--dart-define=HUMAN_GOLDENS=true` |
+
+  Update with a path, as above: very_good's test optimiser can only compare against images that
+  already exist, so it cannot write a new one. A failure leaves the expected, actual and diff
+  images in `failures/` beside the test (ignored by git).
+- **A changed image needs the owner's eye.** Update both sets together. A PR that changes any
+  existing golden lists each changed file in its body, with a line on why, so the owner can
+  look at the readable image before it merges. A new golden needs no note.
+
 ## 7. Component gallery
 
 The development flavor has a gallery screen, reached from Developer Settings, that shows every

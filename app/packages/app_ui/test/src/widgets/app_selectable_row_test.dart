@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
 
+void _goldenTap() {}
+
 void main() {
   group('AppSelectableRow', () {
     testWidgets('is a selected button with a check', (tester) async {
@@ -77,5 +79,52 @@ void main() {
         ),
       );
     });
+  });
+
+  group('AppSelectableRow golden', () {
+    Widget card(Widget row) => AppCard(child: row);
+    goldenStates('app_selectable_row', [
+      (
+        'Selected',
+        card(
+          const AppSelectableRow(
+            title: 'Kilograms',
+            selected: true,
+            onPressed: _goldenTap,
+          ),
+        ),
+      ),
+      (
+        'Unselected',
+        card(
+          const AppSelectableRow(
+            title: 'Pounds',
+            selected: false,
+            onPressed: _goldenTap,
+          ),
+        ),
+      ),
+      (
+        'Subtitle',
+        card(
+          const AppSelectableRow(
+            title: 'Moderately active',
+            subtitle: 'Exercise 3 to 5 days a week, or a job on your feet',
+            selected: true,
+            onPressed: _goldenTap,
+          ),
+        ),
+      ),
+      (
+        'Disabled',
+        card(
+          const AppSelectableRow(
+            title: 'Stones',
+            selected: false,
+            onPressed: null,
+          ),
+        ),
+      ),
+    ]);
   });
 }

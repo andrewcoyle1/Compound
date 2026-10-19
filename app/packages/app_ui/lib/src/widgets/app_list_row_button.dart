@@ -49,14 +49,19 @@ class AppListRowButton extends StatelessWidget {
         button: true,
         child: InkWell(
           onTap: onPressed,
-          child: AppListRow(
-            title: title,
-            subtitle: subtitle,
-            icon: icon,
-            thumbnail: thumbnail,
-            tint: tint,
-            accessory: accessory,
-            destructive: destructive,
+          // Faded when it does nothing, as a disabled iOS row is; it
+          // looked like a live row before.
+          child: Opacity(
+            opacity: onPressed == null ? AppListRow.disabledOpacity : 1,
+            child: AppListRow(
+              title: title,
+              subtitle: subtitle,
+              icon: icon,
+              thumbnail: thumbnail,
+              tint: tint,
+              accessory: accessory,
+              destructive: destructive,
+            ),
           ),
         ),
       ),

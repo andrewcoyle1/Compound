@@ -77,4 +77,62 @@ void main() {
       );
     });
   });
+
+  group('AppStat golden', () {
+    goldenStates('app_stat', [
+      (
+        'Sizes',
+        const Wrap(
+          spacing: AppSpacing.xl,
+          runSpacing: AppSpacing.s,
+          children: [
+            AppStat(value: '12', label: 'Sets', size: AppStatSize.small),
+            AppStat(value: '1,850', label: 'kcal'),
+            AppStat(value: '81.4', label: 'kg', size: AppStatSize.large),
+          ],
+        ),
+      ),
+      (
+        'Icon and tint',
+        Builder(
+          builder: (context) => AppStat(
+            value: '142 g',
+            label: 'Protein',
+            icon: AppSymbols.protein,
+            tint: context.appColors.protein,
+          ),
+        ),
+      ),
+      (
+        'Centred',
+        const SizedBox(
+          width: double.infinity,
+          child: AppStat(
+            value: '7',
+            label: 'Week streak',
+            icon: AppSymbols.streak,
+            alignment: CrossAxisAlignment.center,
+          ),
+        ),
+      ),
+    ]);
+  });
+
+  group('AppStatTile golden', () {
+    goldenStates('app_stat_tile', [
+      ('Plain', const AppStatTile(value: '10,240', label: 'Steps today')),
+      (
+        'Tinted, icon',
+        Builder(
+          builder: (context) => AppStatTile(
+            value: '2,410',
+            label: 'Expenditure',
+            icon: AppSymbols.expenditure,
+            tint: context.appColors.expenditure,
+            size: AppStatSize.large,
+          ),
+        ),
+      ),
+    ]);
+  });
 }

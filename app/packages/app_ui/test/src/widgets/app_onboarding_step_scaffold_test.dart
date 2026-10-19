@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
 
+void _goldenTap() {}
+
 void main() {
   group('AppOnboardingStepScaffold', () {
     testWidgets('lays out title, progress, content and buttons', (
@@ -95,5 +97,57 @@ void main() {
       expect(find.byType(AppCtaButton), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
+  });
+
+  group('AppOnboardingStepScaffold golden', () {
+    const options = AppSection(
+      children: [
+        AppSelectableRow(
+          title: 'Lose fat',
+          selected: true,
+          onPressed: _goldenTap,
+        ),
+        AppSelectableRow(
+          title: 'Build muscle',
+          selected: false,
+          onPressed: _goldenTap,
+        ),
+      ],
+    );
+    goldenStates(
+      'app_onboarding_step_scaffold',
+      [
+        (
+          'A step',
+          const AppOnboardingStepScaffold(
+            title: 'Your goal',
+            subtitle: 'You can change it later in Settings.',
+            progress: 0.4,
+            progressLabel: 'Step 2 of 5',
+            primaryLabel: 'Continue',
+            onPrimaryPressed: _goldenTap,
+            secondaryLabel: 'Skip',
+            onSecondaryPressed: _goldenTap,
+            onBack: _goldenTap,
+            children: [options],
+          ),
+        ),
+        (
+          'Saving',
+          const AppOnboardingStepScaffold(
+            title: 'Your goal',
+            progress: 0.4,
+            primaryLabel: 'Continue',
+            onPrimaryPressed: _goldenTap,
+            isPrimaryLoading: true,
+            children: [options],
+          ),
+        ),
+      ],
+      width: 375,
+      height: 640,
+      padded: false,
+      pumpBeforeTest: pumpOnceSettled,
+    );
   });
 }

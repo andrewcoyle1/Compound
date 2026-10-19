@@ -31,12 +31,17 @@ void main() {
 
   RemoteOpenFoodFacts subject() => RemoteOpenFoodFacts(
     functions: functions,
-    client: MockClient((request) async {
+    now: () => now,
+    newId: () => 'new-id',
+  );
+
+  // The openfoodfacts package makes its own client per request.
+  Future<FoodModel> lookup(String barcode) => http.runWithClient(
+    () => subject().lookupBarcode(barcode),
+    () => MockClient((request) async {
       requests.add(request);
       return respond(request);
     }),
-    now: () => now,
-    newId: () => 'new-id',
   );
 
   void answer(Object? data) {
@@ -50,7 +55,7 @@ void main() {
     functions = _MockFunctions();
     callable = _MockCallable();
     requests = [];
-    respond = (_) => http.Response('{"status":0}', 404);
+    respond = (_) => http.Response('{"status":"failure"}', 404);
     when(() => functions.httpsCallable('foodSearch')).thenReturn(callable);
   });
 
@@ -126,7 +131,7 @@ void main() {
 
   group('lookupBarcode', () {
     const weetabix =
-        '{"code":"5010029000061","status":1,"product":{'
+        '{"code":"5010029000061","status":"success","product":{'
         '"product_name":"Weetabix Original","brands":"Weetabix Limited", '
         '"serving_size":"37.5 g","serving_quantity":37.5, '
         '"nutriments":{"energy-kcal_100g":362,"iron_100g":0.012}}}';
@@ -134,14 +139,17 @@ void main() {
     test('reads the product API, naming the app', () async {
       respond = (_) => http.Response.bytes(utf8.encode(weetabix), 200);
 
-      final food = await subject().lookupBarcode('5010029000061');
+      final food = await lookup('5010029000061');
 
       final request = requests.single;
-      expect(
-        request.url.toString(),
-        'https://world.openfoodfacts.org/api/v2/product/5010029000061.json',
-      );
+      expect(request.method, 'GET');
+      expect(request.url.origin, 'https://world.openfoodfacts.org');
+      expect(request.url.path, '/api/v3/product/5010029000061/');
       expect(request.headers['User-Agent'], RemoteOpenFoodFacts.userAgent);
+      expect(
+        request.url.queryParameters['app_name'],
+        RemoteOpenFoodFacts.userAgent,
+      );
       expect(food.ingredientId, 'off-5010029000061');
       expect(food.name, 'Weetabix Original');
       expect(food.nutrients.values[NutrientKey.ironMg], closeTo(12, 1e-9));
@@ -150,27 +158,28 @@ void main() {
 
     test('a code cannot leave the product path', () async {
       await expectLater(
-        subject().lookupBarcode('../search'),
+        lookup('../search'),
         throwsA(_failure(FoodDataFailure.notFound)),
       );
 
       expect(requests.single.url.pathSegments, [
         'api',
-        'v2',
+        'v3',
         'product',
-        '../search.json',
+        '../search',
+        '',
       ]);
     });
 
     test('an unknown product is not found', () async {
       for (final body in [
-        '{"code":"00000001","status":0}',
-        '{"status":1}',
-        '{"status":1,"product":{"brands":"No name"}}',
+        '{"code":"00000001","status":"failure"}',
+        '{"status":"success"}',
+        '{"status":"success","product":{"brands":"No name"}}',
       ]) {
         respond = (_) => http.Response(body, 200);
         await expectLater(
-          subject().lookupBarcode('00000001'),
+          lookup('00000001'),
           throwsA(_failure(FoodDataFailure.notFound)),
         );
       }
@@ -178,7 +187,7 @@ void main() {
 
     test('an empty code is not found without asking', () async {
       await expectLater(
-        subject().lookupBarcode(''),
+        lookup(''),
         throwsA(_failure(FoodDataFailure.notFound)),
       );
       expect(requests, isEmpty);
@@ -188,7 +197,7 @@ void main() {
       respond = (_) => http.Response('<html>slow down</html>', 429);
 
       await expectLater(
-        subject().lookupBarcode('1'),
+        lookup('1'),
         throwsA(_failure(FoodDataFailure.rateLimited)),
       );
     });
@@ -197,7 +206,7 @@ void main() {
       for (final body in ['<html>down</html>', '[]']) {
         respond = (_) => http.Response(body, 503);
         await expectLater(
-          subject().lookupBarcode('1'),
+          lookup('1'),
           throwsA(_failure(FoodDataFailure.unavailable)),
         );
       }
@@ -207,7 +216,7 @@ void main() {
       respond = (_) => throw http.ClientException('offline');
 
       await expectLater(
-        subject().lookupBarcode('1'),
+        lookup('1'),
         throwsA(_failure(FoodDataFailure.unavailable)),
       );
     });
@@ -223,7 +232,6 @@ void main() {
 
     final food = (await RemoteOpenFoodFacts(
       functions: functions,
-      client: MockClient((_) async => http.Response('', 500)),
     ).searchFoods('apples')).single;
 
     expect(food.dateCreated.isUtc, isTrue);

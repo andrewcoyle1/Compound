@@ -173,12 +173,12 @@ screens never branch on platform themselves.
 ## Enforcement
 
 `scripts/flutter-ui-check.py` runs in CI (`flutter.yml`, **UI contract** job) and enforces rules 2
-and 3 on `app/lib/`. Code from before the contract is baselined per rule: a count may fall but
-never rise. When you fix screens, lower the baseline in the same PR.
+and 3 on `app/lib/` (and `framework-import` on `app/test/`). Every screen was moved onto `app_ui`
+by 19 Oct 2026 (#212–#217), so there is no baseline: any match fails CI.
 
 ```bash
 python3 scripts/flutter-ui-check.py                  # what CI runs
-python3 scripts/flutter-ui-check.py --list text-style  # every remaining match of one rule
+python3 scripts/flutter-ui-check.py --list text-style  # every match of one rule
 ```
 
 Rules 1 and 4–8 are checked in review.

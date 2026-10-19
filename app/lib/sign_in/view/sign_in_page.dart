@@ -36,15 +36,15 @@ class SignInView extends StatelessWidget {
       child: AppScaffold(
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 12,
+              spacing: AppSpacing.m,
               children: [
                 const Spacer(),
                 Text(
                   l10n.signInTitle,
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  style: AppTextStyles.display,
                   textAlign: TextAlign.center,
                 ),
                 const Spacer(),
@@ -57,9 +57,10 @@ class SignInView extends StatelessWidget {
                   label: l10n.signInWithGoogleButton,
                   onPressed: enabled ? cubit.signInWithGoogle : null,
                 ),
-                TextButton(
+                AppCtaButton(
+                  label: l10n.signInAnonymouslyButton,
+                  variant: AppCtaVariant.plain,
                   onPressed: enabled ? cubit.signInAnonymously : null,
-                  child: Text(l10n.signInAnonymouslyButton),
                 ),
               ],
             ),

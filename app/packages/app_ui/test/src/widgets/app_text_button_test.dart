@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
@@ -30,6 +31,20 @@ void main() {
       );
     });
 
+    testWidgets('small draws the label at label size', (tester) async {
+      await tester.pumpApp(
+        Center(
+          child: AppTextButton(label: 'Terms', onPressed: () {}, isSmall: true),
+        ),
+      );
+      final label = tester.renderObject<RenderParagraph>(find.text('Terms'));
+      expect(label.text.style?.fontSize, AppTextStyles.label.fontSize);
+      expect(
+        tester.getSize(find.byType(TextButton)).height,
+        greaterThanOrEqualTo(AppControlSize.row),
+      );
+    });
+
     testWidgets('null onPressed disables it', (tester) async {
       await tester.pumpApp(const AppTextButton(label: 'Skip', onPressed: null));
       expect(tester.widget<TextButton>(find.byType(TextButton)).enabled, false);
@@ -44,6 +59,7 @@ void main() {
         AppTextButton(label: 'Remove', onPressed: () {}, isDestructive: true),
       ),
       ('Disabled', const AppTextButton(label: 'Not now', onPressed: null)),
+      ('Small', AppTextButton(label: 'Terms', onPressed: () {}, isSmall: true)),
     ], width: 220);
   });
 }

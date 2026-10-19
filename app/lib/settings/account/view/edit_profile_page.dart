@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
@@ -72,17 +74,12 @@ class _EditProfileViewState extends State<EditProfileView> {
           case EditProfileStatus.saved:
             context.pop();
           case EditProfileStatus.saveFailure:
-            showAdaptiveDialog<void>(
-              context: context,
-              builder: (context) => AlertDialog.adaptive(
-                title: Text(l10n.editProfileSaveFailedTitle),
-                content: Text(l10n.editProfileSaveFailedMessage),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.settingsOk),
-                  ),
-                ],
+            unawaited(
+              showAppDialog<void>(
+                context: context,
+                title: l10n.editProfileSaveFailedTitle,
+                message: l10n.editProfileSaveFailedMessage,
+                actions: [AppDialogAction(label: l10n.settingsOk)],
               ),
             );
           case EditProfileStatus.privacyFailure:
@@ -97,7 +94,8 @@ class _EditProfileViewState extends State<EditProfileView> {
       },
       child: AppScaffold(
         appBar: AppBar(
-          leading: CloseButton(
+          leading: AppToolbarButton.close(
+            semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
             onPressed: () {
               _cubit.cancelPressed();
               context.pop();
@@ -105,17 +103,22 @@ class _EditProfileViewState extends State<EditProfileView> {
           ),
           title: Text(l10n.editProfileTitle),
           actions: [
-            if (state.status == EditProfileStatus.saving)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                child: Center(child: CircularProgressIndicator.adaptive()),
-              )
-            else
-              IconButton(
-                icon: const Icon(AppSymbols.selected),
-                tooltip: l10n.logWeightSave,
-                onPressed: state.canSave ? _cubit.savePressed : null,
-              ),
+            // Swift's toolbar photo button (`photo.badge.plus`).
+            AppToolbarButton(
+              icon: state.pickedPhoto != null || state.profileImageUrl != null
+                  ? AppSymbols.changePhoto
+                  : AppSymbols.addPhoto,
+              semanticLabel:
+                  state.pickedPhoto != null || state.profileImageUrl != null
+                  ? l10n.editProfileChangePhoto
+                  : l10n.editProfileAddPhoto,
+              onPressed: state.uid == null ? null : _cubit.photoPressed,
+            ),
+            AppToolbarButton.confirm(
+              semanticLabel: l10n.logWeightSave,
+              isSaving: state.status == EditProfileStatus.saving,
+              onPressed: state.canSave ? _cubit.savePressed : null,
+            ),
           ],
         ),
         body: SafeArea(
@@ -167,44 +170,25 @@ class _PhotoSection extends StatelessWidget {
       size: _size,
       color: scheme.onSurfaceVariant,
     );
-    final hasPhoto = picked != null || stored != null;
     return Center(
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          ClipOval(
-            child: SizedBox.square(
-              dimension: _size,
-              child: picked != null
-                  ? Image.memory(
-                      picked,
-                      fit: BoxFit.cover,
-                      semanticLabel: l10n.editProfilePhoto,
-                      errorBuilder: (_, _, _) => placeholder,
-                    )
-                  : stored != null
-                  ? StoredImage(
-                      stored,
-                      semanticLabel: l10n.editProfilePhoto,
-                      placeholder: placeholder,
-                    )
-                  : placeholder,
-            ),
-          ),
-          Positioned(
-            right: -AppSpacing.s,
-            bottom: -AppSpacing.s,
-            child: IconButton.filled(
-              icon: const Icon(AppSymbols.camera),
-              tooltip: hasPhoto
-                  ? l10n.editProfileChangePhoto
-                  : l10n.editProfileAddPhoto,
-              onPressed: state.uid == null
-                  ? null
-                  : context.read<EditProfileCubit>().photoPressed,
-            ),
-          ),
-        ],
+      child: ClipOval(
+        child: SizedBox.square(
+          dimension: _size,
+          child: picked != null
+              ? Image.memory(
+                  picked,
+                  fit: BoxFit.cover,
+                  semanticLabel: l10n.editProfilePhoto,
+                  errorBuilder: (_, _, _) => placeholder,
+                )
+              : stored != null
+              ? StoredImage(
+                  stored,
+                  semanticLabel: l10n.editProfilePhoto,
+                  placeholder: placeholder,
+                )
+              : placeholder,
+        ),
       ),
     );
   }
@@ -227,25 +211,6 @@ class _ProfileSection extends StatelessWidget {
         _ => state.username,
       },
     );
-    Widget textField({
-      required String initialValue,
-      required String label,
-      required ValueChanged<String> onChanged,
-      required String autofillHint,
-    }) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-      child: TextFormField(
-        initialValue: initialValue,
-        textCapitalization: TextCapitalization.words,
-        autofillHints: [autofillHint],
-        decoration: InputDecoration(
-          labelText: label,
-          border: InputBorder.none,
-          filled: false,
-        ),
-        onChanged: onChanged,
-      ),
-    );
     return AppSection(
       header: l10n.editProfileProfileHeader,
       children: [
@@ -258,17 +223,19 @@ class _ProfileSection extends StatelessWidget {
                 : l10n.profileUsernameHandle(username),
           ),
         ),
-        textField(
+        AppTextFieldRow(
           initialValue: state.firstName,
           label: l10n.onboardingFirstName,
           onChanged: cubit.firstNameChanged,
-          autofillHint: AutofillHints.givenName,
+          textCapitalization: TextCapitalization.words,
+          autofillHints: const [AutofillHints.givenName],
         ),
-        textField(
+        AppTextFieldRow(
           initialValue: state.lastName,
           label: l10n.editProfileLastName,
           onChanged: cubit.lastNameChanged,
-          autofillHint: AutofillHints.familyName,
+          textCapitalization: TextCapitalization.words,
+          autofillHints: const [AutofillHints.familyName],
         ),
         AppListRowButton(
           title: l10n.onboardingDateOfBirth,
@@ -356,14 +323,11 @@ class _OptionRow<T extends Object> extends StatelessWidget {
     final selected = this.selected;
     return AppListRowButton(
       title: title,
-      accessory: AppListRowValue(
+      accessory: AppListRowMenu(
         selected == null ? l10n.editProfileNotSpecified : label(selected),
       ),
-      onPressed: () => showModalBottomSheet<void>(
+      onPressed: () => showAppSheet<void>(
         context: context,
-        showDragHandle: true,
-        useSafeArea: true,
-        isScrollControlled: true,
         builder: (sheetContext) {
           void choose(T? option) {
             onSelected(option);

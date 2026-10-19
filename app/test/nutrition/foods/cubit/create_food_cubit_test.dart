@@ -285,7 +285,7 @@ void main() {
         await build().photoPressed();
 
         expect(analytics.names.first, 'IngredientImageSelector_Start');
-        expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+        expect(picker.picks, [(PhotoSource.library, PhotoSize.foodImage)]);
       });
 
       test('a picked photo is kept, and counts as something to lose', () async {

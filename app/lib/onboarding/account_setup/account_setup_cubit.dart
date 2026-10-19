@@ -335,7 +335,7 @@ class AccountSetupCubit extends Cubit<AccountSetupState> {
     Uint8List? photo;
     Object? failure;
     try {
-      photo = await _picker.pick(PhotoSource.library, PhotoSize.standard);
+      photo = await _picker.pick(PhotoSource.library, PhotoSize.avatar);
     } on Object catch (error) {
       failure = error;
     }

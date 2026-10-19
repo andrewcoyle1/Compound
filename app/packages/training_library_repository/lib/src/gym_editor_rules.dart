@@ -270,8 +270,8 @@ abstract final class GymEditorRules {
     return {...item, GymEquipmentKeys.isActive: isActive};
   });
 
-  /// [list]'s items that match [query] (trimmed, any case) and, with
-  /// [selectedOnly], are switched on, by name and then as stored.
+  /// [list]'s items that match [query] by name and, with [selectedOnly],
+  /// are switched on: best first, then by name, then as stored.
   /// With [scope], only the items it names: one exercise variation's
   /// equipment, edited from inside a workout.
   static List<GymEquipmentItem> visibleItems(
@@ -281,17 +281,21 @@ abstract final class GymEditorRules {
     bool selectedOnly = false,
     EquipmentScope? scope,
   }) {
-    final needle = query.trim().toLowerCase();
     final items = [
       for (final item in list.of(gym))
-        if ((needle.isEmpty || _name(item).toLowerCase().contains(needle)) &&
-            (!selectedOnly || item.isActive) &&
+        if ((!selectedOnly || item.isActive) &&
             (scope?.contains((list.kind, item.typeId)) ?? true))
           item,
     ];
-    return _stableSorted(
-      items,
-      (a, b) => _name(a).toLowerCase().compareTo(_name(b).toLowerCase()),
+    return FuzzyMatch.search(
+      _stableSorted(
+        items,
+        (a, b) => _name(a).toLowerCase().compareTo(_name(b).toLowerCase()),
+      ),
+      query,
+      (item) => [
+        [_name(item)],
+      ],
     );
   }
 
@@ -303,7 +307,7 @@ abstract final class GymEditorRules {
     required bool selectedOnly,
     EquipmentScope? scope,
   }) =>
-      query.trim().isNotEmpty &&
+      FuzzyMatch.isSearching(query) &&
       GymEquipmentList.values.every(
         (list) => visibleItems(
           gym,

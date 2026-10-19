@@ -8,11 +8,16 @@ environment:
   flutter: ^3.47.0
 
 dependencies:
+  # AppConfetti's particles. MIT; its licence ships in the app's NOTICES
+  # with every other package's.
+  confetti: 0.8.0
   cupertino_ui: ^1.1.3
   flutter:
     sdk: flutter
   intl: ^0.20.2
   material_ui: ^1.1.1
+  # Share cards drawn off screen to a PNG (MIT).
+  screenshot: 3.0.0
 
 dev_dependencies:
   # Golden tests (docs/specs/flutter/ui-contract.md, rule 6). MIT.

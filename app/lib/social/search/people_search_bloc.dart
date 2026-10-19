@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:compound/social/logic/people.dart';
 import 'package:compound/social/logic/restartable.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
@@ -18,22 +17,23 @@ final class const PeopleSearchState({
   final bool failed = false,
 }) extends Equatable {
   /// Whether anything is typed.
-  bool get isSearching => SearchMatch.isSearching(query);
+  bool get isSearching => FuzzyMatch.isSearching(query);
 
-  /// People followed first, then anyone the server found who is not listed
-  /// already, each matching the query by first name or handle.
+  /// The people followed, then anyone the server found who is not listed
+  /// already, matching the query by first name or handle, best first.
   List<UserModel> results(List<UserModel> following) {
     final followedIds = {for (final user in following) user.userId};
-    return [
-          ...following,
-          for (final user in remoteUsers)
-            if (!followedIds.contains(user.userId)) user,
-        ]
-        .where(
-          (user) =>
-              SearchMatch.matches(query, [firstNameOf(user), user.username]),
-        )
-        .toList();
+    return FuzzyMatch.search(
+      [
+        ...following,
+        for (final user in remoteUsers)
+          if (!followedIds.contains(user.userId)) user,
+      ],
+      query,
+      (user) => [
+        [firstNameOf(user), user.username],
+      ],
+    );
   }
 
   @override
@@ -67,7 +67,7 @@ class PeopleSearchBloc
     Emitter<PeopleSearchState> emit,
   ) async {
     final query = event.query;
-    if (!SearchMatch.isSearching(query)) {
+    if (!FuzzyMatch.isSearching(query)) {
       return emit(PeopleSearchState(query: query));
     }
     // Raised at once, so the spinner shows with the first keystroke.

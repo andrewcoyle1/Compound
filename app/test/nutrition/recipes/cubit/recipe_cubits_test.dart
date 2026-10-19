@@ -442,7 +442,7 @@ void main() {
         await cubit.photoPressed();
 
         expect(cubit.state.photo, picker.photo);
-        expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+        expect(picker.picks, [(PhotoSource.library, PhotoSize.recipeImage)]);
         expect(analytics.names, isEmpty);
       });
 

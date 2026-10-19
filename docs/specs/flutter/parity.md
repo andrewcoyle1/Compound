@@ -321,6 +321,11 @@ None left: label OCR (#185) and A/B tests (#186) closed the last two.
   apps. Fix in Swift before Android 1.0 shares accounts. The other findings in `swift-findings.md`
   each need a decision too.
 
+### (d) Later (owner, 19 Oct 2026)
+- **Gleap:** in-app support chat, bug reports and feedback (`gleap_sdk`, a paid service). Parked.
+- **Coach overhaul with generative UI:** adopt the `markdown` package then, replacing the light
+  bold/italic parser in `coach/view/coach_message_body.dart`.
+
 ### (c) M6: iOS only (go-ahead given 16 Oct 2026)
 - Live Activity and Dynamic Island: keep `WorkoutSessionActivity`, driven over a platform channel and
   an App Group; the Lock Screen set receipt in the progression note's slot (#165).

@@ -3023,6 +3023,7 @@
     "devGalleryOverlays": "Superposiciones",
     "devGalleryStates": "Estados",
     "devGalleryContent": "Contenido",
+    "devGalleryCharts": "Gráficos",
     "devGalleryPlay": "Reproducir",
     "devGallerySampleAction": "Empezar entrenamiento",
     "devGallerySampleShortAction": "Seguir",
@@ -3053,5 +3054,8 @@
     "devGallerySampleWeek": "Semana",
     "devGallerySampleMonth": "Mes",
     "devGallerySampleArchive": "Archivar",
-    "devGallerySamplePin": "Fijar"
+    "devGallerySamplePin": "Fijar",
+    "photoCropTitle": "Recortar foto",
+    "photoCropDone": "Listo",
+    "photoCropCancel": "Cancelar"
 }

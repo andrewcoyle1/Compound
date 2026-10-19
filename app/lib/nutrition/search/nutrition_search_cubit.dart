@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
-import 'package:compound/training_library/logic/search_match.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
 
@@ -13,29 +13,18 @@ final class const NutritionSearchState({
   final List<RecipeTemplateModel> recipes = const [],
 }) extends Equatable {
   /// Whether the query says anything, so results replace the day.
-  bool get isSearching => SearchMatch.isSearching(query);
+  bool get isSearching => FuzzyMatch.isSearching(query);
 
-  /// Foods matching on name or description, by name
-  /// (`NutritionPresenter.filteredFoods`).
-  List<FoodModel> get matchingFoods => sortedByName(
-    foods.where(
-      (food) => SearchMatch.matches(query, [food.name, food.description]),
-    ),
-    (food) => food.name,
-  );
+  /// Foods matching on name, brand or description, best first and then by
+  /// name (`NutritionPresenter.filteredFoods`). None for a blank query.
+  List<FoodModel> get matchingFoods =>
+      isSearching ? searchFoods(foods, query) : const [];
 
-  /// Recipes matching on name, description or an ingredient's name, by
-  /// name (`NutritionPresenter.filteredRecipes`).
-  List<RecipeTemplateModel> get matchingRecipes => sortedByName(
-    recipes.where(
-      (recipe) => SearchMatch.matches(query, [
-        recipe.name,
-        recipe.description,
-        for (final ingredient in recipe.ingredients) ingredient.name,
-      ]),
-    ),
-    (recipe) => recipe.name,
-  );
+  /// Recipes matching on name, an ingredient's name or description, best
+  /// first and then by name (`NutritionPresenter.filteredRecipes`). None
+  /// for a blank query.
+  List<RecipeTemplateModel> get matchingRecipes =>
+      isSearching ? searchRecipes(recipes, query) : const [];
 
   NutritionSearchState copyWith({
     String? query,

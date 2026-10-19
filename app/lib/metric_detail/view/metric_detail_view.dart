@@ -2,7 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
 import 'package:compound/metric_detail/view/metric_chart.dart';
-import 'package:compound/widgets/chart_callout.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 
 /// A metric's screen body (Swift `MetricDetailView`): the range picker, the

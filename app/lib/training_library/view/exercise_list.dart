@@ -3,7 +3,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/cubit/exercise_list_cubit.dart';
 import 'package:compound/training_library/logic/exercise_filters.dart';
-import 'package:compound/training_library/logic/search_match.dart';
 import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/library_names.dart';
@@ -113,7 +112,7 @@ class _Sections extends StatelessWidget {
     final l10n = context.l10n;
     final filters = state.filters;
     final List<Widget> children;
-    if (SearchMatch.isSearching(state.query)) {
+    if (FuzzyMatch.isSearching(state.query)) {
       final results = library.filtered(
         library.searchExercises(state.query),
         filters,

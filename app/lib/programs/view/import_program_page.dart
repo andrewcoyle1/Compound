@@ -6,6 +6,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/import_program_cubit.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
+import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:file_selector/file_selector.dart';
@@ -373,12 +374,15 @@ class _LibraryPickerState extends State<_LibraryPicker> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final words = _query.trim().toLowerCase().split(RegExp(r'\s+'));
-    final matches = [
-      for (final exercise in widget.library)
-        if (words.any((word) => exercise.name.toLowerCase().contains(word)))
-          exercise,
-    ]..sort((a, b) => a.name.compareTo(b.name));
+    // Any word of the imported name may find it, the closest first.
+    final matches = FuzzyMatch.search(
+      TrainingLibrary.byName(widget.library, (exercise) => exercise.name),
+      _query,
+      (exercise) => [
+        [exercise.name],
+      ],
+      anyWord: true,
+    );
     return AppScaffold(
       appBar: AppBar(
         leading: AppToolbarButton.close(

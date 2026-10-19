@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
+import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
@@ -24,18 +25,11 @@ final class const FoodsState({
 }) extends Equatable {
   /// The foods shown (`IngredientListBuilderPresenter.userFoods` and
   /// `.filteredFoods`): branded ones only when the setting allows, matching
-  /// the filter on name or description, by name.
-  List<FoodModel> get visibleFoods {
-    final needle = filter.toLowerCase();
-    bool matches(String? text) =>
-        text != null && text.toLowerCase().contains(needle);
-    return [
-      for (final food in foods ?? const <FoodModel>[])
-        if ((showBrandedFoods || food.brandName == null) &&
-            (needle.isEmpty || matches(food.name) || matches(food.description)))
-          food,
-    ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-  }
+  /// the filter, best first and then by name.
+  List<FoodModel> get visibleFoods => searchFoods([
+    for (final food in foods ?? const <FoodModel>[])
+      if (showBrandedFoods || food.brandName == null) food,
+  ], filter);
 
   FoodsState copyWith({
     List<FoodModel>? foods,

@@ -141,6 +141,14 @@ sealed class ChecklistItem extends Equatable {
 
   /// Whether it is done.
   bool get isDone;
+
+  /// Which item it is: Swift's `ChecklistItem.Kind` raw value.
+  String get kind => switch (this) {
+    TrainingItem() => 'training',
+    NutritionItem() => 'nutrition',
+    WeighInItem() => 'weighIn',
+    StepsItem() => 'steps',
+  };
 }
 
 /// Training today (`TodayChecklist.Training`): a workout finished today,

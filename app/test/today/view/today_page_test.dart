@@ -84,6 +84,7 @@ void main() {
     AnalyticsRepository analytics = const AnalyticsRepository(),
     BodyRepository? bodyRepository,
     Size size = phoneSize,
+    bool reduceMotion = false,
   }) async {
     tester.useSize(size);
     final workouts =
@@ -130,7 +131,13 @@ void main() {
             firstWeekday: firstWeekday,
             now: () => now,
           )..add(const TodaySubscriptionRequested()),
-          child: const TodayView(),
+          child: Builder(
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(disableAnimations: reduceMotion),
+              child: const TodayView(),
+            ),
+          ),
         ),
       ),
       appBloc: appBloc,
@@ -415,6 +422,82 @@ void main() {
       verify(() => router.go(AppTab.nutrition.path)).called(1);
       await tester.tap(find.text('Steps'));
       verify(() => router.goNamed(StepsPage.name)).called(1);
+    });
+
+    group('confetti', () {
+      final burst = find.byWidgetPredicate(
+        (widget) => widget.runtimeType.toString() == 'ConfettiWidget',
+      );
+      final weighIn = BodyMeasurementEntry(
+        id: 'today',
+        authorId: uid,
+        weightKg: 80,
+        date: DateTime(now.year, now.month, now.day, 8),
+        source: WeightSource.manual,
+        dateCreated: DateTime(now.year, now.month, now.day, 8),
+      );
+
+      /// Today with no weigh-in yet; [weighIn] logs one.
+      Future<InMemoryBodyRepository> notWeighedIn(
+        WidgetTester tester, {
+        bool reduceMotion = false,
+      }) async {
+        final body = InMemoryBodyRepository();
+        await pumpView(
+          tester,
+          bodyRepository: body,
+          programsCubit: await programs(tester, const []),
+          reduceMotion: reduceMotion,
+        );
+        await tester.pump();
+        return body;
+      }
+
+      Future<void> logWeighIn(
+        WidgetTester tester,
+        InMemoryBodyRepository body,
+      ) async {
+        await tester.runAsync(() => body.saveMeasurement(weighIn));
+        for (var frame = 0; frame < 4; frame++) {
+          await tester.pump();
+        }
+      }
+
+      testWidgets('bursts from an item as it turns done in view', (
+        tester,
+      ) async {
+        final body = await notWeighedIn(tester);
+        expect(burst, findsNothing);
+        await logWeighIn(tester, body);
+        expect(burst, findsOneWidget);
+        await tester.pumpAndSettle();
+        expect(burst, findsNothing);
+      });
+
+      testWidgets('stays still for a day already done when it opens', (
+        tester,
+      ) async {
+        await pumpView(tester, programsCubit: await programs(tester, const []));
+        for (var frame = 0; frame < 4; frame++) {
+          await tester.pump();
+        }
+        expect(find.text('Weigh In'), findsOneWidget);
+        expect(burst, findsNothing);
+      });
+
+      testWidgets('stays still with reduced motion', (tester) async {
+        final body = await notWeighedIn(tester, reduceMotion: true);
+        await logWeighIn(tester, body);
+        expect(
+          tester
+              .element(find.byType(TodayView))
+              .read<TodayBloc>()
+              .state
+              .celebrated,
+          {'weighIn'},
+        );
+        expect(burst, findsNothing);
+      });
     });
 
     testWidgets('logs a weigh-in until one is in today', (tester) async {

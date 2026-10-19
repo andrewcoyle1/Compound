@@ -111,7 +111,7 @@ class TrainingView extends StatelessWidget {
             CalendarHeader(today: today, markers: markers, onDaySelected: open),
             searchField,
             Expanded(
-              child: SearchMatch.isSearching(query) && library != null
+              child: FuzzyMatch.isSearching(query) && library != null
                   ? _SearchResults(library: library, query: query)
                   : const _Library(),
             ),

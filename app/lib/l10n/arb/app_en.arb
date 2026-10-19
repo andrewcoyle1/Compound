@@ -13282,6 +13282,10 @@
     "@devGalleryContent": {
         "description": "Component gallery: the part showing cards, values, chips and messages"
     },
+    "devGalleryCharts": "Charts",
+    "@devGalleryCharts": {
+        "description": "Component gallery: the part showing chart pieces from compound_charts"
+    },
     "devGalleryPlay": "Play",
     "@devGalleryPlay": {
         "description": "Component gallery: runs every motion curve once"
@@ -13405,5 +13409,17 @@
     "devGallerySamplePin": "Pin",
     "@devGallerySamplePin": {
         "description": "Component gallery: sample swipe action"
+    },
+    "photoCropTitle": "Crop Photo",
+    "@photoCropTitle": {
+        "description": "Photo crop screen: its title, after a photo is taken or chosen"
+    },
+    "photoCropDone": "Done",
+    "@photoCropDone": {
+        "description": "Photo crop screen (iOS): keeps the crop"
+    },
+    "photoCropCancel": "Cancel",
+    "@photoCropCancel": {
+        "description": "Photo crop screen (iOS): discards the photo"
     }
 }

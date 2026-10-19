@@ -89,7 +89,7 @@ void main() {
       expect(cubit.state.visibleFoods.map((f) => f.name), ['Oats']);
     });
 
-    test('filters on name or description, ignoring case', () async {
+    test('filters on name or description, name matches first', () async {
       final cubit =
           await build(
               foods: [
@@ -101,8 +101,8 @@ void main() {
             ..filterChanged('oats');
 
       expect(cubit.state.visibleFoods.map((f) => f.name), [
-        'Porridge',
         'Rolled Oats',
+        'Porridge',
       ]);
     });
 

@@ -7,7 +7,7 @@ import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/training_analytics/bloc/training_analytics_bloc.dart';
 import 'package:compound/training_analytics/view/training_analytics_widgets.dart';
 import 'package:compound/training_analytics/view/training_metric_pages.dart';
-import 'package:compound/widgets/chart_callout.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:go_router/go_router.dart';
 

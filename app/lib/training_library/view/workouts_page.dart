@@ -6,7 +6,6 @@ import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/cubit/library_search_cubit.dart';
-import 'package:compound/training_library/logic/search_match.dart';
 import 'package:compound/training_library/logic/template_summary.dart';
 import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/library_names.dart';
@@ -145,7 +144,7 @@ class _Sections extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final searching = SearchMatch.isSearching(query);
+    final searching = FuzzyMatch.isSearching(query);
     final mesocycles = [
       for (final (mesocycle, days) in library.mesocycleDays(query))
         AppSection(

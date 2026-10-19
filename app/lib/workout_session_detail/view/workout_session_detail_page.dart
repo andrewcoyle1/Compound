@@ -52,8 +52,9 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 /// Strava once.
 ///
 /// As the summary of a workout just finished (`isWorkoutSummary`), it opens
-/// over the tabs in the tracker's place, shows the [session] it is handed
-/// rather than waiting for the save, and Done closes it.
+/// over the tabs in the tracker's place with a burst of confetti, shows the
+/// [session] it is handed rather than waiting for the save, and Done closes
+/// it.
 class WorkoutSessionDetailPage extends StatelessWidget {
   const new({
     required this.sessionId,
@@ -121,7 +122,11 @@ class WorkoutSessionDetailPage extends StatelessWidget {
           )..started(),
         ),
       ],
-      child: WorkoutSessionDetailView(isWorkoutSummary: isWorkoutSummary),
+      // A workout just finished is celebrated once, as its summary opens.
+      child: AppConfetti(
+        playsOnMount: isWorkoutSummary,
+        child: WorkoutSessionDetailView(isWorkoutSummary: isWorkoutSummary),
+      ),
     );
   }
 }

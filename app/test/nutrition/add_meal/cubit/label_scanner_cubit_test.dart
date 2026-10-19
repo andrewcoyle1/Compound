@@ -263,7 +263,7 @@ void main() {
           text: 'Energy 46kcal\nProtein 1.2 g',
         ),
       ]);
-      expect(picker.picks.single, (PhotoSource.camera, PhotoSize.foodPhoto));
+      expect(picker.picks.single, (PhotoSource.camera, PhotoSize.labelPhoto));
       expect(reader.photos.single, picker.photo);
       expect(ai.calls, isEmpty);
     });

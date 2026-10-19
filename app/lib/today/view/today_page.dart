@@ -199,10 +199,11 @@ class _Day extends StatelessWidget {
     );
     // Complete only once the schedule is known, so a planned workout still
     // to come can't be missed.
-    return _DayCompleteWatcher(
-      itemCount: checklist.items.length,
-      isComplete:
-          checklist.isComplete && programs.status != ProgramsStatus.loading,
+    final scheduled = programs.status != ProgramsStatus.loading;
+    return _ChecklistWatcher(
+      checklist: checklist,
+      isComplete: checklist.isComplete && scheduled,
+      ready: state.checklistRead && scheduled,
       child: SafeArea(
         child: AppDashboard(
           sections: [
@@ -245,6 +246,7 @@ class _Day extends StatelessWidget {
             DayChecklistCard(
               checklist: checklist,
               stepGoal: state.stepGoal,
+              celebrated: state.celebrated,
               unit: state.usesPounds
                   ? AppWeightUnit.pounds
                   : AppWeightUnit.kilograms,
@@ -374,38 +376,66 @@ class _LogMenu extends StatelessWidget {
 
 /// Tells the bloc each time the checklist turns complete, and on arrival
 /// when it already is; the bloc marks the day once
-/// (`TodayView.onChange(of: checklist.isComplete, initial: true)`).
-class _DayCompleteWatcher extends StatefulWidget {
+/// (`TodayView.onChange(of: checklist.isComplete, initial: true)`). Once
+/// everything it is built from has arrived ([ready]), it also shows the
+/// bloc the checklist each time it changes while in view, and when the
+/// screen comes back into view, so an item done meanwhile (a meal logged on
+/// Nutrition) is celebrated on return.
+class _ChecklistWatcher extends StatefulWidget {
   const new({
-    required this.itemCount,
+    required this.checklist,
     required this.isComplete,
+    required this.ready,
     required this.child,
   });
 
-  final int itemCount;
+  final TodayChecklist checklist;
   final bool isComplete;
+  final bool ready;
   final Widget child;
 
   @override
-  State<_DayCompleteWatcher> createState() => _DayCompleteWatcherState();
+  State<_ChecklistWatcher> createState() => _ChecklistWatcherState();
 }
 
-class _DayCompleteWatcherState extends State<_DayCompleteWatcher> {
+class _ChecklistWatcherState extends State<_ChecklistWatcher> {
   @override
   void initState() {
     super.initState();
-    _tell();
+    _tellComplete();
   }
 
   @override
-  void didUpdateWidget(_DayCompleteWatcher oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!oldWidget.isComplete) _tell();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _show();
   }
 
-  void _tell() {
+  @override
+  void didUpdateWidget(_ChecklistWatcher oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isComplete) _tellComplete();
+    if (widget.checklist != oldWidget.checklist ||
+        widget.ready != oldWidget.ready) {
+      _show();
+    }
+  }
+
+  void _tellComplete() {
     if (widget.isComplete) {
-      context.read<TodayBloc>().add(TodayDayCompleted(widget.itemCount));
+      context.read<TodayBloc>().add(
+        TodayDayCompleted(widget.checklist.items.length),
+      );
+    }
+  }
+
+  /// In view: tickers run only on the screen showing, not under another
+  /// screen or on another tab.
+  void _show() {
+    // Read first, so a return into view always calls back here.
+    final inView = TickerMode.valuesOf(context).enabled;
+    if (widget.ready && inView) {
+      context.read<TodayBloc>().add(TodayChecklistShown(widget.checklist));
     }
   }
 

@@ -857,7 +857,8 @@ List<Widget> galleryStates(BuildContext context) {
   ];
 }
 
-/// [AppCard], [AppStat], [AppStatTile], [AppChip] and [AppInlineMessage].
+/// [AppCard], [AppStat], [AppStatTile], [AppChip], [AppConfetti] and
+/// [AppInlineMessage].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
   final colors = context.appColors;
@@ -949,6 +950,24 @@ List<Widget> galleryContent(BuildContext context) {
             size: AppChipSize.large,
             selected: selected,
             onPressed: () => update(!selected),
+          ),
+        ),
+      ),
+    ]),
+    galleryEntry('AppConfetti', [
+      // A new burst on each tap: the count keys a fresh one.
+      galleryInline(
+        'playsOnMount',
+        GalleryLive(
+          initial: 0,
+          builder: (bursts, update) => AppConfetti(
+            key: ValueKey(bursts),
+            playsOnMount: bursts > 0,
+            child: AppChip(
+              label: l10n.devGallerySampleShortAction,
+              icon: AppSymbols.success,
+              onPressed: () => update(bursts + 1),
+            ),
           ),
         ),
       ),

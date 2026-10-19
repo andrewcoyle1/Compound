@@ -67,6 +67,7 @@ app/packages/compound_maths/             pure Dart: ExpenditureFilter, TargetPro
                                          1RM, MuscleVolume, progression (parity-tested)
 app/packages/app_ui/                     tokens from Compound/Components/DesignSystem (Spacing, Radius,
                                          Palette, Typography, Motion, Format) + primitives (Card, Stat, Chip…)
+app/packages/compound_charts/            charts on app_ui's tokens (CustomPainter, no chart library)
 app/packages/auth_repository/            firebase_auth + google_sign_in 7 (+ Apple at M6)
 app/packages/<domain>_repository/        one per Swift manager, each taking FirebaseFirestore
 contracts/firestore/                     shared fixtures (repo root: Swift, Dart and functions read them)

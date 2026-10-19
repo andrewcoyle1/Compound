@@ -9,6 +9,7 @@ import 'package:app_ui/app_ui.dart';
 /// in and out, keyed on whether there is a [child] rather than which, so it
 /// jumps between buckets instead of sliding. It never takes a touch.
 class ChartCallout extends StatefulWidget {
+  /// A callout at [anchorX] showing [child], or hidden when it is null.
   const new({required this.anchorX, required this.child, super.key});
 
   /// Where the selected bucket sits across the chart.
@@ -130,9 +131,10 @@ class _CalloutLayout extends SingleChildLayoutDelegate {
 typedef ChartCalloutRow = ({String? name, Color? color, String value});
 
 /// What a [ChartCallout] says (Swift's `SeriesSummary`): each series' name
-/// over its value, side by side, then a rule and the bucket's dates. With
-/// no rows it says [noData].
+/// over its value, side by side (stacked when they don't fit), then a rule
+/// and the bucket's dates. With no rows it says [noData].
 class ChartCalloutSummary extends StatelessWidget {
+  /// Says [rows] over [footer], or [noData] when there are no rows.
   const new({
     required this.rows,
     required this.footer,
@@ -140,8 +142,13 @@ class ChartCalloutSummary extends StatelessWidget {
     super.key,
   });
 
+  /// One per series with a value in the bucket.
   final List<ChartCalloutRow> rows;
+
+  /// The bucket's dates, already formatted.
   final String footer;
+
+  /// What to say when no series has a value.
   final String noData;
 
   @override
@@ -156,10 +163,11 @@ class ChartCalloutSummary extends StatelessWidget {
           if (rows.isEmpty)
             Text(noData, style: AppTextStyles.metric.copyWith(color: secondary))
           else
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // Side by side while they fit, else one above another, so
+            // large text wraps rather than overflowing the chart.
+            OverflowBar(
               spacing: AppSpacing.m,
+              overflowSpacing: AppSpacing.xs,
               children: [
                 for (final row in rows)
                   Column(

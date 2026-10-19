@@ -15,6 +15,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/app/device_store_migration.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/notifications/notifications.dart';
+import 'package:compound/progress_photos/crop_look.dart';
 import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
 import 'package:connectivity_repository/connectivity_repository.dart';
@@ -275,7 +276,7 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     ),
     // Swift's paths in the project's default bucket.
     imageRepository: FirebaseImageRepository(storage: FirebaseStorage.instance),
-    photoPicker: DevicePhotoPicker(),
+    photoPicker: DevicePhotoPicker(look: deviceCropLook),
     labelTextReader: const PlatformLabelTextReader(),
     // The food photo, meal description and label callables are
     // us-central1 and enforce App Check.
@@ -291,7 +292,6 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     // foodSearch is a us-central1 callable that enforces App Check.
     openFoodFacts: RemoteOpenFoodFacts(
       functions: FirebaseFunctions.instanceFor(region: 'us-central1'),
-      client: http.Client(),
     ),
     // The social callables are us-central1 and enforce App Check.
     socialRepository: SocialRepository(

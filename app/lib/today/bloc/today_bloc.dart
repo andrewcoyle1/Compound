@@ -73,10 +73,11 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     on<TodayChecklistItemPressed>(
       (event, emit) => _analyticsRepository.analytic(
         'TodayView_ChecklistItem_Press',
-        {'item': _kind(event.item)},
+        {'item': event.item.kind},
       ),
     );
     on<TodayDayCompleted>(_onDayCompleted);
+    on<TodayChecklistShown>(_onChecklistShown);
     on<TodayStepGoalSelected>(_onStepGoalSelected);
     on<TodaySocialPulsePressed>(
       (event, emit) =>
@@ -89,6 +90,15 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
 
   /// The key holding the day [uid] last completed, as Swift keys it.
   static String dayCompleteKey(String uid) => 'today_day_complete_$uid';
+
+  /// The key holding the day [uid] last got the item of [kind] done
+  /// ([ChecklistItem.kind]), as [dayCompleteKey] holds the whole list's.
+  static String itemDoneKey(String uid, String kind) =>
+      'today_item_done_${kind}_$uid';
+
+  /// Whether the checklist has been shown since the screen opened: what is
+  /// done by its first showing is recorded, not celebrated.
+  var _checklistShown = false;
 
   /// The key holding the week [uid] last opened the review card in (its
   /// first day), as Swift keys it.
@@ -110,14 +120,6 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
             weekStartOf(state.todayKey, firstWeekday: state.firstWeekday),
       );
 
-  /// Swift's `ChecklistItem.Kind` raw values.
-  static String _kind(ChecklistItem item) => switch (item) {
-    TrainingItem() => 'training',
-    NutritionItem() => 'nutrition',
-    WeighInItem() => 'weighIn',
-    StepsItem() => 'steps',
-  };
-
   /// Marks the day complete once per user and day
   /// (`onChecklistCompletionChanged`): `TodayView_DayComplete`, and the
   /// view's success haptic.
@@ -129,6 +131,26 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
       'item_count': event.itemCount,
     });
     emit(state.copyWith(dayCompletions: state.dayCompletions + 1));
+  }
+
+  /// Celebrates each item the checklist shows done for the first time
+  /// today, once per user, item and day, on this device. Items already done
+  /// when the screen first shows the list are only recorded, so reopening
+  /// the app or the day never celebrates again.
+  void _onChecklistShown(TodayChecklistShown event, Emitter<TodayState> emit) {
+    final fresh = {
+      for (final item in event.checklist.items)
+        if (item.isDone &&
+            _store.getString(itemDoneKey(_uid, item.kind)) != state.todayKey)
+          item.kind,
+    };
+    for (final kind in fresh) {
+      _store.setString(itemDoneKey(_uid, kind), state.todayKey);
+    }
+    final firstShowing = !_checklistShown;
+    _checklistShown = true;
+    if (firstShowing || fresh.isEmpty) return;
+    emit(state.copyWith(celebrated: {...state.celebrated, ...fresh}));
   }
 
   /// Saves the chosen step goal (`onStepGoalSelected`). Choosing the goal
@@ -187,38 +209,57 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     );
     _watchGoal(null);
     TodayState failed(Object _, StackTrace _) => state.copyWith(failed: true);
+    // The checklist's inputs still to arrive, each once, in data or error.
+    final unread = {
+      'sessions',
+      'meals',
+      'measurements',
+      'dietPlan',
+      'steps',
+      'settings',
+      'user',
+    };
+    TodayState read(String input, TodayState next) =>
+        unread.remove(input) && unread.isEmpty
+        ? next.copyWith(checklistRead: true)
+        : next;
     return Future.wait([
       emit.forEach(
         _workoutSessionRepository.watchSessions(_uid),
-        onData: (sessions) => state.copyWith(sessions: sessions),
+        onData: (sessions) =>
+            read('sessions', state.copyWith(sessions: sessions)),
         onError: failed,
       ),
       emit.forEach(
         _nutritionRepository.watchMeals(_uid),
-        onData: (meals) => state.copyWith(meals: meals),
+        onData: (meals) => read('meals', state.copyWith(meals: meals)),
         onError: failed,
       ),
       emit.forEach(
         _bodyRepository.watchMeasurements(_uid),
-        onData: (measurements) => state.copyWith(measurements: measurements),
+        onData: (measurements) =>
+            read('measurements', state.copyWith(measurements: measurements)),
         onError: failed,
       ),
       // The rest are niceties: without them, no target, no steps item, the
       // default step goal, kilograms and no goal pace.
       emit.forEach(
         _nutritionRepository.watchDietPlan(_uid),
-        onData: (plan) => state.copyWith(dietPlan: () => plan),
-        onError: (_, _) => state.copyWith(dietPlan: () => null),
+        onData: (plan) =>
+            read('dietPlan', state.copyWith(dietPlan: () => plan)),
+        onError: (_, _) =>
+            read('dietPlan', state.copyWith(dietPlan: () => null)),
       ),
       emit.forEach(
         _bodyRepository.watchSteps(_uid),
-        onData: (steps) => state.copyWith(steps: steps),
-        onError: (_, _) => state,
+        onData: (steps) => read('steps', state.copyWith(steps: steps)),
+        onError: (_, _) => read('steps', state),
       ),
       emit.forEach(
         _bodyRepository.watchAnalyticsSettings(_uid),
-        onData: (settings) => state.copyWith(analyticsSettings: () => settings),
-        onError: (_, _) => state,
+        onData: (settings) =>
+            read('settings', state.copyWith(analyticsSettings: () => settings)),
+        onError: (_, _) => read('settings', state),
       ),
       // The check-in card's: without them, no card.
       emit.forEach(
@@ -241,9 +282,9 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
         _userRepository.watchUser(_uid),
         onData: (user) {
           _watchGoal(user?.submittedCurrentGoalId);
-          return state.copyWith(user: () => user);
+          return read('user', state.copyWith(user: () => user));
         },
-        onError: (_, _) => state,
+        onError: (_, _) => read('user', state),
       ),
     ]);
   }

@@ -1019,10 +1019,7 @@ class _BarcodeView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               spacing: AppSpacing.s,
               children: [
-                const SizedBox.square(
-                  dimension: AppSpacing.l,
-                  child: CircularProgressIndicator.adaptive(),
-                ),
+                const AppSpinner(size: AppSpinnerSize.small),
                 Text(l10n.addMealBarcodeLookingUp(state.code ?? '')),
               ],
             ),

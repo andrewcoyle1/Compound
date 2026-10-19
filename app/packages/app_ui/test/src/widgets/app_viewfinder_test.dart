@@ -32,7 +32,7 @@ void main() {
     );
     expect(find.byIcon(AppSymbols.camera), findsNothing);
     expect(find.byType(ColoredBox), findsWidgets);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(AppSpinner), findsNothing);
     expect(
       tester.getSemantics(find.text('Hold the label in the frame')),
       matchesSemantics(
@@ -48,7 +48,7 @@ void main() {
     await tester.pumpApp(
       const AppViewfinder(caption: 'Reading label…', busy: true),
     );
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(AppSpinner), findsOneWidget);
   });
 
   group('AppViewfinder golden', () {

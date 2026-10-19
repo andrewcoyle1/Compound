@@ -53,18 +53,41 @@ RULES = {
     'raw-haptic': (_ + r'HapticFeedback\.', 'AppHaptics'),
     # Rule 3: snack bars are app_ui's, drawn above the tab bar.
     'raw-snackbar': (_ + r'(SnackBar|SnackBarAction|showSnackBar)\(', 'showAppSnackBar'),
+    # Rule 3: one spinner, app_ui's. A progress indicator given a `value:` shows real progress
+    # (a ring or bar filling), so it is not a spinner and does not count.
+    'raw-spinner': (_ + r'(CircularProgressIndicator|LinearProgressIndicator)(\.adaptive)?\(|'
+                    + _ + r'CupertinoActivityIndicator\(', 'AppSpinner, or AppLoadingView for a first load'),
 }
 
 # Generated strings, and share cards, which render to fixed-size images like the Swift app's.
 EXEMPT = ('lib/l10n/gen/', 'lib/sharing/share_card/', 'lib/weekly_review/view/weekly_review_share_card.dart')
 
+def determinate(after):
+    """Whether the call whose arguments start `after` passes its own `value:`."""
+    depth = 0
+    for token in re.finditer(r'[()]|' + _ + r'value\s*:', after):
+        if token.group() == '(':
+            depth += 1
+        elif token.group() == ')':
+            if depth == 0:
+                return False
+            depth -= 1
+        elif depth == 0:
+            return True
+    return False
+
+
 def matches(text):
     """Yield (rule, line number, line) for every match outside a comment."""
-    for number, line in enumerate(text.splitlines(), 1):
+    offset = 0
+    for number, line in enumerate(text.splitlines(keepends=True), 1):
+        start, offset = offset, offset + len(line)
         if line.lstrip().startswith('//'):
             continue
         for rule, (pattern, _hint) in RULES.items():
-            for _m in re.finditer(pattern, line):
+            for m in re.finditer(pattern, line):
+                if rule == 'raw-spinner' and determinate(text[start + m.end():]):
+                    continue
                 yield rule, number, line.strip()
 
 
@@ -86,7 +109,7 @@ def scan():
         if path.name == 'app_haptics.dart':
             continue
         for rule, number, line in matches(path.read_text()):
-            if rule == 'raw-haptic':
+            if rule in ('raw-haptic', 'raw-spinner'):
                 found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
     return found
 
@@ -146,6 +169,14 @@ def self_test():
         "action: SnackBarAction(label: l10n.trackerUndo,": ['raw-snackbar'],
         "showAppSnackBar(context, message, style: AppSnackBarStyle.error);": [],
         "..hideCurrentSnackBar()": [],
+        "child: CircularProgressIndicator.adaptive(),": ['raw-spinner'],
+        "const CircularProgressIndicator(strokeWidth: 2)": ['raw-spinner'],
+        "child: CupertinoActivityIndicator(),": ['raw-spinner'],
+        "LinearProgressIndicator(minHeight: 4)": ['raw-spinner'],
+        "CircularProgressIndicator(\n  value: fraction,\n  color: c,\n)": [],
+        "LinearProgressIndicator(value: progress, color: f(value: 1))": [],
+        "CircularProgressIndicator(color: f(value: 1))": ['raw-spinner'],
+        "child: AppSpinner(size: AppSpinnerSize.small),": [],
     }
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]

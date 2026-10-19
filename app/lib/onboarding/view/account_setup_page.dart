@@ -330,7 +330,7 @@ class _HealthFill extends StatelessWidget {
             title: l10n.healthFill(context),
             icon: AppSymbols.heart,
             accessory: fill == HealthFill.loading
-                ? const AppListRowCustom(CircularProgressIndicator.adaptive())
+                ? const AppListRowCustom(AppSpinner(size: AppSpinnerSize.small))
                 : null,
             onPressed: () => unawaited(
               context.read<AccountSetupCubit>().fillFromHealthPressed(),

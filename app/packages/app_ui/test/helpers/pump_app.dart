@@ -6,11 +6,14 @@ extension PumpApp on WidgetTester {
   /// Pumps [widget] in a [Scaffold] under [AppTheme.light] (or [theme]),
   /// with the given text scale and reduced-motion setting, below an
   /// [AppSnackBarScope].
+  ///
+  /// Animations are off unless a test turns them on, so a shimmering
+  /// placeholder or a spinner never keeps `pumpAndSettle` from settling.
   Future<void> pumpApp(
     Widget widget, {
     ThemeData? theme,
     double textScale = 1,
-    bool disableAnimations = false,
+    bool disableAnimations = true,
     bool scaffold = true,
   }) {
     return pumpWidget(

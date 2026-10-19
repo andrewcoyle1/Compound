@@ -52,10 +52,7 @@ class LaunchPage extends StatelessWidget {
                     ],
                   ),
                 )
-              : Semantics(
-                  label: l10n.launchLoading,
-                  child: const CircularProgressIndicator.adaptive(),
-                ),
+              : Semantics(label: l10n.launchLoading, child: const AppSpinner()),
         ),
       ),
     );

@@ -119,7 +119,7 @@ void main() {
       await pumpPage(tester);
       await tester.tap(find.widgetWithText(AppListRowButton, 'Delete Account'));
       await tester.pump();
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppSpinner), findsOneWidget);
       await tester.pump(const Duration(seconds: 1));
     });
 

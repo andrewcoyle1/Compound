@@ -60,7 +60,7 @@ class const NameWorkoutPage({final String? workoutId, super.key})
           if (workoutId != null && state is! TrainingLibraryLoaded) {
             return AppScaffold(
               appBar: AppBar(),
-              body: const Center(child: CircularProgressIndicator.adaptive()),
+              body: const Center(child: AppSpinner()),
             );
           }
           final template = switch (state) {

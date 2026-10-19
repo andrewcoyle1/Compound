@@ -225,7 +225,7 @@ void main() {
           .thenReturn(ready().copyWith(status: LogWeightStatus.saving));
       await pumpView(tester);
       // The confirm button keeps its place, spinning and disabled.
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppSpinner), findsOneWidget);
       final save = tester.widget<IconButton>(
         find.ancestor(
           of: find.byTooltip('Save'),

@@ -127,7 +127,6 @@ void main() {
     testWidgets('appears at once when motion is reduced', (tester) async {
       await tester.pumpApp(
         _trigger((context) => showAppSnackBar(context, 'Saved')),
-        disableAnimations: true,
       );
       await tester.tap(find.text('Show'));
       await tester.pump();

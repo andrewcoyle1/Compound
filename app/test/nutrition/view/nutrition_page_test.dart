@@ -172,7 +172,7 @@ void main() {
           .thenAnswer((_) => const Stream.empty());
       await pumpView(tester, repository: repository);
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppSpinner), findsOneWidget);
     });
 
     testWidgets('says when the meals cannot be loaded', (tester) async {

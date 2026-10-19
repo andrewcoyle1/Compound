@@ -199,10 +199,7 @@ class _Status extends StatelessWidget {
       UsernameStatus.checking => Row(
         spacing: AppSpacing.s,
         children: [
-          const SizedBox.square(
-            dimension: AppSpacing.l,
-            child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-          ),
+          const AppSpinner(size: AppSpinnerSize.small),
           Text(l10n.usernameChecking, style: style),
         ],
       ),

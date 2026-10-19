@@ -123,7 +123,7 @@ void main() {
           isSaving: true,
         ),
       );
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppSpinner), findsOneWidget);
       expect(find.byIcon(AppSymbols.confirm), findsNothing);
       await tester.tap(find.byType(AppToolbarButton));
       expect(taps, 0);

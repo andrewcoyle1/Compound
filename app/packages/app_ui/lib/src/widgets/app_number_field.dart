@@ -137,11 +137,19 @@ class _AppNumberFieldState extends State<AppNumberField> {
     if (label != null) {
       field = MergeSemantics(
         child: Row(
+          // The label and the field each get up to half the row, so space a
+          // short label leaves goes between them and the value stays beside
+          // the unit.
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           spacing: AppSpacing.m,
           children: [
-            Text(
-              label,
-              style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurface),
+            // Flexible, so a long label at a large text size wraps rather
+            // than pushing the field out of the row.
+            Flexible(
+              child: Text(
+                label,
+                style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurface),
+              ),
             ),
             Expanded(child: field),
           ],

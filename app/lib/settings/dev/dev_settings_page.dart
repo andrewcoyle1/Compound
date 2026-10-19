@@ -8,6 +8,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/dev/dev_settings_cubit.dart';
+import 'package:compound/settings/dev/gallery/component_gallery_page.dart';
 import 'package:compound/settings/general/view/on_dispose.dart';
 import 'package:compound/sharing/share_card/share_card_content.dart';
 import 'package:compound/sharing/share_card/share_card_renderer.dart';
@@ -16,6 +17,7 @@ import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:purchases_repository/purchases_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -32,7 +34,10 @@ class DevSettingsPage extends StatelessWidget {
 
   /// Whether this build offers the tools: every flavor but production, as
   /// Swift's `#if DEV || MOCK`.
-  static bool get isAvailable => appFlavor != 'production';
+  static bool get isAvailable => availableIn(appFlavor);
+
+  /// Whether a build of [flavor] offers the tools.
+  static bool availableIn(String? flavor) => flavor != 'production';
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +81,17 @@ class DevSettingsView extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
+              AppSection(
+                children: [
+                  AppListRowButton(
+                    title: l10n.devGalleryTitle,
+                    icon: AppSymbols.library,
+                    onPressed: () =>
+                        unawaited(context.pushNamed(ComponentGalleryPage.name)),
+                  ),
+                ],
+              ),
+              gap,
               if (dev.simulatePremium case final premium?) ...[
                 AppSection(
                   header: l10n.settingsSubscription,

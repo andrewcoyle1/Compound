@@ -78,7 +78,8 @@ class AppStat extends StatelessWidget {
                   size: MediaQuery.textScalerOf(context)
                       .scale(size.style.fontSize!),
                 ),
-              Text(value, style: size.style),
+              // Wraps at large text sizes rather than overflowing.
+              Flexible(child: Text(value, style: size.style)),
             ],
           ),
           Text(

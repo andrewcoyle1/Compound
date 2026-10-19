@@ -13201,5 +13201,173 @@
                 "type": "int"
             }
         }
+    },
+    "devGalleryTitle": "Component Gallery",
+    "@devGalleryTitle": {
+        "description": "Developer tools: the row and title of the screen showing every design-system component"
+    },
+    "devGalleryLight": "Light",
+    "@devGalleryLight": {
+        "description": "Component gallery: shows the gallery in light mode"
+    },
+    "devGalleryDark": "Dark",
+    "@devGalleryDark": {
+        "description": "Component gallery: shows the gallery in dark mode"
+    },
+    "devGalleryTokens": "Tokens",
+    "@devGalleryTokens": {
+        "description": "Component gallery: the part showing colours, text styles, spacing, icons and motion"
+    },
+    "devGalleryButtons": "Buttons",
+    "@devGalleryButtons": {
+        "description": "Component gallery: the part showing buttons"
+    },
+    "devGalleryRows": "Rows",
+    "@devGalleryRows": {
+        "description": "Component gallery: the part showing list rows and sections"
+    },
+    "devGalleryInputs": "Inputs",
+    "@devGalleryInputs": {
+        "description": "Component gallery: the part showing text fields and choices"
+    },
+    "devGalleryNavigation": "Navigation",
+    "@devGalleryNavigation": {
+        "description": "Component gallery: the part showing the tab bar and screen layouts"
+    },
+    "devGalleryOverlays": "Overlays",
+    "@devGalleryOverlays": {
+        "description": "Component gallery: the part showing dialogs and sheets"
+    },
+    "devGalleryStates": "States",
+    "@devGalleryStates": {
+        "description": "Component gallery: the part showing empty, error and loading states"
+    },
+    "devGalleryContent": "Content",
+    "@devGalleryContent": {
+        "description": "Component gallery: the part showing cards, values, chips and messages"
+    },
+    "devGalleryPlay": "Play",
+    "@devGalleryPlay": {
+        "description": "Component gallery: runs every motion curve once"
+    },
+    "devGallerySampleAction": "Start Workout",
+    "@devGallerySampleAction": {
+        "description": "Component gallery: sample label of a primary button"
+    },
+    "devGallerySampleShortAction": "Follow",
+    "@devGallerySampleShortAction": {
+        "description": "Component gallery: sample label of a small inline button"
+    },
+    "devGallerySampleTextAction": "See All",
+    "@devGallerySampleTextAction": {
+        "description": "Component gallery: sample label of a text button"
+    },
+    "devGallerySampleDelete": "Delete",
+    "@devGallerySampleDelete": {
+        "description": "Component gallery: sample label of a destructive action"
+    },
+    "devGallerySampleSave": "Save",
+    "@devGallerySampleSave": {
+        "description": "Component gallery: sample label of a confirm button"
+    },
+    "devGallerySampleClose": "Close",
+    "@devGallerySampleClose": {
+        "description": "Component gallery: sample label of a close button"
+    },
+    "devGallerySampleProfile": "Profile",
+    "@devGallerySampleProfile": {
+        "description": "Component gallery: sample label of the profile button"
+    },
+    "devGallerySampleEdit": "Edit",
+    "@devGallerySampleEdit": {
+        "description": "Component gallery: sample label of an edit button"
+    },
+    "devGallerySampleTitle": "Barbell Bench Press",
+    "@devGallerySampleTitle": {
+        "description": "Component gallery: sample row title"
+    },
+    "devGallerySampleSubtitle": "Last trained yesterday",
+    "@devGallerySampleSubtitle": {
+        "description": "Component gallery: sample row subtitle"
+    },
+    "devGallerySampleLongTitle": "A longer title that wraps onto a second line at large text sizes",
+    "@devGallerySampleLongTitle": {
+        "description": "Component gallery: sample long text, to show wrapping"
+    },
+    "devGallerySampleMessage": "Check the spelling or try a new search.",
+    "@devGallerySampleMessage": {
+        "description": "Component gallery: sample message and description"
+    },
+    "devGallerySampleEmptyTitle": "No Workouts",
+    "@devGallerySampleEmptyTitle": {
+        "description": "Component gallery: sample empty-state title"
+    },
+    "devGallerySampleErrorTitle": "Unable to Load Workouts",
+    "@devGallerySampleErrorTitle": {
+        "description": "Component gallery: sample error-state title"
+    },
+    "devGallerySampleRetry": "Try Again",
+    "@devGallerySampleRetry": {
+        "description": "Component gallery: sample retry action"
+    },
+    "devGallerySampleLoading": "Loading…",
+    "@devGallerySampleLoading": {
+        "description": "Component gallery: sample loading label"
+    },
+    "devGallerySampleSearch": "Search",
+    "@devGallerySampleSearch": {
+        "description": "Component gallery: sample search prompt"
+    },
+    "devGallerySampleClear": "Clear search",
+    "@devGallerySampleClear": {
+        "description": "Component gallery: sample label of a search field's clear button"
+    },
+    "devGallerySampleWeight": "Weight",
+    "@devGallerySampleWeight": {
+        "description": "Component gallery: sample number field label"
+    },
+    "devGallerySampleUnit": "Unit",
+    "@devGallerySampleUnit": {
+        "description": "Component gallery: sample label of a number field's unit menu"
+    },
+    "devGallerySampleDialogTitle": "Discard Changes?",
+    "@devGallerySampleDialogTitle": {
+        "description": "Component gallery: sample dialog title"
+    },
+    "devGallerySampleDialogMessage": "Your changes will be lost.",
+    "@devGallerySampleDialogMessage": {
+        "description": "Component gallery: sample dialog message"
+    },
+    "devGallerySampleKeepEditing": "Keep Editing",
+    "@devGallerySampleKeepEditing": {
+        "description": "Component gallery: sample dialog action"
+    },
+    "devGallerySampleDiscard": "Discard",
+    "@devGallerySampleDiscard": {
+        "description": "Component gallery: sample destructive dialog action"
+    },
+    "devGallerySampleCancel": "Cancel",
+    "@devGallerySampleCancel": {
+        "description": "Component gallery: sample cancel action"
+    },
+    "devGallerySampleDay": "Day",
+    "@devGallerySampleDay": {
+        "description": "Component gallery: sample segment"
+    },
+    "devGallerySampleWeek": "Week",
+    "@devGallerySampleWeek": {
+        "description": "Component gallery: sample segment"
+    },
+    "devGallerySampleMonth": "Month",
+    "@devGallerySampleMonth": {
+        "description": "Component gallery: sample segment"
+    },
+    "devGallerySampleArchive": "Archive",
+    "@devGallerySampleArchive": {
+        "description": "Component gallery: sample swipe action"
+    },
+    "devGallerySamplePin": "Pin",
+    "@devGallerySamplePin": {
+        "description": "Component gallery: sample swipe action"
     }
 }

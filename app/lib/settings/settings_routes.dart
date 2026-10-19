@@ -1,9 +1,12 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/integrations/view/integrations_page.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/account/view/edit_profile_page.dart';
 import 'package:compound/settings/account/view/save_account_page.dart';
 import 'package:compound/settings/dev/dev_settings_page.dart';
+import 'package:compound/settings/dev/gallery/component_gallery_page.dart';
+import 'package:compound/settings/dev/gallery/gallery_components.dart';
 import 'package:compound/settings/general/view/about_page.dart';
 import 'package:compound/settings/general/view/customise_analytics_page.dart';
 import 'package:compound/settings/general/view/legal_page.dart';
@@ -24,6 +27,7 @@ import 'package:compound/settings/training/view/smart_progression_settings_page.
 import 'package:compound/settings/training/view/timer_duration_page.dart';
 import 'package:compound/settings/training/view/workout_settings_page.dart';
 import 'package:compound/settings/view/settings_page.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 GoRoute _route(
@@ -129,10 +133,38 @@ final profileRoutes = <RouteBase>[
     _route(SaveAccountPage.path, SaveAccountPage.name, (_, _) {
       return const SaveAccountPage();
     }),
-    // Only reachable where Settings shows its row: never in production.
-    if (DevSettingsPage.isAvailable)
-      _route(DevSettingsPage.path, DevSettingsPage.name, (_, _) {
-        return const DevSettingsPage();
-      }),
+    ...developerRoutes(appFlavor),
   ]),
 ];
+
+/// Developer Settings and the component gallery under it, for a build of
+/// [flavor]: none in production, where Settings shows no row for them.
+List<RouteBase> developerRoutes(String? flavor) => [
+  if (DevSettingsPage.availableIn(flavor))
+    _route(
+      DevSettingsPage.path,
+      DevSettingsPage.name,
+      (_, _) => const DevSettingsPage(),
+      [componentGalleryRoute],
+    ),
+];
+
+/// The component gallery, opening at the part its `section` query names,
+/// with a sample [AppSheetPage] under it.
+final GoRoute componentGalleryRoute = _route(
+  ComponentGalleryPage.path,
+  ComponentGalleryPage.name,
+  (_, state) => ComponentGalleryPage(
+    section:
+        GallerySection.values.asNameMap()[state
+            .uri
+            .queryParameters[ComponentGalleryPage.sectionParameter]],
+  ),
+  [
+    GoRoute(
+      path: ComponentGalleryPage.sheetPath,
+      name: ComponentGalleryPage.sheetName,
+      pageBuilder: (_, _) => const AppSheetPage(child: GallerySheetContent()),
+    ),
+  ],
+);

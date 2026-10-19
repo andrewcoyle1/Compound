@@ -176,7 +176,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                       AppListRowButton(
                         title: l10n.settingsDeleteAccount,
                         accessory: null,
-                        tint: Theme.of(context).colorScheme.error,
+                        destructive: true,
                         onPressed: _delete,
                       ),
                   ],

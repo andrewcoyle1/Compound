@@ -195,14 +195,13 @@ class _Toggle<T> extends StatelessWidget {
       spacing: AppSpacing.s,
       children: [
         Flexible(
-          child: SegmentedButton<T>(
-            showSelectedIcon: false,
+          child: AppSegmentedControl<T>(
             segments: [
               for (final option in options)
-                ButtonSegment(value: option, label: Text(label(option))),
+                AppSegment(value: option, label: label(option)),
             ],
-            selected: {selected},
-            onSelectionChanged: (selection) => onChanged(selection.single),
+            selected: selected,
+            onChanged: onChanged,
           ),
         ),
         ?trailing,

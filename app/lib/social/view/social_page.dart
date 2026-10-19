@@ -112,12 +112,6 @@ class _SocialViewState extends State<SocialView> {
     setState(() {});
   }
 
-  void _clearSearch() {
-    _search.clear();
-    _queryChanged('');
-    _searchFocus.unfocus();
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -140,22 +134,11 @@ class _SocialViewState extends State<SocialView> {
                   AppSpacing.l,
                   AppSpacing.s,
                 ),
-                child: TextField(
+                child: AppSearchField(
                   controller: _search,
                   focusNode: _searchFocus,
-                  textInputAction: TextInputAction.search,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    hintText: l10n.socialSearchPrompt,
-                    prefixIcon: const Icon(AppSymbols.search),
-                    suffixIcon: isSearching
-                        ? IconButton(
-                            tooltip: l10n.commentsCancel,
-                            onPressed: _clearSearch,
-                            icon: const Icon(AppSymbols.close),
-                          )
-                        : null,
-                  ),
+                  hint: l10n.socialSearchPrompt,
+                  clearLabel: l10n.commentsCancel,
                   onChanged: _queryChanged,
                 ),
               ),

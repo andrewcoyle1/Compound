@@ -223,6 +223,25 @@ abstract final class AppSymbols {
   /// The Today tab: the day at a glance.
   static const IconData today = Icons.home_outlined;
 
+  // The tab bar's selected glyphs: each tab's icon filled, as iOS fills the
+  // selected tab. A line chart has no filled form, so [analyticsFilled] is
+  // the same line drawn solid.
+
+  /// [today], selected in the tab bar.
+  static const IconData todayFilled = Icons.home;
+
+  /// [workout], selected in the tab bar.
+  static const IconData workoutFilled = Icons.fitness_center;
+
+  /// [nutrition], selected in the tab bar.
+  static const IconData nutritionFilled = Icons.eco;
+
+  /// [analytics], selected in the tab bar.
+  static const IconData analyticsFilled = Icons.show_chart;
+
+  /// [friends], selected in the tab bar.
+  static const IconData friendsFilled = Icons.group;
+
   /// Settings.
   static const IconData settings = Icons.settings_outlined;
 
@@ -308,6 +327,9 @@ abstract final class AppSymbols {
 
   /// Searching.
   static const IconData search = Icons.search_outlined;
+
+  /// Emptying a text field, such as a search.
+  static const IconData clearText = Icons.cancel;
 
   /// Filtering.
   static const IconData filter = Icons.filter_list_outlined;

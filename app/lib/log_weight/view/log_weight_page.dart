@@ -195,20 +195,19 @@ class WeightWheels extends StatelessWidget {
         Semantics(
           label: l10n.logWeightUnits,
           container: true,
-          child: SegmentedButton<WeightUnitPreference>(
+          child: AppSegmentedControl<WeightUnitPreference>(
             segments: [
-              ButtonSegment(
+              AppSegment(
                 value: WeightUnitPreference.kilograms,
-                label: Text(l10n.logWeightMetric),
+                label: l10n.logWeightMetric,
               ),
-              ButtonSegment(
+              AppSegment(
                 value: WeightUnitPreference.pounds,
-                label: Text(l10n.logWeightImperial),
+                label: l10n.logWeightImperial,
               ),
             ],
-            selected: {state.unit},
-            showSelectedIcon: false,
-            onSelectionChanged: (selection) => onUnitChanged(selection.single),
+            selected: state.unit,
+            onChanged: onUnitChanged,
           ),
         ),
         const SizedBox(height: AppSpacing.xl),

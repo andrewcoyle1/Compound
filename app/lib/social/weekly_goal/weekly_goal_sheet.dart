@@ -120,25 +120,19 @@ class _WeeklyGoalViewState extends State<WeeklyGoalView> {
                   : l10n.profileSessionsAWeek(selected),
               style: AppTextStyles.rowTitle,
             ),
-            SegmentedButton<int>(
-              showSelectedIcon: false,
-              emptySelectionAllowed: true,
+            AppSegmentedControl<int>(
               segments: [
                 for (
                   var goal = minWeeklySessionGoal;
                   goal <= maxWeeklySessionGoal;
                   goal++
                 )
-                  ButtonSegment(value: goal, label: Text('$goal')),
+                  AppSegment(value: goal, label: '$goal'),
               ],
-              selected: {?selected},
-              onSelectionChanged: state.status == WeeklyGoalStatus.saving
+              selected: selected,
+              onChanged: state.status == WeeklyGoalStatus.saving
                   ? null
-                  : (goals) {
-                      if (goals.isNotEmpty) {
-                        unawaited(_cubit.goalSelected(goals.first));
-                      }
-                    },
+                  : (goal) => unawaited(_cubit.goalSelected(goal)),
             ),
             Text(
               l10n.weeklyGoalFooter,

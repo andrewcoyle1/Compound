@@ -5,16 +5,30 @@ import 'package:app_ui/app_ui.dart';
 /// the grouped-list section of the Swift app. Rows are separated by hairlines
 /// inset to the text: past the leading icon or thumbnail of the `app_ui` row
 /// above, 16 pt in otherwise. Outer margins are the screen's job.
+///
+/// [trailing] sits at the header's trailing edge: an [AppChip] with
+/// `onPressed` for an action such as "See All", "New" or "Hide", or a plain
+/// [Text] for a note such as "Required" or a count, which takes the footer's
+/// small secondary style.
 /// {@endtemplate}
 class AppSection extends StatelessWidget {
   /// {@macro app_section}
-  const new({required this.children, this.header, this.footer, super.key});
+  const new({
+    required this.children,
+    this.header,
+    this.trailing,
+    this.footer,
+    super.key,
+  });
 
   /// The rows, usually [AppListRow]s.
   final List<Widget> children;
 
   /// A title above the card, announced as a heading.
   final String? header;
+
+  /// A note or small action at the header's trailing edge.
+  final Widget? trailing;
 
   /// A note below the card.
   final String? footer;
@@ -34,6 +48,8 @@ class AppSection extends StatelessWidget {
     final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final header = this.header;
     final footer = this.footer;
+    final trailing = this.trailing;
+    final note = AppTextStyles.label.copyWith(color: secondary);
     final scaler = MediaQuery.textScalerOf(context);
     const inset = EdgeInsets.symmetric(horizontal: AppSpacing.l);
     return Column(
@@ -41,15 +57,28 @@ class AppSection extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: AppSpacing.s,
       children: [
-        if (header != null)
+        if (header != null || trailing != null)
           Padding(
             padding: inset,
-            child: Semantics(
-              header: true,
-              child: Text(
-                header,
-                style: AppTextStyles.sectionTitle.copyWith(color: secondary),
-              ),
+            child: Row(
+              spacing: AppSpacing.s,
+              children: [
+                Expanded(
+                  child: header == null
+                      ? const SizedBox.shrink()
+                      : Semantics(
+                          header: true,
+                          child: Text(
+                            header,
+                            style: AppTextStyles.sectionTitle.copyWith(
+                              color: secondary,
+                            ),
+                          ),
+                        ),
+                ),
+                if (trailing != null)
+                  DefaultTextStyle.merge(style: note, child: trailing),
+              ],
             ),
           ),
         AppCard(
@@ -67,10 +96,7 @@ class AppSection extends StatelessWidget {
         if (footer != null)
           Padding(
             padding: inset,
-            child: Text(
-              footer,
-              style: AppTextStyles.label.copyWith(color: secondary),
-            ),
+            child: Text(footer, style: note),
           ),
       ],
     );

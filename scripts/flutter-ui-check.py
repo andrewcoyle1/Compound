@@ -51,7 +51,7 @@ EXEMPT = ('lib/l10n/gen/', 'lib/sharing/share_card/', 'lib/weekly_review/view/we
 
 # Counts on 18 Oct 2026, when the contract was written. Lower these as screens are fixed.
 BASELINE = {
-    'raw-colour': 5,
+    'raw-colour': 2,
     'text-style': 83,
     'padding-literal': 1,
     'gap-literal': 1,
@@ -60,7 +60,7 @@ BASELINE = {
     'icon-literal': 6,
     # Every display date went through AppFormat on 19 Oct 2026; no machine format needed DateFormat.
     'date-format': 0,
-    'material-button': 331,
+    'material-button': 329,
     'material-row': 44,
     'material-card': 0,
     'material-dialog': 104,

@@ -49,6 +49,13 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 |---|---|
 | Primary action | `AppCtaButton` in `AppBottomCta` |
 | A row | `AppListRow`, `AppListRowButton`, `AppListRowToggle`, `AppSelectableRow` in an `AppSection` |
+| A picker row | `AppListRowMenu(value)` as the row's accessory: the value with an up-and-down chevron |
+| A destructive row | `AppListRowButton(destructive: true)`: the title in `appColors.danger` |
+| A section header's note or action | `AppSection(trailing:)`: a `Text` ("Required", a count) or an `AppChip` with `onPressed` ("See All", "New", "Hide") |
+| A search | `AppSearchField` |
+| A choice between a few options | `AppSegmentedControl` |
+| The tab bar | `AppTabBar` |
+| A colour the user stored as `#RRGGBB` | `AppColors.fromHex` |
 | A card | `AppCard`, `AppStatTile` |
 | A value | `AppStat` |
 | A tag or filter | `AppChip` |

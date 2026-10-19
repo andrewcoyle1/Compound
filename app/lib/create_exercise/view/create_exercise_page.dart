@@ -159,9 +159,8 @@ class CreateExerciseView extends StatelessWidget {
           child: LibrarySections(
             children: [
               AppSection(
-                header:
-                    '${l10n.exerciseNameRow} · '
-                    '${l10n.createExerciseRequired}',
+                header: l10n.exerciseNameRow,
+                trailing: Text(l10n.createExerciseRequired),
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -183,9 +182,8 @@ class CreateExerciseView extends StatelessWidget {
                 ],
               ),
               AppSection(
-                header:
-                    '${l10n.createExerciseMetricHeader} · '
-                    '${l10n.createExerciseRequired}',
+                header: l10n.createExerciseMetricHeader,
+                trailing: Text(l10n.createExerciseRequired),
                 children: [
                   OptionRow(
                     key: const Key('CreateExercise.metricA'),
@@ -347,7 +345,7 @@ class OptionRow<T extends Object> extends StatelessWidget {
     final value = this.value;
     return AppListRowButton(
       title: title,
-      accessory: AppListRowValue(
+      accessory: AppListRowMenu(
         value == null ? context.l10n.none : name(value),
       ),
       onPressed: () => unawaited(_choose(context)),

@@ -2,7 +2,6 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
-import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/workout_tracker/cubit/swap_exercise_picker_cubit.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -64,7 +63,8 @@ class SwapExercisePickerView extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(AppSpacing.l),
-              child: LibrarySearchField(
+              child: AppSearchField(
+                clearLabel: l10n.clearSearch,
                 hint: l10n.exercisesSearchHint,
                 onChanged: context
                     .read<SwapExercisePickerCubit>()

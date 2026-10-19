@@ -39,6 +39,15 @@ void main() {
       expect(tinted.r, AppColors.light.protein.r);
     });
 
+    test('fromHex reads a stored #RRGGBB, and nothing else', () {
+      expect(AppColors.fromHex('#FF9500'), const Color(0xFFFF9500));
+      expect(AppColors.fromHex('0000ff'), const Color(0xFF0000FF));
+      expect(AppColors.fromHex(null), isNull);
+      expect(AppColors.fromHex('#FFF'), isNull);
+      expect(AppColors.fromHex('#GGGGGG'), isNull);
+      expect(AppColors.fromHex('-12345'), isNull);
+    });
+
     test('warm-up and superset differ, as the contract requires', () {
       expect(AppColors.light.warmup, isNot(AppColors.light.superset));
     });

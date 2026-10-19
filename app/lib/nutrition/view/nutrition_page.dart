@@ -195,7 +195,8 @@ class NutritionView extends StatelessWidget {
                 AppSpacing.l,
                 0,
               ),
-              child: LibrarySearchField(
+              child: AppSearchField(
+                clearLabel: l10n.clearSearch,
                 key: const Key('Nutrition.search'),
                 hint: l10n.nutritionSearchPrompt,
                 onChanged: context.read<NutritionSearchCubit>().queryChanged,

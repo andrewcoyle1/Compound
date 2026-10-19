@@ -72,12 +72,10 @@ class FoodsView extends StatelessWidget {
               AppSpacing.l,
               AppSpacing.s,
             ),
-            child: TextField(
+            child: AppSearchField(
               key: const Key('Foods.filter'),
-              decoration: InputDecoration(
-                hintText: l10n.foodsFilter,
-                prefixIcon: const Icon(AppSymbols.search),
-              ),
+              hint: l10n.foodsFilter,
+              clearLabel: l10n.clearSearch,
               onChanged: cubit.filterChanged,
             ),
           ),

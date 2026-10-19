@@ -97,7 +97,8 @@ class WorkoutsView extends StatelessWidget {
                 AppSpacing.l,
                 0,
               ),
-              child: LibrarySearchField(
+              child: AppSearchField(
+                clearLabel: l10n.clearSearch,
                 hint: l10n.workoutsSearchHint,
                 onChanged: context.read<LibrarySearchCubit>().queryChanged,
               ),

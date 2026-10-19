@@ -172,21 +172,19 @@ class _Form extends StatelessWidget {
         Semantics(
           label: l10n.logWeightUnits,
           container: true,
-          child: SegmentedButton<LengthUnitPreference>(
+          child: AppSegmentedControl<LengthUnitPreference>(
             segments: [
-              ButtonSegment(
+              AppSegment(
                 value: LengthUnitPreference.centimeters,
-                label: Text(l10n.logMeasurementMetric),
+                label: l10n.logMeasurementMetric,
               ),
-              ButtonSegment(
+              AppSegment(
                 value: LengthUnitPreference.inches,
-                label: Text(l10n.logMeasurementImperial),
+                label: l10n.logMeasurementImperial,
               ),
             ],
-            selected: {state.unit},
-            showSelectedIcon: false,
-            onSelectionChanged: (selection) =>
-                bloc.add(LogMeasurementUnitChanged(selection.single)),
+            selected: state.unit,
+            onChanged: (unit) => bloc.add(LogMeasurementUnitChanged(unit)),
           ),
         ),
         const SizedBox(height: AppSpacing.xl),

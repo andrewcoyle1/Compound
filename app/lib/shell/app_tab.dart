@@ -4,16 +4,19 @@ import 'package:compound/l10n/l10n.dart';
 /// The five root tabs, in the Swift app's order (`TabBarView.swift`), one
 /// job each. Each path matches the Swift deep link `compound://tab/<name>`.
 enum AppTab {
-  today(AppSymbols.today),
-  training(AppSymbols.workout),
-  nutrition(AppSymbols.nutrition),
-  progress(AppSymbols.analytics),
-  social(AppSymbols.friends);
+  today(AppSymbols.today, AppSymbols.todayFilled),
+  training(AppSymbols.workout, AppSymbols.workoutFilled),
+  nutrition(AppSymbols.nutrition, AppSymbols.nutritionFilled),
+  progress(AppSymbols.analytics, AppSymbols.analyticsFilled),
+  social(AppSymbols.friends, AppSymbols.friendsFilled);
 
-  new(this.icon);
+  new(this.icon, this.selectedIcon);
 
   /// The tab bar glyph.
   final IconData icon;
+
+  /// The glyph while the tab is selected: [icon] filled.
+  final IconData selectedIcon;
 
   /// The route path, which is also the route name.
   String get path => '/$name';

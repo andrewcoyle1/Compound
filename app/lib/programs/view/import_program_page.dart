@@ -404,7 +404,8 @@ class _LibraryPickerState extends State<_LibraryPicker> {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.l),
-            child: LibrarySearchField(
+            child: AppSearchField(
+              clearLabel: l10n.clearSearch,
               hint: l10n.trainingSearchHint,
               initialValue: widget.initialQuery,
               onChanged: (query) => setState(() => _query = query),

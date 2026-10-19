@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
-import 'package:compound/gym_profiles/view/gym_text.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
@@ -88,7 +87,7 @@ class PlateLoadingView extends StatelessWidget {
     );
   }
 
-  Color? _colour(double weight) => colourFromHex(
+  Color? _colour(double weight) => AppColors.fromHex(
     plates
         .where((plate) => (plate.weight - weight).abs() < 0.001)
         .firstOrNull

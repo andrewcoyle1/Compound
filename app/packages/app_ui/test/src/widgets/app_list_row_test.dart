@@ -166,5 +166,19 @@ void main() {
       expect(find.bySemanticsLabel('Edit'), findsOneWidget);
       expect(find.bySemanticsLabel('Notes'), findsOneWidget);
     });
+
+    testWidgets('a menu shows its value with an up-and-down chevron', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const AppListRow(title: 'Type', accessory: AppListRowMenu('None')),
+      );
+      expect(find.text('None'), findsOneWidget);
+      expect(find.byIcon(AppSymbols.choose), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('None')).dx,
+        greaterThan(tester.getTopLeft(find.text('Type')).dx),
+      );
+    });
   });
 }

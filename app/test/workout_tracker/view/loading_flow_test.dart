@@ -162,13 +162,10 @@ void main() {
       find.text('27.5 kg on each side + 15 kg bar = 70 kg'),
       findsOneWidget,
     );
-    await tester.tap(find.byKey(const ValueKey('plate-2.5')));
-    await tester.pumpAndSettle();
     // The plates run on below the sheet's Done button on a short window.
-    await tester.drag(
-      find.byKey(const ValueKey('plate-2.5')),
-      const Offset(0, -100),
-    );
+    await tester.ensureVisible(find.byKey(const ValueKey('plate-1.25')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('plate-2.5')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('plate-1.25')));
     await tester.pumpAndSettle();
@@ -187,10 +184,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('plate-bar-barbell_2')));
     await tester.pumpAndSettle();
-    await tester.drag(
-      find.byKey(const ValueKey('plate-2.5')),
-      const Offset(0, -100),
-    );
+    await tester.ensureVisible(find.byKey(const ValueKey('plate-1.25')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('plate-1.25')));
     await tester.pumpAndSettle();

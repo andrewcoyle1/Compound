@@ -183,6 +183,7 @@ class _ItemRow extends StatelessWidget {
                   ),
                 ),
               ),
+              pinned: true,
             ),
           ),
         ),

@@ -1001,7 +1001,7 @@
     "@nutritionMacroHeaderShowConsumed": {
         "description": "Macro header: accessibility hint for switching back to the eaten figures"
     },
-    "nutritionItemProtein": "{grams} P",
+    "nutritionItemProtein": "{grams}\u00a0P",
     "@nutritionItemProtein": {
         "description": "A logged food's protein, e.g. 31 g P",
         "placeholders": {
@@ -1010,7 +1010,7 @@
             }
         }
     },
-    "nutritionItemFat": "{grams} F",
+    "nutritionItemFat": "{grams}\u00a0F",
     "@nutritionItemFat": {
         "description": "A logged food's fat, e.g. 4 g F",
         "placeholders": {
@@ -1019,7 +1019,7 @@
             }
         }
     },
-    "nutritionItemCarbs": "{grams} C",
+    "nutritionItemCarbs": "{grams}\u00a0C",
     "@nutritionItemCarbs": {
         "description": "A logged food's carbohydrate, e.g. 25 g C",
         "placeholders": {
@@ -1644,7 +1644,7 @@
             }
         }
     },
-    "nutritionOverviewProtein": "{grams} P",
+    "nutritionOverviewProtein": "{grams}\u00a0P",
     "@nutritionOverviewProtein": {
         "description": "Nutrition Overview: a food's protein",
         "placeholders": {
@@ -1653,7 +1653,7 @@
             }
         }
     },
-    "nutritionOverviewFat": "{grams} F",
+    "nutritionOverviewFat": "{grams}\u00a0F",
     "@nutritionOverviewFat": {
         "description": "Nutrition Overview: a food's fat",
         "placeholders": {
@@ -1662,7 +1662,7 @@
             }
         }
     },
-    "nutritionOverviewCarbs": "{grams} C",
+    "nutritionOverviewCarbs": "{grams}\u00a0C",
     "@nutritionOverviewCarbs": {
         "description": "Nutrition Overview: a food's carbohydrate",
         "placeholders": {
@@ -1956,7 +1956,7 @@
     "@todayLogMenu": {
         "description": "Today: accessibility label of the toolbar's + menu (Log Meal, Log Weight, Start Empty Workout)"
     },
-    "todayDoneCount": "{done} of {total} done",
+    "todayDoneCount": "{done}\u00a0of\u00a0{total} done",
     "@todayDoneCount": {
         "description": "Today checklist: how many items are done",
         "placeholders": {
@@ -2080,7 +2080,7 @@
             }
         }
     },
-    "todayGetStarted": "Get Started · {done} of {total}",
+    "todayGetStarted": "Get Started · {done}\u00a0of\u00a0{total}",
     "@todayGetStarted": {
         "description": "Getting-started card heading, e.g. 'Get Started · 1 of 3'",
         "placeholders": {
@@ -2617,7 +2617,7 @@
     "@goalProgressTarget": {
         "description": "Goal Progress: label over the goal's target weight"
     },
-    "nutritionMetricMacrosEntry": "{protein} P · {carbs} C · {fat} F",
+    "nutritionMetricMacrosEntry": "{protein}\u00a0P · {carbs}\u00a0C · {fat}\u00a0F",
     "@nutritionMetricMacrosEntry": {
         "description": "A day on the Macros history: grams of protein, carbs and fat",
         "placeholders": {

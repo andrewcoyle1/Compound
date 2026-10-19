@@ -33,7 +33,7 @@ void main() {
       );
       expect(find.text('From Strava'), findsOneWidget);
       expect(find.text('1'), findsOneWidget);
-      expect(find.text('6.2 km'), findsOneWidget);
+      expect(find.text('6.2\u00a0km'), findsOneWidget);
       expect(find.text('33:00'), findsOneWidget);
     });
 
@@ -70,7 +70,7 @@ void main() {
       );
       expect(find.text('Strava This Year'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
-      expect(find.text('24 mi'), findsOneWidget);
+      expect(find.text('24\u00a0mi'), findsOneWidget);
       expect(find.text('View on Strava'), findsNWidgets(2));
 
       await tester.tap(find.text('Evening Ride'));

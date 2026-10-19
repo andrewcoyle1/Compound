@@ -27,7 +27,7 @@ void main() {
           ),
         ],
       );
-      expect(WorkoutText.sessionVolume(light, locale: locale), '500 kg');
+      expect(WorkoutText.sessionVolume(light, locale: locale), '500\u00a0kg');
 
       final heavy = fixtureSession(
         'b',
@@ -63,7 +63,10 @@ void main() {
           ),
         ],
       );
-      expect(WorkoutText.sessionVolume(session, locale: locale), '2,204.6 lb');
+      expect(
+        WorkoutText.sessionVolume(session, locale: locale),
+        '2,204.6\u00a0lb',
+      );
     });
   });
 
@@ -83,7 +86,7 @@ void main() {
           fixtureSet(reps: 8, weightKg: 82.5),
           fixtureSet(reps: 8, weightKg: 82.5),
         ]),
-        '2 × 8 @ 82.5 kg',
+        '2 × 8 @ 82.5\u00a0kg',
       );
       expect(
         describe(TrackingMode.weightReps, [
@@ -99,7 +102,7 @@ void main() {
       );
       expect(
         describe(TrackingMode.weightReps, [fixtureSet(reps: 8, weightKg: -20)]),
-        '1 × 8 @ -20 kg',
+        '1 × 8 @ -20\u00a0kg',
       );
       expect(
         describe(TrackingMode.repsOnly, [fixtureSet(reps: 12, weightKg: null)]),
@@ -115,7 +118,7 @@ void main() {
         describe(TrackingMode.distanceTime, [
           fixtureSet(reps: null, distanceMeters: 5000),
         ]),
-        '1 × 5 km',
+        '1 × 5\u00a0km',
       );
     });
 
@@ -154,10 +157,13 @@ void main() {
     test('reads as the set does', () {
       String detail(PersonalRecord r) =>
           WorkoutText.recordDetail(l10n, r, locale: locale);
-      expect(detail(record(TrackingMode.weightReps, 100, 5)), '100 kg × 5');
+      expect(
+        detail(record(TrackingMode.weightReps, 100, 5)),
+        '100\u00a0kg × 5',
+      );
       expect(detail(record(TrackingMode.repsOnly, 20)), '20 reps');
       expect(detail(record(TrackingMode.timeOnly, 90)), '1:30');
-      expect(detail(record(TrackingMode.distanceTime, 5200)), '5.2 km');
+      expect(detail(record(TrackingMode.distanceTime, 5200)), '5.2\u00a0km');
     });
   });
 
@@ -201,7 +207,7 @@ void main() {
     test('weight and reps read as one line', () {
       expect(
         value(fixtureSet(reps: 8, weightKg: 82.5), TrackingMode.weightReps),
-        '82.5 kg × 8 reps',
+        '82.5\u00a0kg × 8 reps',
       );
     });
 
@@ -212,7 +218,7 @@ void main() {
           TrackingMode.weightReps,
           unit: ExerciseWeightUnit.pounds,
         ),
-        '220.5 lb × 1 rep',
+        '220.5\u00a0lb × 1 rep',
       );
     });
 
@@ -233,11 +239,11 @@ void main() {
           TrackingMode.distanceTime,
           distance: AppDistanceUnit.miles,
         ),
-        '0.2 mi in 25:30',
+        '0.2\u00a0mi in 25:30',
       );
       expect(
         value(fixtureSet(distanceMeters: 2000), TrackingMode.distanceTime),
-        '2 km',
+        '2\u00a0km',
       );
       expect(
         value(fixtureSet(durationSec: 60), TrackingMode.distanceTime),
@@ -282,7 +288,7 @@ void main() {
         ),
         locale: locale,
       ),
-      '1 set · 2,204.6 lb volume',
+      '1 set · 2,204.6\u00a0lb volume',
     );
   });
 
@@ -317,7 +323,7 @@ void main() {
         AppWeightUnit.pounds,
         locale: locale,
       ),
-      '3,329.6 lb',
+      '3,329.6\u00a0lb',
     );
     expect(
       AppFormat.weight(
@@ -325,7 +331,7 @@ void main() {
         AppWeightUnit.kilograms,
         locale: locale,
       ),
-      '1,510.3 kg',
+      '1,510.3\u00a0kg',
     );
   });
 }

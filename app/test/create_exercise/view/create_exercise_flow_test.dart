@@ -340,10 +340,16 @@ void main() {
       await tap(tester, cta('ExerciseEquipment.next'));
 
       final field = find.byKey(const Key('FinalExerciseDetails.contribution'));
-      expect(find.text('About 132 lb at your current weight.'), findsOneWidget);
+      expect(
+        find.text('About 132\u00a0lb at your current weight.'),
+        findsOneWidget,
+      );
       await tester.enterText(field, '50');
       await tester.pumpAndSettle();
-      expect(find.text('About 88 lb at your current weight.'), findsOneWidget);
+      expect(
+        find.text('About 88\u00a0lb at your current weight.'),
+        findsOneWidget,
+      );
 
       await tester.enterText(field, '140');
       await tester.pumpAndSettle();

@@ -74,12 +74,12 @@ void main() {
       expect(find.text('2'), findsWidgets);
       expect(find.text('Session b'), findsOneWidget);
       expect(find.text('Session a'), findsOneWidget);
-      expect(find.text('PR: Bench 100 kg × 5'), findsOneWidget);
+      expect(find.text('PR: Bench 100\u00a0kg × 5'), findsOneWidget);
       expect(find.text('6-week streak'), findsOneWidget);
       expect(find.text('2nd workout of the week'), findsOneWidget);
       expect(find.text('1.0 t'), findsOneWidget);
       expect(find.text('1:00:00'), findsNWidgets(2));
-      expect(find.text('2 × 5 @ 100 kg'), findsOneWidget);
+      expect(find.text('2 × 5 @ 100\u00a0kg'), findsOneWidget);
       expect(find.text('Skipped'), findsNothing);
       expect(find.text('Left shoulder twinged'), findsOneWidget);
     });

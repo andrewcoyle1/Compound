@@ -196,7 +196,7 @@ void main() {
       await tester.pump();
       expect(find.text('Train'), findsOneWidget);
       expect(find.text('Push Day'), findsWidgets);
-      expect(find.text('1 of 4 done'), findsOneWidget);
+      expect(find.text('1\u00a0of\u00a04 done'), findsOneWidget);
       await tester.tap(find.text('Train'));
       verify(
         () => router.pushNamed<Object?>(
@@ -223,7 +223,7 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Rest day'), findsOneWidget);
-      expect(find.text('2 of 4 done'), findsOneWidget);
+      expect(find.text('2\u00a0of\u00a04 done'), findsOneWidget);
     });
 
     testWidgets('marks a complete day once, with a haptic', (tester) async {
@@ -348,7 +348,7 @@ void main() {
       await pumpView(tester);
 
       expect(find.text('Your Day'), findsOneWidget);
-      expect(find.text('1 of 3 done'), findsOneWidget);
+      expect(find.text('1\u00a0of\u00a03 done'), findsOneWidget);
       expect(find.text('Eat to Target'), findsOneWidget);
       expect(find.text('Weigh In'), findsOneWidget);
       expect(find.text('Steps'), findsOneWidget);
@@ -381,12 +381,12 @@ void main() {
       expect(food.date, localDayKey(DateTime.now()));
       expect(food.title, "Today's Food");
       await tester.scrollUntilVisible(
-        find.text('Get Started · 3 of 4'),
+        find.text('Get Started · 3\u00a0of\u00a04'),
         -200,
         scrollable: _list,
       );
       // No meals logged: the starter card offers the first meal.
-      expect(find.text('Get Started · 3 of 4'), findsOneWidget);
+      expect(find.text('Get Started · 3\u00a0of\u00a04'), findsOneWidget);
       expect(find.text('Log your first meal'), findsOneWidget);
 
       await tester.scrollUntilVisible(
@@ -605,7 +605,7 @@ void main() {
 
     testWidgets('hides getting started for good', (tester) async {
       await pumpView(tester);
-      final header = find.text('Get Started · 3 of 4');
+      final header = find.text('Get Started · 3\u00a0of\u00a04');
       await tester.scrollUntilVisible(header, -200, scrollable: _list);
       await tester.tap(find.byKey(const Key('Today.hideStarter')));
       await tester.pump();
@@ -658,7 +658,7 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(TodayView), findsOneWidget);
-      expect(find.text('Get Started · 0 of 4'), findsOneWidget);
+      expect(find.text('Get Started · 0\u00a0of\u00a04'), findsOneWidget);
     });
 
     testWidgets('is empty when signed out', (tester) async {

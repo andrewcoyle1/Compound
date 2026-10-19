@@ -8,31 +8,31 @@ void main() {
     });
 
     test('kcal groups and drops decimals', () {
-      expect(AppFormat.kcal(1850.4, locale: 'en'), '1,850 kcal');
-      expect(AppFormat.kcal(1850.4, locale: 'de'), '1.850 kcal');
+      expect(AppFormat.kcal(1850.4, locale: 'en'), '1,850\u00a0kcal');
+      expect(AppFormat.kcal(1850.4, locale: 'de'), '1.850\u00a0kcal');
     });
 
     test('grams keeps one decimal only under 10', () {
-      expect(AppFormat.grams(12.4, locale: 'en'), '12 g');
-      expect(AppFormat.grams(2.5, locale: 'en'), '2.5 g');
-      expect(AppFormat.grams(3, locale: 'en'), '3 g');
-      expect(AppFormat.grams(-12.4, locale: 'en'), '-12 g');
-      expect(AppFormat.grams(2.5, locale: 'es'), '2,5 g');
+      expect(AppFormat.grams(12.4, locale: 'en'), '12\u00a0g');
+      expect(AppFormat.grams(2.5, locale: 'en'), '2.5\u00a0g');
+      expect(AppFormat.grams(3, locale: 'en'), '3\u00a0g');
+      expect(AppFormat.grams(-12.4, locale: 'en'), '-12\u00a0g');
+      expect(AppFormat.grams(2.5, locale: 'es'), '2,5\u00a0g');
     });
 
     test('nutrient keeps up to one decimal at any size', () {
-      expect(AppFormat.nutrient(16.94, locale: 'en'), '16.9 g');
-      expect(AppFormat.nutrient(120, unit: 'mg', locale: 'en'), '120 mg');
+      expect(AppFormat.nutrient(16.94, locale: 'en'), '16.9\u00a0g');
+      expect(AppFormat.nutrient(120, unit: 'mg', locale: 'en'), '120\u00a0mg');
     });
 
     test('weight converts from kilograms', () {
       expect(
         AppFormat.weight(82.5, AppWeightUnit.kilograms, locale: 'en'),
-        '82.5 kg',
+        '82.5\u00a0kg',
       );
       expect(
         AppFormat.weight(82.5, AppWeightUnit.pounds, locale: 'en'),
-        '181.9 lb',
+        '181.9\u00a0lb',
       );
       expect(
         AppFormat.weight(
@@ -41,18 +41,18 @@ void main() {
           maxFractionDigits: 2,
           locale: 'en',
         ),
-        '0.25 kg',
+        '0.25\u00a0kg',
       );
     });
 
     test('distance converts from metres', () {
       expect(
         AppFormat.distance(5230, AppDistanceUnit.kilometers, locale: 'en'),
-        '5.2 km',
+        '5.2\u00a0km',
       );
       expect(
         AppFormat.distance(5150, AppDistanceUnit.miles, locale: 'en'),
-        '3.2 mi',
+        '3.2\u00a0mi',
       );
     });
 

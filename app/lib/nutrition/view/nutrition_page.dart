@@ -236,7 +236,12 @@ class _Day extends StatelessWidget {
         // The strip's cells give only the day and weekday, so the date
         // says which month it is (Swift's navigation subtitle).
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            AppSpacing.m,
+            AppSpacing.l,
+            0,
+          ),
           child: Row(
             children: [
               Expanded(

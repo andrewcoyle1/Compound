@@ -25,7 +25,7 @@ void main() {
         ),
       );
       expect(find.text('Day Complete'), findsOneWidget);
-      expect(find.text('176.4 lb'), findsOneWidget);
+      expect(find.text('176.4\u00a0lb'), findsOneWidget);
       expect(find.textContaining('Step goal'), findsNothing);
       expect(find.bySemanticsLabel(RegExp('Weigh In')), findsOneWidget);
     });
@@ -66,6 +66,34 @@ void main() {
       links.last.onTap!();
       await tester.pumpAndSettle();
       expect(find.byType(MethodInfoSheet), findsOneWidget);
+    });
+
+    testWidgets('at 200% text an open item keeps its circle centred at the '
+        'trailing edge, and the count stays on one line', (tester) async {
+      await tester.pumpApp(
+        const SingleChildScrollView(
+          child: DayChecklistCard(
+            checklist: TodayChecklist([
+              TrainingItem(),
+              WeighInItem(isToday: true, latestKg: 80),
+            ]),
+            stepGoal: 8000,
+            unit: AppWeightUnit.kilograms,
+          ),
+        ),
+        textScale: 2,
+      );
+      final circle = find.byIcon(AppSymbols.choiceUnselected);
+      final row = find.ancestor(of: circle, matching: find.byType(AppListRow));
+      final title = find.descendant(of: row, matching: find.byType(Text));
+      expect(
+        tester.getTopLeft(circle).dx,
+        greaterThan(tester.getTopRight(title.first).dx),
+      );
+      expect(tester.getCenter(circle).dy, tester.getCenter(row).dy);
+      // The count's words are held together by no-break spaces.
+      expect(find.text('1\u00a0of\u00a02 done'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }

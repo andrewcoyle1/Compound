@@ -288,6 +288,11 @@ void main() {
       await openLabel(tester);
       final parse = find.widgetWithText(AppCtaButton, 'Parse Label');
       expect(tester.widget<AppCtaButton>(parse).onPressed, isNull);
+      // A multi-line row on the card's own surface, not a filled box in it.
+      expect(
+        tester.widget(find.byKey(const Key('FoodPicker.labelField'))),
+        isA<AppTextFieldRow>(),
+      );
 
       await tester.enterText(
         find.byKey(const Key('FoodPicker.labelField')),
@@ -298,7 +303,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Protein Shake Mix'), findsOneWidget);
       expect(find.text('per 100g'), findsOneWidget);
-      expect(find.textContaining('Sodium: 250 mg'), findsOneWidget);
+      expect(find.textContaining('Sodium: 250\u00a0mg'), findsOneWidget);
 
       await tester.tap(find.text('Use This Food'));
       await tester.pumpAndSettle();

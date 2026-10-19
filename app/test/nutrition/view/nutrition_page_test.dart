@@ -207,7 +207,15 @@ void main() {
       expect(find.text('Banana'), findsOneWidget);
       expect(find.text('7:30 AM'), findsOneWidget);
       expect(find.textContaining('kcal · '), findsWidgets);
-      expect(find.textContaining('85 g'), findsOneWidget);
+      expect(find.textContaining('85\u00a0g'), findsOneWidget);
+      // Each amount, unit and macro letter wraps as one: "11 g P".
+      expect(find.textContaining(RegExp('\\d\u00a0g\u00a0P · ')), findsWidgets);
+      // The date stands clear of the search above it.
+      expect(
+        tester.getTopLeft(find.text('Sep 21, 2026')).dy -
+            tester.getBottomLeft(find.byType(AppSearchField)).dy,
+        greaterThanOrEqualTo(AppSpacing.m),
+      );
       // On today, there is no way back to it.
       expect(find.text('Today'), findsNothing);
     });
@@ -388,7 +396,7 @@ void main() {
       expect(find.byType(BulletBar), findsNothing);
       expect(find.byType(AppStat), findsNothing);
       // Only the amount is left of the details.
-      expect(find.text('1.5 serving'), findsOneWidget);
+      expect(find.text('1.5\u00a0serving'), findsOneWidget);
       expect(find.byIcon(AppSymbols.meal), findsNothing);
       // The time sits after the food.
       final time = tester.getCenter(find.text('9:00 AM').last);

@@ -365,7 +365,7 @@ void main() {
       expect(find.text('Carbs'), findsWidgets);
       expect(find.text('Fat'), findsWidgets);
       await tapText(tester, 'Show All Data');
-      expect(find.textContaining(' P · '), findsWidgets);
+      expect(find.textContaining('\u00a0P · '), findsWidgets);
     });
 
     testWidgets('an empty nutrient offers to log a meal', (tester) async {
@@ -509,7 +509,7 @@ void main() {
       expect(find.text('Start'), findsOneWidget);
       expect(find.text('Trend'), findsOneWidget);
       expect(find.text('Target'), findsOneWidget);
-      expect(find.text('68 kg'), findsOneWidget);
+      expect(find.text('68\u00a0kg'), findsOneWidget);
       expect(find.byType(MethodInfoButton), findsOneWidget);
 
       await tapText(tester, 'Show All Data');

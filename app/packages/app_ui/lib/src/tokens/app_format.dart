@@ -101,6 +101,10 @@ abstract final class AppFormat {
   /// Shown in place of a missing value.
   static const placeholder = '—';
 
+  /// Between a number and its unit: a no-break space, so `1,850 kcal` never
+  /// wraps between the two.
+  static const _space = '\u00a0';
+
   /// Pounds in a kilogram, as the Swift app's `UnitConversion` has it.
   static const poundsPerKilogram = 2.20462;
 
@@ -109,18 +113,19 @@ abstract final class AppFormat {
 
   /// `1,850 kcal`, no decimals.
   static String kcal(num value, {String? locale}) =>
-      '${number(value, locale: locale)} kcal';
+      '${number(value, locale: locale)}${_space}kcal';
 
   /// `12 g`. No decimals from 10 g up; up to one below, so `2.5 g` but `3 g`.
   static String grams(num value, {String? locale}) {
     final digits = value.abs() >= 10 ? 0 : 1;
-    return '${number(value, maxFractionDigits: digits, locale: locale)} g';
+    final shown = number(value, maxFractionDigits: digits, locale: locale);
+    return '$shown${_space}g';
   }
 
   /// `16.9 g`, `120 mg`: up to one decimal at any size, for nutrition labels
   /// and nutrient tables. Elsewhere use [grams].
   static String nutrient(num value, {String unit = 'g', String? locale}) =>
-      '${number(value, maxFractionDigits: 1, locale: locale)} $unit';
+      '${number(value, maxFractionDigits: 1, locale: locale)}$_space$unit';
 
   /// `82.5 kg` / `181.9 lb`, up to [maxFractionDigits] decimals, from a value
   /// stored in kilograms. A weekly rate passes 2, because at one decimal
@@ -140,7 +145,7 @@ abstract final class AppFormat {
       maxFractionDigits: maxFractionDigits,
       locale: locale,
     );
-    return '$shown ${unit.symbol}';
+    return '$shown$_space${unit.symbol}';
   }
 
   /// `5.2 km` / `3.2 mi`, up to one decimal, from a value stored in metres.
@@ -149,7 +154,7 @@ abstract final class AppFormat {
       AppDistanceUnit.kilometers => meters / 1000,
       AppDistanceUnit.miles => meters * milesPerMeter,
     };
-    return '${number(value, maxFractionDigits: 1, locale: locale)} '
+    return '${number(value, maxFractionDigits: 1, locale: locale)}$_space'
         '${unit.symbol}';
   }
 

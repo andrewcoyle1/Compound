@@ -73,7 +73,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.textContaining(' kcal'), findsOneWidget);
+      expect(find.textContaining('\u00a0kcal'), findsOneWidget);
       await tester.tap(find.text('Unlogged meal'));
       await tester.pumpAndSettle();
       expect(opened.single.mealId, meals.first.mealId);

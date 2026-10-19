@@ -156,12 +156,54 @@ void main() {
       );
     });
 
-    testWidgets('fits its child inside the ring', (tester) async {
+    testWidgets('grows with the text, up to the space it has', (tester) async {
+      await tester.pumpApp(_arc(), textScale: 1.5);
+      expect(tester.getSize(find.byType(ProgressArc)), const Size(180, 180));
+      expect(
+        arcOf(tester),
+        paints..arc(strokeWidth: AppChartMark.arcWidth * 1.5),
+      );
+
+      await tester.pumpApp(
+        Center(child: SizedBox(width: 100, child: _arc())),
+        textScale: 2,
+      );
+      expect(tester.getSize(find.byType(ProgressArc)), const Size(100, 100));
+    });
+
+    testWidgets('stays square and centred when made to fill', (tester) async {
+      await tester.pumpApp(SizedBox.expand(child: _arc()));
+      final arc = tester.getRect(
+        find.descendant(
+          of: find.byType(ProgressArc),
+          matching: find.byType(CustomPaint),
+        ),
+      );
+      expect(arc.size, const Size(120, 120));
+      expect(arc.center, tester.getCenter(find.byType(ProgressArc)));
+    });
+
+    testWidgets('keeps its child at the text size, fitting it only if it '
+        'cannot', (tester) async {
+      await tester.pumpApp(
+        Column(
+          children: [
+            _arc(child: const Text('60')),
+            const Text('60'),
+          ],
+        ),
+        textScale: 2,
+      );
+      expect(
+        tester.getSize(find.text('60').first),
+        tester.getSize(find.text('60').last),
+      );
+
       await tester.pumpApp(
         _arc(child: const Text('A long figure that would not fit at all')),
         textScale: 2,
       );
-      const inner = (120 - 2 * AppChartMark.arcWidth) / math.sqrt2;
+      const inner = (240 - 2 * 2 * AppChartMark.arcWidth) / math.sqrt2;
       final text = tester.getRect(find.byType(Text));
       expect(text.width, lessThanOrEqualTo(inner + 0.01));
       expect(
@@ -212,7 +254,8 @@ void main() {
         ],
       ),
     );
-    Widget row(List<Widget> arcs) => Row(spacing: AppSpacing.l, children: arcs);
+    Widget row(List<Widget> arcs) =>
+        Wrap(spacing: AppSpacing.l, runSpacing: AppSpacing.l, children: arcs);
     ProgressArc ring(double value, {double diameter = 64}) => ProgressArc(
       value: value,
       color: _orange,

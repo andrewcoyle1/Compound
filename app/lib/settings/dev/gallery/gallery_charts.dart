@@ -198,8 +198,9 @@ List<Widget> galleryCharts(BuildContext context) {
     galleryEntry('ProgressArc', [
       galleryBlock(
         'rings at 0, 60%, 100% and 140% (a second lap)',
-        Row(
+        Wrap(
           spacing: AppSpacing.l,
+          runSpacing: AppSpacing.l,
           children: [
             for (final value in [0.0, 0.6, 1.0, 1.4])
               ProgressArc(
@@ -213,8 +214,9 @@ List<Widget> galleryCharts(BuildContext context) {
       ),
       galleryBlock(
         'gauges, used and what is left, with a figure',
-        Row(
+        Wrap(
           spacing: AppSpacing.l,
+          runSpacing: AppSpacing.l,
           children: [
             for (final (from, value, figure) in [
               (0.0, 0.7, '1,450'),

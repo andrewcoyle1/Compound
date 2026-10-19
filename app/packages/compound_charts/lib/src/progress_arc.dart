@@ -33,8 +33,11 @@ enum ArcSweep {
 /// It fills from empty when first shown and moves to each new value, over
 /// [AppMotion.progress]; reduced motion shows the value at once.
 ///
-/// [child] sits in the square inside the ring, scaled down to fit, so it
-/// never meets the stroke at any text size. A screen reader hears
+/// It grows with the text: [diameter] and [strokeWidth] are its size at
+/// the default text size, scaled by the user's, up to the space it is
+/// given. [child] keeps the user's text size in the square inside the
+/// ring, and is scaled down only if it still cannot fit there, so it never
+/// meets the stroke. A screen reader hears
 /// [semanticLabel] and [semanticValue] (the share filled, by default), not
 /// the child.
 class ProgressArc extends StatelessWidget {
@@ -62,14 +65,14 @@ class ProgressArc extends StatelessWidget {
   /// The fill's colour.
   final Color color;
 
-  /// How wide the arc is, its stroke included.
+  /// How wide the arc is at the default text size, its stroke included.
   final double diameter;
 
   /// A full ring or an open gauge.
   final ArcSweep sweep;
 
-  /// The stroke's width: [AppChartMark.arcWidth] or
-  /// [AppChartMark.arcWidthSmall].
+  /// The stroke's width at the default text size: [AppChartMark.arcWidth]
+  /// or [AppChartMark.arcWidthSmall].
   final double strokeWidth;
 
   /// The unfilled part: the theme's neutral `outlineVariant` unless given,
@@ -93,7 +96,6 @@ class ProgressArc extends StatelessWidget {
       0,
     );
     final start = end > 1 ? 0.0 : from.clamp(0, end).toDouble();
-    final inner = (diameter - 2 * strokeWidth) / math.sqrt2;
     return Semantics(
       label: semanticLabel,
       value:
@@ -103,34 +105,54 @@ class ProgressArc extends StatelessWidget {
             locale: Localizations.localeOf(context).toLanguageTag(),
           ),
       excludeSemantics: true,
-      child: TweenAnimationBuilder<(double, double)>(
-        tween: _SpanTween(begin: (start, start), end: (start, end.toDouble())),
-        duration: AppMotion.progress.durationOf(context),
-        curve: AppMotion.progress.curve,
-        builder: (context, span, child) => CustomPaint(
-          painter: _ArcPainter(
-            from: span.$1,
-            to: span.$2,
-            sweep: sweep,
-            width: strokeWidth,
-            color: color,
-            track: trackColor ?? Theme.of(context).colorScheme.outlineVariant,
-            shadow: Theme.of(context).colorScheme.shadow
-                .withValues(alpha: AppChartMark.lapShadowOpacity),
-          ),
-          child: child,
-        ),
-        child: SizedBox.square(
-          dimension: diameter,
-          child: Center(
-            child: SizedBox.square(
-              dimension: math.max(inner, 0),
-              child: child == null
-                  ? null
-                  : FittedBox(fit: BoxFit.scaleDown, child: child),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final side = math.min(
+            MediaQuery.textScalerOf(context).scale(diameter),
+            constraints.biggest.shortestSide,
+          );
+          final stroke = strokeWidth * side / diameter;
+          final inner = (side - 2 * stroke) / math.sqrt2;
+          // Square and centred, however the parent constrains it.
+          return Align(
+            widthFactor: 1,
+            heightFactor: 1,
+            child: TweenAnimationBuilder<(double, double)>(
+              tween: _SpanTween(
+                begin: (start, start),
+                end: (start, end.toDouble()),
+              ),
+              duration: AppMotion.progress.durationOf(context),
+              curve: AppMotion.progress.curve,
+              builder: (context, span, child) => CustomPaint(
+                painter: _ArcPainter(
+                  from: span.$1,
+                  to: span.$2,
+                  sweep: sweep,
+                  width: stroke,
+                  color: color,
+                  track:
+                      trackColor ??
+                      Theme.of(context).colorScheme.outlineVariant,
+                  shadow: Theme.of(context).colorScheme.shadow
+                      .withValues(alpha: AppChartMark.lapShadowOpacity),
+                ),
+                child: child,
+              ),
+              child: SizedBox.square(
+                dimension: side,
+                child: Center(
+                  child: SizedBox.square(
+                    dimension: math.max(inner, 0),
+                    child: child == null
+                        ? null
+                        : FittedBox(fit: BoxFit.scaleDown, child: child),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

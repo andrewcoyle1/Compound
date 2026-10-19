@@ -19,7 +19,6 @@ class ChallengeRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scaler = MediaQuery.textScalerOf(context);
     final large = size >= 80;
     final progress = ChallengeStandings.ringProgress(
       sessions: sessions,
@@ -28,10 +27,8 @@ class ChallengeRing extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return ProgressArc(
       value: progress,
-      diameter: scaler.scale(size),
-      strokeWidth: scaler.scale(
-        large ? AppChartMark.arcWidth : AppChartMark.arcWidthSmall,
-      ),
+      diameter: size,
+      strokeWidth: large ? AppChartMark.arcWidth : AppChartMark.arcWidthSmall,
       color: progress >= 1 ? context.appColors.success : scheme.primary,
       trackColor: AppColors.tintedSurface(scheme.primary),
       semanticLabel: context.l10n.challengeRingLabel(sessions, target),

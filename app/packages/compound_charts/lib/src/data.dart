@@ -100,6 +100,12 @@ class const ChartData({
     return minutes / end.difference(start).inMinutes;
   }
 
+  /// Whether a point at [x] is drawn inside the window.
+  bool contains(DateTime x) {
+    final f = fraction(x);
+    return f >= 0 && f <= 1;
+  }
+
   /// Every bucket some series has a point in, oldest first.
   List<DateTime> get buckets => {
     for (final s in series)

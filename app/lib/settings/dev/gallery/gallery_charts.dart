@@ -97,6 +97,10 @@ List<Widget> galleryCharts(BuildContext context) {
       for (final (caption, data) in charts)
         galleryBlock(caption, CartesianChart(data: data)),
       galleryBlock(
+        'interactive: hold for the trackball, pinch, pan, fling, double tap',
+        _Interactive(data: _week(macros, yFit: ChartYFit.zero)),
+      ),
+      galleryBlock(
         'morphing through the above (ChartDataTween)',
         _Morphing(data: [for (final (_, data) in charts) data]),
       ),
@@ -121,11 +125,13 @@ List<Widget> galleryCharts(BuildContext context) {
             (
               name: l10n.scaleWeightTitle,
               color: colors.scaleWeight,
+              mark: ChartMark.dot,
               value: kg(82.5),
             ),
             (
               name: l10n.weightTrendSeries,
               color: colors.expenditure,
+              mark: ChartMark.line,
               value: kg(82.1),
             ),
           ],
@@ -133,7 +139,7 @@ List<Widget> galleryCharts(BuildContext context) {
         (
           'one unnamed series, at the left edge',
           0.0,
-          [(name: null, color: null, value: l10n.calendarLogged)],
+          [(name: null, color: null, mark: null, value: l10n.calendarLogged)],
         ),
         ('no rows (noData), at the right edge', 1.0, <ChartCalloutRow>[]),
       ])
@@ -209,4 +215,58 @@ class _MorphingState extends State<_Morphing> {
       ),
     ],
   );
+}
+
+/// An interactive [CartesianChart] keeping its own trackball, with a
+/// callout row per series; paging only counts.
+class _Interactive extends StatefulWidget {
+  const new({required this.data});
+
+  final ChartData data;
+
+  @override
+  State<_Interactive> createState() => _InteractiveState();
+}
+
+class _InteractiveState extends State<_Interactive> {
+  DateTime? _selected;
+  int _page = 0;
+
+  List<ChartCalloutRow> _rowsAt(DateTime bucket) => [
+    for (final s in widget.data.series)
+      if (s.points.where((p) => p.x == bucket).firstOrNull case final point?)
+        (
+          name: s.label,
+          color: s.color,
+          mark: s.mark,
+          value: AppFormat.number(point.y),
+        ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _selected;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: AppSpacing.s,
+      children: [
+        Text('Page $_page', style: AppTextStyles.label),
+        CartesianChart(
+          data: widget.data,
+          interactive: true,
+          selected: selected,
+          onSelected: (date) => setState(() => _selected = date),
+          onPage: (direction) => setState(() => _page += direction),
+          bucketLabel: AppFormat.date,
+          callout: selected == null
+              ? null
+              : ChartCalloutSummary(
+                  rows: _rowsAt(selected),
+                  footer: AppFormat.date(selected),
+                  noData: '',
+                ),
+        ),
+      ],
+    );
+  }
 }

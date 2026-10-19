@@ -28,6 +28,20 @@ void main() {
     });
   });
 
+  group('AppTheme press feedback', () {
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    test('has no ripple on iOS', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      expect(AppTheme.light.splashFactory, NoSplash.splashFactory);
+    });
+
+    test('ripples on Android', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      expect(AppTheme.light.splashFactory, isNot(NoSplash.splashFactory));
+    });
+  });
+
   for (final (name, theme, brightness) in [
     ('light', AppTheme.light, Brightness.light),
     ('dark', AppTheme.dark, Brightness.dark),

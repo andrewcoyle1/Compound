@@ -1,5 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/settings/dev/gallery/gallery_charts.dart';
 import 'package:compound/settings/dev/gallery/gallery_components.dart';
 import 'package:compound/settings/dev/gallery/gallery_tokens.dart';
 
@@ -12,7 +13,8 @@ enum GallerySection {
   navigation,
   overlays,
   states,
-  content;
+  content,
+  charts;
 
   /// This part's title.
   String title(AppLocalizations l10n) => switch (this) {
@@ -24,17 +26,20 @@ enum GallerySection {
     overlays => l10n.devGalleryOverlays,
     states => l10n.devGalleryStates,
     content => l10n.devGalleryContent,
+    charts => l10n.devGalleryCharts,
   };
 }
 
-/// Every `app_ui` widget in each of its states, and every token
-/// (`ui-contract.md`, rule 7), under Developer Settings in development and
-/// staging builds: never in production, where its route is not registered.
+/// Every `app_ui` and `compound_charts` widget in each of its states, and
+/// every token (`ui-contract.md`, rule 7), under Developer Settings in
+/// development and staging builds: never in production, where its route is
+/// not registered.
 ///
 /// Controls at the top switch the gallery, and what it opens, between light
 /// and dark and between three text sizes without touching the device's
 /// settings. A new `app_ui` widget gets an entry in `gallery_components.dart`
-/// in the same change; a test fails until it does.
+/// (a chart, in `gallery_charts.dart`) in the same change; a test fails
+/// until it does.
 class ComponentGalleryPage extends StatefulWidget {
   /// Opens at [section], or the top.
   const new({this.section, super.key});
@@ -205,6 +210,9 @@ class _ComponentGalleryPageState extends State<ComponentGalleryPage> {
                                     context,
                                   ),
                                   GallerySection.content => galleryContent(
+                                    context,
+                                  ),
+                                  GallerySection.charts => galleryCharts(
                                     context,
                                   ),
                                 },

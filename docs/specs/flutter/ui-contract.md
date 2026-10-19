@@ -6,8 +6,9 @@ private widgets in 83 files, 331 raw Material buttons, 83 ad-hoc text styles). W
 a value, the Swift app's `docs/specs/ui-framework/CONTRACT.md` has already decided it; the Dart
 names are below.
 
-The design system is the `app_ui` package (`app/packages/app_ui/`). Feature code in `app/lib/`
-uses it and styles nothing itself.
+The design system is the `app_ui` package (`app/packages/app_ui/`). Charts live in
+`compound_charts` (`app/packages/compound_charts/`), which draws on `app_ui`'s tokens and depends on
+nothing else. Feature code in `app/lib/` uses the two and styles nothing itself.
 
 ## 1. Reuse before you build
 
@@ -78,6 +79,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A sheet | `AppSheetPage` (a route's `pageBuilder`) or `showAppSheet`, sized `AppSheetSize.compact` / `half` / `full` |
 | Nothing to show, or a failure | `AppEmptyState`, `AppErrorState` |
 | Loading | `AppPlaceholderRow` / `AppPlaceholder` in place of the content; `AppLoadingView` for a screen's first load |
+| A chart, or the readout over one | `compound_charts`: `ChartCallout` with a `ChartCalloutSummary`. A new chart piece goes there, not in `app_ui` or the screen |
 
 Every icon-only button takes a required `semanticLabel`, which is also its tooltip.
 
@@ -105,9 +107,9 @@ Ported from the Swift contract's Patterns table.
 - Contrast checked in light and dark mode.
 - Every icon-only button has a semantic label.
 
-## 6. Golden tests for `app_ui`
+## 6. Golden tests for `app_ui` and `compound_charts`
 
-Every `app_ui` widget has golden-image tests in light mode, dark mode and at 200% text, so a
+Every `app_ui` and `compound_charts` widget has golden-image tests in light mode, dark mode and at 200% text, so a
 change that makes a component look worse fails a test and agents get visual proof without a
 device.
 
@@ -126,7 +128,10 @@ device.
   - `goldens/macos/`: the same images with real text (Nunito, Material Icons, and Roboto in place
     of San Francisco, which may not be redistributed), for people to look at. They are made and
     checked only on request, on a Mac.
-- **Run** (from `app/packages/app_ui`; the very_good MCP `test` tool takes the same options):
+- `compound_charts` has its own copy of `goldenStates` and `flutter_test_config.dart` in its
+  `test/` folder; `app_ui` does not export them.
+- **Run** (from `app/packages/app_ui`, or `app/packages/compound_charts` with `test/src`; the
+  very_good MCP `test` tool takes the same options):
 
   | To | Run |
   |---|---|
@@ -150,8 +155,9 @@ never registers its route.
 
 - **A new `app_ui` widget, or a new state of one, gets a gallery entry in the same PR.** The
   entries are in `app/lib/settings/dev/gallery/gallery_components.dart` (tokens in
-  `gallery_tokens.dart`); `component_gallery_page_test.dart` fails while an exported widget,
-  `show…` function, `AppSymbols` icon or `AppColors` colour is missing from them.
+  `gallery_tokens.dart`, charts in `gallery_charts.dart`); `component_gallery_page_test.dart`
+  fails while an exported `app_ui` or `compound_charts` widget, `show…` function, `AppSymbols`
+  icon or `AppColors` colour is missing from them.
 - `scripts/flutter-screenshots.sh <udid> <out-dir> GALLERY` shoots the whole gallery a screen at
   a time, light and dark.
 
@@ -174,8 +180,9 @@ screens never branch on platform themselves.
 ## Enforcement
 
 `scripts/flutter-ui-check.py` runs in CI (`flutter.yml`, **UI contract** job) and enforces rules 2
-and 3 on `app/lib/` (and `framework-import` on `app/test/`). Every screen was moved onto `app_ui`
-by 19 Oct 2026 (#212–#217), so there is no baseline: any match fails CI.
+and 3 on `app/lib/` and `compound_charts/lib/` (and `framework-import` on `app/test/` and
+`compound_charts/test/`). Every screen was moved onto `app_ui` by 19 Oct 2026 (#212–#217), so
+there is no baseline: any match fails CI.
 
 ```bash
 python3 scripts/flutter-ui-check.py                  # what CI runs

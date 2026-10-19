@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hold app/lib to the UI contract (docs/specs/flutter/ui-contract.md, rules 2 and 3).
+"""Hold app/lib and compound_charts to the UI contract (docs/specs/flutter/ui-contract.md, rules 2 and 3).
 
 Feature code styles nothing itself: colours, text styles, padding, radii and durations come from
 app_ui's tokens, and Material's buttons, rows and dialogs are wrapped once in app_ui. Every
@@ -16,6 +16,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 LIB = ROOT / 'app' / 'lib'
+# Charts draw on app_ui's tokens like any screen.
+CHARTS = ROOT / 'app' / 'packages' / 'compound_charts'
 
 # Not preceded by a letter, so `AppCard(` and `appColors.` don't count as `Card(` and `Colors.`.
 _ = r'(?<![A-Za-z_])'
@@ -63,11 +65,12 @@ def matches(text):
 def scan():
     found = {rule: [] for rule in RULES}
     # Tests must build with the app's Material too, or a widget and its test use different Themes.
-    for path in sorted((ROOT / 'app' / 'test').rglob('*.dart')):
+    tests = [*(ROOT / 'app' / 'test').rglob('*.dart'), *(CHARTS / 'test').rglob('*.dart')]
+    for path in sorted(tests):
         for rule, number, line in matches(path.read_text()):
             if rule == 'framework-import':
                 found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
-    for path in sorted(LIB.rglob('*.dart')):
+    for path in sorted([*LIB.rglob('*.dart'), *(CHARTS / 'lib').rglob('*.dart')]):
         if any(part in path.as_posix() for part in EXEMPT):
             continue
         for rule, number, line in matches(path.read_text()):
@@ -85,7 +88,7 @@ def check():
                   f'See docs/specs/flutter/ui-contract.md; list them with --list {rule}.')
     if failed:
         return 1
-    print('UI contract: no new literals or raw Material widgets in app/lib.')
+    print('UI contract: no new literals or raw Material widgets in app/lib or compound_charts.')
     return 0
 
 

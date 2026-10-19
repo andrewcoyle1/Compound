@@ -29,6 +29,7 @@ Set<String> _declared(String file, String pattern) => {
 };
 
 const _appUi = 'packages/app_ui/lib';
+const _charts = 'packages/compound_charts/lib';
 
 void main() {
   group('ComponentGalleryPage', () {
@@ -83,6 +84,24 @@ void main() {
       );
       expect(public, contains('AppCtaButton'));
       expect(missing, isEmpty, reason: 'add these to gallery_components.dart');
+    });
+
+    test('has an entry for every exported compound_charts widget', () {
+      final barrel = File('$_charts/compound_charts.dart').readAsStringSync();
+      final public = {
+        for (final m in RegExp(r"export 'src/(\w+)\.dart'").allMatches(barrel))
+          ..._declared(
+            '$_charts/src/${m[1]}.dart',
+            r'^(?:class|final class) ([A-Z]\w*)(?:<\w+>)? extends',
+          ),
+      };
+      final gallery = File('lib/settings/dev/gallery/gallery_charts.dart')
+          .readAsStringSync();
+      final missing = public.where(
+        (name) => !RegExp('\\b$name\\b').hasMatch(gallery),
+      );
+      expect(public, contains('ChartCallout'));
+      expect(missing, isEmpty, reason: 'add these to gallery_charts.dart');
     });
 
     test('lists every AppSymbols icon and AppColors colour', () {

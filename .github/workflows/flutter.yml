@@ -56,6 +56,15 @@ jobs:
       flutter_version: "3.47.7"
       min_coverage: 100
 
+  compound_charts:
+    name: compound_charts
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/compound_charts
+      flutter_version: "3.47.7"
+      # Goldens run as tests, as in app_ui. Packages are held at 100%.
+      min_coverage: 100
+
   compound_maths:
     name: compound_maths
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1

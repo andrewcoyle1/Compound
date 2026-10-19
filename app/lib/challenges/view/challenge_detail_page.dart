@@ -12,7 +12,6 @@ import 'package:compound/social/social_routes.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:social_repository/social_repository.dart';
 
 /// A challenge's standings (`ChallengeDetailView`): the reader's ring, the
@@ -219,9 +218,9 @@ class _Standings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final scheme = Theme.of(context).colorScheme;
-    final dates = DateFormat.yMMMd(locale);
+    String dates(DateTime date) =>
+        AppFormat.date(date, locale: context.dateLocale);
     final daysLeft = ChallengeStandings.daysLeft(challenge, DateTime.now());
     final mySessions = state.progress[viewerId] ?? 0;
     final standings = state.standings(challenge);
@@ -257,8 +256,8 @@ class _Standings extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${dates.format(challenge.startsAt.toLocal())} – '
-                        '${dates.format(challenge.endsAt.toLocal())}',
+                        '${dates(challenge.startsAt.toLocal())} – '
+                        '${dates(challenge.endsAt.toLocal())}',
                         style: AppTextStyles.label.copyWith(
                           color: scheme.onSurfaceVariant,
                         ),

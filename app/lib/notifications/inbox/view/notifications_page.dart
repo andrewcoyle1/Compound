@@ -16,7 +16,6 @@ import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 /// The notifications inbox (Swift `NotificationsView`): follow requests to
 /// answer, then the activity, grouped, newest first. Opening it marks
@@ -291,10 +290,11 @@ class const _GroupRow({
     final l10n = context.l10n;
     final bloc = context.read<InboxBloc>();
     final scheme = Theme.of(context).colorScheme;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final date = DateFormat.yMMMd(locale)
-        .add_jm()
-        .format(group.newest.dateCreated.toLocal());
+    final date = AppFormat.dateTime(
+      group.newest.dateCreated.toLocal(),
+      use24HourFormat: context.use24HourFormat,
+      locale: context.dateLocale,
+    );
     final followBack = showsFollowBack
         ? BlocSelector<CircleBloc, CircleState, FollowState>(
             selector: (circle) => circle.followState(group.newest.actorId),

@@ -8,7 +8,6 @@ import 'package:compound/widgets/calendar/calendar_sheet.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart' show DateFormat;
 
 /// A week of days to pick from, each marked by the host (Swift
 /// `CalendarHeaderView`): Training's workouts, Nutrition's calories. Swiping
@@ -221,7 +220,6 @@ class CalendarDayCell extends StatelessWidget {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final colors = context.appColors;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final marker = this.marker;
     final isToday = day == today;
     final weight = isToday ? FontWeight.w600 : FontWeight.w400;
@@ -229,7 +227,11 @@ class CalendarDayCell extends StatelessWidget {
     return Semantics(
       button: true,
       selected: isSelected,
-      label: DateFormat.MMMMEEEEd(locale).format(day),
+      label: AppFormat.date(
+        day,
+        style: AppDateStyle.weekdayDayMonthLong,
+        locale: context.dateLocale,
+      ),
       value: [
         if (isToday) l10n.calendarToday,
         ?marker?.describe(l10n),
@@ -258,7 +260,11 @@ class CalendarDayCell extends StatelessWidget {
                         spacing: AppSpacing.xxs,
                         children: [
                           Text(
-                            DateFormat.d(locale).format(day),
+                            AppFormat.date(
+                              day,
+                              style: AppDateStyle.day,
+                              locale: context.dateLocale,
+                            ),
                             style: AppTextStyles.rowTitle.copyWith(
                               fontWeight: weight,
                               color: isToday ? scheme.primary : null,
@@ -268,7 +274,11 @@ class CalendarDayCell extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            DateFormat.E(locale).format(day),
+                            AppFormat.date(
+                              day,
+                              style: AppDateStyle.weekdayShort,
+                              locale: context.dateLocale,
+                            ),
                             style: AppTextStyles.rowDetail.copyWith(
                               fontWeight: weight,
                               color: scheme.onSurfaceVariant,

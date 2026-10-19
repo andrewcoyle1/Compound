@@ -17,7 +17,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_repository/health_repository.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -224,7 +223,11 @@ class _Step extends StatelessWidget {
     );
     Widget day(CheckInDay row, {required ValueChanged<bool> onChanged}) =>
         AppListRowToggle(
-          title: DateFormat.EEEE(locale).format(localMidnight(row.dayKey)),
+          title: AppFormat.date(
+            localMidnight(row.dayKey),
+            style: AppDateStyle.weekday,
+            locale: context.dateLocale,
+          ),
           subtitle: switch (row.intakeKcal) {
             null => l10n.checkInNothingLogged,
             final kcal => AppFormat.kcal(kcal.round(), locale: locale),

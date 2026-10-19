@@ -23,7 +23,6 @@ import 'package:compound/weekly_review/logic/weekly_review.dart';
 import 'package:compound/weekly_review/view/weekly_review_share_card.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -318,8 +317,11 @@ class _WeekHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final days = DateFormat.MMMd(locale);
+    String days(DateTime date) => AppFormat.date(
+      date,
+      style: AppDateStyle.dayMonth,
+      locale: context.dateLocale,
+    );
     final end = review.weekEnd;
     final last = DateTime(end.year, end.month, end.day - 1);
     final bloc = context.read<WeeklyReviewBloc>();
@@ -332,7 +334,7 @@ class _WeekHeader extends StatelessWidget {
         ),
         Expanded(
           child: Text(
-            '${days.format(review.weekStart)} – ${days.format(last)}',
+            '${days(review.weekStart)} – ${days(last)}',
             textAlign: TextAlign.center,
             style: AppTextStyles.rowDetail.copyWith(
               fontWeight: FontWeight.w600,
@@ -368,7 +370,11 @@ class _ShareButtonState extends State<_ShareButton> {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final review = widget.state.review(l10n.muscleName);
-    final days = DateFormat.MMMd(locale);
+    String days(DateTime date) => AppFormat.date(
+      date,
+      style: AppDateStyle.dayMonth,
+      locale: context.dateLocale,
+    );
     final end = review.weekEnd;
     final last = DateTime(end.year, end.month, end.day - 1);
     final shareSheet = context.read<ShareSheet>();
@@ -380,7 +386,7 @@ class _ShareButtonState extends State<_ShareButton> {
       WeeklyReviewShareCard(
         l10n: l10n,
         accent: Theme.of(context).colorScheme.primary,
-        dateRange: '${days.format(review.weekStart)} – ${days.format(last)}',
+        dateRange: '${days(review.weekStart)} – ${days(last)}',
         takeaway: WeeklyReviewView.takeawayText(l10n, review.takeaway, locale),
         sessions: l10n.weeklyReviewOfGoal(review.sessionCount, review.goal),
         volume:

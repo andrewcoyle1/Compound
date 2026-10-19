@@ -31,7 +31,6 @@ import 'package:device_store/device_store.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:strava_repository/strava_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart'
@@ -473,9 +472,12 @@ class _Detail extends StatelessWidget {
     final notes = session.notes?.trim();
     final volume = session.loggedVolumeKg;
     final distanceUnit = WorkoutText.preferredDistanceUnit(state.distanceUnit);
-    final started = DateFormat.yMMMMd(locale)
-        .add_jm()
-        .format(session.dateCreated.toLocal());
+    final started = AppFormat.dateTime(
+      session.dateCreated.toLocal(),
+      use24HourFormat: context.use24HourFormat,
+      style: AppDateStyle.long,
+      locale: context.dateLocale,
+    );
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),

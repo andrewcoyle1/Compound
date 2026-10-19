@@ -4,7 +4,6 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/nutrition/cubit/food_log_settings_cubit.dart';
-import 'package:compound/settings/nutrition/logic/nutrition_settings_labels.dart';
 import 'package:compound/settings/nutrition/view/favourite_measurements_page.dart';
 import 'package:compound/settings/nutrition/view/logger_banner_page.dart';
 import 'package:compound/settings/nutrition/view/logger_food_tiles_page.dart';
@@ -64,7 +63,6 @@ class FoodLogSettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<FoodLogSettingsCubit>();
-    final locale = Localizations.localeOf(context).toLanguageTag();
     void open(String name) => unawaited(context.pushNamed(name));
     Widget toggle(
       String key,
@@ -83,7 +81,11 @@ class FoodLogSettingsView extends StatelessWidget {
       title: title,
       value: value,
       options: [for (var hour = 0; hour < 24; hour++) hour],
-      label: (hour) => hourLabel(hour, locale),
+      label: (hour) => AppFormat.hour(
+        hour,
+        use24HourFormat: context.use24HourFormat,
+        locale: context.dateLocale,
+      ),
       onChanged: (hour) => unawaited(cubit.set(key, hour)),
     );
     return SettingsDocumentScaffold<FoodLogSettingsCubit, FoodLogSettings>(

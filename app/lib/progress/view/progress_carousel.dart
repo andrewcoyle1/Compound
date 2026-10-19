@@ -17,7 +17,6 @@ import 'package:compound_maths/compound_maths.dart'
 import 'package:compound_models/compound_models.dart' show Mesocycle;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart' show DateFormat;
 
 /// The header of the Progress tab (Swift `ProgressCarouselView`): the week
 /// against its targets, then today's nutrition, a month's energy balance,
@@ -351,8 +350,16 @@ class _Grid extends StatelessWidget {
     final days = [for (final key in state.weekDayKeys) localMidnight(key)];
     final selected = state.targetDay;
     final today = (state.now.weekday - state.firstWeekday + 7) % 7;
-    final names = DateFormat.EEEE(locale);
-    final letters = DateFormat.EEEEE(locale);
+    String names(DateTime date) => AppFormat.date(
+      date,
+      style: AppDateStyle.weekday,
+      locale: context.dateLocale,
+    );
+    String letters(DateTime date) => AppFormat.date(
+      date,
+      style: AppDateStyle.weekdayInitial,
+      locale: context.dateLocale,
+    );
     void press(int day) {
       unawaited(HapticFeedback.selectionClick());
       context.read<ProgressBloc>().add(ProgressTargetDayPressed(day));
@@ -398,7 +405,7 @@ class _Grid extends StatelessWidget {
                           button: true,
                           selected: day == selected,
                           label:
-                              '${names.format(days[day])}, '
+                              '${names(days[day])}, '
                               '${row.title(l10n)}',
                           value: cellValue(row, eaten[day], goal[day]),
                           hint: day == selected
@@ -424,7 +431,7 @@ class _Grid extends StatelessWidget {
                         label: selected == null
                             ? l10n.targetChartThisWeek(row.title(l10n))
                             : '${row.title(l10n)}, '
-                                  '${names.format(days[selected])}',
+                                  '${names(days[selected])}',
                         value: cellValue(row, summary.eaten, summary.goal),
                         child: ExcludeSemantics(
                           child: Column(
@@ -479,7 +486,7 @@ class _Grid extends StatelessWidget {
                     child: GestureDetector(
                       onTap: () => press(day),
                       child: Text(
-                        letters.format(days[day]),
+                        letters(days[day]),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.label.copyWith(
                           fontWeight: day == selected ? FontWeight.bold : null,

@@ -8,11 +8,11 @@ import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// [time] as the device prints a time of day: `1:00 PM`, or `13:00` with
 /// the 24-hour clock on.
-String _formatTime(BuildContext context, DateTime time) =>
-    MaterialLocalizations.of(context).formatTimeOfDay(
-      TimeOfDay.fromDateTime(time.toLocal()),
-      alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
-    );
+String _formatTime(BuildContext context, DateTime time) => AppFormat.time(
+  time.toLocal(),
+  use24HourFormat: context.use24HourFormat,
+  locale: context.dateLocale,
+);
 
 /// [child] as wide as the widest time of day, so every hour's capsule and
 /// every timestamp gutter is the same width in 12- and 24-hour locales.

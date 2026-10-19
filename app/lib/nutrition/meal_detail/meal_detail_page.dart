@@ -13,7 +13,6 @@ import 'package:compound/programs/view/program_widgets.dart'
     show confirmDestructive;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// A logged meal (Swift `MealDetailView`): its totals and foods, read-only,
@@ -129,7 +128,6 @@ class _Meal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final totals = totalsOf([meal]);
     final date = meal.date.toLocal();
@@ -137,15 +135,11 @@ class _Meal extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
         Text(
-          [
-            DateFormat.yMMMd(locale).format(date),
-            MaterialLocalizations.of(context).formatTimeOfDay(
-              TimeOfDay.fromDateTime(date),
-              alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(
-                context,
-              ),
-            ),
-          ].join(', '),
+          AppFormat.dateTime(
+            date,
+            use24HourFormat: context.use24HourFormat,
+            locale: context.dateLocale,
+          ),
           style: AppTextStyles.label.copyWith(color: secondary),
         ),
         const SizedBox(height: AppSpacing.s),

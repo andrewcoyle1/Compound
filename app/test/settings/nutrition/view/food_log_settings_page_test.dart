@@ -1,5 +1,4 @@
 import 'package:app_ui/app_ui.dart';
-import 'package:compound/settings/nutrition/logic/nutrition_settings_labels.dart';
 import 'package:compound/settings/nutrition/view/favourite_measurements_page.dart';
 import 'package:compound/settings/nutrition/view/food_log_settings_page.dart';
 import 'package:compound/settings/nutrition/view/logger_banner_page.dart';
@@ -71,8 +70,8 @@ void main() {
         'Food Search',
         'Food Tiles',
         'Logger Options',
-        hourLabel(7, 'en'),
-        hourLabel(23, 'en'),
+        AppFormat.hour(7, use24HourFormat: false, locale: 'en'),
+        AppFormat.hour(23, use24HourFormat: false, locale: 'en'),
         'Left',
         'No negative numbers will be used if you exceed a nutrient target.',
       ]) {
@@ -101,11 +100,16 @@ void main() {
       await pump(tester);
       await tester.tap(find.text('Start Hour'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(hourLabel(5, 'en')));
+      await tester.tap(
+        find.text(AppFormat.hour(5, use24HourFormat: false, locale: 'en')),
+      );
       await tester.pumpAndSettle();
 
       expect(repository.saved.single.startHour, 5);
-      expect(find.text(hourLabel(5, 'en')), findsOneWidget);
+      expect(
+        find.text(AppFormat.hour(5, use24HourFormat: false, locale: 'en')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('choosing the side already chosen saves nothing', (

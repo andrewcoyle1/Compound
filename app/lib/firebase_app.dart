@@ -259,7 +259,9 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     notificationsRepository: notificationsRepository,
     liveActivityRepository: liveActivityRepository,
     appIntentsRepository: MethodChannelAppIntentsRepository(),
-    homeWidgetRepository: MethodChannelHomeWidgetRepository(
+    // Both Firebase flavors' `APP_GROUP_ID`, the Swift app's group.
+    homeWidgetRepository: PluginHomeWidgetRepository(
+      appGroupId: 'group.com.compound.app',
       onError: (error, stackTrace) =>
           unawaited(crashlytics.recordError(error, stackTrace)),
     ),

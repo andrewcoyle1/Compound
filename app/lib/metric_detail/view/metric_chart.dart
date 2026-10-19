@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
-import 'package:compound/widgets/chart_callout.dart';
+import 'package:compound_charts/compound_charts.dart';
 
 /// One series on a metric chart: what it is called, its points in the unit
 /// shown, its colour, and whether it is drawn as a line, as bars or as dots.

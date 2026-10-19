@@ -13282,6 +13282,10 @@
     "@devGalleryContent": {
         "description": "Component gallery: the part showing cards, values, chips and messages"
     },
+    "devGalleryCharts": "Charts",
+    "@devGalleryCharts": {
+        "description": "Component gallery: the part showing chart pieces from compound_charts"
+    },
     "devGalleryPlay": "Play",
     "@devGalleryPlay": {
         "description": "Component gallery: runs every motion curve once"

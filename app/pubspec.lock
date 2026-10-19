@@ -281,6 +281,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
+  compound_charts:
+    dependency: "direct main"
+    description:
+      path: "packages/compound_charts"
+      relative: true
+    source: path
+    version: "0.1.0+1"
   compound_maths:
     dependency: "direct main"
     description:

@@ -1,7 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/training_analytics/view/workout_consistency_page.dart'
     show ContributionGrid;
-import 'package:compound/widgets/chart_callout.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter_test/flutter_test.dart';
 

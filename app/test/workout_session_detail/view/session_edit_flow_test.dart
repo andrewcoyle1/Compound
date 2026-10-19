@@ -402,7 +402,7 @@ void main() {
       'Pause reps',
     );
     await tester.enterText(fields.last, 'Elbows in');
-    await tester.tap(find.text('Save').last);
+    await tester.tap(find.byTooltip('Save').last);
     await settle(tester);
     expect(find.text('Pause reps'), findsOneWidget);
     expect(find.text('Elbows in'), findsOneWidget);

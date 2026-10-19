@@ -58,10 +58,10 @@ class ExerciseStrip extends StatelessWidget {
             width: side,
             child: Align(
               alignment: Alignment.topCenter,
-              child: IconButton.filledTonal(
-                tooltip: l10n.trackerAddExercise,
+              child: AppIconButton(
+                icon: AppSymbols.add,
+                semanticLabel: l10n.trackerAddExercise,
                 onPressed: onAddExercise,
-                icon: const Icon(AppSymbols.add),
               ),
             ),
           ),
@@ -116,21 +116,24 @@ class _Tile extends StatelessWidget {
   final List<(IconData, String, VoidCallback)> actions;
 
   Future<void> _menu(BuildContext context) async {
-    final chosen = await showModalBottomSheet<VoidCallback>(
+    final chosen = await showAppSheet<VoidCallback>(
       context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final (icon, label, action) in actions)
-              ListTile(
-                leading: Icon(icon),
-                title: Text(label),
-                onTap: () => Navigator.of(context).pop(action),
-              ),
-          ],
-        ),
+      size: AppSheetSize.compact,
+      builder: (context) => ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [
+          AppSection(
+            children: [
+              for (final (icon, label, action) in actions)
+                AppListRowButton(
+                  title: label,
+                  icon: icon,
+                  accessory: null,
+                  onPressed: () => Navigator.of(context).pop(action),
+                ),
+            ],
+          ),
+        ],
       ),
     );
     chosen?.call();
@@ -200,9 +203,8 @@ class _Tile extends StatelessWidget {
                                 ),
                                 child: Text(
                                   letter,
-                                  style: AppTextStyles.label.copyWith(
+                                  style: AppTextStyles.label.semibold.copyWith(
                                     color: scheme.onPrimary,
-                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),

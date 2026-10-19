@@ -346,7 +346,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Finish Workout…'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Finish'));
+      await tester.tap(find.byTooltip('Finish'));
       await tester.pumpAndSettle();
 
       expect(find.byType(WorkoutTrackerView), findsNothing);
@@ -393,7 +393,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Finish Workout…'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Finish'));
+      await tester.tap(find.byTooltip('Finish'));
       await tester.pumpAndSettle();
 
       expect(find.text('No Sets Logged'), findsOneWidget);
@@ -441,13 +441,13 @@ void main() {
       await tester.tap(find.byTooltip('Workout Notes…'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(EditableText), 'Felt strong');
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byTooltip('Save'));
       await tester.pumpAndSettle();
       expect(cubit.state.session!.notes, 'Felt strong');
 
       await tester.tap(find.byTooltip('Finish Workout…'));
       await tester.pumpAndSettle();
-      expect(find.text('Finish'), findsOneWidget);
+      expect(find.byTooltip('Finish'), findsOneWidget);
       await cubit.close();
     });
 

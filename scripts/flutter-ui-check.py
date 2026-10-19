@@ -60,7 +60,7 @@ BASELINE = {
     'icon-literal': 6,
     # Every display date went through AppFormat on 19 Oct 2026; no machine format needed DateFormat.
     'date-format': 0,
-    'material-button': 331,
+    'material-button': 330,
     'material-row': 44,
     'material-card': 0,
     'material-dialog': 104,

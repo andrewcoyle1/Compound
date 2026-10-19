@@ -68,6 +68,10 @@ abstract final class AppControlSize {
   /// A list row's minimum height: iOS 26's inset-grouped row.
   static const double listRow = 52;
 
+  /// A compact control's drawn height: an inline button in a row or card,
+  /// a toolbar's confirm and avatar circles. Its tap target is still [row].
+  static const double compact = 32;
+
   /// A call-to-action button's minimum height (Swift's `CallToActionButton`).
   static const double cta = 56;
 

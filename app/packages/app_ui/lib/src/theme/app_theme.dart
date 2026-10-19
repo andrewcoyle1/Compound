@@ -72,6 +72,12 @@ abstract final class AppTheme {
       canvasColor: colors.canvas,
       textTheme: AppTextStyles.textTheme,
       extensions: [colors],
+      // Press feedback is the one thing that follows the platform: a ripple
+      // on Android, and on iOS only the pressed highlight, as a tapped iOS
+      // control dims rather than splashes.
+      splashFactory: defaultTargetPlatform == TargetPlatform.iOS
+          ? NoSplash.splashFactory
+          : null,
       iconTheme: IconThemeData(
         color: scheme.onSurface,
         size: AppIconSize.medium.points,

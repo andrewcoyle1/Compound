@@ -259,6 +259,7 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     notificationsRepository: notificationsRepository,
     liveActivityRepository: liveActivityRepository,
     appIntentsRepository: MethodChannelAppIntentsRepository(),
+    quickActionsRepository: PluginQuickActionsRepository(),
     homeWidgetRepository: MethodChannelHomeWidgetRepository(
       onError: (error, stackTrace) =>
           unawaited(crashlytics.recordError(error, stackTrace)),

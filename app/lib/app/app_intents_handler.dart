@@ -197,13 +197,8 @@ class AppIntents implements AppIntentHandler {
   Future<({IntentWorkout? workout, String sentence})> todaysWorkout() async {
     await _user();
     final l10n = _l10n();
-    final state = _programs.state;
-    final mesocycle = state.activeMesocycle;
-    final today = MesocycleSchedule.todayItem(
-      state.activeRun,
-      state.sessions,
-      now: _clock(),
-    );
+    final mesocycle = _programs.state.activeMesocycle;
+    final today = _today();
     if (mesocycle == null || today == null) {
       return (workout: null, sentence: l10n.intentNoMesocycle);
     }
@@ -225,4 +220,37 @@ class AppIntents implements AppIntentHandler {
     await _user();
     _links.store(const RecipesLink());
   }
+
+  /// A home-screen quick action. Start Workout starts today's programme
+  /// workout when one is still to do, as Siri's does, and otherwise opens
+  /// the workout under way or Today; the logs open over Today. Signed out,
+  /// it only opens the app.
+  Future<void> quickAction(QuickAction action) async {
+    try {
+      switch (action) {
+        case QuickAction.startWorkout:
+          await _user();
+          final today = _today();
+          if (today != null &&
+              !today.isCompleted &&
+              today.dayPlan.exercises.isNotEmpty) {
+            await startWorkout(today.dayPlan.workoutId);
+          } else {
+            _links.store(const WorkoutLink());
+          }
+        case QuickAction.logWeight:
+          _links.store(const LogWeightLink());
+        case QuickAction.logMeal:
+          _links.store(const LogMealLink());
+      }
+    } on AppIntentRefusal {
+      return;
+    }
+  }
+
+  ScheduledDay? _today() => MesocycleSchedule.todayItem(
+    _programs.state.activeRun,
+    _programs.state.sessions,
+    now: _clock(),
+  );
 }

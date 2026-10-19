@@ -36,7 +36,8 @@ const _rounded = 'Nunito';
 /// | [sectionTitle] | Card and section titles |
 /// | [rowTitle] | List row title |
 /// | [rowDetail] | Row subtitle, in `onSurfaceVariant` |
-/// | [label] | Stat labels and chips, in `onSurfaceVariant` |
+/// | [label] | Stat labels, in `onSurfaceVariant` |
+/// | [labelEmphasized] | Chips and capsules |
 ///
 /// The metric styles use tabular figures, so changing numbers don't jitter.
 /// Nunito's figures are tabular by default; the feature is asked for anyway.
@@ -100,6 +101,10 @@ abstract final class AppTextStyles {
 
   /// 12, regular: stat labels and chips.
   static TextStyle get label => _system(12, 16, FontWeight.w400, sfTracking: 0);
+
+  /// 12, semibold: a chip's or a capsule's text.
+  static TextStyle get labelEmphasized =>
+      _system(12, 16, FontWeight.w600, sfTracking: 0);
 
   /// A system-font style. [sfTracking] is Apple's tracking for San Francisco
   /// at [size], in points, applied on iOS only.

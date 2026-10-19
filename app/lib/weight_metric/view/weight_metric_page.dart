@@ -9,7 +9,6 @@ import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
-import 'package:compound/progress/view/progress_metric_view.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/weight_metric/bloc/weight_metric_bloc.dart';
@@ -68,26 +67,19 @@ class WeightMetricView extends StatelessWidget {
     final state = context.watch<WeightMetricBloc>().state;
     final title = state.metric.title(l10n);
     final hasEntries = state.weighIns?.isNotEmpty ?? false;
-    final logWeight = ProgressMetricAction(
-      label: l10n.logWeightTitle,
-      icon: AppSymbols.add,
-      onPressed: () => context.pushNamed(LogWeightPage.name),
-    );
     return BlocListener<WeightMetricBloc, WeightMetricState>(
       listenWhen: (previous, current) =>
           current.deleteFailures > previous.deleteFailures,
-      listener: (context, _) => showDialog<void>(
+      listener: (context, _) => showAppDialog<void>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text(context.l10n.metricDeleteFailed),
-          content: Text(context.l10n.metricTryAgain),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(MaterialLocalizations.of(context).okButtonLabel),
-            ),
-          ],
-        ),
+        title: context.l10n.metricDeleteFailed,
+        message: context.l10n.metricTryAgain,
+        actions: [
+          AppDialogAction(
+            label: MaterialLocalizations.of(context).okButtonLabel,
+            role: AppDialogRole.preferred,
+          ),
+        ],
       ),
       child: AppScaffold(
         appBar: AppBar(
@@ -100,25 +92,27 @@ class WeightMetricView extends StatelessWidget {
                 CoachContext(kind: CoachContextKind.weightTrend, title: title),
               ),
             if (!allData)
-              IconButton(
-                icon: const Icon(AppSymbols.add),
-                tooltip: l10n.logWeightTitle,
+              AppToolbarButton(
+                icon: AppSymbols.add,
+                semanticLabel: l10n.logWeightTitle,
                 onPressed: () => context.pushNamed(LogWeightPage.name),
               ),
           ],
         ),
         body: switch (state.status) {
-          WeightMetricStatus.loading => const Center(
-            child: CircularProgressIndicator.adaptive(),
+          WeightMetricStatus.loading => AppLoadingView(
+            label: l10n.launchLoading,
           ),
-          WeightMetricStatus.failure => ProgressMessage(
+          WeightMetricStatus.failure => AppErrorState(
             title: title,
-            message: l10n.weightLoadFailure,
+            description: l10n.weightLoadFailure,
           ),
-          WeightMetricStatus.loaded when !hasEntries => ProgressMessage(
+          WeightMetricStatus.loaded when !hasEntries => AppEmptyState(
+            icon: AppSymbols.analytics,
             title: title,
-            message: l10n.weightNoEntries,
-            action: logWeight,
+            description: l10n.weightNoEntries,
+            actionLabel: l10n.logWeightTitle,
+            onAction: () => context.pushNamed(LogWeightPage.name),
           ),
           WeightMetricStatus.loaded when allData => MetricAllDataView(
             title: title,

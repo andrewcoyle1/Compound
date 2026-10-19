@@ -70,11 +70,14 @@ List<TextSpan> coachMarkdown(String text) {
       bold != null
           ? TextSpan(
               text: bold,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              // The bubble's rowTitle, in its semibold.
+              style: AppTextStyles.sectionTitle,
             )
           : TextSpan(
               text: match.group(2) ?? match.group(3),
-              style: const TextStyle(fontStyle: FontStyle.italic),
+              style: AppTextStyles.rowTitle.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
             ),
     );
     start = match.end;

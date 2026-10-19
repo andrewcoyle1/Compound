@@ -58,16 +58,14 @@ class LogWeightView extends StatelessWidget {
             _dismiss(context);
           case LogWeightStatus.failure:
             unawaited(HapticFeedback.errorNotification());
-            showDialog<void>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text(context.l10n.logWeightSaveFailure),
+            unawaited(
+              showAppDialog<void>(
+                context: context,
+                title: context.l10n.logWeightSaveFailure,
                 actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      MaterialLocalizations.of(context).okButtonLabel,
-                    ),
+                  AppDialogAction(
+                    label: MaterialLocalizations.of(context).okButtonLabel,
+                    role: AppDialogRole.preferred,
                   ),
                 ],
               ),
@@ -81,28 +79,25 @@ class LogWeightView extends StatelessWidget {
       child: AppScaffold(
         appBar: AppBar(
           // Always shown, even when opened directly with nothing below.
-          leading: CloseButton(onPressed: () => _dismiss(context)),
+          leading: AppToolbarButton.close(
+            semanticLabel: MaterialLocalizations.of(context).closeButtonLabel,
+            onPressed: () => _dismiss(context),
+          ),
           title: Text(l10n.logWeightTitle),
           actions: [
-            if (state.status == LogWeightStatus.saving)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                child: Center(child: CircularProgressIndicator.adaptive()),
-              )
-            else
-              IconButton(
-                icon: const Icon(AppSymbols.selected),
-                tooltip: l10n.logWeightSave,
-                onPressed: state.isEditable
-                    ? () => context.read<LogWeightBloc>().add(
-                        const LogWeightSaveRequested(),
-                      )
-                    : null,
-              ),
+            AppToolbarButton.confirm(
+              semanticLabel: l10n.logWeightSave,
+              isSaving: state.status == LogWeightStatus.saving,
+              onPressed: state.isEditable
+                  ? () => context.read<LogWeightBloc>().add(
+                      const LogWeightSaveRequested(),
+                    )
+                  : null,
+            ),
           ],
         ),
         body: state.status == LogWeightStatus.loading
-            ? const Center(child: CircularProgressIndicator.adaptive())
+            ? AppLoadingView(label: l10n.launchLoading)
             : _Form(state: state),
       ),
     );

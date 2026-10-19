@@ -181,6 +181,7 @@ final gallerySymbols = <(String, IconData)>[
   ('error', AppSymbols.error),
   ('plateCalculator', AppSymbols.plateCalculator),
   ('disclosure', AppSymbols.disclosure),
+  ('reorder', AppSymbols.reorder),
   ('choiceSelected', AppSymbols.choiceSelected),
   ('choiceUnselected', AppSymbols.choiceUnselected),
   ('share', AppSymbols.share),
@@ -201,6 +202,7 @@ List<Widget> galleryTokens(BuildContext context) {
         ('rowTitle', AppTextStyles.rowTitle),
         ('rowDetail', AppTextStyles.rowDetail),
         ('label', AppTextStyles.label),
+        ('labelEmphasized', AppTextStyles.labelEmphasized),
       ])
         galleryBlock(name, Text(l10n.devGallerySampleTitle, style: style)),
       for (final (name, style) in [

@@ -84,6 +84,18 @@ List<Widget> galleryButtons(BuildContext context) {
         AppTextButton(label: l10n.devGallerySampleTextAction, onPressed: null),
       ),
     ]),
+    galleryEntry('AppIconBadge', [
+      galleryInline('filled', const AppIconBadge(icon: AppSymbols.meal)),
+      galleryInline(
+        'ring, badge',
+        const AppIconBadge(
+          icon: AppSymbols.meal,
+          size: AppIconSize.hero,
+          filled: false,
+          badge: AppSymbols.edit,
+        ),
+      ),
+    ]),
     galleryEntry('AppIconButton', [
       galleryInline(
         'enabled',

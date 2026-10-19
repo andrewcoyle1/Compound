@@ -47,57 +47,18 @@ class _EstimateSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppSpacing.s,
+    return AppSection(
+      header: l10n.aiEstimateHeader,
+      trailing: addedAll
+          ? AppChip(icon: AppSymbols.selected, label: l10n.aiEstimateAdded)
+          : AppChip(
+              label: l10n.aiEstimateAddAll(items.length),
+              onPressed: onAddAll,
+            ),
+      footer: l10n.aiEstimateFooter,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.l),
-          child: Row(
-            children: [
-              Expanded(
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    l10n.aiEstimateHeader,
-                    style: AppTextStyles.sectionTitle.copyWith(
-                      color: secondary,
-                    ),
-                  ),
-                ),
-              ),
-              if (addedAll)
-                TextButton.icon(
-                  onPressed: null,
-                  icon: const Icon(AppSymbols.selected),
-                  label: Text(l10n.aiEstimateAdded),
-                )
-              else
-                TextButton(
-                  onPressed: onAddAll,
-                  child: Text(l10n.aiEstimateAddAll(items.length)),
-                ),
-            ],
-          ),
-        ),
-        AppCard(
-          child: Column(
-            children: [
-              for (final (index, item) in items.indexed) ...[
-                if (index > 0) const Divider(indent: AppSpacing.l),
-                _EstimateRow(item: item, onTap: () => onTap(item)),
-              ],
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-          child: Text(
-            l10n.aiEstimateFooter,
-            style: AppTextStyles.label.copyWith(color: secondary),
-          ),
-        ),
+        for (final item in items)
+          _EstimateRow(item: item, onTap: () => onTap(item)),
       ],
     );
   }
@@ -112,7 +73,6 @@ class _EstimateRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     // Only what the model estimated; a missing figure is not a zero.
     final detail = [
       AppFormat.grams(item.amountGrams),
@@ -124,34 +84,15 @@ class _EstimateRow extends StatelessWidget {
       if (item.carbGrams case final grams?)
         l10n.nutritionItemCarbs(AppFormat.grams(grams)),
     ].join(' · ');
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.only(left: AppSpacing.l),
-        child: Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: AppSpacing.xxs,
-                  children: [
-                    Text(item.name, style: AppTextStyles.rowTitle),
-                    Text(
-                      detail,
-                      style: AppTextStyles.rowDetail.copyWith(color: secondary),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(AppSymbols.add),
-              tooltip: l10n.aiEstimateAdd(item.name),
-              onPressed: onTap,
-            ),
-          ],
+    return AppListRowButton(
+      title: item.name,
+      subtitle: detail,
+      onPressed: onTap,
+      accessory: AppListRowCustom(
+        AppIconButton(
+          icon: AppSymbols.add,
+          semanticLabel: l10n.aiEstimateAdd(item.name),
+          onPressed: onTap,
         ),
       ),
     );
@@ -215,30 +156,24 @@ class _PhotoView extends StatelessWidget {
       child: photo == null
           ? SingleChildScrollView(
               child: switch (state.camera) {
-                CameraState.denied => _Empty(
+                CameraState.denied => AppEmptyState(
                   icon: AppSymbols.camera,
                   title: l10n.aiScanCameraOffTitle,
-                  message: l10n.aiScanCameraOffMessage,
-                  action: FilledButton(
-                    onPressed: () => unawaited(cubit.openSettings()),
-                    child: Text(l10n.aiScanOpenSettings),
-                  ),
+                  description: l10n.aiScanCameraOffMessage,
+                  actionLabel: l10n.aiScanOpenSettings,
+                  onAction: () => unawaited(cubit.openSettings()),
                 ),
-                CameraState.unavailable => _Empty(
+                CameraState.unavailable => AppEmptyState(
                   icon: AppSymbols.camera,
                   title: l10n.aiScanCameraUnavailableTitle,
-                  message: l10n.aiScanCameraUnavailableMessage,
+                  description: l10n.aiScanCameraUnavailableMessage,
                 ),
-                CameraState.ready => _Empty(
+                CameraState.ready => AppEmptyState(
                   icon: AppSymbols.camera,
                   title: l10n.addMealModeAi,
-                  message: l10n.aiScanDisclosure,
-                  action: FilledButton.icon(
-                    key: const Key('FoodPicker.takePhoto'),
-                    icon: const Icon(AppSymbols.camera),
-                    label: Text(l10n.aiScanTakePhoto),
-                    onPressed: () => unawaited(cubit.takePhoto()),
-                  ),
+                  description: l10n.aiScanDisclosure,
+                  actionLabel: l10n.aiScanTakePhoto,
+                  onAction: () => unawaited(cubit.takePhoto()),
                 ),
               },
             )
@@ -260,9 +195,8 @@ class _PhotoView extends StatelessWidget {
                   ),
                 ),
                 Center(
-                  child: TextButton.icon(
-                    icon: const Icon(AppSymbols.camera),
-                    label: Text(l10n.aiScanRetake),
+                  child: AppTextButton(
+                    label: l10n.aiScanRetake,
                     onPressed: () => unawaited(cubit.retake()),
                   ),
                 ),
@@ -279,11 +213,12 @@ class _PhotoView extends StatelessWidget {
                       kindLabel: l10n.addMealErrorLabel,
                     ),
                   ),
-                  EstimateStatus.analysed when state.items.isEmpty => _Empty(
-                    icon: AppSymbols.food,
-                    title: l10n.aiScanNoFoodsTitle,
-                    message: l10n.aiScanNoFoodsMessage,
-                  ),
+                  EstimateStatus.analysed when state.items.isEmpty =>
+                    AppEmptyState(
+                      icon: AppSymbols.food,
+                      title: l10n.aiScanNoFoodsTitle,
+                      description: l10n.aiScanNoFoodsMessage,
+                    ),
                   EstimateStatus.analysed => _EstimateSection(
                     items: state.items,
                     addedAll: state.addedAll,
@@ -327,7 +262,6 @@ class _DescribeView extends StatelessWidget {
     final l10n = context.l10n;
     final cubit = context.read<MealDescribeCubit>();
     final state = context.watch<MealDescribeCubit>().state;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     return BlocListener<MealDescribeCubit, MealDescribeState>(
       listenWhen: (previous, current) =>
           previous.status != current.status &&
@@ -337,61 +271,39 @@ class _DescribeView extends StatelessWidget {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      l10n.describeHeader,
-                      style: AppTextStyles.sectionTitle.copyWith(
-                        color: secondary,
-                      ),
-                    ),
-                  ),
-                ),
-                Text(
-                  '${AppFormat.number(state.text.characters.length)}/'
-                  '${AppFormat.number(MealDescribeCubit.characterLimit)}',
-                  style: AppTextStyles.label.copyWith(
-                    color: secondary,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.s),
-          AppCard(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: TextField(
-                key: const Key('FoodPicker.describeField'),
-                minLines: 3,
-                maxLines: 8,
-                textCapitalization: TextCapitalization.sentences,
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(
-                    MealDescribeCubit.characterLimit,
-                  ),
-                ],
-                decoration: InputDecoration(
-                  hintText: l10n.describePrompt,
-                  border: InputBorder.none,
-                ),
-                onChanged: cubit.textChanged,
+          AppSection(
+            header: l10n.describeHeader,
+            trailing: Text(
+              '${AppFormat.number(state.text.characters.length)}/'
+              '${AppFormat.number(MealDescribeCubit.characterLimit)}',
+              style: AppTextStyles.label.copyWith(
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
+            footer: l10n.describeFooter,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: TextField(
+                  key: const Key('FoodPicker.describeField'),
+                  minLines: 3,
+                  maxLines: 8,
+                  textCapitalization: TextCapitalization.sentences,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(
+                      MealDescribeCubit.characterLimit,
+                    ),
+                  ],
+                  decoration: InputDecoration(
+                    hintText: l10n.describePrompt,
+                    border: InputBorder.none,
+                  ),
+                  onChanged: cubit.textChanged,
+                ),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: Text(
-              l10n.describeFooter,
-              style: AppTextStyles.label.copyWith(color: secondary),
-            ),
-          ),
+          const SizedBox(height: AppSpacing.l),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
             child: AppCtaButton(
@@ -419,10 +331,10 @@ class _DescribeView extends StatelessWidget {
                 kindLabel: l10n.addMealErrorLabel,
               ),
             ),
-            EstimateStatus.analysed when state.items.isEmpty => _Empty(
+            EstimateStatus.analysed when state.items.isEmpty => AppEmptyState(
               icon: AppSymbols.food,
               title: l10n.aiScanNoFoodsTitle,
-              message: l10n.describeNoFoodsMessage,
+              description: l10n.describeNoFoodsMessage,
             ),
             EstimateStatus.analysed => _EstimateSection(
               items: state.items,

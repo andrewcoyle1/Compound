@@ -19,11 +19,8 @@ Future<FoodAmountResult?> showFoodAmountSheet(
   BuildContext context,
   FoodModel food, {
   double? amount,
-}) => showModalBottomSheet<FoodAmountResult>(
+}) => showAppSheet<FoodAmountResult>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
   builder: (_) => BlocProvider(
     create: (_) => AmountCubit(
       amount == null
@@ -39,11 +36,8 @@ Future<FoodAmountResult?> showFoodAmountSheet(
 Future<MealItemModel?> showItemAmountSheet(
   BuildContext context,
   MealItemModel item,
-) => showModalBottomSheet<MealItemModel>(
+) => showAppSheet<MealItemModel>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
   builder: (_) => BlocProvider(
     create: (_) => AmountCubit(AmountState(text: amountText(item.amount))),
     child: ItemAmountSheet(item: item),
@@ -56,11 +50,8 @@ Future<MealItemModel?> showItemAmountSheet(
 Future<RecipeIngredientModel?> showRecipeIngredientAmountSheet(
   BuildContext context,
   FoodModel food,
-) => showModalBottomSheet<RecipeIngredientModel>(
+) => showAppSheet<RecipeIngredientModel>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
   builder: (_) => BlocProvider(
     create: (_) => AmountCubit(const AmountState(text: '100')),
     child: _Tracked(
@@ -75,11 +66,8 @@ Future<RecipeIngredientModel?> showRecipeIngredientAmountSheet(
 Future<FoodAmountResult?> showRecipeServingsSheet(
   BuildContext context,
   RecipeTemplateModel recipe,
-) => showModalBottomSheet<FoodAmountResult>(
+) => showAppSheet<FoodAmountResult>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
   builder: (_) => BlocProvider(
     create: (_) => AmountCubit(const AmountState(text: '1')),
     child: _Tracked(

@@ -70,16 +70,14 @@ class LogMeasurementView extends StatelessWidget {
             _dismiss(context);
           case LogMeasurementStatus.failure:
             unawaited(HapticFeedback.errorNotification());
-            showDialog<void>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text(context.l10n.logMeasurementSaveFailure),
+            unawaited(
+              showAppDialog<void>(
+                context: context,
+                title: context.l10n.logMeasurementSaveFailure,
                 actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      MaterialLocalizations.of(context).okButtonLabel,
-                    ),
+                  AppDialogAction(
+                    label: MaterialLocalizations.of(context).okButtonLabel,
+                    role: AppDialogRole.preferred,
                   ),
                 ],
               ),
@@ -92,30 +90,27 @@ class LogMeasurementView extends StatelessWidget {
       },
       child: AppScaffold(
         appBar: AppBar(
-          leading: CloseButton(onPressed: () => _dismiss(context)),
+          leading: AppToolbarButton.close(
+            semanticLabel: MaterialLocalizations.of(context).closeButtonLabel,
+            onPressed: () => _dismiss(context),
+          ),
           title: Text(
             l10n.logMeasurementTitle(bodyMeasurementName(l10n, state.kind)),
           ),
           actions: [
-            if (state.status == LogMeasurementStatus.saving)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                child: Center(child: CircularProgressIndicator.adaptive()),
-              )
-            else
-              IconButton(
-                icon: const Icon(AppSymbols.selected),
-                tooltip: l10n.logWeightSave,
-                onPressed: state.isEditable
-                    ? () => context.read<LogMeasurementBloc>().add(
-                        const LogMeasurementSaveRequested(),
-                      )
-                    : null,
-              ),
+            AppToolbarButton.confirm(
+              semanticLabel: l10n.logWeightSave,
+              isSaving: state.status == LogMeasurementStatus.saving,
+              onPressed: state.isEditable
+                  ? () => context.read<LogMeasurementBloc>().add(
+                      const LogMeasurementSaveRequested(),
+                    )
+                  : null,
+            ),
           ],
         ),
         body: state.status == LogMeasurementStatus.loading
-            ? const Center(child: CircularProgressIndicator.adaptive())
+            ? AppLoadingView(label: l10n.launchLoading)
             : _Form(state: state),
       ),
     );

@@ -1052,6 +1052,30 @@
     "@metricShowAllData": {
         "description": "Metric screen: row opening every recorded entry"
     },
+    "metricShowMoreData": "Show More {title} Data",
+    "@metricShowMoreData": {
+        "description": "Metric screen: text button opening Latest, Highest, Lowest and Average in a sheet (QuickCharts' Show More); title is the metric's name",
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "metricHeaderDates": "{average}, {from} – {to}",
+    "@metricHeaderDates": {
+        "description": "Metric chart header: what the figure is (Average or Daily Average), then the dates it covers",
+        "placeholders": {
+            "average": {
+                "type": "String"
+            },
+            "from": {
+                "type": "String"
+            },
+            "to": {
+                "type": "String"
+            }
+        }
+    },
     "metricAllRecordedData": "All Recorded Data",
     "@metricAllRecordedData": {
         "description": "Title of the screen listing every entry of a metric"

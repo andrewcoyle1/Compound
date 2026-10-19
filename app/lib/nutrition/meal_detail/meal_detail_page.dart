@@ -9,8 +9,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/meal_detail/meal_detail_cubit.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
-import 'package:compound/programs/view/program_widgets.dart'
-    show confirmDestructive;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -60,7 +58,7 @@ class MealDetailView extends StatelessWidget {
   Future<void> _delete(BuildContext context) async {
     final l10n = context.l10n;
     final cubit = context.read<MealDetailCubit>();
-    final confirmed = await confirmDestructive(
+    final confirmed = await AppDialog.confirmDestructive(
       context,
       title: l10n.mealDetailDeleteTitle,
       message: l10n.mealDetailDeleteMessage,
@@ -99,9 +97,9 @@ class MealDetailView extends StatelessWidget {
           title: Text(l10n.mealDetailTitle),
           actions: [
             if (meal != null)
-              IconButton(
-                icon: const Icon(AppSymbols.delete),
-                tooltip: l10n.mealDetailDelete,
+              AppToolbarButton(
+                icon: AppSymbols.delete,
+                semanticLabel: l10n.mealDetailDelete,
                 onPressed: state.status == MealDetailStatus.idle
                     ? () => unawaited(_delete(context))
                     : null,
@@ -109,10 +107,11 @@ class MealDetailView extends StatelessWidget {
           ],
         ),
         body: switch (meal) {
-          _ when !state.loaded => const Center(
-            child: CircularProgressIndicator.adaptive(),
+          _ when !state.loaded => AppLoadingView(label: l10n.launchLoading),
+          null => AppEmptyState(
+            icon: AppSymbols.meal,
+            title: l10n.mealDetailNoItems,
           ),
-          null => _NoItems(title: l10n.mealDetailNoItems),
           final meal => _Meal(meal: meal),
         },
       ),
@@ -140,7 +139,7 @@ class _Meal extends StatelessWidget {
             use24HourFormat: context.use24HourFormat,
             locale: context.dateLocale,
           ),
-          style: AppTextStyles.label.copyWith(color: secondary),
+          style: AppTextStyles.rowTitle.copyWith(color: secondary),
         ),
         const SizedBox(height: AppSpacing.s),
         // Item nutrients are stored at the amount logged, so the totals are
@@ -167,9 +166,10 @@ class _Meal extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.l),
         if (meal.items.isEmpty)
-          _NoItems(
+          AppEmptyState(
+            icon: AppSymbols.meal,
             title: l10n.mealDetailNoItems,
-            message: l10n.mealDetailNoItemsMessage,
+            description: l10n.mealDetailNoItemsMessage,
           )
         else
           AppSection(
@@ -177,6 +177,10 @@ class _Meal extends StatelessWidget {
             children: [
               for (final item in meal.items)
                 AppListRow(
+                  // The food's stand-in picture, as on the Nutrition tab.
+                  thumbnail: const Center(
+                    child: AppIconBadge(icon: AppSymbols.meal),
+                  ),
                   title: item.displayName,
                   subtitle: [
                     AppFormat.kcal(item.macros.calories.round()),
@@ -198,44 +202,6 @@ class _Meal extends StatelessWidget {
             ],
           ),
       ],
-    );
-  }
-}
-
-class _NoItems extends StatelessWidget {
-  const new({required this.title, this.message});
-
-  final String title;
-  final String? message;
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    final message = this.message;
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        spacing: AppSpacing.s,
-        children: [
-          Icon(
-            AppSymbols.meal,
-            size: AppIconSize.hero.of(context),
-            color: secondary,
-          ),
-          Text(
-            title,
-            style: AppTextStyles.sectionTitle,
-            textAlign: TextAlign.center,
-          ),
-          if (message != null)
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-        ],
-      ),
     );
   }
 }

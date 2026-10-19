@@ -76,15 +76,15 @@ class _LabelViewState extends State<_LabelView> {
               alignment: WrapAlignment.center,
               spacing: AppSpacing.s,
               children: [
-                OutlinedButton.icon(
+                AppCtaButton(
                   key: const Key('FoodPicker.scanLabel'),
-                  icon: const Icon(AppSymbols.camera),
-                  label: Text(l10n.labelScan),
+                  label: l10n.labelScan,
+                  size: AppCtaSize.compact,
+                  variant: AppCtaVariant.secondary,
                   onPressed: () => unawaited(cubit.scan(PhotoSource.camera)),
                 ),
-                TextButton.icon(
-                  icon: const Icon(AppSymbols.photoLibrary),
-                  label: Text(l10n.labelChooseFromLibrary),
+                AppTextButton(
+                  label: l10n.labelChooseFromLibrary,
                   onPressed: () => unawaited(cubit.scan(PhotoSource.library)),
                 ),
               ],
@@ -98,9 +98,9 @@ class _LabelViewState extends State<_LabelView> {
             ),
             if (state.camera == CameraState.denied)
               Center(
-                child: TextButton(
+                child: AppTextButton(
+                  label: l10n.labelOpenSettings,
                   onPressed: () => unawaited(cubit.openSettings()),
-                  child: Text(l10n.labelOpenSettings),
                 ),
               ),
           ],
@@ -172,9 +172,10 @@ class _LabelViewState extends State<_LabelView> {
                       spacing: AppSpacing.m,
                       children: [
                         Expanded(
-                          child: OutlinedButton(
+                          child: AppCtaButton(
+                            label: l10n.labelDismiss,
+                            variant: AppCtaVariant.secondary,
                             onPressed: cubit.dismiss,
-                            child: Text(l10n.labelDismiss),
                           ),
                         ),
                         Expanded(

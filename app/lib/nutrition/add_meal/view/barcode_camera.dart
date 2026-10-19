@@ -67,14 +67,15 @@ class _BarcodeCameraState extends State<BarcodeCamera> {
             alignment: AlignmentDirectional.topEnd,
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.s),
-              child: IconButton.filledTonal(
-                tooltip: on
-                    ? context.l10n.torchTurnOff
-                    : context.l10n.torchTurnOn,
-                isSelected: on,
-                icon: const Icon(AppSymbols.torchOff),
-                selectedIcon: const Icon(AppSymbols.torchOn),
-                onPressed: () => unawaited(_controller.toggleTorch()),
+              child: Semantics(
+                toggled: on,
+                child: AppIconButton(
+                  icon: on ? AppSymbols.torchOn : AppSymbols.torchOff,
+                  semanticLabel: on
+                      ? context.l10n.torchTurnOff
+                      : context.l10n.torchTurnOn,
+                  onPressed: () => unawaited(_controller.toggleTorch()),
+                ),
               ),
             ),
           );

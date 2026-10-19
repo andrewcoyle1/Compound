@@ -7,7 +7,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/recipes/cubit/recipes_cubit.dart';
 import 'package:compound/nutrition/recipes/view/create_recipe_pages.dart';
 import 'package:compound/nutrition/recipes/view/recipe_detail_page.dart';
-import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -59,9 +58,9 @@ class RecipesView extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.recipesTitle),
         actions: [
-          IconButton(
-            icon: const Icon(AppSymbols.add),
-            tooltip: l10n.recipesAdd,
+          AppToolbarButton(
+            icon: AppSymbols.add,
+            semanticLabel: l10n.recipesAdd,
             onPressed: create,
           ),
         ],
@@ -84,7 +83,7 @@ class RecipesView extends StatelessWidget {
           ),
           Expanded(
             child: switch (state.recipes) {
-              null => const Center(child: CircularProgressIndicator.adaptive()),
+              null => AppLoadingView(label: l10n.launchLoading),
               _ when recipes.isNotEmpty => ListView(
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
@@ -107,24 +106,16 @@ class RecipesView extends StatelessWidget {
                   ),
                 ],
               ),
-              _ when state.filter.isNotEmpty => LibraryEmptyState(
+              _ when state.filter.isNotEmpty => AppEmptyState(
                 icon: AppSymbols.search,
                 title: l10n.recipesNoResults(state.filter),
               ),
-              _ => SingleChildScrollView(
-                child: Column(
-                  children: [
-                    LibraryEmptyState(
-                      icon: AppSymbols.recipe,
-                      title: l10n.recipesEmptyTitle,
-                      message: l10n.recipesEmptyMessage,
-                    ),
-                    FilledButton(
-                      onPressed: create,
-                      child: Text(l10n.recipesCreate),
-                    ),
-                  ],
-                ),
+              _ => AppEmptyState(
+                icon: AppSymbols.recipe,
+                title: l10n.recipesEmptyTitle,
+                description: l10n.recipesEmptyMessage,
+                actionLabel: l10n.recipesCreate,
+                onAction: create,
               ),
             },
           ),

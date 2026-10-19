@@ -9,8 +9,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/recipes/cubit/recipe_detail_cubit.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
-import 'package:compound/programs/view/program_widgets.dart'
-    show confirmDestructive;
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,7 +59,7 @@ class RecipeDetailView extends StatelessWidget {
   Future<void> _delete(BuildContext context, RecipeTemplateModel recipe) async {
     final l10n = context.l10n;
     final cubit = context.read<RecipeDetailCubit>();
-    final confirmed = await confirmDestructive(
+    final confirmed = await AppDialog.confirmDestructive(
       context,
       title: l10n.recipeDetailDeleteTitle,
       message: l10n.recipeDetailDeleteMessage(recipe.name),
@@ -115,13 +113,11 @@ class RecipeDetailView extends StatelessWidget {
           title: Text(recipe?.name ?? ''),
           actions: [
             if (recipe != null)
-              IconButton(
-                icon: Icon(
-                  state.isFavourited
-                      ? AppSymbols.heartFilled
-                      : AppSymbols.heart,
-                ),
-                tooltip: state.isFavourited
+              AppToolbarButton(
+                icon: state.isFavourited
+                    ? AppSymbols.heartFilled
+                    : AppSymbols.heart,
+                semanticLabel: state.isFavourited
                     ? l10n.recipeDetailRemoveFavourite
                     : l10n.recipeDetailAddFavourite,
                 onPressed: () => unawaited(cubit.favouriteToggled()),
@@ -134,15 +130,11 @@ class RecipeDetailView extends StatelessWidget {
                 itemBuilder: (_) => [
                   PopupMenuItem(
                     onTap: () => unawaited(_delete(context, recipe)),
-                    child: ListTile(
-                      leading: Icon(
-                        AppSymbols.delete,
-                        color: context.appColors.danger,
-                      ),
-                      title: Text(
-                        l10n.recipeDetailDelete,
-                        style: TextStyle(color: context.appColors.danger),
-                      ),
+                    padding: EdgeInsets.zero,
+                    child: AppListRow(
+                      icon: AppSymbols.delete,
+                      title: l10n.recipeDetailDelete,
+                      destructive: true,
                     ),
                   ),
                 ],
@@ -161,18 +153,10 @@ class RecipeDetailView extends StatelessWidget {
                 ],
               ),
         body: switch (recipe) {
-          _ when !state.loaded => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
-          null => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Text(
-                l10n.recipeDetailNotFound,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.rowDetail,
-              ),
-            ),
+          _ when !state.loaded => AppLoadingView(label: l10n.launchLoading),
+          null => AppEmptyState(
+            icon: AppSymbols.recipe,
+            title: l10n.recipeDetailNotFound,
           ),
           final recipe => _Details(recipe: recipe, state: state),
         },
@@ -256,17 +240,20 @@ class _Details extends StatelessWidget {
                   accessory: AppListRowCustom(
                     Row(
                       mainAxisSize: MainAxisSize.min,
+                      spacing: AppSpacing.xs,
                       children: [
-                        IconButton(
+                        AppIconButton(
                           key: const Key('RecipeDetail.decrease'),
-                          icon: const Icon(AppSymbols.decrease),
+                          icon: AppSymbols.decrease,
+                          semanticLabel: l10n.editorDecrease,
                           onPressed: canDecrease
                               ? () => step(servings - servingsStep)
                               : null,
                         ),
-                        IconButton(
+                        AppIconButton(
                           key: const Key('RecipeDetail.increase'),
-                          icon: const Icon(AppSymbols.add),
+                          icon: AppSymbols.add,
+                          semanticLabel: l10n.editorIncrease,
                           onPressed: canIncrease
                               ? () => step(servings + servingsStep)
                               : null,

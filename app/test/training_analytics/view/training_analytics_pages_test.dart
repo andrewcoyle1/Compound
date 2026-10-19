@@ -185,7 +185,7 @@ void main() {
       await pump(tester, '/progress/muscles/triceps');
       await tester.tap(find.text('6M'));
       await tester.pumpAndSettle();
-      expect(find.text('Daily Average'.toUpperCase()), findsOneWidget);
+      expect(find.textContaining('Daily Average, '), findsOneWidget);
       expect(find.text('2 sets'), findsWidgets);
     });
 

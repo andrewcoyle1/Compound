@@ -7,8 +7,6 @@ import 'package:compound/check_in/view/check_in_page.dart'
     show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/foods/cubit/food_detail_cubit.dart';
-import 'package:compound/programs/view/program_widgets.dart'
-    show confirmDestructive;
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -55,7 +53,7 @@ class FoodDetailView extends StatelessWidget {
   Future<void> _delete(BuildContext context, FoodModel food) async {
     final l10n = context.l10n;
     final cubit = context.read<FoodDetailCubit>();
-    final confirmed = await confirmDestructive(
+    final confirmed = await AppDialog.confirmDestructive(
       context,
       title: l10n.foodDetailDelete,
       message: l10n.foodDetailDeleteMessage(food.name),
@@ -102,13 +100,11 @@ class FoodDetailView extends StatelessWidget {
           title: Text(food?.name ?? ''),
           actions: [
             if (food != null)
-              IconButton(
-                icon: Icon(
-                  state.isFavourited
-                      ? AppSymbols.heartFilled
-                      : AppSymbols.heart,
-                ),
-                tooltip: state.isFavourited
+              AppToolbarButton(
+                icon: state.isFavourited
+                    ? AppSymbols.heartFilled
+                    : AppSymbols.heart,
+                semanticLabel: state.isFavourited
                     ? l10n.foodDetailRemoveFavorite
                     : l10n.foodDetailAddFavorite,
                 onPressed: () => unawaited(cubit.favouriteToggled()),
@@ -121,15 +117,11 @@ class FoodDetailView extends StatelessWidget {
                 itemBuilder: (_) => [
                   PopupMenuItem(
                     onTap: () => unawaited(_delete(context, food)),
-                    child: ListTile(
-                      leading: Icon(
-                        AppSymbols.delete,
-                        color: context.appColors.danger,
-                      ),
-                      title: Text(
-                        l10n.foodDetailDelete,
-                        style: TextStyle(color: context.appColors.danger),
-                      ),
+                    padding: EdgeInsets.zero,
+                    child: AppListRow(
+                      icon: AppSymbols.delete,
+                      title: l10n.foodDetailDelete,
+                      destructive: true,
                     ),
                   ),
                 ],
@@ -137,18 +129,10 @@ class FoodDetailView extends StatelessWidget {
           ],
         ),
         body: switch (food) {
-          _ when !state.loaded => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
-          null => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Text(
-                l10n.foodDetailMissing,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.rowDetail,
-              ),
-            ),
+          _ when !state.loaded => AppLoadingView(label: l10n.launchLoading),
+          null => AppEmptyState(
+            icon: AppSymbols.food,
+            title: l10n.foodDetailMissing,
           ),
           final food => _Nutrients(food: food),
         },

@@ -96,39 +96,36 @@ class ExpenditureMetricView extends StatelessWidget {
               CoachContext(kind: CoachContextKind.expenditure, title: title),
             ),
           if (!allData && metric == ExpenditureMetric.energyBalance)
-            IconButton(
-              icon: const Icon(AppSymbols.add),
-              tooltip: l10n.nutritionLogMeal,
+            AppToolbarButton(
+              icon: AppSymbols.add,
+              semanticLabel: l10n.nutritionLogMeal,
               onPressed: logMeal,
             ),
           // Expenditure's formula reads the profile (Swift's Edit Profile).
           if (!allData && metric == ExpenditureMetric.expenditure)
-            IconButton(
-              icon: const Icon(AppSymbols.profile),
-              tooltip: l10n.profileEditProfile,
+            AppToolbarButton(
+              icon: AppSymbols.profile,
+              semanticLabel: l10n.profileEditProfile,
               onPressed: () => context.pushNamed(EditProfilePage.name),
             ),
         ],
       ),
       body: switch (state.status) {
-        ExpenditureMetricStatus.loading => const Center(
-          child: CircularProgressIndicator.adaptive(),
+        ExpenditureMetricStatus.loading => AppLoadingView(
+          label: l10n.launchLoading,
         ),
-        ExpenditureMetricStatus.failure => _Message(
+        ExpenditureMetricStatus.failure => AppErrorState(
           title: title,
-          message: l10n.nutritionDayLoadFailed,
+          description: l10n.nutritionDayLoadFailed,
         ),
-        ExpenditureMetricStatus.loaded when isEmpty => _Message(
+        ExpenditureMetricStatus.loaded when isEmpty => AppEmptyState(
+          icon: AppSymbols.analytics,
           title: title,
-          message: balance != null
+          description: balance != null
               ? l10n.energyBalanceNoData
               : l10n.expenditureNoData,
-          action: balance == null
-              ? null
-              : FilledButton(
-                  onPressed: logMeal,
-                  child: Text(l10n.nutritionLogMeal),
-                ),
+          actionLabel: balance == null ? null : l10n.nutritionLogMeal,
+          onAction: balance == null ? null : logMeal,
         ),
         ExpenditureMetricStatus.loaded when allData => MetricAllDataView(
           title: title,
@@ -288,48 +285,6 @@ class ExpenditureEstimateSummary extends StatelessWidget {
               detail,
               style: AppTextStyles.rowDetail.copyWith(color: secondary),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// An empty or failed state: the analytics glyph, the metric's name, a
-/// line saying why, and what to do about it.
-class _Message extends StatelessWidget {
-  const new({required this.title, required this.message, this.action});
-
-  final String title;
-  final String message;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: [
-            Icon(
-              AppSymbols.analytics,
-              size: AppIconSize.hero.of(context),
-              color: secondary,
-            ),
-            Text(
-              title,
-              style: AppTextStyles.sectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-            ?action,
           ],
         ),
       ),

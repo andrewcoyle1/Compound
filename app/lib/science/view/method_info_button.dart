@@ -16,20 +16,14 @@ class MethodInfoButton extends StatelessWidget {
     final l10n = context.l10n;
     return Semantics(
       hint: l10n.methodInfoButtonHint,
-      child: IconButton(
-        icon: const Icon(AppSymbols.info),
-        tooltip: l10n.methodInfoButtonLabel(info.title),
-        onPressed: () => showModalBottomSheet<void>(
+      child: AppToolbarButton(
+        icon: AppSymbols.info,
+        semanticLabel: l10n.methodInfoButtonLabel(info.title),
+        // The sheet's list takes its primary scroll controller, so
+        // dragging the list drags the sheet.
+        onPressed: () => showAppSheet<void>(
           context: context,
-          isScrollControlled: true,
-          showDragHandle: true,
-          useSafeArea: true,
-          builder: (_) => DraggableScrollableSheet(
-            expand: false,
-            initialChildSize: 0.6,
-            builder: (_, controller) =>
-                MethodInfoSheet(info: info, controller: controller),
-          ),
+          builder: (_) => MethodInfoSheet(info: info),
         ),
       ),
     );

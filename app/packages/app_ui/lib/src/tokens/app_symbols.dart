@@ -450,6 +450,9 @@ abstract final class AppSymbols {
   /// closest to iOS's.
   static const IconData disclosure = Icons.arrow_forward_ios_rounded;
 
+  /// A handle to drag a row to a new place in its list.
+  static const IconData reorder = Icons.drag_handle_outlined;
+
   /// A chosen option in a choice list.
   static const IconData choiceSelected = Icons.check_circle_rounded;
 

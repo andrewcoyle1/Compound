@@ -472,6 +472,46 @@ void main() {
       expect(find.byType(NotificationsPage), findsOneWidget);
     });
 
+    testWidgets('shows Page Not Found for an unknown address, with a way '
+        'back to Today', (tester) async {
+      await tester.pumpWidget(
+        App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
+          deviceStore: offersShownDevice(),
+          purchasesRepository: FakePurchasesRepository(),
+          programRepository: InMemoryProgramRepository(),
+          trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
+          authRepository: InMemoryAuthRepository(
+            user: InMemoryAuthRepository.sampleUser,
+          ),
+          userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+        'flutter/navigation',
+        const JSONMethodCodec().encodeMethodCall(
+          const MethodCall('pushRouteInformation', {
+            'location': '/no-such-screen',
+          }),
+        ),
+        (_) {},
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(AppErrorState), findsOneWidget);
+      expect(find.text('Page Not Found'), findsOneWidget);
+
+      await tester.tap(find.text('Go to Today'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AppErrorState), findsNothing);
+      expect(find.byType(AppShell), findsOneWidget);
+    });
+
     testWidgets('badges Social with the comments, mentions and requests '
         'waiting', (tester) async {
       final users = seededUsers();

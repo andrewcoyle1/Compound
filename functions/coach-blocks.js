@@ -10,7 +10,7 @@
 
 import { z } from "genkit";
 import { daysBetween, addDays } from "./coach-maths.js";
-import { callCoachTool } from "./coach.js";
+import { callCoachTool, WEIGH_IN_LIMIT } from "./coach.js";
 
 export const COACH_MAX_BLOCKS = 4;
 export const A2UI_VERSION = "v0.9";
@@ -39,6 +39,15 @@ const isId = (value) => typeof value === "string" && /^[A-Za-z0-9_.:-]{1,128}$/.
 const isDayKey = (value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && addDays(value, 0) === value;
 const present = (object) => Object.keys(object).filter((key) => object[key] != null);
 const unique = (values) => new Set(values.map((v) => JSON.stringify(v))).size === values.length;
+// A question that states a figure about the user, rather than asking: "2.5", "2,400", "80 kg",
+// "15%", "more than 3", "2400". Plain small counts ("the last 4 weeks") and 1RM/e1RM are fine.
+const FIGURE_PATTERNS = [
+    /\d[.,]\d/,
+    /\d\s*(%|(kg|kgs|lb|lbs|pounds?|kilos?|kcal|cal|calories|g|grams?|steps|km|mi|miles)\b)/i,
+    /\b(more|less|fewer|over|under|above|below|than|vs|versus)\.?\s+\d|\d\s*(→|->|vs\b|versus\b)/i,
+    /\d{3,}/,
+];
+const statesAFigure = (question) => FIGURE_PATTERNS.some((pattern) => pattern.test(question.replace(/\be?1RM\b/gi, "")));
 const listOf = (value, min, max) => Array.isArray(value) && value.length >= min && value.length <= max;
 
 const PARSERS = {
@@ -81,7 +90,7 @@ const PARSERS = {
         if (!listOf(trimmed, 1, 3) || !unique(trimmed)) return { error: "questions must be 1 to 3 different questions" };
         if (trimmed.some((q) => q.length < 1 || q.length > MAX_FOLLOW_UP_CHARS)) return { error: `each question must be 1 to ${MAX_FOLLOW_UP_CHARS} characters` };
         // Suggested prompts, not facts: a figure in one would be a number the tools never gave.
-        if (trimmed.some((q) => /\d/.test(q))) return { error: "questions must not contain numbers" };
+        if (trimmed.some(statesAFigure)) return { error: "questions must not state figures (decimals, amounts with a unit, numbers over 99, or comparisons)" };
         return { questions: trimmed };
     },
 };
@@ -125,11 +134,13 @@ const TREND_SOURCES = {
     async weight(coach, { rangeDays }) {
         const body = await tool(coach, "get_body_metrics", { days: rangeDays });
         const unit = coach.env.weightUnit;
-        // ponytail: get_body_metrics returns the latest 60 weigh-ins, so a long range of daily
-        // weigh-ins starts where they do; the fallback names the real first day.
         const points = body.weighIns.map((w) => ({ x: w.day, y: w.weight }));
         const trend = body.weighIns.filter((w) => w.trend != null).map((w) => ({ x: w.day, y: w.trend }));
-        return { points, value: { points, trend, unit }, fallback: trend.length ? series("Weight trend", trend, unit) : null };
+        // get_body_metrics keeps only the latest weigh-ins, so a long range of frequent weigh-ins is
+        // cut short: the chart's points and fallback cover what was shown, never the range asked.
+        const cut = points.length >= WEIGH_IN_LIMIT && daysBetween(points[0].x, coach.env.today) < rangeDays - 1;
+        const fallback = trend.length ? `${series("Weight trend", trend, unit).slice(0, -1)}${cut ? ` (the latest ${WEIGH_IN_LIMIT} weigh-ins)` : ""}.` : null;
+        return { points, value: { points, trend, unit }, fallback };
     },
     async exercise_e1rm(coach, { exerciseId, rangeDays }) {
         const progress = await tool(coach, "get_exercise_progress", { exercise: exerciseId, weeks: Math.ceil(rangeDays / 7) });
@@ -315,7 +326,7 @@ const SHOW_BLOCK_INPUT = z.object({
         exerciseId: z.string().optional().describe("open_exercise only"),
         metric: z.string().optional().describe("open_metric only: weight | expenditure | steps"),
     }).passthrough()).optional().describe("actions only: 1 to 3 buttons that open a screen in the app"),
-    questions: z.array(z.string()).optional().describe("follow_ups only: 1 to 3 questions the user might ask next, at most 80 characters, no numbers"),
+    questions: z.array(z.string()).optional().describe("follow_ups only: 1 to 3 questions the user might ask next, at most 80 characters, stating no figures"),
 }).passthrough();
 
 /// `show_block`, offered only when the app renders blocks. Its schema is loose on purpose (Genkit

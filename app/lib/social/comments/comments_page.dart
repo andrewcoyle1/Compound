@@ -11,7 +11,6 @@ import 'package:compound/social/report/report_sheet.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound/widgets/relative_time.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:social_repository/social_repository.dart';
 
@@ -86,7 +85,7 @@ class _CommentsViewState extends State<CommentsView> {
 
   Future<void> _showNotice(BuildContext context, CommentsState state) async {
     final l10n = context.l10n;
-    unawaited(HapticFeedback.heavyImpact());
+    unawaited(AppHaptics.heavy());
     await showAppDialog<void>(
       context: context,
       title: switch (state.notice) {
@@ -351,7 +350,7 @@ class _CommentRow extends StatelessWidget {
                   ? null
                   : () async {
                       if (!await cubit.likePressed(comment, viewerId)) {
-                        unawaited(HapticFeedback.heavyImpact());
+                        unawaited(AppHaptics.heavy());
                       }
                     },
             ),
@@ -481,7 +480,7 @@ class _InputBar extends StatelessWidget {
                     onPressed: canSend
                         ? () async {
                             await cubit.sendPressed(viewer);
-                            unawaited(HapticFeedback.lightImpact());
+                            unawaited(AppHaptics.light());
                           }
                         : null,
                   ),

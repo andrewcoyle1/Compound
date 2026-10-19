@@ -17,6 +17,9 @@ dependencies:
   # AppSwipeActions' gestures and panes (MIT); its licence ships in the
   # app's NOTICES.
   flutter_slidable: 4.0.3
+  # AppHaptics: the iOS haptic patterns on Android too (BSD-3-Clause); its
+  # licence ships in the app's NOTICES.
+  haptic_feedback: 0.8.0
   intl: ^0.20.2
   material_ui: ^1.1.1
   # Share cards drawn off screen to a PNG (MIT).

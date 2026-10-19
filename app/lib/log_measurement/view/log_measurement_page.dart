@@ -11,7 +11,6 @@ import 'package:compound/progress/logic/body_metrics.dart';
 import 'package:compound/progress/view/progress_names.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/widgets/number_wheel.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:user_repository/user_repository.dart';
@@ -66,10 +65,10 @@ class LogMeasurementView extends StatelessWidget {
       listener: (context, state) {
         switch (state.status) {
           case LogMeasurementStatus.saved:
-            unawaited(HapticFeedback.successNotification());
+            unawaited(AppHaptics.success());
             _dismiss(context);
           case LogMeasurementStatus.failure:
-            unawaited(HapticFeedback.errorNotification());
+            unawaited(AppHaptics.error());
             unawaited(
               showAppDialog<void>(
                 context: context,

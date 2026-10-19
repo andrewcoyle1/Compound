@@ -6,7 +6,6 @@ import 'package:compound/app/app.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -27,7 +26,7 @@ void main() {
   late AppBloc appBloc;
   late LogWeightBloc bloc;
   late GoRouter router;
-  late List<String> haptics;
+  late List<AppHaptic> haptics;
 
   LogWeightState ready() =>
       LogWeightState(date: now, status: LogWeightStatus.ready);
@@ -50,16 +49,8 @@ void main() {
   });
 
   Future<void> pumpView(WidgetTester tester, {double textScale = 1}) async {
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      SystemChannels.platform,
-      (call) async {
-        if (call.method == 'HapticFeedback.vibrate' &&
-            call.arguments is String) {
-          haptics.add(call.arguments as String);
-        }
-        return null;
-      },
-    );
+    AppHaptics.debugPlay = haptics.add;
+    addTearDown(() => AppHaptics.debugPlay = null);
     await tester.pumpApp(
       InheritedGoRouter(
         goRouter: router,
@@ -255,7 +246,7 @@ void main() {
       );
       await pumpView(tester);
       await tester.pump();
-      expect(haptics, ['HapticFeedbackType.successNotification']);
+      expect(haptics, [AppHaptic.success]);
       verify(() => router.pop<Object?>()).called(1);
     });
 
@@ -290,7 +281,7 @@ void main() {
       );
       await pumpView(tester);
       await tester.pumpAndSettle();
-      expect(haptics, ['HapticFeedbackType.errorNotification']);
+      expect(haptics, [AppHaptic.error]);
       expect(find.text('Unable to Save Weight'), findsOneWidget);
       verifyNever(() => router.pop<Object?>());
 

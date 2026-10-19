@@ -3,7 +3,6 @@ import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/semantics.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 /// {@template app_swipe_action}
@@ -133,7 +132,7 @@ class _AppSwipeActionsState extends State<AppSwipeActions>
     final armed = _pastFullSwipe;
     if (armed != _armed) {
       _armed = armed;
-      unawaited(HapticFeedback.mediumImpact());
+      unawaited(AppHaptics.medium());
     }
   }
 

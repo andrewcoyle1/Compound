@@ -12,7 +12,6 @@ import 'package:compound/gym_profiles/view/stack_machine_editor.dart';
 import 'package:compound/gym_profiles/view/weight_list_editor.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/widgets/stored_image.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_repository/image_repository.dart';
 import 'package:program_repository/program_repository.dart';
@@ -120,9 +119,9 @@ class _GymProfileViewState extends State<GymProfileView> {
       _cubit.left().then((saved) {
         if (saved == null) return;
         if (saved) {
-          unawaited(HapticFeedback.successNotification());
+          unawaited(AppHaptics.success());
         } else {
-          unawaited(HapticFeedback.errorNotification());
+          unawaited(AppHaptics.error());
           messenger.showSnackBar(SnackBar(content: Text(saveFailed)));
         }
       }),
@@ -154,10 +153,10 @@ class _GymProfileViewState extends State<GymProfileView> {
       listener: (context, state) async {
         switch (state.status) {
           case GymProfileEditorStatus.continued:
-            unawaited(HapticFeedback.successNotification());
+            unawaited(AppHaptics.success());
             Navigator.of(context).pop(true);
           case GymProfileEditorStatus.continueFailure:
-            unawaited(HapticFeedback.errorNotification());
+            unawaited(AppHaptics.error());
             await showFailureAlert(
               context,
               l10n.onboardingUnableToSaveGym,
@@ -435,7 +434,7 @@ class _EquipmentRow extends StatelessWidget {
     switch (action) {
       case _MachineAction.duplicate:
         cubit.duplicateMachine(list, item.id);
-        unawaited(HapticFeedback.successNotification());
+        unawaited(AppHaptics.success());
       case _MachineAction.delete:
         await _confirmDelete(context, cubit);
       case null:
@@ -525,7 +524,7 @@ class _EquipmentRow extends StatelessWidget {
           tint: scheme.primary,
           onPressed: () {
             cubit.duplicateMachine(list, item.id);
-            unawaited(HapticFeedback.successNotification());
+            unawaited(AppHaptics.success());
           },
         ),
         if (GymEditorRules.isCustom(list, item))

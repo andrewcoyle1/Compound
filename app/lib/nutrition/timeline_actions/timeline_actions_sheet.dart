@@ -10,7 +10,6 @@ import 'package:compound/nutrition/timeline_actions/timeline_day_cubit.dart';
 import 'package:compound/settings/nutrition/cubit/food_log_settings_cubit.dart';
 import 'package:compound/settings/nutrition/cubit/settings_document_cubit.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
@@ -95,14 +94,14 @@ class TimelineActionsView extends StatelessWidget {
         );
         if (confirmed) await cubit.clearDay();
       case TimelineDayAlert.copyFailed:
-        unawaited(HapticFeedback.errorNotification());
+        unawaited(AppHaptics.error());
         await showFailureAlert(
           context,
           l10n.timelineCopyFailed,
           l10n.timelineTryAgain,
         );
       case TimelineDayAlert.clearFailed:
-        unawaited(HapticFeedback.errorNotification());
+        unawaited(AppHaptics.error());
         await showFailureAlert(
           context,
           l10n.timelineClearFailed,
@@ -130,7 +129,7 @@ class TimelineActionsView extends StatelessWidget {
         BlocListener<TimelineDayCubit, TimelineDayState>(
           listenWhen: (previous, current) => !previous.done && current.done,
           listener: (context, _) {
-            unawaited(HapticFeedback.successNotification());
+            unawaited(AppHaptics.success());
             Navigator.of(context).pop();
           },
         ),
@@ -142,7 +141,7 @@ class TimelineActionsView extends StatelessWidget {
             listenWhen: (previous, current) =>
                 current.saveFailures > previous.saveFailures,
             listener: (context, _) {
-              unawaited(HapticFeedback.errorNotification());
+              unawaited(AppHaptics.error());
               unawaited(
                 showFailureAlert(
                   context,

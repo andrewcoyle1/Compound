@@ -12,7 +12,6 @@ import 'package:compound/nutrition_overview/bloc/nutrition_overview_bloc.dart';
 import 'package:compound/nutrition_overview/logic/nutrition_overview.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
@@ -70,7 +69,7 @@ class NutritionOverviewView extends StatelessWidget {
     return BlocListener<NutritionOverviewBloc, NutritionOverviewState>(
       listenWhen: (previous, current) => previous.alertId != current.alertId,
       listener: (context, state) {
-        unawaited(HapticFeedback.errorNotification());
+        unawaited(AppHaptics.error());
         unawaited(
           showFailureAlert(context, switch (state.alert!) {
             NutritionOverviewAlert.acceptFailed =>

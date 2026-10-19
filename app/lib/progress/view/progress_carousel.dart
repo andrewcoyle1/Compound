@@ -15,7 +15,6 @@ import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound_maths/compound_maths.dart'
     show Macros, comparedAverages, zeroMacros;
 import 'package:compound_models/compound_models.dart' show Mesocycle;
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// The header of the Progress tab (Swift `ProgressCarouselView`): the week
@@ -297,7 +296,7 @@ class _Grid extends StatelessWidget {
       locale: context.dateLocale,
     );
     void press(int day) {
-      unawaited(HapticFeedback.selectionClick());
+      unawaited(AppHaptics.selection());
       context.read<ProgressBloc>().add(ProgressTargetDayPressed(day));
     }
 

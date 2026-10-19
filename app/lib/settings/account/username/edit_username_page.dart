@@ -6,7 +6,6 @@ import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/account/username/edit_username_bloc.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_repository/social_repository.dart';
@@ -75,14 +74,14 @@ class _EditUsernameViewState extends State<EditUsernameView> {
       );
     }
     if (state.saved) {
-      unawaited(HapticFeedback.mediumImpact());
+      unawaited(AppHaptics.medium());
       if (context.canPop()) context.pop();
     }
   }
 
   void _onFailure(BuildContext context, EditUsernameState state) {
     final l10n = context.l10n;
-    unawaited(HapticFeedback.heavyImpact());
+    unawaited(AppHaptics.heavy());
     unawaited(
       showAppDialog<void>(
         context: context,

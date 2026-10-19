@@ -3,7 +3,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/social/logic/people.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:intl/intl.dart';
 import 'package:social_repository/social_repository.dart';
 
 /// A person's picture, falling back to the person glyph (`UserAvatarView`).
@@ -157,7 +156,6 @@ class AuthorHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final name = fullNameOf(author);
     return Semantics(
       button: true,
@@ -191,7 +189,11 @@ class AuthorHeader extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    DateFormat.yMMMd(locale).add_jm().format(date.toLocal()),
+                    AppFormat.dateTime(
+                      date.toLocal(),
+                      use24HourFormat: context.use24HourFormat,
+                      locale: context.dateLocale,
+                    ),
                     style: AppTextStyles.label.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),

@@ -19,7 +19,7 @@ import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:health_repository/health_repository.dart';
 import 'package:image_repository/image_repository.dart';
-import 'package:intl/intl.dart' show DateFormat, NumberFormat;
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:user_repository/user_repository.dart';
 
 /// Account setup: name, sex, date of birth, height, weight, exercise
@@ -481,12 +481,13 @@ class _DateOfBirthRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     return AppSection(
       children: [
         AppListRowButton(
           title: l10n.onboardingDateOfBirth,
-          accessory: AppListRowValue(DateFormat.yMMMd(locale).format(date)),
+          accessory: AppListRowValue(
+            AppFormat.date(date, locale: context.dateLocale),
+          ),
           onPressed: () async {
             final cubit = context.read<AccountSetupCubit>();
             final now = DateTime.now();

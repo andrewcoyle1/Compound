@@ -4,7 +4,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/logic/meal_day.dart' show dayKeyOf;
 import 'package:compound/widgets/calendar/calendar_day_marker.dart';
 import 'package:compound/widgets/calendar/calendar_header.dart';
-import 'package:intl/intl.dart' show DateFormat;
 
 /// The month picker behind the calendar header (Swift `CalendarView`):
 /// eighteen months back to six ahead, each a titled grid of the header's
@@ -78,7 +77,6 @@ class _CalendarSheetState extends State<CalendarSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     // 0 is Sunday, as in the locale's own calendar.
     final firstDay = firstDayOfWeekIndex(context);
     return SizedBox(
@@ -124,7 +122,11 @@ class _CalendarSheetState extends State<CalendarSheet> {
                     _Month(
                       key: _keys[month],
                       month: month,
-                      title: DateFormat.yMMMM(locale).format(month),
+                      title: AppFormat.date(
+                        month,
+                        style: AppDateStyle.monthYear,
+                        locale: context.dateLocale,
+                      ),
                       leading: (month.weekday % 7 - firstDay + 7) % 7,
                       today: widget.today,
                       selectedDay: widget.selectedDay,

@@ -1,7 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
-import 'package:intl/intl.dart' show DateFormat;
 
 /// Every entry of a metric, as given (newest first), like Health's "All
 /// Recorded Data" (Swift `MetricAllDataView`): the value on the leading
@@ -45,7 +44,8 @@ class MetricAllDataView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final dates = DateFormat.yMMMd(locale);
+    String dates(DateTime date) =>
+        AppFormat.date(date, locale: context.dateLocale);
     final format = this.format;
     final text =
         valueText ??
@@ -73,7 +73,7 @@ class MetricAllDataView extends StatelessWidget {
                 index,
                 AppListRow(
                   title: text(index),
-                  accessory: AppListRowValue(dates.format(entry.date)),
+                  accessory: AppListRowValue(dates(entry.date)),
                 ),
               ),
           ],

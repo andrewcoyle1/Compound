@@ -8,7 +8,6 @@ import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:strava_repository/strava_repository.dart';
 
 // Imported Strava activities. Strava's terms keep an athlete's data to the
@@ -166,7 +165,7 @@ class StravaActivityRow extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final theme = Theme.of(context);
     final detail = [
-      DateFormat.yMMMd(locale).format(activity.startDate.toLocal()),
+      AppFormat.date(activity.startDate.toLocal(), locale: context.dateLocale),
       if (activity.distance > 0)
         AppFormat.distance(activity.distance, distanceUnit, locale: locale),
       AppFormat.duration(Duration(seconds: activity.movingTime)),

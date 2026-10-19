@@ -14,7 +14,6 @@ import 'package:compound/settings/nutrition/view/nutrition_settings_widgets.dart
 import 'package:compound_maths/compound_maths.dart' as maths;
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -68,7 +67,6 @@ class ExpenditureSettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<StrategySettingsCubit>();
-    final locale = Localizations.localeOf(context).toLanguageTag();
     ChoiceRow<T> picker<T>(
       String key,
       String title, {
@@ -119,7 +117,10 @@ class ExpenditureSettingsView extends StatelessWidget {
                 accessory: AppListRowValue(
                   start == null
                       ? l10n.expenditureSettingsDefault
-                      : DateFormat.yMMMd(locale).format(start.toLocal()),
+                      : AppFormat.date(
+                          start.toLocal(),
+                          locale: context.dateLocale,
+                        ),
                 ),
                 onPressed: () => unawaited(_chooseStartDate(context, start)),
               ),

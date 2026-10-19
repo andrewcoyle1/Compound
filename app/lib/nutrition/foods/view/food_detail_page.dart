@@ -13,7 +13,6 @@ import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// A food from the library (Swift `FoodDetailView`): its nutrients per
@@ -298,8 +297,10 @@ class _Nutrients extends StatelessWidget {
           header: l10n.foodDetailDateCreated,
           children: [
             AppListRow(
-              title: DateFormat.yMMMd(locale)
-                  .format(food.dateCreated.toLocal()),
+              title: AppFormat.date(
+                food.dateCreated.toLocal(),
+                locale: context.dateLocale,
+              ),
             ),
           ],
         ),

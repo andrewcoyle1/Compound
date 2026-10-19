@@ -28,7 +28,6 @@ import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:training_library_repository/training_library_repository.dart';
 import 'package:training_session/training_session.dart'
     show UnitPreferenceStore;
@@ -242,13 +241,12 @@ class _PerformedSubtitle extends StatelessWidget {
     final state = context.watch<ExerciseHistoryBloc>().state;
     if (state is! ExerciseHistoryLoaded) return const SizedBox.shrink();
     final latest = state.stats.mostRecentFirst.firstOrNull;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     return Text(
       latest == null
           ? l10n.exerciseNoHistory
           : l10n.exercisePerformed(
               state.stats.performances.length,
-              DateFormat.yMMMd(locale).format(latest.date.toLocal()),
+              AppFormat.date(latest.date.toLocal(), locale: context.dateLocale),
             ),
       style: AppTextStyles.rowDetail.copyWith(
         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -528,8 +526,10 @@ class _History extends StatelessWidget {
                         title: performance.workoutName,
                         subtitle: _detail(l10n, performance, locale),
                         accessory: AppListRowValue(
-                          DateFormat.yMMMd(locale)
-                              .format(performance.date.toLocal()),
+                          AppFormat.date(
+                            performance.date.toLocal(),
+                            locale: context.dateLocale,
+                          ),
                         ),
                       ),
                   ],
@@ -730,7 +730,8 @@ class _Records extends StatelessWidget {
     );
     String weight(double kg) =>
         AppFormat.weight(kg, weightUnit, locale: locale);
-    String date(DateTime at) => DateFormat.yMMMd(locale).format(at.toLocal());
+    String date(DateTime at) =>
+        AppFormat.date(at.toLocal(), locale: context.dateLocale);
     return _StatsTab(
       builder: (stats) {
         final best = stats.heaviest;

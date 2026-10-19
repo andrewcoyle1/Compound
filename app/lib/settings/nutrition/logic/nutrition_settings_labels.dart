@@ -1,11 +1,5 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound_maths/compound_maths.dart' as maths;
-import 'package:intl/intl.dart';
-
-/// An hour of the day as the region writes it: "7 AM" on a 12-hour clock,
-/// "07" or "7 Uhr" on a 24-hour one (Swift `FoodLogSettingsPresenter
-/// .hourLabel`).
-String hourLabel(int hour, String locale) =>
-    DateFormat.j(locale).format(DateTime(2000, 1, 1, hour));
 
 /// The name of a check-in [weekday], which is 1-based and Sunday-first as
 /// Swift's `Calendar` counts (Swift `checkInWeekdayName`): 1 is Sunday, 2
@@ -13,7 +7,11 @@ String hourLabel(int hour, String locale) =>
 String weekdayName(int weekday, String locale) {
   final day = weekday >= 1 && weekday <= 7 ? weekday : 2;
   // 4 January 2026 was a Sunday.
-  return DateFormat.EEEE(locale).format(DateTime(2026, 1, 3 + day));
+  return AppFormat.date(
+    DateTime(2026, 1, 3 + day),
+    style: AppDateStyle.weekday,
+    locale: locale,
+  );
 }
 
 /// Where today's expenditure came from, for the line under the figure

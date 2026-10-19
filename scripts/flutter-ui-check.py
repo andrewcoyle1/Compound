@@ -34,6 +34,8 @@ RULES = {
     'animation-duration': (_ + r'(duration|reverseDuration)\s*:\s*(const\s+)?Duration\(',
                            'AppMotion.durationOf'),
     'icon-literal': (_ + r'Icons\.\w+', 'AppSymbols'),
+    'date-format': (_ + r'DateFormat\b|' + _ + r'formatTimeOfDay\(',
+                    'AppFormat.date, time, hour or dateTime with context.dateLocale'),
     # Rule 3: no raw Material building blocks in features.
     'material-button': (_ + r'(TextButton|OutlinedButton|ElevatedButton|FilledButton|IconButton)(\.\w+)?\(',
                         'an app_ui button (AppCtaButton, or add one)'),
@@ -56,6 +58,8 @@ BASELINE = {
     'radius-literal': 6,
     'animation-duration': 1,
     'icon-literal': 6,
+    # Every display date went through AppFormat on 19 Oct 2026; no machine format needed DateFormat.
+    'date-format': 0,
     'material-button': 331,
     'material-row': 44,
     'material-card': 0,
@@ -118,6 +122,10 @@ def self_test():
         "duration: const Duration(milliseconds: 300),": ['animation-duration'],
         "Icon(Icons.add)": ['icon-literal'],
         "Icon(AppSymbols.add)": [],
+        "DateFormat.yMMMd(locale).format(date)": ['date-format'],
+        "import 'package:intl/intl.dart' show DateFormat;": ['date-format'],
+        "MaterialLocalizations.of(context).formatTimeOfDay(time)": ['date-format'],
+        "AppFormat.date(date, locale: context.dateLocale)": [],
         "TextButton(onPressed: f, child: c)": ['material-button'],
         "FilledButton.icon(onPressed: f)": ['material-button'],
         "AppCtaButton(onPressed: f)": [],

@@ -15,7 +15,6 @@ import 'package:compound/settings/general/view/units_page.dart';
 import 'package:compound/settings/settings.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:user_repository/user_repository.dart';
@@ -23,7 +22,8 @@ import 'package:user_repository/user_repository.dart';
 import '../../../helpers/helpers.dart';
 import '../recorded_analytics.dart';
 
-String hour(int hour) => DateFormat.j('en').format(DateTime(2000, 1, 1, hour));
+String hour(int hour) =>
+    AppFormat.hour(hour, use24HourFormat: false, locale: 'en');
 
 void main() {
   const user = AuthUser(uid: 'uid', isAnonymous: false);

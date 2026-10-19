@@ -7,7 +7,6 @@ import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:mocktail/mocktail.dart';
 
 import '../../helpers/helpers.dart';
@@ -91,8 +90,13 @@ void main() {
         return world;
       }
 
-      Finder todayCell() =>
-          find.bySemanticsLabel(DateFormat.MMMMEEEEd('en').format(today));
+      Finder todayCell() => find.bySemanticsLabel(
+        AppFormat.date(
+          today,
+          style: AppDateStyle.weekdayDayMonthLong,
+          locale: 'en',
+        ),
+      );
 
       testWidgets('tapping a day with one workout opens it', (tester) async {
         final world = await pump(tester, [trainingSession('s1', on: at(1))]);

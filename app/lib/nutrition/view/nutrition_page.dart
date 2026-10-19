@@ -34,7 +34,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:nutrition_repository/nutrition_repository.dart';
 
 /// The Nutrition tab: one day's meal log (Swift `NutritionView`). A week
@@ -179,9 +178,10 @@ class NutritionView extends StatelessWidget {
               CoachContext(
                 kind: CoachContextKind.nutritionDay,
                 date: dayKeyOf(state.selectedDay),
-                title: DateFormat.yMMMd(
-                  Localizations.localeOf(context).toLanguageTag(),
-                ).format(state.selectedDay),
+                title: AppFormat.date(
+                  state.selectedDay,
+                  locale: context.dateLocale,
+                ),
               ),
             ),
             const ProfileButton(),
@@ -234,7 +234,6 @@ class _Day extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final settings = state.settings!;
     final target = state.target;
     final timeline = state.timeline;
@@ -251,7 +250,7 @@ class _Day extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  DateFormat.yMMMd(locale).format(state.selectedDay),
+                  AppFormat.date(state.selectedDay, locale: context.dateLocale),
                   style: AppTextStyles.rowDetail.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),

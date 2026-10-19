@@ -1,7 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/widgets/number_wheel.dart';
-import 'package:intl/intl.dart';
 
 /// The Start Time sheet (`WorkoutSessionStartTimeSheet`): the day and the
 /// time, never later than now. It holds the pick until Save; Close leaves
@@ -72,7 +71,6 @@ class _StartTimeSheetState extends State<_StartTimeSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     return _SheetScaffold(
       title: l10n.workoutStartTime,
       onSave: () => Navigator.of(context).pop(_start),
@@ -83,13 +81,23 @@ class _StartTimeSheetState extends State<_StartTimeSheet> {
           AppListRowButton(
             title: l10n.sessionDate,
             accessory: AppListRowValue(
-              DateFormat.yMMMMd(locale).format(_start),
+              AppFormat.date(
+                _start,
+                style: AppDateStyle.long,
+                locale: context.dateLocale,
+              ),
             ),
             onPressed: _pickDay,
           ),
           AppListRowButton(
             title: l10n.sessionTime,
-            accessory: AppListRowValue(DateFormat.jm(locale).format(_start)),
+            accessory: AppListRowValue(
+              AppFormat.time(
+                _start,
+                use24HourFormat: context.use24HourFormat,
+                locale: context.dateLocale,
+              ),
+            ),
             onPressed: _pickTime,
           ),
         ],

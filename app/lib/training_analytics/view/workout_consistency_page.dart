@@ -10,7 +10,6 @@ import 'package:compound/training_analytics/view/training_metric_pages.dart';
 import 'package:compound/widgets/chart_callout.dart';
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart' show DateFormat;
 
 /// Every finished workout on a contribution grid, a week a column (Swift
 /// `WorkoutConsistencyView`). Opened from the Progress tab's Workouts
@@ -184,9 +183,11 @@ class _ContributionGridState extends State<ContributionGrid> {
     final monthRow = textScaler.scale(labelStyle.fontSize ?? 12) * 1.4;
     final weekdays = [
       for (var row = 0; row < 7; row++)
-        DateFormat.EEEEE(locale).format(
+        AppFormat.date(
           // 4 January 2021 was a Monday.
           DateTime(2021, 1, 3 + ((widget.firstWeekday - 1 + row) % 7 + 1)),
+          style: AppDateStyle.weekdayInitial,
+          locale: context.dateLocale,
         ),
     ];
     return Semantics(
@@ -221,7 +222,8 @@ class _ContributionGridState extends State<ContributionGrid> {
                 .where((d) => !d.isBefore(first) && !d.isAfter(today))
                 .length;
             final selected = _selected;
-            final dates = DateFormat.yMMMd(locale);
+            String dates(DateTime date) =>
+                AppFormat.date(date, locale: context.dateLocale);
             final header = [
               Text.rich(
                 TextSpan(
@@ -239,7 +241,7 @@ class _ContributionGridState extends State<ContributionGrid> {
               ),
               Text(
                 l10n.contributionDaysLogged(
-                  '${dates.format(first)} – ${dates.format(today)}',
+                  '${dates(first)} – ${dates(today)}',
                 ),
                 style: labelStyle,
               ),
@@ -350,7 +352,7 @@ class _ContributionGridState extends State<ContributionGrid> {
                                     ringColor: scheme.onSurface,
                                     labelStyle: labelStyle,
                                     textScaler: textScaler,
-                                    locale: locale,
+                                    locale: context.dateLocale,
                                   ),
                                 ),
                               ),
@@ -375,8 +377,11 @@ class _ContributionGridState extends State<ContributionGrid> {
                                           l10n.calendarLogged,
                                     ),
                                 ],
-                                footer: DateFormat.yMMMEd(locale)
-                                    .format(selected),
+                                footer: AppFormat.date(
+                                  selected,
+                                  style: AppDateStyle.weekdayMedium,
+                                  locale: context.dateLocale,
+                                ),
                                 noData: l10n.progressNoData,
                               ),
                       ),
@@ -441,7 +446,11 @@ class _GridPainter extends CustomPainter {
         if (day.day != 1 || day.isAfter(today)) continue;
         final label = TextPainter(
           text: TextSpan(
-            text: DateFormat.MMM(locale).format(day),
+            text: AppFormat.date(
+              day,
+              style: AppDateStyle.month,
+              locale: locale,
+            ),
             style: labelStyle,
           ),
           textDirection: TextDirection.ltr,

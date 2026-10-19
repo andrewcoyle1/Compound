@@ -4,7 +4,6 @@ import 'package:compound/workout_history/models/workout_session_highlights.dart'
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
-import 'package:intl/intl.dart';
 import 'package:social_repository/social_repository.dart';
 
 /// Everything the workout share card prints, as strings, so its wording is
@@ -34,6 +33,7 @@ final class const ShareCardContent({
     required List<WorkoutSessionModel> history,
     required int firstDayOfWeek,
     String? locale,
+    String? dateLocale,
   }) => ShareCardContent.make(
     l10n,
     session,
@@ -48,6 +48,7 @@ final class const ShareCardContent({
       firstDayOfWeek: firstDayOfWeek,
     ),
     locale: locale,
+    dateLocale: dateLocale,
   );
 
   /// The card for [session] with its highlights already worked out.
@@ -58,12 +59,18 @@ final class const ShareCardContent({
     required List<PersonalRecord> personalRecords,
     required int weeklyWorkoutNumber,
     String? locale,
+    // The device's region ([AppFormatContext.dateLocale]); [locale] is the
+    // app's language, for numbers.
+    String? dateLocale,
   }) => ShareCardContent(
     firstName: author == null ? null : firstNameOf(author),
     avatarUrl: author == null ? null : profileImageOf(author),
     sessionName: session.name,
-    dateText: DateFormat.MMMMEEEEd(locale)
-        .format(session.dateCreated.toLocal()),
+    dateText: AppFormat.date(
+      session.dateCreated.toLocal(),
+      style: AppDateStyle.weekdayDayMonthLong,
+      locale: dateLocale,
+    ),
     durationText: formatDuration(l10n, session.activeDuration),
     volumeText: formatVolume(
       session.loggedVolumeKg,

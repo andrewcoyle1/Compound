@@ -41,6 +41,7 @@ Future<void> shareWorkoutCard(
     history: history,
     firstDayOfWeek: firstDayOfWeekIndex(context),
     locale: Localizations.localeOf(context).toLanguageTag(),
+    dateLocale: context.dateLocale,
   );
   final accent = Theme.of(context).colorScheme.primary;
   track('Start');

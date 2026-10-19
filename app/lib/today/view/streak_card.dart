@@ -4,7 +4,6 @@ import 'package:compound/nutrition/logic/meal_day.dart' show dayKeyOf;
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound_maths/compound_maths.dart';
-import 'package:intl/intl.dart' show DateFormat;
 
 /// The weekly streak on Today (Swift `WorkoutStreakCard`): weeks in a row
 /// with the weekly goal met, this week's progress and badge, a dot for each
@@ -183,19 +182,26 @@ class _DayDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final fill = hasWorkout
         ? context.appColors.workouts
         : scheme.outlineVariant.withValues(alpha: isFuture ? 0.4 : 1);
     return Semantics(
-      label: DateFormat.EEEE(locale).format(day),
+      label: AppFormat.date(
+        day,
+        style: AppDateStyle.weekday,
+        locale: context.dateLocale,
+      ),
       value: hasWorkout ? l10n.streakWorkoutLogged : l10n.streakNoWorkout,
       excludeSemantics: true,
       child: Column(
         spacing: AppSpacing.xs,
         children: [
           Text(
-            DateFormat.EEEEE(locale).format(day),
+            AppFormat.date(
+              day,
+              style: AppDateStyle.weekdayInitial,
+              locale: context.dateLocale,
+            ),
             style: AppTextStyles.label.copyWith(
               fontWeight: isToday ? FontWeight.bold : null,
               color: isToday ? scheme.onSurface : scheme.onSurfaceVariant,

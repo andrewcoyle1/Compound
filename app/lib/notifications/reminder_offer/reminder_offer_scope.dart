@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/notifications/reminder_offer/reminder_offer_cubit.dart';
 import 'package:device_store/device_store.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notifications_repository/notifications_repository.dart';
 import 'package:user_repository/user_repository.dart';

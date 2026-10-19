@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:flutter/material.dart';
 
 /// The unit a relative time is told in.
 enum RelativeUnit { second, minute, hour, day, week, month, year }

@@ -1,6 +1,6 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
-import 'package:flutter/material.dart';
 
 /// The Weekly Review as a Stories-sized image, drawn like the workout card
 /// (`WeeklyReviewShareCardView`). Privacy: numbers only, no name, no body

@@ -58,6 +58,16 @@ test("trend_chart weight: the weigh-ins and the app's trend, bound by path, in t
     assert.deepEqual(told, { shown: true, shows: block.fallback });
 });
 
+test("trend_chart weight cut short by the 60 weigh-in cap covers, and says, only the days shown", async () => {
+    // Cutting weighs in daily for 61 days: a 90-day chart gets the latest 60.
+    const { block, data } = await show("cutting", { kind: "trend_chart", metric: "weight", rangeDays: 90 });
+    assert.equal(data.points.length, 60);
+    assert.deepEqual([data.points[0].x, data.points.at(-1).x], ["2026-08-07", "2026-10-05"]);
+    assert.match(block.fallback, /^Weight trend, 2026-08-07 to 2026-10-05: [\d.]+ → [\d.]+ kg \(the latest 60 weigh-ins\)\.$/);
+    // A range the weigh-ins fit is not marked.
+    assert.doesNotMatch((await show("cutting", { kind: "trend_chart", metric: "weight", rangeDays: 60 })).block.fallback, /latest/);
+});
+
 test("trend_chart exercise_e1rm: the app's estimated 1RM per session, named, in pounds for a pounds user", async () => {
     const { block, data } = await show("cutting", { kind: "trend_chart", metric: "exercise_e1rm", exerciseId: "system-barbell-bench-press", rangeDays: 56 });
     assert.deepEqual(rootOf(block), { id: "root", component: "TrendChart", metric: "exercise_e1rm", points: { path: "/points" }, unit: { path: "/unit" }, exerciseName: { path: "/exerciseName" } });
@@ -165,7 +175,11 @@ test("arguments are checked strictly; a bad block is not shown and the model is 
         [{ kind: "actions", actions: [{ kind: "log_weight", calories: 500 }] }, /takes no calories/],
         [{ kind: "actions", actions: [null] }, /action kind/],
         [{ kind: "follow_ups", questions: ["x".repeat(81)] }, /80 characters/],
-        [{ kind: "follow_ups", questions: ["Why did I eat 2400 kcal?"] }, /no.*numbers|not contain numbers/],
+        ...[
+            "Why did I eat 2400 kcal?", "Why did I eat 2,400 yesterday?", "Is 82.5 a good target?", "Should I drop to 80 kg?",
+            "Is 150g of protein enough?", "Can I lose 1% a week?", "Why only 6000 steps?", "Should I run 5 km more?",
+            "Why am I eating more than 2 meals late?", "Is 80 → 78 too fast?", "Bench 100 vs 110?",
+        ].map((q) => [{ kind: "follow_ups", questions: [q] }, /must not state figures/]),
         [{ kind: "follow_ups", questions: "Why?" }, /1 to 3/],
     ];
     for (const [args, reason] of bad) {
@@ -176,6 +190,10 @@ test("arguments are checked strictly; a bad block is not shown and the model is 
         assert.equal(told.shown, false);
         assert.match(told.reason, /^Not shown: /);
         assert.equal(blocks.list.length, 0);
+    }
+    // Asking is fine: small counts and 1RM are not figures about the user.
+    for (const q of ["What's my squat 1RM?", "How was the last 4 weeks?", "How is my e1RM trending?", "What should I do in week 3?", "How do I hit my protein target?"]) {
+        assert.deepEqual(parseBlockArgs({ kind: "follow_ups", questions: [q] }, env), { kind: "follow_ups", questions: [q] }, q);
     }
     // A null setting is absent, as Gemini sends unset optional fields.
     assert.deepEqual(parseBlockArgs({ kind: "trend_chart", metric: "weight", rangeDays: 28, exerciseId: null }, env), { kind: "trend_chart", metric: "weight", rangeDays: 28 });

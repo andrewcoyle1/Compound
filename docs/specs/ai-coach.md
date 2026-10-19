@@ -94,15 +94,18 @@ are handled one at a time, so the cap holds when several arrive together.
   `goal_weight`, `expenditure`, `calorie_target`, `protein_target`, `today_calories`,
   `today_protein`, `steps_average`, `exercise_e1rm:<exerciseId>`.
 - `actions` `{ actions: [Action…] (1..3) }`. Action: `{ kind: "log_weight" | "log_meal" | "start_workout" | "open_exercise" | "open_metric" | "open_check_in" | "open_diet_plan", exerciseId? (open_exercise only), metric?: "weight" | "expenditure" | "steps" (open_metric only) }`.
-- `follow_ups` `{ questions: [string ≤ 80 chars, no digits] (1..3) }`: suggested prompts, not facts. A
-  tap sends the text as the user's next message.
+- `follow_ups` `{ questions: [string ≤ 80 chars, stating no figures] (1..3) }`: suggested prompts, not facts. A
+  tap sends the text as the user's next message. A question is refused if it states a figure about the user: a
+  decimal or thousands separator, a number followed by a unit (kg, lb, kcal, g, %, steps, km, mi), a
+  number over 99, or a comparison ("more than 3", "80 → 78"). Small counts ("the last 4 weeks") and
+  "1RM"/"e1RM" are allowed.
 
 A block with nothing to show (no weigh-ins in range, an exercise the user never logged) is dropped
 with the reason. Where each value comes from:
 
 | Block | Tool call |
 |---|---|
-| `trend_chart` weight | `get_body_metrics({ days: rangeDays })`: weigh-ins and the app's trend (its latest 60 weigh-ins) |
+| `trend_chart` weight | `get_body_metrics({ days: rangeDays })`: weigh-ins and the app's trend. That tool lists only the latest 60 weigh-ins, so a long range of frequent weigh-ins is cut short; the points and fallback then cover only the days shown, and the fallback says "(the latest 60 weigh-ins)" |
 | `trend_chart` exercise_e1rm | `get_exercise_progress({ exercise: exerciseId, weeks: ⌈rangeDays / 7⌉ })`, sessions of exactly that id within the range |
 | `trend_chart` expenditure, steps | `get_expenditure` / `get_steps` with `{ days: rangeDays }` (both stop at 180) |
 | `target_bars` | `get_nutrition({ days })` reaching back to that day: totals and that day's targets |

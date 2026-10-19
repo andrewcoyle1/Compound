@@ -405,6 +405,9 @@ function mealTotals(meal) {
 
 // MARK: - Tools (pure: source and environment in, plain data out)
 
+/// get_body_metrics lists at most this many weigh-ins, the latest.
+export const WEIGH_IN_LIMIT = 60;
+
 export const COACH_TOOLS = {
     async get_profile_and_targets(source, env) {
         const [user, goals, plan, strategy] = await Promise.all([source.user(), source.goals(), source.dietPlan(), source.strategySettings()]);
@@ -597,7 +600,7 @@ export const COACH_TOOLS = {
             rangeDays: range,
             units: { weight: env.weightUnit, length: env.lengthUnit },
             trendNote: "The trend is the line on the app's Weight Trend screen: a Kalman filter over the weigh-ins (level and slope, with the real gap in days between readings), smoothed with the readings after each point. One weigh-in is taken to carry about 0.5% of body weight of noise (at least 0.3 kg); only the first weigh-in of a day counts; an odd reading is down-weighted, and one more than max(3 kg, 4%) off the trend is ignored unless the next weigh-in agrees.",
-            weighIns: shown.slice(-60).map(({ m, trend: t }) => ({ day: dayOf(m.at, env), weight: weight(m.weight_kg, env), trend: weight(t, env) })),
+            weighIns: shown.slice(-WEIGH_IN_LIMIT).map(({ m, trend: t }) => ({ day: dayOf(m.at, env), weight: weight(m.weight_kg, env), trend: weight(t, env) })),
             trendChangeInRange: shown.length >= 2 ? weight(shown[shown.length - 1].trend - shown[0].trend, env) : null,
             latestBodyFatPercent: bodyFat.length ? round(bodyFat[bodyFat.length - 1].body_fat_percentage, 1) : null,
             circumferences,
@@ -816,7 +819,7 @@ const UI_PROMPT = [
     "- target_bars: one day's calories and macros against its targets, for questions about what the user ate today or on a day (day \"today\" or YYYY-MM-DD).",
     "- stat_row: 1-3 headline figures, when a few numbers answer the question better than a chart.",
     "- actions: 1-3 buttons that open a screen (log_weight, log_meal, start_workout, open_exercise, open_metric, open_check_in, open_diet_plan) when the next step is in the app. They only open screens; they change nothing.",
-    "- follow_ups: optional, 1-3 short questions the user might ask next (at most 80 characters, no numbers).",
+    "- follow_ups: optional, 1-3 short questions the user might ask next (at most 80 characters; no figures about the user, such as weights, calories or decimals).",
     "- No blocks for refusals, medical questions, or questions about you.",
     "- With a block, keep the text short: the block carries the figures. Any figure you also write must match the tool results and what show_block says it shows. If show_block answers not shown, carry on without it.",
 ];

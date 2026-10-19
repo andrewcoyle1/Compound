@@ -25,29 +25,23 @@ Future<void> startWorkout(
   final l10n = context.l10n;
   final cubit = context.read<ActiveWorkoutCubit>();
   if (cubit.state.isActive) {
-    final choice = await showDialog<_ActiveChoice>(
+    final choice = await showAppDialog<_ActiveChoice>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.trackerActiveTitle),
-        content: Text(l10n.trackerActiveMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.trackerCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(_ActiveChoice.replace),
-            style: TextButton.styleFrom(
-              foregroundColor: context.appColors.danger,
-            ),
-            child: Text(l10n.trackerReplaceButton),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(_ActiveChoice.resume),
-            child: Text(l10n.trackerResumeButton),
-          ),
-        ],
-      ),
+      title: l10n.trackerActiveTitle,
+      message: l10n.trackerActiveMessage,
+      actions: [
+        AppDialogAction(label: l10n.trackerCancel, role: AppDialogRole.cancel),
+        AppDialogAction(
+          label: l10n.trackerReplaceButton,
+          value: _ActiveChoice.replace,
+          role: AppDialogRole.destructive,
+        ),
+        AppDialogAction(
+          label: l10n.trackerResumeButton,
+          value: _ActiveChoice.resume,
+          role: AppDialogRole.preferred,
+        ),
+      ],
     );
     if (!context.mounted) return;
     switch (choice) {
@@ -71,18 +65,11 @@ Future<void> startWorkout(
   if (!context.mounted) return;
   if (cubit.state.effectId != before &&
       cubit.state.effect is StartFailedEffect) {
-    await showDialog<void>(
+    await showAppDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.startFailedTitle),
-        content: Text(l10n.startFailedMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.keypadDone),
-          ),
-        ],
-      ),
+      title: l10n.startFailedTitle,
+      message: l10n.startFailedMessage,
+      actions: [AppDialogAction(label: l10n.keypadDone)],
     );
     return;
   }
@@ -150,10 +137,8 @@ class ActiveWorkoutBar extends StatelessWidget {
                                     session.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.rowDetail.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: scheme.onSurface,
-                                    ),
+                                    style: AppTextStyles.rowDetail.semibold
+                                        .copyWith(color: scheme.onSurface),
                                   ),
                                   Text(
                                     '${progress.done}/'
@@ -194,11 +179,10 @@ class ActiveWorkoutBar extends StatelessWidget {
               // Beside the bar's button rather than in it, so a screen
               // reader reaches it.
               if (resting)
-                IconButton(
+                AppToolbarButton(
                   key: const Key('ActiveWorkoutBar.skipRest'),
-                  tooltip: l10n.accessorySkipRest,
-                  icon: const Icon(AppSymbols.skip),
-                  color: scheme.primary,
+                  icon: AppSymbols.skip,
+                  semanticLabel: l10n.accessorySkipRest,
                   onPressed: context.read<ActiveWorkoutCubit>().skipRestFromBar,
                 ),
             ],

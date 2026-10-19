@@ -386,11 +386,9 @@ class _Key extends StatelessWidget {
             child: Center(
               child: IconTheme.merge(
                 data: IconThemeData(color: foreground),
+                // The number face, which has one weight for every key.
                 child: DefaultTextStyle.merge(
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: foreground,
-                    fontWeight: prominent ? FontWeight.w600 : FontWeight.w400,
-                  ),
+                  style: AppTextStyles.metric.copyWith(color: foreground),
                   child: child,
                 ),
               ),
@@ -459,11 +457,16 @@ class _KeyChip extends StatelessWidget {
                 widthFactor: 1,
                 child: Text(
                   title,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: selected ? scheme.onPrimary : scheme.onSurface,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+                  style:
+                      (selected
+                              ? AppTextStyles.rowDetail.semibold
+                              : AppTextStyles.rowDetail)
+                          .copyWith(
+                            color: selected
+                                ? scheme.onPrimary
+                                : scheme.onSurface,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
                 ),
               ),
             ),
@@ -483,8 +486,7 @@ class _Heading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     title,
-    style: AppTextStyles.label.copyWith(
-      fontWeight: FontWeight.w700,
+    style: AppTextStyles.label.semibold.copyWith(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     ),
   );
@@ -592,10 +594,12 @@ class _LoadingBar extends StatelessWidget {
                     symbol,
                   ),
                   excludeSemantics: true,
-                  child: OutlinedButton(
+                  child: AppCtaButton(
                     key: ValueKey('keypad-use-$value'),
+                    label: _weight(value - machineBase, symbol, locale),
+                    variant: AppCtaVariant.secondary,
+                    size: AppCtaSize.compact,
                     onPressed: () => cubit.keypadWeight(value),
-                    child: Text(_weight(value - machineBase, symbol, locale)),
                   ),
                 ),
           ],

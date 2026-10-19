@@ -16,11 +16,8 @@ Future<void> showEquipmentSheet(
   EquipmentSheetSetup setup, {
   required void Function(String exerciseId, String variationId) onChosen,
   required void Function(String exerciseId, GymProfileModel gym) onGymEdited,
-}) => showModalBottomSheet<void>(
+}) => showAppSheet<void>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
   builder: (context) => BlocProvider(
     create: (context) => EquipmentSheetCubit(
       setup,
@@ -43,62 +40,21 @@ class EquipmentSheetView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<EquipmentSheetCubit>().state;
-    final scheme = Theme.of(context).colorScheme;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-          child: Row(
-            children: [
-              IconButton(
-                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                icon: const Icon(AppSymbols.close),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              Expanded(
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    state.exerciseName,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.rowTitle.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppControlSize.row),
-            ],
-          ),
+    return AppScaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
         ),
-        if (state.hasNoVariations)
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              spacing: AppSpacing.s,
-              children: [
-                Icon(
-                  AppSymbols.equipment,
-                  size: AppIconSize.large.of(context),
-                  color: scheme.onSurfaceVariant,
-                ),
-                Text(l10n.equipmentNone, style: AppTextStyles.sectionTitle),
-                Text(
-                  l10n.equipmentNoVariations,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          Flexible(
-            child: ListView(
-              shrinkWrap: true,
+        title: Text(state.exerciseName),
+      ),
+      body: state.hasNoVariations
+          ? AppEmptyState(
+              icon: AppSymbols.equipment,
+              title: l10n.equipmentNone,
+              description: l10n.equipmentNoVariations,
+            )
+          : ListView(
               padding: const EdgeInsets.all(AppSpacing.l),
               children: [
                 AppSection(
@@ -113,8 +69,6 @@ class EquipmentSheetView extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-      ],
     );
   }
 }
@@ -162,11 +116,14 @@ class _VariationRow extends StatelessWidget {
           ),
         ),
         if (canEdit)
-          IconButton(
-            key: ValueKey('variation-edit-${item.id}'),
-            tooltip: l10n.equipmentEdit(title),
-            icon: Icon(AppSymbols.more),
-            onPressed: () => unawaited(_edit(context, title)),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: AppSpacing.s),
+            child: AppIconButton(
+              key: ValueKey('variation-edit-${item.id}'),
+              icon: AppSymbols.more,
+              semanticLabel: l10n.equipmentEdit(title),
+              onPressed: () => unawaited(_edit(context, title)),
+            ),
           ),
       ],
     );

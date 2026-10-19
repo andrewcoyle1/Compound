@@ -116,6 +116,10 @@ abstract final class AppChartMark {
   /// A gridline's stroke.
   static const double gridWidth = 1;
 
+  /// How tall the stub is that holds an empty bar's place in a card's
+  /// chart, so a day with nothing still reads as a day.
+  static const double stubHeight = 2;
+
   /// The stroke of the rule through the bucket picked.
   static const double ruleWidth = 1.5;
 

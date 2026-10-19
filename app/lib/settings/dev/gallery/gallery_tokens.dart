@@ -272,6 +272,7 @@ List<Widget> galleryTokens(BuildContext context) {
         ('stackGap', AppChartMark.stackGap),
         ('barFill', AppChartMark.barFill),
         ('gridWidth', AppChartMark.gridWidth),
+        ('stubHeight', AppChartMark.stubHeight),
         ('ruleWidth', AppChartMark.ruleWidth),
         ('areaOpacity', AppChartMark.areaOpacity),
       ])

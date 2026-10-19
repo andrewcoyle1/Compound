@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/add_meal/bloc/add_meal_bloc.dart';
 import 'package:compound/nutrition/add_meal/logic/nutrient_breakdown.dart';
@@ -16,7 +15,7 @@ import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/shell/app_tab.dart';
-import 'package:flutter/services.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -123,14 +122,14 @@ class AddMealView extends StatelessWidget {
           listener: (context, state) {
             switch (state.status) {
               case AddMealStatus.saved:
-                unawaited(HapticFeedback.successNotification());
+                unawaited(AppHaptics.success());
                 context.read<MealDraftCubit>().clear();
                 _dismiss(context);
               case AddMealStatus.discarded:
                 context.read<MealDraftCubit>().clear();
                 _dismiss(context);
               case AddMealStatus.failure:
-                unawaited(HapticFeedback.errorNotification());
+                unawaited(AppHaptics.error());
                 unawaited(
                   showAppDialog<void>(
                     context: context,
@@ -424,7 +423,7 @@ class _PlateItem extends StatelessWidget {
     Future<void> edit() async {
       final edited = await showItemAmountSheet(context, item);
       if (edited == null) return;
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       bloc.add(AddMealItemChanged(edited));
     }
 

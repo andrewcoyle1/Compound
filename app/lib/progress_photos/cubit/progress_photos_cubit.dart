@@ -5,8 +5,8 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart' show AppWeightUnit;
 import 'package:bloc/bloc.dart';
 import 'package:body_repository/body_repository.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_repository/image_repository.dart';
 

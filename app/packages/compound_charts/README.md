@@ -9,8 +9,15 @@ import 'package:compound_charts/compound_charts.dart';
 
 | Swift (QuickCharts) | Flutter |
 |---|---|
+| `LineChart`, `BarChart`, `StackedBarChart`, `ComboChart` | `CartesianChart` with `ChartData` |
+| `YAxisFit` | `ChartYFit` |
+| a chart's legend | `ChartLegend`, `ChartSwatch` |
 | `chartCallout` | `ChartCallout` |
 | `SeriesSummary` | `ChartCalloutSummary` |
+
+Charts draw in when first shown and morph when their data changes (`ChartDataTween`, also
+`ChartData.lerp`), from whatever is on screen, on one `AnimationController` that repaints the
+painter without rebuilding. Reduced motion shows the final frame at once.
 
 Every user-facing word is passed in already localized; the package holds no strings.
 

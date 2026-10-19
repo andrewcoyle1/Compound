@@ -23,7 +23,6 @@ import 'package:compound/workout_editor/cubit/delete_workout_cubit.dart';
 import 'package:compound/workout_editor/view/workout_wizard_pages.dart';
 import 'package:compound/workout_tracker/view/start_workout.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart'
@@ -330,10 +329,10 @@ Future<void> _deleted(BuildContext context, DeleteWorkoutStatus status) async {
   final l10n = context.l10n;
   switch (status) {
     case DeleteWorkoutStatus.deleted:
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       if (context.canPop()) context.pop();
     case DeleteWorkoutStatus.failed:
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
       await showFailureAlert(
         context,
         l10n.editorDeleteFailed,
@@ -362,7 +361,7 @@ Future<void> _saveCopy(BuildContext context, WorkoutTemplateModel day) async {
     ),
   );
   if (!ok) {
-    unawaited(HapticFeedback.errorNotification());
+    unawaited(AppHaptics.error());
     if (context.mounted) {
       await showFailureAlert(
         context,
@@ -372,7 +371,7 @@ Future<void> _saveCopy(BuildContext context, WorkoutTemplateModel day) async {
     }
     return;
   }
-  unawaited(HapticFeedback.successNotification());
+  unawaited(AppHaptics.success());
   if (!context.mounted) return;
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()

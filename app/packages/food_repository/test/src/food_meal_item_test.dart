@@ -1,8 +1,5 @@
-import 'dart:math';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
-import 'package:food_repository/src/random_id.dart';
 
 final _now = DateTime.utc(2026, 10, 15, 8);
 
@@ -297,17 +294,5 @@ void main() {
       expect(item.amount, oats.defaultPortionAmount);
       expect(item.unit, 'g');
     });
-  });
-
-  test('randomUuid is a version 4 UUID in upper case', () {
-    final id = randomUuid(Random(1));
-
-    expect(
-      id,
-      matches(
-        RegExp(r'^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB]\w{3}-\w{12}$'),
-      ),
-    );
-    expect(randomUuid(Random(1)), id);
   });
 }

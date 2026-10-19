@@ -1,4 +1,3 @@
-import 'package:ai_repository/src/random_id.dart';
 import 'package:compound_models/compound_models.dart';
 
 /// One food the model found in a photo or a description (Swift
@@ -50,7 +49,7 @@ class const FoodAnalysisItem({
   /// and a nutrient the model did not give stays absent
   /// (`FoodAnalysisItem.mealItem`). [newId] names the item, and the source
   /// when there is no [ingredientId].
-  MealItemModel mealItem({String Function() newId = randomUuid}) =>
+  MealItemModel mealItem({String Function() newId = newDocumentId}) =>
       MealItemModel(
         itemId: newId(),
         sourceType: MealItemSourceType.ingredient,
@@ -67,7 +66,7 @@ class const FoodAnalysisItem({
   /// figures the result row did (`FoodAnalysisItem.estimatedFood`).
   FoodModel estimatedFood({
     required DateTime now,
-    String Function() newId = randomUuid,
+    String Function() newId = newDocumentId,
   }) => FoodModel(
     ingredientId: ingredientId ?? newId(),
     name: name,

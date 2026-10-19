@@ -4,7 +4,6 @@ import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter/foundation.dart' show immutable;
-import 'package:strava_repository/src/random_id.dart';
 import 'package:strava_repository/src/strava_account_store.dart';
 import 'package:strava_repository/src/strava_api.dart';
 import 'package:strava_repository/src/strava_authorizer.dart';
@@ -113,7 +112,7 @@ class StravaRepository {
     this._onEvent = logStravaEvent,
     this._onDecodeError = _logDecodeError,
   }) : _now = now ?? DateTime.now,
-       _newId = newId ?? randomUuid;
+       _newId = newId ?? newDocumentId;
 
   final FirebaseFirestore _firestore;
   final StravaApi _api;

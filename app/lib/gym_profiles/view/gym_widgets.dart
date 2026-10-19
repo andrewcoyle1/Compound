@@ -7,7 +7,6 @@ import 'package:compound/gym_profiles/view/gym_text.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
@@ -248,4 +247,4 @@ class GymFormMessage extends StatelessWidget {
 }
 
 /// Plays the success haptic, as Swift does after an add.
-void gymSaved() => unawaited(HapticFeedback.successNotification());
+void gymSaved() => unawaited(AppHaptics.success());

@@ -13,7 +13,6 @@ import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/shell/app_tab.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_repository/health_repository.dart';
@@ -84,18 +83,18 @@ class CheckInView extends StatelessWidget {
         BlocListener<WeeklyCheckInBloc, WeeklyCheckInState>(
           listenWhen: (previous, current) =>
               previous.weighInsSaved != current.weighInsSaved,
-          listener: (_, _) => unawaited(HapticFeedback.successNotification()),
+          listener: (_, _) => unawaited(AppHaptics.success()),
         ),
         BlocListener<WeeklyCheckInBloc, WeeklyCheckInState>(
           listener: (context, state) {
             if (state.status == WeeklyCheckInStatus.finished) {
-              unawaited(HapticFeedback.successNotification());
+              unawaited(AppHaptics.success());
               _close(context);
               return;
             }
             final alert = state.alert;
             if (alert == null) return;
-            unawaited(HapticFeedback.errorNotification());
+            unawaited(AppHaptics.error());
             unawaited(
               showFailureAlert(context, switch (alert) {
                 WeeklyCheckInAlert.logWeightFailed =>

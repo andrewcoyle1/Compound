@@ -8,7 +8,6 @@ import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/training/program_setup_cubit.dart';
 import 'package:compound/onboarding/view/onboarding_widgets.dart';
 import 'package:compound/programs/programs.dart' show NameMesocyclePage;
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -53,7 +52,7 @@ class ProgramSetupView extends StatelessWidget {
       ),
       selected: program.id == state.selectedId,
       onPressed: () {
-        unawaited(HapticFeedback.selectionClick());
+        unawaited(AppHaptics.selection());
         cubit.programSelected(program);
       },
     );

@@ -17,21 +17,6 @@ import 'package:training_session/src/weight_stepper.dart';
 /// Makes a new id.
 typedef IdGenerator = String Function();
 
-final _random = math.Random.secure();
-
-/// A random (version 4) UUID in Swift's `UUID().uuidString` form: upper
-/// case, hyphenated.
-String newUuid() {
-  final bytes = [for (var i = 0; i < 16; i++) _random.nextInt(256)];
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  final hex = [for (final byte in bytes) byte.toRadixString(16).padLeft(2, '0')]
-      .join()
-      .toUpperCase();
-  return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-'
-      '${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
-}
-
 /// The template's targets for [microcycle] (1-based): the latest override
 /// starting at or before it, else the base targets
 /// (`WorkoutTemplateExercise.setTargets(forMicrocycle:)`).
@@ -244,7 +229,7 @@ m.WorkoutSessionModel sessionFromTemplate({
   required String authorId,
   required m.WorkoutTemplateModel template,
   required DateTime now,
-  IdGenerator newId = newUuid,
+  IdGenerator newId = m.newDocumentId,
   String? id,
   String? notes,
   String? mesocycleId,
@@ -402,7 +387,7 @@ m.WorkoutSessionModel sessionFromTemplate({
 m.WorkoutSessionModel emptySession({
   required String authorId,
   required DateTime now,
-  IdGenerator newId = newUuid,
+  IdGenerator newId = m.newDocumentId,
   String name = 'Workout',
 }) => m.WorkoutSessionModel(
   id: newId(),
@@ -419,7 +404,7 @@ m.WorkoutExerciseModel addingSet(
   m.WorkoutExerciseModel exercise, {
   required String authorId,
   required DateTime now,
-  IdGenerator newId = newUuid,
+  IdGenerator newId = m.newDocumentId,
 }) {
   var nextIndex = exercise.sets.map((set) => set.index).fold(0, math.max) + 1;
   final own = exercise.sets.where((set) => set.parentSetId == null).toList();
@@ -458,7 +443,7 @@ m.WorkoutExerciseModel addedExercise(
   required DateTime now,
   required m.GymProfileModel? gym,
   required UnitPreference? preference,
-  IdGenerator newId = newUuid,
+  IdGenerator newId = m.newDocumentId,
 }) {
   final exercise = template.exercise;
   return takingLoad(
@@ -496,7 +481,7 @@ m.WorkoutExerciseModel addedExercise(
   required m.ExerciseModel replacement,
   required String authorId,
   required DateTime now,
-  IdGenerator newId = newUuid,
+  IdGenerator newId = m.newDocumentId,
 }) {
   final logged = old.sets.where((set) => set.completedAt != null).toList();
   final rulesOld = rulesExercise(old);
@@ -596,7 +581,7 @@ m.WorkoutExerciseModel swappingInPlace(
   required DateTime now,
   required m.GymProfileModel? gym,
   required UnitPreference? preference,
-  IdGenerator newId = newUuid,
+  IdGenerator newId = m.newDocumentId,
 }) {
   final logged = keepLoggedSets
       ? old.sets.where((set) => set.completedAt != null).toList()

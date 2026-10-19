@@ -12,7 +12,6 @@ import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:compound/workout_editor/cubit/workout_wizard_cubit.dart';
 import 'package:compound/workout_editor/view/define_workout_editor.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -314,7 +313,7 @@ class _DefineWorkoutWrapperViewState extends State<DefineWorkoutWrapperView> {
   Future<void> _done(BuildContext context, WorkoutWizardState state) async {
     final l10n = context.l10n;
     if (state.status == WorkoutWizardStatus.saved) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       // Every screen of the wizard, its first included.
       Navigator.of(context)
         ..popUntil(
@@ -326,7 +325,7 @@ class _DefineWorkoutWrapperViewState extends State<DefineWorkoutWrapperView> {
         ..pop();
       return;
     }
-    unawaited(HapticFeedback.errorNotification());
+    unawaited(AppHaptics.error());
     await showFailureAlert(context, l10n.editorSaveFailed, l10n.editorTryAgain);
     _cubit.failureShown();
   }

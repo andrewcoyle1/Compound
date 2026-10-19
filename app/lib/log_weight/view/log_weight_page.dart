@@ -9,7 +9,6 @@ import 'package:compound/log_weight/bloc/log_weight_bloc.dart';
 import 'package:compound/log_weight/logic/decimal_wheel_value.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/widgets/number_wheel.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_repository/health_repository.dart';
@@ -54,10 +53,10 @@ class LogWeightView extends StatelessWidget {
       listener: (context, state) {
         switch (state.status) {
           case LogWeightStatus.saved:
-            unawaited(HapticFeedback.successNotification());
+            unawaited(AppHaptics.success());
             _dismiss(context);
           case LogWeightStatus.failure:
-            unawaited(HapticFeedback.errorNotification());
+            unawaited(AppHaptics.error());
             unawaited(
               showAppDialog<void>(
                 context: context,

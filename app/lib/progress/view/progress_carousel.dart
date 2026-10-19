@@ -15,7 +15,6 @@ import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound_maths/compound_maths.dart'
     show Macros, comparedAverages, zeroMacros;
 import 'package:compound_models/compound_models.dart' show Mesocycle;
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// The header of the Progress tab (Swift `ProgressCarouselView`): the week
@@ -29,91 +28,49 @@ class ProgressCarousel extends StatefulWidget {
   /// The overview's state.
   final ProgressState state;
 
-  /// How many pages there are.
-  static const pageCount = 5;
-
   @override
   State<ProgressCarousel> createState() => _ProgressCarouselState();
 }
 
 class _ProgressCarouselState extends State<ProgressCarousel> {
-  final PageController _controller = PageController();
-  var _page = 0;
   var _showsRemaining = false;
   var _comparesTargets = false;
   var _activeProgram = true;
   RecordKind _recordKind = RecordKind.volume;
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final state = widget.state;
-    final scheme = Theme.of(context).colorScheme;
-    return Column(
-      spacing: AppSpacing.m,
-      children: [
-        SizedBox(
-          // Every page as tall as the tallest, so the toggles line up.
-          height: MediaQuery.textScalerOf(context).scale(380),
-          child: PageView(
-            controller: _controller,
-            onPageChanged: (page) => setState(() => _page = page),
-            children: [
-              for (final page in [
-                NutritionTargetChart(state: state),
-                _DailyNutrition(
-                  state: state,
-                  showsRemaining: _showsRemaining,
-                  onChanged: (value) => setState(() => _showsRemaining = value),
-                ),
-                _EnergyBalance(
-                  state: state,
-                  comparesTargets: _comparesTargets,
-                  onChanged: (value) =>
-                      setState(() => _comparesTargets = value),
-                ),
-                _WeeklyWorkouts(
-                  state: state,
-                  activeProgram: _activeProgram,
-                  onChanged: (value) => setState(() => _activeProgram = value),
-                ),
-                _RecentRecords(
-                  state: state,
-                  kind: _recordKind,
-                  onChanged: (kind) => setState(() => _recordKind = kind),
-                ),
-              ])
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: page,
-                ),
-            ],
+    return AppCarousel(
+      height: 380,
+      pages: [
+        for (final page in [
+          NutritionTargetChart(state: state),
+          _DailyNutrition(
+            state: state,
+            showsRemaining: _showsRemaining,
+            onChanged: (value) => setState(() => _showsRemaining = value),
           ),
-        ),
-        ExcludeSemantics(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: AppSpacing.xs,
-            children: [
-              for (var dot = 0; dot < ProgressCarousel.pageCount; dot++)
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: dot == _page
-                        ? scheme.onSurfaceVariant
-                        : scheme.outlineVariant,
-                  ),
-                ),
-            ],
+          _EnergyBalance(
+            state: state,
+            comparesTargets: _comparesTargets,
+            onChanged: (value) => setState(() => _comparesTargets = value),
           ),
-        ),
+          _WeeklyWorkouts(
+            state: state,
+            activeProgram: _activeProgram,
+            onChanged: (value) => setState(() => _activeProgram = value),
+          ),
+          _RecentRecords(
+            state: state,
+            kind: _recordKind,
+            onChanged: (kind) => setState(() => _recordKind = kind),
+          ),
+        ])
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: page,
+          ),
       ],
     );
   }
@@ -339,7 +296,7 @@ class _Grid extends StatelessWidget {
       locale: context.dateLocale,
     );
     void press(int day) {
-      unawaited(HapticFeedback.selectionClick());
+      unawaited(AppHaptics.selection());
       context.read<ProgressBloc>().add(ProgressTargetDayPressed(day));
     }
 

@@ -1,11 +1,11 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:body_repository/body_repository.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound/log_weight/logic/decimal_wheel_value.dart';
 import 'package:compound/nutrition/logic/meal_day.dart' show startOfDay;
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/progress/logic/body_metrics.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:user_repository/user_repository.dart';
 

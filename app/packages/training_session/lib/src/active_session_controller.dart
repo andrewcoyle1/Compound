@@ -82,7 +82,7 @@ class ActiveSessionController {
     required TrackerEnvironment environment,
     required this._store,
     this._clock = DateTime.now,
-    this._newId = newUuid,
+    this._newId = m.newDocumentId,
     this._onSaveError,
   }) : _environment = environment,
        _session = state.session,
@@ -119,7 +119,7 @@ class ActiveSessionController {
     required ActiveSessionStore store,
     required TrackerEnvironment environment,
     DateTime Function() clock = DateTime.now,
-    IdGenerator newId = newUuid,
+    IdGenerator newId = m.newDocumentId,
     void Function(Object error, StackTrace stackTrace)? onSaveError,
   }) async {
     final state = await store.load();

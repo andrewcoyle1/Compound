@@ -31,7 +31,6 @@ import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart'
     show startWorkout;
 import 'package:device_store/device_store.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -109,8 +108,7 @@ class TodayView extends StatelessWidget {
           listenWhen: (previous, current) =>
               previous.stepGoalSaves != current.stepGoalSaves ||
               previous.dayCompletions != current.dayCompletions,
-          listener: (context, _) =>
-              unawaited(HapticFeedback.successNotification()),
+          listener: (context, _) => unawaited(AppHaptics.success()),
         ),
         BlocListener<TodayBloc, TodayState>(
           listenWhen: (previous, current) =>

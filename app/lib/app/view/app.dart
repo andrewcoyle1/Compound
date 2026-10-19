@@ -64,7 +64,6 @@ import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
 import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:device_store/device_store.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -1042,9 +1041,9 @@ class _AppViewState extends State<AppView> {
     final notice = state.saveNotice;
     if (notice == null) return;
     if (notice == SaveProgress.failed) {
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
     } else if (notice == SaveProgress.saved) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
     }
     // How long the notice stays, not an animation: a failure longer.
     final shownFor = Duration(seconds: notice == SaveProgress.failed ? 8 : 6);

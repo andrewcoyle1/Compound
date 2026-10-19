@@ -10,7 +10,6 @@ import 'package:compound/coach/cubit/coach_cubit.dart';
 import 'package:compound/coach/view/coach_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/widgets/relative_time.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -91,9 +90,7 @@ class _CoachChatsViewState extends State<CoachChatsView> {
     return BlocListener<CoachChatsCubit, CoachChatsState>(
       listenWhen: (previous, current) => current.noticeId != previous.noticeId,
       listener: (context, state) => switch (state.notice) {
-        CoachChatsNotice.withdrawn => unawaited(
-          HapticFeedback.successNotification(),
-        ),
+        CoachChatsNotice.withdrawn => unawaited(AppHaptics.success()),
         CoachChatsNotice.deleteFailed => unawaited(
           showFailureAlert(
             context,

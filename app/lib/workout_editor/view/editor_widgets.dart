@@ -133,7 +133,7 @@ class ChoiceMenu<T> extends StatelessWidget {
       tooltip: tooltip,
       initialValue: (value,),
       onSelected: (choice) {
-        unawaited(HapticFeedback.selectionClick());
+        unawaited(AppHaptics.selection());
         onSelected(choice.$1);
       },
       itemBuilder: (_) => [

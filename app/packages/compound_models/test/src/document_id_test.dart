@@ -1,7 +1,5 @@
-import 'dart:math';
-
-import 'package:compound/app/document_id.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:compound_models/compound_models.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('newDocumentId', () {
@@ -17,10 +15,6 @@ void main() {
 
     test('differs every call', () {
       expect({for (var i = 0; i < 100; i++) newDocumentId()}, hasLength(100));
-    });
-
-    test('is fixed by the random source', () {
-      expect(newDocumentId(Random(1)), newDocumentId(Random(1)));
     });
   });
 }

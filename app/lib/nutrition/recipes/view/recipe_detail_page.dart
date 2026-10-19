@@ -10,7 +10,6 @@ import 'package:compound/nutrition/recipes/cubit/recipe_detail_cubit.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/widgets/stored_image.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -81,7 +80,7 @@ class RecipeDetailView extends StatelessWidget {
               previous.deleteStatus != current.deleteStatus,
           listener: (context, state) {
             if (state.deleteStatus == RecipeDetailDeleteStatus.deleted) {
-              unawaited(HapticFeedback.successNotification());
+              unawaited(AppHaptics.success());
               context.pop();
             }
           },
@@ -90,7 +89,7 @@ class RecipeDetailView extends StatelessWidget {
           listenWhen: (previous, current) =>
               current.deleteFailures > previous.deleteFailures,
           listener: (context, _) {
-            unawaited(HapticFeedback.errorNotification());
+            unawaited(AppHaptics.error());
             unawaited(
               showFailureAlert(
                 context,
@@ -187,7 +186,7 @@ class _Details extends StatelessWidget {
     }
 
     void step(double to) {
-      unawaited(HapticFeedback.selectionClick());
+      unawaited(AppHaptics.selection());
       cubit.servingsChanged(to);
     }
 

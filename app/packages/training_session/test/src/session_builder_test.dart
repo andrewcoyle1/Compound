@@ -75,20 +75,6 @@ final m.ExerciseModel _bench = library(
 );
 
 void main() {
-  test('newUuid is an upper-case version 4 UUID', () {
-    final id = newUuid();
-    expect(
-      id,
-      matches(
-        RegExp(
-          '^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-'
-          r'[89AB][0-9A-F]{3}-[0-9A-F]{12}$',
-        ),
-      ),
-    );
-    expect(newUuid(), isNot(id));
-  });
-
   test('setTargetsForMicrocycle takes the latest override that has begun', () {
     final slot = _slot(
       _bench,

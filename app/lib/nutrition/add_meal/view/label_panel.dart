@@ -71,11 +71,11 @@ class _LabelViewState extends State<_LabelView> {
         switch (state.status) {
           case LabelStatus.read:
             _text.text = state.text!;
-            unawaited(HapticFeedback.successNotification());
+            unawaited(AppHaptics.success());
           case LabelStatus.failed ||
               LabelStatus.saveFailed ||
               LabelStatus.unreadable:
-            unawaited(HapticFeedback.errorNotification());
+            unawaited(AppHaptics.error());
           case LabelStatus.saved:
             // In the library now; on to its amount, as a found barcode is,
             // and the camera looks for the next label.

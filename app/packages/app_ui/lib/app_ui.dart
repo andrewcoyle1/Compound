@@ -4,6 +4,7 @@ library;
 export 'package:material_ui/material_ui.dart';
 
 export 'src/extensions/build_context_extensions.dart';
+export 'src/haptics/app_haptics.dart';
 export 'src/rendering/widget_png.dart';
 export 'src/theme/app_colors.dart';
 export 'src/theme/app_text_styles.dart';
@@ -15,6 +16,7 @@ export 'src/tokens/app_spacing.dart';
 export 'src/tokens/app_symbols.dart';
 export 'src/widgets/app_bottom_cta.dart';
 export 'src/widgets/app_card.dart';
+export 'src/widgets/app_carousel.dart';
 export 'src/widgets/app_chip.dart';
 export 'src/widgets/app_confetti.dart';
 export 'src/widgets/app_cta_button.dart';

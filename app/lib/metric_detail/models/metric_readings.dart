@@ -1,7 +1,44 @@
+import 'package:app_ui/app_ui.dart' show Color;
 import 'package:compound/nutrition/logic/meal_day.dart' show startOfDay;
+import 'package:compound_charts/compound_charts.dart' show ChartMark;
 
 /// One reading on a metric chart: when, and its value in the unit shown.
 typedef MetricPoint = ({DateTime date, double value});
+
+/// One series on a metric chart: what it is called, its points in the unit
+/// shown, its colour, and whether it is drawn as a line, as bars or as dots.
+/// Bars are totals (sets, say), so their buckets add up rather than average,
+/// unless [total] says otherwise: Energy Balance's intake is drawn as bars
+/// of readings, as Swift's combo chart does.
+class const MetricChartSeries({
+  required final String label,
+  required final List<MetricPoint> points,
+  required final Color color,
+  final bool isLine = false,
+  final bool isBar = false,
+  final bool? total,
+}) {
+  /// Whether the series is a total: its buckets add up, its figures are
+  /// whole and its average is a daily one. Bars are, unless [total] says.
+  bool get isTotal => total ?? isBar;
+
+  /// How the chart draws it.
+  ChartMark get mark => isBar
+      ? ChartMark.bar
+      : isLine
+      ? ChartMark.line
+      : ChartMark.dot;
+
+  /// This series with [points] in place of its own.
+  MetricChartSeries withPoints(List<MetricPoint> points) => MetricChartSeries(
+    label: label,
+    points: points,
+    color: color,
+    isLine: isLine,
+    isBar: isBar,
+    total: total,
+  );
+}
 
 /// The ranges the chart's picker offers, as QuickCharts' W, M, 6M and Y.
 /// Each is a window of [days] ending today.

@@ -40,8 +40,8 @@ sealed class DeepLink extends Equatable {
   const new();
 
   /// Parses `compound://tab/nutrition`, tolerating `compound://tab?name=…`
-  /// (or `?tab=…`), plus `compound://join/<code>`, `compound://workout` and
-  /// `compound://recipes`.
+  /// (or `?tab=…`), plus `compound://join/<code>`, `compound://workout`,
+  /// `compound://recipes`, `compound://log-weight` and `compound://log-meal`.
   /// Anything unrecognised is `null`: an unknown link does nothing visible
   /// rather than landing somewhere arbitrary. Like Swift, the scheme is not
   /// checked; the host decides.
@@ -55,6 +55,8 @@ sealed class DeepLink extends Equatable {
     }
     if (host == 'workout') return const WorkoutLink();
     if (host == 'recipes') return const RecipesLink();
+    if (host == 'log-weight') return const LogWeightLink();
+    if (host == 'log-meal') return const LogMealLink();
     if (host != 'tab') return null;
     final queryName = uri.queryParameters.entries
         .where((e) => const {'name', 'tab'}.contains(e.key.toLowerCase()))
@@ -194,6 +196,32 @@ class const RecipesLink() extends DeepLink {
   @override
   String toLocation({String? currentUserId}) =>
       '${DeepLinkTab.nutrition.path}/recipes';
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// `compound://log-weight`, from the Log Weight quick action: Log Weight
+/// over Today.
+class const LogWeightLink() extends DeepLink {
+  /// A link to Log Weight.
+  this;
+
+  @override
+  String toLocation({String? currentUserId}) => DeepLinkTab.today.path;
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// `compound://log-meal`, from the Log Meal quick action: the meal logger
+/// over Today.
+class const LogMealLink() extends DeepLink {
+  /// A link to the meal logger.
+  this;
+
+  @override
+  String toLocation({String? currentUserId}) => DeepLinkTab.today.path;
 
   @override
   List<Object?> get props => [];

@@ -260,6 +260,7 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     platformLinks: AppLinksPlatformLinks(),
     liveActivityRepository: liveActivityRepository,
     appIntentsRepository: MethodChannelAppIntentsRepository(),
+    quickActionsRepository: PluginQuickActionsRepository(),
     // Both Firebase flavors' `APP_GROUP_ID`, the Swift app's group.
     homeWidgetRepository: PluginHomeWidgetRepository(
       appGroupId: 'group.com.compound.app',

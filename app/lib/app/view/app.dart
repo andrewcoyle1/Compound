@@ -144,6 +144,9 @@ class const App({
   /// Siri and Shortcuts (iOS); none when left out.
   final AppIntentsRepository? appIntentsRepository,
 
+  /// The home-screen quick actions; in memory when left out.
+  final QuickActionsRepository? quickActionsRepository,
+
   /// Where photos are uploaded; in memory when left out.
   final ImageRepository? imageRepository,
 
@@ -277,6 +280,9 @@ class const App({
         ),
         RepositoryProvider<AppIntentsRepository>(
           create: (_) => appIntentsRepository ?? FakeAppIntentsRepository(),
+        ),
+        RepositoryProvider<QuickActionsRepository>(
+          create: (_) => quickActionsRepository ?? FakeQuickActionsRepository(),
         ),
         RepositoryProvider.value(value: socialRepository),
         RepositoryProvider(
@@ -764,17 +770,21 @@ class _AppViewState extends State<AppView> {
     context.read<LiveActivityRepository>().setActionHandler(
       _onLiveActivityAction,
     );
-    context.read<AppIntentsRepository>().setHandler(
-      AppIntents(
-        app: context.read(),
-        programs: context.read(),
-        workouts: context.read(),
-        library: context.read(),
-        users: context.read(),
-        saveMeasurement: context.read<HealthRepository>().saveMeasurement,
-        links: context.read<NotificationsRepository>().deepLinks,
-        l10n: () => AppNotificationCopy().l10n,
-        firstWeekday: () => _firstWeekday,
+    final intents = AppIntents(
+      app: context.read(),
+      programs: context.read(),
+      workouts: context.read(),
+      library: context.read(),
+      users: context.read(),
+      saveMeasurement: context.read<HealthRepository>().saveMeasurement,
+      links: context.read<NotificationsRepository>().deepLinks,
+      l10n: () => AppNotificationCopy().l10n,
+      firstWeekday: () => _firstWeekday,
+    );
+    context.read<AppIntentsRepository>().setHandler(intents);
+    unawaited(
+      context.read<QuickActionsRepository>().initialize(
+        (action) => unawaited(intents.quickAction(action)),
       ),
     );
     _followUser(context.read<AppBloc>().state);
@@ -830,6 +840,17 @@ class _AppViewState extends State<AppView> {
     final uid = state is AppAuthenticated ? state.user.uid : null;
     if (uid == null && _uid != null) {
       unawaited(context.read<HomeWidgetRepository>().clear());
+      unawaited(context.read<QuickActionsRepository>().clear());
+    }
+    if (uid != null && _uid == null) {
+      final l10n = AppNotificationCopy().l10n;
+      unawaited(
+        context.read<QuickActionsRepository>().show({
+          QuickAction.startWorkout: l10n.quickActionStartWorkout,
+          QuickAction.logWeight: l10n.quickActionLogWeight,
+          QuickAction.logMeal: l10n.quickActionLogMeal,
+        }),
+      );
     }
     _uid = uid;
     final profile = state is AppAuthenticated ? state.profile : null;
@@ -890,6 +911,17 @@ class _AppViewState extends State<AppView> {
           _router.pushNamed(CommentsPage.name, pathParameters: session),
         );
       }
+    }
+    // The quick actions' logs open over Today.
+    if (link is LogWeightLink) unawaited(_router.pushNamed(LogWeightPage.name));
+    // The meal left unfinished carries on; without one, a meal starts now.
+    if (link is LogMealLink) {
+      unawaited(
+        _router.pushNamed(
+          AddMealPage.name,
+          extra: context.read<MealDraftCubit>().state,
+        ),
+      );
     }
     // An invite link lands on Social, which accepts it
     // (`SocialPresenter.onAcceptInviteNotificationReceived`).

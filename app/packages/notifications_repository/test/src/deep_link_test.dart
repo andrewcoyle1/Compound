@@ -81,6 +81,13 @@ void main() {
       expect(_url('compound://recipes'), const RecipesLink());
       expect(const RecipesLink().props, isEmpty);
     });
+
+    test('the Log Weight and Log Meal quick actions', () {
+      expect(_url('compound://log-weight'), const LogWeightLink());
+      expect(_url('compound://log-meal'), const LogMealLink());
+      expect(const LogWeightLink().props, isEmpty);
+      expect(const LogMealLink().props, isEmpty);
+    });
   });
 
   group('DeepLink.fromData', () {
@@ -200,6 +207,8 @@ void main() {
       expect(const JoinLink('PUSH2345').toLocation(), '/social');
       expect(const WorkoutLink().toLocation(), '/today');
       expect(const RecipesLink().toLocation(), '/nutrition/recipes');
+      expect(const LogWeightLink().toLocation(), '/today');
+      expect(const LogMealLink().toLocation(), '/today');
     });
 
     test(

@@ -13417,5 +13417,17 @@
     "photoCropCancel": "Cancel",
     "@photoCropCancel": {
         "description": "Photo crop screen (iOS): discards the photo"
+    },
+    "quickActionStartWorkout": "Start Workout",
+    "@quickActionStartWorkout": {
+        "description": "Home-screen quick action (long press on the app icon): starts today's workout"
+    },
+    "quickActionLogWeight": "Log Weight",
+    "@quickActionLogWeight": {
+        "description": "Home-screen quick action (long press on the app icon): opens Log Weight"
+    },
+    "quickActionLogMeal": "Log Meal",
+    "@quickActionLogMeal": {
+        "description": "Home-screen quick action (long press on the app icon): opens the meal logger"
     }
 }

@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/notifications/inbox/inbox_bloc.dart';
 import 'package:compound/notifications/inbox/view/activity_banner.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:social_repository/social_repository.dart';

@@ -2,12 +2,12 @@
 library;
 
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/view/rest_sound.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';

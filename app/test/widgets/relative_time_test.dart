@@ -1,6 +1,6 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/widgets/relative_time.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Expected values are what Swift's `.relative(presentation: .named)` printed

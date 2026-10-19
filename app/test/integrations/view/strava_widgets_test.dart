@@ -1,7 +1,7 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:strava_repository/strava_repository.dart';

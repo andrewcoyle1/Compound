@@ -1,10 +1,10 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/social/feed/feed_session_card.dart';
 import 'package:compound/social/report/report_sheet.dart';
 import 'package:compound/social/social.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';

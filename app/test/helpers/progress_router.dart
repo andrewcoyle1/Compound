@@ -1,3 +1,4 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
 import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -5,7 +6,6 @@ import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/training_analytics/training_analytics.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// The screens behind the Progress tab as the app declares them, starting

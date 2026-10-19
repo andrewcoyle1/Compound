@@ -83,6 +83,11 @@ def matches(text):
 
 def scan():
     found = {rule: [] for rule in RULES}
+    # Tests must build with the app's Material too, or a widget and its test use different Themes.
+    for path in sorted((ROOT / 'app' / 'test').rglob('*.dart')):
+        for rule, number, line in matches(path.read_text()):
+            if rule == 'framework-import':
+                found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
     for path in sorted(LIB.rglob('*.dart')):
         if any(part in path.as_posix() for part in EXEMPT):
             continue

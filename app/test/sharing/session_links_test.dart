@@ -9,7 +9,6 @@ import 'package:compound/social/social.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';

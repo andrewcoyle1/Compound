@@ -40,6 +40,8 @@ import 'package:flutter/gestures.dart';
 ///
 /// A one-finger drag that starts vertically always reaches the page's
 /// scroll.
+///
+/// A [CartesianChart.compact] chart is a card's: the marks alone.
 class CartesianChart extends StatefulWidget {
   /// A chart of [data], [height] tall.
   const new({
@@ -52,7 +54,24 @@ class CartesianChart extends StatefulWidget {
     this.onPage,
     this.bucketLabel,
     super.key,
-  });
+  }) : compact = false;
+
+  /// A card's small chart of [data], filling the space it is given: no
+  /// gridlines, labels or gestures, so a carousel or a swipe row around it
+  /// keeps every drag. A [ChartYFit.tight] axis fits the values exactly;
+  /// a line is finer ([AppChartMark.sparkWidth]) and ends in a dot on the
+  /// latest reading; each bucket of a bar chart stands on a stub
+  /// ([AppChartMark.stubHeight]), so an empty one still reads as a day. It
+  /// draws in and morphs as the full chart does.
+  const new compact({required this.data, super.key})
+    : height = 0,
+      interactive = false,
+      selected = null,
+      onSelected = null,
+      callout = null,
+      onPage = null,
+      bucketLabel = null,
+      compact = true;
 
   /// What to plot.
   final ChartData data;
@@ -77,6 +96,9 @@ class CartesianChart extends StatefulWidget {
 
   /// What a screen reader says for each bucket, as the callout would.
   final String Function(DateTime bucket)? bucketLabel;
+
+  /// Whether it is a card's chart ([CartesianChart.compact]).
+  final bool compact;
 
   @override
   State<CartesianChart> createState() => _CartesianChartState();
@@ -146,6 +168,19 @@ class _CartesianChartState extends State<CartesianChart>
     super.didUpdateWidget(oldWidget);
     final data = widget.data;
     if (data == oldWidget.data) return;
+    // Data arriving where there was none draws in, as on first showing,
+    // rather than sliding in from the empty window.
+    if (oldWidget.data.buckets.isEmpty) {
+      _view = null;
+      _tween = ChartDataTween(data, data);
+      _startReveal = 0;
+      _from = null;
+      _curve = AppMotion.progress.curve;
+      _controller
+        ..duration = AppMotion.progress.durationOf(context)
+        ..forward(from: 0);
+      return;
+    }
     // A new window shows all of itself.
     if (data.start != oldWidget.data.start || data.end != oldWidget.data.end) {
       _view = null;
@@ -279,37 +314,36 @@ class _CartesianChartState extends State<CartesianChart>
         if (mounted) setState(() {});
       });
     }
+    final plot = RepaintBoundary(
+      child: CustomPaint(
+        painter: CartesianPainter(
+          data: _tween,
+          progress: _controller,
+          curve: _curve,
+          startReveal: _startReveal,
+          from: _from,
+          labels: _labels,
+          geometry: _geometry,
+          labelStyle: AppTextStyles.label.copyWith(
+            color: scheme.onSurfaceVariant,
+          ),
+          textScaler: MediaQuery.textScalerOf(context),
+          textDirection: Directionality.of(context),
+          gridColor: scheme.outlineVariant,
+          ruleColor: scheme.onSurfaceVariant,
+          markerRing: context.appColors.canvas,
+          selected: selected,
+          locale: context.dateLocale,
+          bucketLabel: widget.bucketLabel,
+          compact: widget.compact,
+        ),
+      ),
+    );
+    if (widget.compact) return SizedBox.expand(child: plot);
     final chart = Stack(
       clipBehavior: Clip.none,
       children: [
-        SizedBox(
-          height: widget.height,
-          width: double.infinity,
-          child: RepaintBoundary(
-            child: CustomPaint(
-              painter: CartesianPainter(
-                data: _tween,
-                progress: _controller,
-                curve: _curve,
-                startReveal: _startReveal,
-                from: _from,
-                labels: _labels,
-                geometry: _geometry,
-                labelStyle: AppTextStyles.label.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-                textScaler: MediaQuery.textScalerOf(context),
-                textDirection: Directionality.of(context),
-                gridColor: scheme.outlineVariant,
-                ruleColor: scheme.onSurfaceVariant,
-                markerRing: context.appColors.canvas,
-                selected: selected,
-                locale: context.dateLocale,
-                bucketLabel: widget.bucketLabel,
-              ),
-            ),
-          ),
-        ),
+        SizedBox(height: widget.height, width: double.infinity, child: plot),
         Positioned.fill(
           child: ChartCallout(
             anchorX: selected == null ? 0 : _xOf(selected),

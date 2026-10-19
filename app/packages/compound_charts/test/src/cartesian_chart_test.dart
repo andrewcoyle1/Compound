@@ -123,6 +123,48 @@ final ChartData _lastWeek = ChartData(
   ],
 );
 
+/// A card's sparkline: the week's readings edge to edge.
+ChartData _spark(ChartMark mark, [List<double>? values]) => ChartData(
+  start: _weekStart,
+  end: DateTime(2026, 10, 18),
+  bucketDays: 0,
+  series: [
+    ChartSeries(
+      label: 'Weight',
+      color: _green,
+      mark: mark,
+      points: _daily(
+        _weekStart,
+        values ?? [73.1, 72.8, 72.9, 72.4, 72.5, 72.1, 72],
+      ),
+    ),
+  ],
+);
+
+/// A card's week of bars, one slot empty and two past the data, under a
+/// line.
+final ChartData _cardBars = _week([
+  ChartSeries(
+    label: 'Calories',
+    color: _blue,
+    mark: ChartMark.bar,
+    points: _daily(_weekStart, [2100, 0, 2300, 1900, 2250]),
+  ),
+  ChartSeries(
+    label: 'Expenditure',
+    color: _red,
+    points: _daily(_weekStart, [2480, 2510, 2495, 2530, 2550, 2520, 2540]),
+  ),
+], yFit: ChartYFit.zero);
+
+/// A card's bars with nothing logged.
+final ChartData _noBars = _week(const [
+  ChartSeries(label: 'Sets', color: _blue, mark: ChartMark.bar, points: []),
+], yFit: ChartYFit.zero);
+
+Widget _card(ChartData data) =>
+    SizedBox(width: 160, height: 36, child: CartesianChart.compact(data: data));
+
 CartesianPainter _painter(WidgetTester tester) =>
     tester
             .widget<CustomPaint>(
@@ -597,6 +639,19 @@ void main() {
       }
     });
 
+    testWidgets('draws in again when data arrives where there was none', (
+      tester,
+    ) async {
+      await tester.pumpApp(CartesianChart(data: _empty));
+      await tester.pumpAndSettle();
+      await tester.pumpApp(CartesianChart(data: _line));
+      expect(_painter(tester).reveal, 0);
+      expect(_painter(tester).shown, _line);
+      expect(_painter(tester).from, isNull);
+      await tester.pumpAndSettle();
+      expect(_painter(tester).reveal, 1);
+    });
+
     testWidgets('does not animate a rebuild with equal data', (tester) async {
       await tester.pumpApp(CartesianChart(data: _line));
       await tester.pumpAndSettle();
@@ -605,6 +660,121 @@ void main() {
       );
       expect(_painter(tester).progress.isAnimating, isFalse);
     });
+  });
+
+  group('compact', () {
+    testWidgets('fills its box with the marks alone, taking no gestures', (
+      tester,
+    ) async {
+      await tester.pumpApp(Center(child: _card(_spark(ChartMark.line))));
+      await tester.pumpAndSettle();
+      final plot = find.byWidgetPredicate(
+        (w) => w is CustomPaint && w.painter is CartesianPainter,
+      );
+      expect(tester.getSize(plot), const Size(160, 36));
+      for (final type in [RawGestureDetector, ChartCallout]) {
+        expect(
+          find.descendant(
+            of: find.byType(CartesianChart),
+            matching: find.byType(type),
+          ),
+          findsNothing,
+        );
+      }
+      expect(_painter(tester).compact, isTrue);
+      // A line ending in a dot, and no gridlines or labels.
+      expect(
+        plot,
+        paints
+          ..path(color: _green, strokeWidth: AppChartMark.sparkWidth)
+          ..circle(color: _green),
+      );
+      expect(plot, paintsExactlyCountTimes(#drawParagraph, 0));
+      expect(plot, paintsExactlyCountTimes(#drawLine, 0));
+    });
+
+    testWidgets('fits a line exactly, and a level one in the middle', (
+      tester,
+    ) async {
+      await tester.pumpApp(Center(child: _card(_spark(ChartMark.area))));
+      await tester.pumpAndSettle();
+      var axis = _painter(tester).geometry.axis!;
+      expect((axis.low, axis.high), (72, 73.1));
+
+      await tester.pumpApp(
+        Center(child: _card(_spark(ChartMark.line, [72, 72]))),
+      );
+      await tester.pumpAndSettle();
+      axis = _painter(tester).geometry.axis!;
+      expect((axis.low, axis.high), (71, 73));
+    });
+
+    testWidgets('stands bars from zero, each bucket on a stub', (tester) async {
+      await tester.pumpApp(Center(child: _card(_cardBars)));
+      await tester.pumpAndSettle();
+      final axis = _painter(tester).geometry.axis!;
+      expect((axis.low, axis.high), (0, 2550));
+      final grid = AppTheme.light.colorScheme.outlineVariant;
+      final plot = find.byWidgetPredicate(
+        (w) => w is CustomPaint && w.painter is CartesianPainter,
+      );
+      expect(
+        plot,
+        paints
+          ..rrect(color: grid)
+          ..rrect(color: grid)
+          ..rrect(color: grid)
+          ..rrect(color: grid)
+          ..rrect(color: grid)
+          ..rrect(color: grid)
+          ..rrect(color: grid)
+          ..rrect(color: _blue),
+      );
+
+      // Nothing logged: the stubs alone.
+      await tester.pumpApp(Center(child: _card(_noBars)));
+      await tester.pumpAndSettle();
+      expect(plot, paintsExactlyCountTimes(#drawRRect, 7));
+
+      // All zero: an axis from zero to one.
+      await tester.pumpApp(
+        Center(
+          child: _card(
+            _week([
+              ChartSeries(
+                label: 'Sets',
+                color: _blue,
+                mark: ChartMark.bar,
+                points: _daily(_weekStart, [0, 0]),
+              ),
+            ], yFit: ChartYFit.zero),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final zero = _painter(tester).geometry.axis!;
+      expect((zero.low, zero.high), (0, 1));
+    });
+
+    testWidgets('sinks to nothing on the scale it had', (tester) async {
+      await tester.pumpApp(Center(child: _card(_spark(ChartMark.line))));
+      await tester.pumpAndSettle();
+      await tester.pumpApp(Center(child: _card(_week(const []))));
+      await tester.pump(_half(AppMotion.standard));
+      final axis = _painter(tester).geometry.axis!;
+      expect((axis.low, axis.high), (72, 73.1));
+      await tester.pumpAndSettle();
+      expect(_painter(tester).shown, _week(const []));
+    });
+  });
+
+  group('compact goldens', () {
+    goldenStates('cartesian_chart_compact', [
+      ('sparkline', _card(_spark(ChartMark.line))),
+      ('sparkline with area', _card(_spark(ChartMark.area))),
+      ('stacked bars with a line', _card(_cardBars)),
+      ('empty', _card(_noBars)),
+    ]);
   });
 
   group('goldens', () {

@@ -337,17 +337,17 @@ class SamplePhotoPicker implements PhotoPicker {
   Future<void> openSettings() async {}
 }
 
-/// Lists the native libraries the crop screen and compressor bundle
-/// (TOCropViewController and SDWebImage on iOS, uCrop on Android) on the
-/// app's licence page, which finds only Dart packages itself. Call once at
-/// startup.
+/// Lists the native libraries the crop screen, compressor and live camera
+/// bundle (TOCropViewController and SDWebImage on iOS, uCrop and CameraX on
+/// Android) on the app's licence page, which finds only Dart packages
+/// itself. Call once at startup.
 void registerPhotoLicenses() => LicenseRegistry.addLicense(() async* {
   for (final (packages, file) in const [
     (['TOCropViewController'], 'TOCropViewController.txt'),
     (['SDWebImage'], 'SDWebImage.txt'),
     (['SDWebImageWebPCoder'], 'SDWebImageWebPCoder.txt'),
     (['libwebp'], 'libwebp.txt'),
-    (['uCrop', 'OkHttp', 'Apache Commons IO'], 'Apache-2.0.txt'),
+    (['uCrop', 'OkHttp', 'Apache Commons IO', 'CameraX'], 'Apache-2.0.txt'),
   ]) {
     yield LicenseEntryWithLineBreaks(
       packages,

@@ -45,6 +45,7 @@ import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 import 'fake_store_review.dart';
+import 'photos.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository;
 
@@ -88,6 +89,7 @@ extension PumpApp on WidgetTester {
     ImageRepository? imageRepository,
     PhotoPicker? photoPicker,
     LabelTextReader? labelTextReader,
+    LiveCamera? liveCamera,
     AiRepository? aiRepository,
     NotificationsRepository? notificationsRepository,
     ProgramsCubit? programsCubit,
@@ -202,6 +204,9 @@ extension PumpApp on WidgetTester {
           ),
           RepositoryProvider<LabelTextReader>.value(
             value: labelTextReader ?? const SampleLabelTextReader(),
+          ),
+          RepositoryProvider<LiveCamera>.value(
+            value: liveCamera ?? FakeLiveCamera(),
           ),
           RepositoryProvider<AiRepository>.value(
             value: aiRepository ?? AiRepository(callFunction: stagingAiCall),

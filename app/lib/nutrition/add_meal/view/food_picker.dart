@@ -953,6 +953,7 @@ class _BarcodeTabState extends State<_BarcodeTab> {
                     connectivity: context.read(),
                     picker: context.read<PhotoPicker>(),
                     reader: context.read<LabelTextReader>(),
+                    camera: context.read<LiveCamera>(),
                   ),
                   child: const _LabelView(),
                 )

@@ -13,11 +13,11 @@ const List<NutrientKey> _labelNutrients = [
   NutrientKey.ironMg,
 ];
 
-/// Label mode: the label's text, read on the device from a photo (Swift's
-/// live text scanner) or typed or pasted (Swift's "Enter Label"), is read
-/// by the AI into a food that Use This Food saves to the library and puts
-/// on the plate. The photo's text lands in the field first, to be checked
-/// before Parse Label, as Swift waits for its Parse Label tap.
+/// Label mode: the live camera reads a label on the device until it holds
+/// still, then the AI reads its text into a food that Use This Food saves
+/// to the library and puts on the plate. A photo's text, or text typed or
+/// pasted (Swift's "Enter Label"), lands in the field to be checked before
+/// Parse Label, as Swift waits for its Parse Label tap.
 class _LabelView extends StatefulWidget {
   const new();
 
@@ -27,9 +27,25 @@ class _LabelView extends StatefulWidget {
 
 class _LabelViewState extends State<_LabelView> {
   final _text = TextEditingController();
+  late final LabelScannerCubit _cubit = context.read();
+
+  /// The camera is let go while the app is in the background or behind a
+  /// system prompt, and opens again when it is back.
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onInactive: () => unawaited(_cubit.pause()),
+      onResume: () => unawaited(_cubit.resume()),
+    );
+    unawaited(_cubit.start());
+  }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     _text.dispose();
     super.dispose();
   }
@@ -37,7 +53,7 @@ class _LabelViewState extends State<_LabelView> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cubit = context.read<LabelScannerCubit>();
+    final cubit = _cubit;
     final state = context.watch<LabelScannerCubit>().state;
     final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final food = switch (state.status) {
@@ -46,6 +62,9 @@ class _LabelViewState extends State<_LabelView> {
       LabelStatus.saveFailed => state.food,
       _ => null,
     };
+    final busy =
+        state.status == LabelStatus.reading ||
+        state.status == LabelStatus.parsing;
     return BlocListener<LabelScannerCubit, LabelScannerState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
@@ -58,9 +77,10 @@ class _LabelViewState extends State<_LabelView> {
               LabelStatus.unreadable:
             unawaited(HapticFeedback.errorNotification());
           case LabelStatus.saved:
-            // In the library now; on to its amount, as a found barcode is.
+            // In the library now; on to its amount, as a found barcode is,
+            // and the camera looks for the next label.
             _text.clear();
-            cubit.dismiss();
+            unawaited(cubit.start());
             unawaited(pickFood(context, state.food!));
           case _:
         }
@@ -69,90 +89,31 @@ class _LabelViewState extends State<_LabelView> {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [
-          if (state.status == LabelStatus.reading)
-            _Working(l10n.labelReading)
-          else
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: AppSpacing.s,
-              children: [
-                AppCtaButton(
-                  key: const Key('FoodPicker.scanLabel'),
-                  label: l10n.labelScan,
-                  size: AppCtaSize.compact,
-                  variant: AppCtaVariant.secondary,
-                  onPressed: () => unawaited(cubit.scan(PhotoSource.camera)),
-                ),
-                AppTextButton(
-                  label: l10n.labelChooseFromLibrary,
-                  onPressed: () => unawaited(cubit.scan(PhotoSource.library)),
-                ),
-              ],
-            ),
-          if (_scanMessage(l10n, state) case final message?) ...[
-            const SizedBox(height: AppSpacing.s),
-            AppInlineMessage(
-              kind: AppInlineMessageKind.error,
-              text: message,
-              kindLabel: l10n.addMealErrorLabel,
-            ),
-            if (state.camera == CameraState.denied)
-              Center(
-                child: AppTextButton(
-                  label: l10n.labelOpenSettings,
-                  onPressed: () => unawaited(cubit.openSettings()),
-                ),
-              ),
-          ],
-          const SizedBox(height: AppSpacing.m),
-          AppCard(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: TextField(
-                key: const Key('FoodPicker.labelField'),
-                controller: _text,
-                minLines: 4,
-                maxLines: 10,
-                decoration: InputDecoration(
-                  hintText: l10n.labelField,
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.s),
-          Text(
-            state.status == LabelStatus.read
-                ? l10n.labelCaptured
-                : l10n.labelScanHint,
-            style: AppTextStyles.label.copyWith(color: secondary),
-          ),
-          const SizedBox(height: AppSpacing.l),
           if (food == null)
-            if (state.status == LabelStatus.parsing)
-              _Working(l10n.labelAnalyzing)
-            else ...[
-              ValueListenableBuilder(
-                valueListenable: _text,
-                builder: (context, text, _) => AppCtaButton(
-                  label: l10n.labelParse,
-                  onPressed: text.text.trim().isEmpty
-                      ? null
-                      : () {
-                          FocusScope.of(context).unfocus();
-                          unawaited(cubit.parse(text.text));
-                        },
-                ),
-              ),
-              if (state.status == LabelStatus.failed) ...[
-                const SizedBox(height: AppSpacing.m),
-                AppInlineMessage(
-                  kind: AppInlineMessageKind.error,
-                  text: l10n.labelFailed,
-                  kindLabel: l10n.addMealErrorLabel,
-                ),
-              ],
-            ]
+            AppViewfinder(
+              key: const Key('FoodPicker.labelCamera'),
+              preview: state.live ? context.read<LiveCamera>().preview() : null,
+              caption: busy
+                  ? l10n.labelReading
+                  : state.status == LabelStatus.scanning
+                  ? l10n.labelHoldInFrame
+                  : null,
+              busy: busy,
+              action: state.hasTorch
+                  ? Semantics(
+                      toggled: state.torch,
+                      child: AppIconButton(
+                        icon: state.torch
+                            ? AppSymbols.torchOn
+                            : AppSymbols.torchOff,
+                        semanticLabel: state.torch
+                            ? l10n.torchTurnOff
+                            : l10n.torchTurnOn,
+                        onPressed: () => unawaited(cubit.toggleTorch()),
+                      ),
+                    )
+                  : null,
+            )
           else
             AppCard(
               child: Padding(
@@ -173,9 +134,9 @@ class _LabelViewState extends State<_LabelView> {
                       children: [
                         Expanded(
                           child: AppCtaButton(
-                            label: l10n.labelDismiss,
+                            label: l10n.labelScanAgain,
                             variant: AppCtaVariant.secondary,
-                            onPressed: cubit.dismiss,
+                            onPressed: () => unawaited(cubit.start()),
                           ),
                         ),
                         Expanded(
@@ -191,6 +152,90 @@ class _LabelViewState extends State<_LabelView> {
                 ),
               ),
             ),
+          if (_scanMessage(l10n, state) case final message?) ...[
+            const SizedBox(height: AppSpacing.s),
+            AppInlineMessage(
+              kind: AppInlineMessageKind.error,
+              text: message,
+              kindLabel: l10n.addMealErrorLabel,
+            ),
+            if (state.camera == CameraState.denied)
+              Center(
+                child: AppTextButton(
+                  label: l10n.labelOpenSettings,
+                  onPressed: () => unawaited(cubit.openSettings()),
+                ),
+              ),
+          ],
+          if (food == null) ...[
+            const SizedBox(height: AppSpacing.s),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: AppSpacing.s,
+              children: [
+                if (!busy &&
+                    state.status != LabelStatus.scanning &&
+                    state.camera == CameraState.ready)
+                  AppTextButton(
+                    key: const Key('FoodPicker.labelScanAgain'),
+                    label: l10n.labelScanAgain,
+                    onPressed: () => unawaited(cubit.start()),
+                  ),
+                AppTextButton(
+                  key: const Key('FoodPicker.labelChoosePhoto'),
+                  label: l10n.labelChooseFromLibrary,
+                  onPressed: busy
+                      ? null
+                      : () => unawaited(cubit.scan(PhotoSource.library)),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.m),
+            AppCard(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: TextField(
+                  key: const Key('FoodPicker.labelField'),
+                  controller: _text,
+                  minLines: 4,
+                  maxLines: 10,
+                  decoration: InputDecoration(
+                    hintText: l10n.labelField,
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s),
+            Text(
+              state.status == LabelStatus.read
+                  ? l10n.labelCaptured
+                  : l10n.labelScanHint,
+              style: AppTextStyles.label.copyWith(color: secondary),
+            ),
+            const SizedBox(height: AppSpacing.l),
+            ValueListenableBuilder(
+              valueListenable: _text,
+              builder: (context, text, _) => AppCtaButton(
+                label: l10n.labelParse,
+                isLoading: state.status == LabelStatus.parsing,
+                onPressed: text.text.trim().isEmpty
+                    ? null
+                    : () {
+                        FocusScope.of(context).unfocus();
+                        unawaited(cubit.parse(text.text));
+                      },
+              ),
+            ),
+            if (state.status == LabelStatus.failed) ...[
+              const SizedBox(height: AppSpacing.m),
+              AppInlineMessage(
+                kind: AppInlineMessageKind.error,
+                text: l10n.labelFailed,
+                kindLabel: l10n.addMealErrorLabel,
+              ),
+            ],
+          ],
         ],
       ),
     );

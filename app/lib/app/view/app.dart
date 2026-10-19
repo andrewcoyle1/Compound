@@ -152,6 +152,10 @@ class const App({
   /// left out.
   final LabelTextReader? labelTextReader,
 
+  /// The Label scanner's live camera; staging's bundled label photo when
+  /// left out.
+  final LiveCamera? liveCamera,
+
   /// The AI food scanners' callables; staging's canned answers when left
   /// out.
   final AiRepository? aiRepository,
@@ -224,6 +228,9 @@ class const App({
         ),
         RepositoryProvider<LabelTextReader>(
           create: (_) => labelTextReader ?? const SampleLabelTextReader(),
+        ),
+        RepositoryProvider<LiveCamera>(
+          create: (_) => liveCamera ?? SampleLiveCamera(),
         ),
         RepositoryProvider<AiRepository>(
           create: (_) =>

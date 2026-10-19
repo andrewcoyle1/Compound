@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:image_repository/src/live_camera.dart';
 
 /// Reads the text printed in a photo, on the device: a nutrition label for
 /// the Label scanner (Swift `BarcodeScanner`'s `.text()` recognition).
@@ -6,6 +7,32 @@ abstract interface class LabelTextReader {
   /// The text in [jpeg], one line per printed line; empty when none was
   /// found. Throws when the photo cannot be read.
   Future<String> read(Uint8List jpeg);
+
+  /// The text in one frame of a [LiveCamera], as [read] gives it.
+  Future<String> readFrame(LabelFrame frame);
+}
+
+/// One frame of a [LiveCamera]: BGRA on iOS, NV21 on Android, as the
+/// platform code reads it.
+class const LabelFrame({
+  /// The pixels.
+  required final Uint8List bytes,
+
+  /// The width, in pixels.
+  required final int width,
+
+  /// The height, in pixels.
+  required final int height,
+
+  /// The bytes in one row of [bytes], padding included.
+  required final int bytesPerRow,
+
+  /// How far the frame turns clockwise, in degrees (0, 90, 180 or 270), to
+  /// stand upright.
+  required final int rotation,
+}) {
+  /// Creates a [LabelFrame].
+  this;
 }
 
 /// [LabelTextReader] on the app's own platform code: Apple Vision on iOS
@@ -24,6 +51,17 @@ class PlatformLabelTextReader implements LabelTextReader {
   @override
   Future<String> read(Uint8List jpeg) async =>
       (await channel.invokeMethod<String>('read', jpeg))?.trim() ?? '';
+
+  @override
+  Future<String> readFrame(LabelFrame frame) async =>
+      (await channel.invokeMethod<String>('readFrame', {
+        'bytes': frame.bytes,
+        'width': frame.width,
+        'height': frame.height,
+        'bytesPerRow': frame.bytesPerRow,
+        'rotation': frame.rotation,
+      }))?.trim() ??
+      '';
 }
 
 /// [LabelTextReader] for the staging flavor and tests: every photo reads
@@ -50,4 +88,7 @@ class SampleLabelTextReader implements LabelTextReader {
 
   @override
   Future<String> read(Uint8List jpeg) async => text;
+
+  @override
+  Future<String> readFrame(LabelFrame frame) async => text;
 }

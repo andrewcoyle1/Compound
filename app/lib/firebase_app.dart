@@ -278,6 +278,7 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     imageRepository: FirebaseImageRepository(storage: FirebaseStorage.instance),
     photoPicker: DevicePhotoPicker(look: deviceCropLook),
     labelTextReader: const PlatformLabelTextReader(),
+    liveCamera: DeviceLiveCamera(),
     // The food photo, meal description and label callables are
     // us-central1 and enforce App Check.
     aiRepository: AiRepository(

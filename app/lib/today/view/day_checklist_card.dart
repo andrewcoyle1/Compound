@@ -29,6 +29,7 @@ class DayChecklistCard extends StatelessWidget {
     required this.checklist,
     required this.stepGoal,
     required this.unit,
+    this.celebrated = const {},
     this.workout,
     this.onItemPressed,
     this.onStepGoalSelected,
@@ -53,6 +54,10 @@ class DayChecklistCard extends StatelessWidget {
 
   /// The unit weights are shown in.
   final AppWeightUnit unit;
+
+  /// The items ([ChecklistItem.kind]) to celebrate: each bursts confetti
+  /// from its tick when it joins the set.
+  final Set<String> celebrated;
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +85,9 @@ class DayChecklistCard extends StatelessWidget {
           children: [
             for (final item in checklist.items)
               _ItemRow(
+                key: ValueKey(item.kind),
                 item: item,
+                celebrate: celebrated.contains(item.kind),
                 unit: unit,
                 workout: workout,
                 stepGoal: stepGoal,
@@ -118,9 +125,12 @@ class _ItemRow extends StatelessWidget {
     required this.stepGoal,
     required this.onPressed,
     required this.onStepGoalSelected,
+    required this.celebrate,
+    super.key,
   });
 
   final ChecklistItem item;
+  final bool celebrate;
   final AppWeightUnit unit;
   final TodaysWorkout? workout;
   final int stepGoal;
@@ -160,14 +170,17 @@ class _ItemRow extends StatelessWidget {
             icon: TodayText.icon(item),
             accessory: AppListRowCustom(
               ExcludeSemantics(
-                child: Icon(
-                  item.isDone
-                      ? AppSymbols.success
-                      : AppSymbols.choiceUnselected,
-                  size: AppIconSize.medium.of(context),
-                  color: item.isDone
-                      ? context.appColors.success
-                      : scheme.outline,
+                child: AppConfetti(
+                  play: celebrate,
+                  child: Icon(
+                    item.isDone
+                        ? AppSymbols.success
+                        : AppSymbols.choiceUnselected,
+                    size: AppIconSize.medium.of(context),
+                    color: item.isDone
+                        ? context.appColors.success
+                        : scheme.outline,
+                  ),
                 ),
               ),
             ),

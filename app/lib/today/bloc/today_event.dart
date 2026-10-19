@@ -46,6 +46,14 @@ final class const TodayDayCompleted(final int itemCount) extends TodayEvent {
   List<Object?> get props => [itemCount];
 }
 
+/// The screen is showing [checklist]: sent each time it changes, and when
+/// the screen comes back into view.
+final class const TodayChecklistShown(final TodayChecklist checklist)
+    extends TodayEvent {
+  @override
+  List<Object?> get props => [checklist];
+}
+
 /// A step goal was chosen on the Steps item.
 final class const TodayStepGoalSelected(final int goal) extends TodayEvent {
   @override

@@ -176,6 +176,8 @@ void main() {
       expect(state.status, TodayStatus.loading);
       expect(state.now, now);
       expect(state.uid, uid);
+      expect(state.checklistRead, isFalse);
+      expect(state.celebrated, isEmpty);
     });
 
     blocTest<TodayBloc, TodayState>(
@@ -196,6 +198,7 @@ void main() {
           ),
         ).called(1);
         expect(state.status, TodayStatus.loaded);
+        expect(state.checklistRead, isTrue);
         expect(state.usesPounds, isTrue);
         expect(state.goal?.goalId, uid);
 
@@ -261,6 +264,7 @@ void main() {
       verify: (bloc) {
         final state = bloc.state;
         expect(state.status, TodayStatus.loaded);
+        expect(state.checklistRead, isTrue);
         expect(state.dietPlan, isNull);
         expect(state.goal, isNull);
         expect(state.usesPounds, isFalse);
@@ -425,6 +429,82 @@ void main() {
         expect(complete.single.parameters, {'item_count': 3});
       },
     );
+
+    group('celebrating', () {
+      const notWeighed = TodayChecklist([
+        WeighInItem(isToday: false),
+        StepsItem(today: 9000, goal: 8000),
+      ]);
+      const weighed = TodayChecklist([
+        WeighInItem(isToday: true),
+        StepsItem(today: 9000, goal: 8000),
+      ]);
+      String? weighInDay() =>
+          store.getString(TodayBloc.itemDoneKey(uid, 'weighIn'));
+
+      blocTest<TodayBloc, TodayState>(
+        'celebrates an item turning done after the first showing, once',
+        build: build,
+        act: (bloc) => bloc
+          ..add(const TodayChecklistShown(notWeighed))
+          ..add(const TodayChecklistShown(weighed))
+          ..add(const TodayChecklistShown(notWeighed))
+          ..add(const TodayChecklistShown(weighed)),
+        expect: () => [
+          isA<TodayState>().having((s) => s.celebrated, 'celebrated', {
+            'weighIn',
+          }),
+        ],
+        verify: (_) {
+          expect(weighInDay(), '2026-03-14');
+          // Done at the first showing: recorded, not celebrated.
+          expect(
+            store.getString(TodayBloc.itemDoneKey(uid, 'steps')),
+            '2026-03-14',
+          );
+        },
+      );
+
+      blocTest<TodayBloc, TodayState>(
+        'only records what is already done at the first showing',
+        build: build,
+        act: (bloc) => bloc
+          ..add(const TodayChecklistShown(weighed))
+          ..add(const TodayChecklistShown(weighed)),
+        expect: () => <TodayState>[],
+        verify: (_) => expect(weighInDay(), '2026-03-14'),
+      );
+
+      blocTest<TodayBloc, TodayState>(
+        'never celebrates an item again on the same day',
+        setUp: () => store.setString(
+          TodayBloc.itemDoneKey(uid, 'weighIn'),
+          '2026-03-14',
+        ),
+        build: build,
+        act: (bloc) => bloc
+          ..add(const TodayChecklistShown(notWeighed))
+          ..add(const TodayChecklistShown(weighed)),
+        expect: () => <TodayState>[],
+      );
+
+      blocTest<TodayBloc, TodayState>(
+        'celebrates again on a new day',
+        setUp: () => store.setString(
+          TodayBloc.itemDoneKey(uid, 'weighIn'),
+          '2026-03-13',
+        ),
+        build: build,
+        act: (bloc) => bloc
+          ..add(const TodayChecklistShown(notWeighed))
+          ..add(const TodayChecklistShown(weighed)),
+        expect: () => [
+          isA<TodayState>().having((s) => s.celebrated, 'celebrated', {
+            'weighIn',
+          }),
+        ],
+      );
+    });
 
     test(
       'a day completed is remembered on the device for the account',

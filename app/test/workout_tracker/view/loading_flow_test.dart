@@ -1,6 +1,7 @@
 @Timeout(Duration(seconds: 30))
 library;
 
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
@@ -9,7 +10,6 @@ import 'package:compound/workout_tracker/view/equipment_sheet.dart';
 import 'package:compound/workout_tracker/view/plate_calculator_sheet.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';

@@ -8,7 +8,7 @@ import 'package:compound/workout_tracker/view/set_table.dart';
 import 'package:compound/workout_tracker/view/tick.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/cupertino.dart' show CupertinoPicker;
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
 import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training_rules/training_rules.dart' as r;

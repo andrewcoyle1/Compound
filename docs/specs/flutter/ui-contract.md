@@ -42,7 +42,7 @@ uses it and styles nothing itself.
   Since Flutter 3.47 the app's Material is the `material_ui` package, and the framework's copy
   is a second library with its own `Theme`: a widget or route built from it finds no theme and
   draws stock Material 3 (the lavender sheet strip and purple dialog buttons in the comparison).
-  Cupertino likewise comes from `package:cupertino_ui`.
+  Cupertino likewise comes from `package:cupertino_ui`. CI's `framework-import` rule enforces both.
 
 ## 3. No raw Material building blocks in features
 

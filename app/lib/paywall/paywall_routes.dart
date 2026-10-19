@@ -1,9 +1,9 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/paywall/view/paywall_page.dart';
 import 'package:compound/paywall/view/subscribe_page.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/account/view/edit_profile_page.dart';
 import 'package:compound/settings/general/view/legal_page.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// Subscription and the paywall.

@@ -1,8 +1,8 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/coach/cubit/coach_cubit.dart';
 import 'package:compound/coach/view/coach_chats_page.dart';
 import 'package:compound/coach/view/coach_page.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// The coach and its saved chats, over the tabs from any screen. The coach

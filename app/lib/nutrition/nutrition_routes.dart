@@ -1,3 +1,4 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/nutrition/foods/view/create_food_pages.dart';
 import 'package:compound/nutrition/foods/view/food_detail_page.dart';
 import 'package:compound/nutrition/foods/view/foods_page.dart';
@@ -5,7 +6,6 @@ import 'package:compound/nutrition/meal_detail/meal_detail_page.dart';
 import 'package:compound/nutrition/recipes/view/create_recipe_pages.dart';
 import 'package:compound/nutrition/recipes/view/recipe_detail_page.dart';
 import 'package:compound/nutrition/recipes/view/recipes_page.dart';
-import 'package:flutter/material.dart';
 import 'package:food_repository/food_repository.dart' show RecipeTemplateModel;
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';

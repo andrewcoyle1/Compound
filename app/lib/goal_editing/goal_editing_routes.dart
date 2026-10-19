@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:app_ui/app_ui.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/view/diet_setup_page.dart';
 import 'package:compound/onboarding/view/goal_setup_page.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// Setting or changing the weight goal after onboarding (Swift

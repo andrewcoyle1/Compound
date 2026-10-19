@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:app_ui/app_ui.dart';
 
 /// The first day of the week where the device is set, as Swift's
 /// `Calendar.current` takes it from the region rather than the language:

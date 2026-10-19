@@ -1,7 +1,7 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/check_in/view/check_in_page.dart'
     show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
-import 'package:flutter/material.dart';
 
 /// Apple Health's words on iOS, Health Connect's on Android: the two
 /// stores the health package reaches.

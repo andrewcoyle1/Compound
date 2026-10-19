@@ -3084,6 +3084,18 @@
     "@launchLoading": {
         "description": "Launch screen: what screen readers hear while the profile loads"
     },
+    "routerErrorTitle": "Page Not Found",
+    "@routerErrorTitle": {
+        "description": "Shown for a link or address that matches no screen"
+    },
+    "routerErrorMessage": "This link doesn't lead anywhere in Compound.",
+    "@routerErrorMessage": {
+        "description": "Shown for a link or address that matches no screen, under the title"
+    },
+    "routerErrorAction": "Go to Today",
+    "@routerErrorAction": {
+        "description": "Button on the page-not-found screen that opens the Today tab"
+    },
     "launchProfileFailure": "Your profile couldn't be loaded.",
     "@launchProfileFailure": {
         "description": "Launch screen: the profile could not be read or created"

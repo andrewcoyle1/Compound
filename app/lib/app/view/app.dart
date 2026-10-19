@@ -57,7 +57,6 @@ import 'package:compound/training_analytics/training_analytics_routes.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
-import 'package:compound/widgets/half_sheet_page.dart';
 import 'package:compound/workout_editor/workout_editor_routes.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
@@ -418,6 +417,16 @@ class _AppViewState extends State<AppView> {
       'INITIAL_LOCATION',
       defaultValue: '/today',
     ),
+    // A link or address that matches no screen.
+    errorBuilder: (context, _) => AppScaffold(
+      appBar: AppBar(),
+      body: AppErrorState(
+        title: context.l10n.routerErrorTitle,
+        description: context.l10n.routerErrorMessage,
+        actionLabel: context.l10n.routerErrorAction,
+        onAction: () => context.go(AppTab.today.path),
+      ),
+    ),
     routes: [
       StatefulShellRoute.indexedStack(
         pageBuilder: (_, state, navigationShell) => MaterialPage(
@@ -597,7 +606,7 @@ class _AppViewState extends State<AppView> {
         path: LogWeightPage.path,
         name: LogWeightPage.name,
         pageBuilder: (_, state) =>
-            HalfSheetPage(key: state.pageKey, child: const LogWeightPage()),
+            AppSheetPage(key: state.pageKey, child: const LogWeightPage()),
       ),
       // Over the tabs, as the Swift app's sheet; the week reviewed is the
       // query's, this week's without one.

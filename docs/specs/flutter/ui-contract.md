@@ -38,6 +38,11 @@ uses it and styles nothing itself.
 - Status colours are never the only signal: pair them with an icon or text.
 - Exempt: share cards (`lib/sharing/share_card/`, `weekly_review_share_card.dart`), which render
   to fixed-size images, and user data such as a gym's chosen colour.
+- Material comes through `package:app_ui/app_ui.dart`, never `package:flutter/material.dart`.
+  Since Flutter 3.47 the app's Material is the `material_ui` package, and the framework's copy
+  is a second library with its own `Theme`: a widget or route built from it finds no theme and
+  draws stock Material 3 (the lavender sheet strip and purple dialog buttons in the comparison).
+  Cupertino likewise comes from `package:cupertino_ui`.
 
 ## 3. No raw Material building blocks in features
 
@@ -68,9 +73,10 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A form or scanner message | `AppInlineMessage` |
 | A screen | `AppScaffold`, `AppDashboard` for tab roots, `AppOnboardingStepScaffold` for onboarding |
 | Swipe actions | `AppSwipeActions` |
-
-Not wrapped yet, so the first screen that needs one adds it to `app_ui`: the confirmation
-dialog, sheets (`compact` / `half` / `full`), and the empty, loading and error states.
+| An alert, confirmation or choice | `showAppDialog` with `AppDialogAction`s; `AppDialog.confirmDestructive` for an irreversible action |
+| A sheet | `AppSheetPage` (a route's `pageBuilder`) or `showAppSheet`, sized `AppSheetSize.compact` / `half` / `full` |
+| Nothing to show, or a failure | `AppEmptyState`, `AppErrorState` |
+| Loading | `AppPlaceholderRow` / `AppPlaceholder` in place of the content; `AppLoadingView` for a screen's first load |
 
 Every icon-only button takes a required `semanticLabel`, which is also its tooltip.
 
@@ -81,13 +87,13 @@ Ported from the Swift contract's Patterns table.
 | Pattern | Rule |
 |---|---|
 | Primary action | One per screen, `AppCtaButton` pinned in `AppBottomCta` |
-| Dismiss | A close button at the leading edge of a modal's app bar. No "Cancel" text button |
+| Dismiss | A close button at the leading edge of a modal's app bar. No "Cancel" text button. In a dialog, Cancel is an `AppDialogRole.cancel` action |
 | Confirm | A confirm button at the trailing edge, with a spinner while saving |
 | Titles | Tab roots have a large title. Every other screen has a standard title |
-| Empty and error states | The shared empty-state widget: icon, title, description and, where possible, the action |
-| Loading | A list or card shows placeholder rows shaped like its content. A full-screen spinner only for a screen's first load |
-| Destructive | Destructive styling. Irreversible actions confirm first, with a Cancel |
-| Sheets | Only `compact`, `half` or `full`, each able to grow to full height at large text, always with a drag handle |
+| Empty and error states | `AppEmptyState` / `AppErrorState`: icon, title, description and, where possible, the action (Try Again for an error) |
+| Loading | A list or card shows `AppPlaceholderRow`s or `AppPlaceholder`s shaped like its content. `AppLoadingView` only for a screen's first load |
+| Destructive | Destructive styling (`AppDialogRole.destructive` in a dialog). Irreversible actions confirm first with `AppDialog.confirmDestructive`, which has a Cancel |
+| Sheets | `AppSheetPage` or `showAppSheet`, sized only `compact`, `half` or `full`; each drags to full height, opens at full height at large text, and has a drag handle |
 | Selection | Anything with a selected state announces it to screen readers |
 | Haptics | Success after every save, log, complete or finish; error when one fails; selection for pickers and segments |
 

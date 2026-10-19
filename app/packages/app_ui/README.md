@@ -28,6 +28,10 @@ MaterialApp(theme: AppTheme.light, darkTheme: AppTheme.dark, …);
 | `readableContentWidth`, `preferredReadableContentWidth` | `AppScaffold` (and its `maxWidth`) in place of `Scaffold`: the app bar spans the window, the body and bottom CTA sit in an `AppReadableWidth` column |
 | `Dashboard` | `AppDashboard(sections: […])` |
 | `horizontalSizeClass == .regular` | `context.isRegularWidth` |
+| `.alert` / `showConfirmationDialog`, `Button(role: .destructive)` | `showAppDialog` with `AppDialogAction`s (`AppDialogRole.standard / preferred / cancel / destructive`), `AppDialog.confirmDestructive` |
+| `ResizableSheetConfig.compact / .half / .full` | `AppSheetPage(size: AppSheetSize.x)` for a route, `showAppSheet(size: …)` otherwise |
+| `ContentUnavailableView` | `AppEmptyState`, `AppErrorState` |
+| `.redacted(reason: .placeholder)`, a first-load `ProgressView` | `AppPlaceholderRow`, `AppPlaceholder`; `AppLoadingView` |
 
 Every user-facing word is passed in already localized; the package holds no strings.
 

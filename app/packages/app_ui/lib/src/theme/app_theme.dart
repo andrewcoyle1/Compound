@@ -133,8 +133,11 @@ abstract final class AppTheme {
         backgroundColor: colors.canvas,
         showDragHandle: true,
         dragHandleColor: scheme.outline,
-        shape: const RoundedSuperellipseBorder(
-          borderRadius: BorderRadius.vertical(
+        // A hairline edge, so a dark sheet stays apart from the black
+        // screen under it.
+        shape: RoundedSuperellipseBorder(
+          side: BorderSide(color: scheme.outlineVariant, width: 0.5),
+          borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xl),
           ),
         ),

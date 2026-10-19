@@ -1,3 +1,4 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/log_measurement/log_measurement.dart';
 import 'package:compound/progress/logic/body_metrics.dart';
 import 'package:compound/progress/logic/nutrition_analytics.dart';
@@ -5,8 +6,6 @@ import 'package:compound/progress/view/body_metrics_pages.dart';
 import 'package:compound/progress/view/nutrition_analytics_pages.dart';
 import 'package:compound/progress/view/progress_metric_pages.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
-import 'package:compound/widgets/half_sheet_page.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// The screens behind the Progress tab's sections: Insights & Analytics,
@@ -110,7 +109,7 @@ final progressRootRoutes = <RouteBase>[
   GoRoute(
     path: LogMeasurementPage.path,
     name: LogMeasurementPage.name,
-    pageBuilder: (_, state) => HalfSheetPage(
+    pageBuilder: (_, state) => AppSheetPage(
       key: state.pageKey,
       child: LogMeasurementPage(
         kind:

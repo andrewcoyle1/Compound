@@ -95,100 +95,72 @@ class ActiveWorkoutBar extends StatelessWidget {
     final digits = AppTextStyles.metricSmall.copyWith(
       fontFeatures: const [FontFeature.tabularFigures()],
     );
-    return Material(
-      color: AppColors.tintedSurface(scheme.primary),
-      child: Tick(
-        builder: (context, now) {
-          final restEnd = state.restEnd;
-          final resting = restEnd != null && now.isBefore(restEnd);
-          return Row(
-            children: [
-              Expanded(
-                child: Semantics(
-                  button: true,
-                  label: l10n.accessoryResumeLabel(
-                    session.name,
-                    state.elapsedAt(now).inMinutes,
-                  ),
-                  excludeSemantics: true,
-                  child: InkWell(
-                    key: const Key('ActiveWorkoutBar.open'),
-                    onTap: () => WorkoutTrackerPage.show(context),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minHeight: AppControlSize.row,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                          AppSpacing.l,
-                          AppSpacing.s,
-                          AppSpacing.m,
-                          AppSpacing.s,
-                        ),
-                        child: Row(
-                          spacing: AppSpacing.m,
-                          children: [
-                            _ProgressRing(fraction: fraction),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    session.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.rowDetail.semibold
-                                        .copyWith(color: scheme.onSurface),
-                                  ),
-                                  Text(
-                                    '${progress.done}/'
-                                    '${l10n.setCount(progress.total)}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.rowDetail.copyWith(
-                                      color: scheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // The rest in the accent, else the clock: the
-                            // colour and Skip Rest say which.
-                            Text(
-                              resting
-                                  ? AppFormat.duration(
-                                      restEnd.difference(now) +
-                                          const Duration(milliseconds: 999),
-                                    )
-                                  : state.isPaused
-                                  ? l10n.trackerPaused
-                                  : AppFormat.duration(state.elapsedAt(now)),
-                              style: digits.copyWith(
-                                color: resting
-                                    ? scheme.primary
-                                    : scheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // Beside the bar's button rather than in it, so a screen
-              // reader reaches it.
-              if (resting)
-                AppToolbarButton(
+    return Tick(
+      builder: (context, now) {
+        final restEnd = state.restEnd;
+        final resting = restEnd != null && now.isBefore(restEnd);
+        return AppTabAccessory(
+          key: const Key('ActiveWorkoutBar.open'),
+          semanticLabel: l10n.accessoryResumeLabel(
+            session.name,
+            state.elapsedAt(now).inMinutes,
+          ),
+          onTap: () => WorkoutTrackerPage.show(context),
+          trailing: resting
+              ? AppToolbarButton(
                   key: const Key('ActiveWorkoutBar.skipRest'),
                   icon: AppSymbols.skip,
                   semanticLabel: l10n.accessorySkipRest,
                   onPressed: context.read<ActiveWorkoutCubit>().skipRestFromBar,
+                )
+              : null,
+          child: Row(
+            spacing: AppSpacing.m,
+            children: [
+              _ProgressRing(fraction: fraction),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      session.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.rowDetail.semibold.copyWith(
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      '${progress.done}/'
+                      '${l10n.setCount(progress.total)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.rowDetail.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              // The rest in the accent, else the clock: the colour and Skip
+              // Rest say which.
+              Text(
+                resting
+                    ? AppFormat.duration(
+                        restEnd.difference(now) +
+                            const Duration(milliseconds: 999),
+                      )
+                    : state.isPaused
+                    ? l10n.trackerPaused
+                    : AppFormat.duration(state.elapsedAt(now)),
+                style: digits.copyWith(
+                  color: resting ? scheme.primary : scheme.onSurfaceVariant,
+                ),
+              ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -114,13 +114,19 @@ void main() {
         );
       });
 
-      test('the tab bar marks the selected tab with the accent only', () {
+      test('the tab bar marks the selected tab in the accent on a capsule', () {
         final on = {WidgetState.selected};
         final tabs = theme.navigationBarTheme;
-        expect(tabs.indicatorColor, const Color(0x00000000));
+        expect(tabs.backgroundColor, const Color(0x00000000));
+        expect(tabs.indicatorColor, AppColors.tintedSurface(scheme.primary));
+        expect(tabs.indicatorShape, isA<StadiumBorder>());
         expect(tabs.iconTheme?.resolve(on)?.color, scheme.primary);
         expect(tabs.iconTheme?.resolve({})?.color, scheme.onSurfaceVariant);
         expect(tabs.labelTextStyle?.resolve(on)?.color, scheme.primary);
+        expect(
+          tabs.labelTextStyle?.resolve(on)?.overflow,
+          TextOverflow.ellipsis,
+        );
         expect(
           tabs.labelTextStyle?.resolve({})?.color,
           scheme.onSurfaceVariant,

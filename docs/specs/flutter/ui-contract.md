@@ -64,7 +64,8 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A section header's note or action | `AppSection(trailing:)`: a `Text` ("Required", a count) or an `AppChip` with `onPressed` ("See All", "New", "Hide") |
 | A search | `AppSearchField` |
 | A choice between a few options | `AppSegmentedControl` |
-| The tab bar | `AppTabBar` |
+| The tab bar | `AppTabBar`: an inset card dock, with `accessory:` for the bars above it |
+| A bar above the tab bar (the workout under way, the unlogged meal) | `AppTabAccessory` |
 | A colour the user stored as `#RRGGBB` | `AppColors.fromHex` |
 | A card | `AppCard`, `AppStatTile` |
 | A value | `AppStat` |

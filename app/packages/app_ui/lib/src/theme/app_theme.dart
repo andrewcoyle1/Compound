@@ -105,12 +105,13 @@ abstract final class AppTheme {
           color: scheme.onSurface,
         ),
       ),
-      // The tab bar: the selected tab is marked by the accent alone, as on
-      // iOS, with no Material indicator pill.
+      // The tab bar: AppTabBar's card supplies the fill, and the selected
+      // tab sits on a tinted capsule in the accent.
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: colors.surface,
+        backgroundColor: const Color(0x00000000),
         surfaceTintColor: const Color(0x00000000),
-        indicatorColor: const Color(0x00000000),
+        indicatorColor: AppColors.tintedSurface(scheme.primary),
+        indicatorShape: const StadiumBorder(),
         overlayColor: const WidgetStatePropertyAll(Color(0x00000000)),
         elevation: 0,
         iconTheme: WidgetStateProperty.resolveWith(
@@ -119,9 +120,14 @@ abstract final class AppTheme {
             size: AppIconSize.medium.points,
           ),
         ),
+        // One line, cut short with an ellipsis where a word is wider than
+        // its tab ("Entrenamiento"), rather than broken onto a clipped
+        // second line.
         labelTextStyle: WidgetStateProperty.resolveWith(
-          (states) =>
-              AppTextStyles.label.copyWith(color: _tabColor(scheme, states)),
+          (states) => AppTextStyles.label.copyWith(
+            color: _tabColor(scheme, states),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ),
       cardTheme: CardThemeData(

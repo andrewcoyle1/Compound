@@ -18,7 +18,7 @@ import {
     stravaTokenNeedsRefresh,
 } from "./lib.js";
 import { genkit } from "genkit";
-import { vertexAI, gemini, imagen3Fast } from "@genkit-ai/vertexai";
+import { vertexAI } from "@genkit-ai/google-genai";
 
 initializeApp();
 
@@ -37,9 +37,15 @@ const STRAVA_CLIENT_SECRET = defineSecret("STRAVA_CLIENT_SECRET");
 const STRAVA_WEBHOOK_VERIFY_TOKEN = defineSecret("STRAVA_WEBHOOK_VERIFY_TOKEN");
 const STRAVA_CALLABLE_OPTIONS = { ...CALLABLE_OPTIONS, secrets: [STRAVA_CLIENT_SECRET] };
 
-// The coach runs in the EU beside Firestore (eur3), and so does its Vertex endpoint: nothing it
-// reads leaves the EU. RevenueCat's V2 key can read customer information and nothing else.
+// The coach runs in the EU beside Firestore (eur3), and so does its Vertex endpoint (the "eu"
+// multi-region; current Gemini models aren't served from single regions): nothing it reads leaves
+// the EU. RevenueCat's V2 key can read customer information and nothing else.
 const COACH_REGION = "europe-west4";
+// One model for every Gemini call, from the multi-region endpoints it is served on: "us" beside
+// the us-central1 functions and "eu" for the coach.
+const GEMINI_MODEL = "gemini-3.8-flash";
+const TEXT_MODEL_LOCATION = "us";
+const COACH_MODEL_LOCATION = "eu";
 const REVENUECAT_SECRET_KEY = defineSecret("REVENUECAT_SECRET_KEY");
 const REVENUECAT_PROJECT_ID = defineString("REVENUECAT_PROJECT_ID");
 const COACH_CALLABLE_OPTIONS = {
@@ -53,12 +59,14 @@ const COACH_CALLABLE_OPTIONS = {
 
 const ai = genkit({
     // The project comes from the runtime, so the dev deploy spends the dev project's Vertex quota.
-    plugins: [vertexAI({ location: REGION })],
+    // Current Gemini models are served from multi-region endpoints only, not from us-central1.
+    plugins: [vertexAI({ location: TEXT_MODEL_LOCATION })],
 });
 
-// gemini-2.0-flash was retired on Vertex AI, and every call to it answered 404, which reached the
-// app as INTERNAL. Thinking is off, as 2.0 Flash had none: these callables want a fast JSON answer.
-const TEXT_MODEL = gemini("gemini-2.5-flash", { thinkingConfig: { thinkingBudget: 0 } });
+// Retired models answer 404, which reaches the app as INTERNAL: gemini-2.0-flash went that way, and
+// gemini-2.5-flash retires on 20 Oct 2026. Check Vertex's model-versions page before a release.
+// Thinking is off: these callables want a fast JSON answer.
+const TEXT_MODEL = vertexAI.model(GEMINI_MODEL, { thinkingConfig: { thinkingBudget: 0 } });
 
 
 async function findOrCreateIngredient(uid, item) {
@@ -261,7 +269,7 @@ export const imageGenerate = onCall(CALLABLE_OPTIONS, async (request) => {
     }
 
     const response = await ai.generate({
-        model: imagen3Fast,
+        model: vertexAI.model("imagen-3.0-fast-generate-001"),
         prompt: prompt.trim(),
         output: { format: "media" },
     });
@@ -1123,10 +1131,10 @@ import {
 
 const DEV_PROJECT_ID = "compound-development";
 
-const coachAI = genkit({ plugins: [vertexAI({ location: COACH_REGION })] });
+const coachAI = genkit({ plugins: [vertexAI({ location: COACH_MODEL_LOCATION })] });
 // A small thinking budget: choosing which tools to call and reconciling their figures is where a
 // coach goes wrong, and 1k thinking tokens buys that for about a second.
-const COACH_MODEL = gemini("gemini-2.5-flash", { thinkingConfig: { thinkingBudget: 1024 } });
+const COACH_MODEL = vertexAI.model(GEMINI_MODEL, { thinkingConfig: { thinkingBudget: 1024 } });
 const COACH_CONFIG = { temperature: 0.3, maxOutputTokens: 4096 };
 const coachTools = defineCoachTools(coachAI);
 coachRuntime.reply ??= (args) => runCoach({ ai: coachAI, model: COACH_MODEL, tools: coachTools, config: COACH_CONFIG, ...args });

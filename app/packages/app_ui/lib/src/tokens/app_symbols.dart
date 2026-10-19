@@ -292,6 +292,9 @@ abstract final class AppSymbols {
   /// Closing.
   static const IconData close = Icons.close_outlined;
 
+  /// Confirming a modal's changes: its toolbar's trailing button.
+  static const IconData confirm = Icons.check_outlined;
+
   /// Opening something in another app or the browser.
   static const IconData openExternally = Icons.open_in_new_outlined;
 

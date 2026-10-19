@@ -48,6 +48,11 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | Need | Use |
 |---|---|
 | Primary action | `AppCtaButton` in `AppBottomCta` |
+| A secondary action | `AppCtaButton(variant: AppCtaVariant.secondary)`: a tinted fill, never an outline |
+| An inline button in a row or card (Follow, Accept, Edit Profile) | `AppCtaButton(size: AppCtaSize.compact)`, primary or secondary |
+| A low-emphasis text action (See All, Not now) | `AppTextButton`, `isDestructive` for a removal |
+| An app bar button | `AppToolbarButton`; `.close` at a modal's leading edge, `.confirm` (with `isSaving`) at its trailing edge, `.avatar` for the profile button |
+| An icon-only button in content (a row's edit pencil) | `AppIconButton` |
 | A row | `AppListRow`, `AppListRowButton`, `AppListRowToggle`, `AppSelectableRow` in an `AppSection` |
 | A card | `AppCard`, `AppStatTile` |
 | A value | `AppStat` |
@@ -57,9 +62,10 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A screen | `AppScaffold`, `AppDashboard` for tab roots, `AppOnboardingStepScaffold` for onboarding |
 | Swipe actions | `AppSwipeActions` |
 
-Not wrapped yet, so the first screen that needs one adds it to `app_ui`: toolbar close and
-confirm buttons, a secondary or text button, an icon button, the confirmation dialog, sheets
-(`compact` / `half` / `full`), and the empty, loading and error states.
+Not wrapped yet, so the first screen that needs one adds it to `app_ui`: the confirmation
+dialog, sheets (`compact` / `half` / `full`), and the empty, loading and error states.
+
+Every icon-only button takes a required `semanticLabel`, which is also its tooltip.
 
 ## 4. Screen patterns
 

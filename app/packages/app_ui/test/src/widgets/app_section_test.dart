@@ -26,6 +26,47 @@ void main() {
       );
     });
 
+    testWidgets('starts each divider at the text of the row above', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        AppSection(
+          children: [
+            const Text('Note'),
+            const AppListRow(title: 'Icon', icon: AppSymbols.goal),
+            const AppListRowButton(
+              title: 'Thumbnail',
+              thumbnail: SizedBox(),
+              onPressed: null,
+            ),
+            const AppListRowToggle(
+              title: 'Toggle',
+              value: false,
+              onChanged: null,
+            ),
+            AppListRowToggle(
+              title: 'Toggle with icon',
+              icon: AppSymbols.notifications,
+              value: false,
+              onChanged: (_) {},
+            ),
+            const AppListRow(title: 'Last'),
+          ],
+        ),
+      );
+      final indents = tester
+          .widgetList<Divider>(find.byType(Divider))
+          .map((divider) => divider.indent);
+      const icon = AppSpacing.l + AppControlSize.icon + AppSpacing.m;
+      expect(indents, [
+        AppSpacing.l,
+        icon,
+        AppSpacing.l + AppControlSize.thumbnail + AppSpacing.m,
+        AppSpacing.l,
+        icon,
+      ]);
+    });
+
     testWidgets('header and footer are optional', (tester) async {
       await tester.pumpApp(
         const AppSection(children: [AppListRow(title: 'One')]),

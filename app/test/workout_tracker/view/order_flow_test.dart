@@ -20,6 +20,7 @@ import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 import '../../helpers/app_repositories.dart';
+import '../../helpers/social_world.dart';
 
 /// The workout's order and the card beyond its sets, through the whole app
 /// on the staging data: the strip's menu, Do Later, the progression note,
@@ -107,7 +108,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Training').last);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Workouts'));
+    await reveal(tester, find.text('Workouts'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Workouts'));
     await tester.pumpAndSettle();

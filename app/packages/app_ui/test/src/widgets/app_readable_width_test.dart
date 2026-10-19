@@ -134,5 +134,51 @@ void main() {
       expect(scaffold.appBar, isNull);
       expect(scaffold.bottomNavigationBar, isNull);
     });
+
+    testWidgets('a large title scrolls up into the app bar', (tester) async {
+      await tester.pumpApp(
+        AppScaffold(
+          largeTitle: 'Today',
+          actions: const [Icon(AppSymbols.settings)],
+          body: ListView(
+            children: [for (var i = 0; i < 50; i++) Text('Row $i')],
+          ),
+          bottomNavigationBar: const SizedBox(height: 44, key: Key('cta')),
+        ),
+        scaffold: false,
+      );
+      double barTitleOpacity() => tester
+          .widget<AnimatedOpacity>(
+            find.descendant(
+              of: find.byType(AppBar),
+              matching: find.byType(AnimatedOpacity),
+            ),
+          )
+          .opacity;
+      expect(find.text('Today'), findsNWidgets(2));
+      expect(barTitleOpacity(), 0);
+      expect(find.byIcon(AppSymbols.settings), findsOneWidget);
+      expect(find.byKey(const Key('cta')), findsOneWidget);
+
+      await tester.drag(find.text('Row 5'), const Offset(0, -300));
+      await tester.pumpAndSettle();
+      expect(barTitleOpacity(), 1);
+    });
+
+    testWidgets('a large title stands without a body', (tester) async {
+      await tester.pumpApp(
+        const AppScaffold(largeTitle: 'Today'),
+        scaffold: false,
+      );
+      expect(
+        tester.getSemantics(
+          find.descendant(
+            of: find.byType(NestedScrollView),
+            matching: find.text('Today'),
+          ),
+        ),
+        isSemantics(label: 'Today', isHeader: true),
+      );
+    });
   });
 }

@@ -20,6 +20,7 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 import '../../helpers/app_repositories.dart';
 import '../../helpers/library_fixtures.dart';
+import '../../helpers/social_world.dart';
 
 /// A clock the test moves by hand, for the cubit and the screen alike.
 class _Clock {
@@ -80,7 +81,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Training').last);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Workouts'));
+    await reveal(tester, find.text('Workouts'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Workouts'));
     await tester.pumpAndSettle();

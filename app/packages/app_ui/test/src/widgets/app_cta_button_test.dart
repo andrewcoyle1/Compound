@@ -15,7 +15,7 @@ void main() {
       expect(tester.getSize(find.byType(FilledButton)).width, 800);
       expect(
         tester.getSize(find.byType(FilledButton)).height,
-        greaterThanOrEqualTo(AppControlSize.row),
+        greaterThanOrEqualTo(AppControlSize.cta),
       );
     });
 

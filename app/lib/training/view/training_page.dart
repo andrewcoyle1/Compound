@@ -86,25 +86,23 @@ class TrainingView extends StatelessWidget {
     final today = startOfDay(DateTime.now());
     void open(DateTime day) => unawaited(openWorkoutsOn(context, day));
     return AppScaffold(
-      appBar: AppBar(
-        title: Text(l10n.tabTraining),
-        actions: [
-          IconButton(
-            icon: const Icon(AppSymbols.calendar),
-            tooltip: l10n.calendarShow,
-            onPressed: () => unawaited(
-              CalendarHeader.showCalendar(
-                context,
-                today: today,
-                markers: markers,
-                onDaySelected: open,
-              ),
+      largeTitle: l10n.tabTraining,
+      actions: [
+        IconButton(
+          icon: const Icon(AppSymbols.calendar),
+          tooltip: l10n.calendarShow,
+          onPressed: () => unawaited(
+            CalendarHeader.showCalendar(
+              context,
+              today: today,
+              markers: markers,
+              onDaySelected: open,
             ),
           ),
-          const _AddMenu(),
-          const ProfileButton(),
-        ],
-      ),
+        ),
+        const _AddMenu(),
+        const ProfileButton(),
+      ],
       body: SafeArea(
         bottom: false,
         child: Column(

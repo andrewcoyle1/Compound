@@ -121,7 +121,7 @@ void main() {
       );
       await tester.tap(find.text('6M'));
       expect(picked, MetricRange.sixMonths);
-      await tester.ensureVisible(find.text('Show All Data'));
+      await reveal(tester, find.text('Show All Data'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Show All Data'));
       expect(opened, isTrue);
@@ -147,6 +147,7 @@ void main() {
       expect(find.text('Daily Average'), findsOneWidget);
       // 5.5 sets today, rounded.
       expect(find.text('6'), findsWidgets);
+      await reveal(tester, find.text('Summary'));
       expect(find.text('Summary'), findsOneWidget);
       expect(find.byType(MetricChart), findsOneWidget);
     });

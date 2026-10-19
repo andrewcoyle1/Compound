@@ -5,7 +5,7 @@ import 'package:compound/l10n/l10n.dart';
 /// job each. Each path matches the Swift deep link `compound://tab/<name>`.
 enum AppTab {
   today(AppSymbols.today),
-  training(AppSymbols.equipment),
+  training(AppSymbols.workout),
   nutrition(AppSymbols.nutrition),
   progress(AppSymbols.analytics),
   social(AppSymbols.friends);

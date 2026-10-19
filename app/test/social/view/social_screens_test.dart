@@ -84,7 +84,7 @@ void main() {
     testWidgets('searches people and follows from the results', (tester) async {
       await pump(tester, '/social');
 
-      await revealOnDashboard(tester, find.text('Find People'));
+      await reveal(tester, find.text('Find People'));
       await tester.tap(find.text('Find People'));
       await tester.pump();
       expect(
@@ -121,11 +121,11 @@ void main() {
     testWidgets('likes a workout and opens its comments', (tester) async {
       await pump(tester, '/social');
 
-      await revealOnDashboard(tester, find.bySemanticsLabel('Like'));
+      await reveal(tester, find.bySemanticsLabel('Like'));
       await tester.tap(find.bySemanticsLabel('Like').first);
       await settle(tester);
 
-      await revealOnDashboard(tester, find.bySemanticsLabel('Comments'));
+      await reveal(tester, find.bySemanticsLabel('Comments'));
       await tester.tap(find.bySemanticsLabel('Comments').first);
       await settle(tester);
       expect(find.byType(CommentsPage), findsOneWidget);

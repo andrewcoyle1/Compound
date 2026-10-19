@@ -23,6 +23,7 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 import '../../helpers/app_repositories.dart';
 import '../../helpers/library_fixtures.dart';
+import '../../helpers/social_world.dart';
 
 /// The exercise's menu through the whole app on the staging data: Swap,
 /// Targets, the unit headings and Exercise Settings.
@@ -79,7 +80,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Training').last);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Workouts'));
+    await reveal(tester, find.text('Workouts'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Workouts'));
     await tester.pumpAndSettle();

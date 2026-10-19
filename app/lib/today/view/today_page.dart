@@ -121,10 +121,8 @@ class TodayView extends StatelessWidget {
       ],
       child: AppScaffold(
         maxWidth: AppContentWidth.dashboard,
-        appBar: AppBar(
-          title: Text(l10n.tabToday),
-          actions: const [AskCoachButton(CoachContext.today), ProfileButton()],
-        ),
+        largeTitle: l10n.tabToday,
+        actions: const [AskCoachButton(CoachContext.today), ProfileButton()],
         body: switch (state.status) {
           TodayStatus.loading => const Center(
             child: CircularProgressIndicator.adaptive(),

@@ -127,10 +127,8 @@ class _SocialViewState extends State<SocialView> {
           previous.isFeedLoading != current.isFeedLoading,
       listener: (_, circle) => _maybeLoadSuggestions(circle),
       child: AppScaffold(
-        appBar: AppBar(
-          title: Text(l10n.tabSocial),
-          actions: const [_NotificationsButton(), ProfileButton()],
-        ),
+        largeTitle: l10n.tabSocial,
+        actions: const [_NotificationsButton(), ProfileButton()],
         body: SafeArea(
           bottom: false,
           child: Column(

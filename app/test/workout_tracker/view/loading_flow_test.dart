@@ -23,6 +23,7 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 import '../../helpers/app_repositories.dart';
 import '../../helpers/library_fixtures.dart';
+import '../../helpers/social_world.dart';
 
 /// The tracker's loading and equipment, through the whole app on the
 /// staging data: the loading bar and plate calculator over the weight
@@ -95,7 +96,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Training').last);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Workouts'));
+    await reveal(tester, find.text('Workouts'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Workouts'));
     await tester.pumpAndSettle();
@@ -163,6 +164,12 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey('plate-2.5')));
     await tester.pumpAndSettle();
+    // The plates run on below the sheet's Done button on a short window.
+    await tester.drag(
+      find.byKey(const ValueKey('plate-2.5')),
+      const Offset(0, -100),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('plate-1.25')));
     await tester.pumpAndSettle();
     expect(find.text('Not loadable: 65 or 75 kg'), findsOneWidget);
@@ -179,6 +186,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('keypad-loading')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('plate-bar-barbell_2')));
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const ValueKey('plate-2.5')),
+      const Offset(0, -100),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('plate-1.25')));
     await tester.pumpAndSettle();

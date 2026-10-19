@@ -27,59 +27,43 @@ class MealDraftBar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final count = draft.items.length;
-    return Material(
-      color: AppColors.tintedSurface(scheme.primary),
-      child: Semantics(
-        button: true,
-        label: l10n.mealDraftLabel(count),
-        excludeSemantics: true,
-        child: InkWell(
-          // The draft as it is now, not when the bar was built.
-          onTap: () => _reopen(context),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AppControlSize.row),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.l,
-                vertical: AppSpacing.s,
-              ),
-              child: Row(
-                spacing: AppSpacing.m,
-                children: [
-                  Icon(AppSymbols.meal, color: scheme.primary),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.mealDraftTitle,
-                          style: AppTextStyles.sectionTitle.copyWith(
-                            color: scheme.onSurface,
-                          ),
-                        ),
-                        Text(
-                          l10n.mealDraftDetail(
-                            count,
-                            AppFormat.kcal(
-                              draft.macros.calories.round(),
-                              locale: locale,
-                            ),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.rowDetail.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+    return AppTabAccessory(
+      semanticLabel: l10n.mealDraftLabel(count),
+      // The draft as it is now, not when the bar was built.
+      onTap: () => _reopen(context),
+      child: Row(
+        spacing: AppSpacing.m,
+        children: [
+          Icon(AppSymbols.meal, color: scheme.primary),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.mealDraftTitle,
+                  style: AppTextStyles.sectionTitle.copyWith(
+                    color: scheme.onSurface,
+                  ),
+                ),
+                Text(
+                  l10n.mealDraftDetail(
+                    count,
+                    AppFormat.kcal(
+                      draft.macros.calories.round(),
+                      locale: locale,
                     ),
                   ),
-                  Icon(AppSymbols.disclosure, color: scheme.onSurfaceVariant),
-                ],
-              ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.rowDetail.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
+          Icon(AppSymbols.disclosure, color: scheme.onSurfaceVariant),
+        ],
       ),
     );
   }

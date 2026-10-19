@@ -22,33 +22,32 @@ class AppShell extends StatelessWidget {
     );
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // The workout under way, while its tracker is minimised.
-          const ActiveWorkoutBar(),
-          // The unlogged meal, when no workout is under way.
-          const MealDraftBar(),
-          AppTabBar(
-            selectedIndex: navigationShell.currentIndex,
-            // Tapping the current tab again returns it to its root, as on
-            // iOS.
-            onSelected: (index) => navigationShell.goBranch(
-              index,
-              initialLocation: index == navigationShell.currentIndex,
+      bottomNavigationBar: AppTabBar(
+        accessory: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // The workout under way, while its tracker is minimised.
+            ActiveWorkoutBar(),
+            // The unlogged meal, when no workout is under way.
+            MealDraftBar(),
+          ],
+        ),
+        selectedIndex: navigationShell.currentIndex,
+        // Tapping the current tab again returns it to its root, as on iOS.
+        onSelected: (index) => navigationShell.goBranch(
+          index,
+          initialLocation: index == navigationShell.currentIndex,
+        ),
+        items: [
+          for (final tab in AppTab.values)
+            AppTabBarItem(
+              icon: tab.icon,
+              selectedIcon: tab.selectedIcon,
+              label: tab.label(l10n),
+              // The comments and mentions unread and the follow requests
+              // waiting (`TabBarPresenter.unreadActivityCount`).
+              badgeCount: tab == AppTab.social ? badge : 0,
             ),
-            items: [
-              for (final tab in AppTab.values)
-                AppTabBarItem(
-                  icon: tab.icon,
-                  selectedIcon: tab.selectedIcon,
-                  label: tab.label(l10n),
-                  // The comments and mentions unread and the follow requests
-                  // waiting (`TabBarPresenter.unreadActivityCount`).
-                  badgeCount: tab == AppTab.social ? badge : 0,
-                ),
-            ],
-          ),
         ],
       ),
     );

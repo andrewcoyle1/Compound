@@ -662,8 +662,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(barWidth('Training'), 1366);
       expect(columnWidth('Training'), AppContentWidth.readable);
-      // The tab bar still spans the window.
-      expect(tester.getSize(find.byType(NavigationBar)).width, 1366);
+      // The dock spans the window; its tabs keep to the readable column.
+      expect(tester.getSize(find.byType(AppTabBar)).width, 1366);
+      expect(
+        tester.getSize(find.byType(NavigationBar)).width,
+        AppContentWidth.readable - 2 * AppSpacing.l,
+      );
     });
 
     testWidgets('opens the workout history and a workout from Training', (

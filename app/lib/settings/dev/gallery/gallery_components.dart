@@ -582,11 +582,51 @@ List<Widget> galleryInputs(BuildContext context) {
   ];
 }
 
-/// [AppTabBar], and the screen layouts: [AppScaffold] with
-/// [AppReadableWidth], [AppDashboard], [AppBottomCta] and
-/// [AppOnboardingStepScaffold], each opened as a screen.
+/// [AppTabBar] and [AppTabAccessory], and the screen layouts:
+/// [AppScaffold] with [AppReadableWidth], [AppDashboard], [AppBottomCta]
+/// and [AppOnboardingStepScaffold], each opened as a screen.
 List<Widget> galleryNavigation(BuildContext context) {
   final l10n = context.l10n;
+  final tabs = [
+    AppTabBarItem(
+      icon: AppSymbols.today,
+      selectedIcon: AppSymbols.todayFilled,
+      label: l10n.tabToday,
+    ),
+    AppTabBarItem(
+      icon: AppSymbols.workout,
+      selectedIcon: AppSymbols.workoutFilled,
+      label: l10n.tabTraining,
+    ),
+    AppTabBarItem(
+      icon: AppSymbols.nutrition,
+      selectedIcon: AppSymbols.nutritionFilled,
+      label: l10n.tabNutrition,
+    ),
+    AppTabBarItem(
+      icon: AppSymbols.analytics,
+      selectedIcon: AppSymbols.analyticsFilled,
+      label: l10n.tabProgress,
+    ),
+    AppTabBarItem(
+      icon: AppSymbols.friends,
+      selectedIcon: AppSymbols.friendsFilled,
+      label: l10n.tabSocial,
+      badgeCount: 3,
+    ),
+  ];
+  final meal = AppTabAccessory(
+    semanticLabel: l10n.mealDraftLabel(2),
+    onTap: galleryNoop,
+    child: Row(
+      spacing: AppSpacing.m,
+      children: [
+        const Icon(AppSymbols.meal),
+        Expanded(child: Text(l10n.mealDraftTitle)),
+        const Icon(AppSymbols.disclosure),
+      ],
+    ),
+  );
   return [
     galleryEntry('AppTabBar', [
       galleryBlock(
@@ -596,35 +636,36 @@ List<Widget> galleryNavigation(BuildContext context) {
           builder: (selected, update) => AppTabBar(
             selectedIndex: selected,
             onSelected: update,
-            items: [
-              AppTabBarItem(
-                icon: AppSymbols.today,
-                selectedIcon: AppSymbols.todayFilled,
-                label: l10n.tabToday,
-              ),
-              AppTabBarItem(
-                icon: AppSymbols.workout,
-                selectedIcon: AppSymbols.workoutFilled,
-                label: l10n.tabTraining,
-              ),
-              AppTabBarItem(
-                icon: AppSymbols.nutrition,
-                selectedIcon: AppSymbols.nutritionFilled,
-                label: l10n.tabNutrition,
-              ),
-              AppTabBarItem(
-                icon: AppSymbols.analytics,
-                selectedIcon: AppSymbols.analyticsFilled,
-                label: l10n.tabProgress,
-              ),
-              AppTabBarItem(
-                icon: AppSymbols.friends,
-                selectedIcon: AppSymbols.friendsFilled,
-                label: l10n.tabSocial,
-                badgeCount: 3,
-              ),
-            ],
+            items: tabs,
           ),
+        ),
+      ),
+      galleryBlock(
+        'accessory',
+        GalleryLive(
+          initial: 1,
+          builder: (selected, update) => AppTabBar(
+            selectedIndex: selected,
+            onSelected: update,
+            items: tabs,
+            accessory: meal,
+          ),
+        ),
+      ),
+    ]),
+    galleryEntry('AppTabAccessory', [
+      galleryBlock('semanticLabel, onTap', meal),
+      galleryBlock(
+        'trailing',
+        AppTabAccessory(
+          semanticLabel: l10n.devGallerySampleTitle,
+          onTap: galleryNoop,
+          trailing: AppToolbarButton(
+            icon: AppSymbols.skip,
+            semanticLabel: l10n.accessorySkipRest,
+            onPressed: galleryNoop,
+          ),
+          child: Text(l10n.devGallerySampleTitle),
         ),
       ),
     ]),

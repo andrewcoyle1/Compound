@@ -127,3 +127,11 @@ flutter:
   assets:
     - assets/equipment/
     - assets/exercises/
+
+# flutter_soloud's build hook (the rest chime, in notifications_repository):
+# WAV only, so it builds without the Xiph (Opus, Ogg, Vorbis, FLAC) libraries
+# it would otherwise download.
+hooks:
+  user_defines:
+    flutter_soloud:
+      no_xiph_libs: true

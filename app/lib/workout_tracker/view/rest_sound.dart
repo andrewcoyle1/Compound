@@ -1,22 +1,20 @@
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 
 /// The sound a rest makes as it runs out in the app (Swift's
-/// `SoundEffectFile.restComplete`), played by the app's own platform code:
-/// iOS system sound 1007, Swift's stand-in while it has no audio file, and
-/// Android's default notification sound. Both follow the silent switch or
-/// ringer mode and mix with whatever is playing.
+/// `SoundEffectFile.restComplete`): the bundled chime ([SoloudRestChime]),
+/// which mixes with whatever is playing and, on iOS, follows the silent
+/// switch.
 abstract final class RestSound {
-  /// The app's channel (`MainActivity.kt`, `AppDelegate.swift`).
-  static const channel = MethodChannel('com.andrewcoyle.compound/sound');
+  /// What plays it; tests put in a fake.
+  @visibleForTesting
+  static RestChime chime = SoloudRestChime();
 
-  /// Plays it; a platform without the channel (a test, a desktop) is
-  /// silent.
+  /// Plays it; a failure (no audio device) is silent.
   static Future<void> play() async {
     try {
-      await channel.invokeMethod<void>('restComplete');
-    } on MissingPluginException {
-      // Nowhere to play it.
-    } on PlatformException {
+      await chime.play();
+    } on Object {
       // The sound is a nicety; the haptic and the screen still say it.
     }
   }

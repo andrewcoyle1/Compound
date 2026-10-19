@@ -1,4 +1,4 @@
-import AudioToolbox
+import AVFAudio
 import Flutter
 import ImageIO
 import UIKit
@@ -17,23 +17,15 @@ import Vision
     // flutter_local_notifications: lets the app decide how a notification shows while it is in
     // front (the rest timer's stays quiet), and hears taps.
     UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+    // The rest chime (`RestSound`, played by flutter_soloud, which leaves the session to the app):
+    // ambient mixes with music and podcasts and follows the silent switch, as the system sound it
+    // replaced did.
+    try? AVAudioSession.sharedInstance().setCategory(.ambient)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    // The rest-complete sound (`RestSound`): system sound 1007, the stand-in the Swift app plays
-    // (`SoundEffectFile.restComplete`). It follows the silent switch.
-    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RestSound") {
-      FlutterMethodChannel(
-        name: "com.andrewcoyle.compound/sound",
-        binaryMessenger: registrar.messenger()
-      ).setMethodCallHandler { call, result in
-        guard call.method == "restComplete" else { return result(FlutterMethodNotImplemented) }
-        AudioServicesPlaySystemSound(1007)
-        result(nil)
-      }
-    }
     // The Label scanner's on-device text reading (`PlatformLabelTextReader`).
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "LabelText") {
       FlutterMethodChannel(

@@ -1,32 +1,37 @@
 import 'package:compound/workout_tracker/view/rest_sound.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:notifications_repository/notifications_repository.dart';
+
+class _Chime implements RestChime {
+  int plays = 0;
+  Error? failure;
+
+  @override
+  Future<void> play() async {
+    plays++;
+    if (failure case final failure?) throw failure;
+  }
+}
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
   group(RestSound, () {
-    final messenger =
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    late _Chime chime;
+    late RestChime original;
 
-    tearDown(() => messenger.setMockMethodCallHandler(RestSound.channel, null));
-
-    test('asks the platform for the rest-complete sound', () async {
-      final calls = <String>[];
-      messenger.setMockMethodCallHandler(RestSound.channel, (call) async {
-        calls.add(call.method);
-        return null;
-      });
-      await RestSound.play();
-      expect(calls, ['restComplete']);
+    setUp(() {
+      original = RestSound.chime;
+      RestSound.chime = chime = _Chime();
     });
 
-    test('is silent where the platform has no channel or fails', () async {
-      await expectLater(RestSound.play(), completes);
-      messenger.setMockMethodCallHandler(
-        RestSound.channel,
-        (_) async => throw PlatformException(code: 'no-audio'),
-      );
+    tearDown(() => RestSound.chime = original);
+
+    test('plays the rest-complete chime', () async {
+      await RestSound.play();
+      expect(chime.plays, 1);
+    });
+
+    test('is silent when it cannot play', () async {
+      chime.failure = StateError('no audio device');
       await expectLater(RestSound.play(), completes);
     });
   });

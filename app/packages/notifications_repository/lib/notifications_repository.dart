@@ -12,3 +12,4 @@ export 'src/home_widget.dart';
 export 'src/live_activity.dart';
 export 'src/local_reminders.dart';
 export 'src/notifications_repository.dart';
+export 'src/rest_chime.dart';

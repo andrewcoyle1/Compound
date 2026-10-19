@@ -1,6 +1,5 @@
 package com.andrewcoyle.compound
 
-import android.media.RingtoneManager
 import android.net.Uri
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -15,18 +14,6 @@ import java.io.File
 class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        // The rest-complete sound (`RestSound`): the default notification sound, which follows
-        // the ringer mode as the iOS system sound follows the silent switch.
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.andrewcoyle.compound/sound")
-            .setMethodCallHandler { call, result ->
-                if (call.method == "restComplete") {
-                    val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                    RingtoneManager.getRingtone(applicationContext, uri)?.play()
-                    result.success(null)
-                } else {
-                    result.notImplemented()
-                }
-            }
         // The Label scanner's on-device text reading (`PlatformLabelTextReader`): ML Kit's
         // bundled Latin model, one line per printed line, as Vision does on iOS.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.andrewcoyle.compound/label_text")

@@ -22,6 +22,13 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 import '../../helpers/helpers.dart';
 
 /// A clock the test moves by hand, for the cubit and the screen alike.
+class _Chime implements RestChime {
+  int plays = 0;
+
+  @override
+  Future<void> play() async => plays++;
+}
+
 class _Clock {
   DateTime now = DateTime(2026, 10, 15, 18);
 
@@ -270,30 +277,25 @@ void main() {
     testWidgets('a rest running out plays the sound and the haptic', (
       tester,
     ) async {
-      final sounds = <String>[];
+      final chime = _Chime();
       final haptics = <AppHaptic>[];
       AppHaptics.debugPlay = haptics.add;
       addTearDown(() => AppHaptics.debugPlay = null);
-      final messenger = tester.binding.defaultBinaryMessenger
-        ..setMockMethodCallHandler(RestSound.channel, (call) async {
-          sounds.add(call.method);
-          return null;
-        });
-      addTearDown(
-        () => messenger.setMockMethodCallHandler(RestSound.channel, null),
-      );
+      final original = RestSound.chime;
+      RestSound.chime = chime;
+      addTearDown(() => RestSound.chime = original);
       await start(tester);
       await pump(tester);
       await tester.tap(find.byKey(ValueKey('done-${nextSetId()}')));
       await tester.pumpAndSettle();
-      sounds.clear();
+      chime.plays = 0;
       haptics.clear();
       final end = cubit.state.restEnd!;
       final loggedAt = clock.now;
       clock.now = end;
       await tester.pump(end.difference(loggedAt));
       await tester.pump();
-      expect(sounds, ['restComplete']);
+      expect(chime.plays, 1);
       expect(haptics, contains(AppHaptic.warning));
       await cubit.close();
     });

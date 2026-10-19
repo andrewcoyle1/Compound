@@ -14,3 +14,4 @@ export 'src/local_reminders.dart';
 export 'src/notifications_repository.dart';
 export 'src/platform_links.dart';
 export 'src/quick_actions.dart';
+export 'src/rest_chime.dart';

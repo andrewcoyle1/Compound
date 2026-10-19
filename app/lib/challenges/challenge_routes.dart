@@ -1,7 +1,7 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/challenges/view/challenge_detail_page.dart';
 import 'package:compound/challenges/view/create_challenge_page.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// The challenge screens, over the tabs like the other social screens:

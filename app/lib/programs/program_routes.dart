@@ -1,3 +1,4 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/programs/view/create_mesocycle_pages.dart';
 import 'package:compound/programs/view/import_program_page.dart';
 import 'package:compound/programs/view/macrocycle_detail_page.dart';
@@ -6,7 +7,6 @@ import 'package:compound/programs/view/mesocycle_design_page.dart';
 import 'package:compound/programs/view/mesocycle_library_page.dart';
 import 'package:compound/programs/view/prebuilt_mesocycle_detail_page.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 export 'view/create_mesocycle_pages.dart' show NameMesocyclePage;

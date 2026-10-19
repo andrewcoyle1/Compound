@@ -1,5 +1,5 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:flutter/material.dart';
 
 /// [child] as the menu of [units], the [selected] one ticked (Swift
 /// `UnitMenu`). [onSelected] hears every choice, the ticked one included.

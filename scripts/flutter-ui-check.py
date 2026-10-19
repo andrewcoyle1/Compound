@@ -36,6 +36,9 @@ RULES = {
     'icon-literal': (_ + r'Icons\.\w+', 'AppSymbols'),
     'date-format': (_ + r'DateFormat\b|' + _ + r'formatTimeOfDay\(',
                     'AppFormat.date, time, hour or dateTime with context.dateLocale'),
+    # Material and Cupertino come through app_ui (material_ui / cupertino_ui). Flutter's own
+    # libraries are a second copy whose Theme the app never provides, so they draw stock Material 3.
+    'framework-import': (r"package:flutter/(material|cupertino)\.dart", 'package:app_ui/app_ui.dart'),
     # Rule 3: no raw Material building blocks in features.
     'material-button': (_ + r'(TextButton|OutlinedButton|ElevatedButton|FilledButton|IconButton)(\.\w+)?\(',
                         'an app_ui button (AppCtaButton, or add one)'),
@@ -60,6 +63,7 @@ BASELINE = {
     'icon-literal': 6,
     # Every display date went through AppFormat on 19 Oct 2026; no machine format needed DateFormat.
     'date-format': 0,
+    'framework-import': 0,
     'material-button': 328,
     'material-row': 44,
     'material-card': 0,
@@ -134,6 +138,9 @@ def self_test():
         "Card(child: c)": ['material-card'],
         "AppCard(child: c)": [],
         "await showModalBottomSheet<void>(": ['material-dialog'],
+        "import 'package:flutter/material.dart';": ['framework-import'],
+        "import 'package:flutter/cupertino.dart' show CupertinoPicker;": ['framework-import'],
+        "import 'package:flutter/services.dart';": [],
         "// TextButton(onPressed: f) in a comment": [],
         "/// Uses [ListTile( in a doc comment": [],
     }

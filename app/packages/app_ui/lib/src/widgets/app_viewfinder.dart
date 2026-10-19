@@ -124,8 +124,8 @@ class _Caption extends StatelessWidget {
                 SizedBox.square(
                   dimension: MediaQuery.textScalerOf(context)
                       .scale(style.fontSize!),
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
+                  child: const AppSpinner(
+                    size: AppSpinnerSize.small,
                     color: Colors.white,
                   ),
                 ),

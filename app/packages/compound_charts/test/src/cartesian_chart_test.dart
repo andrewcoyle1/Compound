@@ -5,7 +5,6 @@ import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_charts/src/cartesian_painter.dart';
 import 'package:flutter/gestures.dart'
     show LongPressGestureRecognizer, kDoubleTapMinTime, kLongPressTimeout;
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/helpers.dart';
@@ -190,23 +189,14 @@ void main() {
   });
 
   group('trackball', () {
-    late List<String> haptics;
+    late List<AppHaptic> haptics;
 
     setUp(() {
       haptics = [];
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-            if (call.method == 'HapticFeedback.vibrate') {
-              haptics.add(call.arguments as String);
-            }
-            return null;
-          });
+      AppHaptics.debugPlay = haptics.add;
     });
 
-    tearDown(
-      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(SystemChannels.platform, null),
-    );
+    tearDown(() => AppHaptics.debugPlay = null);
 
     testWidgets('follows a held finger bucket by bucket, then lets go', (
       tester,
@@ -225,7 +215,7 @@ void main() {
       final gesture = await tester.startGesture(chart.centerLeft);
       await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
       expect(picked, [DateTime(2026, 10, 12)]);
-      expect(haptics, ['HapticFeedbackType.selectionClick']);
+      expect(haptics, [AppHaptic.selection]);
 
       await gesture.moveTo(chart.centerRight);
       await tester.pump();

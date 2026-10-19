@@ -7,7 +7,6 @@ import 'package:compound_charts/src/chart_callout.dart';
 import 'package:compound_charts/src/data.dart';
 import 'package:compound_charts/src/pinch_gesture_recognizer.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/services.dart';
 
 /// A chart of [data] over time ([ChartData]): lines, areas, bars, stacked
 /// bars and dots on one plot, over faint gridlines, with round values at
@@ -213,7 +212,7 @@ class _CartesianChartState extends State<CartesianChart>
     double distance(DateTime x) => (_xOf(x) - position.dx).abs();
     final nearest = buckets.reduce((a, b) => distance(b) < distance(a) ? b : a);
     if (nearest == widget.selected) return;
-    unawaited(HapticFeedback.selectionClick());
+    unawaited(AppHaptics.selection());
     widget.onSelected!(nearest);
   }
 

@@ -32,8 +32,9 @@ manager or model by name.
     caller. So a bloc can await a save offline, and its failure state covers only an error
     raised while starting the write. Never await a raw cloud_firestore write future.
 - **UI:** read `ui-contract.md` before building a screen. Reuse `app_ui` widgets; a new
-  component goes in `app_ui` with golden tests and a gallery entry; no colours, text styles,
-  numbers or raw Material widgets in `app/lib`. Run `python3 scripts/flutter-ui-check.py`
+  component goes in `app_ui` with golden tests and, in the same PR, an entry in the component
+  gallery (`app/lib/settings/dev/gallery/gallery_components.dart`, rule 7); no colours, text
+  styles, numbers or raw Material widgets in `app/lib`. Run `python3 scripts/flutter-ui-check.py`
   before you push.
 - **Widget tests fail after 30 seconds** (`app/test/flutter_test_config.dart`); never raise it.
   A timeout means the test hangs. The usual causes:

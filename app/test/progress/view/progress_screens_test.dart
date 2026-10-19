@@ -1,3 +1,4 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
@@ -9,7 +10,6 @@ import 'package:compound/training_analytics/view/workout_consistency_page.dart'
     show ContributionGrid;
 import 'package:compound_models/compound_models.dart'
     show BodyMeasurementEntryKeys;
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health_repository/health_repository.dart';
 import 'package:mocktail/mocktail.dart';

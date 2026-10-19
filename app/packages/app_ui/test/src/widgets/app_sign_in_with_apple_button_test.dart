@@ -84,6 +84,16 @@ void main() {
           isLoading: true,
         ),
       ),
+      (
+        'Loading, iOS',
+        onIos(
+          AppSignInWithAppleButton(
+            label: 'Sign in with Apple',
+            onPressed: () {},
+            isLoading: true,
+          ),
+        ),
+      ),
     ], pumpBeforeTest: pumpOnceSettled);
   });
 }

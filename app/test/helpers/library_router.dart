@@ -1,8 +1,8 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/create_exercise/create_exercise.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// The Training tab's library routes as the app declares them, starting at

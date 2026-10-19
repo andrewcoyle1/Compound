@@ -78,6 +78,7 @@ void main() {
         ),
       ),
       ('Button', AppChip(label: 'See All', onPressed: () {})),
+      ('Long label', const AppChip(label: 'Upper body hypertrophy')),
     ], width: 200);
   });
 }

@@ -42,7 +42,7 @@ uses it and styles nothing itself.
   Since Flutter 3.47 the app's Material is the `material_ui` package, and the framework's copy
   is a second library with its own `Theme`: a widget or route built from it finds no theme and
   draws stock Material 3 (the lavender sheet strip and purple dialog buttons in the comparison).
-  Cupertino likewise comes from `package:cupertino_ui`.
+  Cupertino likewise comes from `package:cupertino_ui`. CI's `framework-import` rule enforces both.
 
 ## 3. No raw Material building blocks in features
 
@@ -142,8 +142,17 @@ device.
 
 ## 7. Component gallery
 
-The development flavor has a gallery screen, reached from Developer Settings, that shows every
-`app_ui` widget in each of its states. A new `app_ui` widget is added to it in the same PR.
+Development and staging builds have a gallery screen, reached from Developer Settings
+(`/profile/settings/developer/gallery`), that shows every `app_ui` widget in each of its states
+and every token, with switches for light and dark and for 100%, 150% and 200% text. Production
+never registers its route.
+
+- **A new `app_ui` widget, or a new state of one, gets a gallery entry in the same PR.** The
+  entries are in `app/lib/settings/dev/gallery/gallery_components.dart` (tokens in
+  `gallery_tokens.dart`); `component_gallery_page_test.dart` fails while an exported widget,
+  `show…` function, `AppSymbols` icon or `AppColors` colour is missing from them.
+- `scripts/flutter-screenshots.sh <udid> <out-dir> GALLERY` shoots the whole gallery a screen at
+  a time, light and dark.
 
 ## 8. Before-and-after screenshots
 

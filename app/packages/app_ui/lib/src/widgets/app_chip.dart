@@ -67,7 +67,8 @@ class AppChip extends StatelessWidget {
                 color: foreground,
                 size: MediaQuery.textScalerOf(context).scale(style.fontSize!),
               ),
-            Text(label, style: style),
+            // Wraps when the label is wider than the space it is given.
+            Flexible(child: Text(label, style: style)),
           ],
         ),
       ),

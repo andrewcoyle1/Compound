@@ -1,13 +1,13 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/gen/app_localizations_en.dart';
 import 'package:compound/sharing/share_card/share_card_content.dart';
 import 'package:compound/sharing/share_card/share_card_renderer.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
 import 'package:compound/workout_history/models/workout_session_highlights.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Ported from `ShareCardTests`: what the card says, and that it renders at

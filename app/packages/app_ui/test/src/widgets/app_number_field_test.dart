@@ -123,6 +123,26 @@ void main() {
     });
   });
 
+  testWidgets('puts its label above the value at accessibility sizes', (
+    tester,
+  ) async {
+    await tester.pumpApp(
+      const AppNumberField(
+        value: 2,
+        onChanged: _goldenChanged,
+        label: 'Rest between sets',
+      ),
+      textScale: 2,
+    );
+    final label = tester.getRect(find.text('Rest between sets'));
+    final value = tester.getRect(find.byType(TextField));
+    expect(value.top, greaterThanOrEqualTo(label.bottom));
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).textAlign,
+      TextAlign.start,
+    );
+  });
+
   group('AppNumberField golden', () {
     Widget card(Widget field) => AppCard(child: field);
     goldenStates('app_number_field', [
@@ -168,6 +188,17 @@ void main() {
             units: ['cm', 'in'],
             onUnitChanged: _goldenChanged,
             unitsLabel: 'Units',
+          ),
+        ),
+      ),
+      (
+        'Long label',
+        card(
+          const AppNumberField(
+            value: 2,
+            onChanged: _goldenChanged,
+            label: 'Rest between sets',
+            unit: 'min',
           ),
         ),
       ),

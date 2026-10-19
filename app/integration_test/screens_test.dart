@@ -75,7 +75,13 @@ final _screens = <(String, String)>[
   ('SHARED_ITEM', '/shares/sample-share-template'),
   ('CHALLENGE_DETAIL', '/challenges/mock_challenge_1'),
   ('PAYWALL', '/paywall'),
+  // Shot a screen at a time, top to bottom: GALLERY-01-light.png and on.
+  (_gallery, '/profile/settings/developer/gallery'),
 ];
+
+/// The component gallery (`ui-contract.md` rule 7), which is many screens
+/// long.
+const _gallery = 'GALLERY';
 
 /// The screens that need a workout under way, which every other screen
 /// would then show in its tab bar.
@@ -124,8 +130,35 @@ void main() {
       for (final brightness in Brightness.values.reversed) {
         dispatcher.platformBrightnessTestValue = brightness;
         await _settle(tester, ticks: 4);
+        if (name == _gallery) {
+          await _shootPages(tester, binding, name, brightness);
+          continue;
+        }
         await binding.takeScreenshot('$name-${brightness.name}');
       }
     }
   });
+}
+
+/// Shoots the longest vertical scroll view on screen a page at a time.
+Future<void> _shootPages(
+  WidgetTester tester,
+  IntegrationTestWidgetsFlutterBinding binding,
+  String name,
+  Brightness brightness,
+) async {
+  final position = tester
+      .stateList<ScrollableState>(find.byType(Scrollable))
+      .map((state) => state.position)
+      .where((p) => p.axis == Axis.vertical)
+      .reduce((a, b) => a.maxScrollExtent >= b.maxScrollExtent ? a : b);
+  final step = position.viewportDimension * 0.9;
+  for (var page = 1, offset = 0.0; ; page++, offset += step) {
+    position.jumpTo(offset.clamp(0, position.maxScrollExtent));
+    await _settle(tester, ticks: 2);
+    final number = page.toString().padLeft(2, '0');
+    await binding.takeScreenshot('$name-$number-${brightness.name}');
+    if (offset >= position.maxScrollExtent) break;
+  }
+  position.jumpTo(0);
 }

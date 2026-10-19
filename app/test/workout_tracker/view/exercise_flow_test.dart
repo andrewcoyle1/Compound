@@ -1,6 +1,7 @@
 @Timeout(Duration(seconds: 30))
 library;
 
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
@@ -10,7 +11,6 @@ import 'package:compound/workout_editor/view/set_target_page.dart';
 import 'package:compound/workout_tracker/view/exercise_settings_page.dart';
 import 'package:compound/workout_tracker/view/swap_exercise_picker.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';

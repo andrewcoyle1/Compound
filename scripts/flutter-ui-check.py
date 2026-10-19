@@ -36,6 +36,9 @@ RULES = {
     'icon-literal': (_ + r'Icons\.\w+', 'AppSymbols'),
     'date-format': (_ + r'DateFormat\b|' + _ + r'formatTimeOfDay\(',
                     'AppFormat.date, time, hour or dateTime with context.dateLocale'),
+    # Material and Cupertino come through app_ui (material_ui / cupertino_ui). Flutter's own
+    # libraries are a second copy whose Theme the app never provides, so they draw stock Material 3.
+    'framework-import': (r"package:flutter/(material|cupertino)\.dart", 'package:app_ui/app_ui.dart'),
     # Rule 3: no raw Material building blocks in features.
     'material-button': (_ + r'(TextButton|OutlinedButton|ElevatedButton|FilledButton|IconButton)(\.\w+)?\(',
                         'an app_ui button (AppCtaButton, or add one)'),
@@ -60,6 +63,7 @@ BASELINE = {
     'icon-literal': 6,
     # Every display date went through AppFormat on 19 Oct 2026; no machine format needed DateFormat.
     'date-format': 0,
+    'framework-import': 0,
     'material-button': 328,
     'material-row': 44,
     'material-card': 0,
@@ -79,6 +83,11 @@ def matches(text):
 
 def scan():
     found = {rule: [] for rule in RULES}
+    # Tests must build with the app's Material too, or a widget and its test use different Themes.
+    for path in sorted((ROOT / 'app' / 'test').rglob('*.dart')):
+        for rule, number, line in matches(path.read_text()):
+            if rule == 'framework-import':
+                found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
     for path in sorted(LIB.rglob('*.dart')):
         if any(part in path.as_posix() for part in EXEMPT):
             continue
@@ -134,6 +143,9 @@ def self_test():
         "Card(child: c)": ['material-card'],
         "AppCard(child: c)": [],
         "await showModalBottomSheet<void>(": ['material-dialog'],
+        "import 'package:flutter/material.dart';": ['framework-import'],
+        "import 'package:flutter/cupertino.dart' show CupertinoPicker;": ['framework-import'],
+        "import 'package:flutter/services.dart';": [],
         "// TextButton(onPressed: f) in a comment": [],
         "/// Uses [ListTile( in a doc comment": [],
     }

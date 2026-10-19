@@ -1,10 +1,10 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/onboarding/goal/goal_setup_cubit.dart';
 import 'package:compound/onboarding/view/goal_setup_page.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';

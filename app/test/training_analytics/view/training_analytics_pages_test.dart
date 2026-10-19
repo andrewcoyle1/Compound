@@ -1,3 +1,4 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/progress/view/card_charts.dart';
@@ -5,7 +6,6 @@ import 'package:compound/training_analytics/training_analytics.dart';
 import 'package:compound/training_analytics/training_analytics_routes.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound_models/compound_models.dart' show ExerciseModelKeys;
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';

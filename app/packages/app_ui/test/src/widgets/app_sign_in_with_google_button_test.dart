@@ -156,6 +156,16 @@ void main() {
           isLoading: true,
         ),
       ),
+      (
+        'Loading, iOS',
+        onIos(
+          AppSignInWithGoogleButton(
+            label: 'Sign in with Google',
+            onPressed: () {},
+            isLoading: true,
+          ),
+        ),
+      ),
     ], pumpBeforeTest: pumpOnceSettled);
   });
 }

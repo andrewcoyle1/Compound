@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:analytics_repository/analytics_repository.dart';
+import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/notifications/inbox/inbox_bloc.dart';
@@ -10,7 +11,6 @@ import 'package:compound/social/comments/comments_page.dart';
 import 'package:compound/social/profile/social_profile_page.dart';
 import 'package:compound/social/social.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';

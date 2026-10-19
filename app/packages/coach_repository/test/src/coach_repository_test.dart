@@ -201,6 +201,29 @@ void main() {
         now.subtract(const Duration(hours: 23, minutes: 59)),
       );
       expect(list.single.messages, hasLength(2));
+      final [block, ...] = list.single.messages.last.blocks!;
+      expect(CoachComponent.of(block), isA<CoachTrendChart>());
+    });
+
+    test('shows blocks every component can draw, for every screen', () {
+      for (final kind in [null, ...CoachContextKind.values]) {
+        for (final exerciseId in [null, 'bench']) {
+          final blocks = stagingCoachBlocks(
+            kind,
+            messageId: 'm',
+            now: now,
+            exerciseId: exerciseId,
+            exerciseName: 'Bench',
+          );
+          expect(blocks, isNotEmpty);
+          expect(blocks.map((block) => block.surfaceId), [
+            for (var n = 0; n < blocks.length; n++) 'm-$n',
+          ]);
+          for (final block in blocks) {
+            expect(CoachComponent.of(block), isNotNull, reason: block.kind);
+          }
+        }
+      }
     });
 
     test('refuses until consent is given', () async {
@@ -255,6 +278,14 @@ void main() {
           (CoachMessageRole.assistant, finished.text),
         ]);
         expect(chat.messages.last.id, finished.messageId);
+        final shown = [
+          for (final event in events)
+            if (event is CoachBlockShown) event.block.surfaceId,
+        ];
+        expect(shown, isNotEmpty);
+        expect(finished.blocks.map((b) => b.surfaceId), shown);
+        expect(chat.messages.last.blocks!.map((b) => b.surfaceId), shown);
+        expect(chat.messages.first.blocks, isNull);
       });
 
       test('continues a chat, keeping its title, start and context', () async {

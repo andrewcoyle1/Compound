@@ -4,7 +4,9 @@ import 'package:body_repository/body_repository.dart';
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
+import 'package:compound/log_weight/log_weight.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -160,6 +162,26 @@ void main() {
       (tester.widget(answers()) as CoachMessageBody).text,
       contains('trend weight'),
     );
+    // Its blocks follow it, live, so undated.
+    expect(find.byType(CoachSurface), findsNWidgets(3));
+    expect(find.textContaining('As of'), findsNothing);
+
+    // A follow-up asks the next question.
+    await ask(tester, find.text('Is my protein high enough?'));
+    final messages = tester
+        .element(find.byType(CoachView))
+        .read<CoachCubit>()
+        .state
+        .messages;
+    expect(messages.map((m) => m.text), hasLength(4));
+    expect(messages[2].text, 'Is my protein high enough?');
+
+    // An action opens its screen over the coach.
+    await tap(tester, find.text('Log Weight').first);
+    expect(find.byType(LogWeightPage), findsOneWidget);
+    GoRouter.of(tester.element(find.byType(LogWeightPage))).pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(CoachView), findsOneWidget);
 
     await tap(tester, find.byTooltip('Close'));
     expect(find.byType(CoachView), findsNothing);

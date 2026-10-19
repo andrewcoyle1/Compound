@@ -1,0 +1,352 @@
+{
+  "request": {
+    "message": "What should I eat for the rest of today?",
+    "context": {
+      "kind": "nutrition_day",
+      "date": "2026-10-19"
+    },
+    "ui": 1
+  },
+  "chunks": [
+    {
+      "text": "",
+      "block": {
+        "surfaceId": "msg-20-0",
+        "kind": "target_bars",
+        "asOf": "2026-10-19",
+        "fallback": "Food on 2026-10-19: 1,640 of 2,200 kcal, 98 of 160 g protein, 180 of 240 g carbs, not available fat.",
+        "messages": [
+          {
+            "version": "v0.9",
+            "createSurface": {
+              "surfaceId": "msg-20-0",
+              "catalogId": "compound.coach.v1"
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateComponents": {
+              "surfaceId": "msg-20-0",
+              "components": [
+                {
+                  "id": "root",
+                  "component": "TargetBars",
+                  "rows": {
+                    "path": "/rows"
+                  },
+                  "day": {
+                    "path": "/day"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateDataModel": {
+              "surfaceId": "msg-20-0",
+              "path": "/",
+              "value": {
+                "rows": [
+                  {
+                    "nutrient": "calories",
+                    "value": 1640,
+                    "target": 2200,
+                    "unit": "kcal"
+                  },
+                  {
+                    "nutrient": "protein",
+                    "value": 98,
+                    "target": 160,
+                    "unit": "g"
+                  },
+                  {
+                    "nutrient": "carbs",
+                    "value": 180,
+                    "target": 240,
+                    "unit": "g"
+                  },
+                  {
+                    "nutrient": "fat",
+                    "value": null,
+                    "target": null,
+                    "unit": "g"
+                  }
+                ],
+                "day": "2026-10-19"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "text": "You've eaten 1,640 of your 2,200 kcal and 98 of your 160 g of protein so far. "
+    },
+    {
+      "text": "",
+      "block": {
+        "surfaceId": "msg-20-1",
+        "kind": "trend_chart",
+        "asOf": "2026-10-19",
+        "fallback": "Estimated 1RM, Barbell Bench Press, 2026-07-27 to 2026-10-19: 95 → 101.6 kg.",
+        "messages": [
+          {
+            "version": "v0.9",
+            "createSurface": {
+              "surfaceId": "msg-20-1",
+              "catalogId": "compound.coach.v1"
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateComponents": {
+              "surfaceId": "msg-20-1",
+              "components": [
+                {
+                  "id": "root",
+                  "component": "TrendChart",
+                  "metric": "exercise_e1rm",
+                  "points": {
+                    "path": "/points"
+                  },
+                  "unit": {
+                    "path": "/unit"
+                  },
+                  "exerciseName": {
+                    "path": "/exerciseName"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateDataModel": {
+              "surfaceId": "msg-20-1",
+              "path": "/",
+              "value": {
+                "points": [
+                  {
+                    "x": "2026-07-27",
+                    "y": 95.0
+                  },
+                  {
+                    "x": "2026-07-31",
+                    "y": 95.3
+                  },
+                  {
+                    "x": "2026-08-04",
+                    "y": 95.6
+                  },
+                  {
+                    "x": "2026-08-08",
+                    "y": 96.5
+                  },
+                  {
+                    "x": "2026-08-12",
+                    "y": 96.1
+                  },
+                  {
+                    "x": "2026-08-16",
+                    "y": 96.4
+                  },
+                  {
+                    "x": "2026-08-20",
+                    "y": 96.7
+                  },
+                  {
+                    "x": "2026-08-24",
+                    "y": 97.0
+                  },
+                  {
+                    "x": "2026-08-28",
+                    "y": 97.3
+                  },
+                  {
+                    "x": "2026-09-01",
+                    "y": 97.6
+                  },
+                  {
+                    "x": "2026-09-05",
+                    "y": 97.9
+                  },
+                  {
+                    "x": "2026-09-09",
+                    "y": 98.1
+                  },
+                  {
+                    "x": "2026-09-13",
+                    "y": 99.0
+                  },
+                  {
+                    "x": "2026-09-17",
+                    "y": 98.7
+                  },
+                  {
+                    "x": "2026-09-21",
+                    "y": 99.0
+                  },
+                  {
+                    "x": "2026-09-25",
+                    "y": 99.3
+                  },
+                  {
+                    "x": "2026-09-29",
+                    "y": 99.6
+                  },
+                  {
+                    "x": "2026-10-03",
+                    "y": 99.9
+                  },
+                  {
+                    "x": "2026-10-07",
+                    "y": 100.1
+                  },
+                  {
+                    "x": "2026-10-11",
+                    "y": 100.4
+                  },
+                  {
+                    "x": "2026-10-15",
+                    "y": 100.7
+                  },
+                  {
+                    "x": "2026-10-19",
+                    "y": 101.6
+                  }
+                ],
+                "unit": "kg",
+                "exerciseName": "Barbell Bench Press"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "text": "A chicken breast and a yoghurt would close most of the gap, which helps your bench keep climbing."
+    },
+    {
+      "text": "",
+      "block": {
+        "surfaceId": "msg-20-2",
+        "kind": "actions",
+        "asOf": "2026-10-19",
+        "fallback": "You can: Log a meal; Open Barbell Bench Press; Start a workout.",
+        "messages": [
+          {
+            "version": "v0.9",
+            "createSurface": {
+              "surfaceId": "msg-20-2",
+              "catalogId": "compound.coach.v1"
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateComponents": {
+              "surfaceId": "msg-20-2",
+              "components": [
+                {
+                  "id": "root",
+                  "component": "Actions",
+                  "actions": {
+                    "path": "/actions"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateDataModel": {
+              "surfaceId": "msg-20-2",
+              "path": "/",
+              "value": {
+                "actions": [
+                  {
+                    "kind": "log_meal"
+                  },
+                  {
+                    "kind": "open_exercise",
+                    "exerciseId": "barbell-bench-press",
+                    "exerciseName": "Barbell Bench Press"
+                  },
+                  {
+                    "kind": "start_workout"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "text": "",
+      "block": {
+        "surfaceId": "msg-20-3",
+        "kind": "stat_row",
+        "asOf": "2026-10-19",
+        "fallback": "Protein target today: 160 g; Protein today: not available; Barbell Bench Press estimated 1RM: 101 kg.",
+        "messages": [
+          {
+            "version": "v0.9",
+            "createSurface": {
+              "surfaceId": "msg-20-3",
+              "catalogId": "compound.coach.v1"
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateComponents": {
+              "surfaceId": "msg-20-3",
+              "components": [
+                {
+                  "id": "root",
+                  "component": "StatRow",
+                  "stats": {
+                    "path": "/stats"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateDataModel": {
+              "surfaceId": "msg-20-3",
+              "path": "/",
+              "value": {
+                "stats": [
+                  {
+                    "key": "protein_target",
+                    "value": 160,
+                    "unit": "g"
+                  },
+                  {
+                    "key": "today_protein",
+                    "value": null,
+                    "unit": "g"
+                  },
+                  {
+                    "key": "exercise_e1rm:barbell-bench-press",
+                    "value": 101,
+                    "unit": "kg",
+                    "exerciseName": "Barbell Bench Press"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "result": {
+    "chatId": "chat-8",
+    "messageId": "msg-20",
+    "text": "You've eaten 1,640 of your 2,200 kcal and 98 of your 160 g of protein so far. A chicken breast and a yoghurt would close most of the gap, which helps your bench keep climbing.",
+    "remainingToday": 46
+  }
+}

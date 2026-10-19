@@ -13458,5 +13458,150 @@
     "quickActionLogMeal": "Log Meal",
     "@quickActionLogMeal": {
         "description": "Home-screen quick action (long press on the app icon): opens the meal logger"
+    },
+    "coachBlockAsOf": "As of {date}",
+    "@coachBlockAsOf": {
+        "description": "Caption under a block in a saved coach chat: the day its values were read",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "coachBlockWeight": "Weight",
+    "@coachBlockWeight": {
+        "description": "Coach trend chart title for body weight"
+    },
+    "coachBlockExpenditure": "Expenditure",
+    "@coachBlockExpenditure": {
+        "description": "Coach trend chart title for daily expenditure"
+    },
+    "coachBlockSteps": "Steps",
+    "@coachBlockSteps": {
+        "description": "Coach trend chart title for daily steps"
+    },
+    "coachBlockOneRepMax": "Estimated 1RM",
+    "@coachBlockOneRepMax": {
+        "description": "Coach trend chart title for an exercise's estimated one-rep max when the exercise has no name"
+    },
+    "coachBlockExerciseOneRepMax": "{exercise} Estimated 1RM",
+    "@coachBlockExerciseOneRepMax": {
+        "description": "Coach trend chart title for an exercise's estimated one-rep max",
+        "placeholders": {
+            "exercise": {
+                "type": "String"
+            }
+        }
+    },
+    "coachBlockTrend": "Trend",
+    "@coachBlockTrend": {
+        "description": "Legend name of the trend line on a coach chart"
+    },
+    "coachBlockPerWeek": "{value} a week",
+    "@coachBlockPerWeek": {
+        "description": "A weekly rate on a coach stat, such as -0.3 kg a week",
+        "placeholders": {
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "coachStatWeightTrend": "Trend Weight",
+    "@coachStatWeightTrend": {
+        "description": "Coach stat label"
+    },
+    "coachStatWeightRate": "Weekly Change",
+    "@coachStatWeightRate": {
+        "description": "Coach stat label: how fast the trend weight changes"
+    },
+    "coachStatGoalWeight": "Goal Weight",
+    "@coachStatGoalWeight": {
+        "description": "Coach stat label"
+    },
+    "coachStatExpenditure": "Expenditure",
+    "@coachStatExpenditure": {
+        "description": "Coach stat label"
+    },
+    "coachStatCalorieTarget": "Calorie Target",
+    "@coachStatCalorieTarget": {
+        "description": "Coach stat label"
+    },
+    "coachStatProteinTarget": "Protein Target",
+    "@coachStatProteinTarget": {
+        "description": "Coach stat label"
+    },
+    "coachStatTodayCalories": "Calories Today",
+    "@coachStatTodayCalories": {
+        "description": "Coach stat label"
+    },
+    "coachStatTodayProtein": "Protein Today",
+    "@coachStatTodayProtein": {
+        "description": "Coach stat label"
+    },
+    "coachStatStepsAverage": "Average Steps",
+    "@coachStatStepsAverage": {
+        "description": "Coach stat label: average daily steps"
+    },
+    "coachStatOneRepMax": "Estimated 1RM",
+    "@coachStatOneRepMax": {
+        "description": "Coach stat label for an exercise's estimated one-rep max when the exercise has no name"
+    },
+    "coachStatExerciseOneRepMax": "{exercise} 1RM",
+    "@coachStatExerciseOneRepMax": {
+        "description": "Coach stat label for an exercise's estimated one-rep max",
+        "placeholders": {
+            "exercise": {
+                "type": "String"
+            }
+        }
+    },
+    "coachActionLogWeight": "Log Weight",
+    "@coachActionLogWeight": {
+        "description": "Coach action button: opens Log Weight"
+    },
+    "coachActionLogMeal": "Log Meal",
+    "@coachActionLogMeal": {
+        "description": "Coach action button: opens Log Meal"
+    },
+    "coachActionStartWorkout": "Start Workout",
+    "@coachActionStartWorkout": {
+        "description": "Coach action button: starts an empty workout"
+    },
+    "coachActionOpenExercise": "View Exercise",
+    "@coachActionOpenExercise": {
+        "description": "Coach action button: opens an exercise with no name"
+    },
+    "coachActionOpenNamedExercise": "View {exercise}",
+    "@coachActionOpenNamedExercise": {
+        "description": "Coach action button: opens the named exercise",
+        "placeholders": {
+            "exercise": {
+                "type": "String"
+            }
+        }
+    },
+    "coachActionOpenWeight": "View Weight Trend",
+    "@coachActionOpenWeight": {
+        "description": "Coach action button: opens the Weight Trend screen"
+    },
+    "coachActionOpenExpenditure": "View Expenditure",
+    "@coachActionOpenExpenditure": {
+        "description": "Coach action button: opens the Expenditure screen"
+    },
+    "coachActionOpenSteps": "View Steps",
+    "@coachActionOpenSteps": {
+        "description": "Coach action button: opens the Steps screen"
+    },
+    "coachActionOpenCheckIn": "Open Check-In",
+    "@coachActionOpenCheckIn": {
+        "description": "Coach action button: opens the weekly check-in"
+    },
+    "coachActionOpenDietPlan": "Open Diet Plan",
+    "@coachActionOpenDietPlan": {
+        "description": "Coach action button: opens the diet plan"
+    },
+    "coachFollowUpsTitle": "Ask Next",
+    "@coachFollowUpsTitle": {
+        "description": "Heading of the coach's suggested follow-up questions"
     }
 }

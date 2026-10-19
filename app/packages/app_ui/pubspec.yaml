@@ -28,6 +28,9 @@ dependencies:
   # licence ships in the app's NOTICES.
   haptic_feedback: 0.8.0
   intl: ^0.20.2
+  # AppMarkdownText's parser (BSD-3-Clause); its licence ships in the app's
+  # NOTICES.
+  markdown: 7.3.1
   material_ui: ^1.1.1
   # Share cards drawn off screen to a PNG (MIT).
   screenshot: 3.0.0

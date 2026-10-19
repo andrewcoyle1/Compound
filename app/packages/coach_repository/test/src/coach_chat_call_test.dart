@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:coach_repository/coach_repository.dart';
@@ -92,10 +94,11 @@ void main() {
     }
 
     test('leaves out what is absent', () async {
-      expect(await sent(), {'message': 'Hi'});
+      expect(await sent(), {'message': 'Hi', 'ui': 1});
       expect(await sent(context: CoachContext.today), {
         'message': 'Hi',
         'context': {'kind': 'today'},
+        'ui': 1,
       });
     });
 
@@ -114,6 +117,7 @@ void main() {
           'chatId': 'chat-1',
           'message': 'Hi',
           'context': {'kind': 'nutrition_day', 'id': 'x', 'date': '2026-10-15'},
+          'ui': 1,
         },
       );
     });
@@ -138,6 +142,111 @@ void main() {
     expect(finished.text, 'Hello there');
     expect(finished.remainingToday, 48);
     verifyNever(() => callable.call<Object?>(any<Object?>()));
+  });
+
+  group('blocks', () {
+    /// A recorded stream (compound_models' test/fixtures/coach/).
+    Map<String, Object?> recorded(String name) => jsonDecode(
+      File('../compound_models/test/fixtures/coach/$name').readAsStringSync(),
+    ) as Map<String, Object?>;
+
+    for (final name in ['weight_stream.json', 'nutrition_stream.json']) {
+      test(
+        '$name: text, then blocks in order, then the result with them',
+        () async {
+          final fixture = recorded(name);
+          final chunks = fixture['chunks']! as List<Object?>;
+          final request = fixture['request']! as Map<String, Object?>;
+          stream = () => Stream.fromIterable([
+            for (final chunk in chunks) Chunk(chunk),
+            Result(_result(fixture['result'])),
+          ]);
+
+          final context = request['context']! as Map<String, Object?>;
+          final events = await firebaseCoachChat(functions)(
+            request['message']! as String,
+            context: CoachContext(
+              kind: CoachContextKind.values.firstWhere(
+                (kind) => kind.value == context['kind'],
+              ),
+              date: context['date'] as String?,
+            ),
+          ).toList();
+
+          expect(
+            verify(
+              () => callable.stream<Object?, Object?>(captureAny<Object?>()),
+            ).captured.single,
+            request,
+          );
+          final expected = [
+            for (final chunk in chunks.cast<Map<String, Object?>>())
+              if (chunk['block'] case final Map<String, Object?> block)
+                block['surfaceId']
+              else
+                chunk['text'],
+          ];
+          expect(
+            [
+              for (final event in events)
+                switch (event) {
+                  CoachText(:final text) => text,
+                  CoachBlockShown(:final block) => block.surfaceId,
+                  CoachFinished() => null,
+                },
+            ],
+            [...expected, null],
+          );
+          final finished = events.last as CoachFinished;
+          expect(finished.blocks.map((block) => block.surfaceId), [
+            for (final event in events)
+              if (event is CoachBlockShown) event.block.surfaceId,
+          ]);
+          expect(finished.blocks.first.messages, isNotEmpty);
+          verifyNever(() => callable.call<Object?>(any<Object?>()));
+        },
+      );
+    }
+
+    test(
+      'one that does not decode is dropped, and the answer stands',
+      () async {
+        stream = () => Stream.fromIterable([
+          Chunk({'text': 'Hi', 'block': 'not a block'}),
+          Chunk({
+            'text': '',
+            'block': {'surfaceId': 's'},
+          }),
+          Result(_result(_finishedData)),
+        ]);
+
+        final events = await send().toList();
+
+        expect(events, hasLength(2));
+        expect((events.first as CoachText).text, 'Hi');
+        expect((events.last as CoachFinished).blocks, isEmpty);
+        verifyNever(() => callable.call<Object?>(any<Object?>()));
+      },
+    );
+
+    test(
+      'a block alone means it was answering: a drop is not asked again',
+      () async {
+        final block = (recorded('weight_stream.json')['chunks']! as List)[2];
+        stream = () =>
+            Stream<StreamResponse<Object?, Object?>>.value(Chunk(block))
+                .followedBy(PlatformException(code: 'firebase_functions'));
+
+        await expectLater(
+          send(),
+          emitsInOrder([
+            isA<CoachBlockShown>(),
+            emitsError(_failure(CoachFailure.unavailable)),
+          ]),
+        );
+        verifyNever(() => callable.call<Object?>(any<Object?>()));
+      },
+    );
   });
 
   group('a refusal the stream reports with its code', () {
@@ -181,7 +290,8 @@ void main() {
         send(),
         emitsError(_failure(CoachFailure.consentRequired)),
       );
-      verify(() => callable.call<Object?>({'message': 'Hi'})).called(1);
+      verify(() => callable.call<Object?>({'message': 'Hi', 'ui': 1}))
+          .called(1);
     });
 
     test('after a platform error or an unreadable chunk', () async {

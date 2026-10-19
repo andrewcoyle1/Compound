@@ -41,6 +41,11 @@ Future<CoachRepository> inMemoryCoachRepository({
                   'maintenance. Based on your weigh-ins and meal logs since 14 '
                   'September.',
               createdAt: asked.add(const Duration(minutes: 1)),
+              blocks: stagingCoachBlocks(
+                CoachContextKind.weightTrend,
+                messageId: 'm2',
+                now: asked,
+              ),
             ),
           ],
         ).toFirestore().map((key, value) => MapEntry(key, _stored(value))),
@@ -90,8 +95,20 @@ CoachChatCall stagingCoachChat({
       await Future<void>.delayed(wordDelay);
       yield CoachText('$word ');
     }
-    final time = Timestamp.fromDate(clock());
+    final now = clock();
+    final time = Timestamp.fromDate(now);
     final reply = '${chat.id}-$sent';
+    final blocks = stagingCoachBlocks(
+      context?.kind,
+      messageId: reply,
+      now: now,
+      exerciseId: context?.id,
+      exerciseName: context?.title,
+    );
+    for (final block in blocks) {
+      await Future<void>.delayed(wordDelay);
+      yield CoachBlockShown(block);
+    }
     await chat.set({
       CoachChatKeys.id: chat.id,
       CoachChatKeys.title: existing?[CoachChatKeys.title] ?? message,
@@ -101,15 +118,19 @@ CoachChatCall stagingCoachChat({
           existing?[CoachChatKeys.contextKind] ?? context?.kind.value,
       CoachChatKeys.messages: [
         ...?existing?[CoachChatKeys.messages] as List<Object?>?,
-        for (final (id, role, text) in [
-          ('$reply-q', CoachMessageRole.user, message),
-          (reply, CoachMessageRole.assistant, answer),
+        for (final (id, role, text, shown) in [
+          ('$reply-q', CoachMessageRole.user, message, <CoachBlock>[]),
+          (reply, CoachMessageRole.assistant, answer, blocks),
         ])
           {
             CoachMessageKeys.id: id,
             CoachMessageKeys.role: role.value,
             CoachMessageKeys.text: text,
             CoachMessageKeys.createdAt: time,
+            if (shown.isNotEmpty)
+              CoachMessageKeys.blocks: [
+                for (final block in shown) block.toFirestore(),
+              ],
           },
       ],
     });
@@ -118,6 +139,7 @@ CoachChatCall stagingCoachChat({
       messageId: reply,
       text: answer,
       remainingToday: 50 - sent,
+      blocks: blocks,
     );
   };
 }
@@ -156,3 +178,223 @@ const Map<CoachContextKind, String> _answers = {
       'comes from your weight trend and what you logged over the last 28 '
       'days.',
 };
+
+/// The blocks the staging coach shows with its answer about [kind], as the
+/// function lays them out: every value filled in, on the day of [now].
+/// An exercise's chart is about [exerciseId], called [exerciseName].
+List<CoachBlock> stagingCoachBlocks(
+  CoachContextKind? kind, {
+  required String messageId,
+  required DateTime now,
+  String? exerciseId,
+  String? exerciseName,
+}) {
+  String day(int daysAgo) {
+    final date = DateTime(now.year, now.month, now.day - daysAgo);
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${date.year}-${two(date.month)}-${two(date.day)}';
+  }
+
+  var count = 0;
+  CoachBlock block(
+    String kind,
+    String fallback,
+    Map<String, Object?> component,
+    Map<String, Object?> data,
+  ) {
+    final surfaceId = '$messageId-${count++}';
+    Map<String, Object?> message(String name, Map<String, Object?> body) => {
+      'version': 'v0.9',
+      name: {'surfaceId': surfaceId, ...body},
+    };
+    return CoachBlock(
+      surfaceId: surfaceId,
+      kind: kind,
+      asOf: day(0),
+      fallback: fallback,
+      messages: [
+        message('createSurface', {'catalogId': 'compound.coach.v1'}),
+        message('updateComponents', {
+          'components': [
+            {'id': 'root', ...component},
+          ],
+        }),
+        message('updateDataModel', {'path': '/', 'value': data}),
+      ],
+    );
+  }
+
+  Map<String, Object?> bound(String component, List<String> props) => {
+    'component': component,
+    for (final prop in props) prop: {'path': '/$prop'},
+  };
+
+  // Readings along a straight line from [from] to [to] over [days], with
+  // a little day-to-day noise.
+  List<Map<String, Object?>> line(
+    double from,
+    double to,
+    int days, {
+    int every = 1,
+    double noise = 0,
+    int digits = 1,
+  }) => [
+    for (var n = days; n >= 0; n -= every)
+      {
+        'x': day(n),
+        'y': double.parse(
+          (from +
+                  (to - from) * (days - n) / days +
+                  noise * ((n * 7919) % 11 - 5) / 5)
+              .toStringAsFixed(digits),
+        ),
+      },
+  ];
+
+  Map<String, Object?> stat(String key, num? value, String unit) => {
+    'key': key,
+    'value': value,
+    'unit': unit,
+  };
+
+  CoachBlock actions(String fallback, List<Map<String, Object?>> list) => block(
+    'actions',
+    fallback,
+    bound('Actions', ['actions']),
+    {'actions': list},
+  );
+
+  CoachBlock followUps(List<String> questions) => block(
+    'follow_ups',
+    'Suggested questions: ${questions.join(' / ')}',
+    bound('FollowUps', ['questions']),
+    {'questions': questions},
+  );
+
+  return switch (kind) {
+    CoachContextKind.weightTrend => [
+      block(
+        'trend_chart',
+        'Weight trend, ${day(56)} to ${day(0)}: 73.1 → 72.3 kg.',
+        {
+          ...bound('TrendChart', ['points', 'trend', 'unit']),
+          'metric': 'weight',
+        },
+        {
+          'points': line(73.1, 72.3, 56, every: 2, noise: 0.4),
+          'trend': line(73.1, 72.3, 56, every: 7, digits: 2),
+          'unit': 'kg',
+        },
+      ),
+      actions('You can: Log weight; Open weight.', [
+        {'kind': 'log_weight'},
+        {'kind': 'open_metric', 'metric': 'weight'},
+      ]),
+      followUps([
+        'How much should I eat to lose faster?',
+        'Is my protein high enough?',
+      ]),
+    ],
+    CoachContextKind.nutritionDay => [
+      block(
+        'target_bars',
+        'Food on ${day(0)}: 1,640 of 2,200 kcal, 98 of 160 g protein, 180 '
+            'of 240 g carbs, 52 of 70 g fat.',
+        bound('TargetBars', ['rows', 'day']),
+        {
+          'day': day(0),
+          'rows': [
+            for (final (nutrient, value, target, unit) in [
+              ('calories', 1640, 2200, 'kcal'),
+              ('protein', 98, 160, 'g'),
+              ('carbs', 180, 240, 'g'),
+              ('fat', 52, 70, 'g'),
+            ])
+              {
+                'nutrient': nutrient,
+                'value': value,
+                'target': target,
+                'unit': unit,
+              },
+          ],
+        },
+      ),
+      actions('You can: Log a meal.', [
+        {'kind': 'log_meal'},
+      ]),
+    ],
+    CoachContextKind.checkIn => [
+      block(
+        'stat_row',
+        'Expenditure: 2,480 kcal; Calorie target today: 2,200 kcal; Weekly '
+            'change: −0.3 kg/wk.',
+        bound('StatRow', ['stats']),
+        {
+          'stats': [
+            stat('expenditure', 2480, 'kcal'),
+            stat('calorie_target', 2200, 'kcal'),
+            stat('weight_rate_per_week', -0.3, 'kg_per_week'),
+          ],
+        },
+      ),
+      actions('You can: Open the weekly check-in; Open the diet plan.', [
+        {'kind': 'open_check_in'},
+        {'kind': 'open_diet_plan'},
+      ]),
+    ],
+    CoachContextKind.expenditure => [
+      block(
+        'trend_chart',
+        'Expenditure, ${day(28)} to ${day(0)}: 2,390 → 2,480 kcal.',
+        {
+          ...bound('TrendChart', ['points', 'unit']),
+          'metric': 'expenditure',
+        },
+        {'points': line(2390, 2480, 28, noise: 15, digits: 0), 'unit': 'kcal'},
+      ),
+    ],
+    CoachContextKind.exercise when exerciseId != null => [
+      block(
+        'trend_chart',
+        'Estimated 1RM, ${exerciseName ?? exerciseId}, ${day(84)} to '
+            '${day(0)}: 95 → 101 kg.',
+        {
+          ...bound('TrendChart', ['points', 'unit', 'exerciseName']),
+          'metric': 'exercise_e1rm',
+        },
+        {
+          'points': line(95, 101, 84, every: 4, noise: 0.8),
+          'unit': 'kg',
+          'exerciseName': exerciseName,
+        },
+      ),
+      actions('You can: Open ${exerciseName ?? exerciseId}; Start a workout.', [
+        {
+          'kind': 'open_exercise',
+          'exerciseId': exerciseId,
+          'exerciseName': exerciseName,
+        },
+        {'kind': 'start_workout'},
+      ]),
+    ],
+    _ => [
+      block(
+        'stat_row',
+        'Calories today: 1,640 kcal; Protein today: 98 g; Steps, 30-day '
+            'average: 8,420 steps.',
+        bound('StatRow', ['stats']),
+        {
+          'stats': [
+            stat('today_calories', 1640, 'kcal'),
+            stat('today_protein', 98, 'g'),
+            stat('steps_average', 8420, 'steps'),
+          ],
+        },
+      ),
+      followUps([
+        'What should I train next?',
+        'How is my bench press progressing?',
+      ]),
+    ],
+  };
+}

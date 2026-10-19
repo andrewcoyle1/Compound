@@ -2,11 +2,13 @@
 /// contract (docs/specs/flutter/firestore-contract.md).
 library;
 
+export 'src/a2ui.dart';
 export 'src/analytics_settings.dart';
 export 'src/body_enums.dart';
 export 'src/body_measurement_entry.dart';
 export 'src/check_in.dart';
 export 'src/circle.dart';
+export 'src/coach_catalog.dart';
 export 'src/coach_chat.dart';
 export 'src/diet_plan.dart';
 export 'src/document_id.dart';

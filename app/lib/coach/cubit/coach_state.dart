@@ -27,8 +27,15 @@ final class const CoachState({
   /// later without touching the rest.
   final List<CoachMessage> messages = const [],
 
+  /// How many of [messages] came from the stored chat: their blocks are
+  /// snapshots, shown with the day they were read.
+  final int savedMessageCount = 0,
+
   /// The answer as it streams in; null when nothing is streaming.
   final String? streamingText,
+
+  /// The blocks the streaming answer has shown so far, in order.
+  final List<CoachBlock> streamingBlocks = const [],
 
   /// The chat being continued; null until the first answer of a new one.
   final String? chatId,
@@ -72,7 +79,9 @@ final class const CoachState({
   CoachState copyWith({
     CoachGate? gate,
     List<CoachMessage>? messages,
+    int? savedMessageCount,
     String? Function()? streamingText,
+    List<CoachBlock>? streamingBlocks,
     String? Function()? chatId,
     String? Function()? chatTitle,
     CoachFailure? Function()? failure,
@@ -86,7 +95,9 @@ final class const CoachState({
   }) => CoachState(
     gate: gate ?? this.gate,
     messages: messages ?? this.messages,
+    savedMessageCount: savedMessageCount ?? this.savedMessageCount,
     streamingText: streamingText == null ? this.streamingText : streamingText(),
+    streamingBlocks: streamingBlocks ?? this.streamingBlocks,
     chatId: chatId == null ? this.chatId : chatId(),
     chatTitle: chatTitle == null ? this.chatTitle : chatTitle(),
     failure: failure == null ? this.failure : failure(),
@@ -103,7 +114,9 @@ final class const CoachState({
   List<Object?> get props => [
     gate,
     messages,
+    savedMessageCount,
     streamingText,
+    streamingBlocks,
     chatId,
     chatTitle,
     failure,

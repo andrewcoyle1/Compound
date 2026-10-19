@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 /// {@template app_swipe_action}
 /// One button behind a row, revealed by a swipe (a SwiftUI `swipeActions`
@@ -39,10 +41,10 @@ class AppSwipeAction {
 /// {@template app_swipe_actions}
 /// A row with buttons behind it, as SwiftUI's `swipeActions`: swiping
 /// towards the end reveals [leading], towards the start [trailing], each
-/// side's first button at its outer edge.
+/// side's first button at its outer edge. Built on `flutter_slidable`.
 ///
 /// - Tapping a button runs it and closes the row; tapping the row while it
-///   is open only closes it.
+///   is open only closes it. Scrolling the list closes it too.
 /// - Swiping on past most of the row's width runs that side's first button
 ///   at once, when [leadingFullSwipe] or [trailingFullSwipe] allows (as
 ///   `allowsFullSwipe`, both on by default). A haptic marks the point where
@@ -88,73 +90,92 @@ class AppSwipeActions extends StatefulWidget {
 
 class _AppSwipeActionsState extends State<AppSwipeActions>
     with SingleTickerProviderStateMixin {
-  // How far the row has moved towards the end (leading side showing) when
-  // positive, towards the start when negative: logical, whatever the text
-  // direction.
-  late final _offset = AnimationController.unbounded(vsync: this);
+  late final _Controller _controller;
   double _width = 0;
   bool _armed = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Added before the slidable's own listeners, so a full swipe has run
+    // and the row is closing by the time they see the release.
+    _controller = _Controller(this)
+      ..animation.addListener(_onMoved)
+      ..endGesture.addListener(_onReleased);
+  }
+
+  @override
   void dispose() {
-    _offset.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  bool get _isLtr => Directionality.of(context) == TextDirection.ltr;
+  bool get _startOpen => _controller.actionPaneType.value == .start;
 
-  List<AppSwipeAction> _side(double offset) =>
-      offset > 0 ? widget.leading : widget.trailing;
+  double _extent(List<AppSwipeAction> actions) =>
+      math.min(1, actions.length * AppSwipeActions.buttonWidth / _width);
 
-  bool _fullSwipe(double offset) =>
-      offset > 0 ? widget.leadingFullSwipe : widget.trailingFullSwipe;
+  /// Whether letting go now runs the open side's first button.
+  bool get _pastFullSwipe {
+    if (_controller.actionPaneType.value == .none) return false;
+    final actions = _startOpen ? widget.leading : widget.trailing;
+    final allowed = _startOpen
+        ? widget.leadingFullSwipe
+        : widget.trailingFullSwipe;
+    final ratio = _controller.ratio.abs();
+    return allowed &&
+        ratio >= AppSwipeActions.fullSwipeFraction &&
+        ratio > _extent(actions);
+  }
 
-  double _revealed(double offset) =>
-      _side(offset).length * AppSwipeActions.buttonWidth;
-
-  void _onDragUpdate(DragUpdateDetails details) {
-    final delta = details.primaryDelta! * (_isLtr ? 1 : -1);
-    var next = _offset.value + delta;
-    if (next > 0 && widget.leading.isEmpty) next = 0;
-    if (next < 0 && widget.trailing.isEmpty) next = 0;
-    final limit = _fullSwipe(next) ? _width : _revealed(next);
-    _offset.value = next.clamp(-limit, limit);
-    final armed =
-        _fullSwipe(next) &&
-        next.abs() > _width * AppSwipeActions.fullSwipeFraction;
+  void _onMoved() {
+    if (_controller.closing) return;
+    final armed = _pastFullSwipe;
     if (armed != _armed) {
       _armed = armed;
       unawaited(HapticFeedback.mediumImpact());
     }
   }
 
-  void _onDragEnd(DragEndDetails details) {
-    final offset = _offset.value;
-    if (_armed) {
-      _armed = false;
-      _run(_side(offset).first);
-      return;
-    }
-    final velocity = details.primaryVelocity! * (_isLtr ? 1 : -1);
-    final opening = velocity.abs() > 300
-        ? velocity.sign == offset.sign
-        : offset.abs() > _revealed(offset) / 2;
-    _settle(opening ? _revealed(offset) * offset.sign : 0);
+  void _onReleased() {
+    if (!_armed) return;
+    _armed = false;
+    _run((_startOpen ? widget.leading : widget.trailing).first);
   }
 
-  void _settle(double target) => _offset.animateTo(
-    target,
-    duration: AppMotion.quick.durationOf(context),
-    curve: AppMotion.quick.curve,
-  );
-
   void _run(AppSwipeAction action) {
-    _settle(0);
+    unawaited(_controller.close());
     action.onPressed();
+  }
+
+  ActionPane? _pane(List<AppSwipeAction> actions, {required bool fullSwipe}) {
+    if (actions.isEmpty) return null;
+    final motion = _StretchMotion(width: _width, fullSwipe: fullSwipe);
+    return ActionPane(
+      extentRatio: _extent(actions),
+      motion: motion,
+      // Lets the row go past its buttons. The slidable would remove the row
+      // once dismissed; [_onReleased] runs the button instead, so this
+      // vetoes every dismissal and closes, and onDismissed never runs.
+      dismissible: fullSwipe
+          ? DismissiblePane(
+              dismissThreshold: AppSwipeActions.fullSwipeFraction,
+              confirmDismiss: () async => false,
+              closeOnCancel: true,
+              onDismissed: _controller.close,
+              motion: motion,
+            )
+          : null,
+      children: [
+        for (final action in actions)
+          _Button(action: action, onPressed: () => _run(action)),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    _controller.duration = AppMotion.quick.durationOf(context);
     return Semantics(
       customSemanticsActions: {
         for (final action in [...widget.leading, ...widget.trailing])
@@ -163,43 +184,41 @@ class _AppSwipeActionsState extends State<AppSwipeActions>
       child: LayoutBuilder(
         builder: (context, constraints) {
           _width = constraints.maxWidth;
-          return GestureDetector(
-            onHorizontalDragUpdate: _onDragUpdate,
-            onHorizontalDragEnd: _onDragEnd,
-            child: ClipRect(
-              child: AnimatedBuilder(
-                animation: _offset,
-                builder: (context, child) {
-                  final offset = _offset.value;
-                  return Stack(
-                    // The row keeps the width it would have had alone.
-                    fit: StackFit.passthrough,
-                    children: [
-                      if (offset != 0)
-                        Positioned.fill(child: _buttons(context, offset)),
-                      Transform.translate(
-                        offset: Offset(offset * (_isLtr ? 1 : -1), 0),
-                        child: offset == 0
-                            ? child
-                            : Stack(
-                                fit: StackFit.passthrough,
-                                children: [
-                                  ?child,
-                                  Positioned.fill(
-                                    // Open, a tap on the row only closes it.
-                                    child: GestureDetector(
-                                      key: const Key('AppSwipeActions.close'),
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: () => _settle(0),
-                                      excludeFromSemantics: true,
-                                    ),
-                                  ),
-                                ],
-                              ),
+          return Slidable(
+            // DismissiblePane asserts its Slidable has a key.
+            key: const Key('AppSwipeActions.slidable'),
+            controller: _controller,
+            startActionPane: _pane(
+              widget.leading,
+              fullSwipe: widget.leadingFullSwipe,
+            ),
+            endActionPane: _pane(
+              widget.trailing,
+              fullSwipe: widget.trailingFullSwipe,
+            ),
+            // The slidable loosens its child's width, and moves it by a share
+            // of it: full width keeps the row in step with the buttons.
+            child: SizedBox(
+              width: _width,
+              child: ValueListenableBuilder(
+                valueListenable: _controller.direction,
+                builder: (context, direction, child) => direction == 0
+                    ? child!
+                    : Stack(
+                        fit: StackFit.passthrough,
+                        children: [
+                          child!,
+                          Positioned.fill(
+                            // Open, a tap on the row only closes it.
+                            child: GestureDetector(
+                              key: const Key('AppSwipeActions.close'),
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => unawaited(_controller.close()),
+                              excludeFromSemantics: true,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  );
-                },
                 child: widget.child,
               ),
             ),
@@ -208,31 +227,90 @@ class _AppSwipeActionsState extends State<AppSwipeActions>
       ),
     );
   }
+}
 
-  /// The side's buttons, filling the gap the row has left: stretched past
-  /// their own widths, and all the first one's once a full swipe would run.
-  Widget _buttons(BuildContext context, double offset) {
-    final actions = _side(offset);
-    final gap = offset.abs();
-    final armed =
-        _fullSwipe(offset) && gap > _width * AppSwipeActions.fullSwipeFraction;
-    final buttons = [
-      for (final (index, action) in actions.indexed)
-        SizedBox(
-          width: armed ? (index == 0 ? gap : 0) : gap / actions.length,
-          child: _Button(action: action, onPressed: () => _run(action)),
-        ),
-    ];
+/// The slidable's controller, moving at [AppMotion.quick] (none under
+/// reduced motion) and never past the middle to a side without buttons.
+class _Controller extends SlidableController {
+  new(super.vsync);
+
+  Duration duration = AppMotion.quick.duration;
+
+  // The slidable may open a pane from the pane's initState (a release that
+  // came before its first frame), and a zero-length animation would then
+  // notify mid-build. A microsecond still lands on the next frame.
+  Duration get _moveDuration =>
+      duration == Duration.zero ? const Duration(microseconds: 1) : duration;
+
+  @override
+  set ratio(double value) {
+    final blocked =
+        (value > 0 && !enablePositiveActionPane) ||
+        (value < 0 && !enableNegativeActionPane);
+    super.ratio = blocked ? 0 : value;
+  }
+
+  @override
+  Future<void> openTo(
+    double ratio, {
+    Duration duration = Duration.zero,
+    Curve curve = Curves.linear,
+  }) => super.openTo(
+    ratio,
+    duration: _moveDuration,
+    curve: AppMotion.quick.curve,
+  );
+
+  @override
+  Future<void> close({
+    Duration duration = Duration.zero,
+    Curve curve = Curves.linear,
+  }) => super.close(duration: _moveDuration, curve: AppMotion.quick.curve);
+}
+
+/// The open side's buttons, filling the gap the row has left: stretched past
+/// their own widths, and all the first one's once a full swipe would run.
+class const _StretchMotion({
+  required final double width,
+  required final bool fullSwipe,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final pane = ActionPane.of(context)!;
+    final controller = Slidable.of(context)!;
     return ExcludeSemantics(
-      child: Align(
-        alignment: offset > 0
-            ? AlignmentDirectional.centerStart
-            : AlignmentDirectional.centerEnd,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          // The first button sits at the outer edge on either side.
-          children: offset > 0 ? buttons : buttons.reversed.toList(),
+      child: LayoutBuilder(
+        builder: (context, constraints) => AnimatedBuilder(
+          animation: controller.animation,
+          builder: (context, _) {
+            final gap = math.min(
+              controller.ratio.abs() * width,
+              constraints.maxWidth,
+            );
+            final armed =
+                fullSwipe &&
+                gap >= width * AppSwipeActions.fullSwipeFraction &&
+                gap > width * pane.extentRatio;
+            final count = pane.children.length;
+            final buttons = [
+              for (final (index, button) in pane.children.indexed)
+                SizedBox(
+                  width: armed ? (index == 0 ? gap : 0) : gap / count,
+                  child: button,
+                ),
+            ];
+            return Align(
+              alignment: pane.fromStart
+                  ? AlignmentDirectional.centerStart
+                  : AlignmentDirectional.centerEnd,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                // The first button sits at the outer edge on either side.
+                children: pane.fromStart ? buttons : buttons.reversed.toList(),
+              ),
+            );
+          },
         ),
       ),
     );

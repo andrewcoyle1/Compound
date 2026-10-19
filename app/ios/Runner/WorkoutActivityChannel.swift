@@ -5,10 +5,10 @@ import ActivityKit
 #endif
 import WidgetKit
 
-/// The Live Activity and the home-screen widgets, driven from Dart (`LiveActivityRepository` and
-/// `HomeWidgetRepository` in notifications_repository). The Swift app's `LiveActivityManager` and
-/// `WidgetSnapshot+App.swift` work out what to show from its managers; here Dart works it out and
-/// this only hands it to ActivityKit and the App Group.
+/// The Live Activity, driven from Dart (`LiveActivityRepository` in notifications_repository). The
+/// Swift app's `LiveActivityManager` works out what to show from its managers; here Dart works it
+/// out and this only hands it to ActivityKit. The home-screen widgets' snapshot reaches the App
+/// Group through the home_widget plugin (`PluginHomeWidgetRepository`).
 ///
 /// The Live Activity's buttons (`WorkoutRestTimerIntents.swift`) run in this process and reach
 /// Dart through this object as their `LiveActivityIntentHandling`.
@@ -16,7 +16,6 @@ import WidgetKit
 final class WorkoutActivityChannel: NSObject {
 
   private let activity: FlutterMethodChannel
-  private let widgets: FlutterMethodChannel
 
   /// The last content state Dart sent, so the activity can be ended with its summary and a tap
   /// that changed nothing can still take the loading state off.
@@ -32,31 +31,10 @@ final class WorkoutActivityChannel: NSObject {
 
   init(messenger: FlutterBinaryMessenger) {
     activity = FlutterMethodChannel(name: "com.andrewcoyle.compound/live_activity", binaryMessenger: messenger)
-    widgets = FlutterMethodChannel(name: "com.andrewcoyle.compound/home_widgets", binaryMessenger: messenger)
     super.init()
     activity.setMethodCallHandler { [weak self] call, result in self?.handleActivity(call, result: result) }
-    widgets.setMethodCallHandler { call, result in Self.handleWidgets(call, result: result) }
     if #available(iOS 17.0, *) {
       LiveActivityIntentHandler.current = self
-    }
-  }
-
-  // MARK: - Home-screen widgets
-
-  private static func handleWidgets(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    switch call.method {
-    case "write":
-      guard let json = call.arguments as? [String: Any],
-            let snapshot: WidgetSnapshot = decode(json) else {
-        return result(FlutterError(code: "bad_snapshot", message: "Unreadable widget snapshot", details: nil))
-      }
-      WidgetSnapshotStore.write(snapshot)
-      result(nil)
-    case "clear":
-      WidgetSnapshotStore.clear()
-      result(nil)
-    default:
-      result(FlutterMethodNotImplemented)
     }
   }
 
@@ -217,11 +195,6 @@ final class WorkoutActivityChannel: NSObject {
   // MARK: - JSON
 
   /// Dart's JSON, dates as seconds since 1970.
-  nonisolated private static func decode<T: Decodable>(_ json: [String: Any]) -> T? {
-    guard let data = try? JSONSerialization.data(withJSONObject: json) else { return nil }
-    return decode(data)
-  }
-
   nonisolated private static func decode<T: Decodable>(_ data: Data) -> T? {
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .secondsSince1970

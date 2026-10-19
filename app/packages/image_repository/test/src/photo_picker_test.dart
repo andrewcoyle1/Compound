@@ -419,6 +419,7 @@ void main() {
         'uCrop',
         'OkHttp',
         'Apache Commons IO',
+        'CameraX',
       ]),
     );
   });

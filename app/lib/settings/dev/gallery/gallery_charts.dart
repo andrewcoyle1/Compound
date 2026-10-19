@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/progress/view/progress_card.dart';
 import 'package:compound/settings/dev/gallery/gallery_entry.dart';
 import 'package:compound_charts/compound_charts.dart';
 
@@ -96,6 +97,55 @@ List<Widget> galleryCharts(BuildContext context) {
     galleryEntry('CartesianChart', [
       for (final (caption, data) in charts)
         galleryBlock(caption, CartesianChart(data: data)),
+      for (final (caption, data) in [
+        (
+          'compact: a sparkline',
+          _spark(weight.last.points, colors.expenditure, ChartMark.line),
+        ),
+        (
+          'compact: a sparkline with area',
+          _spark(weight.last.points, colors.expenditure, ChartMark.area),
+        ),
+        (
+          'compact: stacked bars with a line, a day empty',
+          _week([
+            for (final s in macros)
+              ChartSeries(
+                label: s.label,
+                color: s.color,
+                mark: ChartMark.bar,
+                // Two days logged, a day missed, two more.
+                points: [
+                  for (final (i, p) in s.points.take(5).indexed)
+                    (x: p.x, y: i == 2 ? 0.0 : p.y),
+                ],
+              ),
+            ChartSeries(
+              label: l10n.expenditureTitle,
+              color: colors.expenditure,
+              points: _days([500, 520, 510, 530, 525, 515, 540]),
+            ),
+          ], yFit: ChartYFit.zero),
+        ),
+        (
+          'compact: empty bars',
+          _week([
+            ChartSeries(
+              label: l10n.progressWorkouts,
+              color: colors.workouts,
+              mark: ChartMark.bar,
+              points: const [],
+            ),
+          ], yFit: ChartYFit.zero),
+        ),
+      ])
+        galleryBlock(
+          caption,
+          SizedBox(
+            height: ProgressCard.chartHeight,
+            child: CartesianChart.compact(data: data),
+          ),
+        ),
       galleryBlock(
         'interactive: hold for the trackball, pinch, pan, fling, double tap',
         _Interactive(data: _week(macros, yFit: ChartYFit.zero)),
@@ -155,6 +205,17 @@ ChartData _week(List<ChartSeries> series, {ChartYFit yFit = ChartYFit.tight}) =>
       start: DateTime(2026, 10, 12),
       end: DateTime(2026, 10, 19),
       yFit: yFit,
+    );
+
+/// A card's line through [points], edge to edge.
+ChartData _spark(List<ChartPoint> points, Color color, ChartMark mark) =>
+    ChartData(
+      series: [
+        ChartSeries(label: '', color: color, mark: mark, points: points),
+      ],
+      start: points.first.x,
+      end: points.last.x,
+      bucketDays: 0,
     );
 
 /// [values] a day apart, from 12 Oct 2026.

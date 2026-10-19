@@ -11,6 +11,7 @@ void main() {
 
   late FakeNotificationsRepository notifications;
   late InMemoryUserRepository users;
+  late FakePlatformLinks platformLinks;
 
   NotificationsCubit build() => NotificationsCubit(
     notifications: notifications,
@@ -132,6 +133,23 @@ void main() {
       expect: () => const [
         NotificationsState(link: TabLink(DeepLinkTab.progress), linkId: 1),
         NotificationsState(link: TabLink(DeepLinkTab.progress), linkId: 2),
+      ],
+    );
+
+    blocTest<NotificationsCubit, NotificationsState>(
+      'routes the links the platform opens the app with',
+      build: () => NotificationsCubit(
+        notifications: notifications,
+        users: users,
+        platformLinks: platformLinks,
+      ),
+      setUp: () => platformLinks = FakePlatformLinks(),
+      act: (cubit) async {
+        await cubit.userChanged(uid, ready: true);
+        platformLinks.open(Uri.parse('compound://tab/social'));
+      },
+      expect: () => const [
+        NotificationsState(link: TabLink(DeepLinkTab.social), linkId: 1),
       ],
     );
 

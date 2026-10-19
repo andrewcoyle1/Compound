@@ -1,0 +1,236 @@
+{
+  "context_kind": "weight_trend",
+  "created_at": {
+    "$timestamp": "2026-10-05T16:59:30.250Z"
+  },
+  "id": "chat_contract_blocks",
+  "messages": [
+    {
+      "created_at": {
+        "$timestamp": "2026-10-05T16:59:30.250Z"
+      },
+      "id": "m_user",
+      "role": "user",
+      "text": "Am I on track?"
+    },
+    {
+      "blocks": [
+        {
+          "as_of": "2026-10-05",
+          "fallback": "Weight trend, 2026-09-29 to 2026-10-05: 80.2 → 79.8 kg.",
+          "kind": "trend_chart",
+          "messages": [
+            {
+              "createSurface": {
+                "catalogId": "compound.coach.v1",
+                "surfaceId": "m_assistant-0"
+              },
+              "version": "v0.9"
+            },
+            {
+              "updateComponents": {
+                "components": [
+                  {
+                    "component": "TrendChart",
+                    "id": "root",
+                    "metric": "weight",
+                    "points": {
+                      "path": "/points"
+                    },
+                    "trend": {
+                      "path": "/trend"
+                    },
+                    "unit": {
+                      "path": "/unit"
+                    }
+                  }
+                ],
+                "surfaceId": "m_assistant-0"
+              },
+              "version": "v0.9"
+            },
+            {
+              "updateDataModel": {
+                "path": "/",
+                "surfaceId": "m_assistant-0",
+                "value": {
+                  "points": [
+                    {
+                      "x": "2026-09-29",
+                      "y": 80.5
+                    },
+                    {
+                      "x": "2026-09-30",
+                      "y": 80
+                    },
+                    {
+                      "x": "2026-10-01",
+                      "y": 80.3
+                    },
+                    {
+                      "x": "2026-10-02",
+                      "y": 79.9
+                    },
+                    {
+                      "x": "2026-10-03",
+                      "y": 80.2
+                    },
+                    {
+                      "x": "2026-10-04",
+                      "y": 79.8
+                    },
+                    {
+                      "x": "2026-10-05",
+                      "y": 79.4
+                    }
+                  ],
+                  "trend": [
+                    {
+                      "x": "2026-09-29",
+                      "y": 80.2
+                    },
+                    {
+                      "x": "2026-09-30",
+                      "y": 80.1
+                    },
+                    {
+                      "x": "2026-10-01",
+                      "y": 80.1
+                    },
+                    {
+                      "x": "2026-10-02",
+                      "y": 80
+                    },
+                    {
+                      "x": "2026-10-03",
+                      "y": 79.9
+                    },
+                    {
+                      "x": "2026-10-04",
+                      "y": 79.8
+                    },
+                    {
+                      "x": "2026-10-05",
+                      "y": 79.8
+                    }
+                  ],
+                  "unit": "kg"
+                }
+              },
+              "version": "v0.9"
+            }
+          ],
+          "surfaceId": "m_assistant-0"
+        },
+        {
+          "as_of": "2026-10-05",
+          "fallback": "Trend weight: 79.8 kg; Weekly change: −0.5 kg/wk; Goal weight: 78 kg.",
+          "kind": "stat_row",
+          "messages": [
+            {
+              "createSurface": {
+                "catalogId": "compound.coach.v1",
+                "surfaceId": "m_assistant-1"
+              },
+              "version": "v0.9"
+            },
+            {
+              "updateComponents": {
+                "components": [
+                  {
+                    "component": "StatRow",
+                    "id": "root",
+                    "stats": {
+                      "path": "/stats"
+                    }
+                  }
+                ],
+                "surfaceId": "m_assistant-1"
+              },
+              "version": "v0.9"
+            },
+            {
+              "updateDataModel": {
+                "path": "/",
+                "surfaceId": "m_assistant-1",
+                "value": {
+                  "stats": [
+                    {
+                      "key": "weight_trend",
+                      "unit": "kg",
+                      "value": 79.8
+                    },
+                    {
+                      "key": "weight_rate_per_week",
+                      "unit": "kg_per_week",
+                      "value": -0.5
+                    },
+                    {
+                      "key": "goal_weight",
+                      "unit": "kg",
+                      "value": 78
+                    }
+                  ]
+                }
+              },
+              "version": "v0.9"
+            }
+          ],
+          "surfaceId": "m_assistant-1"
+        },
+        {
+          "as_of": "2026-10-05",
+          "fallback": "Suggested questions: How should I adjust my calories?",
+          "kind": "follow_ups",
+          "messages": [
+            {
+              "createSurface": {
+                "catalogId": "compound.coach.v1",
+                "surfaceId": "m_assistant-2"
+              },
+              "version": "v0.9"
+            },
+            {
+              "updateComponents": {
+                "components": [
+                  {
+                    "component": "FollowUps",
+                    "id": "root",
+                    "questions": {
+                      "path": "/questions"
+                    }
+                  }
+                ],
+                "surfaceId": "m_assistant-2"
+              },
+              "version": "v0.9"
+            },
+            {
+              "updateDataModel": {
+                "path": "/",
+                "surfaceId": "m_assistant-2",
+                "value": {
+                  "questions": [
+                    "How should I adjust my calories?"
+                  ]
+                }
+              },
+              "version": "v0.9"
+            }
+          ],
+          "surfaceId": "m_assistant-2"
+        }
+      ],
+      "created_at": {
+        "$timestamp": "2026-10-05T17:00:02.500Z"
+      },
+      "id": "m_assistant",
+      "role": "assistant",
+      "text": "Yes: your trend is coming down at about the pace your goal plans."
+    }
+  ],
+  "title": "Am I on track?",
+  "updated_at": {
+    "$timestamp": "2026-10-05T17:00:02.500Z"
+  }
+}

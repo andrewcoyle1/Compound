@@ -1128,6 +1128,7 @@ import {
     validateCoachRequest, hasCoachConsent, isCoachPremium, consumeCoachQuota, firestoreSource, coachEnvironment,
     historyForModel, appendChatMessages, chatTitle, defineCoachTools, runCoach, coachRuntime,
 } from "./coach.js";
+import { coachBlocks, defineShowBlockTool, blockChunk, storedBlock, fitStoredBlocks } from "./coach-blocks.js";
 
 const DEV_PROJECT_ID = "compound-development";
 
@@ -1137,11 +1138,12 @@ const coachAI = genkit({ plugins: [vertexAI({ location: COACH_MODEL_LOCATION })]
 const COACH_MODEL = vertexAI.model(GEMINI_MODEL, { thinkingConfig: { thinkingBudget: 1024 } });
 const COACH_CONFIG = { temperature: 0.3, maxOutputTokens: 4096 };
 const coachTools = defineCoachTools(coachAI);
-coachRuntime.reply ??= (args) => runCoach({ ai: coachAI, model: COACH_MODEL, tools: coachTools, config: COACH_CONFIG, ...args });
+const coachBlockTool = defineShowBlockTool(coachAI);
+coachRuntime.reply ??= (args) => runCoach({ ai: coachAI, model: COACH_MODEL, tools: coachTools, blockTool: coachBlockTool, config: COACH_CONFIG, ...args });
 
 export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response) => {
     const uid = requireAuth(request);
-    const { chatId, message, context } = validateCoachRequest(request.data);
+    const { chatId, message, context, ui } = validateCoachRequest(request.data);
     const db = getFirestore();
     const source = firestoreSource(db, uid);
 
@@ -1161,18 +1163,26 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     const env = await coachEnvironment(source);
     const remainingToday = await consumeCoachQuota(db, uid, { day: env.today, nowMs: env.now.getTime() });
 
+    const messageId = randomUUID();
+    // Generative UI (coach-blocks.js): only for an app that renders the catalog. Each block streams
+    // as its own chunk as soon as it is built.
+    const blocks = ui ? coachBlocks({ messageId, onBlock: request.acceptsStreaming ? (block) => response.sendChunk(blockChunk(block)) : null }) : null;
     const text = await coachRuntime.reply({
         source,
         env,
         history: historyForModel(existing?.data()?.messages),
         message,
         context,
+        blocks,
         onChunk: request.acceptsStreaming ? (delta) => response.sendChunk({ text: delta }) : null,
     });
     if (!text) throw new HttpsError("internal", "The coach had no answer");
 
     const now = Timestamp.now();
-    const reply = { id: randomUUID(), role: "assistant", text, created_at: now };
+    const reply = {
+        id: messageId, role: "assistant", text, created_at: now,
+        ...(blocks?.list.length ? { blocks: blocks.list.map(storedBlock) } : {}),
+    };
     // Appended in a transaction: two replies landing together must not drop each other's turns.
     await db.runTransaction(async (tx) => {
         const current = (await tx.get(chatRef)).data();
@@ -1182,7 +1192,7 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
             created_at: current?.created_at ?? now,
             updated_at: now,
             context_kind: current?.context_kind ?? context?.kind ?? null,
-            messages: appendChatMessages(current?.messages, [{ id: randomUUID(), role: "user", text: message, created_at: now }, reply]),
+            messages: fitStoredBlocks(appendChatMessages(current?.messages, [{ id: randomUUID(), role: "user", text: message, created_at: now }, reply])),
         });
     });
     return { chatId: chatRef.id, messageId: reply.id, text, remainingToday };

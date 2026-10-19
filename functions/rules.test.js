@@ -4,6 +4,7 @@
 import { test, before, beforeEach, after } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { storedBlock } from "./coach-blocks.js";
 import {
     initializeTestEnvironment, assertSucceeds, assertFails,
 } from "@firebase/rules-unit-testing";
@@ -380,6 +381,13 @@ test("coachChat writes and reads the coach_chat fixture's shape", () => {
     assert.deepEqual(enumsFixture.CoachMessageRole, ["user", "assistant"]);
     // Read back when it appends a turn, and by historyForModel.
     assertKeysIn(["title", "created_at", "context_kind", "messages"], "coach_chat");
+    // A reply with generative UI blocks: storedBlock's shape, which Swift ignores and Dart keeps.
+    const reply = contractFixture("coach_chat", "with-blocks").messages[1];
+    assert.deepEqual(Object.keys(reply).sort(), ["blocks", "created_at", "id", "role", "text"]);
+    for (const block of reply.blocks) {
+        assert.deepEqual(Object.keys(block).sort(), Object.keys(storedBlock({ ...block, asOf: block.as_of })).sort());
+        assert.deepEqual(block.messages.map((m) => Object.keys(m).find((k) => k !== "version")), ["createSurface", "updateComponents", "updateDataModel"]);
+    }
 });
 
 test("stravaActivityDoc writes the strava_imported_activity fixture's shape", () => {

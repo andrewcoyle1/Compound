@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// Extension on [WidgetTester] to pump a widget inside the app's theme.
 extension PumpApp on WidgetTester {
   /// Pumps [widget] in a [Scaffold] under [AppTheme.light] (or [theme]),
-  /// with the given text scale and reduced-motion setting.
+  /// with the given text scale and reduced-motion setting, below an
+  /// [AppSnackBarScope].
   Future<void> pumpApp(
     Widget widget, {
     ThemeData? theme,
@@ -20,7 +21,7 @@ extension PumpApp on WidgetTester {
             textScaler: TextScaler.linear(textScale),
             disableAnimations: disableAnimations,
           ),
-          child: child!,
+          child: AppSnackBarScope(child: child!),
         ),
         home: scaffold ? Scaffold(body: widget) : widget,
       ),

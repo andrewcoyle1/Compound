@@ -372,6 +372,7 @@ class _ContributionGridState extends State<ContributionGrid> {
                                     (
                                       name: null,
                                       color: null,
+                                      mark: null,
                                       value:
                                           widget.countText?.call(count) ??
                                           l10n.calendarLogged,

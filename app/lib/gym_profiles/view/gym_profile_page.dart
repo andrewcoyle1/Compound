@@ -99,13 +99,13 @@ class _GymProfileViewState extends State<GymProfileView> {
   late final GymProfileEditorCubit _cubit = context
       .read<GymProfileEditorCubit>();
   late final _name = TextEditingController(text: _cubit.state.gym.name);
-  late ScaffoldMessengerState _messenger;
+  late AppSnackBarScopeState _snackBars;
   late String _saveFailed;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _messenger = ScaffoldMessenger.of(context);
+    _snackBars = AppSnackBarScope.of(context);
     _saveFailed = context.l10n.gymUnableToSave;
   }
 
@@ -113,7 +113,7 @@ class _GymProfileViewState extends State<GymProfileView> {
   void dispose() {
     // Leaving saves, however the screen goes. It is gone by the time a save
     // fails, so the failure is told on the screen below.
-    final messenger = _messenger;
+    final snackBars = _snackBars;
     final saveFailed = _saveFailed;
     unawaited(
       _cubit.left().then((saved) {
@@ -122,7 +122,7 @@ class _GymProfileViewState extends State<GymProfileView> {
           unawaited(AppHaptics.success());
         } else {
           unawaited(AppHaptics.error());
-          messenger.showSnackBar(SnackBar(content: Text(saveFailed)));
+          snackBars.show(saveFailed, style: AppSnackBarStyle.error);
         }
       }),
     );

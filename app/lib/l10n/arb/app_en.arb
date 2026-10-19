@@ -5015,9 +5015,13 @@
     "@labelCaptured": {
         "description": "Under the label field once a photo's text has been read into it (Swift BarcodeScannerView)"
     },
-    "labelScan": "Scan Label",
-    "@labelScan": {
-        "description": "Opens the camera to photograph a nutrition label"
+    "labelHoldInFrame": "Hold the label in the frame",
+    "@labelHoldInFrame": {
+        "description": "Over the live camera in Label mode, while it looks for a nutrition label"
+    },
+    "labelScanAgain": "Scan Again",
+    "@labelScanAgain": {
+        "description": "Starts the live label camera again, after a result, a photo or a failure"
     },
     "labelChooseFromLibrary": "Choose from Library",
     "@labelChooseFromLibrary": {
@@ -5025,7 +5029,7 @@
     },
     "labelReading": "Reading label…",
     "@labelReading": {
-        "description": "While a label photo's text is read on the device"
+        "description": "While a label photo's text is read on the device, and over the live camera while the label it locked on to is analyzed"
     },
     "labelUnreadable": "Couldn't read this label. Hold the camera steady and try again, or enter it manually.",
     "@labelUnreadable": {
@@ -5047,10 +5051,6 @@
     "@labelParse": {
         "description": "Sends the label text to the AI"
     },
-    "labelAnalyzing": "Analyzing label…",
-    "@labelAnalyzing": {
-        "description": "Shown while the AI reads a label"
-    },
     "labelFailed": "Couldn't read this label. Check the text and try again.",
     "@labelFailed": {
         "description": "A label the AI could not read"
@@ -5070,10 +5070,6 @@
     "labelUseFood": "Use This Food",
     "@labelUseFood": {
         "description": "Saves the label's food and adds it"
-    },
-    "labelDismiss": "Dismiss",
-    "@labelDismiss": {
-        "description": "Clears the label result"
     },
     "aiEstimateAddAll": "Add All ({count})",
     "@aiEstimateAddAll": {
@@ -13421,5 +13417,17 @@
     "photoCropCancel": "Cancel",
     "@photoCropCancel": {
         "description": "Photo crop screen (iOS): discards the photo"
+    },
+    "quickActionStartWorkout": "Start Workout",
+    "@quickActionStartWorkout": {
+        "description": "Home-screen quick action (long press on the app icon): starts today's workout"
+    },
+    "quickActionLogWeight": "Log Weight",
+    "@quickActionLogWeight": {
+        "description": "Home-screen quick action (long press on the app icon): opens Log Weight"
+    },
+    "quickActionLogMeal": "Log Meal",
+    "@quickActionLogMeal": {
+        "description": "Home-screen quick action (long press on the app icon): opens the meal logger"
     }
 }

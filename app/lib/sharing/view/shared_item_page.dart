@@ -110,9 +110,11 @@ class _SharedItemViewState extends State<SharedItemView> {
       SharedItemNotice.addFailed => l10n.sharedItemAddFailed,
       SharedItemNotice.declineFailed => l10n.sharedItemDeclineFailed,
     };
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$title. ${l10n.socialTryAgain}')));
+    showAppSnackBar(
+      context,
+      '$title. ${l10n.socialTryAgain}',
+      style: AppSnackBarStyle.error,
+    );
   }
 
   @override

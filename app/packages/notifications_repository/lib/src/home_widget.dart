@@ -1,6 +1,8 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:home_widget/home_widget.dart';
 
 /// {@template widget_workout}
 /// A day's workout as the home-screen widgets show it
@@ -53,16 +55,23 @@ class const WidgetSnapshot({
   /// {@macro widget_snapshot}
   this;
 
-  /// The Swift `Codable` shape, dates in seconds since 1970.
+  /// The Swift `Codable` shape, dates as `JSONEncoder` writes them by
+  /// default: seconds since 1 January 2001.
   Map<String, Object?> toJson() => {
     'todaysWorkout': ?todaysWorkout?.toJson(),
     'upcomingWorkout': ?upcomingWorkout?.toJson(),
-    'day': day.microsecondsSinceEpoch / 1e6,
+    'day': _swiftSeconds(day),
     'currentStreak': currentStreak,
     'sessionsThisWeek': sessionsThisWeek,
     'weeklyGoal': weeklyGoal,
-    'updatedAt': updatedAt.microsecondsSinceEpoch / 1e6,
+    'updatedAt': _swiftSeconds(updatedAt),
   };
+
+  static double _swiftSeconds(DateTime date) =>
+      date.microsecondsSinceEpoch / 1e6 - _swiftEpoch;
+
+  /// 1 January 2001 in seconds since 1970, where Swift's `Date` counts from.
+  static const _swiftEpoch = 978307200;
 
   @override
   List<Object?> get props => [
@@ -85,33 +94,71 @@ abstract interface class HomeWidgetRepository {
   Future<void> clear();
 }
 
-/// {@template method_channel_home_widget_repository}
-/// The widgets through the Runner's `WorkoutActivityChannel`, which keeps
-/// the snapshot in the flavor's App Group. Nothing off iOS; a platform
-/// failure goes to `onError` and is otherwise dropped.
+/// {@template plugin_home_widget_repository}
+/// The widgets through `home_widget`: the snapshot is kept as JSON bytes
+/// under [key] in the flavor's App Group ([appGroupId]), where the widget
+/// extension's `WidgetSnapshotStore` reads it, and the widgets reload only
+/// when something they show changed. Nothing off iOS; a platform failure
+/// goes to `onError` and is otherwise dropped.
 /// {@endtemplate}
-class MethodChannelHomeWidgetRepository implements HomeWidgetRepository {
-  /// {@macro method_channel_home_widget_repository}
-  new({MethodChannel? channel, this._onError})
-    : _channel = channel ?? const MethodChannel(channelName);
+class PluginHomeWidgetRepository implements HomeWidgetRepository {
+  /// {@macro plugin_home_widget_repository}
+  new({required this.appGroupId, this._onError});
 
-  /// The Runner's channel.
-  static const channelName = 'com.andrewcoyle.compound/home_widgets';
+  /// The App Group the widget extension reads (`APP_GROUP_ID`).
+  final String appGroupId;
 
-  final MethodChannel _channel;
   final void Function(Object error, StackTrace stackTrace)? _onError;
 
-  @override
-  Future<void> write(WidgetSnapshot snapshot) =>
-      _call('write', snapshot.toJson());
+  /// The App Group key, shared with the Swift app's widgets.
+  static const key = 'widget.snapshot.v1';
+
+  /// The widgets' kinds (`HomeWidgets.swift`).
+  static const kinds = [
+    'TodaysWorkoutWidget',
+    'StreakWidget',
+    'WeeklyRingWidget',
+  ];
 
   @override
-  Future<void> clear() => _call('clear');
+  Future<void> write(WidgetSnapshot snapshot) => _run(() async {
+    final stored = await _read();
+    final json = snapshot.toJson();
+    await _save(utf8.encode(jsonEncode(json)));
+    if (stored != null) {
+      // What the widgets show is unchanged when only the time written is.
+      final previous = jsonDecode(utf8.decode(stored)) as Map<String, Object?>;
+      json['updatedAt'] = previous['updatedAt'];
+      if (jsonEncode(json) == jsonEncode(previous)) return;
+    }
+    await _reload();
+  });
 
-  Future<void> _call(String method, [Object? arguments]) async {
+  @override
+  Future<void> clear() => _run(() async {
+    if (await _read() == null) return;
+    await _save(null);
+    await _reload();
+  });
+
+  Future<Uint8List?> _read() =>
+      HomeWidget.getWidgetData<Uint8List>(key, appGroupId: appGroupId);
+
+  Future<void> _save(Uint8List? bytes) => HomeWidget.saveWidgetData(
+    key,
+    bytes,
+    appGroupId: appGroupId,
+    deleteFile: false,
+  );
+
+  Future<void> _reload() => Future.wait([
+    for (final kind in kinds) HomeWidget.updateWidget(iOSName: kind),
+  ]);
+
+  Future<void> _run(Future<void> Function() body) async {
     if (defaultTargetPlatform != TargetPlatform.iOS) return;
     try {
-      await _channel.invokeMethod<void>(method, arguments);
+      await body();
     } on Object catch (error, stackTrace) {
       _onError?.call(error, stackTrace);
     }

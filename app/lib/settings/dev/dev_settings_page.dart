@@ -178,11 +178,9 @@ class DevSettingsView extends StatelessWidget {
 
   Future<void> _signOut(BuildContext context) async {
     final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
+    final snackBars = AppSnackBarScope.of(context);
     if (await context.read<DevSettingsCubit>().signOutPressed()) return;
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.settingsSignOutFailed)));
+    snackBars.show(l10n.settingsSignOutFailed, style: AppSnackBarStyle.error);
   }
 }
 
@@ -193,7 +191,7 @@ class DevSettingsView extends StatelessWidget {
 Future<void> _exportShareCards(BuildContext context) async {
   final l10n = context.l10n;
   final shareSheet = context.read<ShareSheet>();
-  final messenger = ScaffoldMessenger.of(context);
+  final snackBars = AppSnackBarScope.of(context);
   final now = DateTime.now();
   final week = sampleWorkoutSessions(uid: sampleUserId, now: now);
   final content = ShareCardContent.fromHistory(
@@ -227,9 +225,7 @@ Future<void> _exportShareCards(BuildContext context) async {
   }
   if (!context.mounted) return;
   if (images.isEmpty) {
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.shareImageFailed)));
+    snackBars.show(l10n.shareImageFailed, style: AppSnackBarStyle.error);
     return;
   }
   await shareSheet.shareImages(context, images);

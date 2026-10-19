@@ -103,15 +103,11 @@ class _ChallengeDetailViewState extends State<ChallengeDetailView> {
       context.pop();
     } else if (state.leaveStatus == ChallengeLeaveStatus.failed) {
       final l10n = context.l10n;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              '${l10n.challengeLeaveFailed}. ${l10n.socialTryAgain}',
-            ),
-          ),
-        );
+      showAppSnackBar(
+        context,
+        '${l10n.challengeLeaveFailed}. ${l10n.socialTryAgain}',
+        style: AppSnackBarStyle.error,
+      );
     }
   }
 

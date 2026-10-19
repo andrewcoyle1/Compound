@@ -49,9 +49,11 @@ class UnitsView extends StatelessWidget {
       onDispose: cubit.disappeared,
       child: BlocListener<UnitsCubit, UnitsState>(
         listenWhen: (_, state) => state.saveFailed,
-        listener: (context, _) => ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(l10n.unitsSaveFailed))),
+        listener: (context, _) => showAppSnackBar(
+          context,
+          l10n.unitsSaveFailed,
+          style: AppSnackBarStyle.error,
+        ),
         child: AppScaffold(
           appBar: AppBar(title: Text(l10n.settingsUnits)),
           body: SafeArea(

@@ -169,9 +169,8 @@ class IntegrationsView extends StatelessWidget {
 /// past workouts. Shared by Integrations and the workout summary.
 void showStravaNotice(BuildContext context, StravaState state) {
   final l10n = context.l10n;
-  void tell(String message) => ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  void tell(String message) =>
+      showAppSnackBar(context, message, style: AppSnackBarStyle.success);
   switch (state.notice) {
     case null:
       return;

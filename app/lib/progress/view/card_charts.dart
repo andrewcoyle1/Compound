@@ -2,11 +2,13 @@ import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/progress/bloc/progress_bloc.dart' show ProgressPoint;
+import 'package:compound_charts/compound_charts.dart';
 
 /// The small charts inside the Progress cards (Swift `SparklineChart`,
 /// `SetsBarChart`, `MacroStackedBarChart`, `MacroProgressChart` and the
-/// card `ContributionGridView`). Each is drawn with a [CustomPainter] and
-/// carries one accessibility summary, [semanticsLabel] and
+/// card `ContributionGridView`). [Sparkline] and [StackedBars] are
+/// [CartesianChart.compact]s; the others are drawn with a [CustomPainter].
+/// Each carries one accessibility summary, [semanticsLabel] and
 /// [semanticsValue], since a screen reader cannot read a plot.
 sealed class CardChart extends StatelessWidget {
   const new({this.semanticsLabel, this.semanticsValue, super.key});
@@ -17,22 +19,25 @@ sealed class CardChart extends StatelessWidget {
   /// What it says.
   final String? semanticsValue;
 
-  CustomPainter _painter(BuildContext context);
+  Widget _chart(BuildContext context);
 
   @override
   Widget build(BuildContext context) => Semantics(
     label: semanticsLabel,
     value: semanticsValue,
-    child: CustomPaint(painter: _painter(context), size: Size.infinite),
+    child: _chart(context),
   );
 }
 
-/// A line through [points], against time, ending in a dot. One point is a
-/// dot; none draws nothing.
+/// A line through [points], against time, edge to edge and fitted closely
+/// to their values, ending in a dot on the latest, over a fill that fades
+/// out beneath it unless [area] is false. One point is a dot in the
+/// middle; none draws nothing.
 final class Sparkline extends CardChart {
   const new({
     required this.points,
     required this.color,
+    this.area = true,
     super.semanticsLabel,
     super.semanticsValue,
     super.key,
@@ -44,63 +49,47 @@ final class Sparkline extends CardChart {
   /// The line's colour.
   final Color color;
 
-  @override
-  CustomPainter _painter(BuildContext context) =>
-      _SparklinePainter(points: points, color: color);
-}
-
-class _SparklinePainter extends CustomPainter {
-  new({required this.points, required this.color});
-
-  final List<ProgressPoint> points;
-  final Color color;
-
-  static const _dot = 3.0;
+  /// Whether a fill fades out beneath the line.
+  final bool area;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    if (points.isEmpty) return;
-    final values = points.map((p) => p.value);
-    final low = values.reduce(math.min);
-    final high = values.reduce(math.max);
-    final first = points.first.date.millisecondsSinceEpoch;
-    final span = points.last.date.millisecondsSinceEpoch - first;
-    final width = size.width - _dot * 2;
-    final height = size.height - _dot * 2;
-    Offset at(ProgressPoint p) => Offset(
-      _dot +
-          (span == 0
-              ? width / 2
-              : (p.date.millisecondsSinceEpoch - first) / span * width),
-      _dot +
-          (high == low ? height / 2 : (high - p.value) / (high - low) * height),
-    );
-    final path = Path()..moveTo(at(points.first).dx, at(points.first).dy);
-    for (final point in points.skip(1)) {
-      path.lineTo(at(point).dx, at(point).dy);
+  Widget _chart(BuildContext context) {
+    final points = this.points;
+    var start = points.firstOrNull?.date ?? _origin;
+    var end = points.lastOrNull?.date ?? _origin;
+    // Nothing to span: the one day sits in the middle.
+    if (!end.isAfter(start)) {
+      start = DateTime(start.year, start.month, start.day - 1);
+      end = DateTime(end.year, end.month, end.day + 1);
     }
-    canvas
-      ..drawPath(
-        path,
-        Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round,
-      )
-      ..drawCircle(at(points.last), _dot, Paint()..color = color);
+    return CartesianChart.compact(
+      data: ChartData(
+        start: start,
+        end: end,
+        // Readings are moments, so the first and last reach the edges.
+        bucketDays: 0,
+        series: [
+          ChartSeries(
+            label: '',
+            color: color,
+            mark: area ? ChartMark.area : ChartMark.line,
+            points: [for (final p in points) (x: p.date, y: p.value)],
+          ),
+        ],
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(_SparklinePainter old) =>
-      old.points != points || old.color != color;
 }
 
-/// Bars in [slots] equal slots, each stacked from [stacks]' values in
-/// [colors] order; slots past the data stay empty. A [line], one value a
-/// slot, is drawn over them in [lineColor] (Energy Balance's expenditure).
-/// Heights are against the tallest bar or line point.
+/// Where [StackedBars]' slots, and an empty [Sparkline]'s window, start:
+/// any fixed day, so new data morphs in place.
+final _origin = DateTime.utc(2026);
+
+/// Bars in [slots] equal slots, a day each, each stacked from [stacks]'
+/// values in [colors] order; slots past the data stand on their stub. A
+/// [line], one value a slot, is drawn over them in [lineColor] (Energy
+/// Balance's expenditure). Heights are from zero to the tallest bar or line
+/// point.
 final class StackedBars extends CardChart {
   const new({
     required this.stacks,
@@ -129,97 +118,35 @@ final class StackedBars extends CardChart {
   final Color? lineColor;
 
   @override
-  CustomPainter _painter(BuildContext context) => _BarsPainter(
-    stacks: stacks,
-    colors: colors,
-    slots: slots,
-    line: line ?? const [],
-    lineColor: lineColor ?? Theme.of(context).colorScheme.onSurface,
-    empty: Theme.of(context).colorScheme.outlineVariant,
-  );
-}
-
-class _BarsPainter extends CustomPainter {
-  new({
-    required this.stacks,
-    required this.colors,
-    required this.slots,
-    required this.empty,
-    this.line = const [],
-    this.lineColor = Colors.transparent,
-  });
-
-  /// How tall an empty slot's stub is.
-  static const double _stub = 2;
-
-  final List<List<double>> stacks;
-  final List<Color> colors;
-  final int slots;
-  final Color empty;
-  final List<double> line;
-  final Color lineColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final totals = [for (final s in stacks) s.fold<double>(0, (a, b) => a + b)];
-    final tallest = [...totals, ...line].fold<double>(0, math.max);
-    final slot = size.width / slots;
-    final barWidth = slot * 0.6;
-    for (var i = 0; i < slots; i++) {
-      final left = i * slot + (slot - barWidth) / 2;
-      final total = i < totals.length ? totals[i] : 0.0;
-      if (total <= 0 || tallest <= 0) {
-        // A stub, so an empty slot still reads as a day.
-        canvas.drawRRect(
-          RRect.fromLTRBR(
-            left,
-            size.height - _stub,
-            left + barWidth,
-            size.height,
-            const Radius.circular(_stub / 2),
-          ),
-          Paint()..color = empty,
-        );
-        continue;
-      }
-      var bottom = size.height;
-      for (final (j, value) in stacks[i].indexed) {
-        if (value <= 0) continue;
-        final top = bottom - value / tallest * size.height;
-        canvas.drawRect(
-          Rect.fromLTRB(left, top, left + barWidth, bottom),
-          Paint()..color = colors[j % colors.length],
-        );
-        bottom = top;
-      }
-    }
-    if (line.isEmpty || tallest <= 0) return;
-    Offset at(int i) => Offset(
-      i * slot + slot / 2,
-      size.height - line[i] / tallest * size.height,
-    );
-    final path = Path()..moveTo(at(0).dx, at(0).dy);
-    for (var i = 1; i < line.length; i++) {
-      path.lineTo(at(i).dx, at(i).dy);
-    }
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = lineColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
+  Widget _chart(BuildContext context) {
+    DateTime slot(int i) => _origin.add(Duration(days: i));
+    final line = this.line;
+    return CartesianChart.compact(
+      data: ChartData(
+        start: _origin,
+        end: slot(slots),
+        yFit: ChartYFit.zero,
+        series: [
+          for (final (j, color) in colors.indexed)
+            ChartSeries(
+              label: '$j',
+              color: color,
+              mark: ChartMark.bar,
+              points: [
+                for (final (i, stack) in stacks.indexed)
+                  (x: slot(i), y: j < stack.length ? stack[j] : 0),
+              ],
+            ),
+          if (line != null)
+            ChartSeries(
+              label: 'line',
+              color: lineColor ?? Theme.of(context).colorScheme.onSurface,
+              points: [for (final (i, y) in line.indexed) (x: slot(i), y: y)],
+            ),
+        ],
+      ),
     );
   }
-
-  @override
-  bool shouldRepaint(_BarsPainter old) =>
-      old.stacks != stacks ||
-      old.colors != colors ||
-      old.empty != empty ||
-      old.line != line ||
-      old.lineColor != lineColor;
 }
 
 /// A bar filled to [current] of [maximum], with a mark at [target] when
@@ -248,12 +175,15 @@ final class ProgressBarChart extends CardChart {
   final Color color;
 
   @override
-  CustomPainter _painter(BuildContext context) => _ProgressPainter(
-    current: current,
-    maximum: maximum,
-    target: target,
-    color: color,
-    mark: Theme.of(context).colorScheme.onSurface,
+  Widget _chart(BuildContext context) => CustomPaint(
+    size: Size.infinite,
+    painter: _ProgressPainter(
+      current: current,
+      maximum: maximum,
+      target: target,
+      color: color,
+      mark: Theme.of(context).colorScheme.onSurface,
+    ),
   );
 }
 
@@ -332,8 +262,10 @@ final class HabitGridChart extends CardChart {
   final Color color;
 
   @override
-  CustomPainter _painter(BuildContext context) =>
-      _GridPainter(days: days, color: color);
+  Widget _chart(BuildContext context) => CustomPaint(
+    size: Size.infinite,
+    painter: _GridPainter(days: days, color: color),
+  );
 }
 
 class _GridPainter extends CustomPainter {

@@ -37,11 +37,11 @@ class TimerDurationPage extends StatelessWidget {
       child: BlocListener<ExerciseRestTimersCubit, ExerciseRestTimersState>(
         listenWhen: (previous, current) =>
             current.saveFailed && !previous.saveFailed,
-        listener: (context, _) => ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(l10n.workoutSettingsSaveFailed)),
-          ),
+        listener: (context, _) => showAppSnackBar(
+          context,
+          l10n.workoutSettingsSaveFailed,
+          style: AppSnackBarStyle.error,
+        ),
         child: WorkoutSettingsScreen(
           screen: 'TimerDurationView',
           title: l10n.restTimerDuration,

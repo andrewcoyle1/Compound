@@ -32,6 +32,13 @@ void main() {
       expect(data.fraction(DateTime(2026, 10, 19)), closeTo(15 / 14, 1e-9));
     });
 
+    test('contains the points drawn inside its window', () {
+      expect(data.contains(DateTime(2026, 10, 12)), isTrue);
+      expect(data.contains(DateTime(2026, 10, 18)), isTrue);
+      expect(data.contains(DateTime(2026, 10, 19)), isFalse);
+      expect(data.contains(DateTime(2026, 10, 11)), isFalse);
+    });
+
     test('lists each bucket once, oldest first', () {
       expect(data.buckets, [DateTime(2026, 10, 12), DateTime(2026, 10, 14)]);
     });

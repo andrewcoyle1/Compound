@@ -7,6 +7,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/notifications/notifications.dart';
+import 'package:compound/nutrition/add_meal/view/add_meal_page.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/nutrition/recipes/view/recipes_page.dart';
 import 'package:compound/onboarding/account_setup/account_setup_cubit.dart';
@@ -355,6 +356,93 @@ void main() {
       await tester.pumpAndSettle();
     });
 
+    testWidgets('offers the quick actions while signed in and routes them', (
+      tester,
+    ) async {
+      final auth = InMemoryAuthRepository(
+        user: InMemoryAuthRepository.sampleUser,
+      );
+      final quick = FakeQuickActionsRepository();
+      await tester.pumpWidget(
+        App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
+          deviceStore: offersShownDevice(),
+          purchasesRepository: FakePurchasesRepository(),
+          programRepository: InMemoryProgramRepository(),
+          trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
+          authRepository: auth,
+          userRepository: seededUsers(),
+          workoutSessionRepository: seededSessions(),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
+          quickActionsRepository: quick,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(quick.titles, {
+        QuickAction.startWorkout: 'Start Workout',
+        QuickAction.logWeight: 'Log Weight',
+        QuickAction.logMeal: 'Log Meal',
+      });
+
+      quick.tap(QuickAction.logWeight);
+      await tester.pumpAndSettle();
+      expect(find.byType(LogWeightPage), findsOneWidget);
+
+      quick.tap(QuickAction.logMeal);
+      await tester.pumpAndSettle();
+      expect(find.byType(AddMealPage), findsOneWidget);
+
+      // No programme: Today, where a workout starts.
+      quick.tap(QuickAction.startWorkout);
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      expect(find.byType(AddMealPage), findsNothing);
+      expect(find.widgetWithText(AppBar, 'Today'), findsOneWidget);
+
+      await auth.signOut();
+      await tester.pumpAndSettle();
+      expect(quick.titles, isEmpty);
+    });
+
+    testWidgets("the Start Workout quick action starts today's workout", (
+      tester,
+    ) async {
+      final quick = FakeQuickActionsRepository();
+      await tester.pumpWidget(
+        App(
+          socialRepository: emptySocialRepository(),
+          coachRepository: silentCoachRepository(),
+          deviceStore: offersShownDevice(),
+          purchasesRepository: FakePurchasesRepository(),
+          programRepository: InMemoryProgramRepository(
+            mesocycles: sampleMesocycles(now: now),
+          ),
+          trainingLibraryRepository: InMemoryTrainingLibraryRepository(
+            workoutTemplates: sampleUserWorkoutTemplates,
+          ),
+          authRepository: InMemoryAuthRepository(
+            user: InMemoryAuthRepository.sampleUser,
+          ),
+          userRepository: seededUsers(),
+          workoutSessionRepository: InMemoryWorkoutSessionRepository(
+            sessions: const [],
+          ),
+          nutritionRepository: InMemoryNutritionRepository(),
+          bodyRepository: InMemoryBodyRepository(),
+          quickActionsRepository: quick,
+        ),
+      );
+      await tester.pumpAndSettle();
+      quick.tap(QuickAction.startWorkout);
+      for (var i = 0; i < 3; i++) {
+        await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+        await tester.pumpAndSettle();
+      }
+      expect(find.byType(WorkoutTrackerPage), findsOneWidget);
+    });
+
     testWidgets('Siri says to sign in first when no one is', (tester) async {
       final intents = FakeAppIntentsRepository();
       await tester.pumpWidget(
@@ -428,6 +516,7 @@ void main() {
       tester,
     ) async {
       final notifications = FakeNotificationsRepository();
+      final links = FakePlatformLinks();
       await tester.pumpWidget(
         App(
           socialRepository: emptySocialRepository(),
@@ -444,6 +533,7 @@ void main() {
           nutritionRepository: InMemoryNutritionRepository(),
           bodyRepository: InMemoryBodyRepository(),
           notificationsRepository: notifications,
+          platformLinks: links,
         ),
       );
       await tester.pumpAndSettle();
@@ -453,16 +543,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(NutritionView), findsOneWidget);
 
-      // As the engine sends a URL the app was opened with: whole.
-      await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
-        'flutter/navigation',
-        const JSONMethodCodec().encodeMethodCall(
-          const MethodCall('pushRouteInformation', {
-            'location': 'compound://tab/progress',
-          }),
-        ),
-        (_) {},
-      );
+      links.open(Uri.parse('compound://tab/progress'));
       await tester.pumpAndSettle();
       expect(find.byType(ProgressPage), findsOneWidget);
 

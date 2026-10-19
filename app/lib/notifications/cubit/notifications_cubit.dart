@@ -20,8 +20,10 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     required this._users,
     this._now = DateTime.now,
     this._webLink,
+    PlatformLinks? platformLinks,
   }) : super(const NotificationsState()) {
     _links = _notifications.deepLinks.changes.listen((_) => _routePending());
+    _opened = platformLinks?.links.listen(linkOpened);
   }
 
   final NotificationsRepository _notifications;
@@ -32,6 +34,9 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   final SessionWebLink? _webLink;
 
   late final StreamSubscription<void> _links;
+
+  /// The URLs the platform opens the app with, launch link included.
+  late final StreamSubscription<Uri>? _opened;
   StreamSubscription<PrivateUserSettings?>? _settingsSubscription;
   String? _uid;
   bool _ready = false;
@@ -110,6 +115,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   @override
   Future<void> close() async {
     unawaited(_links.cancel());
+    unawaited(_opened?.cancel());
     unawaited(_settingsSubscription?.cancel());
     await super.close();
   }

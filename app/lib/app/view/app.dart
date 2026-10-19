@@ -132,6 +132,9 @@ class const App({
   /// when left out.
   final NotificationsRepository? notificationsRepository,
 
+  /// The links the platform opens the app with; none when left out.
+  final PlatformLinks? platformLinks,
+
   /// The Live Activity (iOS); one that never shows when left out.
   final LiveActivityRepository? liveActivityRepository,
 
@@ -140,6 +143,9 @@ class const App({
 
   /// Siri and Shortcuts (iOS); none when left out.
   final AppIntentsRepository? appIntentsRepository,
+
+  /// The home-screen quick actions; in memory when left out.
+  final QuickActionsRepository? quickActionsRepository,
 
   /// Where photos are uploaded; in memory when left out.
   final ImageRepository? imageRepository,
@@ -150,6 +156,10 @@ class const App({
   /// Reads a label photo's text on the device; staging's sample label when
   /// left out.
   final LabelTextReader? labelTextReader,
+
+  /// The Label scanner's live camera; staging's bundled label photo when
+  /// left out.
+  final LiveCamera? liveCamera,
 
   /// The AI food scanners' callables; staging's canned answers when left
   /// out.
@@ -224,6 +234,9 @@ class const App({
         RepositoryProvider<LabelTextReader>(
           create: (_) => labelTextReader ?? const SampleLabelTextReader(),
         ),
+        RepositoryProvider<LiveCamera>(
+          create: (_) => liveCamera ?? SampleLiveCamera(),
+        ),
         RepositoryProvider<AiRepository>(
           create: (_) =>
               aiRepository ?? AiRepository(callFunction: stagingAiCall),
@@ -267,6 +280,9 @@ class const App({
         ),
         RepositoryProvider<AppIntentsRepository>(
           create: (_) => appIntentsRepository ?? FakeAppIntentsRepository(),
+        ),
+        RepositoryProvider<QuickActionsRepository>(
+          create: (_) => quickActionsRepository ?? FakeQuickActionsRepository(),
         ),
         RepositoryProvider.value(value: socialRepository),
         RepositoryProvider(
@@ -316,6 +332,7 @@ class const App({
               notifications: context.read(),
               users: userRepository,
               webLink: sessionWebLink,
+              platformLinks: platformLinks,
             ),
           ),
           BlocProvider(
@@ -730,16 +747,10 @@ class _AppViewState extends State<AppView> {
           },
         ),
     ],
-    redirect: (context, state) {
-      // A `compound://` URL from the platform (its own deep-link handling,
-      // which passes the whole URL): held until it can be routed, from
-      // Today meanwhile. The app's own locations never have a scheme.
-      if (state.uri.hasScheme) {
-        context.read<NotificationsCubit>().linkOpened(state.uri);
-        return AppTab.today.path;
-      }
-      return appRedirect(context.read<AppBloc>().state, state.uri);
-    },
+    // Links from outside the app come through `PlatformLinks` to the
+    // NotificationsCubit, not the router: Flutter's own deep linking is off.
+    redirect: (context, state) =>
+        appRedirect(context.read<AppBloc>().state, state.uri),
   );
 
   /// The app coming back to the front moves the come-back reminders out;
@@ -759,17 +770,21 @@ class _AppViewState extends State<AppView> {
     context.read<LiveActivityRepository>().setActionHandler(
       _onLiveActivityAction,
     );
-    context.read<AppIntentsRepository>().setHandler(
-      AppIntents(
-        app: context.read(),
-        programs: context.read(),
-        workouts: context.read(),
-        library: context.read(),
-        users: context.read(),
-        saveMeasurement: context.read<HealthRepository>().saveMeasurement,
-        links: context.read<NotificationsRepository>().deepLinks,
-        l10n: () => AppNotificationCopy().l10n,
-        firstWeekday: () => _firstWeekday,
+    final intents = AppIntents(
+      app: context.read(),
+      programs: context.read(),
+      workouts: context.read(),
+      library: context.read(),
+      users: context.read(),
+      saveMeasurement: context.read<HealthRepository>().saveMeasurement,
+      links: context.read<NotificationsRepository>().deepLinks,
+      l10n: () => AppNotificationCopy().l10n,
+      firstWeekday: () => _firstWeekday,
+    );
+    context.read<AppIntentsRepository>().setHandler(intents);
+    unawaited(
+      context.read<QuickActionsRepository>().initialize(
+        (action) => unawaited(intents.quickAction(action)),
       ),
     );
     _followUser(context.read<AppBloc>().state);
@@ -825,6 +840,17 @@ class _AppViewState extends State<AppView> {
     final uid = state is AppAuthenticated ? state.user.uid : null;
     if (uid == null && _uid != null) {
       unawaited(context.read<HomeWidgetRepository>().clear());
+      unawaited(context.read<QuickActionsRepository>().clear());
+    }
+    if (uid != null && _uid == null) {
+      final l10n = AppNotificationCopy().l10n;
+      unawaited(
+        context.read<QuickActionsRepository>().show({
+          QuickAction.startWorkout: l10n.quickActionStartWorkout,
+          QuickAction.logWeight: l10n.quickActionLogWeight,
+          QuickAction.logMeal: l10n.quickActionLogMeal,
+        }),
+      );
     }
     _uid = uid;
     final profile = state is AppAuthenticated ? state.profile : null;
@@ -886,6 +912,17 @@ class _AppViewState extends State<AppView> {
         );
       }
     }
+    // The quick actions' logs open over Today.
+    if (link is LogWeightLink) unawaited(_router.pushNamed(LogWeightPage.name));
+    // The meal left unfinished carries on; without one, a meal starts now.
+    if (link is LogMealLink) {
+      unawaited(
+        _router.pushNamed(
+          AddMealPage.name,
+          extra: context.read<MealDraftCubit>().state,
+        ),
+      );
+    }
     // An invite link lands on Social, which accepts it
     // (`SocialPresenter.onAcceptInviteNotificationReceived`).
     final viewer = appState is AppAuthenticated ? appState.profile : null;
@@ -899,9 +936,11 @@ class _AppViewState extends State<AppView> {
   /// `InviteAcceptFlow`).
   void _onInvite(BuildContext context, InviteState state) {
     final l10n = context.l10n;
-    void tell(String message) => ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    void tell(String message, {bool failed = false}) => showAppSnackBar(
+      context,
+      message,
+      style: failed ? AppSnackBarStyle.error : AppSnackBarStyle.success,
+    );
     switch (state.result) {
       case null:
         return;
@@ -913,7 +952,10 @@ class _AppViewState extends State<AppView> {
           ),
         );
       case InviteShareFailed():
-        tell('${l10n.inviteCreateFailed}. ${l10n.socialTryAgain}');
+        tell(
+          '${l10n.inviteCreateFailed}. ${l10n.socialTryAgain}',
+          failed: true,
+        );
       case InviteAccepted(:final inviter, :final acceptance):
         if (acceptance.youFollow == InviteOutcome.requested) {
           context.read<CircleBloc>().add(
@@ -948,6 +990,7 @@ class _AppViewState extends State<AppView> {
             InviteFailure.unavailable => l10n.inviteUnavailable,
             _ => l10n.socialTryAgain,
           }}',
+          failed: true,
         );
     }
   }
@@ -980,33 +1023,36 @@ class _AppViewState extends State<AppView> {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: _router,
-        // How the finished workout's save is going, wherever the user is.
-        builder: (context, child) => MultiBlocListener(
-          listeners: [
-            BlocListener<ActiveWorkoutCubit, ActiveWorkoutState>(
-              listenWhen: (previous, current) =>
-                  current.saveNoticeId != previous.saveNoticeId,
-              listener: _showSaveNotice,
+        // Snack bars above every screen, from any of them.
+        builder: (context, child) => AppSnackBarScope(
+          child: MultiBlocListener(
+            listeners: [
+              // How the finished workout's save is going, wherever the user is.
+              BlocListener<ActiveWorkoutCubit, ActiveWorkoutState>(
+                listenWhen: (previous, current) =>
+                    current.saveNoticeId != previous.saveNoticeId,
+                listener: _showSaveNotice,
+              ),
+              // A follow or nudge that failed, from whichever screen.
+              BlocListener<CircleBloc, CircleState>(
+                listenWhen: (previous, current) =>
+                    current.noticeId != previous.noticeId,
+                listener: showCircleNotice,
+              ),
+              BlocListener<InviteCubit, InviteState>(
+                listenWhen: (previous, current) =>
+                    current.resultId != previous.resultId,
+                listener: _onInvite,
+              ),
+              // An action that needs the server, tried offline.
+              BlocListener<OfflineAlertCubit, int>(
+                listener: (_, _) => _showOfflineAlert(),
+              ),
+            ],
+            child: ActivityBannerOverlay(
+              onOpen: () => _router.goNamed(NotificationsPage.name),
+              child: child!,
             ),
-            // A follow or nudge that failed, from whichever screen.
-            BlocListener<CircleBloc, CircleState>(
-              listenWhen: (previous, current) =>
-                  current.noticeId != previous.noticeId,
-              listener: showCircleNotice,
-            ),
-            BlocListener<InviteCubit, InviteState>(
-              listenWhen: (previous, current) =>
-                  current.resultId != previous.resultId,
-              listener: _onInvite,
-            ),
-            // An action that needs the server, tried offline.
-            BlocListener<OfflineAlertCubit, int>(
-              listener: (_, _) => _showOfflineAlert(),
-            ),
-          ],
-          child: ActivityBannerOverlay(
-            onOpen: () => _router.goNamed(NotificationsPage.name),
-            child: child!,
           ),
         ),
       ),
@@ -1040,18 +1086,20 @@ class _AppViewState extends State<AppView> {
     }
     // How long the notice stays, not an animation: a failure longer.
     final shownFor = Duration(seconds: notice == SaveProgress.failed ? 8 : 6);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(switch (notice) {
-            SaveProgress.retrying => l10n.saveRetrying,
-            SaveProgress.saved => l10n.saveSaved,
-            SaveProgress.failed => l10n.saveFailed,
-          }),
-          duration: shownFor,
-        ),
-      );
+    showAppSnackBar(
+      context,
+      switch (notice) {
+        SaveProgress.retrying => l10n.saveRetrying,
+        SaveProgress.saved => l10n.saveSaved,
+        SaveProgress.failed => l10n.saveFailed,
+      },
+      style: switch (notice) {
+        SaveProgress.retrying => AppSnackBarStyle.info,
+        SaveProgress.saved => AppSnackBarStyle.success,
+        SaveProgress.failed => AppSnackBarStyle.error,
+      },
+      duration: shownFor,
+    );
   }
 }
 

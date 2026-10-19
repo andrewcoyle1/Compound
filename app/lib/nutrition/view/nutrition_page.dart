@@ -98,8 +98,10 @@ class NutritionView extends StatelessWidget {
         BlocListener<NutritionDayBloc, NutritionDayState>(
           listenWhen: (previous, current) =>
               current.deleteFailures > previous.deleteFailures,
-          listener: (context, _) => ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.l10n.nutritionDeleteFailed)),
+          listener: (context, _) => showAppSnackBar(
+            context,
+            context.l10n.nutritionDeleteFailed,
+            style: AppSnackBarStyle.error,
           ),
         ),
         BlocListener<NutritionDayBloc, NutritionDayState>(
@@ -126,8 +128,10 @@ class NutritionView extends StatelessWidget {
         BlocListener<NutritionDayBloc, NutritionDayState>(
           listenWhen: (previous, current) =>
               current.loggedAgainToday > previous.loggedAgainToday,
-          listener: (context, _) => ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.l10n.nutritionLoggedAgainToday)),
+          listener: (context, _) => showAppSnackBar(
+            context,
+            context.l10n.nutritionLoggedAgainToday,
+            style: AppSnackBarStyle.success,
           ),
         ),
       ],

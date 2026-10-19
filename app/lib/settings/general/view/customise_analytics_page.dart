@@ -44,9 +44,11 @@ class CustomiseAnalyticsView extends StatelessWidget {
       onDispose: cubit.disappeared,
       child: BlocListener<CustomiseAnalyticsCubit, CustomiseAnalyticsState>(
         listenWhen: (_, state) => state.saveFailed,
-        listener: (context, _) => ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(l10n.unitsSaveFailed))),
+        listener: (context, _) => showAppSnackBar(
+          context,
+          l10n.unitsSaveFailed,
+          style: AppSnackBarStyle.error,
+        ),
         child: AppScaffold(
           appBar: AppBar(title: Text(l10n.customiseAnalyticsTitle)),
           body: SafeArea(

@@ -4,8 +4,8 @@ import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/social/profile/social_profile_page.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:notifications_repository/notifications_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:purchases_repository/purchases_repository.dart';
@@ -20,6 +20,7 @@ import '../../helpers/helpers.dart';
 /// the viewer's own link (`InviteTests`).
 void main() {
   late ShareRecorder shares;
+  late FakePlatformLinks links;
 
   Future<void> settle(WidgetTester tester) async {
     for (var i = 0; i < 4; i++) {
@@ -42,6 +43,7 @@ void main() {
       ),
     ))!;
     shares = ShareRecorder();
+    links = FakePlatformLinks();
     await tester.pumpWidget(
       App(
         coachRepository: silentCoachRepository(),
@@ -59,19 +61,14 @@ void main() {
         bodyRepository: InMemoryBodyRepository(),
         socialRepository: social,
         shareSheet: shares,
+        platformLinks: links,
       ),
     );
     await settle(tester);
   }
 
   Future<void> open(WidgetTester tester, String url) async {
-    await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
-      'flutter/navigation',
-      const JSONMethodCodec().encodeMethodCall(
-        MethodCall('pushRouteInformation', {'location': url}),
-      ),
-      (_) {},
-    );
+    links.open(Uri.parse(url));
     await settle(tester);
   }
 

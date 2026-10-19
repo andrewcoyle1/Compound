@@ -4,6 +4,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:app_ui/app_ui.dart';
 import 'package:compound_charts/src/data.dart';
 import 'package:compound_charts/src/scale.dart';
+import 'package:flutter/semantics.dart' show SemanticsProperties;
 
 /// A value axis as drawn: the values at its bottom and top, its round
 /// values, and the room its labels take beside the plot, gap included.
@@ -85,8 +86,14 @@ class ChartLabels {
 ///   and fade likewise.
 /// - Marks are revealed from [startReveal] to fully: bars grow from zero,
 ///   areas rise, lines draw from the leading edge and dots pop in.
+/// - The value axis fits only the points inside the window, so a zoomed
+///   chart's axis fits what is shown.
+///
+/// With a [bucketLabel], each bucket in the window is a node for screen
+/// readers, saying its label.
 class CartesianPainter extends CustomPainter {
-  /// Paints [data], with a rule through [selected] when there is one.
+  /// Paints [data], with a rule through [selected] and a marker on each
+  /// series there when there is one.
   new({
     required this.data,
     required this.progress,
@@ -97,11 +104,14 @@ class CartesianPainter extends CustomPainter {
     required this.textDirection,
     required this.gridColor,
     required this.ruleColor,
+    required this.markerRing,
     this.curve = Curves.linear,
     this.startReveal = 1,
     this.from,
     this.selected,
     this.locale,
+    this.bucketLabel,
+    this.compact = false,
   }) : super(repaint: progress);
 
   /// What to plot, from what was on screen to what is to be.
@@ -140,11 +150,22 @@ class CartesianPainter extends CustomPainter {
   /// The colour of the rule through [selected].
   final Color ruleColor;
 
+  /// The ring around each series' marker on [selected], parting it from
+  /// the line beneath: the colour behind the chart.
+  final Color markerRing;
+
   /// The bucket picked.
   final DateTime? selected;
 
+  /// What a screen reader says for each bucket.
+  final String Function(DateTime bucket)? bucketLabel;
+
   /// The locale values and dates are written in.
   final String? locale;
+
+  /// Whether it is a card's chart: the marks alone, with no gridlines or
+  /// labels, a finer line ending in a dot, and a stub on each empty bar.
+  final bool compact;
 
   /// How far through [data] it is, eased.
   double get t => curve.transform(progress.value);
@@ -157,6 +178,7 @@ class CartesianPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (compact) return _paintCompact(canvas, size);
     final t = this.t;
     final data = shown;
     final reveal = this.reveal;
@@ -277,42 +299,7 @@ class CartesianPainter extends CustomPainter {
     canvas.restore();
 
     if (target.ticks.isNotEmpty || start.ticks.isNotEmpty) {
-      final bucketWidth =
-          plot.width *
-          data.bucketDays *
-          Duration.minutesPerDay /
-          data.end.difference(data.start).inMinutes;
-      // Marks stay within the plot's width as the window slides; bars
-      // stand on the axis, never below it, even while it slides away from
-      // zero.
-      canvas
-        ..save()
-        ..clipRect(Rect.fromLTRB(plot.left, 0, plot.right, size.height))
-        ..save()
-        ..clipRect(Rect.fromLTRB(plot.left, 0, plot.right, plot.bottom));
-      _paintBars(canvas, data, xOf, yOf, bucketWidth, reveal);
-      canvas.restore();
-      for (final s in data.series.where((s) => s.mark == ChartMark.area)) {
-        _paintLine(canvas, s, xOf, yOf, reveal, fillTo: plot);
-      }
-      canvas
-        ..save()
-        ..clipRect(
-          Rect.fromLTRB(
-            plot.left,
-            0,
-            plot.left + plot.width * reveal,
-            size.height,
-          ),
-        );
-      for (final s in data.series.where((s) => s.mark == ChartMark.line)) {
-        _paintLine(canvas, s, xOf, yOf, reveal);
-      }
-      canvas.restore();
-      for (final s in data.series.where((s) => s.mark == ChartMark.dot)) {
-        _paintDots(canvas, s, xOf, yOf, reveal);
-      }
-      canvas.restore();
+      _paintMarks(canvas, size, data, plot, xOf, yOf, reveal);
     }
 
     if (selected case final date?) {
@@ -324,9 +311,197 @@ class CartesianPainter extends CustomPainter {
           ..color = ruleColor
           ..strokeWidth = AppChartMark.ruleWidth,
       );
+      // A marker on every series there: a bar's on its segment's top.
+      var stack = 0.0;
+      for (final s in data.series) {
+        final point = s.points.where((p) => p.x == date).firstOrNull;
+        if (point == null) continue;
+        final y = s.mark == ChartMark.bar ? stack += point.y : point.y;
+        final centre = Offset(x, yOf(y));
+        canvas
+          ..drawCircle(
+            centre,
+            AppChartMark.dotRadius + AppChartMark.lineWidth,
+            Paint()..color = markerRing,
+          )
+          ..drawCircle(
+            centre,
+            AppChartMark.dotRadius,
+            Paint()..color = s.color,
+          );
+      }
     }
     labels.end();
   }
+
+  /// A card's chart: the marks alone, filling [size], over a stub for
+  /// each bucket of a bar chart. The value axis fits the values exactly,
+  /// or from zero for bars, and still slides between data.
+  void _paintCompact(Canvas canvas, Size size) {
+    final t = this.t;
+    final data = shown;
+    final values = _values(this.data.end);
+    // An axis emptied keeps its scale while the marks sink.
+    final end = values.isEmpty
+        ? from
+        : _compactAxis(values, this.data.end.yFit);
+    final start = from ?? end;
+    // Inset so a line's end dot and stroke are never cut off; bars stand
+    // on the bottom edge.
+    const inset = AppChartMark.dotRadius;
+    final plot = Rect.fromLTRB(
+      inset,
+      inset,
+      size.width - inset,
+      data.yFit == ChartYFit.zero ? size.height : size.height - inset,
+    );
+    geometry.plot = plot;
+    _paintStubs(canvas, data, plot);
+    if (start == null || end == null) return;
+    final low = lerpDouble(start.low, end.low, t)!;
+    final high = lerpDouble(start.high, end.high, t)!;
+    geometry.axis = (low: low, high: high, ticks: const [], labelWidth: 0);
+    _paintMarks(
+      canvas,
+      size,
+      data,
+      plot,
+      (x) => plot.left + plot.width * data.fraction(x),
+      (value) => plot.bottom - plot.height * (value - low) / (high - low),
+      reveal,
+    );
+  }
+
+  /// [values] fitted exactly, or from zero on a [ChartYFit.zero] axis; a
+  /// single value sits in the middle.
+  static ChartAxis _compactAxis(List<double> values, ChartYFit fit) {
+    var low = values.reduce(math.min);
+    var high = values.reduce(math.max);
+    if (fit == ChartYFit.zero) {
+      low = math.min(low, 0);
+      high = math.max(high, 0);
+      if (low == high) high = 1;
+    } else if (low == high) {
+      low -= 1;
+      high += 1;
+    }
+    return (low: low, high: high, ticks: const [], labelWidth: 0);
+  }
+
+  /// A stub on the floor of each of [data]'s buckets, under the bars, so
+  /// an empty day still reads as one; only when it has bar series.
+  void _paintStubs(Canvas canvas, ChartData data, Rect plot) {
+    if (!data.series.any((s) => s.mark == ChartMark.bar)) return;
+    final buckets =
+        (data.end.difference(data.start).inMinutes /
+                (data.bucketDays * Duration.minutesPerDay))
+            .round();
+    final width = plot.width / buckets * AppChartMark.barFill;
+    final paint = Paint()..color = gridColor;
+    for (var i = 0; i < buckets; i++) {
+      final x = plot.left + plot.width * (i + 0.5) / buckets;
+      canvas.drawRRect(
+        RRect.fromLTRBR(
+          x - width / 2,
+          plot.bottom - AppChartMark.stubHeight,
+          x + width / 2,
+          plot.bottom,
+          const Radius.circular(AppChartMark.stubHeight / 2),
+        ),
+        paint,
+      );
+    }
+  }
+
+  /// [data]'s marks in [plot]: bars, then areas, lines and dots, revealed
+  /// [reveal] of the way.
+  void _paintMarks(
+    Canvas canvas,
+    Size size,
+    ChartData data,
+    Rect plot,
+    double Function(DateTime) xOf,
+    double Function(double) yOf,
+    double reveal,
+  ) {
+    final bucketWidth =
+        plot.width *
+        data.bucketDays *
+        Duration.minutesPerDay /
+        data.end.difference(data.start).inMinutes;
+    // Marks stay within the plot's width as the window slides (a card's
+    // reach its edges, for the end dot); bars stand on the axis, never
+    // below it, even while it slides away from zero.
+    final clip = compact
+        ? Offset.zero & size
+        : Rect.fromLTRB(plot.left, 0, plot.right, size.height);
+    canvas
+      ..save()
+      ..clipRect(clip)
+      ..save()
+      ..clipRect(Rect.fromLTRB(plot.left, 0, plot.right, plot.bottom));
+    _paintBars(canvas, data, xOf, yOf, bucketWidth, reveal);
+    canvas.restore();
+    for (final s in data.series.where((s) => s.mark == ChartMark.area)) {
+      _paintLine(canvas, s, xOf, yOf, reveal, fillTo: plot);
+    }
+    canvas
+      ..save()
+      ..clipRect(
+        Rect.fromLTRB(
+          clip.left,
+          0,
+          clip.left + clip.width * reveal,
+          size.height,
+        ),
+      );
+    for (final s in data.series.where((s) => s.mark == ChartMark.line)) {
+      _paintLine(canvas, s, xOf, yOf, reveal);
+    }
+    canvas.restore();
+    for (final s in data.series.where((s) => s.mark == ChartMark.dot)) {
+      _paintDots(canvas, s, xOf, yOf, reveal);
+    }
+    canvas.restore();
+  }
+
+  @override
+  SemanticsBuilderCallback? get semanticsBuilder {
+    final label = bucketLabel;
+    if (label == null) return null;
+    return (size) {
+      final window = data.end;
+      final plot = geometry.plot;
+      final width =
+          plot.width *
+          window.bucketDays *
+          Duration.minutesPerDay /
+          window.end.difference(window.start).inMinutes;
+      return [
+        for (final bucket in window.buckets)
+          if (window.contains(bucket))
+            CustomPainterSemantics(
+              rect: Rect.fromCenter(
+                center: Offset(
+                  plot.left + plot.width * window.fraction(bucket),
+                  plot.center.dy,
+                ),
+                width: width,
+                height: plot.height,
+              ).intersect(plot),
+              properties: SemanticsProperties(
+                label: label(bucket),
+                textDirection: textDirection,
+              ),
+            ),
+      ];
+    };
+  }
+
+  // The plot moves without a new painter as the axis settles, and the
+  // labels are a closure, so the nodes are rebuilt with every painter.
+  @override
+  bool shouldRebuildSemantics(CartesianPainter oldDelegate) => true;
 
   Paint _gridPaint(double alpha) => Paint()
     ..color = gridColor.withValues(alpha: gridColor.a * alpha)
@@ -344,22 +519,11 @@ class CartesianPainter extends CustomPainter {
     canvas.restore();
   }
 
-  /// The value axis that fits [data] in [room], the plot's height in
-  /// labels, or null when it has nothing to plot.
+  /// The value axis that fits [data]'s points inside its window in
+  /// [room], the plot's height in labels, or null when it has nothing to
+  /// plot.
   ChartAxis? _axis(ChartData data, double room) {
-    // Bars stack, so the axis must reach each stack's total.
-    final stacks = <DateTime, double>{};
-    final values = <double>[];
-    for (final s in data.series) {
-      for (final p in s.points) {
-        if (s.mark == ChartMark.bar) {
-          stacks[p.x] = (stacks[p.x] ?? 0) + p.y;
-        } else {
-          values.add(p.y);
-        }
-      }
-    }
-    values.addAll(stacks.values);
+    final values = _values(data);
     if (values.isEmpty) return null;
     final ticks = _ticks(values, data.yFit, room);
     return (
@@ -372,6 +536,24 @@ class CartesianPainter extends CustomPainter {
               .reduce(math.max) +
           AppSpacing.s,
     );
+  }
+
+  /// The values [data]'s axis must reach: each point inside its window,
+  /// and each stack of bars' total, since bars stack.
+  static List<double> _values(ChartData data) {
+    final stacks = <DateTime, double>{};
+    final values = <double>[];
+    for (final s in data.series) {
+      for (final p in s.points) {
+        if (!data.contains(p.x)) continue;
+        if (s.mark == ChartMark.bar) {
+          stacks[p.x] = (stacks[p.x] ?? 0) + p.y;
+        } else {
+          values.add(p.y);
+        }
+      }
+    }
+    return values..addAll(stacks.values);
   }
 
   /// [ticks] written out, to the decimals their step needs.
@@ -447,8 +629,8 @@ class CartesianPainter extends CustomPainter {
 
   /// A line series, or an area's line and its fill down to [fillTo]'s
   /// bottom, risen [reveal] of the way from it, with its points marked if
-  /// it [ChartSeries.showsPoints]. A lone point, with nothing to join, is a
-  /// dot.
+  /// it [ChartSeries.showsPoints] (only its last on a [compact] chart). A
+  /// lone point, with nothing to join, is a dot.
   void _paintLine(
     Canvas canvas,
     ChartSeries series,
@@ -495,10 +677,16 @@ class CartesianPainter extends CustomPainter {
       Paint()
         ..color = series.color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = AppChartMark.lineWidth
+        ..strokeWidth = compact
+            ? AppChartMark.sparkWidth
+            : AppChartMark.lineWidth
         ..strokeJoin = StrokeJoin.round
         ..strokeCap = StrokeCap.round,
     );
+    // A card's line ends on its latest reading.
+    if (compact && !series.showsPoints) {
+      _paintDots(canvas, series, xOf, yOf, reveal, at: [points.last]);
+    }
   }
 
   /// A dot per point of [series] (or at each of [at]), popping in as
@@ -533,7 +721,9 @@ class CartesianPainter extends CustomPainter {
       oldDelegate.textDirection != textDirection ||
       oldDelegate.gridColor != gridColor ||
       oldDelegate.ruleColor != ruleColor ||
-      oldDelegate.locale != locale;
+      oldDelegate.markerRing != markerRing ||
+      oldDelegate.locale != locale ||
+      oldDelegate.compact != compact;
 }
 
 /// The cubic Bézier segments of a monotone curve through [points], whose x

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The log meal quick action: AppSymbols' Material glyph on a circle, as Android's
+     app shortcut icons are drawn. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="@color/ic_launcher_background"
+        android:pathData="M0,24a24,24 0 1,0 48,0a24,24 0 1,0 -48,0z" />
+    <group android:translateX="12" android:translateY="12">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M15.984375 6.0V14.015625H18.984375V21.984375H21.0V2.015625C18.234375 2.015625 15.984375 4.21875 15.984375 6.0ZM11.015625 9.0H9.0V2.015625H6.984375V9.0H5.015625V2.015625H3.0V9.0C3.0 11.203125 4.78125 12.984375 6.984375 12.984375V21.984375H9.0V12.984375C11.203125 12.984375 12.984375 11.203125 12.984375 9.0V2.015625H11.015625V9.0Z" />
+    </group>
+</vector>

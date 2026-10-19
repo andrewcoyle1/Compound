@@ -85,20 +85,15 @@ class _NotificationSettingsViewState extends State<NotificationSettingsView> {
       child: BlocListener<NotificationSettingsCubit, NotificationSettingsState>(
         listenWhen: (previous, current) =>
             current.failureId != previous.failureId,
-        listener: (context, state) => ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(switch (state.failure!) {
-                NotificationSettingsFailure.save =>
-                  l10n.notificationSettingsSaveFailed,
-                NotificationSettingsFailure.checkPermission =>
-                  l10n.notificationSettingsCheckFailed,
-                NotificationSettingsFailure.requestPermission =>
-                  l10n.notificationSettingsEnableFailed,
-              }),
-            ),
-          ),
+        listener: (context, state) =>
+            showAppSnackBar(context, switch (state.failure!) {
+              NotificationSettingsFailure.save =>
+                l10n.notificationSettingsSaveFailed,
+              NotificationSettingsFailure.checkPermission =>
+                l10n.notificationSettingsCheckFailed,
+              NotificationSettingsFailure.requestPermission =>
+                l10n.notificationSettingsEnableFailed,
+            }, style: AppSnackBarStyle.error),
         child: AppScaffold(
           appBar: AppBar(title: Text(l10n.settingsNotificationSettings)),
           body: SafeArea(

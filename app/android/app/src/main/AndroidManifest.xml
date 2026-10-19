@@ -43,7 +43,9 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- compound:// links (DeepLink), routed by go_router. -->
+            <!-- compound:// links (DeepLink), taken by app_links (PlatformLinks); Flutter's own
+                 deep linking is off so the router never sees them. -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false"/>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>

@@ -301,7 +301,7 @@ class _CommentRow extends StatelessWidget {
                       children: [
                         Text(
                           comment.authorName ?? l10n.socialUnknown,
-                          style: AppTextStyles.sectionTitle,
+                          style: AppTextStyles.rowDetail.semibold,
                         ),
                         RelativeTimeBuilder(
                           date: comment.dateCreated,

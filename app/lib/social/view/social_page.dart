@@ -653,8 +653,8 @@ class _Leaderboard extends StatelessWidget {
                               child: Text(
                                 name,
                                 style: isOwn
-                                    ? AppTextStyles.sectionTitle
-                                    : AppTextStyles.rowTitle,
+                                    ? AppTextStyles.rowDetail.semibold
+                                    : AppTextStyles.rowDetail,
                               ),
                             ),
                             if (rank == 1 && standing.sessions > 0)

@@ -445,7 +445,7 @@ class _PhotoCell extends StatelessWidget {
                         horizontal: AppSpacing.s,
                         vertical: AppSpacing.xxs,
                       ),
-                      child: Text(pose, style: AppTextStyles.label),
+                      child: Text(pose, style: AppTextStyles.label.semibold),
                     ),
                   ),
                 ),

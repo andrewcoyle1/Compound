@@ -180,7 +180,7 @@ class AuthorHeader extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       if (name != null)
-                        Text(name, style: AppTextStyles.sectionTitle),
+                        Text(name, style: AppTextStyles.rowDetail.semibold),
                       UsernameLabel(username: author.username),
                     ],
                   ),

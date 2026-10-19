@@ -108,13 +108,17 @@ class _MemberCell extends StatelessWidget {
                   toGo != null
                       ? l10n.socialToGo(toGo)
                       : firstNameOf(member.user) ?? name,
-                  style: AppTextStyles.label.copyWith(
-                    color: toGo != null
-                        ? colors.warning
-                        : member.trainedToday
-                        ? scheme.onSurface
-                        : scheme.onSurfaceVariant,
-                  ),
+                  style:
+                      (toGo != null
+                              ? AppTextStyles.label.semibold
+                              : AppTextStyles.label)
+                          .copyWith(
+                            color: toGo != null
+                                ? colors.warning
+                                : member.trainedToday
+                                ? scheme.onSurface
+                                : scheme.onSurfaceVariant,
+                          ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

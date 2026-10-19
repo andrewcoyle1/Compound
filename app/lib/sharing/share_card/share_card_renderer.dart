@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:app_ui/app_ui.dart';
-import 'package:flutter/rendering.dart';
 
 /// The pixel density cards are drawn at: a 360-point card comes out 1080
 /// pixels wide, as Swift's `ShareCardRenderer.scale`.
@@ -41,28 +39,13 @@ Future<Uint8List?> renderShareCard(
   Widget card, {
   required Size size,
 }) async {
-  final view = View.of(context);
   final direction = Directionality.of(context);
   final locale = Localizations.localeOf(context);
   final icon = precacheImage(AppImages.appIcon, context);
   try {
     await icon;
-    final boundary = RenderRepaintBoundary();
-    final renderView = RenderView(
-      view: view,
-      configuration: ViewConfiguration(
-        logicalConstraints: BoxConstraints.tight(size),
-        physicalConstraints: BoxConstraints.tight(size * shareCardScale),
-        devicePixelRatio: shareCardScale,
-      ),
-      child: RenderPositionedBox(child: boundary),
-    );
-    final pipeline = PipelineOwner()..rootNode = renderView;
-    renderView.prepareInitialFrame();
-    final build = BuildOwner(focusManager: FocusManager());
-    final root = RenderObjectToWidgetAdapter<RenderBox>(
-      container: boundary,
-      child: Localizations(
+    return await renderWidgetPng(
+      Localizations(
         locale: locale,
         delegates: const [
           DefaultWidgetsLocalizations.delegate,
@@ -73,18 +56,9 @@ Future<Uint8List?> renderShareCard(
           child: Directionality(textDirection: direction, child: card),
         ),
       ),
-    ).attachToRenderTree(build);
-    build
-      ..buildScope(root)
-      ..finalizeTree();
-    pipeline
-      ..flushLayout()
-      ..flushCompositingBits()
-      ..flushPaint();
-    final image = await boundary.toImage(pixelRatio: shareCardScale);
-    final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    return data?.buffer.asUint8List();
+      size: size,
+      pixelRatio: shareCardScale,
+    );
   } on Object catch (_) {
     return null;
   }

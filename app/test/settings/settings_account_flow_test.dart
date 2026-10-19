@@ -254,7 +254,8 @@ void main() {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 50)),
       );
-      await tester.pump();
+      // Elapses the capture's zero-length delay.
+      await tester.pump(Duration.zero);
     }
     expect(
       [for (final (name, png) in shares.images) (name, png.isNotEmpty)],

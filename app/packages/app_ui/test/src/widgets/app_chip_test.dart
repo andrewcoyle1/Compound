@@ -58,6 +58,49 @@ void main() {
     });
   });
 
+  group('AppChip large', () {
+    testWidgets('is a 44 pt capsule of text on surface', (tester) async {
+      await tester.pumpApp(
+        const Center(
+          child: AppChip(
+            label: 'Gym',
+            icon: AppSymbols.gym,
+            size: AppChipSize.large,
+          ),
+        ),
+      );
+      final scheme = AppTheme.light.colorScheme;
+      expect(_decoration(tester).color, AppColors.light.surface);
+      expect(
+        tester.widget<Text>(find.text('Gym')).style?.color,
+        scheme.onSurface,
+      );
+      expect(tester.widget<Icon>(find.byType(Icon)).color, scheme.onSurface);
+      expect(
+        tester.getSize(find.byType(AppChip)).height,
+        greaterThanOrEqualTo(AppControlSize.row),
+      );
+    });
+
+    testWidgets('selected is the accent with onPrimary text', (tester) async {
+      await tester.pumpApp(
+        const Center(
+          child: AppChip(
+            label: 'Type',
+            size: AppChipSize.large,
+            selected: true,
+          ),
+        ),
+      );
+      final scheme = AppTheme.light.colorScheme;
+      expect(_decoration(tester).color, scheme.primary);
+      expect(
+        tester.widget<Text>(find.text('Type')).style?.color,
+        scheme.onPrimary,
+      );
+    });
+  });
+
   group('AppChip golden', () {
     goldenStates('app_chip', [
       ('Tag', const AppChip(label: 'Push')),
@@ -79,6 +122,25 @@ void main() {
       ),
       ('Button', AppChip(label: 'See All', onPressed: () {})),
       ('Long label', const AppChip(label: 'Upper body hypertrophy')),
+      (
+        'Large',
+        AppChip(
+          label: 'Gym',
+          icon: AppSymbols.gym,
+          size: AppChipSize.large,
+          onPressed: () {},
+        ),
+      ),
+      (
+        'Large, selected',
+        AppChip(
+          label: 'Type',
+          icon: AppSymbols.exercise,
+          size: AppChipSize.large,
+          selected: true,
+          onPressed: () {},
+        ),
+      ),
     ], width: 200);
   });
 }

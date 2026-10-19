@@ -186,7 +186,7 @@ void main() {
 
     testWidgets('an empty screen offers Log Weight', (tester) async {
       await pumpView(tester, WeightMetric.scaleWeight, measurements: const []);
-      expect(find.widgetWithText(TextButton, 'Log Weight'), findsOneWidget);
+      expect(find.widgetWithText(AppCtaButton, 'Log Weight'), findsOneWidget);
     });
 
     testWidgets('swiping a row deletes its weigh-in', (tester) async {

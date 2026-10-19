@@ -255,7 +255,12 @@ class _EquipmentPickerViewState extends State<EquipmentPickerView> {
             .compareTo(l10n.equipmentKindName(b).toLowerCase()),
       );
     return AppScaffold(
-      appBar: AppBar(leading: const CloseButton(), title: Text(widget.title)),
+      appBar: AppBar(
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
+        ),
+        title: Text(widget.title),
+      ),
       body: SafeArea(
         bottom: false,
         child: Column(

@@ -112,8 +112,8 @@ class WeeklyReviewView extends StatelessWidget {
         ],
       ),
       body: switch (state.status) {
-        WeeklyReviewStatus.loading => const Center(
-          child: CircularProgressIndicator.adaptive(),
+        WeeklyReviewStatus.loading => AppLoadingView(
+          label: context.l10n.launchLoading,
         ),
         WeeklyReviewStatus.failure => AnalyticsMessage(
           title: l10n.weeklyReviewTitle,
@@ -327,23 +327,21 @@ class _WeekHeader extends StatelessWidget {
     final bloc = context.read<WeeklyReviewBloc>();
     return Row(
       children: [
-        IconButton(
-          icon: const Icon(AppSymbols.previous),
-          tooltip: l10n.weeklyReviewPreviousWeek,
+        AppIconButton(
+          icon: AppSymbols.previous,
+          semanticLabel: l10n.weeklyReviewPreviousWeek,
           onPressed: () => bloc.add(const WeeklyReviewPreviousWeekPressed()),
         ),
         Expanded(
           child: Text(
             '${days(review.weekStart)} – ${days(last)}',
             textAlign: TextAlign.center,
-            style: AppTextStyles.rowDetail.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.sectionTitle,
           ),
         ),
-        IconButton(
-          icon: const Icon(AppSymbols.next),
-          tooltip: l10n.weeklyReviewNextWeek,
+        AppIconButton(
+          icon: AppSymbols.next,
+          semanticLabel: l10n.weeklyReviewNextWeek,
           onPressed: state.canShowNextWeek
               ? () => bloc.add(const WeeklyReviewNextWeekPressed())
               : null,
@@ -428,9 +426,9 @@ class _ShareButtonState extends State<_ShareButton> {
   }
 
   @override
-  Widget build(BuildContext context) => IconButton(
-    icon: Icon(AppSymbols.share),
-    tooltip: context.l10n.weeklyReviewShare,
+  Widget build(BuildContext context) => AppToolbarButton(
+    icon: AppSymbols.share,
+    semanticLabel: context.l10n.weeklyReviewShare,
     onPressed: _sharing ? null : () => unawaited(_share()),
   );
 }

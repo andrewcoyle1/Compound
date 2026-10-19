@@ -43,9 +43,9 @@ class MuscleGroupsView extends StatelessWidget {
         title: Text(l10n.progressMuscleGroups),
         actions: [
           MethodInfoButton(MethodInfo.weeklyHardSets(l10n)),
-          IconButton(
-            icon: const Icon(AppSymbols.muscleBalance),
-            tooltip: l10n.muscleBalanceTitle,
+          AppToolbarButton(
+            icon: AppSymbols.muscleBalance,
+            semanticLabel: l10n.muscleBalanceTitle,
             onPressed: () => context.goNamed(MuscleBalancePage.name),
           ),
         ],

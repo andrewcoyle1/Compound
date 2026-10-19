@@ -58,8 +58,8 @@ class ExerciseList extends StatelessWidget {
         _FilterBar(library: library, filters: listState.filters),
     ];
     final body = switch (libraryState) {
-      TrainingLibraryLoading() => const Center(
-        child: CircularProgressIndicator.adaptive(),
+      TrainingLibraryLoading() => AppLoadingView(
+        label: context.l10n.launchLoading,
       ),
       TrainingLibraryFailure() => LibraryFailure(
         message: l10n.exercisesLoadFailure,
@@ -254,16 +254,19 @@ class _FilterBar extends StatelessWidget {
         .firstOrNull;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.l,
+        vertical: AppSpacing.s,
+      ),
       child: Row(
-        spacing: AppSpacing.xs,
+        spacing: AppSpacing.s,
         children: [
           // Offered only while something is filtered: a reset that resets
           // nothing reads as broken.
           if (filters.isActive)
-            IconButton(
-              icon: const Icon(AppSymbols.logAgain),
-              tooltip: l10n.filterClear,
+            AppIconButton(
+              icon: AppSymbols.logAgain,
+              semanticLabel: l10n.filterClear,
               onPressed: cubit.filtersReset,
             ),
           _ChoiceChip<String?>(
@@ -411,6 +414,7 @@ class _ChoiceChip<T> extends StatelessWidget {
         label: label,
         icon: icon,
         selected: isActive ?? value != options.first.$1,
+        size: AppChipSize.large,
         onPressed: () =>
             controller.isOpen ? controller.close() : controller.open(),
       ),
@@ -459,6 +463,7 @@ class _MultiChip<T> extends StatelessWidget {
             : context.l10n.filterCountChip(title, selection.length),
         icon: icon,
         selected: selection.isNotEmpty,
+        size: AppChipSize.large,
         onPressed: () =>
             controller.isOpen ? controller.close() : controller.open(),
       ),

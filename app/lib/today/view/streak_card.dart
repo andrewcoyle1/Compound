@@ -203,7 +203,6 @@ class _DayDot extends StatelessWidget {
               locale: context.dateLocale,
             ),
             style: AppTextStyles.label.copyWith(
-              fontWeight: isToday ? FontWeight.bold : null,
               color: isToday ? scheme.onSurface : scheme.onSurfaceVariant,
             ),
           ),

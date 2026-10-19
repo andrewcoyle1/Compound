@@ -30,6 +30,33 @@ void main() {
       );
     });
 
+    testWidgets('inline lines up with the text before it', (tester) async {
+      await tester.pumpApp(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Detail'),
+            AppTextButton(label: 'Edit', onPressed: () {}, inline: true),
+          ],
+        ),
+      );
+      expect(
+        tester.getTopLeft(find.text('Edit')).dx,
+        tester.getTopLeft(find.text('Detail')).dx,
+      );
+      expect(
+        tester.getSize(find.byType(TextButton)).height,
+        greaterThanOrEqualTo(AppControlSize.row),
+      );
+      final style = tester
+          .widget<TextButton>(find.byType(TextButton))
+          .style!
+          .textStyle!
+          .resolve({})!;
+      expect(style.fontWeight, FontWeight.w600);
+      expect(style.fontSize, AppTextStyles.rowDetail.fontSize);
+    });
+
     testWidgets('null onPressed disables it', (tester) async {
       await tester.pumpApp(const AppTextButton(label: 'Skip', onPressed: null));
       expect(tester.widget<TextButton>(find.byType(TextButton)).enabled, false);
@@ -44,6 +71,17 @@ void main() {
         AppTextButton(label: 'Remove', onPressed: () {}, isDestructive: true),
       ),
       ('Disabled', const AppTextButton(label: 'Not now', onPressed: null)),
+      (
+        'Inline',
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: AppTextButton(
+            label: 'Edit Weights',
+            onPressed: () {},
+            inline: true,
+          ),
+        ),
+      ),
     ], width: 220);
   });
 }

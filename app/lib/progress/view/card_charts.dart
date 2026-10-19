@@ -146,8 +146,11 @@ class _BarsPainter extends CustomPainter {
     required this.slots,
     required this.empty,
     this.line = const [],
-    this.lineColor = const Color(0x00000000),
+    this.lineColor = Colors.transparent,
   });
+
+  /// How tall an empty slot's stub is.
+  static const double _stub = 2;
 
   final List<List<double>> stacks;
   final List<Color> colors;
@@ -170,10 +173,10 @@ class _BarsPainter extends CustomPainter {
         canvas.drawRRect(
           RRect.fromLTRBR(
             left,
-            size.height - 2,
+            size.height - _stub,
             left + barWidth,
             size.height,
-            const Radius.circular(1),
+            const Radius.circular(_stub / 2),
           ),
           Paint()..color = empty,
         );
@@ -341,6 +344,7 @@ class _GridPainter extends CustomPainter {
 
   static const _rows = 3;
   static const _gap = 3.0;
+  static const double _corner = 2;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -355,7 +359,13 @@ class _GridPainter extends CustomPainter {
       final x = (i ~/ _rows) * (cell + _gap);
       final y = (i % _rows) * (cell + _gap);
       canvas.drawRRect(
-        RRect.fromLTRBR(x, y, x + cell, y + cell, const Radius.circular(2)),
+        RRect.fromLTRBR(
+          x,
+          y,
+          x + cell,
+          y + cell,
+          const Radius.circular(_corner),
+        ),
         done ? filled : blank,
       );
     }

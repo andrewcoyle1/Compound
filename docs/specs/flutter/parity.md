@@ -322,6 +322,9 @@ None left: label OCR (#185) and A/B tests (#186) closed the last two.
   each need a decision too.
 
 ### (d) Later (owner, 19 Oct 2026)
+Package candidates and why others were turned down: `packages.md`.
+- **Ready when wanted:** `csv` for program import's hand-written CSV reader; `animations` for page
+  transitions; `showcaseview` for one-time feature tips (owner's call).
 - **Gleap:** in-app support chat, bug reports and feedback (`gleap_sdk`, a paid service). Parked.
 - **Coach overhaul with generative UI:** adopt the `markdown` package then, replacing the light
   bold/italic parser in `coach/view/coach_message_body.dart`.

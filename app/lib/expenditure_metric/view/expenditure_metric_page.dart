@@ -28,13 +28,16 @@ import 'package:user_repository/user_repository.dart';
 /// `EnergyBalanceView`): the shared metric layout over the last 90 days of
 /// the expenditure engine. Pushed from the Progress tab.
 class ExpenditureMetricPage extends StatelessWidget {
-  const new({required this.metric, this.allData = false, super.key});
+  const new({required this.metric, this.allData = false, super.key, this.now});
 
   /// Which of the two screens.
   final ExpenditureMetric metric;
 
   /// Whether to show every entry (All Recorded Data) instead of the chart.
   final bool allData;
+
+  /// The moment the estimate is for; now when null. For tests.
+  final DateTime Function()? now;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +53,7 @@ class ExpenditureMetricPage extends StatelessWidget {
         analytics: context.read<AnalyticsRepository>(),
         uid: state.user.uid,
         metric: metric,
+        now: now ?? DateTime.now,
       )..add(const ExpenditureMetricSubscriptionRequested()),
       child: ExpenditureMetricView(allData: allData),
     );

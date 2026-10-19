@@ -557,7 +557,8 @@ List<Widget> galleryNavigation(BuildContext context) {
   ];
 }
 
-/// [showAppDialog] and [AppDialog], and [showAppSheet] and [AppSheetPage].
+/// [showAppDialog] and [AppDialog], [showAppSheet] and [AppSheetPage], and
+/// [AppMenuItem].
 List<Widget> galleryOverlays(BuildContext context) {
   final l10n = context.l10n;
   final keep = AppDialogAction<void>(label: l10n.devGallerySampleKeepEditing);
@@ -636,6 +637,31 @@ List<Widget> galleryOverlays(BuildContext context) {
         title: 'half',
         onPressed: () =>
             unawaited(context.pushNamed(ComponentGalleryPage.sheetName)),
+      ),
+    ]),
+    galleryEntry('AppMenuItem', [
+      AppListRow(
+        title: 'icon, text only, isDestructive',
+        accessory: AppListRowCustom(
+          PopupMenuButton<void>(
+            tooltip: l10n.devGallerySampleEdit,
+            icon: Icon(AppSymbols.more),
+            itemBuilder: (_) => [
+              AppMenuItem(
+                label: l10n.devGallerySampleEdit,
+                value: null,
+                icon: AppSymbols.edit,
+              ),
+              AppMenuItem(label: l10n.devGallerySampleSave, value: null),
+              AppMenuItem(
+                label: l10n.devGallerySampleDelete,
+                value: null,
+                icon: AppSymbols.delete,
+                isDestructive: true,
+              ),
+            ],
+          ),
+        ),
       ),
     ]),
   ];

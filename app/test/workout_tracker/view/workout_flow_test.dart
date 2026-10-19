@@ -125,7 +125,7 @@ void main() {
     await tester.tap(find.text('Finish Workout…'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(EditableText), 'Good session');
-    await tester.tap(find.text('Finish'));
+    await tester.tap(find.byTooltip('Finish'));
     await tester.pumpAndSettle();
 
     // The summary, in the tracker's place.

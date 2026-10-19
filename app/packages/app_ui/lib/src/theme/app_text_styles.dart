@@ -156,6 +156,15 @@ abstract final class AppTextStyles {
   );
 }
 
+/// The weight a style takes for emphasis, as Swift's `.weight(.semibold)` on
+/// one of its fonts: `AppTextStyles.label.semibold` is the tracker's rest
+/// countdown, `AppTextStyles.rowDetail.semibold` a set's number. A title is
+/// [AppTextStyles.sectionTitle], not `rowTitle.semibold`.
+extension AppTextStyleWeight on TextStyle {
+  /// This style in semibold. Nunito, which has no semibold, draws it bold.
+  TextStyle get semibold => copyWith(fontWeight: FontWeight.w600);
+}
+
 /// Icon sizes at the default text size. [of] scales them with the user's
 /// text size setting, as SwiftUI's `@ScaledMetric` does.
 enum AppIconSize {

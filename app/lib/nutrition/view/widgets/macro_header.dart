@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_maths/compound_maths.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
@@ -202,8 +203,9 @@ class _MacroBar extends StatelessWidget {
           ),
           // The bar drains on the remaining page, so it agrees with the
           // figure above it.
-          LinearProgressIndicator(
+          BulletBar(
             value: macroProgress(remaining ? left : total, target),
+            thickness: AppChartMark.bulletWidthSmall,
             color: colour,
           ),
         ],

@@ -6,6 +6,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition_overview/logic/nutrition_overview.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -81,6 +82,12 @@ void main() {
           expect(find.textContaining('consumed'), findsOneWidget);
           expect(find.text('Macros'), findsOneWidget);
           expect(find.byType(MethodInfoButton), findsOneWidget);
+          // Calories and each macro, as a share of the day's target.
+          final bars = tester.widgetList<BulletBar>(find.byType(BulletBar));
+          expect(bars, hasLength(4));
+          for (final bar in bars) {
+            expect(bar.value, inInclusiveRange(0, 1));
+          }
 
           await tester.tap(find.text('Start'));
           verify(

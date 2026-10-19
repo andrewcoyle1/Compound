@@ -17,6 +17,7 @@ import 'package:compound/progress/view/progress_names.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/training_analytics/training_analytics.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_maths/compound_maths.dart'
     show BodyRatioKind, Macros, loggedAverage;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -187,10 +188,9 @@ class ProgressCards {
       value: measured ? _number(progress.percent) : AppFormat.placeholder,
       unit: '%',
       onTap: () => router?.goNamed(GoalProgressPage.name),
-      chart: ProgressBarChart(
-        current: progress.percent,
-        maximum: 100,
-        color: accent,
+      // The card's figure already says how far.
+      chart: ExcludeSemantics(
+        child: BulletBar(value: progress.percent, maximum: 100, color: accent),
       ),
     );
   }
@@ -290,12 +290,12 @@ class ProgressCards {
       value: logged ? _number(eaten, 1) : AppFormat.placeholder,
       unit: 'g',
       onTap: () => _nutrition(NutritionMetric.protein),
-      chart: ProgressBarChart(
-        current: eaten,
+      chart: BulletBar(
+        value: eaten,
         maximum: proteinCeiling(eaten: eaten, target: target),
         target: target,
         color: colors.protein,
-        semanticsValue: target == null || target <= 0
+        semanticValue: target == null || target <= 0
             ? grams(eaten)
             : l10n.progressOfTarget(grams(eaten), grams(target)),
       ),
@@ -409,11 +409,13 @@ class ProgressCards {
       value: eaten == null ? AppFormat.placeholder : _number(current, decimals),
       unit: metric.unit,
       onTap: () => _nutrition(metric),
-      chart: ProgressBarChart(
-        current: current,
-        maximum: macroChartMax(current, goal, macroFallback(metric)),
-        target: goal,
-        color: nutritionMetricColor(colors, metric),
+      chart: ExcludeSemantics(
+        child: BulletBar(
+          value: current,
+          maximum: macroChartMax(current, goal, macroFallback(metric)),
+          target: goal,
+          color: nutritionMetricColor(colors, metric),
+        ),
       ),
     );
   }
@@ -430,10 +432,12 @@ class ProgressCards {
           : _number(figure.value, figure.decimals),
       unit: metric.unit,
       onTap: () => _nutrition(metric),
-      chart: ProgressBarChart(
-        current: value ?? 0,
-        maximum: breakdownChartMax(value),
-        color: nutritionMetricColor(colors, metric),
+      chart: ExcludeSemantics(
+        child: BulletBar(
+          value: value ?? 0,
+          maximum: breakdownChartMax(value),
+          color: nutritionMetricColor(colors, metric),
+        ),
       ),
     );
   }

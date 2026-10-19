@@ -136,6 +136,22 @@ abstract final class AppChartMark {
   /// How dark the shadow is that a ring's tip casts on the lap beneath it,
   /// once it is past a full turn.
   static const double lapShadowOpacity = 0.45;
+
+  /// A bullet bar's thickness: a card's bar, a day's column, a record.
+  static const double bulletWidth = 8;
+
+  /// A thin bullet bar under a figure, as in a macro header.
+  static const double bulletWidthSmall = 4;
+
+  /// The stroke of a target's tick, and of the over-target caret.
+  static const double tickWidth = 2;
+
+  /// How far a target's tick stands proud of the bar on each side.
+  static const double tickOverhang = 3;
+
+  /// How far the over-target caret reaches past the bar's end, and half
+  /// its width.
+  static const double caretSize = 4;
 }
 
 /// The widest a screen's content grows on tablets and desktops. Wider

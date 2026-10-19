@@ -7,7 +7,8 @@ import 'package:compound_charts/compound_charts.dart';
 /// The small charts inside the Progress cards (Swift `SparklineChart`,
 /// `SetsBarChart`, `MacroStackedBarChart`, `MacroProgressChart` and the
 /// card `ContributionGridView`). [Sparkline] and [StackedBars] are
-/// [CartesianChart.compact]s; the others are drawn with a [CustomPainter].
+/// [CartesianChart.compact]s; [HabitGridChart] is drawn with a
+/// [CustomPainter]. A target's bar is a [BulletBar].
 /// Each carries one accessibility summary, [semanticsLabel] and
 /// [semanticsValue], since a screen reader cannot read a plot.
 sealed class CardChart extends StatelessWidget {
@@ -147,100 +148,6 @@ final class StackedBars extends CardChart {
       ),
     );
   }
-}
-
-/// A bar filled to [current] of [maximum], with a mark at [target] when
-/// there is one.
-final class ProgressBarChart extends CardChart {
-  const new({
-    required this.current,
-    required this.maximum,
-    required this.color,
-    this.target,
-    super.semanticsLabel,
-    super.semanticsValue,
-    super.key,
-  });
-
-  /// How far the bar is filled.
-  final double current;
-
-  /// The bar's full width.
-  final double maximum;
-
-  /// The target mark, or null for none.
-  final double? target;
-
-  /// The fill's colour.
-  final Color color;
-
-  @override
-  Widget _chart(BuildContext context) => CustomPaint(
-    size: Size.infinite,
-    painter: _ProgressPainter(
-      current: current,
-      maximum: maximum,
-      target: target,
-      color: color,
-      mark: Theme.of(context).colorScheme.onSurface,
-    ),
-  );
-}
-
-class _ProgressPainter extends CustomPainter {
-  new({
-    required this.current,
-    required this.maximum,
-    required this.target,
-    required this.color,
-    required this.mark,
-  });
-
-  final double current;
-  final double maximum;
-  final double? target;
-  final Color color;
-  final Color mark;
-
-  static const _thickness = 10.0;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final top = (size.height - _thickness) / 2;
-    const radius = Radius.circular(_thickness / 2);
-    canvas.drawRRect(
-      RRect.fromLTRBR(0, top, size.width, top + _thickness, radius),
-      Paint()..color = color.withValues(alpha: 0.2),
-    );
-    double share(double value) =>
-        maximum <= 0 ? 0 : (value / maximum).clamp(0, 1);
-    final filled = share(current) * size.width;
-    if (filled > 0) {
-      canvas.drawRRect(
-        RRect.fromLTRBR(0, top, filled, top + _thickness, radius),
-        Paint()..color = color,
-      );
-    }
-    final target = this.target;
-    if (target != null && target > 0 && target < maximum) {
-      final x = share(target) * size.width;
-      canvas.drawLine(
-        Offset(x, top - 3),
-        Offset(x, top + _thickness + 3),
-        Paint()
-          ..color = mark.withValues(alpha: 0.5)
-          ..strokeWidth = 2,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ProgressPainter old) =>
-      old.current != current ||
-      old.maximum != maximum ||
-      old.target != target ||
-      old.color != color ||
-      old.mark != mark;
 }
 
 /// The 30-day habit grid: ten columns of three days, oldest at the top

@@ -482,93 +482,20 @@ class _TargetCell extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.s),
           border: selected ? Border.all(color: scheme.primary, width: 2) : null,
         ),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _CellPainter(
-                  fill: (value / maximum).clamp(0, 1).toDouble(),
-                  tick: (target / maximum).clamp(0, 1).toDouble(),
-                  tint: tint,
-                  track: scheme.outlineVariant,
-                  mark: scheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            if (showsCaret(value, target))
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Icon(
-                  AppSymbols.increase,
-                  size: AppIconSize.small.of(context),
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+          child: BulletBar(
+            value: value,
+            maximum: maximum,
+            target: target,
+            over: showsCaret(value, target),
+            direction: Axis.vertical,
+            color: tint,
+          ),
         ),
       ),
     );
   }
-}
-
-class _CellPainter extends CustomPainter {
-  new({
-    required this.fill,
-    required this.tick,
-    required this.tint,
-    required this.track,
-    required this.mark,
-  });
-
-  final double fill;
-  final double tick;
-  final Color tint;
-  final Color track;
-  final Color mark;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final width = math.max(AppSpacing.xs, size.width * 0.3);
-    final top = size.height * 0.12;
-    final bottom = size.height * 0.88;
-    final x = size.width / 2;
-    final bar = Rect.fromLTRB(x - width / 2, top, x + width / 2, bottom);
-    canvas
-      ..drawRRect(
-        RRect.fromRectAndRadius(bar, Radius.circular(width / 2)),
-        Paint()..color = track,
-      )
-      ..drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTRB(
-            bar.left,
-            bottom - (bottom - top) * fill,
-            bar.right,
-            bottom,
-          ),
-          Radius.circular(width / 2),
-        ),
-        Paint()..color = tint,
-      );
-    final y = bottom - (bottom - top) * tick;
-    canvas.drawLine(
-      Offset(bar.left - AppSpacing.xxs, y),
-      Offset(bar.right + AppSpacing.xxs, y),
-      Paint()
-        ..color = mark
-        ..strokeWidth = 2
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_CellPainter old) =>
-      old.fill != fill ||
-      old.tick != tick ||
-      old.tint != tint ||
-      old.track != track ||
-      old.mark != mark;
 }
 
 // MARK: - Daily nutrition
@@ -735,26 +662,12 @@ class _MacroBar extends StatelessWidget {
                 color: scheme.onSurfaceVariant,
               ),
             ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppSpacing.xs),
-              child: SizedBox(
-                height: AppSpacing.xs,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: ColoredBox(color: scheme.outlineVariant),
-                    ),
-                    FractionallySizedBox(
-                      alignment: showsRemaining
-                          ? AlignmentDirectional.centerEnd
-                          : AlignmentDirectional.centerStart,
-                      widthFactor: showsRemaining ? 1 - fraction : fraction,
-                      heightFactor: 1,
-                      child: ColoredBox(color: colour),
-                    ),
-                  ],
-                ),
-              ),
+            // What is left runs from what was eaten to the end.
+            BulletBar(
+              from: showsRemaining ? fraction : 0,
+              value: showsRemaining ? 1 : fraction,
+              thickness: AppChartMark.bulletWidthSmall,
+              color: colour,
             ),
             FittedBox(child: Text(figure, style: AppTextStyles.metricSmall)),
           ],
@@ -807,6 +720,23 @@ class _CalorieGauge extends StatelessWidget {
       ),
     );
   }
+}
+
+/// How tall [text] is in a record's row style, on one line or wrapped to
+/// [width].
+double _textHeight(BuildContext context, String text, {double? width}) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: text,
+      style: DefaultTextStyle.of(context).style.merge(AppTextStyles.rowDetail),
+    ),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    maxLines: width == null ? 1 : null,
+  )..layout(maxWidth: width ?? double.infinity);
+  final height = painter.height;
+  painter.dispose();
+  return height;
 }
 
 /// The narrowest [texts] can be set without breaking a word: their longest
@@ -1263,62 +1193,139 @@ class _RecentRecords extends StatelessWidget {
                 ],
               ),
             )
-          : SingleChildScrollView(
-              child: Column(
-                spacing: AppSpacing.m,
-                children: [
-                  for (final record in records)
-                    Semantics(
-                      label: record.name,
-                      value: text(record),
-                      child: ExcludeSemantics(
-                        child: Row(
-                          spacing: AppSpacing.s,
-                          children: [
-                            SizedBox(
-                              width: MediaQuery.textScalerOf(context)
-                                  .scale(130),
-                              child: Text(
-                                record.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.rowDetail,
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final scaler = MediaQuery.textScalerOf(context);
+                final name = scaler.scale(130);
+                final figure = math.min(
+                  _wordWidth(context, [
+                    for (final record in records)
+                      (text(record), AppTextStyles.rowDetail),
+                  ], lines: true).ceilToDouble(),
+                  constraints.maxWidth / 2,
+                );
+                // The name beside its bar while the name, a bar and the
+                // widest figure fit across; else the name goes above.
+                final beside =
+                    name +
+                        scaler.scale(AppSpacing.xxl) +
+                        figure +
+                        2 * AppSpacing.s <=
+                    constraints.maxWidth;
+                // The page is a glance at the latest: as many whole rows
+                // as its height holds, never a row cut in half.
+                double height(ExerciseRecord record) {
+                  final measure = math.max(
+                    _textHeight(context, text(record), width: figure),
+                    scaler.scale(AppChartMark.bulletWidth),
+                  );
+                  return beside
+                      ? math.max(_textHeight(context, record.name), measure)
+                      : _textHeight(
+                              context,
+                              record.name,
+                              width: constraints.maxWidth,
+                            ) +
+                            AppSpacing.xxs +
+                            measure;
+                }
+
+                var used = -AppSpacing.m;
+                final shown = records.takeWhile((record) {
+                  used += AppSpacing.m + height(record);
+                  return used <= constraints.maxHeight;
+                }).toList();
+                return SingleChildScrollView(
+                  child: Column(
+                    spacing: AppSpacing.m,
+                    children: [
+                      for (final record
+                          in shown.isEmpty ? records.take(1) : shown)
+                        Semantics(
+                          label: record.name,
+                          value: text(record),
+                          child: ExcludeSemantics(
+                            child: _RecordRow(
+                              name: record.name,
+                              figure: text(record),
+                              nameWidth: beside ? name : null,
+                              figureWidth: figure,
+                              bar: BulletBar(
+                                value: record.value,
+                                maximum: top,
+                                color: colors.personalRecord,
                               ),
                             ),
-                            Expanded(
-                              child: Row(
-                                spacing: AppSpacing.s,
-                                children: [
-                                  Flexible(
-                                    child: FractionallySizedBox(
-                                      widthFactor: top > 0
-                                          ? math.max(record.value / top, 0.03)
-                                          : 0.03,
-                                      child: Container(
-                                        height: AppSpacing.m,
-                                        decoration: BoxDecoration(
-                                          color: colors.personalRecord,
-                                          borderRadius: BorderRadius.circular(
-                                            AppSpacing.m,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    text(record),
-                                    style: AppTextStyles.rowDetail,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                ],
-              ),
+                    ],
+                  ),
+                );
+              },
             ),
+    );
+  }
+}
+
+/// One record: its name, then its bar and figure, the name beside them
+/// when [nameWidth] is given (cut to one line) and above them otherwise
+/// (as many lines as it needs).
+class _RecordRow extends StatelessWidget {
+  const new({
+    required this.name,
+    required this.figure,
+    required this.nameWidth,
+    required this.figureWidth,
+    required this.bar,
+  });
+
+  final String name;
+  final String figure;
+  final double? nameWidth;
+  final double figureWidth;
+  final Widget bar;
+
+  @override
+  Widget build(BuildContext context) {
+    final nameWidth = this.nameWidth;
+    final measure = Row(
+      spacing: AppSpacing.s,
+      children: [
+        Expanded(child: bar),
+        SizedBox(
+          width: figureWidth,
+          child: Text(
+            figure,
+            textAlign: TextAlign.end,
+            style: AppTextStyles.rowDetail,
+          ),
+        ),
+      ],
+    );
+    if (nameWidth == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppSpacing.xxs,
+        children: [
+          Text(name, style: AppTextStyles.rowDetail),
+          measure,
+        ],
+      );
+    }
+    return Row(
+      spacing: AppSpacing.s,
+      children: [
+        SizedBox(
+          width: nameWidth,
+          child: Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.rowDetail,
+          ),
+        ),
+        Expanded(child: measure),
+      ],
     );
   }
 }

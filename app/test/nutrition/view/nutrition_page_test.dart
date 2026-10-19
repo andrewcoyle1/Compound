@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
@@ -12,6 +14,7 @@ import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/settings/nutrition/view/food_log_settings_page.dart';
 import 'package:compound/widgets/calendar/calendar.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart'
@@ -231,10 +234,25 @@ void main() {
       tester,
     ) async {
       await pumpView(tester);
+      List<double> bars() => [
+        for (final bar in tester.widgetList<BulletBar>(
+          find.descendant(
+            of: find.byType(MacroHeader),
+            matching: find.byType(BulletBar),
+          ),
+        ))
+          bar.value,
+      ];
+      final eaten = bars();
+      expect(eaten, hasLength(4));
 
       await tester.tap(find.byType(MacroHeader));
       await tester.pump();
       expect(find.textContaining(' left'), findsNWidgets(4));
+      // The bars drain to what is left.
+      for (final (i, left) in bars().indexed) {
+        expect(left, closeTo(math.max(1 - eaten[i], 0), 0.001));
+      }
 
       await tester.fling(find.byType(MacroHeader), const Offset(-200, 0), 800);
       await tester.pump();
@@ -367,7 +385,7 @@ void main() {
       );
 
       expect(find.byType(CalendarHeader), findsNothing);
-      expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(find.byType(BulletBar), findsNothing);
       expect(find.byType(AppStat), findsNothing);
       // Only the amount is left of the details.
       expect(find.text('1.5 serving'), findsOneWidget);

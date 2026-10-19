@@ -452,6 +452,18 @@ void main() {
     });
   });
 
+  test("each item's kind is Swift's raw value", () {
+    expect(
+      [
+        const TrainingItem(),
+        const NutritionItem(calories: 0, proteinGrams: 0, mealsLogged: 0),
+        const WeighInItem(isToday: false),
+        const StepsItem(today: 0, goal: 1),
+      ].map((item) => item.kind),
+      ['training', 'nutrition', 'weighIn', 'steps'],
+    );
+  });
+
   test('the step goals offered', () {
     expect(stepGoalChoices, [5000, 6000, 8000, 10000, 12000, 15000]);
   });

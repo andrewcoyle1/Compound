@@ -76,6 +76,16 @@ final class const TodayState({
 
   /// Moves the first time each day the checklist is complete.
   final int dayCompletions = 0,
+
+  /// Whether the checklist's inputs (the sessions, meals, weigh-ins, diet
+  /// plan, steps, step goal and profile) have each arrived: until then an
+  /// item can look done or undone only because something is still on its
+  /// way.
+  final bool checklistRead = false,
+
+  /// The items ([ChecklistItem.kind]) celebrated while the screen has been
+  /// open: each turned done in view, for the first time today.
+  final Set<String> celebrated = const {},
 }) extends Equatable {
   /// Where the data has got to.
   TodayStatus get status => failed
@@ -256,6 +266,8 @@ final class const TodayState({
     int? stepGoalSaves,
     int? stepGoalFailures,
     int? dayCompletions,
+    bool? checklistRead,
+    Set<String>? celebrated,
   }) => TodayState(
     uid: uid,
     now: now,
@@ -281,6 +293,8 @@ final class const TodayState({
     stepGoalSaves: stepGoalSaves ?? this.stepGoalSaves,
     stepGoalFailures: stepGoalFailures ?? this.stepGoalFailures,
     dayCompletions: dayCompletions ?? this.dayCompletions,
+    checklistRead: checklistRead ?? this.checklistRead,
+    celebrated: celebrated ?? this.celebrated,
   );
 
   @override
@@ -307,5 +321,7 @@ final class const TodayState({
     stepGoalSaves,
     stepGoalFailures,
     dayCompletions,
+    checklistRead,
+    celebrated,
   ];
 }

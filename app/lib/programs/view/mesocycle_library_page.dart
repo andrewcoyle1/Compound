@@ -104,18 +104,12 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
                 ],
               ),
             if (state.mesocycles.isEmpty && active == null)
-              Column(
-                children: [
-                  LibraryEmptyState(
-                    icon: AppSymbols.mesocycle,
-                    title: l10n.programNoMesocycles,
-                    message: l10n.programNoMesocyclesMessage,
-                  ),
-                  FilledButton(
-                    onPressed: () => unawaited(NameMesocyclePage.open(context)),
-                    child: Text(l10n.programCreateMesocycle),
-                  ),
-                ],
+              AppEmptyState(
+                icon: AppSymbols.mesocycle,
+                title: l10n.programNoMesocycles,
+                description: l10n.programNoMesocyclesMessage,
+                actionLabel: l10n.programCreateMesocycle,
+                onAction: () => unawaited(NameMesocyclePage.open(context)),
               ),
             if (templates.isNotEmpty)
               AppSection(
@@ -139,6 +133,7 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
                           mesocycle: template,
                           trailing: Icon(
                             AppSymbols.disclosure,
+                            size: AppIconSize.small.of(context),
                             color: Theme.of(context).colorScheme.outline,
                           ),
                         ),
@@ -209,7 +204,6 @@ class _DisclosureState extends State<_Disclosure> {
             if (onDelete != null)
               AppSwipeAction(
                 label: l10n.programDelete,
-                icon: AppSymbols.delete,
                 isDestructive: true,
                 onPressed: onDelete,
               ),
@@ -224,35 +218,34 @@ class _DisclosureState extends State<_Disclosure> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    PopupMenuButton<void>(
+                    PopupMenuButton<VoidCallback>(
+                      onSelected: (action) => action(),
                       icon: Icon(AppSymbols.more),
                       tooltip: l10n.programMesocycleOptions,
                       itemBuilder: (_) => [
-                        PopupMenuItem(
-                          onTap: () => unawaited(
+                        AppMenuItem(
+                          value: () => unawaited(
                             MesocycleDesignPage.edit(
                               context,
                               widget.mesocycle.id,
                             ),
                           ),
-                          child: Text(l10n.programEditMesocycle),
+                          label: l10n.programEditMesocycle,
                         ),
-                        PopupMenuItem(
-                          onTap: () => unawaited(
+                        AppMenuItem(
+                          value: () => unawaited(
                             showShareToFollower(
                               context,
                               MesocycleSharePayload(widget.mesocycle),
                             ),
                           ),
-                          child: Text(l10n.shareWithFriends),
+                          label: l10n.shareWithFriends,
                         ),
                         if (onDelete != null)
-                          PopupMenuItem(
-                            onTap: onDelete,
-                            child: Text(
-                              l10n.programDeleteMesocycle,
-                              style: TextStyle(color: context.appColors.danger),
-                            ),
+                          AppMenuItem(
+                            value: onDelete,
+                            label: l10n.programDeleteMesocycle,
+                            isDestructive: true,
                           ),
                       ],
                     ),
@@ -262,6 +255,7 @@ class _DisclosureState extends State<_Disclosure> {
                         duration: AppMotion.quick.durationOf(context),
                         child: Icon(
                           AppSymbols.disclosure,
+                          size: AppIconSize.small.of(context),
                           color: scheme.outline,
                         ),
                       ),

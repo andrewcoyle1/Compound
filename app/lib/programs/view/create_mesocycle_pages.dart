@@ -96,9 +96,9 @@ class _NameMesocyclePageState extends State<NameMesocyclePage> {
       appBar: AppBar(
         leading: widget.inPlace
             ? null
-            : IconButton(
-                icon: const Icon(AppSymbols.close),
-                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            : AppToolbarButton.close(
+                semanticLabel: MaterialLocalizations.of(context)
+                    .closeButtonTooltip,
                 onPressed: () => context.pop(),
               ),
         title: Text(l10n.programCreateMesocycle),

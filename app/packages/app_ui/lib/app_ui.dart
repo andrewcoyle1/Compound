@@ -14,6 +14,7 @@ export 'src/tokens/app_spacing.dart';
 export 'src/tokens/app_symbols.dart';
 export 'src/widgets/app_bottom_cta.dart';
 export 'src/widgets/app_card.dart';
+export 'src/widgets/app_carousel.dart';
 export 'src/widgets/app_chip.dart';
 export 'src/widgets/app_cta_button.dart';
 export 'src/widgets/app_dashboard.dart';

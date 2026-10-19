@@ -60,7 +60,9 @@ class AppColors extends ThemeExtension<AppColors> {
     otherNutrients: Color(0xFF8CC7F2),
     success: Color(0xFF34C759),
     warning: Color(0xFFFF9500),
-    danger: Color(0xFFFF3B30),
+    // Apple's increased-contrast system red: 5.4:1 on white, where the
+    // standard #FF3B30 is 3.6:1, below WCAG AA for text (owner, 19 Oct 2026).
+    danger: Color(0xFFD70015),
     warmup: Color(0xFFFF9500),
     superset: Color(0xFF5856D6),
     personalRecord: Color(0xFFFFCC00),

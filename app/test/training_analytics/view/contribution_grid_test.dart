@@ -12,26 +12,32 @@ void main() {
   // Wednesday 14 October 2026; weeks from Monday.
   final today = DateTime(2026, 10, 14);
 
-  Future<void> pump(WidgetTester tester, {bool counted = true}) =>
-      tester.pumpApp(
-        Scaffold(
-          body: ContributionGrid(
-            dates: [
-              DateTime(2026, 10, 14, 7),
-              DateTime(2026, 10, 14, 18),
-              DateTime(2026, 10, 12, 9),
-              DateTime(2026, 9, 1, 9),
-            ],
-            today: today,
-            firstWeekday: DateTime.monday,
-            color: const Color(0xFF34C759),
-            semanticsLabel: '4 workouts',
-            countText: counted
-                ? (count) => count == 1 ? '1 workout' : '$count workouts'
-                : null,
-          ),
-        ),
-      );
+  Future<void> pump(
+    WidgetTester tester, {
+    bool counted = true,
+    bool graded = false,
+    double textScale = 1,
+  }) => tester.pumpApp(
+    Scaffold(
+      body: ContributionGrid(
+        dates: [
+          DateTime(2026, 10, 14, 7),
+          DateTime(2026, 10, 14, 18),
+          DateTime(2026, 10, 12, 9),
+          DateTime(2026, 9, 1, 9),
+        ],
+        today: today,
+        firstWeekday: DateTime.monday,
+        color: const Color(0xFF34C759),
+        semanticsLabel: '4 workouts',
+        countText: counted
+            ? (count) => count == 1 ? '1 workout' : '$count workouts'
+            : null,
+        graded: graded,
+      ),
+    ),
+    textScale: textScale,
+  );
 
   /// The centre of [day]'s square, in the week before last's column when
   /// [weeksBack] says.
@@ -44,11 +50,16 @@ void main() {
           )
           .last,
     );
-    const step = 21.0;
-    final monthRow = grid.height - 7 * step + 3;
+    // The month row is a label's line and a small gap; the squares
+    // stretch a little so whole weeks fill the width.
+    const monthRow = 16 + AppSpacing.xs;
+    final stretch =
+        (grid.height - monthRow) /
+        (7 * AppChartMark.heatCell + 6 * AppChartMark.heatGap);
+    const step = AppChartMark.heatCell + AppChartMark.heatGap;
     return Offset(
-      grid.right - 9 - weeksBack * step,
-      grid.top + monthRow + row * step + 9,
+      grid.right - (AppChartMark.heatCell / 2 + weeksBack * step) * stretch,
+      grid.top + monthRow + (row * step + AppChartMark.heatCell / 2) * stretch,
     );
   }
 
@@ -109,5 +120,50 @@ void main() {
     await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
     expect(find.text('Logged'), findsOneWidget);
     await gesture.up();
+  });
+
+  testWidgets('shades workouts by how many, keyed by a legend', (tester) async {
+    await pump(tester);
+    expect(find.byType(HeatGridLegend), findsNothing);
+    expect(tester.widget<HeatGrid>(find.byType(HeatGrid)).levels, 2);
+
+    await pump(tester, graded: true);
+    // Two on the busiest day: none, one, and two or more.
+    expect(tester.widget<HeatGrid>(find.byType(HeatGrid)).levels, 3);
+    expect(
+      tester.widget<HeatGridLegend>(find.byType(HeatGridLegend)).levels,
+      3,
+    );
+    expect(find.text('Less'), findsOneWidget);
+    expect(find.text('More'), findsOneWidget);
+  });
+
+  testWidgets('reads each week and what it holds', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pump(tester);
+    expect(
+      find.semantics.byLabel('Week of Oct 12, 2026: 3 workouts'),
+      findsOne,
+    );
+    expect(find.semantics.byLabel('Week of Oct 5, 2026: 0 workouts'), findsOne);
+    await pump(tester, counted: false);
+    expect(
+      find.semantics.byLabel('Week of Oct 12, 2026: 2 days logged'),
+      findsOne,
+    );
+    handle.dispose();
+  });
+
+  testWidgets('grows the weekdays with the text instead of pinning them', (
+    tester,
+  ) async {
+    await pump(tester, textScale: 2);
+    expect(tester.takeException(), isNull);
+    final letter = tester.getSize(find.text('W'));
+    expect(letter.height, greaterThanOrEqualTo(2 * 16));
+    // Monday's row to Sunday's: six rows, each taller than its initial.
+    final monday = tester.getRect(find.text('M')).top;
+    final sunday = tester.getRect(find.text('S').last).top;
+    expect(sunday - monday, greaterThan(6 * letter.height));
   });
 }

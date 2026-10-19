@@ -9,8 +9,9 @@ import 'package:compound_charts/compound_charts.dart';
 // Every public `compound_charts` widget. A test fails while a widget the
 // package exports has no entry here.
 
-/// [CartesianChart] in each mark, [ChartLegend] and [ChartSwatch], and
-/// [ChartCallout] with a [ChartCalloutSummary].
+/// [CartesianChart] in each mark, [ChartLegend] and [ChartSwatch],
+/// [ChartCallout] with a [ChartCalloutSummary], [BulletBar], [HeatGrid] with
+/// [HeatGridLegend], and [ProgressArc].
 List<Widget> galleryCharts(BuildContext context) {
   final l10n = context.l10n;
   final colors = context.appColors;
@@ -264,6 +265,41 @@ List<Widget> galleryCharts(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('HeatGrid', [
+      galleryBlock(
+        'a card’s month, 2 levels and 5',
+        Column(
+          spacing: AppSpacing.m,
+          children: [
+            for (final (levels, color) in [
+              (2, colors.habits),
+              (5, colors.workouts),
+            ])
+              SizedBox(
+                height: AppChartHeight.compact / 2,
+                child: HeatGrid.packed(
+                  values: [for (var i = 0; i < 30; i++) (i * 7) % levels],
+                  levels: levels,
+                  color: color,
+                ),
+              ),
+          ],
+        ),
+      ),
+      galleryBlock(
+        'a calendar with a legend; hold a day for its readout',
+        _HeldHeatGrid(color: colors.habits),
+      ),
+      galleryBlock(
+        'empty',
+        HeatGrid(
+          days: const {},
+          today: DateTime(2026, 10, 18),
+          levels: 2,
+          color: colors.habits,
+        ),
+      ),
+    ]),
     galleryEntry('ProgressArc', [
       galleryBlock(
         'rings at 0, 60%, 100% and 140% (a second lap)',
@@ -434,6 +470,71 @@ class _InteractiveState extends State<_Interactive> {
                   footer: AppFormat.date(selected),
                   noData: '',
                 ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A [HeatGrid] of sixteen weeks to 18 Oct 2026, up to four sessions a
+/// day, keeping its own pick, over its [HeatGridLegend].
+class _HeldHeatGrid extends StatefulWidget {
+  const new({required this.color});
+
+  final Color color;
+
+  @override
+  State<_HeldHeatGrid> createState() => _HeldHeatGridState();
+}
+
+class _HeldHeatGridState extends State<_HeldHeatGrid> {
+  DateTime? _selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final days = {
+      for (var day = 0; day < 16 * 7; day++)
+        if ((day * 7) % 5 case final level when level > 0)
+          DateTime(2026, 10, 18 - day): level,
+    };
+    final selected = _selected;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      spacing: AppSpacing.xs,
+      children: [
+        HeatGrid(
+          days: days,
+          today: DateTime(2026, 10, 18),
+          levels: 5,
+          color: widget.color,
+          selected: selected,
+          onSelected: (day) => setState(() => _selected = day),
+          callout: selected == null
+              ? null
+              : ChartCalloutSummary(
+                  rows: [
+                    if (days[selected] case final count?)
+                      (
+                        name: null,
+                        color: null,
+                        mark: null,
+                        value: l10n.workoutGridLabel(count),
+                      ),
+                  ],
+                  footer: AppFormat.date(
+                    selected,
+                    style: AppDateStyle.weekdayMedium,
+                    locale: context.dateLocale,
+                  ),
+                  noData: l10n.progressNoData,
+                ),
+        ),
+        HeatGridLegend(
+          levels: 5,
+          color: widget.color,
+          less: l10n.heatGridLess,
+          more: l10n.heatGridMore,
         ),
       ],
     );

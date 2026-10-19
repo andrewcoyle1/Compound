@@ -283,6 +283,11 @@ List<Widget> galleryTokens(BuildContext context) {
         ('tickWidth', AppChartMark.tickWidth),
         ('tickOverhang', AppChartMark.tickOverhang),
         ('caretSize', AppChartMark.caretSize),
+        ('heatCell', AppChartMark.heatCell),
+        ('heatGap', AppChartMark.heatGap),
+        ('heatCorner', AppChartMark.heatCorner),
+        ('heatFirstShade', AppChartMark.heatFirstShade),
+        ('heatRingWidth', AppChartMark.heatRingWidth),
       ])
         AppListRow(
           title: name,

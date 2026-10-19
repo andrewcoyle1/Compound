@@ -857,8 +857,8 @@ List<Widget> galleryStates(BuildContext context) {
   ];
 }
 
-/// [AppCard], [AppStat], [AppStatTile], [AppChip], [AppConfetti] and
-/// [AppInlineMessage].
+/// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppChip],
+/// [AppConfetti] and [AppInlineMessage].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
   final colors = context.appColors;
@@ -880,6 +880,25 @@ List<Widget> galleryContent(BuildContext context) {
       ('AppCard: tinted', AppCardStyle.tinted(colors.protein)),
     ])
       AppCard(style: style, child: padded(Text(caption))),
+    galleryEntry('AppCarousel', [
+      galleryBlock(
+        'three pages',
+        AppCarousel(
+          height: 120,
+          pages: [
+            for (final label in [
+              l10n.devGallerySampleDay,
+              l10n.devGallerySampleWeek,
+              l10n.devGallerySampleMonth,
+            ])
+              AppCard(
+                style: AppCardStyle.tile,
+                child: Center(child: Text(label)),
+              ),
+          ],
+        ),
+      ),
+    ]),
     galleryEntry('AppStat', [
       for (final size in AppStatSize.values)
         galleryBlock(

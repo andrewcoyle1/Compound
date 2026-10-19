@@ -1,0 +1,540 @@
+{
+  "request": {
+    "message": "Why has my weight stalled?",
+    "context": {
+      "kind": "weight_trend"
+    },
+    "ui": 1
+  },
+  "chunks": [
+    {
+      "text": "Your trend weight is down 0.8 kg over the last eight weeks, "
+    },
+    {
+      "text": "about **0.1 kg a week**, slower than the 0.4 kg you planned.\n\n"
+    },
+    {
+      "text": "",
+      "block": {
+        "surfaceId": "msg-12-0",
+        "kind": "trend_chart",
+        "asOf": "2026-10-19",
+        "fallback": "Weight trend, 2026-08-25 to 2026-10-19: 73.1 → 72.3 kg.",
+        "messages": [
+          {
+            "version": "v0.9",
+            "createSurface": {
+              "surfaceId": "msg-12-0",
+              "catalogId": "compound.coach.v1"
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateComponents": {
+              "surfaceId": "msg-12-0",
+              "components": [
+                {
+                  "id": "root",
+                  "component": "TrendChart",
+                  "metric": "weight",
+                  "points": {
+                    "path": "/points"
+                  },
+                  "trend": {
+                    "path": "/trend"
+                  },
+                  "unit": {
+                    "path": "/unit"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateDataModel": {
+              "surfaceId": "msg-12-0",
+              "path": "/",
+              "value": {
+                "points": [
+                  {
+                    "x": "2026-08-25",
+                    "y": 73.0
+                  },
+                  {
+                    "x": "2026-08-26",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-08-28",
+                    "y": 73.0
+                  },
+                  {
+                    "x": "2026-08-29",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-08-31",
+                    "y": 73.6
+                  },
+                  {
+                    "x": "2026-09-01",
+                    "y": 73.1
+                  },
+                  {
+                    "x": "2026-09-03",
+                    "y": 72.9
+                  },
+                  {
+                    "x": "2026-09-04",
+                    "y": 73.1
+                  },
+                  {
+                    "x": "2026-09-06",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-09-07",
+                    "y": 73.4
+                  },
+                  {
+                    "x": "2026-09-09",
+                    "y": 72.5
+                  },
+                  {
+                    "x": "2026-09-10",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-09-12",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-09-13",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-09-15",
+                    "y": 73.3
+                  },
+                  {
+                    "x": "2026-09-16",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-09-18",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-09-19",
+                    "y": 72.9
+                  },
+                  {
+                    "x": "2026-09-21",
+                    "y": 72.7
+                  },
+                  {
+                    "x": "2026-09-22",
+                    "y": 73.2
+                  },
+                  {
+                    "x": "2026-09-24",
+                    "y": 72.1
+                  },
+                  {
+                    "x": "2026-09-25",
+                    "y": 72.5
+                  },
+                  {
+                    "x": "2026-09-27",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-09-28",
+                    "y": 72.5
+                  },
+                  {
+                    "x": "2026-09-30",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-10-01",
+                    "y": 72.1
+                  },
+                  {
+                    "x": "2026-10-03",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-10-04",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-10-06",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-10-07",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-10-09",
+                    "y": 71.9
+                  },
+                  {
+                    "x": "2026-10-10",
+                    "y": 72.5
+                  },
+                  {
+                    "x": "2026-10-12",
+                    "y": 72.4
+                  },
+                  {
+                    "x": "2026-10-13",
+                    "y": 72.3
+                  },
+                  {
+                    "x": "2026-10-15",
+                    "y": 72.4
+                  },
+                  {
+                    "x": "2026-10-16",
+                    "y": 71.8
+                  },
+                  {
+                    "x": "2026-10-18",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-10-19",
+                    "y": 72.5
+                  }
+                ],
+                "trend": [
+                  {
+                    "x": "2026-08-25",
+                    "y": 73.1
+                  },
+                  {
+                    "x": "2026-08-26",
+                    "y": 73.1
+                  },
+                  {
+                    "x": "2026-08-28",
+                    "y": 73.1
+                  },
+                  {
+                    "x": "2026-08-29",
+                    "y": 73.0
+                  },
+                  {
+                    "x": "2026-08-31",
+                    "y": 73.0
+                  },
+                  {
+                    "x": "2026-09-01",
+                    "y": 73.0
+                  },
+                  {
+                    "x": "2026-09-03",
+                    "y": 73.0
+                  },
+                  {
+                    "x": "2026-09-04",
+                    "y": 73.0
+                  },
+                  {
+                    "x": "2026-09-06",
+                    "y": 72.9
+                  },
+                  {
+                    "x": "2026-09-07",
+                    "y": 72.9
+                  },
+                  {
+                    "x": "2026-09-09",
+                    "y": 72.9
+                  },
+                  {
+                    "x": "2026-09-10",
+                    "y": 72.9
+                  },
+                  {
+                    "x": "2026-09-12",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-09-13",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-09-15",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-09-16",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-09-18",
+                    "y": 72.8
+                  },
+                  {
+                    "x": "2026-09-19",
+                    "y": 72.7
+                  },
+                  {
+                    "x": "2026-09-21",
+                    "y": 72.7
+                  },
+                  {
+                    "x": "2026-09-22",
+                    "y": 72.7
+                  },
+                  {
+                    "x": "2026-09-24",
+                    "y": 72.7
+                  },
+                  {
+                    "x": "2026-09-25",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-09-27",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-09-28",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-09-30",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-10-01",
+                    "y": 72.6
+                  },
+                  {
+                    "x": "2026-10-03",
+                    "y": 72.5
+                  },
+                  {
+                    "x": "2026-10-04",
+                    "y": 72.5
+                  },
+                  {
+                    "x": "2026-10-06",
+                    "y": 72.5
+                  },
+                  {
+                    "x": "2026-10-07",
+                    "y": 72.5
+                  },
+                  {
+                    "x": "2026-10-09",
+                    "y": 72.4
+                  },
+                  {
+                    "x": "2026-10-10",
+                    "y": 72.4
+                  },
+                  {
+                    "x": "2026-10-12",
+                    "y": 72.4
+                  },
+                  {
+                    "x": "2026-10-13",
+                    "y": 72.4
+                  },
+                  {
+                    "x": "2026-10-15",
+                    "y": 72.4
+                  },
+                  {
+                    "x": "2026-10-16",
+                    "y": 72.3
+                  },
+                  {
+                    "x": "2026-10-18",
+                    "y": 72.3
+                  },
+                  {
+                    "x": "2026-10-19",
+                    "y": 72.3
+                  }
+                ],
+                "unit": "kg"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "text": "## What to try\n\n- Log every meal for a week\n- Weigh in each morning\n\nBased on your 37 weigh-ins since 24 August."
+    },
+    {
+      "text": "",
+      "block": {
+        "surfaceId": "msg-12-1",
+        "kind": "stat_row",
+        "asOf": "2026-10-19",
+        "fallback": "Trend weight: 72.3 kg; Weekly change: −0.1 kg/wk; Expenditure: 2,290 kcal.",
+        "messages": [
+          {
+            "version": "v0.9",
+            "createSurface": {
+              "surfaceId": "msg-12-1",
+              "catalogId": "compound.coach.v1"
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateComponents": {
+              "surfaceId": "msg-12-1",
+              "components": [
+                {
+                  "id": "root",
+                  "component": "StatRow",
+                  "stats": {
+                    "path": "/stats"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateDataModel": {
+              "surfaceId": "msg-12-1",
+              "path": "/",
+              "value": {
+                "stats": [
+                  {
+                    "key": "weight_trend",
+                    "value": 72.3,
+                    "unit": "kg"
+                  },
+                  {
+                    "key": "weight_rate_per_week",
+                    "value": -0.1,
+                    "unit": "kg_per_week"
+                  },
+                  {
+                    "key": "expenditure",
+                    "value": 2290,
+                    "unit": "kcal"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "text": "",
+      "block": {
+        "surfaceId": "msg-12-2",
+        "kind": "actions",
+        "asOf": "2026-10-19",
+        "fallback": "You can: Log weight; Open weight.",
+        "messages": [
+          {
+            "version": "v0.9",
+            "createSurface": {
+              "surfaceId": "msg-12-2",
+              "catalogId": "compound.coach.v1"
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateComponents": {
+              "surfaceId": "msg-12-2",
+              "components": [
+                {
+                  "id": "root",
+                  "component": "Actions",
+                  "actions": {
+                    "path": "/actions"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateDataModel": {
+              "surfaceId": "msg-12-2",
+              "path": "/",
+              "value": {
+                "actions": [
+                  {
+                    "kind": "log_weight"
+                  },
+                  {
+                    "kind": "open_metric",
+                    "metric": "weight"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "text": "",
+      "block": {
+        "surfaceId": "msg-12-3",
+        "kind": "follow_ups",
+        "asOf": "2026-10-19",
+        "fallback": "Suggested questions: How much should I eat to lose faster? / Is my protein high enough?",
+        "messages": [
+          {
+            "version": "v0.9",
+            "createSurface": {
+              "surfaceId": "msg-12-3",
+              "catalogId": "compound.coach.v1"
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateComponents": {
+              "surfaceId": "msg-12-3",
+              "components": [
+                {
+                  "id": "root",
+                  "component": "FollowUps",
+                  "questions": {
+                    "path": "/questions"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "version": "v0.9",
+            "updateDataModel": {
+              "surfaceId": "msg-12-3",
+              "path": "/",
+              "value": {
+                "questions": [
+                  "How much should I eat to lose faster?",
+                  "Is my protein high enough?"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "result": {
+    "chatId": "chat-7",
+    "messageId": "msg-12",
+    "text": "Your trend weight is down 0.8 kg over the last eight weeks, about **0.1 kg a week**, slower than the 0.4 kg you planned.\n\n## What to try\n\n- Log every meal for a week\n- Weigh in each morning\n\nBased on your 37 weigh-ins since 24 August.",
+    "remainingToday": 47
+  }
+}

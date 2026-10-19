@@ -59,6 +59,7 @@ class CoachCubit extends Cubit<CoachState> {
   }) : super(
          CoachState(
            messages: _request.chat?.messages ?? const [],
+           savedMessageCount: _request.chat?.messages.length ?? 0,
            chatId: _request.chat?.id,
            chatTitle: _request.chat?.title,
            remainingToday: _coach.remainingToday(_uid),
@@ -163,6 +164,7 @@ class CoachCubit extends Cubit<CoachState> {
         failure: () => null,
         isSending: true,
         streamingText: () => '',
+        streamingBlocks: const [],
         messages: [...state.messages, pending],
       ),
     );
@@ -185,12 +187,19 @@ class CoachCubit extends Cubit<CoachState> {
                 streamingText: () => (state.streamingText ?? '') + text,
               ),
             );
+          case CoachBlockShown(:final block):
+            emit(
+              state.copyWith(
+                streamingBlocks: [...state.streamingBlocks, block],
+              ),
+            );
           case CoachFinished(:final chatId, :final messageId, :final text):
             emit(
               state.copyWith(
                 chatId: () => chatId,
                 chatTitle: () => _savedTitle(chatId),
                 remainingToday: event.remainingToday,
+                streamingBlocks: const [],
                 messages: [
                   ...state.messages,
                   CoachMessage(
@@ -198,6 +207,7 @@ class CoachCubit extends Cubit<CoachState> {
                     role: CoachMessageRole.assistant,
                     text: text,
                     createdAt: _now(),
+                    blocks: event.blocks.isEmpty ? null : event.blocks,
                   ),
                 ],
               ),
@@ -223,6 +233,7 @@ class CoachCubit extends Cubit<CoachState> {
         state.copyWith(
           isSending: false,
           streamingText: () => null,
+          streamingBlocks: const [],
           messages: [
             for (final message in state.messages)
               if (message.id != pending.id) message,
@@ -254,6 +265,7 @@ class CoachCubit extends Cubit<CoachState> {
         chatId: () => null,
         chatTitle: () => null,
         messages: const [],
+        savedMessageCount: 0,
         failure: () => null,
       ),
     );

@@ -132,7 +132,8 @@ class _CoachViewState extends State<CoachView> {
         BlocListener<CoachCubit, CoachState>(
           listenWhen: (previous, current) =>
               current.messages.length != previous.messages.length ||
-              current.streamingText != previous.streamingText,
+              current.streamingText != previous.streamingText ||
+              current.streamingBlocks != previous.streamingBlocks,
           listener: (_, _) => _scrollToEnd(),
         ),
       ],
@@ -329,6 +330,8 @@ class _Chat extends StatelessWidget {
     final streaming = state.streamingText;
     final failure = state.failure;
     final remaining = state.remainingShown;
+    void followUp(String question) =>
+        unawaited(cubit.suggestionPressed(question));
     return Column(
       children: [
         Expanded(
@@ -358,30 +361,41 @@ class _Chat extends StatelessWidget {
                   ],
                 ),
               ],
-              for (final message in state.messages)
+              for (final (index, message) in state.messages.indexed)
                 Padding(
                   key: ValueKey(message.id),
                   padding: const EdgeInsets.only(bottom: AppSpacing.m),
                   child: CoachMessageBody(
                     role: message.role,
                     text: message.text,
+                    blocks: message.blocks ?? const [],
+                    saved: index < state.savedMessageCount,
+                    onFollowUp: followUp,
                   ),
                 ),
               if (streaming != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.m),
-                  child: streaming.isEmpty
-                      ? const Align(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: AppSpacing.m,
+                    children: [
+                      if (streaming.isEmpty)
+                        const Align(
                           alignment: AlignmentDirectional.centerStart,
                           child: Padding(
                             padding: EdgeInsets.all(AppSpacing.m),
                             child: AppSpinner(),
                           ),
-                        )
-                      : CoachMessageBody(
-                          role: CoachMessageRole.assistant,
-                          text: streaming,
                         ),
+                      CoachMessageBody(
+                        role: CoachMessageRole.assistant,
+                        text: streaming,
+                        blocks: state.streamingBlocks,
+                        onFollowUp: followUp,
+                      ),
+                    ],
+                  ),
                 ),
               if (failure != null)
                 AppInlineMessage(

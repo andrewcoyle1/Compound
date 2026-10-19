@@ -186,6 +186,132 @@ void main() {
       await subscription.cancel();
     });
 
+    test('blocks accumulate as they stream and stay with the answer', () async {
+      const chart = CoachBlock(
+        surfaceId: 'a1-0',
+        kind: 'trend_chart',
+        asOf: '2026-10-14',
+        fallback: 'Weight trend.',
+        messages: [],
+      );
+      const followUps = CoachBlock(
+        surfaceId: 'a1-1',
+        kind: 'follow_ups',
+        asOf: '2026-10-14',
+        fallback: 'Suggested questions.',
+        messages: [],
+      );
+      events = const [
+        CoachText('Hello'),
+        CoachBlockShown(chart),
+        CoachBlockShown(followUps),
+        CoachFinished(
+          chatId: 'c1',
+          messageId: 'a1',
+          text: 'Hello',
+          remainingToday: 49,
+          blocks: [chart, followUps],
+        ),
+      ];
+      final cubit = await screen();
+      await cubit.appeared();
+      final streamed = <List<String>>[];
+      final subscription = cubit.stream.listen(
+        (state) => streamed.add([
+          for (final block in state.streamingBlocks) block.surfaceId,
+        ]),
+      );
+      cubit.draftChanged('How am I doing?');
+
+      await cubit.sendPressed();
+
+      expect(
+        streamed,
+        containsAllInOrder([
+          ['a1-0'],
+          ['a1-0', 'a1-1'],
+          <String>[],
+        ]),
+      );
+      expect(cubit.state.streamingBlocks, isEmpty);
+      expect(cubit.state.messages.last.blocks, [chart, followUps]);
+      expect(cubit.state.messages.first.blocks, isNull);
+      expect(cubit.state.savedMessageCount, 0);
+      await subscription.cancel();
+    });
+
+    test('an answer without blocks stores none', () async {
+      final cubit = await screen();
+      await cubit.appeared();
+      cubit.draftChanged('Hi');
+
+      await cubit.sendPressed();
+
+      expect(cubit.state.messages.last.blocks, isNull);
+    });
+
+    test('a failed answer drops the blocks it streamed', () async {
+      final repository = CoachRepository(
+        firestore: firestore,
+        users: users,
+        coachChat: (message, {chatId, context}) async* {
+          yield const CoachBlockShown(
+            CoachBlock(
+              surfaceId: 'a1-0',
+              kind: 'actions',
+              asOf: '2026-10-14',
+              fallback: 'You can: Log weight.',
+              messages: [],
+            ),
+          );
+          throw const CoachException(CoachFailure.unavailable);
+        },
+      );
+      final cubit = await screen(repository: repository);
+      await cubit.appeared();
+      cubit.draftChanged('Hi');
+
+      await cubit.sendPressed();
+
+      expect(cubit.state.streamingBlocks, isEmpty);
+      expect(cubit.state.failure, CoachFailure.unavailable);
+    });
+
+    test("a saved chat replays its answers' blocks", () async {
+      const block = CoachBlock(
+        surfaceId: 'm2-0',
+        kind: 'stat_row',
+        asOf: '2026-10-13',
+        fallback: 'Trend weight: 72.3 kg.',
+        messages: [],
+      );
+      final m2 = sampleChat.messages.last;
+      final cubit = await screen(
+        request: CoachRequest.forChat(
+          CoachChat(
+            id: sampleChat.id,
+            title: sampleChat.title,
+            createdAt: asked,
+            updatedAt: asked,
+            messages: [
+              sampleChat.messages.first,
+              CoachMessage(
+                id: m2.id,
+                role: m2.role,
+                text: m2.text,
+                createdAt: asked,
+                blocks: const [block],
+              ),
+            ],
+          ),
+          CoachContext.today,
+        ),
+      );
+
+      expect(cubit.state.messages.last.blocks, [block]);
+      expect(cubit.state.savedMessageCount, 2);
+    });
+
     test('an empty message is not sent', () async {
       final cubit = await screen()
         ..draftChanged('   ');
@@ -267,14 +393,19 @@ void main() {
         request: CoachRequest.forChat(sampleChat, CoachContext.today),
       );
       expect(cubit.state.messages, hasLength(2));
+      expect(cubit.state.savedMessageCount, 2);
       expect(cubit.state.chatTitle, 'Why has my weight stalled?');
 
       cubit.draftChanged('And now?');
       await cubit.sendPressed();
       expect(sent.single.$2, 'chat-1');
+      // The saved replies replay as saved; this session's are live.
+      expect(cubit.state.messages, hasLength(4));
+      expect(cubit.state.savedMessageCount, 2);
 
       cubit.newChatPressed();
       expect(cubit.state.messages, isEmpty);
+      expect(cubit.state.savedMessageCount, 0);
       expect(cubit.state.chatId, isNull);
       expect(analytics.names.last, 'CoachView_NewChat_Press');
     });

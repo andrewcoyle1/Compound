@@ -105,6 +105,8 @@ dependencies:
     path: packages/workout_session_repository
 
 dev_dependencies:
+  # Golden tests of feature widgets (ui-contract.md, rule 6). MIT.
+  alchemist: 0.14.0
   bloc_lint: ^0.4.2
   bloc_test: ^10.0.0
   bloc_tools: ^0.1.0-dev.24

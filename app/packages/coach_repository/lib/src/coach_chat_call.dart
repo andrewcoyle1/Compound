@@ -83,10 +83,21 @@ final class const CoachText(
   this;
 }
 
+/// A block of generative UI the answer shows after its text: a chart,
+/// target bars, a stat row, actions or follow-up questions.
+final class const CoachBlockShown(
+  /// The block, as the chat saves it.
+  final CoachBlock block,
+) extends CoachStreamEvent {
+  /// Creates a [CoachBlockShown].
+  this;
+}
+
 /// The answer is complete and saved: the last event of a reply.
 ///
 /// [text] is the whole answer; show it in place of what streamed, because
-/// a reply can also arrive whole, with no [CoachText] before it.
+/// a reply can also arrive whole, with no [CoachText] before it. [blocks]
+/// are the [CoachBlockShown]s that streamed, in order.
 final class const CoachFinished({
   /// The chat it was saved in: new when no chat id was sent.
   required final String chatId,
@@ -99,6 +110,9 @@ final class const CoachFinished({
 
   /// What is left of today's 50 messages.
   required final int remainingToday,
+
+  /// The blocks the answer showed, in order.
+  final List<CoachBlock> blocks = const [],
 }) extends CoachStreamEvent {
   /// Creates a [CoachFinished].
   this;
@@ -155,8 +169,13 @@ typedef CoachChatCall = Stream<CoachStreamEvent> Function(
 /// `ProductionCoachService`), allowed 120 seconds because its tools read
 /// history before the model answers.
 ///
-/// The request is `{chatId?, message, context?: {kind, id?, date?}}`, with
-/// absent values left out as Swift's encoder leaves them.
+/// The request is `{chatId?, message, context?: {kind, id?, date?}, ui: 1}`,
+/// with absent values left out as Swift's encoder leaves them. `ui` is the
+/// block catalog this build draws (`compound.coach.v1`); without it the
+/// function sends text alone.
+///
+/// A chunk carrying a `block` becomes a [CoachBlockShown]. One that does not
+/// decode is dropped, never an error: the answer's text still stands.
 ///
 /// cloud_functions 6.5 streams, but drops a refusal's code: on Android the
 /// stream just ends, and on iOS every error arrives as `unknown`. So when
@@ -186,16 +205,24 @@ CoachChatCall firebaseCoachChat(FirebaseFunctions functions) {
           'id': ?context.id,
           'date': ?context.date,
         },
+      'ui': 1,
     };
     var answering = false;
+    final blocks = <CoachBlock>[];
     try {
       await for (final response in callable.stream<Object?, Object?>(request)) {
         switch (response) {
           case Chunk(:final partialData):
-            yield CoachText((partialData! as Map)['text']! as String);
+            final chunk = partialData! as Map;
+            final text = chunk['text']! as String;
             answering = true;
+            if (text.isNotEmpty) yield CoachText(text);
+            if (_block(chunk['block']) case final block?) {
+              blocks.add(block);
+              yield CoachBlockShown(block);
+            }
           case Result(:final result):
-            yield _finished(result.data);
+            yield _finished(result.data, blocks);
             return;
         }
       }
@@ -213,15 +240,40 @@ CoachChatCall firebaseCoachChat(FirebaseFunctions functions) {
   };
 }
 
-CoachFinished _finished(Object? data) {
+CoachFinished _finished(Object? data, [List<CoachBlock>? blocks]) {
   final result = data! as Map;
   return CoachFinished(
     chatId: result['chatId']! as String,
     messageId: result['messageId']! as String,
     text: result['text']! as String,
     remainingToday: readInt(result['remainingToday']),
+    blocks: blocks ?? const [],
   );
 }
+
+/// A chunk's `block`, or null for none or one that does not decode. The
+/// chunk spells the date `asOf`; the chat stores it `as_of`.
+CoachBlock? _block(Object? block) {
+  if (block is! Map) return null;
+  try {
+    final data = _json(block)! as Map<String, Object?>;
+    return CoachBlock.fromFirestore({
+      ...data,
+      CoachBlockKeys.asOf: data['asOf'],
+    });
+  } on Object {
+    return null;
+  }
+}
+
+/// A platform channel's maps, which arrive untyped, as JSON maps.
+Object? _json(Object? value) => switch (value) {
+  final Map<Object?, Object?> map => {
+    for (final MapEntry(:key, :value) in map.entries) '$key': _json(value),
+  },
+  final List<Object?> list => [for (final item in list) _json(item)],
+  _ => value,
+};
 
 /// The function's refusals as the app's (`ProductionCoachService
 /// .coachError`): a reason in the error's details tells consent, premium

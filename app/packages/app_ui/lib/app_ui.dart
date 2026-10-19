@@ -30,6 +30,7 @@ export 'src/widgets/app_list_row.dart';
 export 'src/widgets/app_list_row_button.dart';
 export 'src/widgets/app_list_row_toggle.dart';
 export 'src/widgets/app_loading.dart';
+export 'src/widgets/app_markdown_text.dart';
 export 'src/widgets/app_menu_item.dart';
 export 'src/widgets/app_number_field.dart';
 export 'src/widgets/app_onboarding_step_scaffold.dart';

@@ -4,7 +4,7 @@
 library;
 
 export 'package:compound_models/compound_models.dart'
-    show CoachChat, CoachMessage, CoachMessageRole;
+    show CoachBlock, CoachChat, CoachMessage, CoachMessageRole;
 
 export 'src/coach_chat_call.dart';
 export 'src/coach_repository.dart';

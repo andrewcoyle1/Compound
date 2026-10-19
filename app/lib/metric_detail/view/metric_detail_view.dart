@@ -1,7 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
-import 'package:compound/metric_detail/view/metric_chart.dart';
 import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 
@@ -441,15 +440,31 @@ class _ChartState extends State<_Chart> {
                   ),
                 )
               else
-                MetricChart(
-                  series: visible,
-                  start: start,
-                  end: end,
-                  bucketDays: switch (range) {
-                    MetricRange.week || MetricRange.month => 1,
-                    MetricRange.sixMonths => 7,
-                    MetricRange.year => 365 / 12,
-                  },
+                CartesianChart(
+                  data: ChartData(
+                    series: [
+                      for (final s in visible)
+                        ChartSeries(
+                          label: s.label,
+                          color: s.color,
+                          mark: s.mark,
+                          points: [
+                            for (final p in s.points) (x: p.date, y: p.value),
+                          ],
+                        ),
+                    ],
+                    start: start,
+                    end: end,
+                    bucketDays: switch (range) {
+                      MetricRange.week || MetricRange.month => 1,
+                      MetricRange.sixMonths => 7,
+                      MetricRange.year => 365 / 12,
+                    },
+                    // Bars stand on zero; readings fit closely.
+                    yFit: visible.any((s) => s.isBar)
+                        ? ChartYFit.zero
+                        : ChartYFit.tight,
+                  ),
                   selected: selected,
                   onSelected: (date) => setState(() => _selected = date),
                   callout: selected == null
@@ -530,7 +545,7 @@ class _SeriesLine extends StatelessWidget {
         Row(
           spacing: AppSpacing.s,
           children: [
-            _Swatch(series: series),
+            ChartSwatch(mark: series.mark, color: series.color),
             Flexible(
               child: Text(
                 series.label,
@@ -552,35 +567,6 @@ class _SeriesLine extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// A series' key in the header: a dot for dots, a dash for a line, so the
-/// two differ by shape as well as colour.
-class _Swatch extends StatelessWidget {
-  const new({required this.series});
-
-  final MetricChartSeries series;
-
-  @override
-  Widget build(BuildContext context) {
-    final size = series.isLine
-        ? const Size(AppSpacing.l, AppSpacing.xs)
-        : const Size.square(AppSpacing.s);
-    // One width for both, so the labels line up.
-    return SizedBox(
-      width: AppSpacing.l,
-      child: Center(
-        child: Container(
-          width: size.width,
-          height: size.height,
-          decoration: BoxDecoration(
-            color: series.color,
-            borderRadius: BorderRadius.circular(AppSpacing.xs),
-          ),
-        ),
-      ),
     );
   }
 }

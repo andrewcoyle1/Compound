@@ -7,7 +7,6 @@ import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
-import 'package:compound/metric_detail/view/metric_chart.dart';
 import 'package:compound/metric_detail/view/metric_detail_view.dart'
     show MetricChartPanel;
 import 'package:compound/programs/view/program_widgets.dart'

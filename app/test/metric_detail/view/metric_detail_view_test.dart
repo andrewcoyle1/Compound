@@ -54,18 +54,6 @@ void main() {
     });
   });
 
-  group('niceBounds', () {
-    test('gives whole numbers at least two apart with a whole middle', () {
-      expect(niceBounds(70.3, 70.3), (69.0, 71.0));
-      expect(niceBounds(70.1, 74.6), (70.0, 76.0));
-      expect(niceBounds(70.1, 72.6), (70.0, 74.0));
-      // A ratio steps in tenths.
-      expect(readingBounds(0.44, 0.5), (0.4, 0.6));
-      expect(readingBounds(70.3, 70.3), (69.0, 71.0));
-      expect(readingBounds(-0.5, 0.5), niceBounds(-0.5, 0.5));
-    });
-  });
-
   group(MetricDetailView, () {
     final scale = MetricChartSeries(
       label: 'Scale',
@@ -93,7 +81,12 @@ void main() {
       expect(find.text('Highest: Oct 13'), findsOneWidget);
       expect(find.text('Lowest: Yesterday'), findsOneWidget);
       expect(find.text('Average'), findsOneWidget);
-      expect(find.byType(MetricChart), findsOneWidget);
+      // Readings as dots, the trend as a line, on a close-fitting axis.
+      final data = tester
+          .widget<CartesianChart>(find.byType(CartesianChart))
+          .data;
+      expect(data.series.map((s) => s.mark), [ChartMark.dot, ChartMark.line]);
+      expect(data.yFit, ChartYFit.tight);
       // Each series in the header, the readings first.
       expect(find.text('Trend'), findsOneWidget);
     });
@@ -111,7 +104,7 @@ void main() {
         scale.withPoints([at(20, 72)]),
       ]);
       expect(find.text('No data in this range'), findsOneWidget);
-      expect(find.byType(MetricChart), findsNothing);
+      expect(find.byType(CartesianChart), findsNothing);
     });
 
     testWidgets('reports the range picked and the tap on all data', (
@@ -152,7 +145,13 @@ void main() {
       expect(find.textContaining('Daily Average, '), findsOneWidget);
       // 5.5 sets today, rounded.
       expect(find.text('6'), findsWidgets);
-      expect(find.byType(MetricChart), findsOneWidget);
+      // Bars stand on zero.
+      final data = tester
+          .widget<CartesianChart>(find.byType(CartesianChart))
+          .data;
+      expect(data.series.single.mark, ChartMark.bar);
+      expect(data.series.single.points.last, (x: today, y: 5.5));
+      expect(data.yFit, ChartYFit.zero);
       await reveal(tester, find.text('Summary'));
       expect(find.text('Summary'), findsOneWidget);
       await tester.tap(find.text('Show More Weight Data'));
@@ -169,13 +168,13 @@ void main() {
           isLine: true,
         ),
       ]);
-      expect(find.byType(MetricChart), findsOneWidget);
+      expect(find.byType(CartesianChart), findsOneWidget);
     });
 
     testWidgets('draws every range', (tester) async {
       for (final range in MetricRange.values) {
         await pumpDetail(tester, [scale], range: range);
-        expect(find.byType(MetricChart), findsOneWidget, reason: range.name);
+        expect(find.byType(CartesianChart), findsOneWidget, reason: range.name);
       }
     });
 
@@ -191,33 +190,61 @@ void main() {
       expect(find.text('Average, Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
       expect(find.text('78 kg'), findsWidgets);
 
-      await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(300, 0),
+        800,
+      );
       await tester.pumpAndSettle();
       expect(find.text('Average, Oct 2, 2026 – Oct 8, 2026'), findsOneWidget);
       expect(find.text('79 kg'), findsWidgets);
 
-      await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(300, 0),
+        800,
+      );
       await tester.pumpAndSettle();
       expect(find.text('Average, Sep 25, 2026 – Oct 1, 2026'), findsOneWidget);
 
       // Nothing older: it stays.
-      await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(300, 0),
+        800,
+      );
       await tester.pumpAndSettle();
       expect(find.text('Average, Sep 25, 2026 – Oct 1, 2026'), findsOneWidget);
 
-      await tester.fling(find.byType(MetricChart), const Offset(-300, 0), 800);
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(-300, 0),
+        800,
+      );
       await tester.pumpAndSettle();
-      await tester.fling(find.byType(MetricChart), const Offset(-300, 0), 800);
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(-300, 0),
+        800,
+      );
       await tester.pumpAndSettle();
       expect(find.text('Average, Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
 
       // Nothing newer than today.
-      await tester.fling(find.byType(MetricChart), const Offset(-300, 0), 800);
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(-300, 0),
+        800,
+      );
       await tester.pumpAndSettle();
       expect(find.text('Average, Oct 9, 2026 – Oct 15, 2026'), findsOneWidget);
 
       // A new range starts again at today.
-      await tester.fling(find.byType(MetricChart), const Offset(300, 0), 800);
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(300, 0),
+        800,
+      );
       await tester.pumpAndSettle();
       await pumpDetail(tester, [weeks], range: MetricRange.month);
       expect(find.text('Average, Sep 16, 2026 – Oct 15, 2026'), findsOneWidget);
@@ -268,7 +295,7 @@ void main() {
           color: const Color(0xFF000000),
         ),
       ]);
-      final chart = tester.getRect(find.byType(MetricChart));
+      final chart = tester.getRect(find.byType(CartesianChart));
       final gesture = await tester.startGesture(
         chart.centerLeft + const Offset(4, 0),
       );
@@ -330,7 +357,7 @@ void main() {
       expect(find.textContaining('Average, '), findsOneWidget);
       expect(find.textContaining('Daily Average'), findsNothing);
       expect(find.text('2,250 kcal'), findsWidgets);
-      expect(find.byType(MetricChart), findsOneWidget);
+      expect(find.byType(CartesianChart), findsOneWidget);
     });
   });
 

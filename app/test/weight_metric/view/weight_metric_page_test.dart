@@ -6,6 +6,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_models/compound_models.dart'
     show BodyMeasurementEntryKeys;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -99,7 +100,7 @@ void main() {
     ) async {
       await pumpView(tester, WeightMetric.scaleWeight);
       expect(find.text('Scale Weight'), findsWidgets);
-      expect(find.byType(MetricChart), findsOneWidget);
+      expect(find.byType(CartesianChart), findsOneWidget);
       expect(find.text('Latest: Today'), findsOneWidget);
       expect(find.textContaining('Average, '), findsOneWidget);
       expect(find.text('Show More Scale Weight Data'), findsOneWidget);

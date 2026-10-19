@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/dev/gallery/gallery_entry.dart';
@@ -6,6 +8,7 @@ import 'package:compound_charts/compound_charts.dart';
 // Every public `compound_charts` widget. A test fails while a widget the
 // package exports has no entry here.
 
+/// [CartesianChart] in each mark, [ChartLegend] and [ChartSwatch], and
 /// [ChartCallout] with a [ChartCalloutSummary].
 List<Widget> galleryCharts(BuildContext context) {
   final l10n = context.l10n;
@@ -23,7 +26,73 @@ List<Widget> galleryCharts(BuildContext context) {
         ),
         noData: l10n.progressNoData,
       );
+  final macros = [
+    for (final (label, color, grams) in [
+      (l10n.progressProtein, colors.protein, <double>[160, 150, 175, 168]),
+      (l10n.nutritionMacroCarbs, colors.carbs, <double>[220, 260, 200, 240]),
+      (l10n.nutritionMacroFat, colors.fat, <double>[70, 64, 82, 75]),
+    ])
+      ChartSeries(
+        label: label,
+        color: color,
+        mark: ChartMark.bar,
+        points: _days([...grams, ...grams.reversed.take(3)]),
+      ),
+  ];
+  final weight = [
+    ChartSeries(
+      label: l10n.scaleWeightTitle,
+      color: colors.scaleWeight,
+      mark: ChartMark.dot,
+      points: _days([73.1, 72.6, 72.9, 72.4, 72.5, 72.1, 72]),
+    ),
+    ChartSeries(
+      label: l10n.weightTrendSeries,
+      color: colors.expenditure,
+      points: _days([72.9, 72.8, 72.7, 72.6, 72.5, 72.4, 72.3]),
+    ),
+  ];
   return [
+    galleryEntry('CartesianChart', [
+      for (final (caption, data) in [
+        ('dots and a line, a week', _week(weight)),
+        (
+          'area, a month',
+          ChartData(
+            start: DateTime(2026, 9, 19),
+            end: DateTime(2026, 10, 19),
+            series: [
+              ChartSeries(
+                label: l10n.progressSteps,
+                color: colors.steps,
+                mark: ChartMark.area,
+                points: [
+                  for (var i = 0; i < 30; i++)
+                    (
+                      x: DateTime(2026, 9, 19 + i),
+                      y: 8000 + 2500 * math.sin(i / 4) + i * 60,
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        ('stacked bars from zero', _week(macros, yFit: ChartYFit.zero)),
+        ('empty', _week(const [])),
+      ])
+        galleryBlock(caption, CartesianChart(data: data)),
+    ]),
+    galleryEntry('ChartLegend', [
+      galleryBlock('stacked bars', ChartLegend(series: macros)),
+      galleryBlock('dots and a line', ChartLegend(series: weight)),
+    ]),
+    galleryEntry('ChartSwatch', [
+      for (final mark in ChartMark.values)
+        galleryInline(
+          mark.name,
+          ChartSwatch(mark: mark, color: colors.workouts),
+        ),
+    ]),
     galleryEntry('ChartCallout', [
       for (final (caption, anchor, rows) in [
         (
@@ -53,6 +122,20 @@ List<Widget> galleryCharts(BuildContext context) {
     ]),
   ];
 }
+
+/// The week to 18 Oct 2026.
+ChartData _week(List<ChartSeries> series, {ChartYFit yFit = ChartYFit.tight}) =>
+    ChartData(
+      series: series,
+      start: DateTime(2026, 10, 12),
+      end: DateTime(2026, 10, 19),
+      yFit: yFit,
+    );
+
+/// [values] a day apart, from 12 Oct 2026.
+List<ChartPoint> _days(List<double> values) => [
+  for (final (i, y) in values.indexed) (x: DateTime(2026, 10, 12 + i), y: y),
+];
 
 /// A stand-in plot with [callout] over it at [anchor] across its width, and
 /// room above for the callout.

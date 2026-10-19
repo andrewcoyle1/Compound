@@ -8,11 +8,16 @@ import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/science/method_info.dart';
+import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound/sharing/share_card/share_workout_card.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
 import 'package:compound/shell/app_tab.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
+import 'package:compound/social/social_routes.dart' show SocialNavigation;
+import 'package:compound/social/view/people_widgets.dart' show AuthorHeader;
+import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/exercise_picker_page.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_session_detail/bloc/workout_session_detail_bloc.dart';
@@ -23,8 +28,6 @@ import 'package:compound/workout_session_detail/view/session_timing_sheets.dart'
 import 'package:compound/workout_session_detail/view/set_detail_row.dart';
 import 'package:compound/workout_tracker/logic/set_keypad.dart' show SetKeypad;
 import 'package:compound/workout_tracker/view/set_keypad_view.dart';
-import 'package:compound/workout_tracker/view/set_row_parts.dart'
-    show confirmDestructive;
 import 'package:compound/workout_tracker/view/tracker_text.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:device_store/device_store.dart';
@@ -174,14 +177,18 @@ class WorkoutSessionDetailView extends StatelessWidget {
             ],
           ),
           body: switch (state) {
-            WorkoutSessionDetailNotFound() => _Message(
-              text: l10n.workoutSessionNotFound,
+            WorkoutSessionDetailNotFound() => AppEmptyState(
+              icon: AppSymbols.workout,
+              title: l10n.workoutSessionNotFound,
             ),
-            WorkoutSessionDetailFailure() => _Message(
-              text: l10n.workoutSessionLoadFailure,
-              canRetry: true,
+            WorkoutSessionDetailFailure() => AppErrorState(
+              title: l10n.workoutSessionLoadFailure,
+              actionLabel: l10n.tryAgainButton,
+              onAction: () => context.read<WorkoutSessionDetailBloc>().add(
+                const WorkoutSessionDetailRequested(),
+              ),
             ),
-            _ => const Center(child: CircularProgressIndicator.adaptive()),
+            _ => AppLoadingView(label: l10n.launchLoading),
           },
         ),
       },
@@ -193,22 +200,22 @@ class WorkoutSessionDetailView extends StatelessWidget {
     final l10n = context.l10n;
     final offer = context.read<SessionStravaCubit>();
     final strava = context.read<StravaCubit>();
-    final connect = await showDialog<bool>(
+    final connect = await showAppDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.stravaOfferTitle),
-        content: Text(l10n.stravaOfferMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.stravaNotNow),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.stravaOfferConnect),
-          ),
-        ],
-      ),
+      title: l10n.stravaOfferTitle,
+      message: l10n.stravaOfferMessage,
+      actions: [
+        AppDialogAction(
+          label: l10n.stravaNotNow,
+          value: false,
+          role: AppDialogRole.cancel,
+        ),
+        AppDialogAction(
+          label: l10n.stravaOfferConnect,
+          value: true,
+          role: AppDialogRole.preferred,
+        ),
+      ],
     );
     final accepted = connect ?? false;
     await offer.offerAnswered(connect: accepted);
@@ -229,18 +236,16 @@ int _firstWeekday(BuildContext context) {
   return first == 0 ? DateTime.sunday : first;
 }
 
+/// The summary's confirm button, which closes it.
 class _DoneButton extends StatelessWidget {
   const new({required this.onPressed});
 
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => TextButton(
+  Widget build(BuildContext context) => AppToolbarButton.confirm(
+    semanticLabel: context.l10n.summaryDone,
     onPressed: onPressed,
-    child: Text(
-      context.l10n.summaryDone,
-      style: const TextStyle(fontWeight: FontWeight.w600),
-    ),
   );
 }
 
@@ -286,21 +291,20 @@ class _LoadedView extends StatelessWidget {
           appBar: AppBar(
             automaticallyImplyLeading: !isWorkoutSummary && !edit.isEditing,
             leading: edit.isEditing
-                ? IconButton(
+                ? AppToolbarButton.close(
                     key: const ValueKey('session-end-editing'),
-                    icon: const Icon(AppSymbols.close),
-                    tooltip: l10n.socialClose,
+                    semanticLabel: l10n.socialClose,
                     onPressed: () => unawaited(_endEditing(context)),
                   )
                 : null,
-            title: Text(session.name),
+            title: _Title(session: session),
             actions: [
               if (session.endedAt != null) _ShareImageButton(session: session),
               if (edit.isEditing)
-                IconButton(
+                AppToolbarButton.confirm(
                   key: const ValueKey('session-save'),
-                  icon: const Icon(AppSymbols.selected),
-                  tooltip: l10n.trackerSave,
+                  semanticLabel: l10n.trackerSave,
+                  isSaving: edit.isSaving,
                   onPressed: edit.hasUnsavedChanges && !edit.isSaving
                       ? () => unawaited(
                           cubit.saveChanges(
@@ -329,26 +333,13 @@ class _LoadedView extends StatelessWidget {
     final l10n = context.l10n;
     final cubit = context.read<SessionEditCubit>();
     if (!cubit.state.hasUnsavedChanges) return cubit.endEditing();
-    final discard = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.discardChangesTitle),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.keepEditingButton),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: context.appColors.danger,
-            ),
-            child: Text(l10n.discardChangesButton),
-          ),
-        ],
-      ),
+    final discard = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.discardChangesTitle,
+      confirmLabel: l10n.discardChangesButton,
+      cancelLabel: l10n.keepEditingButton,
     );
-    if (discard ?? false) cubit.discardChanges();
+    if (discard) cubit.discardChanges();
   }
 
   static void _showNotice(BuildContext context, SessionEditState state) {
@@ -383,15 +374,15 @@ class _LoadedView extends StatelessWidget {
       ),
     };
     unawaited(HapticFeedback.errorNotification());
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
+    unawaited(
+      showAppDialog<void>(
+        context: context,
+        title: title,
+        message: message,
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(MaterialLocalizations.of(context).okButtonLabel),
+          AppDialogAction(
+            label: MaterialLocalizations.of(context).okButtonLabel,
+            role: AppDialogRole.preferred,
           ),
         ],
       ),
@@ -421,19 +412,29 @@ class _MoreMenu extends StatelessWidget {
       itemBuilder: (_) => [
         PopupMenuItem(
           value: _MoreAction.edit,
-          child: ListTile(
-            leading: const Icon(AppSymbols.edit),
-            title: Text(l10n.editorEditWorkout),
+          child: Row(
+            spacing: AppSpacing.m,
+            children: [
+              const Icon(AppSymbols.edit),
+              Flexible(child: Text(l10n.editorEditWorkout)),
+            ],
           ),
         ),
         PopupMenuItem(
           value: _MoreAction.delete,
-          child: ListTile(
-            leading: Icon(AppSymbols.delete, color: context.appColors.danger),
-            title: Text(
-              l10n.editorDelete,
-              style: TextStyle(color: context.appColors.danger),
-            ),
+          child: Row(
+            spacing: AppSpacing.m,
+            children: [
+              Icon(AppSymbols.delete, color: context.appColors.danger),
+              Flexible(
+                child: Text(
+                  l10n.editorDelete,
+                  style: AppTextStyles.rowTitle.copyWith(
+                    color: context.appColors.danger,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -444,25 +445,75 @@ class _MoreMenu extends StatelessWidget {
     final l10n = context.l10n;
     final cubit = context.read<SessionEditCubit>();
     final firstWeekday = _firstWeekday(context);
-    final delete = await confirmDestructive(
+    final delete = await AppDialog.confirmDestructive(
       context,
       title: l10n.sessionDeleteTitle,
       message: l10n.sessionDeleteMessage,
-      action: l10n.editorDelete,
+      confirmLabel: l10n.editorDelete,
+      cancelLabel: l10n.trackerCancel,
     );
     if (delete) await cubit.delete(firstWeekday: firstWeekday);
   }
 }
 
-class _Detail extends StatelessWidget {
+/// The workout's title and, under it, when it started (Swift's
+/// `navigationSubtitle`).
+class _Title extends StatelessWidget {
+  const new({required this.session});
+
+  final WorkoutSessionModel session;
+
+  @override
+  Widget build(BuildContext context) {
+    // Two lines in a fixed-height bar: at the size iOS draws an inline
+    // title, which does not grow with the text size.
+    return MediaQuery.withNoTextScaling(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(session.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(
+            _started(context, session),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.label.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "16 October 2026 at 13:00".
+String _started(BuildContext context, WorkoutSessionModel session) =>
+    AppFormat.dateTime(
+      session.dateCreated.toLocal(),
+      use24HourFormat: context.use24HourFormat,
+      style: AppDateStyle.long,
+      locale: context.dateLocale,
+    );
+
+class _Detail extends StatefulWidget {
   const new({required this.state});
 
   /// The workout as read, for the profile's units.
   final WorkoutSessionDetailLoaded state;
 
   @override
+  State<_Detail> createState() => _DetailState();
+}
+
+class _DetailState extends State<_Detail> {
+  /// The exercises opened onto their sets; each starts folded, as Swift's
+  /// `DisclosureGroup`.
+  final _expanded = <String>{};
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final state = widget.state;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final cubit = context.read<SessionEditCubit>();
     final edit = context.watch<SessionEditCubit>().state;
@@ -472,19 +523,78 @@ class _Detail extends StatelessWidget {
     final notes = session.notes?.trim();
     final volume = session.loggedVolumeKg;
     final distanceUnit = WorkoutText.preferredDistanceUnit(state.distanceUnit);
-    final started = AppFormat.dateTime(
-      session.dateCreated.toLocal(),
-      use24HourFormat: context.use24HourFormat,
-      style: AppDateStyle.long,
-      locale: context.dateLocale,
+    final started = _started(context, session);
+    final author = context.select<CircleBloc, UserModel?>(
+      (bloc) => bloc.state.authorOf(session),
     );
+    final scheme = Theme.of(context).colorScheme;
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [
+          if (author != null) ...[
+            AppSection(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.l,
+                    vertical: AppSpacing.m,
+                  ),
+                  child: AuthorHeader(
+                    author: author,
+                    date: session.dateCreated,
+                    onPressed: () =>
+                        SocialNavigation.openProfile(context, author),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+          ],
           AppSection(
             header: l10n.workoutDetailsHeader,
             children: [
+              AppListRow(
+                title: l10n.statVolume,
+                icon: AppSymbols.volume,
+                accessory: AppListRowCustom(
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        volume > 0
+                            ? AppFormat.weight(
+                                volume,
+                                WorkoutText.preferredWeightUnit(
+                                  state.weightUnit,
+                                ),
+                                locale: locale,
+                              )
+                            : AppFormat.placeholder,
+                        style: AppTextStyles.rowTitle.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      MethodInfoButton(MethodInfo.tonnage(l10n)),
+                    ],
+                  ),
+                ),
+              ),
+              // The author's own finished workouts only: the coach reads
+              // the asker's data, never someone else's.
+              if (session.endedAt != null && isAuthor && !edit.isEditing)
+                AppListRowButton(
+                  title: l10n.coachAskAboutWorkout,
+                  icon: AppSymbols.coach,
+                  onPressed: () => CoachPage.open(
+                    context,
+                    CoachContext(
+                      kind: CoachContextKind.session,
+                      id: session.id,
+                      title: session.name,
+                    ),
+                  ),
+                ),
               if (isAuthor)
                 AppListRowButton(
                   title: l10n.workoutStartTime,
@@ -512,38 +622,6 @@ class _Detail extends StatelessWidget {
                     subtitle: AppFormat.duration(duration),
                     icon: AppSymbols.duration,
                   ),
-              AppListRow(
-                title: l10n.statVolume,
-                icon: AppSymbols.volume,
-                accessory: AppListRowValue(
-                  volume > 0
-                      ? AppFormat.weight(
-                          volume,
-                          WorkoutText.preferredWeightUnit(state.weightUnit),
-                          locale: locale,
-                        )
-                      : AppFormat.placeholder,
-                ),
-              ),
-              if (edit.isEditing)
-                _NotesField(initial: session.notes ?? '')
-              else if (notes != null && notes.isNotEmpty)
-                AppListRow(title: notes, icon: AppSymbols.note),
-              // The author's own finished workouts only: the coach reads
-              // the asker's data, never someone else's.
-              if (session.endedAt != null && isAuthor && !edit.isEditing)
-                AppListRowButton(
-                  title: l10n.coachAskAboutWorkout,
-                  icon: AppSymbols.coach,
-                  onPressed: () => CoachPage.open(
-                    context,
-                    CoachContext(
-                      kind: CoachContextKind.session,
-                      id: session.id,
-                      title: session.name,
-                    ),
-                  ),
-                ),
               // Edits in place rather than opening a screen: no chevron.
               if (isAuthor && !edit.isEditing)
                 AppListRowButton(
@@ -564,27 +642,37 @@ class _Detail extends StatelessWidget {
                     unawaited(context.read<LinkOpener>().open(link));
                   },
                 ),
+              if (edit.isEditing)
+                _NotesField(initial: session.notes ?? '')
+              else if (notes != null && notes.isNotEmpty)
+                AppListRow(title: notes, icon: AppSymbols.note),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
           if (edit.isEditing) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    l10n.exerciseDetailsHeader,
-                    style: AppTextStyles.label.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        l10n.exerciseDetailsHeader,
+                        style: AppTextStyles.sectionTitle.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                IconButton.filledTonal(
-                  key: const ValueKey('session-add-exercise'),
-                  icon: const Icon(AppSymbols.add),
-                  tooltip: l10n.editorAddExercise,
-                  onPressed: () => unawaited(_addExercises(context)),
-                ),
-              ],
+                  AppIconButton(
+                    key: const ValueKey('session-add-exercise'),
+                    icon: AppSymbols.add,
+                    semanticLabel: l10n.editorAddExercise,
+                    onPressed: () => unawaited(_addExercises(context)),
+                  ),
+                ],
+              ),
             ),
             for (final member in edit.members) ...[
               const SizedBox(height: AppSpacing.l),
@@ -593,34 +681,40 @@ class _Detail extends StatelessWidget {
                 member: member,
               ),
             ],
-          ] else
-            for (final (index, exercise) in session.exercises.indexed) ...[
-              if (index > 0) const SizedBox(height: AppSpacing.l),
-              AppSection(
-                header: index == 0 ? l10n.exerciseDetailsHeader : null,
-                children: [
-                  AppListRow(
-                    title: exercise.name,
-                    subtitle: WorkoutText.exerciseSummary(
+          ] else if (session.exercises.isNotEmpty)
+            AppSection(
+              header: l10n.exerciseDetailsHeader,
+              children: [
+                for (final exercise in session.exercises) ...[
+                  _ExerciseRow(
+                    exercise: exercise,
+                    summary: WorkoutText.exerciseSummary(
                       l10n,
                       exercise,
                       locale: locale,
                     ),
-                    icon: AppSymbols.exercise,
-                  ),
-                  if (exercise.notes case final note? when note.isNotEmpty)
-                    AppListRow(title: note, icon: AppSymbols.note),
-                  for (final set in exercise.sets)
-                    SetDetailRow(
-                      set: set,
-                      number: exercise.workingSetNumber(set),
-                      trackingMode: exercise.trackingMode,
-                      weightUnit: exercise.displayWeightUnit,
-                      distanceUnit: distanceUnit,
+                    expanded: _expanded.contains(exercise.id),
+                    onPressed: () => setState(
+                      () => _expanded.contains(exercise.id)
+                          ? _expanded.remove(exercise.id)
+                          : _expanded.add(exercise.id),
                     ),
+                  ),
+                  if (_expanded.contains(exercise.id)) ...[
+                    if (exercise.notes case final note? when note.isNotEmpty)
+                      AppListRow(title: note, icon: AppSymbols.note),
+                    for (final set in exercise.sets)
+                      SetDetailRow(
+                        set: set,
+                        number: exercise.workingSetNumber(set),
+                        trackingMode: exercise.trackingMode,
+                        weightUnit: exercise.displayWeightUnit,
+                        distanceUnit: distanceUnit,
+                      ),
+                  ],
                 ],
-              ),
-            ],
+              ],
+            ),
         ],
       ),
     );
@@ -659,6 +753,49 @@ class _Detail extends StatelessWidget {
     final cubit = context.read<SessionEditCubit>();
     final picked = await ExercisePickerPage.show(context);
     if (picked != null) cubit.addExercises(picked);
+  }
+}
+
+/// An exercise of the read workout: its picture, name and summary, opening
+/// onto its sets (Swift's `DisclosureGroup` label).
+class _ExerciseRow extends StatelessWidget {
+  const new({
+    required this.exercise,
+    required this.summary,
+    required this.expanded,
+    required this.onPressed,
+  });
+
+  final WorkoutExerciseModel exercise;
+  final String summary;
+  final bool expanded;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      expanded: expanded,
+      child: AppListRowButton(
+        title: exercise.name,
+        subtitle: summary,
+        thumbnail: ExerciseImage.named(
+          name: exercise.name,
+          image: exercise.imageName,
+        ),
+        accessory: AppListRowCustom(
+          AnimatedRotation(
+            turns: expanded ? 0.25 : 0,
+            duration: AppMotion.quick.durationOf(context),
+            child: Icon(
+              AppSymbols.disclosure,
+              size: AppIconSize.small.of(context),
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
+        ),
+        onPressed: onPressed,
+      ),
+    );
   }
 }
 
@@ -725,41 +862,6 @@ class _NotesFieldState extends State<_NotesField> {
           hintText: l10n.sessionNotesPrompt,
         ),
         onChanged: context.read<SessionEditCubit>().setNotes,
-      ),
-    );
-  }
-}
-
-class _Message extends StatelessWidget {
-  const new({required this.text, this.canRetry = false});
-
-  final String text;
-  final bool canRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.l,
-          children: [
-            AppInlineMessage(
-              kind: AppInlineMessageKind.error,
-              text: text,
-              kindLabel: l10n.errorLabel,
-            ),
-            if (canRetry)
-              TextButton(
-                onPressed: () => context.read<WorkoutSessionDetailBloc>().add(
-                  const WorkoutSessionDetailRequested(),
-                ),
-                child: Text(l10n.tryAgainButton),
-              ),
-          ],
-        ),
       ),
     );
   }

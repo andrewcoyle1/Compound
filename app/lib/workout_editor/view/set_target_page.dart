@@ -120,10 +120,9 @@ class SetTargetView extends StatelessWidget {
       },
       child: AppScaffold(
         appBar: AppBar(
-          leading: IconButton(
+          leading: AppToolbarButton.close(
             key: const Key('SetTarget.close'),
-            icon: const Icon(AppSymbols.close),
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
             onPressed: () => unawaited(_close(context)),
           ),
           title: EditorTitle(
@@ -134,10 +133,9 @@ class SetTargetView extends StatelessWidget {
             subtitle: state.exercise.exercise.name,
           ),
           actions: [
-            IconButton(
+            AppToolbarButton.confirm(
               key: const Key('SetTarget.save'),
-              icon: const Icon(AppSymbols.selected),
-              tooltip: l10n.editorSave,
+              semanticLabel: l10n.editorSave,
               onPressed: () => _save(context),
             ),
           ],
@@ -251,21 +249,16 @@ class _Targets extends StatelessWidget {
             ],
             child: _TargetRow(target: target, plansSets: cubit.state.plansSets),
           ),
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-            child: Semantics(
-              label: l10n.editorAddSetLabel,
-              button: true,
-              excludeSemantics: true,
-              child: TextButton.icon(
-                key: const Key('SetTarget.addSet'),
-                onPressed: cubit.addSet,
-                icon: const Icon(AppSymbols.add),
-                label: Text(l10n.editorAddSet),
-              ),
-            ),
+        Semantics(
+          label: l10n.editorAddSetLabel,
+          button: true,
+          excludeSemantics: true,
+          child: AppListRowButton(
+            key: const Key('SetTarget.addSet'),
+            title: l10n.editorAddSet,
+            icon: AppSymbols.add,
+            accessory: null,
+            onPressed: cubit.addSet,
           ),
         ),
       ],
@@ -449,7 +442,7 @@ class _ExercisePlan extends StatelessWidget {
               onSelected: cubit.warmupsChanged,
               child: AppListRow(
                 title: l10n.editorWarmupSets,
-                accessory: AppListRowValue(
+                accessory: AppListRowMenu(
                   text.warmupTitle(exercise.warmupSetCount),
                 ),
               ),
@@ -466,9 +459,7 @@ class _ExercisePlan extends StatelessWidget {
               onSelected: cubit.restChanged,
               child: AppListRow(
                 title: l10n.editorRest,
-                accessory: AppListRowValue(
-                  text.restTitle(exercise.restSeconds),
-                ),
+                accessory: AppListRowMenu(text.restTitle(exercise.restSeconds)),
               ),
             ),
             Padding(
@@ -559,25 +550,21 @@ class _ExercisePlan extends StatelessWidget {
                   title: substitute.name,
                   thumbnail: ExerciseImage(substitute),
                   accessory: AppListRowCustom(
-                    IconButton(
-                      icon: const Icon(AppSymbols.delete),
-                      tooltip: l10n.editorRemove,
+                    AppIconButton(
+                      icon: AppSymbols.delete,
+                      semanticLabel: l10n.editorRemove,
+                      isDestructive: true,
                       onPressed: () => cubit.substitutionRemoved(substitute.id),
                     ),
                   ),
                 ),
               ),
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-                child: TextButton.icon(
-                  key: const Key('SetTarget.addSubstitution'),
-                  onPressed: () => unawaited(_addSubstitutions(context)),
-                  icon: const Icon(AppSymbols.add),
-                  label: Text(l10n.editorAddSubstitution),
-                ),
-              ),
+            AppListRowButton(
+              key: const Key('SetTarget.addSubstitution'),
+              title: l10n.editorAddSubstitution,
+              icon: AppSymbols.add,
+              accessory: null,
+              onPressed: () => unawaited(_addSubstitutions(context)),
             ),
           ],
         ),

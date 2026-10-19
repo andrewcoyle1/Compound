@@ -8,6 +8,8 @@ import 'package:compound/programs/view/mesocycle_style.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound/workout_editor/view/editor_widgets.dart'
+    show CountStepper;
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -206,27 +208,16 @@ class const _CycleStepper({
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return AppListRow(
+    return CountStepper(
       title: l10n.programNumberOfCycles,
       subtitle: l10n.programCycleCount(cycles),
       icon: AppSymbols.repeatMacrocycle,
-      accessory: AppListRowCustom(
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(AppSymbols.decrease),
-              tooltip: l10n.programFewerCycles,
-              onPressed: cycles > 1 ? () => onChanged(cycles - 1) : null,
-            ),
-            IconButton(
-              icon: const Icon(AppSymbols.add),
-              tooltip: l10n.programMoreCycles,
-              onPressed: cycles < 16 ? () => onChanged(cycles + 1) : null,
-            ),
-          ],
-        ),
-      ),
+      value: cycles,
+      min: 1,
+      max: 16,
+      decreaseLabel: l10n.programFewerCycles,
+      increaseLabel: l10n.programMoreCycles,
+      onChanged: onChanged,
     );
   }
 }
@@ -242,56 +233,26 @@ class const _EditorSheet({
   @override
   Widget build(BuildContext context) {
     final localizations = MaterialLocalizations.of(context);
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
+    return AppScaffold(
+      appBar: AppBar(
+        leading: AppToolbarButton.close(
+          semanticLabel: localizations.closeButtonTooltip,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(AppSymbols.close),
-                  tooltip: localizations.closeButtonTooltip,
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.rowTitle.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(AppSymbols.selected),
-                  tooltip: localizations.saveButtonLabel,
-                  onPressed: canSave ? onSave : null,
-                ),
-              ],
-            ),
-            Flexible(child: child),
-          ],
-        ),
+        title: Text(title),
+        actions: [
+          AppToolbarButton.confirm(
+            semanticLabel: localizations.saveButtonLabel,
+            onPressed: canSave ? onSave : null,
+          ),
+        ],
       ),
+      body: SafeArea(top: false, child: child),
     );
   }
 }
 
 Future<T?> _sheet<T>(BuildContext context, Widget child) =>
-    showModalBottomSheet<T>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (_) => child,
-    );
+    showAppSheet<T>(context: context, builder: (_) => child);
 
 /// Asks for a name, starting from [initialName]; the trimmed name, or null
 /// when closed (Swift `RenameWorkoutTemplateModelView`). A blank name
@@ -331,17 +292,19 @@ class _RenameSheetState extends State<_RenameSheet> {
       title: widget.title,
       canSave: _trimmed.isNotEmpty,
       onSave: _save,
-      child: Padding(
+      child: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
-        child: TextField(
-          controller: _name,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: context.l10n.programDayNameHint,
+        children: [
+          TextField(
+            controller: _name,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: context.l10n.programDayNameHint,
+            ),
+            onChanged: (_) => setState(() {}),
+            onSubmitted: (_) => _save(),
           ),
-          onChanged: (_) => setState(() {}),
-          onSubmitted: (_) => _save(),
-        ),
+        ],
       ),
     );
   }
@@ -411,7 +374,6 @@ class _DayOrderSheetState extends State<_DayOrderSheet> {
       canSave: true,
       onSave: () => Navigator.of(context).pop(_days),
       child: ReorderableListView(
-        shrinkWrap: true,
         onReorderItem: (from, to) => setState(
           () => _days = List.of(_days)
             ..removeAt(from)
@@ -455,51 +417,32 @@ class _DeloadSheetState extends State<_DeloadSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     return _EditorSheet(
       title: l10n.programDeload,
       canSave: true,
       onSave: () => Navigator.of(context).pop(_selected),
-      child: SingleChildScrollView(
+      child: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: AppSpacing.s,
-          children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: AppSpacing.l,
-                  ),
-                  child: Text(
-                    l10n.programDeloadWeek,
-                    style: AppTextStyles.sectionTitle.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
+        children: [
+          AppSection(
+            header: l10n.programDeloadWeek,
+            trailing: MethodInfoButton(MethodInfo.mesocycleDeload(l10n)),
+            footer: l10n.programDeloadFooter,
+            children: [
+              for (final type in DeloadType.values)
+                AppSelectableRow(
+                  title: deloadTitle(l10n, type),
+                  subtitle: switch (type) {
+                    DeloadType.none => l10n.programDeloadNoneDescription,
+                    DeloadType.start => l10n.programDeloadFirstDescription,
+                    DeloadType.end => l10n.programDeloadLastDescription,
+                  },
+                  selected: type == _selected,
+                  onPressed: () => setState(() => _selected = type),
                 ),
-                MethodInfoButton(MethodInfo.mesocycleDeload(l10n)),
-              ],
-            ),
-            AppSection(
-              footer: l10n.programDeloadFooter,
-              children: [
-                for (final type in DeloadType.values)
-                  AppSelectableRow(
-                    title: deloadTitle(l10n, type),
-                    subtitle: switch (type) {
-                      DeloadType.none => l10n.programDeloadNoneDescription,
-                      DeloadType.start => l10n.programDeloadFirstDescription,
-                      DeloadType.end => l10n.programDeloadLastDescription,
-                    },
-                    selected: type == _selected,
-                    onPressed: () => setState(() => _selected = type),
-                  ),
-              ],
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -104,18 +104,12 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
                 ],
               ),
             if (state.mesocycles.isEmpty && active == null)
-              Column(
-                children: [
-                  LibraryEmptyState(
-                    icon: AppSymbols.mesocycle,
-                    title: l10n.programNoMesocycles,
-                    message: l10n.programNoMesocyclesMessage,
-                  ),
-                  FilledButton(
-                    onPressed: () => unawaited(NameMesocyclePage.open(context)),
-                    child: Text(l10n.programCreateMesocycle),
-                  ),
-                ],
+              AppEmptyState(
+                icon: AppSymbols.mesocycle,
+                title: l10n.programNoMesocycles,
+                description: l10n.programNoMesocyclesMessage,
+                actionLabel: l10n.programCreateMesocycle,
+                onAction: () => unawaited(NameMesocyclePage.open(context)),
               ),
             if (templates.isNotEmpty)
               AppSection(
@@ -139,6 +133,7 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
                           mesocycle: template,
                           trailing: Icon(
                             AppSymbols.disclosure,
+                            size: AppIconSize.small.of(context),
                             color: Theme.of(context).colorScheme.outline,
                           ),
                         ),
@@ -251,7 +246,9 @@ class _DisclosureState extends State<_Disclosure> {
                             onTap: onDelete,
                             child: Text(
                               l10n.programDeleteMesocycle,
-                              style: TextStyle(color: context.appColors.danger),
+                              style: AppTextStyles.rowTitle.copyWith(
+                                color: context.appColors.danger,
+                              ),
                             ),
                           ),
                       ],
@@ -262,6 +259,7 @@ class _DisclosureState extends State<_Disclosure> {
                         duration: AppMotion.quick.durationOf(context),
                         child: Icon(
                           AppSymbols.disclosure,
+                          size: AppIconSize.small.of(context),
                           color: scheme.outline,
                         ),
                       ),

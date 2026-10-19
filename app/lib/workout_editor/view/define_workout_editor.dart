@@ -181,20 +181,21 @@ class const _Header({
       return Row(
         children: [
           Expanded(child: Text(l10n.editorSelectTwo, style: style)),
-          TextButton(
+          AppTextButton(
             key: const Key('DefineWorkout.cancelSuperset'),
+            label: l10n.editorCancel,
             onPressed: cubit.supersetCancelled,
-            child: Text(l10n.editorCancel),
           ),
-          FilledButton(
+          AppCtaButton(
             key: const Key('DefineWorkout.confirmSuperset'),
+            label: l10n.editorSuperset,
+            size: AppCtaSize.compact,
             onPressed: state.canConfirmSuperset
                 ? () {
                     unawaited(HapticFeedback.successNotification());
                     cubit.supersetConfirmed();
                   }
                 : null,
-            child: Text(l10n.editorSuperset),
           ),
         ],
       );
@@ -208,21 +209,21 @@ class const _Header({
           ),
         ),
         if (state.isEditing && count >= 2)
-          TextButton(
+          AppTextButton(
             key: const Key('DefineWorkout.superset'),
+            label: l10n.editorSuperset,
             onPressed: cubit.supersetPressed,
-            child: Text(l10n.editorSuperset),
           ),
         if (count > 0)
-          TextButton(
+          AppTextButton(
             key: const Key('DefineWorkout.edit'),
+            label: state.isEditing ? l10n.editorDone : l10n.editorEdit,
             onPressed: () => cubit.editingChanged(isEditing: !state.isEditing),
-            child: Text(state.isEditing ? l10n.editorDone : l10n.editorEdit),
           ),
-        IconButton.filledTonal(
+        AppIconButton(
           key: const Key('DefineWorkout.addExercise'),
-          icon: const Icon(AppSymbols.add),
-          tooltip: l10n.editorAddExercise,
+          icon: AppSymbols.add,
+          semanticLabel: l10n.editorAddExercise,
           onPressed: () => unawaited(onAdd(context)),
         ),
       ],
@@ -249,7 +250,7 @@ class const _ExerciseRow({
       color: scheme.onSurfaceVariant,
     );
     final selected = state.supersetSelection.contains(exercise.id);
-    final side = MediaQuery.textScalerOf(context).scale(44);
+    final side = MediaQuery.textScalerOf(context).scale(AppControlSize.row);
     final letter = this.letter;
     final summary = this.summary;
     final content = Padding(
@@ -282,8 +283,7 @@ class const _ExerciseRow({
               children: [
                 Text(
                   exercise.exercise.name,
-                  style: AppTextStyles.rowTitle.copyWith(
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.sectionTitle.copyWith(
                     color: scheme.onSurface,
                   ),
                 ),
@@ -322,25 +322,30 @@ class const _ExerciseRow({
           ),
           if (state.isEditing) ...[
             if (exercise.supersetGroupId != null)
-              IconButton(
-                icon: const Icon(AppSymbols.superset),
-                tooltip: l10n.editorRemoveFromSuperset,
+              AppIconButton(
+                icon: AppSymbols.superset,
+                semanticLabel: l10n.editorRemoveFromSuperset,
                 onPressed: () => cubit.removedFromSuperset(exercise.id),
               ),
-            IconButton(
-              icon: Icon(AppSymbols.delete, color: context.appColors.danger),
-              tooltip: l10n.editorDelete,
+            AppIconButton(
+              icon: AppSymbols.delete,
+              semanticLabel: l10n.editorDelete,
+              isDestructive: true,
               onPressed: () => cubit.removeExercise(exercise.id),
             ),
             ReorderableDragStartListener(
               index: index,
-              child: const Padding(
-                padding: EdgeInsets.all(AppSpacing.s),
-                child: Icon(Icons.drag_handle),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.s),
+                child: Icon(AppSymbols.reorder, color: scheme.outline),
               ),
             ),
           ] else if (!state.isSelectingSuperset)
-            Icon(AppSymbols.disclosure, color: scheme.outline),
+            Icon(
+              AppSymbols.disclosure,
+              size: AppIconSize.small.of(context),
+              color: scheme.outline,
+            ),
         ],
       ),
     );

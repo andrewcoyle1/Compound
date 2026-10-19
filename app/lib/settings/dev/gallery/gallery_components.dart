@@ -94,6 +94,15 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
       galleryInline(
+        'isDestructive',
+        AppIconButton(
+          icon: AppSymbols.delete,
+          semanticLabel: l10n.devGallerySampleDelete,
+          isDestructive: true,
+          onPressed: galleryNoop,
+        ),
+      ),
+      galleryInline(
         'disabled',
         AppIconButton(
           icon: AppSymbols.edit,

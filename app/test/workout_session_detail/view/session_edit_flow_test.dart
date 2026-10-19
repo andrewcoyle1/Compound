@@ -1,3 +1,4 @@
+import 'package:app_ui/app_ui.dart' show AppToolbarButton;
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
@@ -7,7 +8,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_ui/material_ui.dart' show IconButton, PopupMenuEntry;
+import 'package:material_ui/material_ui.dart' show PopupMenuEntry;
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:purchases_repository/purchases_repository.dart';
@@ -134,7 +135,7 @@ void main() {
     await tap(tester, find.byKey(const ValueKey('session-edit')));
     // Nothing changed yet, so there is nothing to save.
     final save = find.byKey(const ValueKey('session-save'));
-    expect(tester.widget<IconButton>(save).onPressed, isNull);
+    expect(tester.widget<AppToolbarButton>(save).onPressed, isNull);
 
     // The tracker's own keypad, docked at the foot.
     await tap(tester, find.byKey(const ValueKey('cell-s1-reps')));

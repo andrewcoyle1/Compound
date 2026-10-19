@@ -133,9 +133,9 @@ class const ImportProgramView({
         canPop: !hasFile,
         child: AppScaffold(
           appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(AppSymbols.close),
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            leading: AppToolbarButton.close(
+              semanticLabel: MaterialLocalizations.of(context)
+                  .closeButtonTooltip,
               onPressed: () => context.pop(),
             ),
             title: Text(l10n.importTitle),
@@ -143,23 +143,12 @@ class const ImportProgramView({
           body: SafeArea(
             bottom: false,
             child: !hasFile && error == null
-                ? Center(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          LibraryEmptyState(
-                            icon: AppSymbols.mesocycle,
-                            title: l10n.importTitle,
-                            message: l10n.importFormats,
-                          ),
-                          FilledButton(
-                            onPressed: () => unawaited(_choose(context)),
-                            child: Text(l10n.importChooseFile),
-                          ),
-                        ],
-                      ),
-                    ),
+                ? AppEmptyState(
+                    icon: AppSymbols.mesocycle,
+                    title: l10n.importTitle,
+                    description: l10n.importFormats,
+                    actionLabel: l10n.importChooseFile,
+                    onAction: () => unawaited(_choose(context)),
                   )
                 : LibrarySections(
                     children: [
@@ -227,10 +216,9 @@ class const ImportProgramView({
   Future<ExerciseModel?> _chooseFromLibrary(
     BuildContext context,
     String name,
-  ) => showModalBottomSheet<ExerciseModel>(
+  ) => showAppSheet<ExerciseModel>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
+    size: AppSheetSize.full,
     builder: (_) => _LibraryPicker(library: library, initialQuery: name),
   );
 }
@@ -393,10 +381,8 @@ class _LibraryPickerState extends State<_LibraryPicker> {
     ]..sort((a, b) => a.name.compareTo(b.name));
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(AppSymbols.close),
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: () => Navigator.of(context).pop(),
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
         ),
         title: Text(l10n.importChooseFromLibrary),
       ),

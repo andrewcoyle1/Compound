@@ -12,8 +12,6 @@ import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart'
 import 'package:compound/workout_tracker/view/equipment_sheet.dart';
 import 'package:compound/workout_tracker/view/exercise_settings_page.dart';
 import 'package:compound/workout_tracker/view/notes_sheet.dart';
-import 'package:compound/workout_tracker/view/set_row_parts.dart'
-    show confirmDestructive;
 import 'package:compound/workout_tracker/view/set_table.dart';
 import 'package:compound/workout_tracker/view/swap_exercise_picker.dart';
 import 'package:compound_models/compound_models.dart';
@@ -78,17 +76,12 @@ class SessionExerciseEditor extends StatelessWidget {
               ),
             for (final set in exercise.sets)
               if (!set.isWarmup || set.completedAt == null) row(set),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: TextButton.icon(
-                  key: ValueKey('add-set-${exercise.id}'),
-                  onPressed: () => cubit.addSet(exercise.id),
-                  icon: const Icon(AppSymbols.add),
-                  label: Text(l10n.trackerAddSet),
-                ),
-              ),
+            AppListRowButton(
+              key: ValueKey('add-set-${exercise.id}'),
+              title: l10n.trackerAddSet,
+              icon: AppSymbols.add,
+              accessory: null,
+              onPressed: () => cubit.addSet(exercise.id),
             ),
           ],
         ),
@@ -191,14 +184,12 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        IconButton(
+        AppIconButton(
           key: ValueKey('exercise-note-${exercise.id}'),
-          tooltip: sessionNote == null
+          semanticLabel: sessionNote == null
               ? l10n.sessionAddNote
               : l10n.sessionEditNote,
-          icon: Icon(
-            sessionNote == null ? AppSymbols.addNote : AppSymbols.note,
-          ),
+          icon: sessionNote == null ? AppSymbols.addNote : AppSymbols.note,
           onPressed: () => unawaited(_editNotes(context)),
         ),
       ],
@@ -321,22 +312,29 @@ class _ActionChips extends StatelessWidget {
             itemBuilder: (_) => [
               PopupMenuItem(
                 value: _MoreAction.settings,
-                child: ListTile(
-                  leading: const Icon(AppSymbols.settings),
-                  title: Text(l10n.trackerExerciseSettings),
+                child: Row(
+                  spacing: AppSpacing.m,
+                  children: [
+                    const Icon(AppSymbols.settings),
+                    Flexible(child: Text(l10n.trackerExerciseSettings)),
+                  ],
                 ),
               ),
               PopupMenuItem(
                 value: _MoreAction.delete,
-                child: ListTile(
-                  leading: Icon(
-                    AppSymbols.delete,
-                    color: context.appColors.danger,
-                  ),
-                  title: Text(
-                    l10n.trackerDeleteExercise,
-                    style: TextStyle(color: context.appColors.danger),
-                  ),
+                child: Row(
+                  spacing: AppSpacing.m,
+                  children: [
+                    Icon(AppSymbols.delete, color: context.appColors.danger),
+                    Flexible(
+                      child: Text(
+                        l10n.trackerDeleteExercise,
+                        style: AppTextStyles.rowTitle.copyWith(
+                          color: context.appColors.danger,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -404,14 +402,15 @@ class _ActionChips extends StatelessWidget {
     );
     if (replacement == null || !context.mounted) return;
     if (cubit.state.asksBeforeSwapping(exercise.id, replacement)) {
-      final discard = await confirmDestructive(
+      final discard = await AppDialog.confirmDestructive(
         context,
         title: l10n.sessionDiscardLoggedSetsTitle,
         message: l10n.sessionMeasuredDifferently(
           replacement.name,
           exercise.name,
         ),
-        action: l10n.sessionSwapAndDiscard,
+        confirmLabel: l10n.sessionSwapAndDiscard,
+        cancelLabel: l10n.trackerCancel,
       );
       if (!discard) return;
       return cubit.swapExercise(
@@ -434,41 +433,27 @@ class _ActionChips extends StatelessWidget {
         if (e.id != exercise.id) e,
     ];
     if (others.isEmpty) {
-      return await showDialog<void>(
+      return await showAppDialog<void>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l10n.sessionNoExercisesAvailable),
-          content: Text(l10n.sessionNoExercisesAvailableMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(MaterialLocalizations.of(context).okButtonLabel),
-            ),
-          ],
-        ),
-      );
-    }
-    final partner = await showDialog<String>(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: Text(l10n.sessionAddToGroup),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            child: Text(l10n.sessionPairWith(exercise.name)),
-          ),
-          for (final other in others)
-            SimpleDialogOption(
-              key: ValueKey('pair-${other.id}'),
-              onPressed: () => Navigator.of(context).pop(other.id),
-              child: Text(other.name),
-            ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.trackerCancel),
+        title: l10n.sessionNoExercisesAvailable,
+        message: l10n.sessionNoExercisesAvailableMessage,
+        actions: [
+          AppDialogAction(
+            label: MaterialLocalizations.of(context).okButtonLabel,
+            role: AppDialogRole.preferred,
           ),
         ],
-      ),
+      );
+    }
+    final partner = await showAppDialog<String>(
+      context: context,
+      title: l10n.sessionAddToGroup,
+      message: l10n.sessionPairWith(exercise.name),
+      actions: [
+        for (final other in others)
+          AppDialogAction(label: other.name, value: other.id),
+        AppDialogAction(label: l10n.trackerCancel, role: AppDialogRole.cancel),
+      ],
     );
     if (partner != null) cubit.pairSuperset(exercise.id, partner);
   }
@@ -483,11 +468,12 @@ class _ActionChips extends StatelessWidget {
 
   Future<void> _delete(BuildContext context) async {
     final cubit = context.read<SessionEditCubit>();
-    final delete = await confirmDestructive(
+    final delete = await AppDialog.confirmDestructive(
       context,
       title: context.l10n.trackerDeleteExerciseTitle,
       message: member.exercise.name,
-      action: context.l10n.trackerDeleteExercise,
+      confirmLabel: context.l10n.trackerDeleteExercise,
+      cancelLabel: context.l10n.trackerCancel,
     );
     if (delete) cubit.deleteExercise(member.exercise.id);
   }

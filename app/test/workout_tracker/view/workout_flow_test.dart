@@ -134,7 +134,7 @@ void main() {
       find.byType(WorkoutSessionDetailPage),
     );
     expect(summary.isWorkoutSummary, isTrue);
-    expect(find.text('Done'), findsOneWidget);
+    expect(find.byTooltip('Done'), findsOneWidget);
     expect(find.text('My Upper Body'), findsOneWidget);
     expect(find.text('Barbell Bench Press'), findsOneWidget);
 
@@ -157,7 +157,7 @@ void main() {
     expect(await store.load(), isNull);
 
     // Done closes it, back to the template.
-    await tester.tap(find.text('Done'));
+    await tester.tap(find.byTooltip('Done'));
     await tester.pumpAndSettle();
     expect(find.text('Start Workout'), findsOneWidget);
   });

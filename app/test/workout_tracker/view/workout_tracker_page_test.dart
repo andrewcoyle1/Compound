@@ -350,10 +350,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(WorkoutTrackerView), findsNothing);
-      expect(find.text('Done'), findsOneWidget);
+      expect(find.byTooltip('Done'), findsOneWidget);
       final saved = await sessions.watchSessions(uid).first;
       expect(saved.single.exercises.expand((e) => e.sets), hasLength(1));
-      await tester.tap(find.text('Done'));
+      await tester.tap(find.byTooltip('Done'));
       await tester.pumpAndSettle();
       expect(find.text('Today'), findsOneWidget);
       await cubit.close();

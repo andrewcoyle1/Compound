@@ -10,7 +10,6 @@ import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/mesocycle_settings_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/sharing/view/share_to_follower_page.dart';
-import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/workout_editor/view/define_workout_editor.dart';
 import 'package:compound_models/compound_models.dart'
     show MesocycleSharePayload;
@@ -71,8 +70,8 @@ class _MesocycleDesignPageState extends State<MesocycleDesignPage> {
       return AppScaffold(
         appBar: AppBar(),
         body: programs.status == ProgramsStatus.loading
-            ? const Center(child: CircularProgressIndicator.adaptive())
-            : LibraryEmptyState(
+            ? AppLoadingView(label: context.l10n.launchLoading)
+            : AppEmptyState(
                 icon: AppSymbols.mesocycle,
                 title: context.l10n.programNoMesocycles,
               ),
@@ -200,10 +199,9 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
         child: AppScaffold(
           appBar: AppBar(
             leading: isEditing
-                ? IconButton(
+                ? AppToolbarButton.close(
                     key: const Key('ProgramDesign.close'),
-                    icon: const Icon(AppSymbols.close),
-                    tooltip: MaterialLocalizations.of(context)
+                    semanticLabel: MaterialLocalizations.of(context)
                         .closeButtonTooltip,
                     onPressed: () => unawaited(_closePressed(context)),
                   )
@@ -214,9 +212,9 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
                   : l10n.programCreateMesocycle,
             ),
             actions: [
-              IconButton(
-                icon: const Icon(AppSymbols.settings),
-                tooltip: l10n.programMesocycleSettingsLabel,
+              AppToolbarButton(
+                icon: AppSymbols.settings,
+                semanticLabel: l10n.programMesocycleSettingsLabel,
                 onPressed: () => unawaited(_openSettings(context)),
               ),
               if (isEditing)
@@ -237,7 +235,9 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
                       onTap: () => unawaited(_deletePressed(context)),
                       child: Text(
                         l10n.programDeleteMesocycle,
-                        style: TextStyle(color: context.appColors.danger),
+                        style: AppTextStyles.rowTitle.copyWith(
+                          color: context.appColors.danger,
+                        ),
                       ),
                     ),
                   ],
@@ -258,20 +258,25 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
                   child: Wrap(
                     spacing: AppSpacing.s,
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: state.canRemoveDay
-                            ? cubit.removeSelectedDay
-                            : null,
-                        icon: const Icon(AppSymbols.delete),
-                        label: Text(l10n.programRemoveDay),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: context.appColors.danger,
+                      // Faded while the last day cannot go, as a disabled
+                      // button is.
+                      Opacity(
+                        opacity: state.canRemoveDay
+                            ? 1
+                            : AppListRow.disabledOpacity,
+                        child: AppChip(
+                          label: l10n.programRemoveDay,
+                          icon: AppSymbols.delete,
+                          tint: context.appColors.danger,
+                          onPressed: state.canRemoveDay
+                              ? cubit.removeSelectedDay
+                              : null,
                         ),
                       ),
-                      OutlinedButton.icon(
+                      AppChip(
+                        label: l10n.programRenameDay,
+                        icon: AppSymbols.edit,
                         onPressed: () => unawaited(_renamePressed(context)),
-                        icon: const Icon(AppSymbols.edit),
-                        label: Text(l10n.programRenameDay),
                       ),
                     ],
                   ),
@@ -337,23 +342,25 @@ class const _DayBar({
           for (final day in state.days)
             Semantics(
               selected: day.workoutId == selected,
-              child: day.workoutId == selected
-                  ? FilledButton(
-                      onPressed: () => cubit.selectDay(day.workoutId),
-                      child: Text(day.name),
-                    )
-                  : OutlinedButton(
-                      onPressed: () {
-                        unawaited(HapticFeedback.selectionClick());
-                        cubit.selectDay(day.workoutId);
-                      },
-                      child: Text(day.name),
-                    ),
+              child: AppCtaButton(
+                label: day.name,
+                size: AppCtaSize.compact,
+                variant: day.workoutId == selected
+                    ? AppCtaVariant.primary
+                    : AppCtaVariant.secondary,
+                onPressed: () {
+                  if (day.workoutId != selected) {
+                    unawaited(HapticFeedback.selectionClick());
+                  }
+                  cubit.selectDay(day.workoutId);
+                },
+              ),
             ),
-          OutlinedButton.icon(
+          AppCtaButton(
+            label: context.l10n.programAddDay,
+            size: AppCtaSize.compact,
+            variant: AppCtaVariant.secondary,
             onPressed: onAdd,
-            icon: const Icon(AppSymbols.add),
-            label: Text(context.l10n.programAddDay),
           ),
         ],
       ),

@@ -61,18 +61,26 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
           padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
           child: Row(
             children: [
-              Semantics(
-                header: true,
-                child: Text(
-                  l10n.programActiveMesocycle,
-                  style: AppTextStyles.sectionTitle.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+              // Wraps at large text rather than pushing the menu off.
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Semantics(
+                        header: true,
+                        child: Text(
+                          l10n.programActiveMesocycle,
+                          style: AppTextStyles.sectionTitle.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (view?.isDeload ?? false)
+                      MethodInfoButton(MethodInfo.mesocycleDeload(l10n)),
+                  ],
                 ),
               ),
-              if (view?.isDeload ?? false)
-                MethodInfoButton(MethodInfo.mesocycleDeload(l10n)),
-              const Spacer(),
               if (view == null)
                 Text(
                   header,
@@ -153,7 +161,9 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
                       onTap: () => unawaited(_delete(context)),
                       child: Text(
                         l10n.programDeleteMesocycle,
-                        style: TextStyle(color: context.appColors.danger),
+                        style: AppTextStyles.rowTitle.copyWith(
+                          color: context.appColors.danger,
+                        ),
                       ),
                     ),
                   ],
@@ -391,6 +401,7 @@ class const _DayRow({
                     : item.isSkipped
                     ? AppSymbols.skip
                     : AppSymbols.choiceUnselected,
+                size: AppIconSize.small.of(context),
                 color: item.isCompleted ? scheme.primary : scheme.outline,
               ),
             ),
@@ -404,15 +415,23 @@ class const _DayRow({
     BuildContext context,
     VoidCallback onSkip,
   ) async {
-    final skip = await showModalBottomSheet<bool>(
+    final skip = await showAppSheet<bool>(
       context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: AppListRowButton(
-          title: context.l10n.programSkip,
-          icon: AppSymbols.skip,
-          onPressed: () => Navigator.of(context).pop(true),
-        ),
+      size: AppSheetSize.compact,
+      builder: (context) => ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [
+          AppSection(
+            children: [
+              AppListRowButton(
+                title: context.l10n.programSkip,
+                icon: AppSymbols.skip,
+                accessory: null,
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+            ],
+          ),
+        ],
       ),
     );
     if (skip ?? false) onSkip();

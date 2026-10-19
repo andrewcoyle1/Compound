@@ -44,7 +44,7 @@ class LabelScannerCubit extends Cubit<LabelScannerState> {
     if (state.status case LabelStatus.reading || LabelStatus.parsing) return;
     final Uint8List? photo;
     try {
-      photo = await _picker.pick(source, PhotoSize.foodPhoto);
+      photo = await _picker.pick(source, PhotoSize.labelPhoto);
     } on PhotoAccessDeniedException {
       _track('BarcodeScanner_CameraDenied');
       if (!isClosed) emit(const LabelScannerState(camera: CameraState.denied));

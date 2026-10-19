@@ -183,7 +183,7 @@ void main() {
         UserModelKeys.submittedLastName: '',
       });
       expect(cubit.state.question, AccountQuestion.gender);
-      expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+      expect(picker.picks, [(PhotoSource.library, PhotoSize.avatar)]);
       expect(photoEvents(), [
         'NamePhoto_PhotoSelected',
         'NamePhoto_PhotoLoad_Start',

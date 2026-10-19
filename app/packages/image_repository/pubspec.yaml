@@ -12,6 +12,8 @@ dependencies:
   firebase_storage: 13.6.0
   flutter:
     sdk: flutter
+  flutter_image_compress: 2.5.1
+  image_cropper: 12.2.1
   image_picker: 1.2.3
 
 dev_dependencies:
@@ -19,3 +21,8 @@ dev_dependencies:
     sdk: flutter
   mocktail: ^1.0.5
   very_good_analysis: ^11.0.0
+
+flutter:
+  # The native libraries' licences (registerPhotoLicenses).
+  assets:
+    - assets/licenses/

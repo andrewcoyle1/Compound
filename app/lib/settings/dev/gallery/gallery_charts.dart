@@ -52,35 +52,54 @@ List<Widget> galleryCharts(BuildContext context) {
       points: _days([72.9, 72.8, 72.7, 72.6, 72.5, 72.4, 72.3]),
     ),
   ];
+  final charts = [
+    for (final (caption, data) in [
+      ('dots and a line, a week', _week(weight)),
+      (
+        'a line with point markers',
+        _week([
+          ChartSeries(
+            label: l10n.weightTrendSeries,
+            color: colors.expenditure,
+            showsPoints: true,
+            points: _days([72.9, 72.6, 72.7, 72.3, 72.4, 72.1, 71.9]),
+          ),
+        ]),
+      ),
+      (
+        'area, a month',
+        ChartData(
+          start: DateTime(2026, 9, 19),
+          end: DateTime(2026, 10, 19),
+          series: [
+            ChartSeries(
+              label: l10n.progressSteps,
+              color: colors.steps,
+              mark: ChartMark.area,
+              points: [
+                for (var i = 0; i < 30; i++)
+                  (
+                    x: DateTime(2026, 9, 19 + i),
+                    y: 8000 + 2500 * math.sin(i / 4) + i * 60,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      ('stacked bars from zero', _week(macros, yFit: ChartYFit.zero)),
+      ('empty', _week(const [])),
+    ])
+      (caption, data),
+  ];
   return [
     galleryEntry('CartesianChart', [
-      for (final (caption, data) in [
-        ('dots and a line, a week', _week(weight)),
-        (
-          'area, a month',
-          ChartData(
-            start: DateTime(2026, 9, 19),
-            end: DateTime(2026, 10, 19),
-            series: [
-              ChartSeries(
-                label: l10n.progressSteps,
-                color: colors.steps,
-                mark: ChartMark.area,
-                points: [
-                  for (var i = 0; i < 30; i++)
-                    (
-                      x: DateTime(2026, 9, 19 + i),
-                      y: 8000 + 2500 * math.sin(i / 4) + i * 60,
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        ('stacked bars from zero', _week(macros, yFit: ChartYFit.zero)),
-        ('empty', _week(const [])),
-      ])
+      for (final (caption, data) in charts)
         galleryBlock(caption, CartesianChart(data: data)),
+      galleryBlock(
+        'morphing through the above (ChartDataTween)',
+        _Morphing(data: [for (final (_, data) in charts) data]),
+      ),
     ]),
     galleryEntry('ChartLegend', [
       galleryBlock('stacked bars', ChartLegend(series: macros)),
@@ -162,3 +181,32 @@ Widget _plot(double anchor, Widget callout) => Padding(
     ),
   ),
 );
+
+/// A [CartesianChart] stepping through [data] at each press, morphing from
+/// one to the next.
+class _Morphing extends StatefulWidget {
+  const new({required this.data});
+
+  final List<ChartData> data;
+
+  @override
+  State<_Morphing> createState() => _MorphingState();
+}
+
+class _MorphingState extends State<_Morphing> {
+  int _index = 0;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    spacing: AppSpacing.s,
+    children: [
+      CartesianChart(data: widget.data[_index]),
+      AppChip(
+        label: 'Next',
+        onPressed: () =>
+            setState(() => _index = (_index + 1) % widget.data.length),
+      ),
+    ],
+  );
+}

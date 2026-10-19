@@ -105,7 +105,10 @@ abstract final class AppChartMark {
   static const double dotRadius = 3.5;
 
   /// The corner on the top of a bar, or of a stack of bars.
-  static const double barCorner = 2;
+  static const double barCorner = 4;
+
+  /// The gap between the segments of a stacked bar.
+  static const double stackGap = 1.5;
 
   /// The share of its bucket a bar fills, leaving a gap between bars.
   static const double barFill = 0.6;

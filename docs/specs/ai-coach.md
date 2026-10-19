@@ -9,8 +9,8 @@ A chat in which the user asks about their own training, nutrition and body data.
 |---|---|
 | Scope at launch | Read-only. It answers; it never writes. Actions (log a meal, swap an exercise) are v2, behind confirmation cards. |
 | Access | Premium only, checked on the server. |
-| Model | Gemini 2.5 Flash on Vertex AI, through Genkit, as the existing callables use. |
-| Region | `europe-west4` for the function and the Vertex endpoint. Firestore is `eur3`, so nothing leaves the EU. |
+| Model | Gemini 3.8 Flash on Vertex AI, through Genkit's Google GenAI plugin, as the existing callables use (2.5 Flash retired on 20 Oct 2026). |
+| Region | `europe-west4` for the function; the Vertex endpoint is the `eu` multi-region, since current Gemini models aren't served from single regions. Firestore is `eur3`, so nothing leaves the EU. |
 | Data access | Server-side tools. The function reads Firestore with the Admin SDK for the caller's uid; no round trips through the app. |
 | Derived figures | Ported to the server (expenditure, weight trend, PRs and e1RM, muscle volume). See "Keeping the maths in step". |
 | Premium check | RevenueCat REST API v2 (`GET /v2/projects/{project_id}/customers/{uid}/active_entitlements`), any active entitlement, cached briefly. The key is a V2 secret key with only *Customer information: read* permission, held in the `REVENUECAT_SECRET_KEY` Functions secret; a V1 key would have full write access to the account. The dev project skips the check, as dev builds do. |

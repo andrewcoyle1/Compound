@@ -13,7 +13,7 @@ export function cleanJson(text) {
     return text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
 }
 
-// Gemini 2.5 Flash returns a bare array of items as often as the {"items": [...]} it is asked
+// Gemini Flash returns a bare array of items as often as the {"items": [...]} it is asked
 // for (one item usually comes wrapped, several usually do not), so both are read the same.
 export function foodItems(parsed) {
     if (Array.isArray(parsed)) return parsed;

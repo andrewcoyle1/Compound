@@ -6,7 +6,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sharing/cubit/share_to_follower_cubit.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/view/people_widgets.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:social_repository/social_repository.dart';
 
@@ -67,11 +66,11 @@ class _ShareToFollowerViewState extends State<ShareToFollowerView> {
 
   void _onStatus(BuildContext context, ShareToFollowerState state) {
     if (state.status == ShareSendStatus.sent) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       Navigator.of(context).pop();
     } else if (state.status == ShareSendStatus.failed) {
       final l10n = context.l10n;
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(

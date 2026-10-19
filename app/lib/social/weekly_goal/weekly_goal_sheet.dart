@@ -6,7 +6,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/social/weekly_goal/weekly_goal_cubit.dart';
 import 'package:compound_maths/compound_maths.dart'
     show maxWeeklySessionGoal, minWeeklySessionGoal;
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -53,10 +52,10 @@ class _WeeklyGoalViewState extends State<WeeklyGoalView> {
     final l10n = context.l10n;
     switch (state.status) {
       case WeeklyGoalStatus.saved:
-        unawaited(HapticFeedback.mediumImpact());
+        unawaited(AppHaptics.medium());
         Navigator.of(context).pop();
       case WeeklyGoalStatus.failed:
-        unawaited(HapticFeedback.heavyImpact());
+        unawaited(AppHaptics.heavy());
         unawaited(
           showAppDialog<void>(
             context: context,

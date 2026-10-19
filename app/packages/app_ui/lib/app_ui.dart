@@ -4,6 +4,7 @@ library;
 export 'package:material_ui/material_ui.dart';
 
 export 'src/extensions/build_context_extensions.dart';
+export 'src/haptics/app_haptics.dart';
 export 'src/rendering/widget_png.dart';
 export 'src/theme/app_colors.dart';
 export 'src/theme/app_text_styles.dart';

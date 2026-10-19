@@ -74,7 +74,7 @@ class FoodPickerView extends StatelessWidget {
                     selected: mode == state.mode,
                     onPressed: () {
                       if (mode != state.mode) {
-                        unawaited(HapticFeedback.selectionClick());
+                        unawaited(AppHaptics.selection());
                       }
                       bloc.add(AddMealModeSelected(mode));
                     },
@@ -138,14 +138,14 @@ Future<void> pickFood(BuildContext context, FoodModel food) async {
   }
   final result = await showFoodAmountSheet(context, food);
   if (result == null) return;
-  unawaited(HapticFeedback.successNotification());
+  unawaited(AppHaptics.success());
   bloc.add(AddMealItemAdded(result.item, food: food));
   if (result.log) bloc.add(const AddMealSaveRequested());
 }
 
 /// A row's +: straight onto the plate at the amount last logged.
 void quickAddFood(BuildContext context, FoodModel food) {
-  unawaited(HapticFeedback.successNotification());
+  unawaited(AppHaptics.success());
   context.read<AddMealBloc>().add(AddMealFoodQuickAdded(food));
 }
 
@@ -204,7 +204,7 @@ Future<void> pickRecipe(
   final bloc = context.read<AddMealBloc>();
   final result = await showRecipeServingsSheet(context, recipe);
   if (result == null) return;
-  unawaited(HapticFeedback.successNotification());
+  unawaited(AppHaptics.success());
   bloc.add(AddMealItemAdded(result.item));
   if (result.log) bloc.add(const AddMealSaveRequested());
 }
@@ -246,7 +246,7 @@ class RecipeRow extends StatelessWidget {
       addLabel: l10n.addMealQuickAddRecipe(recipe.name),
       onPressed: () => unawaited(pickRecipe(context, recipe)),
       onAdd: () {
-        unawaited(HapticFeedback.successNotification());
+        unawaited(AppHaptics.success());
         context.read<AddMealBloc>().add(AddMealRecipeQuickAdded(recipe));
       },
     );
@@ -535,7 +535,7 @@ class _LibraryTabState extends State<_LibraryTab> {
   /// segment clears it (`FoodLibraryPresenter.onLibraryOptionChanged`).
   void _select(LibrarySegment segment) {
     if (segment == _segment) return;
-    unawaited(HapticFeedback.selectionClick());
+    unawaited(AppHaptics.selection());
     setState(() {
       _segment = segment;
       _filter = '';
@@ -883,7 +883,7 @@ class _QuickAddView extends StatelessWidget {
                           parameters: {'food_name': state.trimmedName},
                         ),
                       );
-                      unawaited(HapticFeedback.successNotification());
+                      unawaited(AppHaptics.success());
                       bloc
                         ..add(AddMealItemAdded(item()))
                         ..add(const AddMealPickerClosed());
@@ -994,7 +994,7 @@ class _BarcodeView extends StatelessWidget {
           // behind it, with Scan Again, for a wrong match.
           unawaited(pickFood(context, food));
         } else {
-          unawaited(HapticFeedback.errorNotification());
+          unawaited(AppHaptics.error());
         }
       },
       child: ListView(

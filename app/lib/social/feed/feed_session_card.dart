@@ -18,7 +18,6 @@ import 'package:compound/social/social_routes.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -87,17 +86,17 @@ class FeedSessionCard extends StatelessWidget {
     final l10n = context.l10n;
     switch (state.status) {
       case SaveSessionTemplateStatus.saved:
-        unawaited(HapticFeedback.mediumImpact());
+        unawaited(AppHaptics.medium());
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(content: Text(l10n.programCopySaved(state.savedName!))),
           );
       case SaveSessionTemplateStatus.unresolved:
-        unawaited(HapticFeedback.heavyImpact());
+        unawaited(AppHaptics.heavy());
         unawaited(showFailureAlert(context, l10n.saveAsTemplateUnresolved));
       case SaveSessionTemplateStatus.failed:
-        unawaited(HapticFeedback.heavyImpact());
+        unawaited(AppHaptics.heavy());
         unawaited(
           showFailureAlert(
             context,
@@ -143,7 +142,7 @@ class _Actions extends StatelessWidget {
                   : () async {
                       final cubit = context.read<SessionLikeCubit>();
                       if (!await cubit.toggled(viewer)) {
-                        unawaited(HapticFeedback.heavyImpact());
+                        unawaited(AppHaptics.heavy());
                       }
                     },
             ),

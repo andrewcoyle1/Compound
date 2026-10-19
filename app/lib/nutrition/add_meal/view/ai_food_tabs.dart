@@ -13,7 +13,7 @@ Future<void> _addEstimate(BuildContext context, FoodAnalysisItem item) async {
     amount: item.amountGrams,
   );
   if (result == null) return;
-  unawaited(HapticFeedback.successNotification());
+  unawaited(AppHaptics.success());
   bloc.add(AddMealItemAdded(result.item));
   if (result.log) bloc.add(const AddMealSaveRequested());
 }
@@ -21,7 +21,7 @@ Future<void> _addEstimate(BuildContext context, FoodAnalysisItem item) async {
 /// Add All: every estimate onto the plate as it is.
 void _addAllEstimates(BuildContext context, List<FoodAnalysisItem> items) {
   final bloc = context.read<AddMealBloc>();
-  unawaited(HapticFeedback.successNotification());
+  unawaited(AppHaptics.success());
   for (final item in items) {
     bloc.add(AddMealItemAdded(item.mealItem()));
   }
@@ -152,7 +152,7 @@ class _PhotoView extends StatelessWidget {
       listenWhen: (previous, current) =>
           previous.status != current.status &&
           current.status == EstimateStatus.failed,
-      listener: (_, _) => unawaited(HapticFeedback.errorNotification()),
+      listener: (_, _) => unawaited(AppHaptics.error()),
       child: photo == null
           ? SingleChildScrollView(
               child: switch (state.camera) {
@@ -266,7 +266,7 @@ class _DescribeView extends StatelessWidget {
       listenWhen: (previous, current) =>
           previous.status != current.status &&
           current.status == EstimateStatus.failed,
-      listener: (_, _) => unawaited(HapticFeedback.errorNotification()),
+      listener: (_, _) => unawaited(AppHaptics.error()),
       child: ListView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),

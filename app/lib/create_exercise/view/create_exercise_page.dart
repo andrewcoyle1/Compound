@@ -10,7 +10,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -333,7 +332,7 @@ class OptionRow<T extends Object> extends StatelessWidget {
       ),
     );
     if (chosen == null) return;
-    unawaited(HapticFeedback.selectionClick());
+    unawaited(AppHaptics.selection());
     onChanged(chosen.$1);
   }
 

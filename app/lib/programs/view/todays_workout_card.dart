@@ -17,7 +17,6 @@ import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
@@ -122,11 +121,7 @@ class const TodaysWorkoutCard({super.key}) extends StatelessWidget {
     final ok = await context.read<ProgramsCubit>().succeeded(
       (c) => c.repeatMacrocycle(),
     );
-    unawaited(
-      ok
-          ? HapticFeedback.successNotification()
-          : HapticFeedback.errorNotification(),
-    );
+    unawaited(ok ? AppHaptics.success() : AppHaptics.error());
     if (!ok && context.mounted) {
       await showFailureAlert(context, context.l10n.programRepeatFailed);
     }
@@ -551,11 +546,7 @@ class const _Start({
     final ok = await cubit.succeeded(
       (c) => c.skip(slot, eventPrefix: 'TodaysWorkoutCard'),
     );
-    unawaited(
-      ok
-          ? HapticFeedback.successNotification()
-          : HapticFeedback.errorNotification(),
-    );
+    unawaited(ok ? AppHaptics.success() : AppHaptics.error());
     if (!ok && context.mounted) {
       await showFailureAlert(context, l10n.programSkipFailed);
     }

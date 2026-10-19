@@ -277,7 +277,7 @@ class _LoadedView extends StatelessWidget {
         BlocListener<SessionEditCubit, SessionEditState>(
           listenWhen: (previous, current) =>
               current.savedId != previous.savedId,
-          listener: (_, _) => unawaited(HapticFeedback.successNotification()),
+          listener: (_, _) => unawaited(AppHaptics.success()),
         ),
         BlocListener<SessionEditCubit, SessionEditState>(
           listenWhen: (previous, current) =>
@@ -378,7 +378,7 @@ class _LoadedView extends StatelessWidget {
         },
       ),
     };
-    unawaited(HapticFeedback.errorNotification());
+    unawaited(AppHaptics.error());
     unawaited(
       showAppDialog<void>(
         context: context,
@@ -938,6 +938,6 @@ class _ShareImageButtonState extends State<_ShareImageButton> {
       {'session_id': widget.session.id},
     );
     await Clipboard.setData(ClipboardData(text: '$link'));
-    await HapticFeedback.successNotification();
+    await AppHaptics.success();
   }
 }

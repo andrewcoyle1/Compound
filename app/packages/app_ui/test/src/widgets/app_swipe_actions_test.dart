@@ -1,7 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/semantics.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
@@ -40,13 +39,10 @@ void main() {
       TextDirection direction = TextDirection.ltr,
       bool disableAnimations = false,
     }) async {
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        (call) async {
-          if (call.method == 'HapticFeedback.vibrate') haptics++;
-          return null;
-        },
-      );
+      AppHaptics.debugPlay = (haptic) {
+        if (haptic == AppHaptic.medium) haptics++;
+      };
+      addTearDown(() => AppHaptics.debugPlay = null);
       await tester.pumpApp(
         Directionality(
           textDirection: direction,

@@ -23,7 +23,7 @@ import 'package:user_repository/user_repository.dart';
 /// target proposal's, the day's calories and macros against its target,
 /// the foods that contributed most, and its nutrients.
 class NutritionOverviewPage extends StatelessWidget {
-  const new({required this.dayKey, super.key});
+  const new({required this.dayKey, super.key, this.now});
 
   static const path = 'overview';
   static const name = 'nutritionOverview';
@@ -33,6 +33,9 @@ class NutritionOverviewPage extends StatelessWidget {
 
   /// The day shown.
   final String dayKey;
+
+  /// The moment the figures are for; now when null. For tests.
+  final DateTime Function()? now;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +53,7 @@ class NutritionOverviewPage extends StatelessWidget {
         dismissals: context.read<ProposalDismissals>(),
         uid: state.user.uid,
         dayKey: dayKey,
+        now: now ?? DateTime.now,
       )..add(const NutritionOverviewStarted()),
       child: const NutritionOverviewView(),
     );

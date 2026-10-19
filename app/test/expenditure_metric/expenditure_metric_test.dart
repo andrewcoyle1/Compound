@@ -1,5 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart' show localDayKey;
 import 'package:compound/app/app.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
@@ -114,7 +115,11 @@ void main() {
       await tester.pumpApp(
         InheritedGoRouter(
           goRouter: router,
-          child: ExpenditureMetricPage(metric: metric, allData: allData),
+          child: ExpenditureMetricPage(
+            metric: metric,
+            allData: allData,
+            now: () => data.now,
+          ),
         ),
         appBloc: appBloc,
         userRepository: data.users,
@@ -126,25 +131,33 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets('Expenditure charts the estimate with today summarised', (
-      tester,
-    ) async {
-      await pumpPage(tester, ExpenditureMetric.expenditure);
-      expect(find.text('Expenditure'), findsWidgets);
-      expect(find.byType(MetricDetailView), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.byType(ExpenditureEstimateSummary),
-        300,
-      );
-      expect(find.text('Today'), findsWidgets);
-      expect(find.textContaining('based on what you logged'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Show All Data'), 300);
-      await tester.tap(find.text('Show All Data'));
-      verify(() => router.goNamed('expenditureData')).called(1);
-      expect(analytics.names.first, 'ExpenditureDetailView_Appear');
-      await tester.tap(find.byTooltip('Edit Profile'));
-      verify(() => router.pushNamed<Object?>('editProfile')).called(1);
-    });
+    // The estimate is read at the data's own moment, whatever the clock
+    // says: a Monday, a Sunday and mid-week, each at 1pm.
+    for (final moment in [
+      DateTime(2026, 10, 19, 13),
+      DateTime(2026, 10, 18, 13),
+      stagingNow,
+    ]) {
+      testWidgets('Expenditure charts the estimate with today summarised '
+          'on ${localDayKey(moment)}', (tester) async {
+        data = StagingData(now: moment);
+        await pumpPage(tester, ExpenditureMetric.expenditure);
+        expect(find.text('Expenditure'), findsWidgets);
+        expect(find.byType(MetricDetailView), findsOneWidget);
+        await tester.scrollUntilVisible(
+          find.byType(ExpenditureEstimateSummary),
+          300,
+        );
+        expect(find.text('Today'), findsWidgets);
+        expect(find.textContaining('based on what you logged'), findsOneWidget);
+        await tester.scrollUntilVisible(find.text('Show All Data'), 300);
+        await tester.tap(find.text('Show All Data'));
+        verify(() => router.goNamed('expenditureData')).called(1);
+        expect(analytics.names.first, 'ExpenditureDetailView_Appear');
+        await tester.tap(find.byTooltip('Edit Profile'));
+        verify(() => router.pushNamed<Object?>('editProfile')).called(1);
+      });
+    }
 
     testWidgets('Energy Balance charts intake against expenditure', (
       tester,

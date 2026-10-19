@@ -6,6 +6,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition_overview/logic/nutrition_overview.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -42,7 +43,10 @@ void main() {
     await tester.pumpApp(
       InheritedGoRouter(
         goRouter: router,
-        child: NutritionOverviewPage(dayKey: dayKey ?? localDayKey(data.now)),
+        child: NutritionOverviewPage(
+          dayKey: dayKey ?? localDayKey(data.now),
+          now: () => data.now,
+        ),
       ),
       appBloc: appBloc,
       userRepository: data.users,
@@ -55,77 +59,95 @@ void main() {
   }
 
   group(NutritionOverviewPage, () {
-    testWidgets('shows the check-in card, the day and its nutrients', (
-      tester,
-    ) async {
-      await pumpPage(tester);
-      expect(find.text('Nutrition Overview'), findsOneWidget);
-      expect(find.text('Weekly check-in ready'), findsOneWidget);
-      expect(find.text('New targets suggested'), findsNothing);
-      expect(find.textContaining('consumed'), findsOneWidget);
-      expect(find.text('Macros'), findsOneWidget);
-      expect(find.byType(MethodInfoButton), findsOneWidget);
+    // The page reads the staging data at the data's own moment, whatever
+    // the clock says. The check-in's week turns on Monday, so cover a
+    // Monday, a Sunday and mid-week, each at 1pm so the day has meals.
+    for (final moment in [
+      DateTime(2026, 10, 19, 13),
+      DateTime(2026, 10, 18, 13),
+      stagingNow,
+    ]) {
+      group('on ${localDayKey(moment)}', () {
+        setUp(() => data = StagingData(now: moment));
+        final week = checkInWeekStart(localDayKey(moment));
 
-      await tester.tap(find.text('Start'));
-      verify(
-        () => router.pushNamed<Object?>(
-          'checkIn',
-          queryParameters: {'week': '2026-10-12'},
-        ),
-      ).called(1);
+        testWidgets('shows the check-in card, the day and its nutrients', (
+          tester,
+        ) async {
+          await pumpPage(tester);
+          expect(find.text('Nutrition Overview'), findsOneWidget);
+          expect(find.text('Weekly check-in ready'), findsOneWidget);
+          expect(find.text('New targets suggested'), findsNothing);
+          expect(find.textContaining('consumed'), findsOneWidget);
+          expect(find.text('Macros'), findsOneWidget);
+          expect(find.byType(MethodInfoButton), findsOneWidget);
 
-      await tester.tap(find.byType(Switch));
-      await tester.pump();
-      expect(find.text('Top Contributors'), findsOneWidget);
+          await tester.tap(find.text('Start'));
+          verify(
+            () => router.pushNamed<Object?>(
+              'checkIn',
+              queryParameters: {'week': week},
+            ),
+          ).called(1);
 
-      await tester.scrollUntilVisible(find.text('Fiber'), 300);
-      expect(find.text('Carb Breakdown'), findsOneWidget);
-    });
+          await tester.tap(find.byType(Switch));
+          await tester.pump();
+          expect(find.text('Top Contributors'), findsOneWidget);
 
-    testWidgets('offers the proposal once the check-in is skipped', (
-      tester,
-    ) async {
-      await pumpPage(tester);
-      await tester.tap(find.text('Skip This Week'));
-      await tester.pump();
-      expect(find.text('Weekly check-in ready'), findsNothing);
-      expect(find.text('New targets suggested'), findsOneWidget);
-      expect(find.textContaining('kcal a day, down from'), findsOneWidget);
-      // The card's info button joins the macros'.
-      expect(find.byType(MethodInfoButton), findsNWidgets(2));
-      await tester.tap(find.text('Not now'));
-      await tester.pump();
-      expect(find.text('New targets suggested'), findsNothing);
-    });
+          await tester.scrollUntilVisible(find.text('Fiber'), 300);
+          expect(find.text('Carb Breakdown'), findsOneWidget);
+        });
 
-    testWidgets('alerts when the plan does not save', (tester) async {
-      data = StagingData(
-        records: [
-          CheckInRecord(
-            authorId: uid,
-            lastCompletedWeekStart: DateTime(2026, 10, 12),
-          ),
-        ],
-      );
-      final nutrition = _RefusingNutrition(data.nutrition);
-      await tester.pumpApp(
-        InheritedGoRouter(
-          goRouter: router,
-          child: NutritionOverviewPage(dayKey: localDayKey(data.now)),
-        ),
-        appBloc: appBloc,
-        userRepository: data.users,
-        nutritionRepository: nutrition,
-        bodyRepository: data.body,
-        programRepository: data.programs,
-        checkInRepository: data.checkIns,
-      );
-      await tester.pump();
-      await tester.tap(find.text('Accept'));
-      await tester.pump();
-      await tester.pump();
-      expect(find.text('Unable to Update Your Targets'), findsOneWidget);
-    });
+        testWidgets('offers the proposal once the check-in is skipped', (
+          tester,
+        ) async {
+          await pumpPage(tester);
+          await tester.tap(find.text('Skip This Week'));
+          await tester.pump();
+          expect(find.text('Weekly check-in ready'), findsNothing);
+          expect(find.text('New targets suggested'), findsOneWidget);
+          expect(find.textContaining('kcal a day, down from'), findsOneWidget);
+          // The card's info button joins the macros'.
+          expect(find.byType(MethodInfoButton), findsNWidgets(2));
+          await tester.tap(find.text('Not now'));
+          await tester.pump();
+          expect(find.text('New targets suggested'), findsNothing);
+        });
+
+        testWidgets('alerts when the plan does not save', (tester) async {
+          data = StagingData(
+            now: moment,
+            records: [
+              CheckInRecord(
+                authorId: uid,
+                lastCompletedWeekStart: localMidnight(week),
+              ),
+            ],
+          );
+          final nutrition = _RefusingNutrition(data.nutrition);
+          await tester.pumpApp(
+            InheritedGoRouter(
+              goRouter: router,
+              child: NutritionOverviewPage(
+                dayKey: localDayKey(data.now),
+                now: () => data.now,
+              ),
+            ),
+            appBloc: appBloc,
+            userRepository: data.users,
+            nutritionRepository: nutrition,
+            bodyRepository: data.body,
+            programRepository: data.programs,
+            checkInRepository: data.checkIns,
+          );
+          await tester.pump();
+          await tester.tap(find.text('Accept'));
+          await tester.pump();
+          await tester.pump();
+          expect(find.text('Unable to Update Your Targets'), findsOneWidget);
+        });
+      });
+    }
 
     testWidgets('a day with nothing logged leaves out the nutrients', (
       tester,

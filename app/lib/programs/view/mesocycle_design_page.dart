@@ -218,27 +218,24 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
                 onPressed: () => unawaited(_openSettings(context)),
               ),
               if (isEditing)
-                PopupMenuButton<void>(
+                PopupMenuButton<VoidCallback>(
+                  onSelected: (action) => action(),
                   icon: Icon(AppSymbols.more),
                   tooltip: l10n.programMore,
                   itemBuilder: (_) => [
-                    PopupMenuItem(
-                      onTap: () => unawaited(
+                    AppMenuItem(
+                      value: () => unawaited(
                         showShareToFollower(
                           context,
                           MesocycleSharePayload(state.mesocycle),
                         ),
                       ),
-                      child: Text(l10n.shareWithFriends),
+                      label: l10n.shareWithFriends,
                     ),
-                    PopupMenuItem(
-                      onTap: () => unawaited(_deletePressed(context)),
-                      child: Text(
-                        l10n.programDeleteMesocycle,
-                        style: AppTextStyles.rowTitle.copyWith(
-                          color: context.appColors.danger,
-                        ),
-                      ),
+                    AppMenuItem(
+                      value: () => unawaited(_deletePressed(context)),
+                      label: l10n.programDeleteMesocycle,
+                      isDestructive: true,
                     ),
                   ],
                 ),

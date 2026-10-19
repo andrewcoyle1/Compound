@@ -204,7 +204,6 @@ class _DisclosureState extends State<_Disclosure> {
             if (onDelete != null)
               AppSwipeAction(
                 label: l10n.programDelete,
-                icon: AppSymbols.delete,
                 isDestructive: true,
                 onPressed: onDelete,
               ),
@@ -219,37 +218,34 @@ class _DisclosureState extends State<_Disclosure> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    PopupMenuButton<void>(
+                    PopupMenuButton<VoidCallback>(
+                      onSelected: (action) => action(),
                       icon: Icon(AppSymbols.more),
                       tooltip: l10n.programMesocycleOptions,
                       itemBuilder: (_) => [
-                        PopupMenuItem(
-                          onTap: () => unawaited(
+                        AppMenuItem(
+                          value: () => unawaited(
                             MesocycleDesignPage.edit(
                               context,
                               widget.mesocycle.id,
                             ),
                           ),
-                          child: Text(l10n.programEditMesocycle),
+                          label: l10n.programEditMesocycle,
                         ),
-                        PopupMenuItem(
-                          onTap: () => unawaited(
+                        AppMenuItem(
+                          value: () => unawaited(
                             showShareToFollower(
                               context,
                               MesocycleSharePayload(widget.mesocycle),
                             ),
                           ),
-                          child: Text(l10n.shareWithFriends),
+                          label: l10n.shareWithFriends,
                         ),
                         if (onDelete != null)
-                          PopupMenuItem(
-                            onTap: onDelete,
-                            child: Text(
-                              l10n.programDeleteMesocycle,
-                              style: AppTextStyles.rowTitle.copyWith(
-                                color: context.appColors.danger,
-                              ),
-                            ),
+                          AppMenuItem(
+                            value: onDelete,
+                            label: l10n.programDeleteMesocycle,
+                            isDestructive: true,
                           ),
                       ],
                     ),

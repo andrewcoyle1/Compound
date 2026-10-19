@@ -108,7 +108,6 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
               trailing: [
                 AppSwipeAction(
                   label: l10n.programDelete,
-                  icon: AppSymbols.delete,
                   isDestructive: true,
                   onPressed: () => unawaited(_delete(context)),
                 ),
@@ -136,18 +135,19 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
                 mesocycle: mesocycle,
                 isDeload: view?.isDeload ?? false,
                 phase: view?.phase,
-                trailing: PopupMenuButton<void>(
+                trailing: PopupMenuButton<VoidCallback>(
+                  onSelected: (action) => action(),
                   icon: Icon(AppSymbols.more),
                   tooltip: l10n.programMesocycleOptions,
                   itemBuilder: (_) => [
-                    PopupMenuItem(
-                      onTap: () => unawaited(
+                    AppMenuItem(
+                      value: () => unawaited(
                         MesocycleDesignPage.edit(context, mesocycle.id),
                       ),
-                      child: Text(l10n.programInfo),
+                      label: l10n.programInfo,
                     ),
-                    PopupMenuItem(
-                      onTap: () => CoachPage.open(
+                    AppMenuItem(
+                      value: () => CoachPage.open(
                         context,
                         CoachContext(
                           kind: CoachContextKind.mesocycle,
@@ -155,16 +155,12 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
                           title: mesocycle.name,
                         ),
                       ),
-                      child: Text(l10n.coachAskCoach),
+                      label: l10n.coachAskCoach,
                     ),
-                    PopupMenuItem(
-                      onTap: () => unawaited(_delete(context)),
-                      child: Text(
-                        l10n.programDeleteMesocycle,
-                        style: AppTextStyles.rowTitle.copyWith(
-                          color: context.appColors.danger,
-                        ),
-                      ),
+                    AppMenuItem(
+                      value: () => unawaited(_delete(context)),
+                      label: l10n.programDeleteMesocycle,
+                      isDestructive: true,
                     ),
                   ],
                 ),

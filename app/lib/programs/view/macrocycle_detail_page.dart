@@ -195,18 +195,15 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                 : null,
           ),
           if (existing != null)
-            PopupMenuButton<void>(
+            PopupMenuButton<VoidCallback>(
+              onSelected: (action) => action(),
               icon: Icon(AppSymbols.more),
               tooltip: l10n.programMore,
               itemBuilder: (context) => [
-                PopupMenuItem(
-                  onTap: () => unawaited(_delete(existing)),
-                  child: Text(
-                    l10n.programDeleteMacrocycle,
-                    style: AppTextStyles.rowTitle.copyWith(
-                      color: context.appColors.danger,
-                    ),
-                  ),
+                AppMenuItem(
+                  value: () => unawaited(_delete(existing)),
+                  label: l10n.programDeleteMacrocycle,
+                  isDestructive: true,
                 ),
               ],
             ),
@@ -258,7 +255,6 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                           trailing: [
                             AppSwipeAction(
                               label: l10n.programDelete,
-                              icon: AppSymbols.delete,
                               isDestructive: true,
                               onPressed: () => cubit.removed(index),
                             ),

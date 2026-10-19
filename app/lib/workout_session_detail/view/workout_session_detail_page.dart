@@ -410,32 +410,16 @@ class _MoreMenu extends StatelessWidget {
         _MoreAction.delete => unawaited(_delete(context)),
       },
       itemBuilder: (_) => [
-        PopupMenuItem(
+        AppMenuItem(
           value: _MoreAction.edit,
-          child: Row(
-            spacing: AppSpacing.m,
-            children: [
-              const Icon(AppSymbols.edit),
-              Flexible(child: Text(l10n.editorEditWorkout)),
-            ],
-          ),
+          label: l10n.editorEditWorkout,
+          icon: AppSymbols.edit,
         ),
-        PopupMenuItem(
+        AppMenuItem(
           value: _MoreAction.delete,
-          child: Row(
-            spacing: AppSpacing.m,
-            children: [
-              Icon(AppSymbols.delete, color: context.appColors.danger),
-              Flexible(
-                child: Text(
-                  l10n.editorDelete,
-                  style: AppTextStyles.rowTitle.copyWith(
-                    color: context.appColors.danger,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          label: l10n.editorDelete,
+          icon: AppSymbols.delete,
+          isDestructive: true,
         ),
       ],
     );

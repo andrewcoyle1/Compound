@@ -310,32 +310,16 @@ class _ActionChips extends StatelessWidget {
               _MoreAction.delete => unawaited(_delete(context)),
             },
             itemBuilder: (_) => [
-              PopupMenuItem(
+              AppMenuItem(
                 value: _MoreAction.settings,
-                child: Row(
-                  spacing: AppSpacing.m,
-                  children: [
-                    const Icon(AppSymbols.settings),
-                    Flexible(child: Text(l10n.trackerExerciseSettings)),
-                  ],
-                ),
+                label: l10n.trackerExerciseSettings,
+                icon: AppSymbols.settings,
               ),
-              PopupMenuItem(
+              AppMenuItem(
                 value: _MoreAction.delete,
-                child: Row(
-                  spacing: AppSpacing.m,
-                  children: [
-                    Icon(AppSymbols.delete, color: context.appColors.danger),
-                    Flexible(
-                      child: Text(
-                        l10n.trackerDeleteExercise,
-                        style: AppTextStyles.rowTitle.copyWith(
-                          color: context.appColors.danger,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                label: l10n.trackerDeleteExercise,
+                icon: AppSymbols.delete,
+                isDestructive: true,
               ),
             ],
             child: ConstrainedBox(

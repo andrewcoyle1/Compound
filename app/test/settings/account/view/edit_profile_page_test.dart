@@ -107,7 +107,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, '  ');
       await tester.pump();
       final save = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.check_rounded),
+        find.widgetWithIcon(IconButton, AppSymbols.selected),
       );
       expect(save.onPressed, isNull);
     });

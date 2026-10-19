@@ -19,6 +19,7 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 
 import '../../helpers/app_repositories.dart';
 import '../../helpers/display_size.dart';
+import '../../helpers/social_world.dart';
 
 void main() {
   const uid = sampleUserId;
@@ -61,7 +62,7 @@ void main() {
     // Training › Workouts › My Upper Body › Start Workout.
     await tester.tap(find.text('Training').last);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Workouts'));
+    await reveal(tester, find.text('Workouts'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Workouts'));
     await tester.pumpAndSettle();

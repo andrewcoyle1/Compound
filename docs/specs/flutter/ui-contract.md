@@ -101,6 +101,10 @@ The development flavor has a gallery screen, reached from Developer Settings, th
 A PR that changes how something looks includes before and after screenshots (light and dark),
 or the golden diffs.
 
+`scripts/flutter-screenshots.sh <simulator-udid> [out-dir] [NAME,…]` shoots every staging screen
+listed in `app/integration_test/screens_test.dart`, light and dark, into `app/build/screenshots`.
+Run it on the base branch for "before" and on yours for "after"; it needs a booted simulator.
+
 ## Platform look
 
 **One Compound look on both platforms** (own brand, decided 14 Oct 2026), with each platform's

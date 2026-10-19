@@ -37,6 +37,9 @@ class _MockGoRouter extends Mock implements GoRouter;
 class _MockCircleBloc extends MockBloc<CircleEvent, CircleState>
     implements CircleBloc;
 
+/// The Today list, under the large title's scroll view.
+final Finder _list = find.byType(Scrollable).last;
+
 void main() {
   const uid = 'mock_user_123';
   // Thursday 15 October 2026, 7pm: after the sample weigh-in and in time
@@ -282,7 +285,11 @@ void main() {
       );
       final analytics = AnalyticsRecorder();
       await pumpView(tester, circleBloc: circle, analytics: analytics);
-      await tester.scrollUntilVisible(find.text('Sam trained today'), 200);
+      await tester.scrollUntilVisible(
+        find.text('Sam trained today'),
+        200,
+        scrollable: _list,
+      );
       await tester.tap(find.text('Sam trained today'));
       verify(() => router.go(AppTab.social.path)).called(1);
       await tester.pump();
@@ -342,6 +349,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.textContaining('protein to go today'),
         200,
+        scrollable: _list,
       );
       expect(find.textContaining('protein to go today'), findsOneWidget);
       // Swift's CoachTests: Today asks about today, and the gap about
@@ -364,12 +372,20 @@ void main() {
       );
       expect(food.date, localDayKey(DateTime.now()));
       expect(food.title, "Today's Food");
-      await tester.scrollUntilVisible(find.text('Get Started · 3 of 4'), -200);
+      await tester.scrollUntilVisible(
+        find.text('Get Started · 3 of 4'),
+        -200,
+        scrollable: _list,
+      );
       // No meals logged: the starter card offers the first meal.
       expect(find.text('Get Started · 3 of 4'), findsOneWidget);
       expect(find.text('Log your first meal'), findsOneWidget);
 
-      await tester.scrollUntilVisible(find.text('Total workouts'), 200);
+      await tester.scrollUntilVisible(
+        find.text('Total workouts'),
+        200,
+        scrollable: _list,
+      );
       expect(find.text('Weekly Streak'), findsOneWidget);
       expect(find.text('3 of 3 this week'), findsOneWidget);
       expect(find.text('Goal Met'), findsOneWidget);
@@ -429,7 +445,11 @@ void main() {
           meals: [_meal(uid, now, calories: 2550, protein: 165)],
         );
         expect(find.textContaining('protein to go'), findsNothing);
-        await tester.scrollUntilVisible(find.text('At Risk'), 200);
+        await tester.scrollUntilVisible(
+          find.text('At Risk'),
+          200,
+          scrollable: _list,
+        );
         expect(find.text('At Risk'), findsOneWidget);
       },
     );
@@ -492,7 +512,7 @@ void main() {
         ],
       );
       final card = find.text('Your weekly review is ready');
-      await tester.scrollUntilVisible(card, 200);
+      await tester.scrollUntilVisible(card, 200, scrollable: _list);
       await tester.tap(card);
       await tester.pump();
       verify(() => router.goNamed(WeeklyReviewPage.name)).called(1);

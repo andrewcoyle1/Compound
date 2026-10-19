@@ -35,6 +35,7 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 import '../../helpers/app_repositories.dart';
 import '../../helpers/display_size.dart';
 import '../../helpers/reminder_offers.dart';
+import '../../helpers/social_world.dart';
 
 void main() {
   final now = DateTime(2026, 10, 14, 12);
@@ -654,7 +655,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Workout History'));
+      await reveal(tester, find.text('Workout History'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Workout History'));
       await tester.pumpAndSettle();
@@ -703,7 +704,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       // Below the header carousel.
-      await tester.ensureVisible(find.text('Weight Trend'));
+      await reveal(tester, find.text('Weight Trend'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Weight Trend'));
       await tester.pumpAndSettle();

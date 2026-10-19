@@ -110,7 +110,7 @@ class _SettingsViewState extends State<SettingsView> {
                   // A subscriber is shown their subscription, not sold one.
                   AppListRowButton(
                     title: l10n.settingsSubscription,
-                    icon: AppSymbols.favourite,
+                    icon: AppSymbols.subscription,
                     accessory: AppListRowValue(
                       state.isPremium
                           ? l10n.settingsSubscriptionActive

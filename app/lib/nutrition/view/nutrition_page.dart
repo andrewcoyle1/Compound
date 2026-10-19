@@ -133,60 +133,56 @@ class NutritionView extends StatelessWidget {
         ),
       ],
       child: AppScaffold(
-        appBar: AppBar(
-          title: Text(l10n.tabNutrition),
-          actions: [
-            IconButton(
-              icon: const Icon(AppSymbols.calendar),
-              tooltip: l10n.calendarShow,
-              onPressed: () => unawaited(
-                CalendarHeader.showCalendar(
-                  context,
-                  today: state.today,
-                  markers: state.markers,
-                  selectedDay: state.selectedDay,
-                  onDaySelected: (day) => context.read<NutritionDayBloc>().add(
-                    NutritionDayDateSelected(day),
-                  ),
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(AppSymbols.add),
-              tooltip: l10n.nutritionLogMeal,
-              onPressed: () => openMealLogger(
+        largeTitle: l10n.tabNutrition,
+        actions: [
+          IconButton(
+            icon: const Icon(AppSymbols.calendar),
+            tooltip: l10n.calendarShow,
+            onPressed: () => unawaited(
+              CalendarHeader.showCalendar(
                 context,
-                date: toolbarMealDate(
-                  selectedDay: state.selectedDay,
-                  now: DateTime.now(),
+                today: state.today,
+                markers: state.markers,
+                selectedDay: state.selectedDay,
+                onDaySelected: (day) => context.read<NutritionDayBloc>().add(
+                  NutritionDayDateSelected(day),
                 ),
               ),
             ),
-            IconButton(
-              icon: const Icon(AppSymbols.analytics),
-              tooltip: l10n.nutritionOverviewTitle,
-              onPressed: () => context.goNamed(
-                NutritionOverviewPage.name,
-                queryParameters: {
-                  NutritionOverviewPage.dayParameter: dayKeyOf(
-                    state.selectedDay,
-                  ),
-                },
+          ),
+          IconButton(
+            icon: const Icon(AppSymbols.add),
+            tooltip: l10n.nutritionLogMeal,
+            onPressed: () => openMealLogger(
+              context,
+              date: toolbarMealDate(
+                selectedDay: state.selectedDay,
+                now: DateTime.now(),
               ),
             ),
-            AskCoachButton(
-              CoachContext(
-                kind: CoachContextKind.nutritionDay,
-                date: dayKeyOf(state.selectedDay),
-                title: AppFormat.date(
-                  state.selectedDay,
-                  locale: context.dateLocale,
-                ),
+          ),
+          IconButton(
+            icon: const Icon(AppSymbols.analytics),
+            tooltip: l10n.nutritionOverviewTitle,
+            onPressed: () => context.goNamed(
+              NutritionOverviewPage.name,
+              queryParameters: {
+                NutritionOverviewPage.dayParameter: dayKeyOf(state.selectedDay),
+              },
+            ),
+          ),
+          AskCoachButton(
+            CoachContext(
+              kind: CoachContextKind.nutritionDay,
+              date: dayKeyOf(state.selectedDay),
+              title: AppFormat.date(
+                state.selectedDay,
+                locale: context.dateLocale,
               ),
             ),
-            const ProfileButton(),
-          ],
-        ),
+          ),
+          const ProfileButton(),
+        ],
         // The search over the user's foods and recipes sits above the day,
         // and its results replace the day while it has a query.
         body: Column(

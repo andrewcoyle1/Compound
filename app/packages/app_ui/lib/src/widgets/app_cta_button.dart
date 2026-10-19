@@ -68,10 +68,19 @@ class AppCtaButton extends StatelessWidget {
             ],
           )
         : Text(label);
+    // As tall as Swift's call-to-action button.
+    final filled = FilledButton.styleFrom(
+      minimumSize: const Size(0, AppControlSize.cta),
+    );
     final button = switch (variant) {
-      AppCtaVariant.primary => FilledButton(onPressed: onPressed, child: child),
+      AppCtaVariant.primary => FilledButton(
+        onPressed: onPressed,
+        style: filled,
+        child: child,
+      ),
       AppCtaVariant.secondary => FilledButton.tonal(
         onPressed: onPressed,
+        style: filled,
         child: child,
       ),
       AppCtaVariant.plain => TextButton(

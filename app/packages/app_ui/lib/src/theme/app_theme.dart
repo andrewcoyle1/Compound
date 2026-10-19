@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:flutter/foundation.dart';
 
 /// {@template app_theme}
 /// Compound's look as [ThemeData]: the brand on both platforms, not stock
@@ -75,7 +76,13 @@ abstract final class AppTheme {
         color: scheme.onSurface,
         size: AppIconSize.medium.points,
       ),
+      // Titles centred on both platforms, as on iOS. Flutter would centre an
+      // iOS title only with fewer than two actions.
       appBarTheme: AppBarTheme(
+        centerTitle: true,
+        toolbarHeight: defaultTargetPlatform == TargetPlatform.iOS
+            ? AppControlSize.iosToolbar
+            : null,
         backgroundColor: colors.canvas,
         foregroundColor: scheme.onSurface,
         elevation: 0,
@@ -136,7 +143,8 @@ abstract final class AppTheme {
         style: FilledButton.styleFrom(
           minimumSize: minimumSize,
           shape: pill,
-          textStyle: AppTextStyles.sectionTitle,
+          // Swift's CTA label is body, not headline.
+          textStyle: AppTextStyles.rowTitle,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.l,
             vertical: AppSpacing.m,

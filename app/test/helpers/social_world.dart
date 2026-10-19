@@ -52,16 +52,21 @@ final class SocialWorld {
   UserModel get viewer => circle.state.viewer!;
 }
 
-/// Scrolls the Social dashboard until [finder] is on screen. Its banners
-/// vary by day (the week's recap shows on the week's first day), so a test
-/// scrolls to what it needs rather than assume where it sits.
-Future<void> revealOnDashboard(WidgetTester tester, Finder finder) async {
+/// Scrolls the innermost vertical list until [finder] is on screen, for
+/// content a lazy list has not built yet. The Social dashboard's banners
+/// vary by day (the week's recap shows on the week's first day), and a tab
+/// root's large title scrolls first, so a test scrolls to what it needs
+/// rather than assume where it sits.
+Future<void> reveal(WidgetTester tester, Finder finder) async {
   for (var i = 0; i < 20 && finder.evaluate().isEmpty; i++) {
     await tester.drag(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is Scrollable && widget.axisDirection == AxisDirection.down,
-      ),
+      find
+          .byWidgetPredicate(
+            (widget) =>
+                widget is Scrollable &&
+                widget.axisDirection == AxisDirection.down,
+          )
+          .last,
       const Offset(0, -200),
     );
     await tester.pump();

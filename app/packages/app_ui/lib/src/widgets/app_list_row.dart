@@ -45,7 +45,8 @@ final class AppListRowCustom extends AppListRowAccessory {
 /// [AppListRowButton], [AppListRowToggle] and [AppSelectableRow] wrap it for
 /// the interactive cases.
 ///
-/// Text scales with the user's setting, the row is at least 44 pt tall, and
+/// Text scales with the user's setting, the row is at least 52 pt tall (iOS
+/// 26's inset-grouped row), and
 /// at the largest text sizes a value or custom accessory moves under the
 /// title instead of squeezing it. The subtitle stops at two lines, except at
 /// those sizes and on a checkmark row, whose subtitle explains the choice.
@@ -84,6 +85,24 @@ class AppListRow extends StatelessWidget {
 
   /// The trailing accessory, or none.
   final AppListRowAccessory? accessory;
+
+  /// Where the text starts, from the row's leading edge: past the leading
+  /// [icon] or [thumbnail] when there is one. [AppSection] starts the
+  /// divider below the row there, as iOS does.
+  static double textInset(
+    TextScaler scaler, {
+    IconData? icon,
+    Widget? thumbnail,
+  }) {
+    final leading = icon != null
+        ? AppControlSize.icon
+        : thumbnail != null
+        ? AppControlSize.thumbnail
+        : null;
+    return leading == null
+        ? AppSpacing.l
+        : AppSpacing.l + scaler.scale(leading) + AppSpacing.m;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +200,7 @@ class AppListRow extends StatelessWidget {
     }
 
     final row = ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: AppControlSize.row),
+      constraints: const BoxConstraints(minHeight: AppControlSize.listRow),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.l,

@@ -72,10 +72,8 @@ class ProgressView extends StatelessWidget {
     final state = context.watch<ProgressBloc>().state;
     return AppScaffold(
       maxWidth: AppContentWidth.dashboard,
-      appBar: AppBar(
-        title: Text(l10n.tabProgress),
-        actions: const [_LogMenu(), ProfileButton()],
-      ),
+      largeTitle: l10n.tabProgress,
+      actions: const [_LogMenu(), ProfileButton()],
       body: switch (state.status) {
         ProgressStatus.loading => const Center(
           child: CircularProgressIndicator.adaptive(),

@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:flutter/rendering.dart' show OverflowBoxFit;
 
 /// {@template app_list_row_toggle}
 /// A row with a switch: the platform's own switch, and the whole row toggles
@@ -40,8 +41,23 @@ class AppListRowToggle extends StatelessWidget {
           title: title,
           subtitle: subtitle,
           icon: icon,
+          // The row is the tap target, so the switch takes no height of its
+          // own: it sits in a line of text and paints into the row's
+          // padding, and the row keeps a list row's height.
           accessory: AppListRowCustom(
-            Switch.adaptive(value: value, onChanged: onChanged),
+            SizedBox(
+              height: MediaQuery.textScalerOf(context)
+                  .scale(AppTextStyles.rowTitle.fontSize!),
+              child: OverflowBox(
+                maxHeight: double.infinity,
+                fit: OverflowBoxFit.deferToChild,
+                child: Switch.adaptive(
+                  value: value,
+                  onChanged: onChanged,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ),
           ),
         ),
       ),

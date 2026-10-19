@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:app_ui/app_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 double _contrast(Color a, Color b) {
@@ -10,6 +11,23 @@ double _contrast(Color a, Color b) {
 }
 
 void main() {
+  group('AppTheme app bar', () {
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    test('is as tall as the navigation bar on iOS', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      expect(
+        AppTheme.light.appBarTheme.toolbarHeight,
+        AppControlSize.iosToolbar,
+      );
+    });
+
+    test("keeps Material's height on Android", () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      expect(AppTheme.light.appBarTheme.toolbarHeight, isNull);
+    });
+  });
+
   for (final (name, theme, brightness) in [
     ('light', AppTheme.light, Brightness.light),
     ('dark', AppTheme.dark, Brightness.dark),
@@ -53,6 +71,17 @@ void main() {
           minimum,
         );
         expect(theme.textButtonTheme.style?.minimumSize?.resolve({}), minimum);
+      });
+
+      test('call-to-action labels are body text, as in Swift', () {
+        expect(
+          theme.filledButtonTheme.style?.textStyle?.resolve({}),
+          AppTextStyles.rowTitle,
+        );
+      });
+
+      test('app bar titles are centred on both platforms', () {
+        expect(theme.appBarTheme.centerTitle, isTrue);
       });
 
       test('switches use the accent when on', () {

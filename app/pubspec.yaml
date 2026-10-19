@@ -109,7 +109,12 @@ dev_dependencies:
   # Staging's in-memory Firestore, imported only by main_staging.dart, so the
   # development and production builds never depend on it.
   fake_cloud_firestore: ^4.3.0
+  # The screenshot harness (integration_test/, test_driver/).
+  flutter_driver:
+    sdk: flutter
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
   mocktail: ^1.0.5
   very_good_analysis: ^11.0.0

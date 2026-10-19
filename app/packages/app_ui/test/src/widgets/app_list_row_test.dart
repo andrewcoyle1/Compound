@@ -10,7 +10,7 @@ void main() {
       'can hold on a phone, so a capped row would cut it short.';
 
   group('AppListRow', () {
-    testWidgets('shows title and subtitle, at least 44 pt tall', (
+    testWidgets('shows title and subtitle, at least 52 pt tall', (
       tester,
     ) async {
       await tester.pumpApp(
@@ -20,7 +20,7 @@ void main() {
       expect(find.text('Metric'), findsOneWidget);
       expect(
         tester.getSize(find.byType(AppListRow)).height,
-        greaterThanOrEqualTo(AppControlSize.row),
+        greaterThanOrEqualTo(AppControlSize.listRow),
       );
     });
 

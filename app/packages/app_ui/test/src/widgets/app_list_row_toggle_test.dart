@@ -33,6 +33,15 @@ void main() {
       );
       await tester.tap(find.byType(Switch));
       expect(changed, isFalse);
+      // The row is the tap target, so the switch adds no height of its own.
+      expect(
+        tester.widget<Switch>(find.byType(Switch)).materialTapTargetSize,
+        MaterialTapTargetSize.shrinkWrap,
+      );
+      expect(
+        tester.getSize(find.byType(AppListRow)).height,
+        AppControlSize.listRow,
+      );
       expect(
         tester.getSemantics(find.byType(AppListRowToggle)),
         isSemantics(label: 'Reminders', isToggled: true),
@@ -48,6 +57,26 @@ void main() {
         ),
       );
       expect(tester.widget<InkWell>(find.byType(InkWell)).onTap, isNull);
+    });
+
+    testWidgets('grows with large text and stays the tap target', (
+      tester,
+    ) async {
+      bool? changed;
+      await tester.pumpApp(
+        AppListRowToggle(
+          title: 'Reminders',
+          value: false,
+          onChanged: (value) => changed = value,
+        ),
+        textScale: 2,
+      );
+      expect(
+        tester.getSize(find.byType(AppListRow)).height,
+        greaterThan(AppControlSize.listRow),
+      );
+      await tester.tap(find.text('Reminders'));
+      expect(changed, isTrue);
     });
   });
 }

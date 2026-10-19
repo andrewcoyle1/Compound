@@ -64,6 +64,16 @@ abstract final class AppControlSize {
 
   /// The minimum tap target, on both platforms.
   static const double row = 44;
+
+  /// A list row's minimum height: iOS 26's inset-grouped row.
+  static const double listRow = 52;
+
+  /// A call-to-action button's minimum height (Swift's `CallToActionButton`).
+  static const double cta = 56;
+
+  /// The app bar's height on iOS, as its navigation bar. Android keeps
+  /// Material's 56.
+  static const double iosToolbar = 44;
 }
 
 /// Chart plot heights.

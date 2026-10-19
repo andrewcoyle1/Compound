@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:app_ui/app_ui.dart';
 import 'package:bloc/bloc.dart';
-import 'package:flutter/widgets.dart';
 
 class AppBlocObserver extends BlocObserver {
   const new();
@@ -24,6 +24,7 @@ class AppBlocObserver extends BlocObserver {
 /// and returns the root widget.
 Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppTextStyles.registerFontLicense();
 
   FlutterError.onError = (details) {
     log(details.exceptionAsString(), stackTrace: details.stack);

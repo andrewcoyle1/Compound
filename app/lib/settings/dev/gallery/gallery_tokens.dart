@@ -278,6 +278,11 @@ List<Widget> galleryTokens(BuildContext context) {
         ('arcWidth', AppChartMark.arcWidth),
         ('arcWidthSmall', AppChartMark.arcWidthSmall),
         ('lapShadowOpacity', AppChartMark.lapShadowOpacity),
+        ('bulletWidth', AppChartMark.bulletWidth),
+        ('bulletWidthSmall', AppChartMark.bulletWidthSmall),
+        ('tickWidth', AppChartMark.tickWidth),
+        ('tickOverhang', AppChartMark.tickOverhang),
+        ('caretSize', AppChartMark.caretSize),
       ])
         AppListRow(
           title: name,

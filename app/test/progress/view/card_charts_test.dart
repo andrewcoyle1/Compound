@@ -44,24 +44,6 @@ void main() {
       );
       await pumpChart(
         tester,
-        const ProgressBarChart(
-          current: 40,
-          maximum: 0,
-          target: 50,
-          color: Colors.red,
-        ),
-      );
-      await pumpChart(
-        tester,
-        const ProgressBarChart(
-          current: 60,
-          maximum: 180,
-          target: 150,
-          color: Colors.red,
-        ),
-      );
-      await pumpChart(
-        tester,
         const HabitGridChart(days: [true, false], color: Colors.pink),
       );
       await pumpChart(

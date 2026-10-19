@@ -195,6 +195,75 @@ List<Widget> galleryCharts(BuildContext context) {
       ])
         galleryBlock(caption, _plot(anchor, summary(rows))),
     ]),
+    galleryEntry('BulletBar', [
+      galleryBlock(
+        'at 0, 3%, 60% and full',
+        Column(
+          spacing: AppSpacing.m,
+          children: [
+            for (final value in [0.0, 0.03, 0.6, 1.0])
+              BulletBar(value: value, color: colors.workouts),
+          ],
+        ),
+      ),
+      galleryBlock(
+        'against a target: under, past it, and well over with the caret',
+        Column(
+          spacing: AppSpacing.m,
+          children: [
+            for (final value in [120.0, 180.0])
+              BulletBar(
+                value: value,
+                maximum: 200,
+                target: 150,
+                color: colors.protein,
+              ),
+            BulletBar(
+              value: 200,
+              maximum: 200,
+              target: 150,
+              over: true,
+              color: colors.protein,
+            ),
+          ],
+        ),
+      ),
+      galleryBlock(
+        'thin, eaten and what is left',
+        Column(
+          spacing: AppSpacing.m,
+          children: [
+            for (final (from, value) in [(0.0, 0.65), (0.65, 1.0)])
+              BulletBar(
+                from: from,
+                value: value,
+                thickness: AppChartMark.bulletWidthSmall,
+                color: colors.carbs,
+              ),
+          ],
+        ),
+      ),
+      galleryBlock(
+        'vertical days against a tick, one well over',
+        SizedBox(
+          height: AppControlSize.cta,
+          child: Row(
+            spacing: AppSpacing.s,
+            children: [
+              for (final value in [0.0, 1500.0, 2100.0, 3000.0])
+                BulletBar(
+                  value: value,
+                  maximum: 3000,
+                  target: 2200,
+                  over: value > 2200 * 1.1,
+                  direction: Axis.vertical,
+                  color: colors.calories,
+                ),
+            ],
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('ProgressArc', [
       galleryBlock(
         'rings at 0, 60%, 100% and 140% (a second lap)',

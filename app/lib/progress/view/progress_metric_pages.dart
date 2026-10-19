@@ -11,13 +11,13 @@ import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/progress/bloc/progress_figures.dart';
 import 'package:compound/progress/logic/progress_overview.dart'
     show goalFraction;
-import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/progress/view/progress_cards.dart';
 import 'package:compound/progress/view/progress_metric_view.dart';
 import 'package:compound/progress/view/progress_provider.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/training_analytics/view/workout_consistency_page.dart'
     show ContributionGrid;
+import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_models/compound_models.dart'
     show BodyMeasurementEntryKeys, WeightGoal;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -340,12 +340,10 @@ class GoalProgressHeader extends StatelessWidget {
           AppFormat.percent(fraction, locale: locale),
           style: AppTextStyles.metricLarge,
         ),
-        SizedBox(
-          height: AppSpacing.l,
-          child: ProgressBarChart(
-            current: fraction * 100,
-            maximum: 100,
-            target: 100,
+        // The percentage above already says how far.
+        ExcludeSemantics(
+          child: BulletBar(
+            value: fraction,
             color: Theme.of(context).colorScheme.primary,
           ),
         ),

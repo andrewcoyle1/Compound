@@ -151,7 +151,14 @@ void main() {
       expect(find.byType(Sparkline), findsNWidgets(7));
       expect(find.byType(HabitGridChart), findsNWidgets(2));
       expect(find.byType(StackedBars), findsNWidgets(5));
-      expect(find.byType(ProgressBarChart), findsNWidgets(2));
+      // Goal Progress and Protein.
+      expect(
+        find.descendant(
+          of: find.byType(ProgressCard),
+          matching: find.byType(BulletBar),
+        ),
+        findsNWidgets(2),
+      );
     });
 
     testWidgets('an empty tab reads as absent, not zero', (tester) async {
@@ -424,6 +431,76 @@ void main() {
       expect(find.text('Active Program'), findsNothing);
       expect(find.textContaining('target'), findsNothing);
     });
+
+    testWidgets('the week runs a bar up each day to its target, a caret '
+        'over any day well past it', (tester) async {
+      await pumpView(tester);
+      final bars = tester.widgetList<BulletBar>(
+        find.descendant(
+          of: find.byType(NutritionTargetChart),
+          matching: find.byType(BulletBar),
+        ),
+      );
+      // Four rows of seven days.
+      expect(bars, hasLength(28));
+      for (final bar in bars) {
+        expect(bar.direction, Axis.vertical);
+        expect(bar.over, showsCaret(bar.value, bar.target!));
+      }
+    });
+
+    testWidgets("daily nutrition's macro bars show what is left", (
+      tester,
+    ) async {
+      await pumpView(tester);
+      await nextPage(tester);
+      List<BulletBar> bars() => tester
+          .widgetList<BulletBar>(
+            find.descendant(
+              of: find.byType(ProgressCarousel),
+              matching: find.byType(BulletBar),
+            ),
+          )
+          .toList();
+      final eaten = [for (final bar in bars()) bar.value];
+      expect(eaten, hasLength(3));
+      await tester.tap(find.text('Remaining').last);
+      await tester.pumpAndSettle();
+      for (final (i, bar) in bars().indexed) {
+        expect(bar.from, eaten[i]);
+        expect(bar.value, 1);
+      }
+    });
+
+    for (final (scale, beside) in [(1.0, true), (2.0, false)]) {
+      testWidgets('records at ${scale * 100}% text put each name '
+          '${beside ? 'beside' : 'above'} its bar, and nothing '
+          'overflows', (tester) async {
+        await pumpView(tester, textScale: scale);
+        for (var page = 0; page < 4; page++) {
+          await nextPage(tester);
+        }
+        final name = find.text('Cable Y-Raise');
+        final bar = find
+            .descendant(
+              of: find.byType(ProgressCarousel),
+              matching: find.byType(BulletBar),
+            )
+            .first;
+        if (beside) {
+          expect(
+            tester.getCenter(name).dy,
+            closeTo(tester.getCenter(bar).dy, 1),
+          );
+        } else {
+          expect(
+            tester.getBottomLeft(name).dy,
+            lessThanOrEqualTo(tester.getTopLeft(bar).dy),
+          );
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
 
     testWidgets('records without a workout say so', (tester) async {
       await pumpView(tester, empty: true);

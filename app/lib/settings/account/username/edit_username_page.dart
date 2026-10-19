@@ -83,17 +83,12 @@ class _EditUsernameViewState extends State<EditUsernameView> {
   void _onFailure(BuildContext context, EditUsernameState state) {
     final l10n = context.l10n;
     unawaited(HapticFeedback.heavyImpact());
-    showAdaptiveDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(l10n.usernameSaveFailedTitle),
-        content: Text(l10n.usernameSaveFailedMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.settingsOk),
-          ),
-        ],
+    unawaited(
+      showAppDialog<void>(
+        context: context,
+        title: l10n.usernameSaveFailedTitle,
+        message: l10n.usernameSaveFailedMessage,
+        actions: [AppDialogAction(label: l10n.settingsOk)],
       ),
     );
   }
@@ -120,17 +115,11 @@ class _EditUsernameViewState extends State<EditUsernameView> {
         appBar: AppBar(
           title: Text(l10n.usernameTitle),
           actions: [
-            if (state.isSaving)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                child: Center(child: CircularProgressIndicator.adaptive()),
-              )
-            else
-              IconButton(
-                icon: const Icon(AppSymbols.selected),
-                tooltip: l10n.usernameSave,
-                onPressed: state.canSave ? _save : null,
-              ),
+            AppToolbarButton.confirm(
+              semanticLabel: l10n.usernameSave,
+              isSaving: state.isSaving,
+              onPressed: state.canSave ? _save : null,
+            ),
           ],
         ),
         body: SafeArea(

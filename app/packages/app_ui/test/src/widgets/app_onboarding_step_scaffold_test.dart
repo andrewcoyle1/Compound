@@ -47,6 +47,40 @@ void main() {
       expect((primary, secondary), (1, 1));
     });
 
+    testWidgets('draws its title large, then in the bar once scrolled', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        AppOnboardingStepScaffold(
+          title: 'About You',
+          primaryLabel: 'Continue',
+          onPrimaryPressed: null,
+          children: [for (var i = 0; i < 30; i++) Text('Option $i')],
+        ),
+        scaffold: false,
+      );
+      final large = find.descendant(
+        of: find.byType(NestedScrollView),
+        matching: find.text('About You'),
+      );
+      expect(
+        tester.widget<Text>(large).style?.fontSize,
+        AppTextStyles.display.fontSize,
+      );
+      double barTitleOpacity() => tester
+          .widget<AnimatedOpacity>(
+            find.descendant(
+              of: find.byType(AppBar),
+              matching: find.byType(AnimatedOpacity),
+            ),
+          )
+          .opacity;
+      expect(barTitleOpacity(), 0);
+      await tester.drag(find.text('Option 5'), const Offset(0, -300));
+      await tester.pumpAndSettle();
+      expect(barTitleOpacity(), 1);
+    });
+
     testWidgets('keeps its button above the keyboard', (tester) async {
       tester.view.viewInsets = const FakeViewPadding(bottom: 900);
       addTearDown(tester.view.resetViewInsets);

@@ -176,7 +176,7 @@ class StravaActivityRow extends StatelessWidget {
         onTap: () =>
             unawaited(context.read<LinkOpener>().open(activity.stravaUri)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 44),
+          constraints: const BoxConstraints(minHeight: AppControlSize.row),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: AppSpacing.xxs,

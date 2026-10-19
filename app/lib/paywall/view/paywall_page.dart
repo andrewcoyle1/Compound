@@ -138,17 +138,12 @@ class _PaywallViewState extends State<PaywallView> {
         l10n.paywallLoadFailedMessage,
       ),
     };
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.settingsOk),
-          ),
-        ],
+    unawaited(
+      showAppDialog<void>(
+        context: context,
+        title: title,
+        message: message,
+        actions: [AppDialogAction(label: l10n.settingsOk)],
       ),
     );
   }
@@ -178,7 +173,9 @@ class _PaywallViewState extends State<PaywallView> {
         appBar: AppBar(
           leading: widget.isOnboarding
               ? null
-              : CloseButton(
+              : AppToolbarButton.close(
+                  semanticLabel: MaterialLocalizations.of(context)
+                      .closeButtonTooltip,
                   onPressed: () {
                     _cubit.closePressed();
                     context.pop();
@@ -214,9 +211,7 @@ class _PaywallViewState extends State<PaywallView> {
         body: switch (state.load) {
           _ when _cubit.state.variant == PaywallTestOption.revenueCat =>
             const _RevenueCatPaywall(),
-          PaywallLoad.loading => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
+          PaywallLoad.loading => AppLoadingView(label: l10n.launchLoading),
           PaywallLoad.failed || PaywallLoad.empty => _LoadFailed(
             message: state.load == PaywallLoad.empty
                 ? l10n.paywallNoProducts
@@ -240,36 +235,91 @@ class _LoadFailed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Center(
-      child: SingleChildScrollView(
+    return AppErrorState(
+      title: l10n.paywallLoadFailedTitle,
+      description: message,
+      actionLabel: l10n.tryAgainButton,
+      onAction: () => unawaited(context.read<PaywallCubit>().loadProducts()),
+    );
+  }
+}
+
+/// The product name and its line on a card tinted with the accent (Swift's
+/// hero card, in the app's own neutral look).
+class _Hero extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = Theme.of(context).colorScheme;
+    return AppCard(
+      style: AppCardStyle.tinted(colors.primary),
+      child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.m,
+          spacing: AppSpacing.s,
           children: [
-            Icon(
-              AppSymbols.error,
-              size: 48,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            // One product name everywhere, and no trial wording: there is
+            // no trial.
+            // One word: shrunk to fit at large text sizes rather than broken.
+            Semantics(
+              header: true,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  l10n.paywallTitle,
+                  style: AppTextStyles.display.copyWith(
+                    color: colors.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
             Text(
-              l10n.paywallLoadFailedTitle,
-              style: AppTextStyles.sectionTitle,
+              l10n.paywallSubtitle,
+              style: AppTextStyles.rowDetail.copyWith(color: colors.onSurface),
               textAlign: TextAlign.center,
-            ),
-            Text(
-              message,
-              style: AppTextStyles.rowDetail,
-              textAlign: TextAlign.center,
-            ),
-            AppCtaButton(
-              label: l10n.tryAgainButton,
-              onPressed: () =>
-                  unawaited(context.read<PaywallCubit>().loadProducts()),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The plans, one card each; the chosen one is tinted with the accent as
+/// well as ticked (Swift outlines it).
+class _PlanCards extends StatelessWidget {
+  const new({required this.state, required this.subtitle});
+
+  final PaywallState state;
+  final String Function(SubscriptionProduct) subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<PaywallCubit>();
+    final primary = Theme.of(context).colorScheme.primary;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.m,
+      children: [
+        for (final product in state.products)
+          AppCard(
+            style: product == state.selected
+                ? AppCardStyle.tinted(primary)
+                : AppCardStyle.tile,
+            child: AppSelectableRow(
+              title: product.title,
+              subtitle: subtitle(product),
+              selected: product == state.selected,
+              onPressed: () {
+                unawaited(HapticFeedback.selectionClick());
+                cubit.productSelected(product);
+              },
+            ),
+          ),
+      ],
     );
   }
 }
@@ -297,40 +347,16 @@ class _Plans extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cubit = context.read<PaywallCubit>();
-    final colors = Theme.of(context).colorScheme;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
-        // One product name everywhere, and no trial wording: there is no
-        // trial.
-        Text(
-          l10n.paywallTitle,
-          style: AppTextStyles.display.copyWith(color: colors.primary),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: AppSpacing.s),
-        Text(
-          l10n.paywallSubtitle,
-          style: AppTextStyles.rowDetail,
-          textAlign: TextAlign.center,
-        ),
+        const _Hero(),
         const SizedBox(height: AppSpacing.xl),
         // The plans first, so the price and the choice need no scrolling.
-        AppSection(
-          children: [
-            for (final product in state.products)
-              AppSelectableRow(
-                title: product.title,
-                subtitle:
-                    '${priceWithPeriod(l10n, product)}\n${product.subtitle}',
-                selected: product == state.selected,
-                onPressed: () {
-                  unawaited(HapticFeedback.selectionClick());
-                  cubit.productSelected(product);
-                },
-              ),
-          ],
+        _PlanCards(
+          state: state,
+          subtitle: (product) =>
+              '${priceWithPeriod(l10n, product)}\n${product.subtitle}',
         ),
         const SizedBox(height: AppSpacing.xl),
         AppSection(
@@ -344,8 +370,8 @@ class _Plans extends StatelessWidget {
 
 /// The `storeKit` variant. Swift shows StoreKit's own subscription screen,
 /// which Flutter has no free equivalent for (and Google Play none at all),
-/// so this draws its layout: the name and a line on the accent, then the
-/// plans to pick from, with Subscribe, Restore and the policies below.
+/// so this draws its layout: the name and a line, then the plans to pick
+/// from, with Subscribe, Restore and the policies below.
 class _StorePlans extends StatelessWidget {
   const new({required this.state});
 
@@ -354,57 +380,14 @@ class _StorePlans extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cubit = context.read<PaywallCubit>();
-    final colors = Theme.of(context).colorScheme;
     return ListView(
+      padding: const EdgeInsets.all(AppSpacing.l),
       children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [colors.primary, colors.primary.withValues(alpha: 0.7)],
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              spacing: AppSpacing.s,
-              children: [
-                Text(
-                  l10n.paywallTitle,
-                  style: AppTextStyles.display.copyWith(
-                    color: colors.onPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  l10n.paywallSubtitle,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: colors.onPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: AppSection(
-            children: [
-              for (final product in state.products)
-                AppSelectableRow(
-                  title: product.title,
-                  subtitle: priceWithPeriod(l10n, product),
-                  selected: product == state.selected,
-                  onPressed: () {
-                    unawaited(HapticFeedback.selectionClick());
-                    cubit.productSelected(product);
-                  },
-                ),
-            ],
-          ),
+        const _Hero(),
+        const SizedBox(height: AppSpacing.xl),
+        _PlanCards(
+          state: state,
+          subtitle: (product) => priceWithPeriod(l10n, product),
         ),
       ],
     );
@@ -479,13 +462,15 @@ class _PurchaseBar extends StatelessWidget {
           alignment: WrapAlignment.center,
           spacing: AppSpacing.l,
           children: [
-            TextButton(
+            AppTextButton(
+              label: l10n.legalTermsOfService,
               onPressed: onLegalPressed,
-              child: Text(l10n.legalTermsOfService),
+              isSmall: true,
             ),
-            TextButton(
+            AppTextButton(
+              label: l10n.legalPrivacyPolicy,
               onPressed: onLegalPressed,
-              child: Text(l10n.legalPrivacyPolicy),
+              isSmall: true,
             ),
           ],
         ),

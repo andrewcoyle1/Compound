@@ -1020,17 +1020,12 @@ class _AppViewState extends State<AppView> {
     final context = _router.routerDelegate.navigatorKey.currentContext;
     if (context == null) return;
     final l10n = context.l10n;
-    showAdaptiveDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(l10n.offlineTitle),
-        content: Text(l10n.offlineMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.settingsOk),
-          ),
-        ],
+    unawaited(
+      showAppDialog<void>(
+        context: context,
+        title: l10n.offlineTitle,
+        message: l10n.offlineMessage,
+        actions: [AppDialogAction(label: l10n.settingsOk)],
       ),
     );
   }
@@ -1044,6 +1039,8 @@ class _AppViewState extends State<AppView> {
     } else if (notice == SaveProgress.saved) {
       unawaited(HapticFeedback.successNotification());
     }
+    // How long the notice stays, not an animation: a failure longer.
+    final shownFor = Duration(seconds: notice == SaveProgress.failed ? 8 : 6);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -1053,7 +1050,7 @@ class _AppViewState extends State<AppView> {
             SaveProgress.saved => l10n.saveSaved,
             SaveProgress.failed => l10n.saveFailed,
           }),
-          duration: Duration(seconds: notice == SaveProgress.failed ? 8 : 6),
+          duration: shownFor,
         ),
       );
   }

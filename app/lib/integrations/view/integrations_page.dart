@@ -5,8 +5,6 @@ import 'package:compound/check_in/view/check_in_page.dart'
     show showFailureAlert;
 import 'package:compound/integrations/cubit/strava_cubit.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:compound/programs/view/program_widgets.dart'
-    show confirmDestructive;
 import 'package:compound/settings/general/view/on_dispose.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -95,9 +93,10 @@ class IntegrationsView extends StatelessWidget {
                           )
                         : state.available && athlete == null
                         ? AppListRowCustom(
-                            TextButton(
+                            AppCtaButton(
+                              label: l10n.stravaConnect,
+                              size: AppCtaSize.compact,
                               onPressed: () => unawaited(cubit.connect()),
-                              child: Text(l10n.stravaConnect),
                             ),
                           )
                         : null,
@@ -123,10 +122,12 @@ class IntegrationsView extends StatelessWidget {
                         accessory: AppListRowCustom(
                           state.isTestingUpload
                               ? const CircularProgressIndicator.adaptive()
-                              : TextButton(
+                              : AppCtaButton(
+                                  label: l10n.stravaTestUpload,
+                                  size: AppCtaSize.compact,
+                                  variant: AppCtaVariant.secondary,
                                   onPressed: () =>
                                       unawaited(cubit.testUpload()),
-                                  child: Text(l10n.stravaTestUpload),
                                 ),
                         ),
                       ),
@@ -153,7 +154,7 @@ class IntegrationsView extends StatelessWidget {
   static Future<void> _disconnect(BuildContext context) async {
     final l10n = context.l10n;
     final cubit = context.read<StravaCubit>();
-    if (await confirmDestructive(
+    if (await AppDialog.confirmDestructive(
       context,
       title: l10n.stravaDisconnectTitle,
       message: l10n.stravaDisconnectMessage,
@@ -232,22 +233,22 @@ String stravaFailureText(AppLocalizations l10n, StravaFailure? failure) =>
 Future<void> _offerBackfill(BuildContext context, int count) async {
   final l10n = context.l10n;
   final cubit = context.read<StravaCubit>();
-  final upload = await showDialog<bool>(
+  final upload = await showAppDialog<bool>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text(l10n.stravaBackfillTitle(count)),
-      content: Text(l10n.stravaBackfillMessage),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(l10n.stravaNotNow),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(l10n.stravaUploadPastWorkouts),
-        ),
-      ],
-    ),
+    title: l10n.stravaBackfillTitle(count),
+    message: l10n.stravaBackfillMessage,
+    actions: [
+      AppDialogAction(
+        label: l10n.stravaNotNow,
+        value: false,
+        role: AppDialogRole.cancel,
+      ),
+      AppDialogAction(
+        label: l10n.stravaUploadPastWorkouts,
+        value: true,
+        role: AppDialogRole.preferred,
+      ),
+    ],
   );
   if (upload ?? false) await cubit.backfill();
 }

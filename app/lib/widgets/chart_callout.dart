@@ -180,10 +180,8 @@ class ChartCalloutSummary extends StatelessWidget {
           const Divider(height: 1),
           Text(
             footer,
-            style: AppTextStyles.label.copyWith(
-              color: secondary,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.emphasized(AppTextStyles.label)
+                .copyWith(color: secondary),
           ),
         ],
       ),

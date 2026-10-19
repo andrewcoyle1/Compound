@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
@@ -59,16 +61,10 @@ class MethodsAndSourcesView extends StatelessWidget {
 
   static void _open(BuildContext context, String id, MethodInfo info) {
     context.read<ScreenTrackingCubit>().pressed('Method_Press', {'method': id});
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: (_) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        builder: (_, controller) =>
-            MethodInfoSheet(info: info, controller: controller),
+    unawaited(
+      showAppSheet<void>(
+        context: context,
+        builder: (_) => MethodInfoSheet(info: info),
       ),
     );
   }

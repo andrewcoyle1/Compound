@@ -91,6 +91,14 @@ List<Widget> galleryButtons(BuildContext context) {
           onPressed: galleryNoop,
         ),
       ),
+      galleryInline(
+        'isSmall',
+        AppTextButton(
+          label: l10n.devGallerySampleTextAction,
+          isSmall: true,
+          onPressed: galleryNoop,
+        ),
+      ),
     ]),
     galleryEntry('AppIconButton', [
       galleryInline(
@@ -383,7 +391,8 @@ List<Widget> galleryRows(BuildContext context) {
   ];
 }
 
-/// [AppSearchField], [AppNumberField] and [AppSegmentedControl].
+/// [AppSearchField], [AppNumberField], [AppTextFieldRow] and
+/// [AppSegmentedControl].
 List<Widget> galleryInputs(BuildContext context) {
   final l10n = context.l10n;
   final units = [for (final unit in AppWeightUnit.values) unit.symbol];
@@ -462,6 +471,31 @@ List<Widget> galleryInputs(BuildContext context) {
             onUnitChanged: update,
             onChanged: (_) {},
           ),
+        ),
+      ),
+    ]),
+    galleryEntry('AppTextFieldRow', [
+      galleryBlock(
+        'empty',
+        AppSection(
+          children: [
+            AppTextFieldRow(
+              label: l10n.devGallerySampleTitle,
+              onChanged: (_) {},
+            ),
+          ],
+        ),
+      ),
+      galleryBlock(
+        'initialValue',
+        AppSection(
+          children: [
+            AppTextFieldRow(
+              label: l10n.devGallerySampleTitle,
+              initialValue: l10n.devGallerySampleSubtitle,
+              onChanged: (_) {},
+            ),
+          ],
         ),
       ),
     ]),

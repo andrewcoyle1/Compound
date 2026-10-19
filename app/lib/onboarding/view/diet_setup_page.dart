@@ -66,9 +66,7 @@ class DietSetupView extends StatelessWidget {
     final step = state.isFromSettings ? null : OnboardingStep.customiseProgram;
 
     final question = state.status == DietSetupStatus.loading
-        ? const AppScaffold(
-            body: Center(child: CircularProgressIndicator.adaptive()),
-          )
+        ? AppScaffold(body: AppLoadingView(label: l10n.launchLoading))
         : switch (state.question) {
             DietQuestion.intro => OnboardingQuestion(
               step: step,

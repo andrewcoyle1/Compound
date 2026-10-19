@@ -19,6 +19,7 @@ class AppTextButton extends StatelessWidget {
     required this.onPressed,
     this.isDestructive = false,
     this.inline = false,
+    this.isSmall = false,
     super.key,
   });
 
@@ -34,6 +35,10 @@ class AppTextButton extends StatelessWidget {
   /// Whether it is a link inside content, lined up with the text above.
   final bool inline;
 
+  /// Whether the label is drawn at [AppTextStyles.label] size, for a link
+  /// in a footnote such as Terms of Service. The tap target stays 44 pt.
+  final bool isSmall;
+
   @override
   Widget build(BuildContext context) => TextButton(
     onPressed: onPressed,
@@ -48,7 +53,11 @@ class AppTextButton extends StatelessWidget {
       alignment: inline ? AlignmentDirectional.centerStart : null,
       // Padding the target out to 48 would centre the text in it.
       tapTargetSize: inline ? MaterialTapTargetSize.shrinkWrap : null,
-      textStyle: inline ? AppTextStyles.rowDetail.semibold : null,
+      textStyle: inline
+          ? AppTextStyles.rowDetail.semibold
+          : isSmall
+          ? AppTextStyles.label
+          : null,
     ),
     child: Text(label),
   );

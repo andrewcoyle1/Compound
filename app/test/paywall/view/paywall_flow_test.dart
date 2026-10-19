@@ -208,7 +208,7 @@ void main() {
     expect(location(tester), '/paywall');
 
     // Closing it buys nothing.
-    await tap(tester, find.byType(CloseButton));
+    await tap(tester, find.byIcon(AppSymbols.close));
     expect(location(tester), '/profile/settings');
 
     await tap(tester, find.text('Subscription'));

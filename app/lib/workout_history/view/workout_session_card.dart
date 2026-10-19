@@ -263,7 +263,6 @@ class _Capsule extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = AppTextStyles.label.copyWith(
-      fontWeight: FontWeight.w500,
       color: Theme.of(context).colorScheme.onSurface,
     );
     return DecoratedBox(

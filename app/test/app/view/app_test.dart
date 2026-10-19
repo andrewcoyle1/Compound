@@ -705,6 +705,7 @@ void main() {
       await tester.tap(find.text('Push B'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Push B'), findsOneWidget);
+      await reveal(tester, find.text('Dumbbell Seated Shoulder Press'));
       expect(find.text('Dumbbell Seated Shoulder Press'), findsOneWidget);
 
       await tester.pageBack();

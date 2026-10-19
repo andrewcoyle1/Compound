@@ -44,8 +44,8 @@ class WorkoutHistoryView extends StatelessWidget {
     return AppScaffold(
       appBar: AppBar(title: Text(context.l10n.workoutHistoryTitle)),
       body: switch (state) {
-        WorkoutHistoryLoading() => const Center(
-          child: CircularProgressIndicator.adaptive(),
+        WorkoutHistoryLoading() => AppLoadingView(
+          label: context.l10n.launchLoading,
         ),
         WorkoutHistoryFailure() => const _Failure(),
         WorkoutHistoryLoaded(:final entries) when entries.isEmpty =>
@@ -104,32 +104,10 @@ class _Empty extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: [
-            Icon(
-              AppSymbols.history,
-              size: AppIconSize.hero.of(context),
-              color: secondary,
-            ),
-            Text(
-              l10n.workoutHistoryEmptyTitle,
-              style: AppTextStyles.sectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              l10n.workoutHistoryEmptyMessage,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+    return AppEmptyState(
+      icon: AppSymbols.history,
+      title: l10n.workoutHistoryEmptyTitle,
+      description: l10n.workoutHistoryEmptyMessage,
     );
   }
 }
@@ -140,26 +118,11 @@ class _Failure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.l,
-          children: [
-            AppInlineMessage(
-              kind: AppInlineMessageKind.error,
-              text: l10n.workoutHistoryLoadFailure,
-              kindLabel: l10n.errorLabel,
-            ),
-            TextButton(
-              onPressed: () => context.read<WorkoutHistoryBloc>().add(
-                const WorkoutHistorySubscriptionRequested(),
-              ),
-              child: Text(l10n.tryAgainButton),
-            ),
-          ],
-        ),
+    return AppErrorState(
+      title: l10n.workoutHistoryLoadFailure,
+      actionLabel: l10n.tryAgainButton,
+      onAction: () => context.read<WorkoutHistoryBloc>().add(
+        const WorkoutHistorySubscriptionRequested(),
       ),
     );
   }

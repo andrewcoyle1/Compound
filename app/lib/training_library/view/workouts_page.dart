@@ -61,10 +61,10 @@ class WorkoutsView extends StatelessWidget {
     return AppScaffold(
       appBar: AppBar(
         actions: [
-          IconButton(
+          AppToolbarButton(
             key: const Key('Workouts.add'),
-            icon: const Icon(AppSymbols.add),
-            tooltip: l10n.editorNewWorkout,
+            icon: AppSymbols.add,
+            semanticLabel: l10n.editorNewWorkout,
             onPressed: () {
               context.read<LibrarySearchCubit>().addWorkoutPressed();
               unawaited(NameWorkoutPage.create(context));
@@ -105,8 +105,8 @@ class WorkoutsView extends StatelessWidget {
             ),
             Expanded(
               child: switch (state) {
-                TrainingLibraryLoading() => const Center(
-                  child: CircularProgressIndicator.adaptive(),
+                TrainingLibraryLoading() => AppLoadingView(
+                  label: context.l10n.launchLoading,
                 ),
                 TrainingLibraryFailure() => LibraryFailure(
                   message: l10n.workoutsLoadFailure,
@@ -260,8 +260,7 @@ class WorkoutRow extends StatelessWidget {
                   children: [
                     Text(
                       workout.name,
-                      style: AppTextStyles.rowTitle.copyWith(
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.sectionTitle.copyWith(
                         color: scheme.onSurface,
                       ),
                     ),

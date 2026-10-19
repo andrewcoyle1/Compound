@@ -134,10 +134,32 @@ class NutritionView extends StatelessWidget {
       ],
       child: AppScaffold(
         largeTitle: l10n.tabNutrition,
+        // Swift's order: the coach, +, the calendar, then the profile.
         actions: [
-          IconButton(
-            icon: const Icon(AppSymbols.calendar),
-            tooltip: l10n.calendarShow,
+          AskCoachButton(
+            CoachContext(
+              kind: CoachContextKind.nutritionDay,
+              date: dayKeyOf(state.selectedDay),
+              title: AppFormat.date(
+                state.selectedDay,
+                locale: context.dateLocale,
+              ),
+            ),
+          ),
+          AppToolbarButton(
+            icon: AppSymbols.add,
+            semanticLabel: l10n.nutritionLogMeal,
+            onPressed: () => openMealLogger(
+              context,
+              date: toolbarMealDate(
+                selectedDay: state.selectedDay,
+                now: DateTime.now(),
+              ),
+            ),
+          ),
+          AppToolbarButton(
+            icon: AppSymbols.calendar,
+            semanticLabel: l10n.calendarShow,
             onPressed: () => unawaited(
               CalendarHeader.showCalendar(
                 context,
@@ -147,37 +169,6 @@ class NutritionView extends StatelessWidget {
                 onDaySelected: (day) => context.read<NutritionDayBloc>().add(
                   NutritionDayDateSelected(day),
                 ),
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(AppSymbols.add),
-            tooltip: l10n.nutritionLogMeal,
-            onPressed: () => openMealLogger(
-              context,
-              date: toolbarMealDate(
-                selectedDay: state.selectedDay,
-                now: DateTime.now(),
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(AppSymbols.analytics),
-            tooltip: l10n.nutritionOverviewTitle,
-            onPressed: () => context.goNamed(
-              NutritionOverviewPage.name,
-              queryParameters: {
-                NutritionOverviewPage.dayParameter: dayKeyOf(state.selectedDay),
-              },
-            ),
-          ),
-          AskCoachButton(
-            CoachContext(
-              kind: CoachContextKind.nutritionDay,
-              date: dayKeyOf(state.selectedDay),
-              title: AppFormat.date(
-                state.selectedDay,
-                locale: context.dateLocale,
               ),
             ),
           ),
@@ -206,10 +197,10 @@ class NutritionView extends StatelessWidget {
               child: search.isSearching
                   ? _SearchResults(state: search)
                   : switch (state.status) {
-                      NutritionDayStatus.loading => const Center(
-                        child: CircularProgressIndicator.adaptive(),
+                      NutritionDayStatus.loading => AppLoadingView(
+                        label: l10n.launchLoading,
                       ),
-                      NutritionDayStatus.failure => _Message(
+                      NutritionDayStatus.failure => AppErrorState(
                         title: l10n.nutritionDayLoadFailed,
                       ),
                       NutritionDayStatus.loaded => _Day(state: state),
@@ -254,9 +245,9 @@ class _Day extends StatelessWidget {
                 ),
               ),
               if (state.selectedDay != state.today)
-                TextButton(
+                AppTextButton(
+                  label: l10n.nutritionToday,
                   onPressed: () => select(state.today),
-                  child: Text(l10n.nutritionToday),
                 ),
             ],
           ),
@@ -275,21 +266,19 @@ class _Day extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
               if (timeline.isEmpty)
-                _Message(
+                AppEmptyState(
+                  icon: AppSymbols.meal,
                   title: l10n.nutritionNothingLoggedTitle,
-                  message: l10n.nutritionNothingLoggedMessage,
-                  scrolls: false,
+                  description: l10n.nutritionNothingLoggedMessage,
                   // With Hide Empty Hours on there are no hour buttons;
                   // this keeps the day's one job reachable.
-                  action: FilledButton(
-                    onPressed: () => openMealLogger(
-                      context,
-                      date: toolbarMealDate(
-                        selectedDay: state.selectedDay,
-                        now: DateTime.now(),
-                      ),
+                  actionLabel: l10n.nutritionLogMeal,
+                  onAction: () => openMealLogger(
+                    context,
+                    date: toolbarMealDate(
+                      selectedDay: state.selectedDay,
+                      now: DateTime.now(),
                     ),
-                    child: Text(l10n.nutritionLogMeal),
                   ),
                 ),
               for (final hour in timeline) ...[
@@ -365,6 +354,20 @@ class _Day extends StatelessWidget {
                       showTimelineActions(context, state.selectedDay),
                     ),
                   ),
+                  // A row, as in Swift, rather than a fifth toolbar button.
+                  AppListRowButton(
+                    key: const Key('Nutrition.overview'),
+                    title: l10n.nutritionOverviewTitle,
+                    icon: AppSymbols.nutrition,
+                    onPressed: () => context.goNamed(
+                      NutritionOverviewPage.name,
+                      queryParameters: {
+                        NutritionOverviewPage.dayParameter: dayKeyOf(
+                          state.selectedDay,
+                        ),
+                      },
+                    ),
+                  ),
                   // Swift's `onCustomiseFoodLogPressed`, which logs no
                   // event of its own.
                   AppListRowButton(
@@ -411,10 +414,10 @@ class _SearchResults extends StatelessWidget {
     final recipes = state.matchingRecipes;
     final foods = state.matchingFoods;
     if (recipes.isEmpty && foods.isEmpty) {
-      return LibraryEmptyState(
+      return AppEmptyState(
         icon: AppSymbols.search,
         title: l10n.searchNoResults(state.query.trim()),
-        message: l10n.searchNoResultsMessage,
+        description: l10n.searchNoResultsMessage,
       );
     }
     return LibrarySections(
@@ -447,57 +450,5 @@ class _SearchResults extends StatelessWidget {
           ),
       ],
     );
-  }
-}
-
-/// An empty or failed state: the meal glyph, a title and an optional line.
-class _Message extends StatelessWidget {
-  const new({
-    required this.title,
-    this.message,
-    this.action,
-    this.scrolls = true,
-  });
-
-  final String title;
-  final String? message;
-  final Widget? action;
-
-  /// Whether it centres and scrolls itself; false inside a list.
-  final bool scrolls;
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    final message = this.message;
-    final column = Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        spacing: AppSpacing.s,
-        children: [
-          Icon(
-            AppSymbols.meal,
-            size: AppIconSize.hero.of(context),
-            color: secondary,
-          ),
-          Text(
-            title,
-            style: AppTextStyles.sectionTitle,
-            textAlign: TextAlign.center,
-          ),
-          if (message != null)
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-          ?action,
-        ],
-      ),
-    );
-    return scrolls
-        ? Center(child: SingleChildScrollView(child: column))
-        : column;
   }
 }

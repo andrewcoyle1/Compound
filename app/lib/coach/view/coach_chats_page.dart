@@ -9,7 +9,6 @@ import 'package:compound/coach/cubit/coach_chats_cubit.dart';
 import 'package:compound/coach/cubit/coach_cubit.dart';
 import 'package:compound/coach/view/coach_page.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/relative_time.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -74,27 +73,14 @@ class _CoachChatsViewState extends State<CoachChatsView> {
 
   Future<void> _withdraw() async {
     final l10n = context.l10n;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.coachWithdrawTitle),
-        content: Text(l10n.coachWithdrawMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.coachCancel),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.coachWithdrawConfirm),
-          ),
-        ],
-      ),
+    final confirmed = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.coachWithdrawTitle,
+      message: l10n.coachWithdrawMessage,
+      confirmLabel: l10n.coachWithdrawConfirm,
+      cancelLabel: l10n.coachCancel,
     );
-    if (confirmed ?? false) await _cubit.withdrawConfirmed();
+    if (confirmed) await _cubit.withdrawConfirmed();
   }
 
   @override
@@ -102,7 +88,6 @@ class _CoachChatsViewState extends State<CoachChatsView> {
     final l10n = context.l10n;
     final state = context.watch<CoachChatsCubit>().state;
     final chats = state.chats;
-    final scheme = Theme.of(context).colorScheme;
     return BlocListener<CoachChatsCubit, CoachChatsState>(
       listenWhen: (previous, current) => current.noticeId != previous.noticeId,
       listener: (context, state) => switch (state.notice) {
@@ -129,9 +114,9 @@ class _CoachChatsViewState extends State<CoachChatsView> {
         appBar: AppBar(
           title: Text(l10n.coachChatsTitle),
           actions: [
-            IconButton(
-              icon: const Icon(AppSymbols.add),
-              tooltip: l10n.coachNewChat,
+            AppToolbarButton(
+              icon: AppSymbols.add,
+              semanticLabel: l10n.coachNewChat,
               onPressed: () {
                 _cubit.newChatPressed();
                 _open(
@@ -145,15 +130,15 @@ class _CoachChatsViewState extends State<CoachChatsView> {
           ],
         ),
         body: chats == null
-            ? const Center(child: CircularProgressIndicator.adaptive())
+            ? AppLoadingView(label: l10n.launchLoading)
             : ListView(
                 padding: const EdgeInsets.all(AppSpacing.l),
                 children: [
                   if (chats.isEmpty)
-                    LibraryEmptyState(
+                    AppEmptyState(
                       icon: AppSymbols.coach,
                       title: l10n.coachChatsEmptyTitle,
-                      message: l10n.coachChatsEmptyMessage,
+                      description: l10n.coachChatsEmptyMessage,
                     )
                   else
                     AppSection(
@@ -198,7 +183,7 @@ class _CoachChatsViewState extends State<CoachChatsView> {
                       children: [
                         AppListRowButton(
                           title: l10n.coachWithdraw,
-                          tint: scheme.error,
+                          destructive: true,
                           icon: AppSymbols.lock,
                           onPressed: state.isWithdrawing
                               ? null

@@ -271,8 +271,8 @@ class _MetricChartPainter extends CustomPainter {
               top,
               point.dx + width / 2,
               bottom,
-              topLeft: const Radius.circular(2),
-              topRight: const Radius.circular(2),
+              topLeft: _barCorner,
+              topRight: _barCorner,
             ),
             bar,
           );
@@ -343,3 +343,8 @@ class _MetricChartPainter extends CustomPainter {
   final (bottom, top) = niceBounds(low * 10, high * 10);
   return (bottom / 10, top / 10);
 }
+
+/// A bar's rounded top: chart-mark geometry, finer than any [AppRadius],
+/// as Swift Charts rounds its bars.
+const _barCorner = Radius.circular(_barCornerRadius);
+const double _barCornerRadius = 2;

@@ -266,7 +266,7 @@ void main() {
     await tap(tester, find.byKey(const Key('NameWorkout.continue')));
     expect(find.byType(ChooseGymProfileView), findsOneWidget);
 
-    await tap(tester, find.byKey(const Key('ChooseGymProfile.create')));
+    await tap(tester, find.text('Create Gym Profile'));
     expect(find.byType(CreateGymProfileView), findsOneWidget);
     await tester.enterText(
       find.byKey(const Key('CreateGymProfile.name')),

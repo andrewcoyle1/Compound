@@ -246,15 +246,18 @@ class _AmrapSection extends StatelessWidget {
                 accessory: AppListRowCustom(
                   Row(
                     mainAxisSize: MainAxisSize.min,
+                    spacing: AppSpacing.s,
                     children: [
-                      IconButton(
-                        icon: const Icon(AppSymbols.decrease),
+                      AppIconButton(
+                        icon: AppSymbols.decrease,
+                        semanticLabel: l10n.editorDecrease,
                         onPressed: raises && ceiling > amrapCeilingRange.min
                             ? () => setCeiling(ceiling - 1)
                             : null,
                       ),
-                      IconButton(
-                        icon: const Icon(AppSymbols.add),
+                      AppIconButton(
+                        icon: AppSymbols.add,
+                        semanticLabel: l10n.editorIncrease,
                         onPressed: raises && ceiling < amrapCeilingRange.max
                             ? () => setCeiling(ceiling + 1)
                             : null,

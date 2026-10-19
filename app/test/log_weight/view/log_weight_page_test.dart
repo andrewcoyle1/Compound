@@ -233,8 +233,15 @@ void main() {
       when(() => bloc.state)
           .thenReturn(ready().copyWith(status: LogWeightStatus.saving));
       await pumpView(tester);
-      expect(find.byTooltip('Save'), findsNothing);
+      // The confirm button keeps its place, spinning and disabled.
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      final save = tester.widget<IconButton>(
+        find.ancestor(
+          of: find.byTooltip('Save'),
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(save.onPressed, isNull);
     });
 
     testWidgets('on save, plays the success haptic and closes', (tester) async {
@@ -268,7 +275,7 @@ void main() {
 
     testWidgets('closes without saving', (tester) async {
       await pumpView(tester);
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byTooltip('Close'));
       verify(() => router.pop<Object?>()).called(1);
       verifyNever(() => bloc.add(const LogWeightSaveRequested()));
     });

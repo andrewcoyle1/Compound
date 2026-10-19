@@ -7,7 +7,7 @@ import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
 /// An empty state: an icon, a title and a line under it (Swift
-/// `ContentUnavailableView`).
+/// `ContentUnavailableView`), as [AppEmptyState] draws it.
 class LibraryEmptyState extends StatelessWidget {
   const new({required this.icon, required this.title, this.message, super.key});
 
@@ -16,42 +16,11 @@ class LibraryEmptyState extends StatelessWidget {
   final String? message;
 
   @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        spacing: AppSpacing.s,
-        children: [
-          ExcludeSemantics(
-            child: Icon(
-              icon,
-              size: AppIconSize.large.of(context),
-              color: secondary,
-            ),
-          ),
-          Semantics(
-            header: true,
-            child: Text(
-              title,
-              style: AppTextStyles.sectionTitle,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          if (message case final message?)
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      AppEmptyState(icon: icon, title: title, description: message);
 }
 
-/// A failed read, with a way to try again.
+/// A failed read, with a way to try again, as [AppErrorState] draws it.
 class LibraryFailure extends StatelessWidget {
   const new({required this.message, required this.onRetry, super.key});
 
@@ -59,26 +28,11 @@ class LibraryFailure extends StatelessWidget {
   final VoidCallback onRetry;
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.l,
-          children: [
-            AppInlineMessage(
-              kind: AppInlineMessageKind.error,
-              text: message,
-              kindLabel: l10n.errorLabel,
-            ),
-            TextButton(onPressed: onRetry, child: Text(l10n.tryAgainButton)),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => AppErrorState(
+    title: message,
+    actionLabel: context.l10n.tryAgainButton,
+    onAction: onRetry,
+  );
 }
 
 /// A muscle an exercise works. Primary and secondary differ by fill, weight

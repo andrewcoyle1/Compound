@@ -88,9 +88,9 @@ class TrainingView extends StatelessWidget {
     return AppScaffold(
       largeTitle: l10n.tabTraining,
       actions: [
-        IconButton(
-          icon: const Icon(AppSymbols.calendar),
-          tooltip: l10n.calendarShow,
+        AppToolbarButton(
+          icon: AppSymbols.calendar,
+          semanticLabel: l10n.calendarShow,
           onPressed: () => unawaited(
             CalendarHeader.showCalendar(
               context,
@@ -173,31 +173,24 @@ Future<String?> _chooseSession(
     use24HourFormat: context.use24HourFormat,
     locale: context.dateLocale,
   );
-  return showDialog<String>(
+  return showAppDialog<String>(
     context: context,
-    builder: (context) => SimpleDialog(
-      title: Text(l10n.trainingMultipleWorkouts),
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-          child: Text(l10n.trainingWhichWorkout),
-        ),
-        for (final session in sessions)
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(context).pop(session.id),
-            child: Text(
-              l10n.trainingSessionChoice(
-                session.name,
-                time(session.dateCreated.toLocal()),
-              ),
-            ),
+    title: l10n.trainingMultipleWorkouts,
+    message: l10n.trainingWhichWorkout,
+    actions: [
+      for (final session in sessions)
+        AppDialogAction(
+          label: l10n.trainingSessionChoice(
+            session.name,
+            time(session.dateCreated.toLocal()),
           ),
-        SimpleDialogOption(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+          value: session.id,
         ),
-      ],
-    ),
+      AppDialogAction(
+        label: MaterialLocalizations.of(context).cancelButtonLabel,
+        role: AppDialogRole.cancel,
+      ),
+    ],
   );
 }
 
@@ -208,52 +201,45 @@ class _AddMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return PopupMenuButton<VoidCallback>(
-      icon: const Icon(AppSymbols.add),
-      tooltip: l10n.trainingAddTraining,
-      onSelected: (action) => action(),
-      itemBuilder: (_) => [
-        PopupMenuItem(
-          value: () => unawaited(
+    return MenuAnchor(
+      menuChildren: [
+        MenuItemButton(
+          leadingIcon: const Icon(AppSymbols.start),
+          onPressed: () => unawaited(
             startWorkout(context, eventPrefix: 'TrainingView_StartWorkout'),
           ),
-          child: ListTile(
-            leading: const Icon(AppSymbols.start),
-            title: Text(l10n.startEmptyWorkout),
-          ),
+          child: Text(l10n.startEmptyWorkout),
         ),
-        const PopupMenuDivider(),
-        PopupMenuItem(
-          value: () => unawaited(
+        const Divider(),
+        MenuItemButton(
+          leadingIcon: const Icon(AppSymbols.macrocycle),
+          onPressed: () => unawaited(
             MacrocycleDetailPage.open(context, MacrocycleDetailPage.newId),
           ),
-          child: ListTile(
-            leading: const Icon(AppSymbols.macrocycle),
-            title: Text(l10n.programNewMacrocycle),
-          ),
+          child: Text(l10n.programNewMacrocycle),
         ),
-        PopupMenuItem(
-          value: () => unawaited(NameMesocyclePage.open(context)),
-          child: ListTile(
-            leading: const Icon(AppSymbols.mesocycle),
-            title: Text(l10n.programNewMesocycle),
-          ),
+        MenuItemButton(
+          leadingIcon: const Icon(AppSymbols.mesocycle),
+          onPressed: () => unawaited(NameMesocyclePage.open(context)),
+          child: Text(l10n.programNewMesocycle),
         ),
-        PopupMenuItem(
-          value: () => unawaited(NameWorkoutPage.create(context)),
-          child: ListTile(
-            leading: const Icon(AppSymbols.workout),
-            title: Text(l10n.editorNewWorkout),
-          ),
+        MenuItemButton(
+          leadingIcon: const Icon(AppSymbols.workout),
+          onPressed: () => unawaited(NameWorkoutPage.create(context)),
+          child: Text(l10n.editorNewWorkout),
         ),
-        PopupMenuItem(
-          value: () => unawaited(CreateExercisePage.open(context)),
-          child: ListTile(
-            leading: const Icon(AppSymbols.exercise),
-            title: Text(l10n.createExerciseNew),
-          ),
+        MenuItemButton(
+          leadingIcon: const Icon(AppSymbols.exercise),
+          onPressed: () => unawaited(CreateExercisePage.open(context)),
+          child: Text(l10n.createExerciseNew),
         ),
       ],
+      builder: (context, controller, _) => AppToolbarButton(
+        icon: AppSymbols.add,
+        semanticLabel: l10n.trainingAddTraining,
+        onPressed: () =>
+            controller.isOpen ? controller.close() : controller.open(),
+      ),
     );
   }
 }
@@ -274,19 +260,12 @@ class _Library extends StatelessWidget {
         else if (programs.status == ProgramsStatus.loaded)
           AppSection(
             children: [
-              LibraryEmptyState(
+              AppEmptyState(
                 icon: AppSymbols.mesocycle,
                 title: l10n.programNoActiveMesocycle,
-                message: l10n.programAddMesocycleMessage,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.l),
-                child: Center(
-                  child: FilledButton(
-                    onPressed: () => context.goNamed(MesocycleLibraryPage.name),
-                    child: Text(l10n.programChooseMesocycle),
-                  ),
-                ),
+                description: l10n.programAddMesocycleMessage,
+                actionLabel: l10n.programChooseMesocycle,
+                onAction: () => context.goNamed(MesocycleLibraryPage.name),
               ),
             ],
           ),
@@ -349,10 +328,10 @@ class _SearchResults extends StatelessWidget {
     final exercises = library.searchExercises(query);
     final workouts = library.searchWorkoutTemplates(query);
     if (exercises.isEmpty && workouts.isEmpty) {
-      return LibraryEmptyState(
+      return AppEmptyState(
         icon: AppSymbols.search,
         title: l10n.searchNoResults(query.trim()),
-        message: l10n.searchNoResultsMessage,
+        description: l10n.searchNoResultsMessage,
       );
     }
     return LibrarySections(
@@ -362,24 +341,16 @@ class _SearchResults extends StatelessWidget {
             header: l10n.trainingExercisesRow,
             children: [
               for (final exercise in exercises)
-                MergeSemantics(
-                  child: Semantics(
-                    button: true,
-                    child: InkWell(
-                      onTap: () => unawaited(
-                        context.pushNamed(
-                          ExerciseDetailPage.name,
-                          pathParameters: {
-                            ExerciseDetailPage.idParameter: exercise.id,
-                          },
-                        ),
-                      ),
-                      child: AppListRow(
-                        title: exercise.name,
-                        subtitle: exercise.description,
-                        thumbnail: ExerciseImage(exercise),
-                        accessory: const AppListRowChevron(),
-                      ),
+                AppListRowButton(
+                  title: exercise.name,
+                  subtitle: exercise.description,
+                  thumbnail: ExerciseImage(exercise),
+                  onPressed: () => unawaited(
+                    context.pushNamed(
+                      ExerciseDetailPage.name,
+                      pathParameters: {
+                        ExerciseDetailPage.idParameter: exercise.id,
+                      },
                     ),
                   ),
                 ),

@@ -161,7 +161,7 @@ void main() {
       contains('trend weight'),
     );
 
-    await tap(tester, find.byType(CloseButton));
+    await tap(tester, find.byTooltip('Close'));
     expect(find.byType(CoachView), findsNothing);
   });
 

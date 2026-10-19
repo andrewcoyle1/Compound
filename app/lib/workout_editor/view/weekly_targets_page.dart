@@ -90,26 +90,24 @@ class WeeklyTargetsView extends StatelessWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            IconButton(
-                              icon: const Icon(AppSymbols.decrease),
-                              tooltip: l10n.editorDecrease,
+                            AppIconButton(
+                              icon: AppSymbols.decrease,
+                              semanticLabel: l10n.editorDecrease,
                               onPressed: state.canStep(variation, -1)
                                   ? () => _step(cubit, variation, -1)
                                   : null,
                             ),
-                            IconButton(
-                              icon: const Icon(AppSymbols.increase),
-                              tooltip: l10n.editorIncrease,
+                            AppIconButton(
+                              icon: AppSymbols.increase,
+                              semanticLabel: l10n.editorIncrease,
                               onPressed: state.canStep(variation, 1)
                                   ? () => _step(cubit, variation, 1)
                                   : null,
                             ),
-                            IconButton(
-                              icon: Icon(
-                                AppSymbols.delete,
-                                color: context.appColors.danger,
-                              ),
-                              tooltip: l10n.editorDelete,
+                            AppIconButton(
+                              icon: AppSymbols.delete,
+                              semanticLabel: l10n.editorDelete,
+                              isDestructive: true,
                               onPressed: () => cubit.delete(variation),
                             ),
                           ],

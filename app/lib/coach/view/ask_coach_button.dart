@@ -16,9 +16,9 @@ class AskCoachButton extends StatelessWidget {
     final l10n = context.l10n;
     return Semantics(
       hint: l10n.coachAskCoachHint,
-      child: IconButton(
-        icon: const Icon(AppSymbols.coach),
-        tooltip: l10n.coachAskCoach,
+      child: AppToolbarButton(
+        icon: AppSymbols.coach,
+        semanticLabel: l10n.coachAskCoach,
         onPressed: () => CoachPage.open(context, coachContext),
       ),
     );

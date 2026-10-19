@@ -56,9 +56,9 @@ class FoodsView extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.foodsTitle),
         actions: [
-          IconButton(
-            icon: const Icon(AppSymbols.add),
-            tooltip: l10n.foodsAdd,
+          AppToolbarButton(
+            icon: AppSymbols.add,
+            semanticLabel: l10n.foodsAdd,
             onPressed: create,
           ),
         ],
@@ -81,7 +81,7 @@ class FoodsView extends StatelessWidget {
           ),
           Expanded(
             child: switch (state.foods) {
-              null => const Center(child: CircularProgressIndicator.adaptive()),
+              null => AppLoadingView(label: l10n.launchLoading),
               _ when foods.isNotEmpty => ListView(
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
@@ -112,62 +112,20 @@ class FoodsView extends StatelessWidget {
                   ),
                 ],
               ),
-              _ when state.filter.isNotEmpty => _Empty(
+              _ when state.filter.isNotEmpty => AppEmptyState(
+                icon: AppSymbols.search,
                 title: l10n.foodsNoResults(state.filter),
               ),
-              _ => _Empty(
+              _ => AppEmptyState(
+                icon: AppSymbols.food,
                 title: l10n.foodsEmptyTitle,
-                message: l10n.foodsEmptyMessage,
-                action: FilledButton(
-                  onPressed: create,
-                  child: Text(l10n.foodsCreate),
-                ),
+                description: l10n.foodsEmptyMessage,
+                actionLabel: l10n.foodsCreate,
+                onAction: create,
               ),
             },
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _Empty extends StatelessWidget {
-  const new({required this.title, this.message, this.action});
-
-  final String title;
-  final String? message;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    final message = this.message;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: [
-            Icon(
-              AppSymbols.food,
-              size: AppIconSize.hero.of(context),
-              color: secondary,
-            ),
-            Text(
-              title,
-              style: AppTextStyles.sectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            if (message != null)
-              Text(
-                message,
-                style: AppTextStyles.rowDetail.copyWith(color: secondary),
-                textAlign: TextAlign.center,
-              ),
-            ?action,
-          ],
-        ),
       ),
     );
   }

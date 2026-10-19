@@ -1056,6 +1056,30 @@
     "@metricShowAllData": {
         "description": "Metric screen: row opening every recorded entry"
     },
+    "metricShowMoreData": "Show More {title} Data",
+    "@metricShowMoreData": {
+        "description": "Metric screen: text button opening Latest, Highest, Lowest and Average in a sheet (QuickCharts' Show More); title is the metric's name",
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "metricHeaderDates": "{average}, {from} – {to}",
+    "@metricHeaderDates": {
+        "description": "Metric chart header: what the figure is (Average or Daily Average), then the dates it covers",
+        "placeholders": {
+            "average": {
+                "type": "String"
+            },
+            "from": {
+                "type": "String"
+            },
+            "to": {
+                "type": "String"
+            }
+        }
+    },
     "metricAllRecordedData": "All Recorded Data",
     "@metricAllRecordedData": {
         "description": "Title of the screen listing every entry of a metric"
@@ -1923,6 +1947,14 @@
     "todayYourDay": "Your Day",
     "@todayYourDay": {
         "description": "Today checklist: section heading"
+    },
+    "todayStarterHide": "Hide",
+    "@todayStarterHide": {
+        "description": "Today: the getting-started section header's button that hides the section on this device"
+    },
+    "todayLogMenu": "Log",
+    "@todayLogMenu": {
+        "description": "Today: accessibility label of the toolbar's + menu (Log Meal, Log Weight, Start Empty Workout)"
     },
     "todayDoneCount": "{done} of {total} done",
     "@todayDoneCount": {

@@ -61,18 +61,26 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
           padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
           child: Row(
             children: [
-              Semantics(
-                header: true,
-                child: Text(
-                  l10n.programActiveMesocycle,
-                  style: AppTextStyles.sectionTitle.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+              // Wraps at large text rather than pushing the menu off.
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Semantics(
+                        header: true,
+                        child: Text(
+                          l10n.programActiveMesocycle,
+                          style: AppTextStyles.sectionTitle.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (view?.isDeload ?? false)
+                      MethodInfoButton(MethodInfo.mesocycleDeload(l10n)),
+                  ],
                 ),
               ),
-              if (view?.isDeload ?? false)
-                MethodInfoButton(MethodInfo.mesocycleDeload(l10n)),
-              const Spacer(),
               if (view == null)
                 Text(
                   header,
@@ -100,7 +108,6 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
               trailing: [
                 AppSwipeAction(
                   label: l10n.programDelete,
-                  icon: AppSymbols.delete,
                   isDestructive: true,
                   onPressed: () => unawaited(_delete(context)),
                 ),
@@ -128,18 +135,19 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
                 mesocycle: mesocycle,
                 isDeload: view?.isDeload ?? false,
                 phase: view?.phase,
-                trailing: PopupMenuButton<void>(
+                trailing: PopupMenuButton<VoidCallback>(
+                  onSelected: (action) => action(),
                   icon: Icon(AppSymbols.more),
                   tooltip: l10n.programMesocycleOptions,
                   itemBuilder: (_) => [
-                    PopupMenuItem(
-                      onTap: () => unawaited(
+                    AppMenuItem(
+                      value: () => unawaited(
                         MesocycleDesignPage.edit(context, mesocycle.id),
                       ),
-                      child: Text(l10n.programInfo),
+                      label: l10n.programInfo,
                     ),
-                    PopupMenuItem(
-                      onTap: () => CoachPage.open(
+                    AppMenuItem(
+                      value: () => CoachPage.open(
                         context,
                         CoachContext(
                           kind: CoachContextKind.mesocycle,
@@ -147,14 +155,12 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
                           title: mesocycle.name,
                         ),
                       ),
-                      child: Text(l10n.coachAskCoach),
+                      label: l10n.coachAskCoach,
                     ),
-                    PopupMenuItem(
-                      onTap: () => unawaited(_delete(context)),
-                      child: Text(
-                        l10n.programDeleteMesocycle,
-                        style: TextStyle(color: context.appColors.danger),
-                      ),
+                    AppMenuItem(
+                      value: () => unawaited(_delete(context)),
+                      label: l10n.programDeleteMesocycle,
+                      isDestructive: true,
                     ),
                   ],
                 ),
@@ -391,6 +397,7 @@ class const _DayRow({
                     : item.isSkipped
                     ? AppSymbols.skip
                     : AppSymbols.choiceUnselected,
+                size: AppIconSize.small.of(context),
                 color: item.isCompleted ? scheme.primary : scheme.outline,
               ),
             ),
@@ -404,15 +411,23 @@ class const _DayRow({
     BuildContext context,
     VoidCallback onSkip,
   ) async {
-    final skip = await showModalBottomSheet<bool>(
+    final skip = await showAppSheet<bool>(
       context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: AppListRowButton(
-          title: context.l10n.programSkip,
-          icon: AppSymbols.skip,
-          onPressed: () => Navigator.of(context).pop(true),
-        ),
+      size: AppSheetSize.compact,
+      builder: (context) => ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [
+          AppSection(
+            children: [
+              AppListRowButton(
+                title: context.l10n.programSkip,
+                icon: AppSymbols.skip,
+                accessory: null,
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+            ],
+          ),
+        ],
       ),
     );
     if (skip ?? false) onSkip();

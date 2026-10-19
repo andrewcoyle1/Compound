@@ -11,7 +11,6 @@ import 'package:compound/coach/view/coach_message_body.dart';
 import 'package:compound/coach/view/coach_text.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/paywall/view/paywall_page.dart';
-import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -141,22 +140,27 @@ class _CoachViewState extends State<CoachView> {
       child: AppScaffold(
         backgroundColor: context.appColors.canvas,
         appBar: AppBar(
+          // Opened as a modal, it closes from the leading edge.
+          leading: widget.request.showsCloseButton
+              ? AppToolbarButton.close(
+                  semanticLabel: MaterialLocalizations.of(context)
+                      .closeButtonTooltip,
+                )
+              : null,
           title: Text(title),
           actions: [
             if (state.gate == CoachGate.chat)
               PopupMenuButton<void Function()>(
-                icon: const Icon(Icons.more_horiz_rounded),
+                icon: Icon(AppSymbols.more),
                 tooltip: l10n.coachMore,
                 onSelected: (action) => action(),
                 itemBuilder: (context) => [
-                  PopupMenuItem(
+                  AppMenuItem(
                     value: _cubit.newChatPressed,
-                    child: ListTile(
-                      leading: const Icon(AppSymbols.add),
-                      title: Text(l10n.coachNewChat),
-                    ),
+                    icon: AppSymbols.add,
+                    label: l10n.coachNewChat,
                   ),
-                  PopupMenuItem(
+                  AppMenuItem(
                     value: () {
                       _cubit.chatsPressed();
                       unawaited(
@@ -166,19 +170,15 @@ class _CoachViewState extends State<CoachView> {
                         ),
                       );
                     },
-                    child: ListTile(
-                      leading: const Icon(AppSymbols.history),
-                      title: Text(l10n.coachChats),
-                    ),
+                    icon: AppSymbols.history,
+                    label: l10n.coachChats,
                   ),
                 ],
               ),
           ],
         ),
         body: switch (state.gate) {
-          CoachGate.loading => const Center(
-            child: CircularProgressIndicator.adaptive(),
-          ),
+          CoachGate.loading => AppLoadingView(label: l10n.launchLoading),
           CoachGate.premium => const _PremiumGate(),
           CoachGate.consent => const _ConsentGate(),
           CoachGate.chat => _Chat(
@@ -217,29 +217,18 @@ class _PremiumGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Center(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LibraryEmptyState(
-              icon: AppSymbols.coach,
-              title: l10n.coachPremiumTitle,
-              message: l10n.coachPremiumMessage,
-            ),
-            FilledButton(
-              onPressed: () async {
-                final cubit = context.read<CoachCubit>()..seePlansPressed();
-                // Swift's `showPaywall(isOnboarding: false)`; coming back,
-                // the gate is read again, as Swift's `onViewAppear` does.
-                await context.pushNamed<bool>(PaywallPage.name);
-                await cubit.appeared();
-              },
-              child: Text(l10n.coachSeePlans),
-            ),
-          ],
-        ),
-      ),
+    return AppEmptyState(
+      icon: AppSymbols.coach,
+      title: l10n.coachPremiumTitle,
+      description: l10n.coachPremiumMessage,
+      actionLabel: l10n.coachSeePlans,
+      onAction: () async {
+        final cubit = context.read<CoachCubit>()..seePlansPressed();
+        // Swift's `showPaywall(isOnboarding: false)`; coming back, the gate
+        // is read again, as Swift's `onViewAppear` does.
+        await context.pushNamed<bool>(PaywallPage.name);
+        await cubit.appeared();
+      },
     );
   }
 }
@@ -354,40 +343,21 @@ class _Chat extends StatelessWidget {
                   l10n.coachEmptyMessage,
                   style: AppTextStyles.rowDetail.copyWith(color: secondary),
                 ),
-                for (final question in l10n.coachSuggestions(
-                  request.context.kind,
-                ))
-                  Padding(
-                    padding: const EdgeInsets.only(top: AppSpacing.m),
-                    child: Material(
-                      color: context.appColors.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.m),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(AppRadius.m),
-                        onTap: () =>
+                const SizedBox(height: AppSpacing.m),
+                AppSection(
+                  children: [
+                    for (final question in l10n.coachSuggestions(
+                      request.context.kind,
+                    ))
+                      AppListRowButton(
+                        icon: AppSymbols.coach,
+                        title: question,
+                        accessory: null,
+                        onPressed: () =>
                             unawaited(cubit.suggestionPressed(question)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.m),
-                          child: Row(
-                            spacing: AppSpacing.s,
-                            children: [
-                              Icon(
-                                AppSymbols.coach,
-                                size: AppIconSize.small.of(context),
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  question,
-                                  style: AppTextStyles.rowTitle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
-                    ),
-                  ),
+                  ],
+                ),
               ],
               for (final message in state.messages)
                 Padding(
@@ -463,18 +433,9 @@ class _Chat extends StatelessWidget {
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.arrow_upward_rounded,
-                        size: AppIconSize.medium.of(context),
-                      ),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(context)
-                            .colorScheme
-                            .onPrimary,
-                      ),
-                      tooltip: l10n.coachSend,
+                    AppIconButton(
+                      icon: AppSymbols.send,
+                      semanticLabel: l10n.coachSend,
                       onPressed: state.canSend
                           ? () => unawaited(cubit.sendPressed())
                           : null,

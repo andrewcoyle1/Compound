@@ -85,6 +85,31 @@ class MetricDetailView extends StatelessWidget {
     final highest = readings.highest;
     final lowest = readings.lowest;
     final average = readings.average;
+    // Latest under the chart, and the rest one tap away in a sheet
+    // (QuickCharts' Show More), so the chart keeps the screen.
+    final rows = [
+      if (latest != null)
+        AppListRow(
+          title: l10n.metricLatest(day(latest.date)),
+          accessory: AppListRowValue(value(latest.value)),
+        ),
+      // With every day alike, these would only repeat Latest.
+      if (readings.hasSpread) ...[
+        AppListRow(
+          title: l10n.metricHighest(day(highest!.date)),
+          accessory: AppListRowValue(value(highest.value)),
+        ),
+        AppListRow(
+          title: l10n.metricLowest(day(lowest!.date)),
+          accessory: AppListRowValue(value(lowest.value)),
+        ),
+      ],
+      if (average != null)
+        AppListRow(
+          title: total ? l10n.metricDailyAverage : l10n.metricAverage,
+          accessory: AppListRowValue(value(average)),
+        ),
+    ];
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
@@ -96,32 +121,24 @@ class MetricDetailView extends StatelessWidget {
           value: value,
           onRangeSelected: onRangeSelected,
         ),
-        const SizedBox(height: AppSpacing.xl),
-        AppSection(
-          children: [
-            if (latest != null)
-              AppListRow(
-                title: l10n.metricLatest(day(latest.date)),
-                accessory: AppListRowValue(value(latest.value)),
+        if (rows.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.xl),
+          AppSection(children: [rows.first]),
+          if (rows.length > 1)
+            Center(
+              child: AppTextButton(
+                label: l10n.metricShowMoreData(title),
+                onPressed: () => showAppSheet<void>(
+                  context: context,
+                  size: AppSheetSize.compact,
+                  builder: (_) => ListView(
+                    padding: const EdgeInsets.all(AppSpacing.l),
+                    children: [AppSection(header: title, children: rows)],
+                  ),
+                ),
               ),
-            // With every day alike, these would only repeat Latest.
-            if (readings.hasSpread) ...[
-              AppListRow(
-                title: l10n.metricHighest(day(highest!.date)),
-                accessory: AppListRowValue(value(highest.value)),
-              ),
-              AppListRow(
-                title: l10n.metricLowest(day(lowest!.date)),
-                accessory: AppListRowValue(value(lowest.value)),
-              ),
-            ],
-            if (average != null)
-              AppListRow(
-                title: total ? l10n.metricDailyAverage : l10n.metricAverage,
-                accessory: AppListRowValue(value(average)),
-              ),
-          ],
-        ),
+            ),
+        ],
         if (summary case final summary?) ...[
           const SizedBox(height: AppSpacing.xl),
           summary,
@@ -369,15 +386,19 @@ class _ChartState extends State<_Chart> {
     );
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final selected = _selected;
+    // Swift's chart header: each series' name in its colour over its
+    // figure, then what the figure is and the dates.
     final header = [
-      Text(
-        (series.first.isTotal ? l10n.metricDailyAverage : l10n.metricAverage)
-            .toUpperCase(),
-        style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
-      ),
       for (final a in averages)
         _SeriesLine(series: a.series, value: value(a.average)),
-      Text('$from – $to', style: secondary),
+      Text(
+        l10n.metricHeaderDates(
+          series.first.isTotal ? l10n.metricDailyAverage : l10n.metricAverage,
+          from,
+          to,
+        ),
+        style: secondary,
+      ),
     ];
     return Semantics(
       container: true,
@@ -485,24 +506,51 @@ String bucketText(MetricRange range, DateTime bucket, String locale) {
   };
 }
 
-/// One series in the header: its figure, its key and its name.
+/// One series in the header: its key and name in its colour, over its
+/// figure with the unit set small.
 class _SeriesLine extends StatelessWidget {
   const new({required this.series, required this.value});
 
   final MetricChartSeries series;
+
+  /// The figure with its unit, as the screen shows values.
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
-    return Row(
-      spacing: AppSpacing.s,
+    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
+    // The unit is the last word, when there is one.
+    final split = value.lastIndexOf(' ');
+    final (figure, unit) = split < 0
+        ? (value, null)
+        : (value.substring(0, split), value.substring(split));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: AppTextStyles.metric),
-        _Swatch(series: series),
-        Flexible(child: Text(series.label, style: secondary)),
+        Row(
+          spacing: AppSpacing.s,
+          children: [
+            _Swatch(series: series),
+            Flexible(
+              child: Text(
+                series.label,
+                style: AppTextStyles.rowDetail.copyWith(color: series.color),
+              ),
+            ),
+          ],
+        ),
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: figure, style: AppTextStyles.metricLarge),
+              if (unit != null)
+                TextSpan(
+                  text: unit,
+                  style: AppTextStyles.rowDetail.copyWith(color: secondary),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }

@@ -68,13 +68,12 @@ List<TextSpan> coachMarkdown(String text) {
     final bold = match.group(1);
     spans.add(
       bold != null
-          ? TextSpan(
-              text: bold,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            )
+          ? TextSpan(text: bold, style: AppTextStyles.rowTitle.semibold)
           : TextSpan(
               text: match.group(2) ?? match.group(3),
-              style: const TextStyle(fontStyle: FontStyle.italic),
+              style: AppTextStyles.rowTitle.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
             ),
     );
     start = match.end;

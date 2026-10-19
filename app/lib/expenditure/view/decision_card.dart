@@ -53,8 +53,17 @@ class DecisionCard extends StatelessWidget {
               spacing: AppSpacing.m,
               runSpacing: AppSpacing.s,
               children: [
-                FilledButton(onPressed: onPrimary, child: Text(primary)),
-                OutlinedButton(onPressed: onSecondary, child: Text(secondary)),
+                AppCtaButton(
+                  label: primary,
+                  size: AppCtaSize.compact,
+                  onPressed: onPrimary,
+                ),
+                AppCtaButton(
+                  label: secondary,
+                  size: AppCtaSize.compact,
+                  variant: AppCtaVariant.secondary,
+                  onPressed: onSecondary,
+                ),
               ],
             ),
           ],

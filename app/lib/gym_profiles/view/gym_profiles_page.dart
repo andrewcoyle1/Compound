@@ -63,27 +63,14 @@ class GymProfilesView extends StatelessWidget {
   Future<void> _delete(BuildContext context, GymProfileModel gym) async {
     final l10n = context.l10n;
     final cubit = context.read<GymProfilesCubit>();
-    final delete = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.gymDeleteProfileTitle),
-        content: Text(l10n.gymDeleteProfileMessage(gym.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.gymCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(l10n.gymDelete),
-          ),
-        ],
-      ),
+    final delete = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.gymDeleteProfileTitle,
+      message: l10n.gymDeleteProfileMessage(gym.name),
+      confirmLabel: l10n.gymDelete,
+      cancelLabel: l10n.gymCancel,
     );
-    if (delete ?? false) await cubit.delete(gym);
+    if (delete) await cubit.delete(gym);
   }
 
   @override
@@ -119,30 +106,21 @@ class GymProfilesView extends StatelessWidget {
         appBar: AppBar(
           title: Text(l10n.gymProfilesTitle),
           actions: [
-            IconButton(
-              icon: const Icon(AppSymbols.add),
-              tooltip: l10n.gymAddProfileLabel,
+            AppToolbarButton(
+              icon: AppSymbols.add,
+              semanticLabel: l10n.gymAddProfileLabel,
               onPressed: () => _add(context, app),
             ),
           ],
         ),
         body: SafeArea(
           child: gyms.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      LibraryEmptyState(
-                        icon: AppSymbols.equipment,
-                        title: l10n.gymNoProfiles,
-                        message: l10n.gymNoProfilesMessage,
-                      ),
-                      TextButton(
-                        onPressed: () => _add(context, app),
-                        child: Text(l10n.gymAddProfile),
-                      ),
-                    ],
-                  ),
+              ? AppEmptyState(
+                  icon: AppSymbols.equipment,
+                  title: l10n.gymNoProfiles,
+                  description: l10n.gymNoProfilesMessage,
+                  actionLabel: l10n.gymAddProfile,
+                  onAction: () => _add(context, app),
                 )
               : LibrarySections(
                   children: [

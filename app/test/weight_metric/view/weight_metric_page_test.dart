@@ -101,7 +101,8 @@ void main() {
       expect(find.text('Scale Weight'), findsWidgets);
       expect(find.byType(MetricChart), findsOneWidget);
       expect(find.text('Latest: Today'), findsOneWidget);
-      expect(find.text('Average'), findsOneWidget);
+      expect(find.textContaining('Average, '), findsOneWidget);
+      expect(find.text('Show More Scale Weight Data'), findsOneWidget);
       expect(find.byType(MethodInfoButton), findsNothing);
       // The chart reads as one summary.
       expect(
@@ -186,7 +187,7 @@ void main() {
 
     testWidgets('an empty screen offers Log Weight', (tester) async {
       await pumpView(tester, WeightMetric.scaleWeight, measurements: const []);
-      expect(find.widgetWithText(TextButton, 'Log Weight'), findsOneWidget);
+      expect(find.widgetWithText(AppCtaButton, 'Log Weight'), findsOneWidget);
     });
 
     testWidgets('swiping a row deletes its weigh-in', (tester) async {

@@ -135,10 +135,9 @@ class _NameWorkoutViewState extends State<NameWorkoutView> {
     final state = context.watch<WorkoutWizardCubit>().state;
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
+        leading: AppToolbarButton.close(
           key: const Key('NameWorkout.close'),
-          icon: const Icon(AppSymbols.close),
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -245,18 +244,14 @@ class _ChooseGymProfileViewState extends State<ChooseGymProfileView> {
         child: LibrarySections(
           children: [
             // Every workout needs a gym.
-            if (gyms.isEmpty) ...[
-              LibraryEmptyState(
+            if (gyms.isEmpty)
+              AppEmptyState(
                 icon: AppSymbols.gym,
                 title: l10n.editorNoGyms,
-                message: l10n.editorNoGymsMessage,
+                description: l10n.editorNoGymsMessage,
+                actionLabel: l10n.onboardingGymTitle,
+                onAction: () => unawaited(CreateGymProfilePage.push(context)),
               ),
-              TextButton(
-                key: const Key('ChooseGymProfile.create'),
-                onPressed: () => unawaited(CreateGymProfilePage.push(context)),
-                child: Text(l10n.onboardingGymTitle),
-              ),
-            ],
             AppSection(
               header: l10n.editorChooseGymHeader,
               children: [

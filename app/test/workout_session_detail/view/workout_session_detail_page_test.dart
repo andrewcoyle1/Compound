@@ -109,8 +109,17 @@ void main() {
       expect(find.text('4,497.4 lb'), findsOneWidget);
       expect(find.text('Felt strong'), findsOneWidget);
       expect(find.text('Exercise Details'), findsOneWidget);
-      expect(find.text('Pause the first rep'), findsOneWidget);
       expect(find.text('2 sets · 1,640 kg volume'), findsOneWidget);
+      // Each exercise opens onto its note and sets, as Swift's disclosure.
+      expect(find.text('Pause the first rep'), findsNothing);
+      for (final name in ['Split Squat', 'Bench']) {
+        await tester.ensureVisible(find.text(name));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(name));
+        await tester.pumpAndSettle();
+      }
+      await tester.ensureVisible(find.text('Pause the first rep'));
+      expect(find.text('Pause the first rep'), findsOneWidget);
       expect(find.text('Warm-up'), findsOneWidget);
       expect(find.text('40 kg × 10 reps'), findsOneWidget);
       expect(find.text('Set 1'), findsOneWidget);
@@ -166,6 +175,12 @@ void main() {
       expect(find.text('—'), findsOneWidget);
       // The author's own finished workout: Ask Coach, above the sets.
       expect(find.text('Ask Coach About This Workout'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Plank'), 200);
+      await tester.ensureVisible(find.text('Plank'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Plank'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
       await tester.scrollUntilVisible(find.text('1:00'), 200);
       expect(find.text('1:00'), findsOneWidget);
     });

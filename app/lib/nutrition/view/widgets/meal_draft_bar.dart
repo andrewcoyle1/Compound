@@ -53,8 +53,7 @@ class MealDraftBar extends StatelessWidget {
                       children: [
                         Text(
                           l10n.mealDraftTitle,
-                          style: AppTextStyles.rowTitle.copyWith(
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.sectionTitle.copyWith(
                             color: scheme.onSurface,
                           ),
                         ),

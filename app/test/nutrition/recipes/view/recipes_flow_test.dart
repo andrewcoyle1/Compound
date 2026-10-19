@@ -227,7 +227,7 @@ void main() {
       await tap(tester, find.text('Add'));
       expect(find.byType(RecipeIngredientAmountSheet), findsNothing);
       await tap(tester, find.byTooltip('Quick add Broccoli'));
-      await tap(tester, find.byType(CloseButton));
+      await tap(tester, find.byTooltip('Close'));
 
       expect(find.text('Chicken Breast'), findsOneWidget);
       expect(find.text('Broccoli'), findsOneWidget);

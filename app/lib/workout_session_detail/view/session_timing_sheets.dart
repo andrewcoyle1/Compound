@@ -8,10 +8,8 @@ import 'package:compound/widgets/number_wheel.dart';
 Future<DateTime?> showSessionStartTimeSheet(
   BuildContext context,
   DateTime start,
-) => showModalBottomSheet<DateTime>(
+) => showAppSheet<DateTime>(
   context: context,
-  useSafeArea: true,
-  showDragHandle: true,
   builder: (_) => _StartTimeSheet(start: start.toLocal()),
 );
 
@@ -113,10 +111,8 @@ Future<(int, int)?> showSessionDurationSheet(
   BuildContext context, {
   required int hours,
   required int minutes,
-}) => showModalBottomSheet<(int, int)>(
+}) => showAppSheet<(int, int)>(
   context: context,
-  useSafeArea: true,
-  showDragHandle: true,
   builder: (_) => _DurationSheet(hours: hours, minutes: minutes),
 );
 
@@ -181,41 +177,20 @@ class _SheetScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.l,
-        0,
-        AppSpacing.l,
-        AppSpacing.xl,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.l,
-        children: [
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(AppSymbols.close),
-                tooltip: l10n.socialClose,
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              Expanded(
-                child: Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.sectionTitle,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(AppSymbols.selected),
-                tooltip: l10n.trackerSave,
-                onPressed: onSave,
-              ),
-            ],
+    return AppScaffold(
+      appBar: AppBar(
+        leading: AppToolbarButton.close(semanticLabel: l10n.socialClose),
+        title: Text(title),
+        actions: [
+          AppToolbarButton.confirm(
+            semanticLabel: l10n.trackerSave,
+            onPressed: onSave,
           ),
-          child,
         ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [child],
       ),
     );
   }

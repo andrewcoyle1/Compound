@@ -133,6 +133,7 @@ final gallerySymbols = <(String, IconData)>[
   ('start', AppSymbols.start),
   ('edit', AppSymbols.edit),
   ('delete', AppSymbols.delete),
+  ('reorder', AppSymbols.reorder),
   ('duplicate', AppSymbols.duplicate),
   ('favourite', AppSymbols.favourite),
   ('rate', AppSymbols.rate),

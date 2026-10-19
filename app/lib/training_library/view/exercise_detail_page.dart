@@ -106,8 +106,8 @@ class ExerciseDetailView extends StatelessWidget {
       _ => null,
     };
     final body = switch (libraryState) {
-      TrainingLibraryLoading() => const Center(
-        child: CircularProgressIndicator.adaptive(),
+      TrainingLibraryLoading() => AppLoadingView(
+        label: context.l10n.launchLoading,
       ),
       TrainingLibraryFailure() => LibraryFailure(
         message: l10n.exercisesLoadFailure,
@@ -115,7 +115,13 @@ class ExerciseDetailView extends StatelessWidget {
           const TrainingLibrarySubscriptionRequested(),
         ),
       ),
-      TrainingLibraryLoaded(:final library) when exercise != null => TabBarView(
+      TrainingLibraryLoaded(:final library) when exercise != null => _Tabs(
+        labels: [
+          l10n.exerciseAboutTab,
+          l10n.exerciseHistoryTab,
+          l10n.exerciseChartsTab,
+          l10n.exerciseRecordsTab,
+        ],
         children: [
           ExerciseAbout(exercise: exercise, library: library),
           _History(weightUnit: weightUnit),
@@ -123,11 +129,9 @@ class ExerciseDetailView extends StatelessWidget {
           _Records(weightUnit: weightUnit),
         ],
       ),
-      TrainingLibraryLoaded() => Center(
-        child: LibraryEmptyState(
-          icon: AppSymbols.exercise,
-          title: l10n.exerciseNotFound,
-        ),
+      TrainingLibraryLoaded() => AppEmptyState(
+        icon: AppSymbols.exercise,
+        title: l10n.exerciseNotFound,
       ),
     };
     final app = context.read<AppBloc>().state;
@@ -141,60 +145,94 @@ class ExerciseDetailView extends StatelessWidget {
     final deleting =
         context.watch<DeleteExerciseCubit>().state ==
         DeleteExerciseStatus.deleting;
-    final scaffold = DefaultTabController(
-      length: 4,
-      child: AppScaffold(
-        appBar: AppBar(
-          actions: [
-            if (exercise != null)
-              AskCoachButton(
-                CoachContext(
-                  kind: CoachContextKind.exercise,
-                  id: exercise.id,
-                  title: exercise.name,
-                ),
+    final scaffold = AppScaffold(
+      appBar: AppBar(
+        actions: [
+          if (exercise != null)
+            AskCoachButton(
+              CoachContext(
+                kind: CoachContextKind.exercise,
+                id: exercise.id,
+                title: exercise.name,
               ),
-            if (canDelete)
-              PopupMenuButton<VoidCallback>(
-                key: const Key('ExerciseDetail.options'),
-                icon: Icon(AppSymbols.more),
-                tooltip: l10n.exerciseOptions,
-                enabled: !deleting,
-                onSelected: (action) => action(),
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: () => unawaited(_delete(context, exercise)),
-                    child: Text(
-                      l10n.exerciseDeleteTitle,
-                      style: TextStyle(color: context.appColors.danger),
-                    ),
-                  ),
-                ],
+            ),
+          if (canDelete)
+            PopupMenuButton<VoidCallback>(
+              key: const Key('ExerciseDetail.options'),
+              icon: Icon(AppSymbols.more),
+              tooltip: l10n.exerciseOptions,
+              enabled: !deleting,
+              onSelected: (action) => action(),
+              itemBuilder: (_) => [
+                AppMenuItem(
+                  value: () => unawaited(_delete(context, exercise)),
+                  label: l10n.exerciseDeleteTitle,
+                  icon: AppSymbols.delete,
+                  isDestructive: true,
+                ),
+              ],
+            ),
+        ],
+        title: exercise == null
+            ? null
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [Text(exercise.name), const _PerformedSubtitle()],
               ),
-          ],
-          title: exercise == null
-              ? null
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(exercise.name), const _PerformedSubtitle()],
-                ),
-          bottom: exercise == null
-              ? null
-              : TabBar(
-                  tabs: [
-                    Tab(text: l10n.exerciseAboutTab),
-                    Tab(text: l10n.exerciseHistoryTab),
-                    Tab(text: l10n.exerciseChartsTab),
-                    Tab(text: l10n.exerciseRecordsTab),
-                  ],
-                ),
-        ),
-        body: SafeArea(bottom: false, child: body),
       ),
+      body: SafeArea(bottom: false, child: body),
     );
     return BlocListener<DeleteExerciseCubit, DeleteExerciseStatus>(
       listener: (context, status) => unawaited(_deleted(context, status)),
       child: scaffold,
+    );
+  }
+}
+
+/// The detail's four views under a segmented control (Swift's segmented
+/// `Picker`), the chosen one filling the rest of the screen.
+class _Tabs extends StatefulWidget {
+  const new({required this.labels, required this.children});
+
+  final List<String> labels;
+  final List<Widget> children;
+
+  @override
+  State<_Tabs> createState() => _TabsState();
+}
+
+class _TabsState extends State<_Tabs> {
+  var _index = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            AppSpacing.xs,
+            AppSpacing.l,
+            0,
+          ),
+          child: AppSegmentedControl<int>(
+            key: const Key('ExerciseDetail.tabs'),
+            segments: [
+              for (final (index, label) in widget.labels.indexed)
+                AppSegment(value: index, label: label),
+            ],
+            selected: _index,
+            onChanged: (index) => setState(() => _index = index),
+          ),
+        ),
+        Expanded(
+          child: KeyedSubtree(
+            key: ValueKey(_index),
+            child: widget.children[_index],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -505,8 +543,8 @@ class _History extends StatelessWidget {
       message: l10n.exerciseNotLoggedMessage,
     );
     return switch (context.watch<ExerciseHistoryBloc>().state) {
-      ExerciseHistoryLoading() => const Center(
-        child: CircularProgressIndicator.adaptive(),
+      ExerciseHistoryLoading() => AppLoadingView(
+        label: context.l10n.launchLoading,
       ),
       ExerciseHistoryFailure() => LibraryFailure(
         message: l10n.exerciseHistoryLoadFailure,
@@ -562,8 +600,8 @@ class _StatsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return switch (context.watch<ExerciseHistoryBloc>().state) {
-      ExerciseHistoryLoading() => const Center(
-        child: CircularProgressIndicator.adaptive(),
+      ExerciseHistoryLoading() => AppLoadingView(
+        label: context.l10n.launchLoading,
       ),
       ExerciseHistoryFailure() => LibraryFailure(
         message: l10n.exerciseHistoryLoadFailure,

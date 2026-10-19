@@ -12841,6 +12841,35 @@
             }
         }
     },
+    "heatGridLess": "Less",
+    "@heatGridLess": {
+        "description": "Contribution grid legend: the empty end of the shades"
+    },
+    "heatGridMore": "More",
+    "@heatGridMore": {
+        "description": "Contribution grid legend: the full end of the shades"
+    },
+    "heatGridWeek": "Week of {date}: {summary}",
+    "@heatGridWeek": {
+        "description": "Contribution grid, for a screen reader: one week's column and what it holds, such as 3 workouts",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            },
+            "summary": {
+                "type": "String"
+            }
+        }
+    },
+    "heatGridDaysLogged": "{count, plural, =1{1 day logged} other{{count} days logged}}",
+    "@heatGridDaysLogged": {
+        "description": "Contribution grid, for a screen reader: how many days of a week have an entry",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "sessionSuperset": "Superset…",
     "@sessionSuperset": {
         "description": "Session editor: exercise chip, pair it with another"

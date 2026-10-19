@@ -152,6 +152,22 @@ abstract final class AppChartMark {
   /// How far the over-target caret reaches past the bar's end, and half
   /// its width.
   static const double caretSize = 4;
+
+  /// A heat grid's square on a detail screen, at the default text size.
+  static const double heatCell = 18;
+
+  /// The gap between a heat grid's squares, at [heatCell].
+  static const double heatGap = 3;
+
+  /// A heat grid square's corner at [heatCell], scaled with the square.
+  static const double heatCorner = 3;
+
+  /// How far a heat grid's faintest shade goes from the surface towards
+  /// the full colour; the shades between are spaced evenly up to it.
+  static const double heatFirstShade = 0.4;
+
+  /// The stroke of the ring round the heat grid square picked.
+  static const double heatRingWidth = 2;
 }
 
 /// The widest a screen's content grows on tablets and desktops. Wider

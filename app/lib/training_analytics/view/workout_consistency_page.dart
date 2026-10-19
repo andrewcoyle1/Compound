@@ -8,7 +8,6 @@ import 'package:compound/training_analytics/bloc/training_analytics_bloc.dart';
 import 'package:compound/training_analytics/view/training_analytics_widgets.dart';
 import 'package:compound/training_analytics/view/training_metric_pages.dart';
 import 'package:compound_charts/compound_charts.dart';
-import 'package:flutter/foundation.dart' show setEquals;
 import 'package:go_router/go_router.dart';
 
 /// Every finished workout on a contribution grid, a week a column (Swift
@@ -83,6 +82,7 @@ class _WorkoutConsistencyView extends StatelessWidget {
                 color: context.appColors.habits,
                 semanticsLabel: l10n.workoutGridLabel(state.workouts.length),
                 countText: l10n.workoutGridLabel,
+                graded: true,
               ),
               const SizedBox(height: AppSpacing.xl),
               AppSection(
@@ -102,14 +102,20 @@ class _WorkoutConsistencyView extends StatelessWidget {
   }
 }
 
-/// A contribution grid (Swift QuickCharts' `ContributionChart` with a goal
-/// of one): a week per column, its days down the rows from [firstWeekday]
-/// with their initials, back to the week of the first of [dates] (or as far
-/// as fills the width) and scrolled to this week, with each month named
-/// over the column it starts in. A day with any of [dates] is filled.
+/// A contribution grid ([HeatGrid], Swift QuickCharts' `ContributionChart`):
+/// a week per column, its days down the rows from [firstWeekday] with their
+/// initials, back to the week of the first of [dates] (or as far as fills
+/// the width) and scrolled to this week, with each month named over the
+/// column it starts in.
 ///
-/// The header counts the days logged and the dates covered; pressing and
-/// holding a day rings it and shows its count and date instead.
+/// A day's shade is how many of [dates] fall on it. When [graded], each
+/// entry is a level, up to the most on any one day and at most
+/// [gradedLevels] - 1, with a legend beneath; otherwise any entry fills the
+/// day.
+///
+/// The header counts the days logged and the dates the grid covers;
+/// pressing and holding a day rings it and shows its count and date
+/// instead. A screen reader hears [semanticsLabel], then each week.
 class ContributionGrid extends StatefulWidget {
   const new({
     required this.dates,
@@ -118,6 +124,7 @@ class ContributionGrid extends StatefulWidget {
     required this.color,
     required this.semanticsLabel,
     this.countText,
+    this.graded = false,
     super.key,
   });
 
@@ -130,7 +137,7 @@ class ContributionGrid extends StatefulWidget {
   /// The week's first day, as an ISO weekday (1 = Monday).
   final int firstWeekday;
 
-  /// The filled squares' colour.
+  /// The fullest shade.
   final Color color;
 
   /// What the grid shows, for a screen reader.
@@ -140,9 +147,12 @@ class ContributionGrid extends StatefulWidget {
   /// without it a day with any reads "Logged".
   final String Function(int count)? countText;
 
-  static const _cell = 18.0;
-  static const _gap = 3.0;
-  static const double _step = _cell + _gap;
+  /// Whether a day with more entries is a fuller shade.
+  final bool graded;
+
+  /// The most shades a graded grid takes, counting empty: one each for
+  /// none to three entries, and the fullest for four or more.
+  static const gradedLevels = 5;
 
   @override
   State<ContributionGrid> createState() => _ContributionGridState();
@@ -151,23 +161,11 @@ class ContributionGrid extends StatefulWidget {
 class _ContributionGridState extends State<ContributionGrid> {
   DateTime? _selected;
 
-  /// Where the picked day's week sits across the grid.
-  double _anchorX = 0;
-
-  DateTime _weekStart(DateTime date) {
-    final offset = (date.weekday - widget.firstWeekday + 7) % 7;
-    return DateTime(date.year, date.month, date.day - offset);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final labelStyle = AppTextStyles.label.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
-    final textScaler = MediaQuery.textScalerOf(context);
     final counts = <DateTime, int>{};
     for (final date in widget.dates) {
       final local = date.toLocal();
@@ -175,335 +173,130 @@ class _ContributionGridState extends State<ContributionGrid> {
       counts[day] = (counts[day] ?? 0) + 1;
     }
     final today = widget.today;
-    final last = _weekStart(today);
-    final firstLogged = _weekStart(
-      counts.keys.reduce((a, b) => a.isBefore(b) ? a : b),
-    );
-    final logged = (last.difference(firstLogged).inDays / 7).round() + 1;
-    final monthRow = textScaler.scale(labelStyle.fontSize ?? 12) * 1.4;
-    final weekdays = [
-      for (var row = 0; row < 7; row++)
-        AppFormat.date(
-          // 4 January 2021 was a Monday.
-          DateTime(2021, 1, 3 + ((widget.firstWeekday - 1 + row) % 7 + 1)),
-          style: AppDateStyle.weekdayInitial,
-          locale: context.dateLocale,
-        ),
-    ];
+    final most = counts.values.fold(0, math.max);
+    final levels = widget.graded
+        ? math.min(most, ContributionGrid.gradedLevels - 1) + 1
+        : 2;
+    String date(DateTime day) =>
+        AppFormat.date(day, locale: context.dateLocale);
+    String countOf(int count) =>
+        widget.countText?.call(count) ?? l10n.calendarLogged;
+    final selected = _selected;
     return Semantics(
+      container: true,
       label: widget.semanticsLabel,
-      child: ExcludeSemantics(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final letters = weekdays
-                .map(
-                  (w) => (TextPainter(
-                    text: TextSpan(text: w, style: labelStyle),
-                    textDirection: TextDirection.ltr,
-                    textScaler: textScaler,
-                  )..layout()).width,
-                )
-                .reduce(math.max);
-            final lettersWidth = letters + AppSpacing.s;
-            // At least as many weeks as fill the width, as GitHub's grid.
-            final weeks = math.max(
-              logged,
-              ((constraints.maxWidth - lettersWidth + ContributionGrid._gap) /
-                      ContributionGrid._step)
-                  .floor(),
-            );
-            final first = DateTime(
-              last.year,
-              last.month,
-              last.day - 7 * (weeks - 1),
-            );
-            final span = today.difference(first).inDays + 1;
-            final daysLogged = counts.keys
-                .where((d) => !d.isBefore(first) && !d.isAfter(today))
-                .length;
-            final selected = _selected;
-            String dates(DateTime date) =>
-                AppFormat.date(date, locale: context.dateLocale);
-            final header = [
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: AppFormat.number(daysLogged, locale: locale),
-                      style: AppTextStyles.metric,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppSpacing.xs,
+        children: [
+          HeatGrid(
+            days: counts,
+            today: today,
+            firstWeekday: widget.firstWeekday,
+            levels: levels,
+            color: widget.color,
+            selected: selected,
+            onSelected: (day) => setState(() => _selected = day),
+            callout: selected == null
+                ? null
+                : ChartCalloutSummary(
+                    rows: [
+                      if (counts[selected] case final count?)
+                        (
+                          name: null,
+                          color: null,
+                          mark: null,
+                          value: countOf(count),
+                        ),
+                    ],
+                    footer: AppFormat.date(
+                      selected,
+                      style: AppDateStyle.weekdayMedium,
+                      locale: context.dateLocale,
                     ),
-                    TextSpan(text: ' ${l10n.contributionOfDays(span)}'),
-                  ],
-                ),
-                style: AppTextStyles.rowDetail.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-              Text(
-                l10n.contributionDaysLogged(
-                  '${dates(first)} – ${dates(today)}',
-                ),
-                style: labelStyle,
-              ),
-            ];
-
-            DateTime? dayAt(Offset position) {
-              final week = (position.dx / ContributionGrid._step).floor();
-              final row = ((position.dy - monthRow) / ContributionGrid._step)
-                  .floor();
-              if (week < 0 || week >= weeks || row < 0 || row > 6) return null;
-              final day = DateTime(
-                first.year,
-                first.month,
-                first.day + week * 7 + row,
-              );
-              return day.isAfter(today) ? null : day;
-            }
-
-            void pick(Offset position, Offset global) {
-              final day = dayAt(position);
-              if (day == _selected) return;
-              // The callout centres on the day's week, wherever the grid
-              // has scrolled to.
-              final week = (position.dx / ContributionGrid._step).floor();
-              final box = context.findRenderObject()! as RenderBox;
-              setState(() {
-                _selected = day;
-                _anchorX =
-                    box.globalToLocal(global).dx +
-                    week * ContributionGrid._step +
-                    ContributionGrid._cell / 2 -
-                    position.dx;
-              });
-            }
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: AppSpacing.xs,
-              children: [
-                // Hidden under the callout while a day is picked, keeping
-                // its room so nothing moves.
-                Opacity(
-                  opacity: selected == null ? 1 : 0,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: AppSpacing.xs,
-                    children: header,
+                    noData: l10n.progressNoData,
                   ),
+            header: (first) {
+              final span =
+                  DateTime.utc(today.year, today.month, today.day)
+                      .difference(
+                        DateTime.utc(first.year, first.month, first.day),
+                      )
+                      .inDays +
+                  1;
+              final daysLogged = counts.keys
+                  .where((d) => !d.isBefore(first) && !d.isAfter(today))
+                  .length;
+              // Hidden under the callout while a day is picked, keeping
+              // its room so nothing moves.
+              return Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 2 * AppSpacing.xs + AppSpacing.s,
                 ),
-                const SizedBox(height: AppSpacing.s),
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Row(
+                child: ExcludeSemantics(
+                  child: Opacity(
+                    opacity: selected == null ? 1 : 0,
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: AppSpacing.xs,
                       children: [
-                        Padding(
-                          padding: EdgeInsets.only(top: monthRow),
-                          child: SizedBox(
-                            width: lettersWidth,
-                            child: Column(
-                              children: [
-                                for (final w in weekdays)
-                                  SizedBox(
-                                    height: ContributionGrid._step,
-                                    child: Align(
-                                      alignment:
-                                          AlignmentDirectional.centerStart,
-                                      child: Text(
-                                        w,
-                                        style: labelStyle,
-                                        textScaler: TextScaler.noScaling,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: AppFormat.number(
+                                  daysLogged,
+                                  locale: locale,
+                                ),
+                                style: AppTextStyles.metric,
+                              ),
+                              TextSpan(
+                                text: ' ${l10n.contributionOfDays(span)}',
+                              ),
+                            ],
+                          ),
+                          style: AppTextStyles.rowDetail.copyWith(
+                            color: scheme.onSurfaceVariant,
                           ),
                         ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            reverse: true,
-                            child: GestureDetector(
-                              onLongPressStart: (d) =>
-                                  pick(d.localPosition, d.globalPosition),
-                              onLongPressMoveUpdate: (d) =>
-                                  pick(d.localPosition, d.globalPosition),
-                              onLongPressEnd: (_) =>
-                                  setState(() => _selected = null),
-                              child: SizedBox(
-                                width:
-                                    weeks * ContributionGrid._step -
-                                    ContributionGrid._gap,
-                                height:
-                                    monthRow +
-                                    7 * ContributionGrid._step -
-                                    ContributionGrid._gap,
-                                child: CustomPaint(
-                                  painter: _GridPainter(
-                                    weeks: weeks,
-                                    first: first,
-                                    today: today,
-                                    days: counts.keys.toSet(),
-                                    color: widget.color,
-                                    top: monthRow,
-                                    selected: selected,
-                                    ringColor: scheme.onSurface,
-                                    labelStyle: labelStyle,
-                                    textScaler: textScaler,
-                                    locale: context.dateLocale,
-                                  ),
-                                ),
-                              ),
-                            ),
+                        Text(
+                          l10n.contributionDaysLogged(
+                            '${date(first)} – ${date(today)}',
+                          ),
+                          style: AppTextStyles.label.copyWith(
+                            color: scheme.onSurfaceVariant,
                           ),
                         ),
                       ],
                     ),
-                    Positioned.fill(
-                      child: ChartCallout(
-                        anchorX: _anchorX,
-                        child: selected == null
-                            ? null
-                            : ChartCalloutSummary(
-                                rows: [
-                                  if (counts[selected] case final count?)
-                                    (
-                                      name: null,
-                                      color: null,
-                                      mark: null,
-                                      value:
-                                          widget.countText?.call(count) ??
-                                          l10n.calendarLogged,
-                                    ),
-                                ],
-                                footer: AppFormat.date(
-                                  selected,
-                                  style: AppDateStyle.weekdayMedium,
-                                  locale: context.dateLocale,
-                                ),
-                                noData: l10n.progressNoData,
-                              ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ],
-            );
-          },
-        ),
+              );
+            },
+            weekLabel: (start) {
+              final week = [
+                for (var day = 0; day < DateTime.daysPerWeek; day++)
+                  counts[DateTime(start.year, start.month, start.day + day)],
+              ].nonNulls;
+              return l10n.heatGridWeek(
+                date(start),
+                widget.countText?.call(week.fold(0, (a, b) => a + b)) ??
+                    l10n.heatGridDaysLogged(week.length),
+              );
+            },
+          ),
+          if (widget.graded)
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: HeatGridLegend(
+                levels: levels,
+                color: widget.color,
+                less: l10n.heatGridLess,
+                more: l10n.heatGridMore,
+              ),
+            ),
+        ],
       ),
     );
   }
-}
-
-class _GridPainter extends CustomPainter {
-  new({
-    required this.weeks,
-    required this.first,
-    required this.today,
-    required this.days,
-    required this.color,
-    required this.top,
-    required this.selected,
-    required this.ringColor,
-    required this.labelStyle,
-    required this.textScaler,
-    required this.locale,
-  });
-
-  final int weeks;
-  final DateTime first;
-  final DateTime today;
-  final Set<DateTime> days;
-  final Color color;
-
-  /// The height of the month names over the squares.
-  final double top;
-  final DateTime? selected;
-  final Color ringColor;
-  final TextStyle labelStyle;
-  final TextScaler textScaler;
-  final String locale;
-
-  static const double _corner = 3;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const step = ContributionGrid._step;
-    const cell = ContributionGrid._cell;
-    final filled = Paint()..color = color;
-    final blank = Paint()..color = color.withValues(alpha: 0.15);
-    var lastLabelEnd = double.negativeInfinity;
-    for (var week = 0; week < weeks; week++) {
-      final weekStart = DateTime(first.year, first.month, first.day + week * 7);
-      // A month is named over the column its first day falls in, unless
-      // the name before it is still in the way.
-      for (var row = 0; row < 7; row++) {
-        final day = DateTime(
-          weekStart.year,
-          weekStart.month,
-          weekStart.day + row,
-        );
-        if (day.day != 1 || day.isAfter(today)) continue;
-        final label = TextPainter(
-          text: TextSpan(
-            text: AppFormat.date(
-              day,
-              style: AppDateStyle.month,
-              locale: locale,
-            ),
-            style: labelStyle,
-          ),
-          textDirection: TextDirection.ltr,
-          textScaler: textScaler,
-        )..layout();
-        final x = week * step;
-        if (x >= lastLabelEnd) {
-          label.paint(canvas, Offset(x, 0));
-          lastLabelEnd = x + label.width + AppSpacing.xs;
-        }
-      }
-      for (var row = 0; row < 7; row++) {
-        final day = DateTime(
-          weekStart.year,
-          weekStart.month,
-          weekStart.day + row,
-        );
-        if (day.isAfter(today)) continue;
-        final rect = RRect.fromLTRBR(
-          week * step,
-          top + row * step,
-          week * step + cell,
-          top + row * step + cell,
-          const Radius.circular(_corner),
-        );
-        canvas.drawRRect(rect, days.contains(day) ? filled : blank);
-        if (day == selected) {
-          canvas.drawRRect(
-            rect.inflate(1.5),
-            Paint()
-              ..color = ringColor
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 2,
-          );
-        }
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_GridPainter old) =>
-      old.weeks != weeks ||
-      old.first != first ||
-      old.today != today ||
-      !setEquals(old.days, days) ||
-      old.color != color ||
-      old.top != top ||
-      old.selected != selected ||
-      old.ringColor != ringColor ||
-      old.labelStyle != labelStyle ||
-      old.textScaler != textScaler ||
-      old.locale != locale;
 }

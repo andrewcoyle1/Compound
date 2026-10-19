@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/progress/bloc/progress_bloc.dart' show ProgressPoint;
 import 'package:compound_charts/compound_charts.dart';
@@ -7,8 +5,8 @@ import 'package:compound_charts/compound_charts.dart';
 /// The small charts inside the Progress cards (Swift `SparklineChart`,
 /// `SetsBarChart`, `MacroStackedBarChart`, `MacroProgressChart` and the
 /// card `ContributionGridView`). [Sparkline] and [StackedBars] are
-/// [CartesianChart.compact]s; [HabitGridChart] is drawn with a
-/// [CustomPainter]. A target's bar is a [BulletBar].
+/// [CartesianChart.compact]s; [HabitGridChart] is a [HeatGrid.packed]. A
+/// target's bar is a [BulletBar].
 /// Each carries one accessibility summary, [semanticsLabel] and
 /// [semanticsValue], since a screen reader cannot read a plot.
 sealed class CardChart extends StatelessWidget {
@@ -150,9 +148,9 @@ final class StackedBars extends CardChart {
   }
 }
 
-/// The 30-day habit grid: ten columns of three days, oldest at the top
-/// left, read down each column; a filled square for each day with the
-/// habit.
+/// The 30-day habit grid, a [HeatGrid.packed]: ten columns of three
+/// days, oldest at the top left, read down each column; a full square for
+/// each day with the habit.
 final class HabitGridChart extends CardChart {
   const new({
     required this.days,
@@ -165,52 +163,16 @@ final class HabitGridChart extends CardChart {
   /// One per day, oldest first.
   final List<bool> days;
 
-  /// The filled squares' colour.
+  /// The full squares' colour.
   final Color color;
 
   @override
-  Widget _chart(BuildContext context) => CustomPaint(
-    size: Size.infinite,
-    painter: _GridPainter(days: days, color: color),
+  Widget _chart(BuildContext context) => HeatGrid.packed(
+    values: [
+      for (final done in days)
+        if (done) 1 else 0,
+    ],
+    levels: 2,
+    color: color,
   );
-}
-
-class _GridPainter extends CustomPainter {
-  new({required this.days, required this.color});
-
-  final List<bool> days;
-  final Color color;
-
-  static const _rows = 3;
-  static const _gap = 3.0;
-  static const double _corner = 2;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final columns = (days.length / _rows).ceil();
-    final cell = math.min(
-      (size.width - _gap * (columns - 1)) / columns,
-      (size.height - _gap * (_rows - 1)) / _rows,
-    );
-    final filled = Paint()..color = color;
-    final blank = Paint()..color = color.withValues(alpha: 0.15);
-    for (final (i, done) in days.indexed) {
-      final x = (i ~/ _rows) * (cell + _gap);
-      final y = (i % _rows) * (cell + _gap);
-      canvas.drawRRect(
-        RRect.fromLTRBR(
-          x,
-          y,
-          x + cell,
-          y + cell,
-          const Radius.circular(_corner),
-        ),
-        done ? filled : blank,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_GridPainter old) =>
-      old.days != days || old.color != color;
 }

@@ -132,7 +132,8 @@ void main() {
         await tester.runAsync(
           () => Future<void>.delayed(const Duration(milliseconds: 50)),
         );
-        await tester.pump();
+        // Elapses the capture's zero-length delay.
+        await tester.pump(Duration.zero);
       }
       expect(shares.images.single.$1, 'compound-week.png');
       expect(shares.images.single.$2, isNotEmpty);

@@ -252,20 +252,19 @@ class _SocialProfileViewState extends State<SocialProfileView> {
               _Header(summary: summary, followers: state.followers),
               if (!summary.isLocked) ...[
                 const SizedBox(height: AppSpacing.l),
-                SegmentedButton<SocialProfileTab>(
-                  showSelectedIcon: false,
+                AppSegmentedControl<SocialProfileTab>(
                   segments: [
-                    ButtonSegment(
+                    AppSegment(
                       value: SocialProfileTab.progress,
-                      label: Text(l10n.tabProgress),
+                      label: l10n.tabProgress,
                     ),
-                    ButtonSegment(
+                    AppSegment(
                       value: SocialProfileTab.activities,
-                      label: Text(l10n.socialActivities),
+                      label: l10n.socialActivities,
                     ),
                   ],
-                  selected: {state.tab},
-                  onSelectionChanged: (tabs) => _cubit.tabChanged(tabs.first),
+                  selected: state.tab,
+                  onChanged: _cubit.tabChanged,
                 ),
                 const SizedBox(height: AppSpacing.s),
                 if (state.tab == SocialProfileTab.progress) ...[

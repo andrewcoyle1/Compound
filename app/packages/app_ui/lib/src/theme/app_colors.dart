@@ -109,6 +109,16 @@ class AppColors extends ThemeExtension<AppColors> {
   static Color tintedSurface(Color color) =>
       color.withValues(alpha: color.a * 0.15);
 
+  /// A colour the user chose, stored as `#RRGGBB` (the `#` optional), such
+  /// as a gym plate's or a mesocycle's. User data, so not a token. Null when
+  /// [hex] is not six hex digits.
+  static Color? fromHex(String? hex) {
+    final digits = RegExp(r'^#?([0-9a-fA-F]{6})$').firstMatch(hex ?? '')?[1];
+    return digits == null
+        ? null
+        : Color(0xFF000000 | int.parse(digits, radix: 16));
+  }
+
   /// The screen background behind surfaces (iOS `systemGroupedBackground`).
   final Color canvas;
 

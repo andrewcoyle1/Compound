@@ -75,7 +75,8 @@ class RecipesView extends StatelessWidget {
               AppSpacing.l,
               AppSpacing.s,
             ),
-            child: LibrarySearchField(
+            child: AppSearchField(
+              clearLabel: l10n.clearSearch,
               key: const Key('Recipes.filter'),
               hint: l10n.recipesFilter,
               onChanged: cubit.filterChanged,

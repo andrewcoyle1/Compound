@@ -35,6 +35,8 @@ abstract final class AppTheme {
       surfaceContainerHighest: Color(0xFFE5E5EA),
       surfaceContainerHigh: Color(0xFFFFFFFF),
       surfaceTint: Color(0x00000000),
+      // A segmented control's thumb, raised on its track.
+      surfaceBright: Color(0xFFFFFFFF),
     ),
     AppColors.light,
   );
@@ -59,6 +61,7 @@ abstract final class AppTheme {
       surfaceContainerHighest: Color(0xFF2C2C2E),
       surfaceContainerHigh: Color(0xFF2C2C2E),
       surfaceTint: Color(0x00000000),
+      surfaceBright: Color(0xFF636366),
     ),
     AppColors.dark,
   );
@@ -72,6 +75,12 @@ abstract final class AppTheme {
       canvasColor: colors.canvas,
       textTheme: AppTextStyles.textTheme,
       extensions: [colors],
+      // Press feedback is the one thing that follows the platform: a ripple
+      // on Android, and on iOS only the pressed highlight, as a tapped iOS
+      // control dims rather than splashes.
+      splashFactory: defaultTargetPlatform == TargetPlatform.iOS
+          ? NoSplash.splashFactory
+          : null,
       iconTheme: IconThemeData(
         color: scheme.onSurface,
         size: AppIconSize.medium.points,
@@ -97,6 +106,7 @@ abstract final class AppTheme {
         backgroundColor: colors.surface,
         surfaceTintColor: const Color(0x00000000),
         indicatorColor: const Color(0x00000000),
+        overlayColor: const WidgetStatePropertyAll(Color(0x00000000)),
         elevation: 0,
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(

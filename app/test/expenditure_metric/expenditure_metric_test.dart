@@ -225,10 +225,10 @@ void main() {
       await pumpPage(tester, ExpenditureMetric.expenditure);
       await tester.tap(find.text('W'));
       await tester.pump();
-      final segmented = tester.widget<SegmentedButton<MetricRange>>(
-        find.byType(SegmentedButton<MetricRange>),
+      final segmented = tester.widget<AppSegmentedControl<MetricRange>>(
+        find.byType(AppSegmentedControl<MetricRange>),
       );
-      expect(segmented.selected, {MetricRange.week});
+      expect(segmented.selected, MetricRange.week);
       await tester.pumpWidget(const SizedBox());
       expect(analytics.names.last, 'ExpenditureDetailView_Disappear');
     });

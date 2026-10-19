@@ -240,22 +240,19 @@ class _PlateView extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: SegmentedButton<NutritionScope>(
+            child: AppSegmentedControl<NutritionScope>(
               segments: [
-                ButtonSegment(
+                AppSegment(
                   value: NutritionScope.plate,
-                  label: Text(l10n.addMealScopePlate),
+                  label: l10n.addMealScopePlate,
                 ),
-                ButtonSegment(
+                AppSegment(
                   value: NutritionScope.day,
-                  label: Text(l10n.addMealScopeDay),
+                  label: l10n.addMealScopeDay,
                 ),
               ],
-              selected: {state.scope},
-              onSelectionChanged: (selection) {
-                unawaited(HapticFeedback.selectionClick());
-                bloc.add(AddMealScopeChanged(selection.single));
-              },
+              selected: state.scope,
+              onChanged: (scope) => bloc.add(AddMealScopeChanged(scope)),
             ),
           ),
           Padding(

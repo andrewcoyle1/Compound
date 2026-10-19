@@ -246,12 +246,10 @@ class _GymProfileViewState extends State<GymProfileView> {
                   AppSpacing.l,
                   0,
                 ),
-                child: TextField(
+                child: AppSearchField(
                   key: const Key('GymProfile.search'),
-                  decoration: InputDecoration(
-                    hintText: l10n.gymFilterByName,
-                    prefixIcon: const Icon(AppSymbols.search),
-                  ),
+                  hint: l10n.gymFilterByName,
+                  clearLabel: l10n.clearSearch,
                   onChanged: _cubit.queryChanged,
                 ),
               ),

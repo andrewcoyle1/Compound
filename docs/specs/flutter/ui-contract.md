@@ -53,7 +53,19 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | Need | Use |
 |---|---|
 | Primary action | `AppCtaButton` in `AppBottomCta` |
+| A secondary action | `AppCtaButton(variant: AppCtaVariant.secondary)`: a tinted fill, never an outline |
+| An inline button in a row or card (Follow, Accept, Edit Profile) | `AppCtaButton(size: AppCtaSize.compact)`, primary or secondary |
+| A low-emphasis text action (See All, Not now) | `AppTextButton`, `isDestructive` for a removal |
+| An app bar button | `AppToolbarButton`; `.close` at a modal's leading edge, `.confirm` (with `isSaving`) at its trailing edge, `.avatar` for the profile button |
+| An icon-only button in content (a row's edit pencil) | `AppIconButton` |
 | A row | `AppListRow`, `AppListRowButton`, `AppListRowToggle`, `AppSelectableRow` in an `AppSection` |
+| A picker row | `AppListRowMenu(value)` as the row's accessory: the value with an up-and-down chevron |
+| A destructive row | `AppListRowButton(destructive: true)`: the title in `appColors.danger` |
+| A section header's note or action | `AppSection(trailing:)`: a `Text` ("Required", a count) or an `AppChip` with `onPressed` ("See All", "New", "Hide") |
+| A search | `AppSearchField` |
+| A choice between a few options | `AppSegmentedControl` |
+| The tab bar | `AppTabBar` |
+| A colour the user stored as `#RRGGBB` | `AppColors.fromHex` |
 | A card | `AppCard`, `AppStatTile` |
 | A value | `AppStat` |
 | A tag or filter | `AppChip` |
@@ -66,8 +78,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | Nothing to show, or a failure | `AppEmptyState`, `AppErrorState` |
 | Loading | `AppPlaceholderRow` / `AppPlaceholder` in place of the content; `AppLoadingView` for a screen's first load |
 
-Not wrapped yet, so the first screen that needs one adds it to `app_ui`: toolbar close and
-confirm buttons, a secondary or text button, and an icon button.
+Every icon-only button takes a required `semanticLabel`, which is also its tooltip.
 
 ## 4. Screen patterns
 

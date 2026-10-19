@@ -391,7 +391,8 @@ class _IngredientPickerView extends StatelessWidget {
               AppSpacing.l,
               AppSpacing.s,
             ),
-            child: LibrarySearchField(
+            child: AppSearchField(
+              clearLabel: l10n.clearSearch,
               hint: l10n.foodsFilter,
               onChanged: foodsCubit.filterChanged,
             ),

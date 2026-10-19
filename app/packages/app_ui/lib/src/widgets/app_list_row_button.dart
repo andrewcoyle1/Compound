@@ -14,6 +14,7 @@ class AppListRowButton extends StatelessWidget {
     this.thumbnail,
     this.tint,
     this.accessory = const AppListRowChevron(),
+    this.destructive = false,
     super.key,
   });
 
@@ -38,6 +39,9 @@ class AppListRowButton extends StatelessWidget {
   /// See [AppListRow.accessory]. A chevron by default.
   final AppListRowAccessory? accessory;
 
+  /// See [AppListRow.destructive].
+  final bool destructive;
+
   @override
   Widget build(BuildContext context) {
     return MergeSemantics(
@@ -52,6 +56,7 @@ class AppListRowButton extends StatelessWidget {
             thumbnail: thumbnail,
             tint: tint,
             accessory: accessory,
+            destructive: destructive,
           ),
         ),
       ),

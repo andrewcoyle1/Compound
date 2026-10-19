@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:compound/programs/view/program_widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:program_repository/program_repository.dart';
 
@@ -99,7 +98,7 @@ class const _Swatch({
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final tint = mesocycleColour(colour) ?? scheme.onSurface;
+    final tint = AppColors.fromHex(colour) ?? scheme.onSurface;
     final side = MediaQuery.textScalerOf(context).scale(AppControlSize.row);
     return Semantics(
       button: true,

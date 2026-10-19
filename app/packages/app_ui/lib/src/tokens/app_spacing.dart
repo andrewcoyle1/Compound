@@ -68,8 +68,15 @@ abstract final class AppControlSize {
   /// A list row's minimum height: iOS 26's inset-grouped row.
   static const double listRow = 52;
 
+  /// A compact control's drawn height: an inline button in a row or card,
+  /// a toolbar's confirm and avatar circles. Its tap target is still [row].
+  static const double compact = 32;
+
   /// A call-to-action button's minimum height (Swift's `CallToActionButton`).
   static const double cta = 56;
+
+  /// A segmented control's track: iOS's 32 pt, inside a 44 pt tap target.
+  static const double segmentedControl = 32;
 
   /// The app bar's height on iOS, as its navigation bar. Android keeps
   /// Material's 56.

@@ -227,19 +227,18 @@ class _RangePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return SegmentedButton<MetricRange>(
-      showSelectedIcon: false,
+    return AppSegmentedControl<MetricRange>(
       segments: [
         for (final range in ranges)
-          ButtonSegment(
+          AppSegment(
             value: range,
-            label: Text(switch (range) {
+            label: switch (range) {
               MetricRange.week => l10n.chartRangeWeek,
               MetricRange.month => l10n.chartRangeMonth,
               MetricRange.sixMonths => l10n.chartRangeSixMonths,
               MetricRange.year => l10n.chartRangeYear,
-            }),
-            tooltip: switch (range) {
+            },
+            semanticLabel: switch (range) {
               MetricRange.week => l10n.chartRangeWeekName,
               MetricRange.month => l10n.chartRangeMonthName,
               MetricRange.sixMonths => l10n.chartRangeSixMonthsName,
@@ -247,8 +246,8 @@ class _RangePicker extends StatelessWidget {
             },
           ),
       ],
-      selected: {range},
-      onSelectionChanged: (selected) => onSelected(selected.single),
+      selected: range,
+      onChanged: onSelected,
     );
   }
 }

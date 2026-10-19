@@ -19,7 +19,9 @@ void main() {
       );
     });
 
-    testWidgets('secondary is tonal and plain is text', (tester) async {
+    testWidgets('secondary is a filled button and plain is text', (
+      tester,
+    ) async {
       await tester.pumpApp(
         Column(
           children: [
@@ -38,6 +40,46 @@ void main() {
       );
       expect(find.byType(FilledButton), findsOneWidget);
       expect(find.byType(TextButton), findsOneWidget);
+    });
+
+    for (final variant in AppCtaVariant.values) {
+      testWidgets('compact ${variant.name} is as wide as its label, with a '
+          '44 pt target', (tester) async {
+        var taps = 0;
+        await tester.pumpApp(
+          Center(
+            child: AppCtaButton(
+              label: 'Accept',
+              onPressed: () => taps++,
+              variant: variant,
+              size: AppCtaSize.compact,
+            ),
+          ),
+        );
+        final size = tester.getSize(find.byType(AppCtaButton));
+        expect(size.width, lessThan(400));
+        expect(size.height, greaterThanOrEqualTo(AppControlSize.row));
+        await tester.tap(find.text('Accept'));
+        expect(taps, 1);
+      });
+    }
+
+    testWidgets('compact grows with large text', (tester) async {
+      await tester.pumpApp(
+        Center(
+          child: AppCtaButton(
+            label: 'Accept',
+            onPressed: () {},
+            size: AppCtaSize.compact,
+          ),
+        ),
+        textScale: 2,
+      );
+      final fill = find.descendant(
+        of: find.byType(FilledButton),
+        matching: find.byType(Material),
+      );
+      expect(tester.getSize(fill).height, greaterThan(AppControlSize.compact));
     });
 
     for (final variant in AppCtaVariant.values) {

@@ -268,7 +268,8 @@ class _EquipmentPickerViewState extends State<EquipmentPickerView> {
                 AppSpacing.l,
                 0,
               ),
-              child: LibrarySearchField(
+              child: AppSearchField(
+                clearLabel: l10n.clearSearch,
                 hint: l10n.createExerciseFilterEquipment,
                 onChanged: (query) => setState(() => _query = query),
               ),

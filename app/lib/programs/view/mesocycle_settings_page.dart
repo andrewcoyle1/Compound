@@ -126,7 +126,7 @@ class _MesocycleSettingsPageState extends State<MesocycleSettingsPage> {
                     // The row's own glyph shows both.
                     title: l10n.programColourAndIcon,
                     icon: mesocycleGlyph(mesocycle.icon),
-                    tint: mesocycleColour(mesocycle.colour),
+                    tint: AppColors.fromHex(mesocycle.colour),
                     onPressed: () async {
                       final chosen = await _tracked(
                         'EditMesocycleColourIconView',

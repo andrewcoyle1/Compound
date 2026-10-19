@@ -74,5 +74,39 @@ void main() {
       expect(find.byType(Divider), findsNothing);
       expect(find.byType(Text), findsOneWidget);
     });
+
+    testWidgets('a trailing note or action sits beside the header', (
+      tester,
+    ) async {
+      var hidden = false;
+      await tester.pumpApp(
+        Column(
+          children: [
+            const AppSection(
+              header: 'Exercise Name',
+              trailing: Text('Required'),
+              children: [AppListRow(title: 'One')],
+            ),
+            AppSection(
+              trailing: AppChip(label: 'Hide', onPressed: () => hidden = true),
+              children: const [AppListRow(title: 'Two')],
+            ),
+          ],
+        ),
+      );
+      final note = tester.widget<RichText>(
+        find.descendant(
+          of: find.text('Required'),
+          matching: find.byType(RichText),
+        ),
+      );
+      expect(note.text.style?.fontSize, AppTextStyles.label.fontSize);
+      expect(
+        tester.getCenter(find.text('Required')).dy,
+        closeTo(tester.getCenter(find.text('Exercise Name')).dy, 1),
+      );
+      await tester.tap(find.text('Hide'));
+      expect(hidden, isTrue);
+    });
   });
 }

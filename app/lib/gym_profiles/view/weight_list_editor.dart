@@ -187,7 +187,7 @@ class _WeightRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final figure = GymText.weight(weight.value, weight.unit);
-    final colour = colourFromHex(weight.colour);
+    final colour = AppColors.fromHex(weight.colour);
     final name = weight.name;
     final title = list == GymEquipmentList.bands && name != null
         ? name
@@ -388,7 +388,7 @@ class EquipmentColourPicker extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: colour == EquipmentColour.standard
                           ? scheme.onSurface
-                          : colourFromHex(colour.hex),
+                          : AppColors.fromHex(colour.hex),
                       border: Border.all(
                         color: colour == selected
                             ? scheme.primary

@@ -446,7 +446,7 @@ void main() {
 
       await cubit.photoPressed();
       expect(cubit.state.pickedPhoto, photo);
-      expect(picker.picks, [(PhotoSource.library, PhotoSize.standard)]);
+      expect(picker.picks, [(PhotoSource.library, PhotoSize.avatar)]);
       expect(images.images, isEmpty);
 
       await cubit.savePressed();

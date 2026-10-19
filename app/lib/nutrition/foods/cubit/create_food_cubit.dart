@@ -166,7 +166,7 @@ class CreateFoodCubit extends Cubit<CreateFoodState> {
     _analytics.analytic('IngredientImageSelector_Start');
     final Uint8List? photo;
     try {
-      photo = await _picker.pick(PhotoSource.library, PhotoSize.standard);
+      photo = await _picker.pick(PhotoSource.library, PhotoSize.foodImage);
     } on Object catch (error) {
       _analytics.severe('IngredientImageSelector_Fail', error);
       return;

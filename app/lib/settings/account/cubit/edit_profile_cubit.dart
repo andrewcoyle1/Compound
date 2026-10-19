@@ -99,7 +99,7 @@ class EditProfileCubit extends Cubit<EditProfileState> {
   /// uploaded by Save. A cancel changes nothing.
   Future<void> photoPressed() async {
     try {
-      final photo = await _picker.pick(PhotoSource.library, PhotoSize.standard);
+      final photo = await _picker.pick(PhotoSource.library, PhotoSize.avatar);
       if (photo == null) return;
       _analytics.analytic('profile_photo_selected');
       emit(

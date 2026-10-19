@@ -198,7 +198,7 @@ class GymProfileEditorCubit extends Cubit<GymProfileEditorState> {
     var drafted = false;
     _emit(state.copyWith(savingPhoto: true));
     try {
-      final photo = await _picker.pick(PhotoSource.library, PhotoSize.standard);
+      final photo = await _picker.pick(PhotoSource.library, PhotoSize.gymImage);
       if (photo == null) {
         _analytics.analytic('${_screen}_ImageSelected_Cancel');
         return;

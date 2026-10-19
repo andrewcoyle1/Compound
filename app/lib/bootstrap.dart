@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:bloc/bloc.dart';
+import 'package:image_repository/image_repository.dart';
 
 class AppBlocObserver extends BlocObserver {
   const new();
@@ -25,6 +26,7 @@ class AppBlocObserver extends BlocObserver {
 Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   WidgetsFlutterBinding.ensureInitialized();
   AppTextStyles.registerFontLicense();
+  registerPhotoLicenses();
 
   FlutterError.onError = (details) {
     log(details.exceptionAsString(), stackTrace: details.stack);

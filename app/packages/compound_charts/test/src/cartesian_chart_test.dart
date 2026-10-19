@@ -3,7 +3,8 @@ import 'dart:math' as math;
 import 'package:app_ui/app_ui.dart';
 import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_charts/src/cartesian_painter.dart';
-import 'package:flutter/gestures.dart' show kLongPressTimeout;
+import 'package:flutter/gestures.dart'
+    show LongPressGestureRecognizer, kDoubleTapMinTime, kLongPressTimeout;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/helpers.dart';
@@ -31,6 +32,12 @@ final ChartSeries _weight = ChartSeries(
 );
 
 final ChartData _line = _week([_weight]);
+
+final ChartSeries _trend = ChartSeries(
+  label: 'Trend',
+  color: _blue,
+  points: _daily(_weekStart, [72.9, 72.6, 72.7, 72.3, 72.4, 72.1, 71.9]),
+);
 
 final ChartData _area = ChartData(
   start: DateTime(2026, 9, 16),
@@ -130,23 +137,90 @@ Duration _half(AppMotion motion) => motion.duration ~/ 2;
 
 void main() {
   group(CartesianChart, () {
-    testWidgets('picks the bucket under a held finger, then lets go', (
+    testWidgets('takes no gestures unless interactive', (tester) async {
+      await tester.pumpApp(CartesianChart(data: _line, onSelected: (_) {}));
+      expect(
+        find.descendant(
+          of: find.byType(CartesianChart),
+          matching: find.byType(RawGestureDetector),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('takes no long press without onSelected', (tester) async {
+      await tester.pumpApp(CartesianChart(data: _line, interactive: true));
+      final detector = tester.widget<RawGestureDetector>(
+        find
+            .descendant(
+              of: find.byType(CartesianChart),
+              matching: find.byType(RawGestureDetector),
+            )
+            .first,
+      );
+      expect(
+        detector.gestures.keys,
+        isNot(contains(LongPressGestureRecognizer)),
+      );
+    });
+
+    testWidgets('marks every series at the bucket picked', (tester) async {
+      await tester.pumpApp(
+        CartesianChart(data: _stacked, selected: DateTime(2026, 10, 15)),
+      );
+      await tester.pumpAndSettle();
+      // Each on its ring, a bar's on its segment's top.
+      final canvas = AppTheme.light.extension<AppColors>()!.canvas;
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is CustomPaint && w.painter is CartesianPainter,
+        ),
+        paints
+          ..circle(color: canvas)
+          ..circle(color: _red)
+          ..circle(color: canvas)
+          ..circle(color: _green)
+          ..circle(color: canvas)
+          ..circle(color: _orange)
+          ..circle(color: canvas)
+          ..circle(color: _blue),
+      );
+    });
+  });
+
+  group('trackball', () {
+    late List<AppHaptic> haptics;
+
+    setUp(() {
+      haptics = [];
+      AppHaptics.debugPlay = haptics.add;
+    });
+
+    tearDown(() => AppHaptics.debugPlay = null);
+
+    testWidgets('follows a held finger bucket by bucket, then lets go', (
       tester,
     ) async {
       final picked = <DateTime?>[];
       await tester.pumpApp(
         Center(
-          child: CartesianChart(data: _line, onSelected: picked.add),
+          child: CartesianChart(
+            data: _line,
+            interactive: true,
+            onSelected: picked.add,
+          ),
         ),
       );
       final chart = tester.getRect(find.byType(CartesianChart));
       final gesture = await tester.startGesture(chart.centerLeft);
       await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
       expect(picked, [DateTime(2026, 10, 12)]);
+      expect(haptics, [AppHaptic.selection]);
 
       await gesture.moveTo(chart.centerRight);
       await tester.pump();
       expect(picked.last, DateTime(2026, 10, 18));
+      expect(haptics, hasLength(2));
 
       await gesture.up();
       await tester.pump();
@@ -159,6 +233,7 @@ void main() {
         Center(
           child: CartesianChart(
             data: _line,
+            interactive: true,
             selected: DateTime(2026, 10, 12),
             onSelected: picked.add,
           ),
@@ -168,13 +243,18 @@ void main() {
         tester.getRect(find.byType(CartesianChart)).centerLeft,
       );
       expect(picked, [null]);
+      expect(haptics, isEmpty);
     });
 
     testWidgets('has nothing to pick when empty', (tester) async {
       final picked = <DateTime?>[];
       await tester.pumpApp(
         Center(
-          child: CartesianChart(data: _empty, onSelected: picked.add),
+          child: CartesianChart(
+            data: _empty,
+            interactive: true,
+            onSelected: picked.add,
+          ),
         ),
       );
       await tester.longPress(find.byType(CartesianChart));
@@ -187,7 +267,6 @@ void main() {
           child: CartesianChart(
             data: _line,
             selected: DateTime(2026, 10, 15),
-            onSelected: (_) {},
             callout: const Text('72.4 kg'),
           ),
         ),
@@ -200,18 +279,229 @@ void main() {
       expect(callout.center.dx, lessThan(chart.center.dx));
       expect(callout.center.dx, greaterThan(chart.left + chart.width / 4));
     });
+  });
 
-    testWidgets('takes no long press without onSelected', (tester) async {
-      await tester.pumpApp(CartesianChart(data: _line));
-      final detector = tester.widget<GestureDetector>(
-        find.descendant(
-          of: find.byType(CartesianChart),
-          matching: find.byType(GestureDetector),
+  group('paging, zoom and pan', () {
+    late List<int> pages;
+
+    Future<Rect> pumpChart(WidgetTester tester, {ChartData? data}) async {
+      pages = [];
+      await tester.pumpApp(
+        Center(
+          child: CartesianChart(
+            data: data ?? _line,
+            interactive: true,
+            onPage: pages.add,
+          ),
         ),
       );
-      expect(detector.onLongPressStart, isNull);
+      await tester.pumpAndSettle();
+      return tester.getRect(find.byType(CartesianChart));
+    }
+
+    Duration span(WidgetTester tester) {
+      final shown = _painter(tester).shown;
+      return shown.end.difference(shown.start);
+    }
+
+    /// Spreads two fingers [by] further apart about [centre], and lifts
+    /// them.
+    Future<void> pinch(WidgetTester tester, Offset centre, double by) async {
+      final a = await tester.startGesture(centre - const Offset(40, 0));
+      final b = await tester.startGesture(centre + const Offset(40, 0));
+      for (var i = 0; i < 4; i++) {
+        await a.moveBy(Offset(-by / 8, 0));
+        await b.moveBy(Offset(by / 8, 0));
+        await tester.pump();
+      }
+      await a.up();
+      await b.up();
+      await tester.pumpAndSettle();
+    }
+
+    /// Drags one finger [by] slowly enough not to fling.
+    Future<void> pan(WidgetTester tester, Offset from, double by) async {
+      final finger = await tester.startGesture(from);
+      for (var i = 0; i < 4; i++) {
+        await finger.moveBy(Offset(by / 4, 0));
+        await tester.pump();
+      }
+      await finger.up();
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a fling pages back or on', (tester) async {
+      await pumpChart(tester);
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(300, 0),
+        800,
+      );
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(-300, 0),
+        800,
+      );
+      expect(pages, [-1, 1]);
     });
 
+    testWidgets('a slow drag neither pages nor pans', (tester) async {
+      final chart = await pumpChart(tester);
+      await pan(tester, chart.center, 200);
+      expect(pages, isEmpty);
+      expect(_painter(tester).shown, _line);
+    });
+
+    testWidgets('pinching zooms in about the fingers and refits the axis', (
+      tester,
+    ) async {
+      final chart = await pumpChart(tester);
+      final fullAxis = _painter(tester).geometry.axis!;
+      await pinch(tester, chart.centerRight - const Offset(80, 0), 400);
+      final shown = _painter(tester).shown;
+      expect(span(tester), lessThan(const Duration(days: 4)));
+      // Zoomed about the fingers, near the window's end.
+      expect(shown.end.isAfter(DateTime(2026, 10, 17)), isTrue);
+      // The axis fits only what is shown.
+      final axis = _painter(tester).geometry.axis!;
+      expect(axis.high, lessThan(fullAxis.high));
+    });
+
+    testWidgets('zooms no closer than a bucket nor further than all', (
+      tester,
+    ) async {
+      final chart = await pumpChart(tester);
+      await pinch(tester, chart.center, 2000);
+      expect(span(tester), const Duration(days: 1));
+
+      await pinch(tester, chart.center, -70);
+      expect(_painter(tester).shown, _line);
+    });
+
+    testWidgets('pans when zoomed, and pages only from an edge', (
+      tester,
+    ) async {
+      final chart = await pumpChart(tester);
+      await pinch(tester, chart.center, 300);
+      final zoomed = _painter(tester).shown;
+
+      await pan(tester, chart.center, 40);
+      final panned = _painter(tester).shown;
+      expect(panned.start.isBefore(zoomed.start), isTrue);
+      expect(
+        span(tester).inMinutes,
+        zoomed.end.difference(zoomed.start).inMinutes,
+      );
+
+      // A fling from the middle only pans.
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(-300, 0),
+        800,
+      );
+      await tester.pumpAndSettle();
+      expect(pages, isEmpty);
+
+      // Panned to the start, a fling back pages back.
+      await pan(tester, chart.center, 4000);
+      expect(_painter(tester).shown.start, _line.start);
+      await tester.fling(
+        find.byType(CartesianChart),
+        const Offset(300, 0),
+        800,
+      );
+      expect(pages, [-1]);
+    });
+
+    testWidgets('a double tap shows the whole window again', (tester) async {
+      final chart = await pumpChart(tester);
+      await tester.tap(find.byType(CartesianChart));
+      await tester.pump(kDoubleTapMinTime);
+      await tester.tap(find.byType(CartesianChart));
+      await tester.pumpAndSettle();
+      expect(_painter(tester).shown, _line);
+
+      await pinch(tester, chart.center, 300);
+      expect(_painter(tester).shown, isNot(_line));
+      await tester.tap(find.byType(CartesianChart));
+      await tester.pump(kDoubleTapMinTime);
+      await tester.tap(find.byType(CartesianChart));
+      await tester.pumpAndSettle();
+      expect(_painter(tester).shown, _line);
+    });
+
+    testWidgets('keeps the zoom for new data, not for a new window', (
+      tester,
+    ) async {
+      final chart = await pumpChart(tester);
+      await pinch(tester, chart.center, 300);
+      final zoomed = span(tester);
+
+      await tester.pumpApp(
+        Center(
+          child: CartesianChart(
+            data: _week([_weight, _trend]),
+            interactive: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(span(tester), zoomed);
+
+      await tester.pumpApp(
+        Center(child: CartesianChart(data: _lastWeek, interactive: true)),
+      );
+      await tester.pumpAndSettle();
+      expect(_painter(tester).shown, _lastWeek);
+    });
+
+    testWidgets('a vertical drag scrolls the page', (tester) async {
+      final scroll = ScrollController();
+      addTearDown(scroll.dispose);
+      await tester.pumpApp(
+        ListView(
+          controller: scroll,
+          children: [
+            CartesianChart(data: _line, interactive: true, onPage: (_) {}),
+            const SizedBox(height: 2000),
+          ],
+        ),
+      );
+      await tester.drag(find.byType(CartesianChart), const Offset(0, -200));
+      await tester.pumpAndSettle();
+      expect(scroll.offset, greaterThan(0));
+    });
+  });
+
+  group('semantics', () {
+    testWidgets('makes each bucket in the window a node', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpApp(
+        CartesianChart(
+          data: _line,
+          bucketLabel: (bucket) => 'Day ${bucket.day}',
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (var day = 12; day <= 18; day++) {
+        expect(find.semantics.byLabel('Day $day'), findsOne);
+      }
+      final monday = find.semantics.byLabel('Day 12').evaluate().single.rect;
+      final sunday = find.semantics.byLabel('Day 18').evaluate().single.rect;
+      expect(monday.right, lessThanOrEqualTo(sunday.left + 1));
+      handle.dispose();
+    });
+
+    testWidgets('has no bucket nodes without a label', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpApp(CartesianChart(data: _line));
+      await tester.pumpAndSettle();
+      expect(find.semantics.byLabel(RegExp('.')), findsNothing);
+      handle.dispose();
+    });
+  });
+
+  group('drawing', () {
     testWidgets('repaints for a new theme, text size or window', (
       tester,
     ) async {
@@ -326,8 +616,31 @@ void main() {
       ('dots, a year by month', CartesianChart(data: _dots)),
       ('a line with point markers', CartesianChart(data: _marked)),
       (
-        'a bucket picked',
-        CartesianChart(data: _line, selected: DateTime(2026, 10, 15)),
+        'trackball held, a callout row per series',
+        Padding(
+          // Room for the callout, which floats above the chart.
+          padding: const EdgeInsets.only(top: 150),
+          child: CartesianChart(
+            data: _week([_weight, _trend]),
+            selected: DateTime(2026, 10, 15),
+            callout: ChartCalloutSummary(
+              rows: [
+                for (final (name, color, value) in [
+                  ('Weight', _green, '72.4 kg'),
+                  ('Trend', _blue, '72.3 kg'),
+                ])
+                  (
+                    name: name,
+                    color: color,
+                    mark: ChartMark.line,
+                    value: value,
+                  ),
+              ],
+              footer: 'Thu, Oct 15',
+              noData: 'No Data',
+            ),
+          ),
+        ),
       ),
       ('empty', CartesianChart(data: _empty)),
     ]);

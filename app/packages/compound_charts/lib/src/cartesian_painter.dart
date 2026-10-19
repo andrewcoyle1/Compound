@@ -4,6 +4,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:app_ui/app_ui.dart';
 import 'package:compound_charts/src/data.dart';
 import 'package:compound_charts/src/scale.dart';
+import 'package:flutter/semantics.dart' show SemanticsProperties;
 
 /// A value axis as drawn: the values at its bottom and top, its round
 /// values, and the room its labels take beside the plot, gap included.
@@ -85,8 +86,14 @@ class ChartLabels {
 ///   and fade likewise.
 /// - Marks are revealed from [startReveal] to fully: bars grow from zero,
 ///   areas rise, lines draw from the leading edge and dots pop in.
+/// - The value axis fits only the points inside the window, so a zoomed
+///   chart's axis fits what is shown.
+///
+/// With a [bucketLabel], each bucket in the window is a node for screen
+/// readers, saying its label.
 class CartesianPainter extends CustomPainter {
-  /// Paints [data], with a rule through [selected] when there is one.
+  /// Paints [data], with a rule through [selected] and a marker on each
+  /// series there when there is one.
   new({
     required this.data,
     required this.progress,
@@ -97,11 +104,13 @@ class CartesianPainter extends CustomPainter {
     required this.textDirection,
     required this.gridColor,
     required this.ruleColor,
+    required this.markerRing,
     this.curve = Curves.linear,
     this.startReveal = 1,
     this.from,
     this.selected,
     this.locale,
+    this.bucketLabel,
   }) : super(repaint: progress);
 
   /// What to plot, from what was on screen to what is to be.
@@ -140,8 +149,15 @@ class CartesianPainter extends CustomPainter {
   /// The colour of the rule through [selected].
   final Color ruleColor;
 
+  /// The ring around each series' marker on [selected], parting it from
+  /// the line beneath: the colour behind the chart.
+  final Color markerRing;
+
   /// The bucket picked.
   final DateTime? selected;
+
+  /// What a screen reader says for each bucket.
+  final String Function(DateTime bucket)? bucketLabel;
 
   /// The locale values and dates are written in.
   final String? locale;
@@ -324,9 +340,66 @@ class CartesianPainter extends CustomPainter {
           ..color = ruleColor
           ..strokeWidth = AppChartMark.ruleWidth,
       );
+      // A marker on every series there: a bar's on its segment's top.
+      var stack = 0.0;
+      for (final s in data.series) {
+        final point = s.points.where((p) => p.x == date).firstOrNull;
+        if (point == null) continue;
+        final y = s.mark == ChartMark.bar ? stack += point.y : point.y;
+        final centre = Offset(x, yOf(y));
+        canvas
+          ..drawCircle(
+            centre,
+            AppChartMark.dotRadius + AppChartMark.lineWidth,
+            Paint()..color = markerRing,
+          )
+          ..drawCircle(
+            centre,
+            AppChartMark.dotRadius,
+            Paint()..color = s.color,
+          );
+      }
     }
     labels.end();
   }
+
+  @override
+  SemanticsBuilderCallback? get semanticsBuilder {
+    final label = bucketLabel;
+    if (label == null) return null;
+    return (size) {
+      final window = data.end;
+      final plot = geometry.plot;
+      final width =
+          plot.width *
+          window.bucketDays *
+          Duration.minutesPerDay /
+          window.end.difference(window.start).inMinutes;
+      return [
+        for (final bucket in window.buckets)
+          if (window.contains(bucket))
+            CustomPainterSemantics(
+              rect: Rect.fromCenter(
+                center: Offset(
+                  plot.left + plot.width * window.fraction(bucket),
+                  plot.center.dy,
+                ),
+                width: width,
+                height: plot.height,
+              ).intersect(plot),
+              properties: SemanticsProperties(
+                label: label(bucket),
+                textDirection: textDirection,
+              ),
+            ),
+      ];
+    };
+  }
+
+  // The plot moves without a new painter as the axis settles, and the
+  // labels are a closure, so the nodes are rebuilt with every painter.
+  @override
+  bool shouldRebuildSemantics(CartesianPainter oldDelegate) => true;
 
   Paint _gridPaint(double alpha) => Paint()
     ..color = gridColor.withValues(alpha: gridColor.a * alpha)
@@ -344,14 +417,16 @@ class CartesianPainter extends CustomPainter {
     canvas.restore();
   }
 
-  /// The value axis that fits [data] in [room], the plot's height in
-  /// labels, or null when it has nothing to plot.
+  /// The value axis that fits [data]'s points inside its window in
+  /// [room], the plot's height in labels, or null when it has nothing to
+  /// plot.
   ChartAxis? _axis(ChartData data, double room) {
     // Bars stack, so the axis must reach each stack's total.
     final stacks = <DateTime, double>{};
     final values = <double>[];
     for (final s in data.series) {
       for (final p in s.points) {
+        if (!data.contains(p.x)) continue;
         if (s.mark == ChartMark.bar) {
           stacks[p.x] = (stacks[p.x] ?? 0) + p.y;
         } else {
@@ -533,6 +608,7 @@ class CartesianPainter extends CustomPainter {
       oldDelegate.textDirection != textDirection ||
       oldDelegate.gridColor != gridColor ||
       oldDelegate.ruleColor != ruleColor ||
+      oldDelegate.markerRing != markerRing ||
       oldDelegate.locale != locale;
 }
 

@@ -38,12 +38,22 @@ ChartCalloutSummary _summary(List<ChartCalloutRow> rows) =>
     ChartCalloutSummary(rows: rows, footer: '12–18 Oct', noData: 'No Data');
 
 const List<ChartCalloutRow> _twoSeries = [
-  (name: 'Weight', color: Color(0xFF34C759), value: '82.5 kg'),
-  (name: 'Trend', color: Color(0xFF007AFF), value: '82.1 kg'),
+  (
+    name: 'Weight',
+    color: Color(0xFF34C759),
+    mark: ChartMark.dot,
+    value: '82.5 kg',
+  ),
+  (
+    name: 'Trend',
+    color: Color(0xFF007AFF),
+    mark: ChartMark.line,
+    value: '82.1 kg',
+  ),
 ];
 
 const List<ChartCalloutRow> _oneUnnamed = [
-  (name: null, color: null, value: '4 workouts'),
+  (name: null, color: null, mark: null, value: '4 workouts'),
 ];
 
 void main() {

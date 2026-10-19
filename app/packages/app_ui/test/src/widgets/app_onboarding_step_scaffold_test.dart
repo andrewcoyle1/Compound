@@ -129,7 +129,7 @@ void main() {
       );
       expect(find.byType(LinearProgressIndicator), findsNothing);
       expect(find.byType(AppCtaButton), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppSpinner), findsOneWidget);
     });
   });
 

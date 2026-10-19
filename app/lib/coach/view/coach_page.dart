@@ -375,7 +375,7 @@ class _Chat extends StatelessWidget {
                           alignment: AlignmentDirectional.centerStart,
                           child: Padding(
                             padding: EdgeInsets.all(AppSpacing.m),
-                            child: CircularProgressIndicator.adaptive(),
+                            child: AppSpinner(),
                           ),
                         )
                       : CoachMessageBody(

@@ -902,10 +902,7 @@ class _ShareImageButtonState extends State<_ShareImageButton> {
     if (_rendering) {
       return const Padding(
         padding: EdgeInsets.all(AppSpacing.l),
-        child: SizedBox.square(
-          dimension: AppSpacing.l,
-          child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-        ),
+        child: AppSpinner(size: AppSpinnerSize.small),
       );
     }
     return PopupMenuButton<ShareCardFormat>(

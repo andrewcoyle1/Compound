@@ -93,7 +93,7 @@ void main() {
         appBloc: appBloc,
         workoutSessionRepository: sessions,
       );
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppSpinner), findsOneWidget);
       await tester.pump(const Duration(seconds: 1));
     });
 
@@ -151,6 +151,7 @@ void main() {
           appBloc: appBloc,
           userRepository: users,
           workoutSessionRepository: sessions,
+          disableAnimations: false,
         );
         await tester.pump();
         expect(burst, findsOneWidget);

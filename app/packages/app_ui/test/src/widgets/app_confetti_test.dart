@@ -9,7 +9,10 @@ void main() {
     final burst = find.byType(ConfettiWidget);
 
     testWidgets('shows only its child at rest', (tester) async {
-      await tester.pumpApp(const AppConfetti(child: glyph));
+      await tester.pumpApp(
+        const AppConfetti(child: glyph),
+        disableAnimations: false,
+      );
       expect(find.byIcon(AppSymbols.success), findsOneWidget);
       expect(burst, findsNothing);
     });
@@ -17,8 +20,14 @@ void main() {
     testWidgets('bursts when play turns true, then clears and settles', (
       tester,
     ) async {
-      await tester.pumpApp(const AppConfetti(child: glyph));
-      await tester.pumpApp(const AppConfetti(play: true, child: glyph));
+      await tester.pumpApp(
+        const AppConfetti(child: glyph),
+        disableAnimations: false,
+      );
+      await tester.pumpApp(
+        const AppConfetti(play: true, child: glyph),
+        disableAnimations: false,
+      );
       await tester.pump();
       expect(burst, findsOneWidget);
       expect(
@@ -28,14 +37,20 @@ void main() {
 
       // Staying true does not burst again.
       await tester.pump(AppConfetti.lifetime);
-      await tester.pumpApp(const AppConfetti(play: true, child: glyph));
+      await tester.pumpApp(
+        const AppConfetti(play: true, child: glyph),
+        disableAnimations: false,
+      );
       await tester.pumpAndSettle();
       expect(burst, findsNothing);
       expect(find.byIcon(AppSymbols.success), findsOneWidget);
     });
 
     testWidgets('bursts once when it appears, if asked', (tester) async {
-      await tester.pumpApp(const AppConfetti(playsOnMount: true, child: glyph));
+      await tester.pumpApp(
+        const AppConfetti(playsOnMount: true, child: glyph),
+        disableAnimations: false,
+      );
       await tester.pump();
       expect(burst, findsOneWidget);
       await tester.pumpAndSettle();
@@ -45,10 +60,19 @@ void main() {
     testWidgets('bursts again from the start while still bursting', (
       tester,
     ) async {
-      await tester.pumpApp(const AppConfetti(playsOnMount: true, child: glyph));
+      await tester.pumpApp(
+        const AppConfetti(playsOnMount: true, child: glyph),
+        disableAnimations: false,
+      );
       await tester.pump(AppConfetti.lifetime ~/ 2);
-      await tester.pumpApp(const AppConfetti(child: glyph));
-      await tester.pumpApp(const AppConfetti(play: true, child: glyph));
+      await tester.pumpApp(
+        const AppConfetti(child: glyph),
+        disableAnimations: false,
+      );
+      await tester.pumpApp(
+        const AppConfetti(play: true, child: glyph),
+        disableAnimations: false,
+      );
       await tester.pump(AppConfetti.lifetime * 0.75);
       expect(burst, findsOneWidget);
       await tester.pumpAndSettle();
@@ -56,10 +80,7 @@ void main() {
     });
 
     testWidgets('never plays with reduced motion', (tester) async {
-      await tester.pumpApp(
-        const AppConfetti(playsOnMount: true, child: glyph),
-        disableAnimations: true,
-      );
+      await tester.pumpApp(const AppConfetti(playsOnMount: true, child: glyph));
       await tester.pump();
       expect(burst, findsNothing);
     });
@@ -84,6 +105,7 @@ void main() {
             child: AppCtaButton(label: 'Done', onPressed: () => taps++),
           ),
         ),
+        disableAnimations: false,
       );
       await tester.pump();
       expect(burst, findsOneWidget);
@@ -92,7 +114,10 @@ void main() {
     });
 
     testWidgets('can go mid-burst', (tester) async {
-      await tester.pumpApp(const AppConfetti(playsOnMount: true, child: glyph));
+      await tester.pumpApp(
+        const AppConfetti(playsOnMount: true, child: glyph),
+        disableAnimations: false,
+      );
       await tester.pump();
       await tester.pumpApp(const SizedBox.shrink());
       expect(burst, findsNothing);

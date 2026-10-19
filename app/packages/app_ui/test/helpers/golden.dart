@@ -22,7 +22,9 @@ const List<(String, Brightness, double)> _variants = [
 /// Each cell is [width] wide on the theme's canvas, padded unless [padded]
 /// is false; [height] fixes its height, which a screen-sized widget needs.
 /// [pumpBeforeTest] replaces the default settle, for a widget that never
-/// settles (a spinner).
+/// settles. Animations are off (reduced motion), so placeholders and
+/// spinners hold still; a state that wants them on sets its own
+/// [MediaQuery].
 void goldenStates(
   String fileName,
   List<GoldenState> states, {
@@ -107,8 +109,10 @@ class _Cell extends StatelessWidget {
     data: theme,
     child: Builder(
       builder: (context) => MediaQuery(
-        data: MediaQuery.of(context)
-            .copyWith(textScaler: TextScaler.linear(textScale)),
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(textScale),
+          disableAnimations: true,
+        ),
         child: Material(
           color: context.appColors.canvas,
           child: SizedBox(

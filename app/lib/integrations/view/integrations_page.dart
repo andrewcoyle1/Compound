@@ -89,7 +89,7 @@ class IntegrationsView extends StatelessWidget {
                     tint: context.appColors.workouts,
                     accessory: state.isConnecting
                         ? const AppListRowCustom(
-                            CircularProgressIndicator.adaptive(),
+                            AppSpinner(size: AppSpinnerSize.small),
                           )
                         : state.available && athlete == null
                         ? AppListRowCustom(
@@ -121,7 +121,7 @@ class IntegrationsView extends StatelessWidget {
                         icon: AppSymbols.start,
                         accessory: AppListRowCustom(
                           state.isTestingUpload
-                              ? const CircularProgressIndicator.adaptive()
+                              ? const AppSpinner(size: AppSpinnerSize.small)
                               : AppCtaButton(
                                   label: l10n.stravaTestUpload,
                                   size: AppCtaSize.compact,

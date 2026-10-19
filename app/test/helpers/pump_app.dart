@@ -104,7 +104,15 @@ extension PumpApp on WidgetTester {
     ReviewPrompter? reviews,
     double textScale = 1,
     GoRouter? router,
+    // Off unless a test turns them on, so a shimmering placeholder or a
+    // spinner never keeps pumpAndSettle from settling.
+    bool disableAnimations = true,
   }) {
+    Widget scope(BuildContext context, Widget? child) => MediaQuery(
+      data: MediaQuery.of(context)
+          .copyWith(disableAnimations: disableAnimations),
+      child: AppSnackBarScope(child: child!),
+    );
     return pumpWidget(
       MultiRepositoryProvider(
         providers: [
@@ -319,14 +327,14 @@ extension PumpApp on WidgetTester {
                       AppLocalizations.localizationsDelegates,
                   supportedLocales: AppLocalizations.supportedLocales,
                   routerConfig: router,
-                  builder: (_, child) => AppSnackBarScope(child: child!),
+                  builder: scope,
                 )
               : MaterialApp(
                   theme: AppTheme.light,
                   localizationsDelegates:
                       AppLocalizations.localizationsDelegates,
                   supportedLocales: AppLocalizations.supportedLocales,
-                  builder: (_, child) => AppSnackBarScope(child: child!),
+                  builder: scope,
                   home: MediaQuery.withClampedTextScaling(
                     minScaleFactor: textScale,
                     maxScaleFactor: textScale,

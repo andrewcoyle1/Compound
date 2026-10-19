@@ -837,8 +837,8 @@ List<Widget> galleryOverlays(BuildContext context) {
   ];
 }
 
-/// [AppEmptyState], [AppErrorState], [AppLoadingView], [AppPlaceholder] and
-/// [AppPlaceholderRow].
+/// [AppEmptyState], [AppErrorState], [AppLoadingView], [AppSpinner],
+/// [AppPlaceholder] and [AppPlaceholderRow].
 List<Widget> galleryStates(BuildContext context) {
   final l10n = context.l10n;
   return [
@@ -876,6 +876,17 @@ List<Widget> galleryStates(BuildContext context) {
       galleryBlock(
         'label',
         AppLoadingView(label: l10n.devGallerySampleLoading),
+      ),
+    ]),
+    galleryEntry('AppSpinner', [
+      galleryBlock('regular', const AppSpinner()),
+      galleryBlock('small', const AppSpinner(size: AppSpinnerSize.small)),
+      galleryBlock(
+        'color: onSurfaceVariant',
+        AppSpinner(
+          size: AppSpinnerSize.small,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     ]),
     galleryEntry('AppPlaceholderRow', [

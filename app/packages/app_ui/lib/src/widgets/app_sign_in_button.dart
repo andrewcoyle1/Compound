@@ -56,9 +56,6 @@ class AppSignInButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onTap = isLoading ? null : onPressed;
-    // iOS's spinner takes its tick colour from `backgroundColor`, and its
-    // own grey vanishes on the Apple button's fill.
-    final iosTicks = _cupertino(context) ? foreground : null;
     return Semantics(
       button: true,
       enabled: onTap != null,
@@ -77,13 +74,9 @@ class AppSignInButton extends StatelessWidget {
             width: double.infinity,
             child: isLoading
                 ? Center(
-                    child: SizedBox.square(
-                      dimension: AppIconSize.small.of(context),
-                      child: CircularProgressIndicator.adaptive(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(foreground),
-                        backgroundColor: iosTicks,
-                      ),
+                    child: AppSpinner(
+                      size: AppSpinnerSize.small,
+                      color: foreground,
                     ),
                   )
                 : FittedBox(
@@ -113,8 +106,3 @@ class AppSignInButton extends StatelessWidget {
     );
   }
 }
-
-bool _cupertino(BuildContext context) => const {
-  TargetPlatform.iOS,
-  TargetPlatform.macOS,
-}.contains(Theme.of(context).platform);

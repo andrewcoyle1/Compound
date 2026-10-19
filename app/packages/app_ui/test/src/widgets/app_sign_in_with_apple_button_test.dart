@@ -63,7 +63,7 @@ void main() {
           isLoading: true,
         ),
       );
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppSpinner), findsOneWidget);
       expect(find.text('Continue with Apple'), findsNothing);
       await tester.tap(find.byType(AppSignInWithAppleButton));
       expect(taps, 0);

@@ -316,9 +316,8 @@ class const _GroupRow({
                         if (opening == group.newest.id)
                           const SizedBox.square(
                             dimension: AppSpacing.xxl,
-                            child: Padding(
-                              padding: EdgeInsets.all(AppSpacing.s),
-                              child: CircularProgressIndicator.adaptive(),
+                            child: Center(
+                              child: AppSpinner(size: AppSpinnerSize.small),
                             ),
                           )
                         else

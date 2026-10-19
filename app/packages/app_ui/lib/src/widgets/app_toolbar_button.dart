@@ -155,11 +155,11 @@ class AppToolbarButton extends StatelessWidget {
         tooltip: semanticLabel,
         iconSize: AppIconSize.small.points,
         icon: isSaving
-            ? SizedBox.square(
-                dimension: AppIconSize.small.points,
-                child: CircularProgressIndicator.adaptive(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(scheme.onSurfaceVariant),
+            // The circle keeps its size at any text size, as the icon does.
+            ? MediaQuery.withNoTextScaling(
+                child: AppSpinner(
+                  size: AppSpinnerSize.small,
+                  color: scheme.onSurfaceVariant,
                 ),
               )
             : Icon(icon),

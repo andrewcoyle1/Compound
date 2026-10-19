@@ -97,7 +97,7 @@ void main() {
             loadingLabel: 'Loading',
           ),
         );
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(AppSpinner), findsOneWidget);
         expect(
           tester
               .widget<ButtonStyleButton>(

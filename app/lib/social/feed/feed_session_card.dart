@@ -313,12 +313,7 @@ class _MoreMenuState extends State<_MoreMenu> {
           ),
       ],
       builder: (context, controller, _) => _rendering
-          ? Center(
-              child: SizedBox.square(
-                dimension: AppIconSize.small.of(context),
-                child: const CircularProgressIndicator.adaptive(strokeWidth: 2),
-              ),
-            )
+          ? const Center(child: AppSpinner(size: AppSpinnerSize.small))
           : AppIconButton.plain(
               icon: AppSymbols.more,
               semanticLabel: l10n.socialMoreActions,

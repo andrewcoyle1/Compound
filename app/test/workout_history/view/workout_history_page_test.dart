@@ -61,7 +61,7 @@ void main() {
   group(WorkoutHistoryPage, () {
     testWidgets('shows progress until the sessions arrive', (tester) async {
       await pump(tester, const Stream.empty());
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppSpinner), findsOneWidget);
     });
 
     testWidgets('lists finished workouts with their totals and highlights', (

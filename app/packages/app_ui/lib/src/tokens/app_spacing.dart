@@ -92,6 +92,35 @@ abstract final class AppChartHeight {
   static const double regular = 200;
 }
 
+/// Chart mark geometry, as Swift Charts draws its marks: finer than any
+/// [AppSpacing] or [AppRadius].
+abstract final class AppChartMark {
+  /// A line's stroke on a detail chart.
+  static const double lineWidth = 2.5;
+
+  /// A line's stroke in a card's small chart.
+  static const double sparkWidth = 1.5;
+
+  /// A dot's radius.
+  static const double dotRadius = 3.5;
+
+  /// The corner on the top of a bar, or of a stack of bars.
+  static const double barCorner = 2;
+
+  /// The share of its bucket a bar fills, leaving a gap between bars.
+  static const double barFill = 0.6;
+
+  /// A gridline's stroke.
+  static const double gridWidth = 1;
+
+  /// The stroke of the rule through the bucket picked.
+  static const double ruleWidth = 1.5;
+
+  /// How strong an area's fill is at the line, fading to nothing at the
+  /// axis.
+  static const double areaOpacity = 0.3;
+}
+
 /// The widest a screen's content grows on tablets and desktops. Wider
 /// screens centre it, so rows, cards and charts keep phone-like proportions.
 abstract final class AppContentWidth {

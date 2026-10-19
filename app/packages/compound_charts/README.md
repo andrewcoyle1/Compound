@@ -9,6 +9,9 @@ import 'package:compound_charts/compound_charts.dart';
 
 | Swift (QuickCharts) | Flutter |
 |---|---|
+| `LineChart`, `BarChart`, `StackedBarChart`, `ComboChart` | `CartesianChart` with `ChartData` |
+| `YAxisFit` | `ChartYFit` |
+| a chart's legend | `ChartLegend`, `ChartSwatch` |
 | `chartCallout` | `ChartCallout` |
 | `SeriesSummary` | `ChartCalloutSummary` |
 

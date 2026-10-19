@@ -83,6 +83,22 @@ List<Widget> galleryButtons(BuildContext context) {
         'disabled',
         AppTextButton(label: l10n.devGallerySampleTextAction, onPressed: null),
       ),
+      galleryInline(
+        'inline',
+        AppTextButton(
+          label: l10n.devGallerySampleTextAction,
+          inline: true,
+          onPressed: galleryNoop,
+        ),
+      ),
+      galleryInline(
+        'isSmall',
+        AppTextButton(
+          label: l10n.devGallerySampleTextAction,
+          isSmall: true,
+          onPressed: galleryNoop,
+        ),
+      ),
     ]),
     galleryEntry('AppIconButton', [
       galleryInline(
@@ -384,7 +400,8 @@ List<Widget> galleryRows(BuildContext context) {
   ];
 }
 
-/// [AppSearchField], [AppNumberField] and [AppSegmentedControl].
+/// [AppSearchField], [AppNumberField], [AppTextFieldRow] and
+/// [AppSegmentedControl].
 List<Widget> galleryInputs(BuildContext context) {
   final l10n = context.l10n;
   final units = [for (final unit in AppWeightUnit.values) unit.symbol];
@@ -463,6 +480,31 @@ List<Widget> galleryInputs(BuildContext context) {
             onUnitChanged: update,
             onChanged: (_) {},
           ),
+        ),
+      ),
+    ]),
+    galleryEntry('AppTextFieldRow', [
+      galleryBlock(
+        'empty',
+        AppSection(
+          children: [
+            AppTextFieldRow(
+              label: l10n.devGallerySampleTitle,
+              onChanged: (_) {},
+            ),
+          ],
+        ),
+      ),
+      galleryBlock(
+        'initialValue',
+        AppSection(
+          children: [
+            AppTextFieldRow(
+              label: l10n.devGallerySampleTitle,
+              initialValue: l10n.devGallerySampleSubtitle,
+              onChanged: (_) {},
+            ),
+          ],
         ),
       ),
     ]),
@@ -804,6 +846,19 @@ List<Widget> galleryContent(BuildContext context) {
           initial: true,
           builder: (selected, update) => AppChip(
             label: l10n.devGallerySampleShortAction,
+            selected: selected,
+            onPressed: () => update(!selected),
+          ),
+        ),
+      ),
+      galleryInline(
+        'size: large, onPressed, selected',
+        GalleryLive(
+          initial: false,
+          builder: (selected, update) => AppChip(
+            label: l10n.devGallerySampleShortAction,
+            icon: AppSymbols.filter,
+            size: AppChipSize.large,
             selected: selected,
             onPressed: () => update(!selected),
           ),

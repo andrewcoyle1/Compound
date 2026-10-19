@@ -109,34 +109,32 @@ Future<void> showOnboardingFailure(
   required String title,
   String? message,
   VoidCallback? onRetry,
-}) {
+}) async {
   unawaited(HapticFeedback.errorNotification());
   final l10n = context.l10n;
-  return showDialog<void>(
+  final material = MaterialLocalizations.of(context);
+  final retry = await showAppDialog<bool>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content: Text(message ?? l10n.onboardingCheckConnection),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            onRetry == null
-                ? MaterialLocalizations.of(context).okButtonLabel
-                : MaterialLocalizations.of(context).cancelButtonLabel,
-          ),
+    title: title,
+    message: message ?? l10n.onboardingCheckConnection,
+    actions: [
+      if (onRetry == null)
+        AppDialogAction(label: material.okButtonLabel, value: false)
+      else ...[
+        AppDialogAction(
+          label: material.cancelButtonLabel,
+          value: false,
+          role: AppDialogRole.cancel,
         ),
-        if (onRetry != null)
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              onRetry();
-            },
-            child: Text(l10n.tryAgainButton),
-          ),
+        AppDialogAction(
+          label: l10n.tryAgainButton,
+          value: true,
+          role: AppDialogRole.preferred,
+        ),
       ],
-    ),
+    ],
   );
+  if (retry ?? false) onRetry?.call();
 }
 
 /// The success haptic Swift plays after every save.

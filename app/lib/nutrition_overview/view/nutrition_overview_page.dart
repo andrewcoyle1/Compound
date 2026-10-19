@@ -82,14 +82,9 @@ class NutritionOverviewView extends StatelessWidget {
       child: AppScaffold(
         appBar: AppBar(title: Text(l10n.nutritionOverviewTitle)),
         body: state.failed
-            ? Center(
-                child: Text(
-                  l10n.nutritionDayLoadFailed,
-                  style: AppTextStyles.sectionTitle,
-                ),
-              )
+            ? AppErrorState(title: l10n.nutritionDayLoadFailed)
             : !state.isLoaded
-            ? const Center(child: CircularProgressIndicator.adaptive())
+            ? AppLoadingView(label: l10n.launchLoading)
             : _Overview(state: state),
       ),
     );

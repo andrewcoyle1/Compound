@@ -75,8 +75,8 @@ class ProgressView extends StatelessWidget {
       largeTitle: l10n.tabProgress,
       actions: const [_LogMenu(), ProfileButton()],
       body: switch (state.status) {
-        ProgressStatus.loading => const Center(
-          child: CircularProgressIndicator.adaptive(),
+        ProgressStatus.loading => AppLoadingView(
+          label: context.l10n.launchLoading,
         ),
         ProgressStatus.failure => const _LoadFailure(),
         ProgressStatus.loaded => _Overview(state: state),
@@ -288,9 +288,9 @@ class _LogMenu extends StatelessWidget {
           child: Text(l10n.progressLogMeasurement),
         ),
       ],
-      builder: (context, controller, _) => IconButton(
-        icon: const Icon(AppSymbols.add),
-        tooltip: l10n.progressLogBodyMetrics,
+      builder: (context, controller, _) => AppToolbarButton(
+        icon: AppSymbols.add,
+        semanticLabel: l10n.progressLogBodyMetrics,
         onPressed: () =>
             controller.isOpen ? controller.close() : controller.open(),
       ),

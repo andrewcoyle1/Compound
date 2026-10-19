@@ -222,7 +222,8 @@ class CalendarDayCell extends StatelessWidget {
     final colors = context.appColors;
     final marker = this.marker;
     final isToday = day == today;
-    final weight = isToday ? FontWeight.w600 : FontWeight.w400;
+    TextStyle weighted(TextStyle style) =>
+        isToday ? AppTextStyles.emphasized(style) : style;
     final badge = marker?.badgeCount;
     return Semantics(
       button: true,
@@ -265,8 +266,7 @@ class CalendarDayCell extends StatelessWidget {
                               style: AppDateStyle.day,
                               locale: context.dateLocale,
                             ),
-                            style: AppTextStyles.rowTitle.copyWith(
-                              fontWeight: weight,
+                            style: weighted(AppTextStyles.rowTitle).copyWith(
                               color: isToday ? scheme.primary : null,
                               fontFeatures: const [
                                 FontFeature.tabularFigures(),
@@ -279,10 +279,8 @@ class CalendarDayCell extends StatelessWidget {
                               style: AppDateStyle.weekdayShort,
                               locale: context.dateLocale,
                             ),
-                            style: AppTextStyles.rowDetail.copyWith(
-                              fontWeight: weight,
-                              color: scheme.onSurfaceVariant,
-                            ),
+                            style: weighted(AppTextStyles.rowDetail)
+                                .copyWith(color: scheme.onSurfaceVariant),
                           ),
                           // Always laid out, so today's cell is no taller.
                           DecoratedBox(

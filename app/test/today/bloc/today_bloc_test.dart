@@ -455,6 +455,23 @@ void main() {
       expect(build().state.weeklyReviewOpened, isFalse);
     });
 
+    test("hiding getting started stays hidden, under Swift's key", () async {
+      expect(build().state.starterDismissed, isFalse);
+      final first = build()..add(const TodayStarterDismissed(3));
+      await Future<void>.delayed(Duration.zero);
+      expect(first.state.starterDismissed, isTrue);
+      expect(store.getBool(TodayBloc.starterDismissedKey(uid)), isTrue);
+      expect(
+        tracked()
+            .where((e) => e.eventName == 'TodayView_Starter_Dismiss')
+            .single
+            .parameters,
+        {'remaining': 3},
+      );
+      await first.close();
+      expect(build().state.starterDismissed, isTrue);
+    });
+
     // `testTrainingItemRoutes`, `testSocialPulseTracked`: the bloc's part.
     blocTest<TodayBloc, TodayState>(
       'checklist taps and the social row are tracked',

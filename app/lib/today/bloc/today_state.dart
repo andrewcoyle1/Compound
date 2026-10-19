@@ -55,6 +55,9 @@ final class const TodayState({
   /// Whether the weekly review card was opened since the screen started.
   final bool weeklyReviewOpened = false,
 
+  /// Whether the getting-started section was hidden, on this device.
+  final bool starterDismissed = false,
+
   /// The check-in's day and the weeks done, or null until read.
   final NutritionStrategySettings? strategySettings,
   final CheckInRecord? checkInRecord,
@@ -244,6 +247,7 @@ final class const TodayState({
     WeightGoal? Function()? goal,
     bool? failed,
     bool? weeklyReviewOpened,
+    bool? starterDismissed,
     NutritionStrategySettings? strategySettings,
     CheckInRecord? Function()? checkInRecord,
     LoggingBreak? Function()? loggingBreak,
@@ -268,6 +272,7 @@ final class const TodayState({
     goal: goal == null ? this.goal : goal(),
     failed: failed ?? this.failed,
     weeklyReviewOpened: weeklyReviewOpened ?? this.weeklyReviewOpened,
+    starterDismissed: starterDismissed ?? this.starterDismissed,
     strategySettings: strategySettings ?? this.strategySettings,
     checkInRecord: checkInRecord == null ? this.checkInRecord : checkInRecord(),
     loggingBreak: loggingBreak == null ? this.loggingBreak : loggingBreak(),
@@ -293,6 +298,7 @@ final class const TodayState({
     goal,
     failed,
     weeklyReviewOpened,
+    starterDismissed,
     strategySettings,
     checkInRecord,
     loggingBreak,

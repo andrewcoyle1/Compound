@@ -83,6 +83,12 @@ void main() {
       );
     });
 
+    test('emphasized sets a style in semibold and keeps its size', () {
+      final style = AppTextStyles.emphasized(AppTextStyles.rowDetail);
+      expect(style.fontWeight, FontWeight.w600);
+      expect(style.fontSize, AppTextStyles.rowDetail.fontSize);
+    });
+
     test('carry no colour, so text takes the theme', () {
       expect(AppTextStyles.textTheme.bodyMedium?.color, isNull);
     });

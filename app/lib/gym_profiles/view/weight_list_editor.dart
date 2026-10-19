@@ -84,9 +84,9 @@ class _WeightListEditorPageState extends State<WeightListEditorPage>
       appBar: AppBar(
         title: Text(GymEditorRules.nameOf(item)),
         actions: [
-          IconButton(
-            icon: const Icon(AppSymbols.add),
-            tooltip: _addLabel(l10n),
+          AppToolbarButton(
+            icon: AppSymbols.add,
+            semanticLabel: _addLabel(l10n),
             onPressed: () => unawaited(_add(item)),
           ),
         ],

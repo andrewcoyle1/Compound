@@ -206,12 +206,11 @@ class WorkoutTemplateDetailView extends StatelessWidget {
                     ),
                     child: Text(l10n.shareWithFriends),
                   ),
-                  PopupMenuItem(
+                  AppMenuItem(
                     value: () => unawaited(_delete(context, ownWorkout)),
-                    child: Text(
-                      l10n.editorDeleteWorkout,
-                      style: TextStyle(color: context.appColors.danger),
-                    ),
+                    label: l10n.editorDeleteWorkout,
+                    icon: AppSymbols.delete,
+                    isDestructive: true,
                   ),
                 ],
               ),
@@ -263,8 +262,8 @@ class WorkoutTemplateDetailView extends StatelessWidget {
         body: SafeArea(
           bottom: false,
           child: switch (state) {
-            TrainingLibraryLoading() => const Center(
-              child: CircularProgressIndicator.adaptive(),
+            TrainingLibraryLoading() => AppLoadingView(
+              label: context.l10n.launchLoading,
             ),
             TrainingLibraryFailure() => LibraryFailure(
               message: l10n.workoutsLoadFailure,
@@ -522,9 +521,7 @@ class _MuscleTile extends StatelessWidget {
             children: [
               Text(
                 l10n.muscleName(summary.muscle),
-                style: AppTextStyles.rowDetail.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.rowDetail.semibold,
               ),
               Text(
                 l10n.targetSetsValue(
@@ -617,8 +614,7 @@ class _ExerciseRow extends StatelessWidget {
                   children: [
                     Text(
                       exercise.exercise.name,
-                      style: AppTextStyles.rowTitle.copyWith(
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.sectionTitle.copyWith(
                         color: scheme.onSurface,
                       ),
                     ),
@@ -734,24 +730,9 @@ class SetTargetLabel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: AppSpacing.xs,
         children: [
-          DecoratedBox(
-            decoration: ShapeDecoration(
-              shape: const StadiumBorder(),
-              color: scheme.surfaceContainerHighest,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xs,
-                vertical: AppSpacing.xxs,
-              ),
-              child: Text(
-                '${target.setNumber}',
-                style: AppTextStyles.label.copyWith(
-                  fontWeight: FontWeight.w600,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ),
+          AppChip(
+            label: AppFormat.number(target.setNumber),
+            tint: scheme.onSurfaceVariant,
           ),
           Text(
             description,

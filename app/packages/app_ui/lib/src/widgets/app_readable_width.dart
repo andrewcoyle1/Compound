@@ -72,6 +72,7 @@ class AppScaffold extends StatelessWidget {
   const new({
     this.appBar,
     this.largeTitle,
+    this.leading,
     this.actions,
     this.body,
     this.bottomNavigationBar,
@@ -80,12 +81,19 @@ class AppScaffold extends StatelessWidget {
     super.key,
   });
 
+  /// The largest text scale a [largeTitle] is drawn at.
+  static const largeTitleMaxTextScale = 1.5;
+
   /// The top bar, as wide as the window. Ignored with a [largeTitle].
   final PreferredSizeWidget? appBar;
 
   /// A tab root's title, drawn large. The scaffold then builds the app bar,
   /// holding [actions].
   final String? largeTitle;
+
+  /// The app bar's leading button beside a [largeTitle], such as a back
+  /// button inside a flow. Null implies the route's own back button.
+  final Widget? leading;
 
   /// The app bar's actions beside a [largeTitle].
   final List<Widget>? actions;
@@ -112,6 +120,7 @@ class AppScaffold extends StatelessWidget {
     if (largeTitle != null) {
       return _LargeTitleScaffold(
         title: largeTitle,
+        leading: leading,
         actions: actions,
         body: body,
         bottomNavigationBar: column(bottomNavigationBar),
@@ -131,6 +140,7 @@ class AppScaffold extends StatelessWidget {
 class _LargeTitleScaffold extends StatefulWidget {
   const new({
     required this.title,
+    required this.leading,
     required this.actions,
     required this.body,
     required this.bottomNavigationBar,
@@ -139,6 +149,7 @@ class _LargeTitleScaffold extends StatefulWidget {
   });
 
   final String title;
+  final Widget? leading;
   final List<Widget>? actions;
   final Widget? body;
   final Widget? bottomNavigationBar;
@@ -170,6 +181,7 @@ class _LargeTitleScaffoldState extends State<_LargeTitleScaffold> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
+        leading: widget.leading,
         title: ListenableBuilder(
           listenable: _scroll,
           builder: (context, _) => AnimatedOpacity(
@@ -194,12 +206,18 @@ class _LargeTitleScaffoldState extends State<_LargeTitleScaffold> {
                   AppSpacing.l,
                   AppSpacing.s,
                 ),
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    widget.title,
-                    style: AppTextStyles.display.copyWith(
-                      color: scheme.onSurface,
+                // Capped at accessibility sizes, as iOS caps a large title
+                // (and Material its large app bar), so the content is not
+                // pushed off the screen.
+                child: MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: AppScaffold.largeTitleMaxTextScale,
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      widget.title,
+                      style: AppTextStyles.display.copyWith(
+                        color: scheme.onSurface,
+                      ),
                     ),
                   ),
                 ),

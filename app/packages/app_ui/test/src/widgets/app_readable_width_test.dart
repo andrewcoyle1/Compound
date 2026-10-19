@@ -167,6 +167,24 @@ void main() {
       expect(barTitleOpacity(), 1);
     });
 
+    testWidgets('a large title stops growing at accessibility sizes', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const AppScaffold(largeTitle: 'Today'),
+        scaffold: false,
+        textScale: 3,
+      );
+      final title = find.descendant(
+        of: find.byType(NestedScrollView),
+        matching: find.text('Today'),
+      );
+      expect(
+        MediaQuery.textScalerOf(tester.element(title)).scale(10),
+        10 * AppScaffold.largeTitleMaxTextScale,
+      );
+    });
+
     testWidgets('a large title stands without a body', (tester) async {
       await tester.pumpApp(
         const AppScaffold(largeTitle: 'Today'),

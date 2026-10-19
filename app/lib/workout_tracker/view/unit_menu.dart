@@ -57,25 +57,20 @@ enum UnitChange { displayOnly, convert }
 /// Convert Values or Cancel (null).
 Future<UnitChange?> askUnitChange(BuildContext context, String title) {
   final l10n = context.l10n;
-  return showDialog<UnitChange>(
+  return showAppDialog<UnitChange>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content: Text(l10n.trackerUnitChangeMessage),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.trackerCancel),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(UnitChange.displayOnly),
-          child: Text(l10n.trackerDisplayOnly),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(UnitChange.convert),
-          child: Text(l10n.trackerConvertValues),
-        ),
-      ],
-    ),
+    title: title,
+    message: l10n.trackerUnitChangeMessage,
+    actions: [
+      AppDialogAction(label: l10n.trackerCancel, role: AppDialogRole.cancel),
+      AppDialogAction(
+        label: l10n.trackerDisplayOnly,
+        value: UnitChange.displayOnly,
+      ),
+      AppDialogAction(
+        label: l10n.trackerConvertValues,
+        value: UnitChange.convert,
+      ),
+    ],
   );
 }

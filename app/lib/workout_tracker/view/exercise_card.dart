@@ -115,7 +115,7 @@ class ExerciseCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
-                child: TextButton.icon(
+                child: AppTextButton(
                   onPressed: () {
                     if (letter == null) {
                       cubit.addSet(card.single.exercise.id);
@@ -123,12 +123,9 @@ class ExerciseCard extends StatelessWidget {
                       cubit.addRound([for (final m in card) m.exercise.id]);
                     }
                   },
-                  icon: const Icon(AppSymbols.add),
-                  label: Text(
-                    letter == null
-                        ? context.l10n.trackerAddSet
-                        : context.l10n.trackerAddRound,
-                  ),
+                  label: letter == null
+                      ? context.l10n.trackerAddSet
+                      : context.l10n.trackerAddRound,
                 ),
               ),
             ),
@@ -191,8 +188,7 @@ class _Header extends StatelessWidget {
                   header: true,
                   child: Text(
                     label == null ? exercise.name : '$label  ${exercise.name}',
-                    style: AppTextStyles.rowTitle.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: AppTextStyles.sectionTitle.copyWith(
                       color: scheme.onSurface,
                     ),
                   ),
@@ -230,29 +226,23 @@ class _Header extends StatelessWidget {
               _ExerciseAction.delete => unawaited(_delete(context)),
             },
             itemBuilder: (_) => [
-              PopupMenuItem(
+              AppMenuItem(
                 value: _ExerciseAction.notes,
-                child: ListTile(
-                  leading: const Icon(AppSymbols.note),
-                  title: Text(l10n.trackerNotes),
-                ),
+                icon: AppSymbols.note,
+                label: l10n.trackerNotes,
               ),
               if (offersDoLater)
-                PopupMenuItem(
+                AppMenuItem(
                   value: _ExerciseAction.doLater,
-                  child: ListTile(
-                    leading: const Icon(AppSymbols.doLater),
-                    title: Text(l10n.trackerDoLater),
-                  ),
+                  icon: AppSymbols.doLater,
+                  label: l10n.trackerDoLater,
                 ),
               const PopupMenuDivider(),
               if (exercise.equipmentVariations.isNotEmpty)
-                PopupMenuItem(
+                AppMenuItem(
                   value: _ExerciseAction.equipment,
-                  child: ListTile(
-                    leading: const Icon(AppSymbols.equipment),
-                    title: Text(l10n.trackerEquipment),
-                  ),
+                  icon: AppSymbols.equipment,
+                  label: l10n.trackerEquipment,
                 ),
               // A check beside it while the sides are logged apart.
               if (rulesExercise(exercise).isPerSide)
@@ -264,40 +254,27 @@ class _Header extends StatelessWidget {
                     child: Text(l10n.trackerSplitSides),
                   ),
                 ),
-              PopupMenuItem(
+              AppMenuItem(
                 value: _ExerciseAction.targets,
-                child: ListTile(
-                  leading: const Icon(AppSymbols.goal),
-                  title: Text(l10n.trackerTargets),
-                ),
+                icon: AppSymbols.goal,
+                label: l10n.trackerTargets,
               ),
-              PopupMenuItem(
+              AppMenuItem(
                 value: _ExerciseAction.swap,
-                child: ListTile(
-                  leading: const Icon(AppSymbols.swap),
-                  title: Text(l10n.trackerSwap),
-                ),
+                icon: AppSymbols.swap,
+                label: l10n.trackerSwap,
               ),
               const PopupMenuDivider(),
-              PopupMenuItem(
+              AppMenuItem(
                 value: _ExerciseAction.settings,
-                child: ListTile(
-                  leading: const Icon(AppSymbols.settings),
-                  title: Text(l10n.trackerExerciseSettings),
-                ),
+                icon: AppSymbols.settings,
+                label: l10n.trackerExerciseSettings,
               ),
-              PopupMenuItem(
+              AppMenuItem(
                 value: _ExerciseAction.delete,
-                child: ListTile(
-                  leading: Icon(
-                    AppSymbols.delete,
-                    color: context.appColors.danger,
-                  ),
-                  title: Text(
-                    l10n.trackerDeleteExercise,
-                    style: TextStyle(color: context.appColors.danger),
-                  ),
-                ),
+                icon: AppSymbols.delete,
+                label: l10n.trackerDeleteExercise,
+                isDestructive: true,
               ),
             ],
           ),
@@ -427,27 +404,14 @@ class _Header extends StatelessWidget {
   Future<void> _delete(BuildContext context) async {
     final l10n = context.l10n;
     final cubit = context.read<ActiveWorkoutCubit>();
-    final delete = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.trackerDeleteExerciseTitle),
-        content: Text(member.exercise.name),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.trackerCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: context.appColors.danger,
-            ),
-            child: Text(l10n.trackerDeleteExercise),
-          ),
-        ],
-      ),
+    final delete = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.trackerDeleteExerciseTitle,
+      message: member.exercise.name,
+      confirmLabel: l10n.trackerDeleteExercise,
+      cancelLabel: l10n.trackerCancel,
     );
-    if (delete ?? false) cubit.deleteExercise(member.exercise.id);
+    if (delete) cubit.deleteExercise(member.exercise.id);
   }
 }
 
@@ -526,8 +490,7 @@ class _ProgressionNote extends StatelessWidget {
                   ),
                   Text(
                     l10n.workoutSettingsSmartProgression,
-                    style: AppTextStyles.label.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: AppTextStyles.label.semibold.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
@@ -632,9 +595,8 @@ class _RestLine extends StatelessWidget {
                 ),
                 Text(
                   text,
-                  style: AppTextStyles.label.copyWith(
+                  style: AppTextStyles.label.semibold.copyWith(
                     color: scheme.primary,
-                    fontWeight: FontWeight.w600,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),

@@ -129,7 +129,8 @@ class _SleevePainter extends CustomPainter {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(left, mid - height / 2, width, height),
-          const Radius.circular(1),
+          // A plate's edge, rounded in proportion to its drawn width.
+          Radius.circular(width / 8),
         ),
         Paint()..color = colours[index],
       );

@@ -123,19 +123,17 @@ class RecipeDetailView extends StatelessWidget {
                 onPressed: () => unawaited(cubit.favouriteToggled()),
               ),
             if (recipe != null && cubit.canDelete)
-              PopupMenuButton<void>(
+              PopupMenuButton<VoidCallback>(
                 icon: Icon(AppSymbols.more),
+                onSelected: (action) => action(),
                 tooltip: l10n.recipeDetailOptions,
                 enabled: state.deleteStatus == RecipeDetailDeleteStatus.idle,
                 itemBuilder: (_) => [
-                  PopupMenuItem(
-                    onTap: () => unawaited(_delete(context, recipe)),
-                    padding: EdgeInsets.zero,
-                    child: AppListRow(
-                      icon: AppSymbols.delete,
-                      title: l10n.recipeDetailDelete,
-                      destructive: true,
-                    ),
+                  AppMenuItem(
+                    value: () => unawaited(_delete(context, recipe)),
+                    icon: AppSymbols.delete,
+                    label: l10n.recipeDetailDelete,
+                    isDestructive: true,
                   ),
                 ],
               ),

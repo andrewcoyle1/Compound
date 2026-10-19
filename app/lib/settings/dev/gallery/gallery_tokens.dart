@@ -202,7 +202,6 @@ List<Widget> galleryTokens(BuildContext context) {
         ('rowTitle', AppTextStyles.rowTitle),
         ('rowDetail', AppTextStyles.rowDetail),
         ('label', AppTextStyles.label),
-        ('labelEmphasized', AppTextStyles.labelEmphasized),
       ])
         galleryBlock(name, Text(l10n.devGallerySampleTitle, style: style)),
       for (final (name, style) in [

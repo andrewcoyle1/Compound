@@ -26,8 +26,6 @@ void main() {
       expect(AppTextStyles.rowTitle.fontSize, 17);
       expect(AppTextStyles.rowDetail.fontSize, 15);
       expect(AppTextStyles.label.fontSize, 12);
-      expect(AppTextStyles.labelEmphasized.fontSize, 12);
-      expect(AppTextStyles.labelEmphasized.fontWeight, FontWeight.w600);
     });
 
     test('numbers are set in the bundled rounded face', () {

@@ -68,7 +68,7 @@ class MealHourHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final style = AppTextStyles.labelEmphasized.copyWith(
+    final style = AppTextStyles.label.semibold.copyWith(
       fontFeatures: const [FontFeature.tabularFigures()],
       color: scheme.onSurfaceVariant,
     );

@@ -43,7 +43,7 @@ class AppChip extends StatelessWidget {
     final tint = this.tint ?? scheme.primary;
     final foreground = selected ? scheme.onPrimary : tint;
     final icon = this.icon;
-    final style = AppTextStyles.labelEmphasized.copyWith(color: foreground);
+    final style = AppTextStyles.label.semibold.copyWith(color: foreground);
     final chip = DecoratedBox(
       decoration: ShapeDecoration(
         shape: const StadiumBorder(),

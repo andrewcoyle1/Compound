@@ -68,11 +68,7 @@ List<TextSpan> coachMarkdown(String text) {
     final bold = match.group(1);
     spans.add(
       bold != null
-          ? TextSpan(
-              text: bold,
-              // The bubble's rowTitle, in its semibold.
-              style: AppTextStyles.sectionTitle,
-            )
+          ? TextSpan(text: bold, style: AppTextStyles.rowTitle.semibold)
           : TextSpan(
               text: match.group(2) ?? match.group(3),
               style: AppTextStyles.rowTitle.copyWith(

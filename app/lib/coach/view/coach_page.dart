@@ -155,15 +155,12 @@ class _CoachViewState extends State<CoachView> {
                 tooltip: l10n.coachMore,
                 onSelected: (action) => action(),
                 itemBuilder: (context) => [
-                  PopupMenuItem(
+                  AppMenuItem(
                     value: _cubit.newChatPressed,
-                    padding: EdgeInsets.zero,
-                    child: AppListRow(
-                      icon: AppSymbols.add,
-                      title: l10n.coachNewChat,
-                    ),
+                    icon: AppSymbols.add,
+                    label: l10n.coachNewChat,
                   ),
-                  PopupMenuItem(
+                  AppMenuItem(
                     value: () {
                       _cubit.chatsPressed();
                       unawaited(
@@ -173,11 +170,8 @@ class _CoachViewState extends State<CoachView> {
                         ),
                       );
                     },
-                    padding: EdgeInsets.zero,
-                    child: AppListRow(
-                      icon: AppSymbols.history,
-                      title: l10n.coachChats,
-                    ),
+                    icon: AppSymbols.history,
+                    label: l10n.coachChats,
                   ),
                 ],
               ),

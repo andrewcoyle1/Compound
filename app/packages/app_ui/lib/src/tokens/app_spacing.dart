@@ -126,6 +126,16 @@ abstract final class AppChartMark {
   /// How strong an area's fill is at the line, fading to nothing at the
   /// axis.
   static const double areaOpacity = 0.3;
+
+  /// A ring's or gauge's stroke.
+  static const double arcWidth = 8;
+
+  /// A small ring's stroke, beside a row's text.
+  static const double arcWidthSmall = 6;
+
+  /// How dark the shadow is that a ring's tip casts on the lap beneath it,
+  /// once it is past a full turn.
+  static const double lapShadowOpacity = 0.45;
 }
 
 /// The widest a screen's content grows on tablets and desktops. Wider

@@ -12,6 +12,7 @@ import 'package:compound/progress/logic/progress_carousel.dart';
 import 'package:compound/progress/view/card_charts.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_maths/compound_maths.dart'
     show Macros, comparedAverages, zeroMacros;
 import 'package:compound_models/compound_models.dart' show Mesocycle;
@@ -778,84 +779,27 @@ class _CalorieGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Semantics(
-      label: label,
-      value: value,
-      child: ExcludeSemantics(
-        child: SizedBox.square(
-          dimension: 150,
-          child: CustomPaint(
-            painter: _GaugePainter(
-              from: showsRemaining ? fraction : 0,
-              to: showsRemaining ? 1 : fraction,
-              color: color,
-              track: scheme.outlineVariant,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FittedBox(child: Text(value, style: AppTextStyles.display)),
-                  Text(
-                    label,
-                    style: AppTextStyles.label.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+    return ProgressArc(
+      sweep: ArcSweep.gauge,
+      from: showsRemaining ? fraction : 0,
+      value: showsRemaining ? 1 : fraction,
+      color: color,
+      diameter: 150,
+      semanticLabel: label,
+      semanticValue: value,
+      child: Column(
+        children: [
+          Text(value, style: AppTextStyles.display),
+          Text(
+            label,
+            style: AppTextStyles.label.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
-}
-
-class _GaugePainter extends CustomPainter {
-  new({
-    required this.from,
-    required this.to,
-    required this.color,
-    required this.track,
-  });
-
-  final double from;
-  final double to;
-  final Color color;
-  final Color track;
-
-  static const double _sweep = 1.5 * math.pi;
-  static const double _start = 0.75 * math.pi;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = (Offset.zero & size).deflate(4);
-    Paint stroke(Color c) => Paint()
-      ..color = c
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
-    canvas.drawArc(rect, _start, _sweep, false, stroke(track));
-    if (to > from) {
-      canvas.drawArc(
-        rect,
-        _start + _sweep * from,
-        _sweep * (to - from),
-        false,
-        stroke(color),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_GaugePainter old) =>
-      old.from != from ||
-      old.to != to ||
-      old.color != color ||
-      old.track != track;
 }
 
 // MARK: - Energy balance
@@ -1074,72 +1018,48 @@ class _Ring extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final text = _whole(value, locale);
     final target = this.target;
-    final fraction = target == null || target <= 0
-        ? 0.0
-        : math.min(value / target, 1).toDouble();
     final secondary = AppTextStyles.label.copyWith(
       color: scheme.onSurfaceVariant,
     );
-    return Semantics(
-      label: title,
-      value: target == null
-          ? text
-          : l10n.progressOfTarget(text, _whole(target, locale)),
-      child: ExcludeSemantics(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.m,
-          children: [
-            SizedBox.square(
-              dimension: diameter,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CircularProgressIndicator(
-                    value: fraction,
-                    strokeWidth: 8,
-                    strokeCap: StrokeCap.round,
-                    color: colour,
-                    backgroundColor: scheme.outlineVariant,
-                  ),
-                  Center(
-                    child: FittedBox(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.m),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              text,
-                              style: AppTextStyles.metricLarge.copyWith(
-                                color: colour,
-                              ),
-                            ),
-                            if (target != null)
-                              Text(
-                                l10n.carouselLeft(math.max(target - value, 0)),
-                                style: secondary,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      spacing: AppSpacing.m,
+      children: [
+        // Past the target, the ring laps itself.
+        ProgressArc(
+          value: target == null || target <= 0 ? 0 : value / target,
+          color: colour,
+          diameter: diameter,
+          semanticLabel: title,
+          semanticValue: target == null
+              ? text
+              : l10n.progressOfTarget(text, _whole(target, locale)),
+          child: Column(
+            children: [
+              Text(
+                text,
+                style: AppTextStyles.metricLarge.copyWith(color: colour),
               ),
-            ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: AppSpacing.xxs,
-              children: [
-                Text(title, style: AppTextStyles.rowTitle),
-                if (target != null)
-                  Text(l10n.carouselRingTarget(target), style: secondary),
-              ],
-            ),
-          ],
+              if (target != null)
+                Text(
+                  l10n.carouselLeft(math.max(target - value, 0)),
+                  style: secondary,
+                ),
+            ],
+          ),
         ),
-      ),
+        ExcludeSemantics(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: AppSpacing.xxs,
+            children: [
+              Text(title, style: AppTextStyles.rowTitle),
+              if (target != null)
+                Text(l10n.carouselRingTarget(target), style: secondary),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

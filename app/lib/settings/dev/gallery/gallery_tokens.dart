@@ -275,6 +275,9 @@ List<Widget> galleryTokens(BuildContext context) {
         ('stubHeight', AppChartMark.stubHeight),
         ('ruleWidth', AppChartMark.ruleWidth),
         ('areaOpacity', AppChartMark.areaOpacity),
+        ('arcWidth', AppChartMark.arcWidth),
+        ('arcWidthSmall', AppChartMark.arcWidthSmall),
+        ('lapShadowOpacity', AppChartMark.lapShadowOpacity),
       ])
         AppListRow(
           title: name,

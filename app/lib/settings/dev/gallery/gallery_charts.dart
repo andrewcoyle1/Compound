@@ -195,6 +195,43 @@ List<Widget> galleryCharts(BuildContext context) {
       ])
         galleryBlock(caption, _plot(anchor, summary(rows))),
     ]),
+    galleryEntry('ProgressArc', [
+      galleryBlock(
+        'rings at 0, 60%, 100% and 140% (a second lap)',
+        Row(
+          spacing: AppSpacing.l,
+          children: [
+            for (final value in [0.0, 0.6, 1.0, 1.4])
+              ProgressArc(
+                value: value,
+                color: colors.workouts,
+                diameter: AppControlSize.cta,
+                strokeWidth: AppChartMark.arcWidthSmall,
+              ),
+          ],
+        ),
+      ),
+      galleryBlock(
+        'gauges, used and what is left, with a figure',
+        Row(
+          spacing: AppSpacing.l,
+          children: [
+            for (final (from, value, figure) in [
+              (0.0, 0.7, '1,450'),
+              (0.7, 1.0, '620'),
+            ])
+              ProgressArc(
+                sweep: ArcSweep.gauge,
+                from: from,
+                value: value,
+                color: colors.calories,
+                diameter: AppChartHeight.compact,
+                child: Text(figure, style: AppTextStyles.display),
+              ),
+          ],
+        ),
+      ),
+    ]),
   ];
 }
 

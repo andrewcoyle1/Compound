@@ -26,7 +26,7 @@ void main() {
           proteinTarget: 150,
         ),
       ),
-      '1,450 / 2,000 kcal · 110 g / 150 g protein',
+      '1,450 / 2,000\u00a0kcal · 110\u00a0g / 150\u00a0g protein',
     );
     expect(
       detail(
@@ -37,7 +37,7 @@ void main() {
           calorieTarget: 2000,
         ),
       ),
-      '1,450 / 2,000 kcal',
+      '1,450 / 2,000\u00a0kcal',
     );
     expect(
       detail(
@@ -61,13 +61,13 @@ void main() {
           goalWeeklyChangeKg: -0.5,
         ),
       ),
-      '82.4 kg · −0.4 kg this week · goal −0.5 kg/wk',
+      '82.4\u00a0kg · −0.4\u00a0kg this week · goal −0.5\u00a0kg/wk',
     );
     expect(
       detail(
         const WeighInItem(isToday: true, latestKg: 82.4, goalWeeklyChangeKg: 0),
       ),
-      '82.4 kg',
+      '82.4\u00a0kg',
     );
     expect(detail(const WeighInItem(isToday: false)), 'No weigh-ins yet');
   });
@@ -113,9 +113,9 @@ void main() {
   });
 
   test('signed weights', () {
-    expect(TodayText.signedWeight(0.3, kg, locale: locale), '+0.3 kg');
-    expect(TodayText.signedWeight(-0.4, kg, locale: locale), '−0.4 kg');
-    expect(TodayText.signedWeight(0, kg, locale: locale), '0 kg');
+    expect(TodayText.signedWeight(0.3, kg, locale: locale), '+0.3\u00a0kg');
+    expect(TodayText.signedWeight(-0.4, kg, locale: locale), '−0.4\u00a0kg');
+    expect(TodayText.signedWeight(0, kg, locale: locale), '0\u00a0kg');
   });
 
   test('every item and starter step has a title and a glyph', () {

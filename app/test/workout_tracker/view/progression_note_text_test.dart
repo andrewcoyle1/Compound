@@ -29,7 +29,7 @@ void main() {
             lastMinReps: 5,
           ),
         ),
-        '+2.5 kg today. You hit 5 reps on every working set last time.',
+        '+2.5\u00a0kg today. You hit 5 reps on every working set last time.',
       );
       expect(
         reason(
@@ -47,7 +47,8 @@ void main() {
             changeKg: -10,
           ),
         ),
-        '−10 kg today. Two sessions short of the reps, so the weight resets.',
+        '−10\u00a0kg today. Two sessions short of the reps, so the weight '
+        'resets.',
       );
       expect(
         reason(
@@ -57,7 +58,7 @@ void main() {
           ),
           ExerciseWeightUnit.pounds,
         ),
-        '+5 lb today.',
+        '+5\u00a0lb today.',
       );
     });
   });

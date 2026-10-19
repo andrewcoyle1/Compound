@@ -279,24 +279,17 @@ class _DescribeView extends StatelessWidget {
             ),
             footer: l10n.describeFooter,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                child: TextField(
-                  key: const Key('FoodPicker.describeField'),
-                  minLines: 3,
-                  maxLines: 8,
-                  textCapitalization: TextCapitalization.sentences,
-                  inputFormatters: [
-                    LengthLimitingTextInputFormatter(
-                      MealDescribeCubit.characterLimit,
-                    ),
-                  ],
-                  decoration: InputDecoration(
-                    hintText: l10n.describePrompt,
-                    border: InputBorder.none,
+              AppTextFieldRow(
+                key: const Key('FoodPicker.describeField'),
+                label: l10n.describePrompt,
+                minLines: 3,
+                maxLines: 8,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(
+                    MealDescribeCubit.characterLimit,
                   ),
-                  onChanged: cubit.textChanged,
-                ),
+                ],
+                onChanged: cubit.textChanged,
               ),
             ],
           ),

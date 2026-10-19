@@ -148,13 +148,13 @@ void main() {
       expect(find.text('Volume up 11% on last week.'), findsOneWidget);
       expect(find.text('1 of 3'), findsOneWidget);
       expect(find.text('+11% vs last week'), findsOneWidget);
-      expect(find.text('500 kg'), findsOneWidget);
+      expect(find.text('500\u00a0kg'), findsOneWidget);
       expect(find.text('Average RPE'), findsOneWidget);
       expect(find.text('Sets per Muscle'), findsOneWidget);
       expect(find.text('Chest'), findsOneWidget);
       expect(find.text(bench), findsOneWidget);
       expect(find.text('Personal Records'), findsOneWidget);
-      expect(find.text('100 kg × 5'), findsOneWidget);
+      expect(find.text('100\u00a0kg × 5'), findsOneWidget);
       expect(find.textContaining('kg (−'), findsOneWidget);
       expect(find.text('Body & Nutrition'), findsOneWidget);
       expect(find.textContaining('logged days on target'), findsOneWidget);

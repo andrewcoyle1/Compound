@@ -104,7 +104,8 @@ void main() {
         shareWorkoutSummary(l10n, pushA, locale: 'en'),
         matches(
           RegExp(
-            r'^Push A · \d+ exercises · \d+ sets · [\d,.]+ (kg|lb) lifted$',
+            '^Push A · \\d+ exercises · \\d+ sets · [\\d,.]+\u00a0(kg|lb) '
+            r'lifted$',
           ),
         ),
       );

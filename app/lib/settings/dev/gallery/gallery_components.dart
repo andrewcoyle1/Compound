@@ -313,6 +313,14 @@ List<Widget> galleryRows(BuildContext context) {
           AppChip(label: l10n.devGallerySampleShortAction),
         ),
       ),
+      AppListRow(
+        title: 'AppListRowCustom(pinned)',
+        subtitle: l10n.devGallerySampleSubtitle,
+        accessory: const AppListRowCustom(
+          Icon(AppSymbols.choiceUnselected),
+          pinned: true,
+        ),
+      ),
       const AppListRow(
         title: 'destructive',
         icon: AppSymbols.delete,

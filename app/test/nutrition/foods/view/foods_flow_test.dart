@@ -170,7 +170,7 @@ void main() {
 
       expect(find.byType(FoodDetailView), findsOneWidget);
       expect(find.text('Nutrition Information (per 100g)'), findsOneWidget);
-      expect(find.text('40 kcal'), findsOneWidget);
+      expect(find.text('40\u00a0kcal'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Add to favorites'));
       await tester.pumpAndSettle();

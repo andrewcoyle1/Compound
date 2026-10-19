@@ -252,24 +252,47 @@ class NutritionTargetChart extends StatelessWidget {
               },
             ),
           )
-        else ...[
+        else
+          // Sized to its content, the key straight under the grid; any
+          // height the carousel's taller pages leave goes below.
           Expanded(
-            child: _Grid(state: state, targets: targets),
-          ),
-          ExcludeSemantics(
-            child: Text(
-              l10n.targetChartKey,
-              style: AppTextStyles.label.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppSpacing.m,
+                children: [
+                  _Grid(state: state, targets: targets),
+                  ExcludeSemantics(
+                    child: Text(
+                      l10n.targetChartKey,
+                      style: AppTextStyles.label.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
       ],
     );
   }
 }
 
+/// One metric's row: each day's eaten and target, and the figures shown.
+typedef _RowFigures = ({
+  _TargetRow row,
+  List<double> eaten,
+  List<double> goal,
+  String amount,
+  String of,
+  String value,
+});
+
+/// The grid: a row of day cells per metric with the figures beside them,
+/// or, when the figures would take more than a third of the width (large
+/// text), above them, so the cells keep the full width and no figure is
+/// shrunk or cut.
 class _Grid extends StatelessWidget {
   const new({required this.state, required this.targets});
 
@@ -286,6 +309,10 @@ class _Grid extends StatelessWidget {
     final days = [for (final key in state.weekDayKeys) localMidnight(key)];
     final selected = state.targetDay;
     final today = (state.now.weekday - state.firstWeekday + 7) % 7;
+    final secondary = AppTextStyles.label.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
+    final iconSize = AppIconSize.small.of(context);
     String names(DateTime date) => AppFormat.date(
       date,
       style: AppDateStyle.weekday,
@@ -311,145 +338,171 @@ class _Grid extends StatelessWidget {
           : amounts;
     }
 
-    return SingleChildScrollView(
-      child: Column(
-        spacing: AppSpacing.m,
-        children: [
-          for (final row in _TargetRow.values)
-            Row(
-              spacing: AppSpacing.s,
-              children: [
-                ...() {
-                  final eaten = [for (final d in logged) row.of(d)];
-                  final goal = [for (final d in targets) row.of(d)];
-                  final most = math
-                      .max(
-                        math.max(goal.reduce(math.max), eaten.reduce(math.max)),
-                        1,
-                      )
-                      .toDouble();
-                  final summary = selected == null
-                      ? (
-                          eaten: eaten.reduce((a, b) => a + b),
-                          goal: goal.reduce((a, b) => a + b),
-                        )
-                      : (eaten: eaten[selected], goal: goal[selected]);
-                  return [
-                    for (var day = 0; day < 7; day++)
-                      Expanded(
-                        child: Semantics(
-                          button: true,
-                          selected: day == selected,
-                          label:
-                              '${names(days[day])}, '
-                              '${row.title(l10n)}',
-                          value: cellValue(row, eaten[day], goal[day]),
-                          hint: day == selected
-                              ? l10n.targetChartShowsWeek
-                              : l10n.targetChartShowsDay,
-                          child: GestureDetector(
-                            onTap: () => press(day),
-                            child: ExcludeSemantics(
-                              child: _TargetCell(
-                                value: eaten[day],
-                                target: goal[day],
-                                maximum: most,
-                                tint: row.colour(colors),
-                                selected: day == selected,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    SizedBox(
-                      width: MediaQuery.textScalerOf(context).scale(84),
-                      child: Semantics(
-                        label: selected == null
-                            ? l10n.targetChartThisWeek(row.title(l10n))
-                            : '${row.title(l10n)}, '
-                                  '${names(days[selected])}',
-                        value: cellValue(row, summary.eaten, summary.goal),
-                        child: ExcludeSemantics(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                spacing: AppSpacing.xxs,
-                                children: [
-                                  Icon(
-                                    row.icon,
-                                    size: AppIconSize.small.of(context),
-                                    color: row.colour(colors),
-                                  ),
-                                  Flexible(
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment:
-                                          AlignmentDirectional.centerStart,
-                                      child: Text(
-                                        row.amount(summary.eaten, locale),
-                                        style: AppTextStyles.metricSmall,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                l10n.targetChartOf(
-                                  row.amount(summary.goal, locale),
-                                ),
-                                style: AppTextStyles.label.copyWith(
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+    final rows = <_RowFigures>[
+      for (final row in _TargetRow.values)
+        () {
+          final eaten = [for (final d in logged) row.of(d)];
+          final goal = [for (final d in targets) row.of(d)];
+          final summary = selected == null
+              ? (
+                  eaten: eaten.reduce((a, b) => a + b),
+                  goal: goal.reduce((a, b) => a + b),
+                )
+              : (eaten: eaten[selected], goal: goal[selected]);
+          return (
+            row: row,
+            eaten: eaten,
+            goal: goal,
+            amount: row.amount(summary.eaten, locale),
+            of: l10n.targetChartOf(row.amount(summary.goal, locale)),
+            value: cellValue(row, summary.eaten, summary.goal),
+          );
+        }(),
+    ];
+    // The figures' width unwrapped: the icon and amount, or the target.
+    final figuresWidth = math.max(
+      iconSize +
+          AppSpacing.xxs +
+          _wordWidth(context, [
+            for (final r in rows) (r.amount, AppTextStyles.metricSmall),
+          ], lines: true),
+      _wordWidth(context, [
+        for (final r in rows) (r.of, AppTextStyles.label),
+      ], lines: true),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final stacked = figuresWidth > constraints.maxWidth / 3;
+        Widget figures(_RowFigures r) {
+          final amount = Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: AppSpacing.xxs,
+            children: [
+              Icon(r.row.icon, size: iconSize, color: r.row.colour(colors)),
+              Text(r.amount, style: AppTextStyles.metricSmall),
+            ],
+          );
+          return Semantics(
+            label: selected == null
+                ? l10n.targetChartThisWeek(r.row.title(l10n))
+                : '${r.row.title(l10n)}, ${names(days[selected])}',
+            value: r.value,
+            child: ExcludeSemantics(
+              child: stacked
+                  ? Wrap(
+                      spacing: AppSpacing.s,
+                      crossAxisAlignment: WrapCrossAlignment.end,
+                      children: [
+                        amount,
+                        Text(r.of, style: secondary),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        amount,
+                        Text(r.of, style: secondary),
+                      ],
                     ),
-                  ];
-                }(),
-              ],
             ),
-          ExcludeSemantics(
-            child: Row(
-              spacing: AppSpacing.s,
-              children: [
-                for (var day = 0; day < 7; day++)
-                  Expanded(
+          );
+        }
+
+        Widget cells(_RowFigures r) {
+          final most = math
+              .max(
+                math.max(r.goal.reduce(math.max), r.eaten.reduce(math.max)),
+                1,
+              )
+              .toDouble();
+          return Row(
+            spacing: AppSpacing.s,
+            children: [
+              for (var day = 0; day < 7; day++)
+                Expanded(
+                  child: Semantics(
+                    button: true,
+                    selected: day == selected,
+                    label: '${names(days[day])}, ${r.row.title(l10n)}',
+                    value: cellValue(r.row, r.eaten[day], r.goal[day]),
+                    hint: day == selected
+                        ? l10n.targetChartShowsWeek
+                        : l10n.targetChartShowsDay,
                     child: GestureDetector(
                       onTap: () => press(day),
-                      child: Text(
-                        letters(days[day]),
-                        textAlign: TextAlign.center,
-                        style:
-                            (day == selected
-                                    ? AppTextStyles.label.semibold
-                                    : AppTextStyles.label)
-                                .copyWith(
-                                  color: day == today
-                                      ? scheme.primary
-                                      : scheme.onSurfaceVariant,
-                                ),
+                      child: ExcludeSemantics(
+                        child: _TargetCell(
+                          value: r.eaten[day],
+                          target: r.goal[day],
+                          maximum: most,
+                          tint: r.row.colour(colors),
+                          selected: day == selected,
+                        ),
                       ),
-                    ),
-                  ),
-                SizedBox(
-                  width: MediaQuery.textScalerOf(context).scale(84),
-                  child: Text(
-                    selected == null ? l10n.targetChartWeek : '',
-                    style: AppTextStyles.label.copyWith(
-                      color: scheme.onSurfaceVariant,
                     ),
                   ),
                 ),
-              ],
-            ),
+            ],
+          );
+        }
+
+        final week = Text(
+          selected == null ? l10n.targetChartWeek : '',
+          style: secondary,
+        );
+        final weekdays = ExcludeSemantics(
+          child: Row(
+            spacing: AppSpacing.s,
+            children: [
+              for (var day = 0; day < 7; day++)
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => press(day),
+                    child: Text(
+                      letters(days[day]),
+                      textAlign: TextAlign.center,
+                      style:
+                          (day == selected
+                                  ? AppTextStyles.label.semibold
+                                  : AppTextStyles.label)
+                              .copyWith(
+                                color: day == today
+                                    ? scheme.primary
+                                    : scheme.onSurfaceVariant,
+                              ),
+                    ),
+                  ),
+                ),
+              if (!stacked) SizedBox(width: figuresWidth, child: week),
+            ],
           ),
-        ],
-      ),
+        );
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.m,
+          children: [
+            for (final r in rows)
+              if (stacked)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.xs,
+                  children: [figures(r), cells(r)],
+                )
+              else
+                Row(
+                  spacing: AppSpacing.s,
+                  children: [
+                    Expanded(child: cells(r)),
+                    SizedBox(width: figuresWidth, child: figures(r)),
+                  ],
+                ),
+            weekdays,
+            if (stacked && selected == null) ExcludeSemantics(child: week),
+          ],
+        );
+      },
     );
   }
 }

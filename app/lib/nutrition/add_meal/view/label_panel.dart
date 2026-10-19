@@ -192,18 +192,12 @@ class _LabelViewState extends State<_LabelView> {
             ),
             const SizedBox(height: AppSpacing.m),
             AppCard(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                child: TextField(
-                  key: const Key('FoodPicker.labelField'),
-                  controller: _text,
-                  minLines: 4,
-                  maxLines: 10,
-                  decoration: InputDecoration(
-                    hintText: l10n.labelField,
-                    border: InputBorder.none,
-                  ),
-                ),
+              child: AppTextFieldRow(
+                key: const Key('FoodPicker.labelField'),
+                label: l10n.labelField,
+                controller: _text,
+                minLines: 4,
+                maxLines: 10,
               ),
             ),
             const SizedBox(height: AppSpacing.s),

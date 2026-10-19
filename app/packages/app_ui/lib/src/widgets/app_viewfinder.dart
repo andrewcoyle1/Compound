@@ -2,9 +2,9 @@ import 'package:app_ui/app_ui.dart';
 
 /// {@template app_viewfinder}
 /// A live camera's box: the [preview] filling a rounded 4:3 frame, with a
-/// guide drawn inside it for what to hold in view, a [caption] saying what
-/// is happening ("Hold the label in the frame", "Reading label…"), and an
-/// [action] at the top trailing corner, such as the torch.
+/// guide drawn inside it for what to hold in view, a [caption] under the
+/// guide saying what is happening ("Hold the label in the frame", "Reading
+/// label…"), and an [action] at the top trailing corner, such as the torch.
 ///
 /// Without a preview (the camera is opening, closed or refused) the box
 /// shows a camera glyph and no guide. The guide and the caption's scrim are
@@ -49,36 +49,52 @@ class AppViewfinder extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (preview != null) ...[
-                ExcludeSemantics(child: preview),
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        width: 3,
+              if (preview != null) ExcludeSemantics(child: preview),
+              // The caption sits under the guide, never across its edge.
+              Column(
+                children: [
+                  Expanded(
+                    child: preview == null
+                        ? Center(
+                            child: Icon(
+                              AppSymbols.camera,
+                              size: AppIconSize.large.of(context),
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          )
+                        : Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              AppSpacing.xl,
+                              AppSpacing.xl,
+                              AppSpacing.xl,
+                              caption == null ? AppSpacing.xl : AppSpacing.s,
+                            ),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  width: 3,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.m,
+                                ),
+                              ),
+                              child: const SizedBox.expand(),
+                            ),
+                          ),
+                  ),
+                  if (caption != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.m,
+                        0,
+                        AppSpacing.m,
+                        AppSpacing.m,
                       ),
-                      borderRadius: BorderRadius.circular(AppRadius.m),
+                      child: _Caption(text: caption, busy: busy),
                     ),
-                  ),
-                ),
-              ] else
-                Center(
-                  child: Icon(
-                    AppSymbols.camera,
-                    size: AppIconSize.large.of(context),
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              if (caption != null)
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.m),
-                    child: _Caption(text: caption, busy: busy),
-                  ),
-                ),
+                ],
+              ),
               if (action != null)
                 Align(
                   alignment: AlignmentDirectional.topEnd,

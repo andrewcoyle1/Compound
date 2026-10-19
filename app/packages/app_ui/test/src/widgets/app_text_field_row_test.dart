@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/helpers.dart';
@@ -46,6 +47,36 @@ void main() {
       expect(submitted, ['Coyle']);
     });
 
+    testWidgets('a multi-line field takes its lines, controller and limits, '
+        'with no fill of its own', (tester) async {
+      final controller = TextEditingController(text: 'Energy 380 kcal');
+      addTearDown(controller.dispose);
+      await tester.pumpApp(
+        AppSection(
+          children: [
+            AppTextFieldRow(
+              label: 'Label text',
+              controller: controller,
+              minLines: 4,
+              maxLines: 10,
+              inputFormatters: [LengthLimitingTextInputFormatter(20)],
+            ),
+          ],
+        ),
+        textScale: 2,
+      );
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.minLines, 4);
+      expect(field.maxLines, 10);
+      expect(field.decoration!.filled, isNot(isTrue));
+      await tester.enterText(
+        find.byType(TextField),
+        'Energy 380 kcal Protein 30 g',
+      );
+      expect(controller.text, 'Energy 380 kcal Prot');
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('is named by its label with text in it', (tester) async {
       await tester.pumpApp(
         AppTextFieldRow(
@@ -73,6 +104,17 @@ void main() {
           const AppTextFieldRow(
             label: 'First name',
             initialValue: 'Alice',
+            onChanged: _goldenChanged,
+          ),
+        ),
+      ),
+      (
+        'Multi-line',
+        card(
+          const AppTextFieldRow(
+            label: 'Label text',
+            minLines: 4,
+            maxLines: 10,
             onChanged: _goldenChanged,
           ),
         ),

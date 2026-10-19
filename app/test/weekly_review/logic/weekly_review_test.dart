@@ -273,7 +273,7 @@ void main() {
               WorkoutText.recordDetail(l10n, r, locale: 'en'),
             ].join(' '),
         ],
-        ['Bench 100 kg × 5', 'Squat 150 kg × 5'],
+        ['Bench 100\u00a0kg × 5', 'Squat 150\u00a0kg × 5'],
       );
     });
 

@@ -167,6 +167,29 @@ void main() {
       expect(find.bySemanticsLabel('Notes'), findsOneWidget);
     });
 
+    testWidgets('a pinned accessory stays centred at the trailing edge at '
+        'accessibility sizes, and keeps its semantics', (tester) async {
+      await tester.pumpApp(
+        AppListRow(
+          title: 'Train',
+          subtitle: longSubtitle,
+          accessory: AppListRowCustom(
+            TextButton(onPressed: () {}, child: const Text('Done')),
+            pinned: true,
+          ),
+        ),
+        textScale: 2,
+      );
+      final done = find.byType(TextButton);
+      final row = find.byType(AppListRow);
+      expect(
+        tester.getTopLeft(done).dx,
+        greaterThan(tester.getTopRight(find.text('Train')).dx),
+      );
+      expect(tester.getCenter(done).dy, tester.getCenter(row).dy);
+      expect(find.bySemanticsLabel('Done'), findsOneWidget);
+    });
+
     testWidgets('a menu shows its value with an up-and-down chevron', (
       tester,
     ) async {
@@ -258,6 +281,20 @@ void main() {
             title: 'Single-arm dumbbell row with a pause at the top',
             subtitle: 'Back · Biceps',
             accessory: AppListRowValue('3 × 10'),
+          ),
+        ),
+      ),
+      (
+        'Pinned accessory',
+        card(
+          const AppListRow(
+            title: 'Train',
+            subtitle: 'Leg Day A',
+            icon: AppSymbols.workout,
+            accessory: AppListRowCustom(
+              Icon(AppSymbols.choiceUnselected),
+              pinned: true,
+            ),
           ),
         ),
       ),

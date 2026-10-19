@@ -44,6 +44,41 @@ void main() {
     handle.dispose();
   });
 
+  for (final scale in [1.0, 2.0]) {
+    testWidgets('at ${scale * 100}% text the caption sits under the guide, '
+        'clear of its edge', (tester) async {
+      await tester.pumpApp(
+        const SizedBox(
+          width: 343,
+          child: AppViewfinder(
+            preview: _picture,
+            caption: 'Hold the label in the frame',
+          ),
+        ),
+        textScale: scale,
+      );
+      final guide = find.byWidgetPredicate(
+        (widget) =>
+            widget is DecoratedBox &&
+            widget.decoration is BoxDecoration &&
+            (widget.decoration as BoxDecoration).border != null,
+      );
+      final caption = find.ancestor(
+        of: find.text('Hold the label in the frame'),
+        matching: find.byType(DecoratedBox),
+      );
+      expect(
+        tester.getTopLeft(caption.first).dy,
+        greaterThan(tester.getBottomLeft(guide).dy),
+      );
+      expect(
+        tester.getBottomLeft(caption.first).dy,
+        lessThanOrEqualTo(tester.getBottomLeft(find.byType(AppViewfinder)).dy),
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('a busy caption has a spinner', (tester) async {
     await tester.pumpApp(
       const AppViewfinder(caption: 'Reading label…', busy: true),

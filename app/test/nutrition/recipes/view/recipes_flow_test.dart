@@ -232,7 +232,7 @@ void main() {
       expect(find.text('Chicken Breast'), findsOneWidget);
       expect(find.text('Broccoli'), findsOneWidget);
       // 450 g of chicken and Broccoli's 100 g.
-      expect(find.text('Weight of ingredients is 550 g'), findsOneWidget);
+      expect(find.text('Weight of ingredients is 550\u00a0g'), findsOneWidget);
 
       await tap(tester, find.text('Next'));
       expect(find.byType(RecipePreparationView), findsOneWidget);

@@ -43,10 +43,15 @@ final class AppListRowMenu extends AppListRowAccessory {
 /// Any trailing widget, such as a switch or a button.
 final class AppListRowCustom extends AppListRowAccessory {
   /// A trailing widget.
-  const new(this.child);
+  const new(this.child, {this.pinned = false});
 
   /// The widget.
   final Widget child;
+
+  /// Whether the widget stays at the trailing edge, centred on the row, at
+  /// every text size, rather than moving under the title at the largest:
+  /// for a glyph no wider than an icon, such as a done tick.
+  final bool pinned;
 }
 
 /// {@template app_list_row}
@@ -56,10 +61,10 @@ final class AppListRowCustom extends AppListRowAccessory {
 /// the interactive cases.
 ///
 /// Text scales with the user's setting, the row is at least 52 pt tall (iOS
-/// 26's inset-grouped row), and
-/// at the largest text sizes a value or custom accessory moves under the
-/// title instead of squeezing it. The subtitle stops at two lines, except at
-/// those sizes and on a checkmark row, whose subtitle explains the choice.
+/// 26's inset-grouped row), and at the largest text sizes a value or custom
+/// accessory moves under the title instead of squeezing it, unless the
+/// custom one is `pinned`. The subtitle stops at two lines, except at those
+/// sizes and on a checkmark row, whose subtitle explains the choice.
 /// {@endtemplate}
 class AppListRow extends StatelessWidget {
   /// {@macro app_list_row}
@@ -179,6 +184,7 @@ class AppListRow extends StatelessWidget {
 
     final glyphSize = AppIconSize.small.of(context);
     final inline = switch (accessory) {
+      AppListRowCustom(pinned: true) => null,
       AppListRowValue(:final value) => Text(
         value,
         style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurfaceVariant),
@@ -216,6 +222,7 @@ class AppListRow extends StatelessWidget {
         size: glyphSize,
         color: selected ? scheme.primary : scheme.outline,
       ),
+      AppListRowCustom(pinned: true, :final child) => child,
       _ => null,
     };
 
@@ -250,7 +257,12 @@ class AppListRow extends StatelessWidget {
           children: [
             if (leading != null) ExcludeSemantics(child: leading),
             Expanded(child: middle),
-            if (trailing != null) ExcludeSemantics(child: trailing),
+            if (trailing != null)
+              // A pinned custom accessory keeps its own semantics.
+              if (accessory is AppListRowCustom)
+                trailing
+              else
+                ExcludeSemantics(child: trailing),
           ],
         ),
       ),

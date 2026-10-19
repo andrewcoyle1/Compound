@@ -239,7 +239,7 @@ void main() {
       await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
       expect(find.text('Session a'), findsOneWidget);
-      expect(find.text('2 sets · 8 reps · top 110 kg'), findsOneWidget);
+      expect(find.text('2 sets · 8 reps · top 110\u00a0kg'), findsOneWidget);
     });
 
     group('Charts and Records', () {
@@ -301,15 +301,15 @@ void main() {
         await tester.tap(find.text('Records'));
         await tester.pumpAndSettle();
         expect(find.text('Personal Best'), findsOneWidget);
-        expect(find.text('120 kg × 3 reps'), findsOneWidget);
+        expect(find.text('120\u00a0kg × 3 reps'), findsOneWidget);
         expect(find.textContaining('Achieved on '), findsOneWidget);
         expect(find.text('1RM'), findsOneWidget);
         // 3 × 120 → 132; 5 × 100 → 116.7; 5 × 90 is no record.
-        expect(find.text('132 kg'), findsNWidgets(2));
-        expect(find.text('116.7 kg'), findsOneWidget);
+        expect(find.text('132\u00a0kg'), findsNWidgets(2));
+        expect(find.text('116.7\u00a0kg'), findsOneWidget);
         expect(find.text('Total Sets'), findsOneWidget);
         expect(find.text('13'), findsOneWidget);
-        expect(find.text('1,310 kg'), findsOneWidget);
+        expect(find.text('1,310\u00a0kg'), findsOneWidget);
       });
 
       testWidgets('say when the exercise was never logged', (tester) async {

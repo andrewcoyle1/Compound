@@ -102,7 +102,10 @@ void main() {
   });
 
   test('volume is grouped and absent when nothing was lifted', () {
-    expect(ShareCardContent.formatVolume(12340, locale: 'en_US'), '12,340 kg');
+    expect(
+      ShareCardContent.formatVolume(12340, locale: 'en_US'),
+      '12,340\u00a0kg',
+    );
     expect(ShareCardContent.formatVolume(0, locale: 'en_US'), isNull);
   });
 
@@ -110,7 +113,7 @@ void main() {
     final card = content(
       session(sets: [set(10, 60, isWarmup: true), set(5, 100), set(5, 100)]),
     );
-    expect(card.volumeText, '1,000 kg');
+    expect(card.volumeText, '1,000\u00a0kg');
     expect(card.setCount, 2);
     expect(card.durationText, '1h 5m');
     expect(card.sessionName, 'Push Day');
@@ -135,7 +138,7 @@ void main() {
       records: const [bench],
       weekly: 3,
     );
-    expect(card.personalRecordLines, ['Bench 100 kg × 5']);
+    expect(card.personalRecordLines, ['Bench 100\u00a0kg × 5']);
     expect(card.weeklyText, '3rd workout of the week');
     expect(card.streakText, '12-week streak');
   });
@@ -162,7 +165,7 @@ void main() {
       firstDayOfWeek: 1,
       locale: 'en_US',
     );
-    expect(card.personalRecordLines, ['Bench 100 kg × 5']);
+    expect(card.personalRecordLines, ['Bench 100\u00a0kg × 5']);
     expect(card.firstName, isNull);
   });
 

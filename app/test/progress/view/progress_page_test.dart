@@ -294,6 +294,48 @@ void main() {
       expect(today, 3);
     });
 
+    testWidgets('the key sits straight under the weekdays', (tester) async {
+      await pumpView(tester);
+      final chart = find.byType(NutritionTargetChart);
+      final key = find.descendant(
+        of: chart,
+        matching: find.textContaining('Bar shows what you ate'),
+      );
+      final weekday = find.descendant(of: chart, matching: find.text('W'));
+      expect(
+        tester.getTopLeft(key).dy - tester.getBottomLeft(weekday).dy,
+        lessThanOrEqualTo(AppSpacing.m),
+      );
+    });
+
+    testWidgets("at 200% text the week puts each row's figures above "
+        'full-width cells, with nothing clipped', (tester) async {
+      await pumpView(tester, textScale: 2);
+      final chart = find.byType(NutritionTargetChart);
+      Finder inChart(Finder finder) =>
+          find.descendant(of: chart, matching: finder);
+      final bars = inChart(find.byType(BulletBar));
+      final calories = inChart(find.byIcon(AppSymbols.calories));
+      expect(
+        tester.getBottomLeft(calories).dy,
+        lessThanOrEqualTo(tester.getTopLeft(bars.first).dy),
+      );
+      expect(
+        tester.getTopRight(bars.at(6)).dx,
+        greaterThan(tester.getTopRight(chart).dx - AppSpacing.xl),
+      );
+      final key = inChart(find.textContaining('Bar shows what you ate'));
+      // Taller than the page only in the test font; the page then scrolls
+      // to it rather than cutting it off.
+      await tester.ensureVisible(key);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getBottomLeft(key).dy,
+        lessThanOrEqualTo(tester.getBottomLeft(find.byType(PageView)).dy),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('without a plan says so, and offers to create one', (
       tester,
     ) async {
@@ -335,7 +377,7 @@ void main() {
       expect(find.textContaining('reps'), findsWidgets);
       await tester.tap(find.text('1-RM'));
       await tester.pumpAndSettle();
-      expect(find.textContaining(' kg'), findsWidgets);
+      expect(find.textContaining('\u00a0kg'), findsWidgets);
     });
 
     // `WeeklyWorkoutsCard` with an active mesocycle: its targets on the

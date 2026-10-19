@@ -316,6 +316,7 @@ class _MealItemLabel extends StatelessWidget {
     // Hide Food Details wins over the individual toggles.
     final details = !settings.hideFoodDetails;
     final macros = item.macros;
+    final amount = AppFormat.number(item.amount, maxFractionDigits: 2);
     final detail = [
       if (details && settings.showCaloriesInTimeline)
         AppFormat.kcal(macros.calories),
@@ -324,7 +325,8 @@ class _MealItemLabel extends StatelessWidget {
         l10n.nutritionItemFat(AppFormat.grams(macros.fatGrams)),
         l10n.nutritionItemCarbs(AppFormat.grams(macros.carbGrams)),
       ],
-      '${AppFormat.number(item.amount, maxFractionDigits: 2)} ${item.unit}',
+      // A no-break space, as AppFormat's units: "350 g" wraps as one.
+      '$amount\u00a0${item.unit}',
     ].join(' · ');
     // At accessibility sizes the text takes the row's width: the picture
     // goes, and the pencil moves under the figures.

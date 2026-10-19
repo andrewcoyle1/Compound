@@ -106,10 +106,10 @@ void main() {
       expect(find.text('Workout Details'), findsOneWidget);
       expect(find.text('1:04:00'), findsOneWidget);
       // 2 × 8 × 80 + 6 × 60 + 2 × 10 × 20 kg = 2,040 kg, in the user's pounds.
-      expect(find.text('4,497.4 lb'), findsOneWidget);
+      expect(find.text('4,497.4\u00a0lb'), findsOneWidget);
       expect(find.text('Felt strong'), findsOneWidget);
       expect(find.text('Exercise Details'), findsOneWidget);
-      expect(find.text('2 sets · 1,640 kg volume'), findsOneWidget);
+      expect(find.text('2 sets · 1,640\u00a0kg volume'), findsOneWidget);
       // Each exercise opens onto its note and sets, as Swift's disclosure.
       expect(find.text('Pause the first rep'), findsNothing);
       for (final name in ['Split Squat', 'Bench']) {
@@ -121,15 +121,15 @@ void main() {
       await tester.ensureVisible(find.text('Pause the first rep'));
       expect(find.text('Pause the first rep'), findsOneWidget);
       expect(find.text('Warm-up'), findsOneWidget);
-      expect(find.text('40 kg × 10 reps'), findsOneWidget);
+      expect(find.text('40\u00a0kg × 10 reps'), findsOneWidget);
       expect(find.text('Set 1'), findsOneWidget);
       expect(find.text('Set 2'), findsOneWidget);
       expect(find.text('RPE 7.5'), findsOneWidget);
       expect(find.text('Drop set'), findsOneWidget);
       await tester.scrollUntilVisible(find.text('Set 1R'), 100);
       expect(find.text('Set 1L'), findsOneWidget);
-      expect(find.text('1 set · 881.8 lb volume'), findsOneWidget);
-      expect(find.text('44.1 lb × 10 reps'), findsNWidgets(2));
+      expect(find.text('1 set · 881.8\u00a0lb volume'), findsOneWidget);
+      expect(find.text('44.1\u00a0lb × 10 reps'), findsNWidgets(2));
     });
 
     group('confetti', () {

@@ -148,15 +148,15 @@ void main() {
       await pump(tester);
       final setId = nextSetId();
 
-      expect(find.text('Log set 1 · 60 kg × 8'), findsOneWidget);
-      await tester.tap(find.text('Log set 1 · 60 kg × 8'));
+      expect(find.text('Log set 1 · 60\u00a0kg × 8'), findsOneWidget);
+      await tester.tap(find.text('Log set 1 · 60\u00a0kg × 8'));
       await tester.pumpAndSettle();
 
       expect(cubit.state.set(setId)!.completedAt, clock.now);
       expect(find.textContaining('Skip Rest'), findsOneWidget);
       expect(find.text('+15s'), findsOneWidget);
       expect(
-        find.text('Barbell Bench Press · Set 1 · 60 kg × 8'),
+        find.text('Barbell Bench Press · Set 1 · 60\u00a0kg × 8'),
         findsOneWidget,
       );
       await cubit.close();
@@ -210,14 +210,14 @@ void main() {
         'Cable Neutral Grip Lat Pulldown',
       );
       expect(
-        find.text('Barbell Bench Press · Set 1 · 60 kg × 8'),
+        find.text('Barbell Bench Press · Set 1 · 60\u00a0kg × 8'),
         findsOneWidget,
       );
       await tester.tap(find.byTooltip('Add a rep'));
       await tester.pumpAndSettle();
       expect(cubit.state.set(setId)!.reps, 9);
       expect(
-        find.text('Barbell Bench Press · Set 1 · 60 kg × 9'),
+        find.text('Barbell Bench Press · Set 1 · 60\u00a0kg × 9'),
         findsOneWidget,
       );
 
@@ -252,7 +252,7 @@ void main() {
         find.textContaining('Cable Neutral Grip Lat Pulldown · Set 1 · '),
         findsOneWidget,
       );
-      expect(find.textContaining(' $symbol × 8'), findsOneWidget);
+      expect(find.textContaining('\u00a0$symbol × 8'), findsOneWidget);
       await cubit.close();
     });
 

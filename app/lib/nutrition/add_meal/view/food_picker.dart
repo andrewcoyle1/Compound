@@ -796,18 +796,9 @@ class _QuickAddView extends StatelessWidget {
               AppSection(
                 header: l10n.addMealQuickAddName,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.l,
-                    ),
-                    child: TextField(
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecoration(
-                        hintText: l10n.addMealQuickAddName,
-                        border: InputBorder.none,
-                      ),
-                      onChanged: cubit.nameChanged,
-                    ),
+                  AppTextFieldRow(
+                    label: l10n.addMealQuickAddName,
+                    onChanged: cubit.nameChanged,
                   ),
                 ],
               ),

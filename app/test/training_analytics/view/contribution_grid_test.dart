@@ -73,6 +73,14 @@ void main() {
     expect(find.text('W'), findsOneWidget);
     expect(find.text('S'), findsNWidgets(2));
     expect(find.bySemanticsLabel('4 workouts'), findsOneWidget);
+    // The header covers every week the grid shows, back past the first
+    // entry's (31 August, 45 days to today) to fill the width.
+    expect(find.textContaining('Days Logged, Aug 31,'), findsNothing);
+    final span = RegExp(r'of (\d+) days').firstMatch(
+      tester.widget<Text>(find.textContaining('of ')).textSpan!.toPlainText(),
+    )!;
+    expect(int.parse(span[1]!), greaterThan(45));
+    expect(int.parse(span[1]!) % 7, 3);
   });
 
   testWidgets('holding a day reads out its count and date, then lets go', (

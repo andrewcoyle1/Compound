@@ -206,6 +206,37 @@ void main() {
       expect(grid.height - _top, greaterThan(7 * _step - _gap));
     });
 
+    testWidgets('builds its header from the first day it shows', (
+      tester,
+    ) async {
+      final firsts = <DateTime>[];
+      await tester.pumpApp(
+        Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: _letters + 18 * _step - _gap,
+            child: HeatGrid(
+              days: {_today: 1},
+              today: _today,
+              levels: 2,
+              color: _pink,
+              header: (first) {
+                firsts.add(first);
+                return const Text('header');
+              },
+            ),
+          ),
+        ),
+        disableAnimations: true,
+      );
+      // 18 weeks back to Monday 15 June, above the grid.
+      expect(firsts.last, DateTime(2026, 6, 15));
+      expect(
+        tester.getRect(find.text('header')).bottom,
+        lessThanOrEqualTo(tester.getRect(painter()).top),
+      );
+    });
+
     testWidgets('goes back to the first week logged, scrolled to this', (
       tester,
     ) async {

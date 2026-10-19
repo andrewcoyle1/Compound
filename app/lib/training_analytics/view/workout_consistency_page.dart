@@ -113,7 +113,7 @@ class _WorkoutConsistencyView extends StatelessWidget {
 /// [gradedLevels] - 1, with a legend beneath; otherwise any entry fills the
 /// day.
 ///
-/// The header counts the days logged since the first week with any;
+/// The header counts the days logged and the dates the grid covers;
 /// pressing and holding a day rings it and shows its count and date
 /// instead. A screen reader hears [semanticsLabel], then each week.
 class ContributionGrid extends StatefulWidget {
@@ -177,20 +177,6 @@ class _ContributionGridState extends State<ContributionGrid> {
     final levels = widget.graded
         ? math.min(most, ContributionGrid.gradedLevels - 1) + 1
         : 2;
-    final earliest = counts.keys.reduce((a, b) => a.isBefore(b) ? a : b);
-    final first = DateTime(
-      earliest.year,
-      earliest.month,
-      earliest.day - (earliest.weekday - widget.firstWeekday + 7) % 7,
-    );
-    final span =
-        DateTime.utc(
-          today.year,
-          today.month,
-          today.day,
-        ).difference(DateTime.utc(first.year, first.month, first.day)).inDays +
-        1;
-    final daysLogged = counts.keys.where((d) => !d.isAfter(today)).length;
     String date(DateTime day) =>
         AppFormat.date(day, locale: context.dateLocale);
     String countOf(int count) =>
@@ -203,42 +189,6 @@ class _ContributionGridState extends State<ContributionGrid> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: AppSpacing.xs,
         children: [
-          // Hidden under the callout while a day is picked, keeping its
-          // room so nothing moves.
-          ExcludeSemantics(
-            child: Opacity(
-              opacity: selected == null ? 1 : 0,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: AppSpacing.xs,
-                children: [
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: AppFormat.number(daysLogged, locale: locale),
-                          style: AppTextStyles.metric,
-                        ),
-                        TextSpan(text: ' ${l10n.contributionOfDays(span)}'),
-                      ],
-                    ),
-                    style: AppTextStyles.rowDetail.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                  Text(
-                    l10n.contributionDaysLogged(
-                      '${date(first)} – ${date(today)}',
-                    ),
-                    style: AppTextStyles.label.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.s),
           HeatGrid(
             days: counts,
             today: today,
@@ -266,6 +216,63 @@ class _ContributionGridState extends State<ContributionGrid> {
                     ),
                     noData: l10n.progressNoData,
                   ),
+            header: (first) {
+              final span =
+                  DateTime.utc(today.year, today.month, today.day)
+                      .difference(
+                        DateTime.utc(first.year, first.month, first.day),
+                      )
+                      .inDays +
+                  1;
+              final daysLogged = counts.keys
+                  .where((d) => !d.isBefore(first) && !d.isAfter(today))
+                  .length;
+              // Hidden under the callout while a day is picked, keeping
+              // its room so nothing moves.
+              return Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 2 * AppSpacing.xs + AppSpacing.s,
+                ),
+                child: ExcludeSemantics(
+                  child: Opacity(
+                    opacity: selected == null ? 1 : 0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: AppSpacing.xs,
+                      children: [
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: AppFormat.number(
+                                  daysLogged,
+                                  locale: locale,
+                                ),
+                                style: AppTextStyles.metric,
+                              ),
+                              TextSpan(
+                                text: ' ${l10n.contributionOfDays(span)}',
+                              ),
+                            ],
+                          ),
+                          style: AppTextStyles.rowDetail.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          l10n.contributionDaysLogged(
+                            '${date(first)} – ${date(today)}',
+                          ),
+                          style: AppTextStyles.label.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
             weekLabel: (start) {
               final week = [
                 for (var day = 0; day < DateTime.daysPerWeek; day++)

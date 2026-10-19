@@ -53,6 +53,7 @@ class HeatGrid extends StatefulWidget {
     this.onSelected,
     this.callout,
     this.weekLabel,
+    this.header,
     super.key,
   }) : values = const [],
        rows = DateTime.daysPerWeek;
@@ -72,7 +73,8 @@ class HeatGrid extends StatefulWidget {
        selected = null,
        onSelected = null,
        callout = null,
-       weekLabel = null;
+       weekLabel = null,
+       header = null;
 
   /// Each day's level, keyed by the day at midnight; a day left out is 0.
   final Map<DateTime, int> days;
@@ -112,6 +114,11 @@ class HeatGrid extends StatefulWidget {
 
   /// What a screen reader says for the week starting on the day given.
   final String Function(DateTime weekStart)? weekLabel;
+
+  /// What sits above the grid, given the first day it shows (the start of
+  /// its first column), such as a count of the days it covers. The callout
+  /// floats over it.
+  final Widget Function(DateTime firstDay)? header;
 
   @override
   State<HeatGrid> createState() => _HeatGridState();
@@ -368,7 +375,7 @@ class _HeatGridState extends State<HeatGrid> {
         // The scroll view is reversed, so the grid's end sits at the
         // viewport's, less however far it has been scrolled back.
         final offset = _scroll.hasClients ? _scroll.offset : 0.0;
-        return Stack(
+        final chart = Stack(
           clipBehavior: Clip.none,
           children: [
             Row(
@@ -421,6 +428,12 @@ class _HeatGridState extends State<HeatGrid> {
               ),
             ),
           ],
+        );
+        final header = widget.header;
+        if (header == null) return chart;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [header(first), chart],
         );
       },
     );

@@ -2,14 +2,12 @@
 """Hold app/lib to the UI contract (docs/specs/flutter/ui-contract.md, rules 2 and 3).
 
 Feature code styles nothing itself: colours, text styles, padding, radii and durations come from
-app_ui's tokens, and Material's buttons, rows and dialogs are wrapped once in app_ui. Code from
-before the contract is baselined below. A count may fall but never rise, so no new literal lands.
+app_ui's tokens, and Material's buttons, rows and dialogs are wrapped once in app_ui. Every
+screen was moved onto app_ui by 19 Oct 2026, so any match fails.
 
-    python3 scripts/flutter-ui-check.py              # fail if any count is above its baseline (CI)
+    python3 scripts/flutter-ui-check.py              # fail on any match (CI)
     python3 scripts/flutter-ui-check.py --list RULE  # print each match of one rule
     python3 scripts/flutter-ui-check.py --self-test
-
-When a count falls, lower its baseline in the same PR so it cannot creep back.
 """
 
 import re
@@ -52,25 +50,6 @@ RULES = {
 # Generated strings, and share cards, which render to fixed-size images like the Swift app's.
 EXEMPT = ('lib/l10n/gen/', 'lib/sharing/share_card/', 'lib/weekly_review/view/weekly_review_share_card.dart')
 
-# Counts on 18 Oct 2026, when the contract was written. Lower these as screens are fixed.
-BASELINE = {
-    'raw-colour': 2,
-    'text-style': 83,
-    'padding-literal': 1,
-    'gap-literal': 1,
-    'radius-literal': 6,
-    'animation-duration': 1,
-    'icon-literal': 6,
-    # Every display date went through AppFormat on 19 Oct 2026; no machine format needed DateFormat.
-    'date-format': 0,
-    'framework-import': 0,
-    'material-button': 328,
-    'material-row': 44,
-    'material-card': 0,
-    'material-dialog': 104,
-}
-
-
 def matches(text):
     """Yield (rule, line number, line) for every match outside a comment."""
     for number, line in enumerate(text.splitlines(), 1):
@@ -100,13 +79,10 @@ def check():
     found = scan()
     failed = False
     for rule, (_pattern, hint) in RULES.items():
-        count, limit = len(found[rule]), BASELINE[rule]
-        if count > limit:
+        if found[rule]:
             failed = True
-            print(f'{rule}: {count}, baseline {limit}. Use {hint}. '
+            print(f'{rule}: {len(found[rule])} found. Use {hint}. '
                   f'See docs/specs/flutter/ui-contract.md; list them with --list {rule}.')
-        elif count < limit:
-            print(f'{rule}: {count}, below its baseline of {limit}. Lower BASELINE in {Path(__file__).name}.')
     if failed:
         return 1
     print('UI contract: no new literals or raw Material widgets in app/lib.')
@@ -152,7 +128,6 @@ def self_test():
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]
         assert sorted(got) == sorted(expected), (line, got, expected)
-    assert set(RULES) == set(BASELINE)
     print(f'self-test: {len(cases)} cases passed')
     return 0
 

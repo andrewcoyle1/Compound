@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,6 +38,7 @@ void main() {
       bool leadingFullSwipe = true,
       bool trailingFullSwipe = true,
       TextDirection direction = TextDirection.ltr,
+      bool disableAnimations = false,
     }) async {
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
         SystemChannels.platform,
@@ -68,6 +70,7 @@ void main() {
                 leadingFullSwipe: leadingFullSwipe,
                 trailingFullSwipe: trailingFullSwipe,
                 child: InkWell(
+                  key: const Key('row'),
                   onTap: () => rowTaps++,
                   child: const SizedBox(height: 56, child: Text('Oats')),
                 ),
@@ -75,20 +78,14 @@ void main() {
             ),
           ),
         ),
+        disableAnimations: disableAnimations,
       );
     }
 
     // How far the row has moved, in logical pixels from its place.
-    double rowShift(WidgetTester tester) => tester
-        .widget<Transform>(
-          find.descendant(
-            of: find.byType(AppSwipeActions),
-            matching: find.byType(Transform),
-          ),
-        )
-        .transform
-        .getTranslation()
-        .x;
+    double rowShift(WidgetTester tester) =>
+        tester.getTopLeft(find.byKey(const Key('row'))).dx -
+        tester.getTopLeft(find.byType(AppSwipeActions)).dx;
 
     // A quick swipe by [dx]: five steps 5 ms apart.
     Future<void> flick(WidgetTester tester, double dx) async {
@@ -243,6 +240,107 @@ void main() {
         tester.getCenter(find.text('Pin')).dx,
         lessThan(tester.getCenter(find.text('Mute')).dx),
       );
+    });
+
+    testWidgets('a full swipe past three buttons runs the first, not just '
+        'opens them', (tester) async {
+      await pump(
+        tester,
+        trailing: [action('Delete'), action('Mute'), action('Pin')],
+      );
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(AppSwipeActions)),
+      );
+      // 3 × 74 is past 0.6 of 400, so only a swipe past the buttons runs.
+      await gesture.moveBy(const Offset(-20, 0));
+      await gesture.moveBy(const Offset(-205, 0));
+      await tester.pump();
+      expect(haptics, 0);
+      await gesture.moveBy(const Offset(-60, 0));
+      await tester.pump();
+      expect(haptics, 1);
+      // The first button takes the whole gap.
+      expect(tester.getSize(find.text('Delete')).width, greaterThan(0));
+      expect(find.text('Mute').hitTestable(), findsNothing);
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(ran, ['Delete']);
+      expect(rowShift(tester), 0);
+    });
+
+    testWidgets('a swipe past the buttons but short of a full swipe opens', (
+      tester,
+    ) async {
+      await pump(tester);
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(AppSwipeActions)),
+      );
+      await gesture.moveBy(const Offset(-20, 0));
+      await gesture.moveBy(const Offset(-180, 0));
+      await tester.pump();
+      // The buttons stretch to fill the gap.
+      expect(
+        tester.getSize(find.byIcon(AppSymbols.edit)).width,
+        lessThan(AppSwipeActions.buttonWidth),
+      );
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(ran, isEmpty);
+      expect(haptics, 0);
+      expect(rowShift(tester), -2 * AppSwipeActions.buttonWidth);
+    });
+
+    testWidgets('under reduced motion the row opens and closes at once', (
+      tester,
+    ) async {
+      await pump(tester, disableAnimations: true);
+      await tester.drag(find.byType(AppSwipeActions), const Offset(-120, 0));
+      // A frame starts each move; the next, a millisecond on, has finished it.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1));
+      expect(rowShift(tester), -2 * AppSwipeActions.buttonWidth);
+      await tester.tap(find.byKey(const Key('AppSwipeActions.close')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1));
+      expect(rowShift(tester), 0);
+    });
+
+    testWidgets('in a reorderable list, a long press moves the row and a '
+        'swipe still opens it', (tester) async {
+      final moves = <(int, int)>[];
+      await tester.pumpApp(
+        ReorderableListView(
+          onReorderItem: (from, to) => moves.add((from, to)),
+          children: [
+            for (final name in ['Upper', 'Lower'])
+              AppSwipeActions(
+                key: ValueKey(name),
+                trailing: [action('Delete $name')],
+                child: SizedBox(height: 56, child: Text(name)),
+              ),
+          ],
+        ),
+      );
+      await tester.drag(find.text('Upper'), const Offset(-100, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delete Upper'));
+      await tester.pumpAndSettle();
+      expect(ran, ['Delete Upper']);
+
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('Lower')),
+      );
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      for (var step = 0; step < 6; step++) {
+        await gesture.moveBy(const Offset(0, -15));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(moves, hasLength(1));
+      expect(moves.single.$1, 1);
+      expect(ran, ['Delete Upper']);
+      expect(find.byIcon(AppSymbols.delete), findsNothing);
     });
 
     testWidgets('every button is a screen-reader action', (tester) async {

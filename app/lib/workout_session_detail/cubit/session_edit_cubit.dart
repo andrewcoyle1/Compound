@@ -56,7 +56,7 @@ class SessionEditCubit extends Cubit<SessionEditState>
     UnitPreferenceStore? units,
     DeviceStore? device,
     this._clock = DateTime.now,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
   }) : _saved = session,
        _units = units ?? UnitPreferenceStore(),
        _device = device ?? InMemoryDeviceStore(),

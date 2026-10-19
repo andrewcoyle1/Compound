@@ -24,7 +24,6 @@ import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound_models/compound_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -257,7 +256,7 @@ Future<void> _deleted(BuildContext context, DeleteExerciseStatus status) async {
     case DeleteExerciseStatus.deleted:
       if (context.canPop()) context.pop();
     case DeleteExerciseStatus.failed:
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
       await showFailureAlert(
         context,
         l10n.exerciseDeleteFailed,

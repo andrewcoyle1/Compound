@@ -169,19 +169,18 @@ class IntegrationsView extends StatelessWidget {
 /// past workouts. Shared by Integrations and the workout summary.
 void showStravaNotice(BuildContext context, StravaState state) {
   final l10n = context.l10n;
-  void tell(String message) => ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  void tell(String message) =>
+      showAppSnackBar(context, message, style: AppSnackBarStyle.success);
   switch (state.notice) {
     case null:
       return;
     case StravaNotice.backfillOffered:
       unawaited(_offerBackfill(context, state.noticeCount));
     case StravaNotice.backfillQueued:
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       tell(l10n.stravaBackfillQueued(state.noticeCount));
     case StravaNotice.connectFailed:
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
       unawaited(
         showFailureAlert(
           context,
@@ -192,7 +191,7 @@ void showStravaNotice(BuildContext context, StravaState state) {
         ),
       );
     case StravaNotice.disconnectFailed:
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
       unawaited(
         showFailureAlert(
           context,
@@ -201,10 +200,10 @@ void showStravaNotice(BuildContext context, StravaState state) {
         ),
       );
     case StravaNotice.testUploadSent:
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       tell(l10n.stravaTestUploadSent);
     case StravaNotice.testUploadFailed:
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
       unawaited(
         showFailureAlert(
           context,

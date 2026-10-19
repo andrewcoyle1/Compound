@@ -1,25 +1,4 @@
-import 'dart:math';
-
 import 'package:compound_models/compound_models.dart';
-
-/// A random (version 4) UUID in upper case, as Swift's `UUID().uuidString`
-/// writes the ids these documents carry.
-String newUuid() {
-  final random = Random.secure();
-  final bytes = [for (var i = 0; i < 16; i++) random.nextInt(256)];
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  final hex = [for (final byte in bytes) byte.toRadixString(16).padLeft(2, '0')]
-      .join()
-      .toUpperCase();
-  return [
-    hex.substring(0, 8),
-    hex.substring(8, 12),
-    hex.substring(12, 16),
-    hex.substring(16, 20),
-    hex.substring(20),
-  ].join('-');
-}
 
 /// The shipped program matched to how often the user said they exercise
 /// (`CreateMesocyclePresenter.recommendedProgramId`): two or fewer sessions
@@ -49,7 +28,7 @@ Mesocycle copyMesocycle(
   Mesocycle mesocycle, {
   required String authorId,
   required DateTime now,
-  String Function() newId = newUuid,
+  String Function() newId = newDocumentId,
 }) => _Copier(
   authorId: authorId,
   now: now,
@@ -85,7 +64,7 @@ SharedItemCopy copySharedItem(
   required String recipientId,
   required Iterable<String> libraryExerciseIds,
   required DateTime now,
-  String Function() newId = newUuid,
+  String Function() newId = newDocumentId,
 }) {
   final copier = _Copier(
     authorId: recipientId,

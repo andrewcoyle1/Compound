@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:app_ui/app_ui.dart';
+import 'package:compound_charts/src/chart_legend.dart';
+import 'package:compound_charts/src/data.dart';
 
 /// Swift QuickCharts' `chartCallout`: [child] in a floating panel just
 /// above the chart this fills (put it in a `Positioned.fill` over the
@@ -126,9 +128,15 @@ class _CalloutLayout extends SingleChildLayoutDelegate {
   bool shouldRelayout(_CalloutLayout oldDelegate) => oldDelegate.x != x;
 }
 
-/// One line of a [ChartCalloutSummary]: a series' name in its colour, over
-/// its value. A chart of one unnamed series leaves the name out.
-typedef ChartCalloutRow = ({String? name, Color? color, String value});
+/// One line of a [ChartCalloutSummary]: a series' name in its colour,
+/// after its [ChartSwatch] when its `mark` is given, over its value. A
+/// chart of one unnamed series leaves the name out.
+typedef ChartCalloutRow = ({
+  String? name,
+  Color? color,
+  ChartMark? mark,
+  String value,
+});
 
 /// What a [ChartCallout] says (Swift's `SeriesSummary`): each series' name
 /// over its value, side by side (stacked when they don't fit), then a rule
@@ -174,11 +182,24 @@ class ChartCalloutSummary extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (row.name case final name?)
-                        Text(
-                          name,
-                          style: AppTextStyles.rowDetail.copyWith(
-                            color: row.color,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: AppSpacing.xs,
+                          children: [
+                            if ((row.mark, row.color) case (
+                              final mark?,
+                              final color?,
+                            ))
+                              ChartSwatch(mark: mark, color: color),
+                            Flexible(
+                              child: Text(
+                                name,
+                                style: AppTextStyles.rowDetail.copyWith(
+                                  color: row.color,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       Text(row.value, style: AppTextStyles.metric),
                     ],

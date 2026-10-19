@@ -8,7 +8,7 @@ import 'package:compound/programs/cubit/macrocycle_draft_cubit.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
-import 'package:flutter/services.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
@@ -99,7 +99,7 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
       AppAuthenticated(:final user) => user.uid,
       _ => '',
     },
-    newId: newUuid,
+    newId: newDocumentId,
     now: DateTime.now(),
   );
 
@@ -109,10 +109,10 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
     if (!mounted) return;
     setState(() => _saving = false);
     if (ok) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       context.pop();
     } else {
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
       await showFailureAlert(
         context,
         context.l10n.programSaveFailed,
@@ -328,7 +328,7 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                     hint: l10n.programAddMesocycleHint,
                     child: InkWell(
                       onTap: () {
-                        unawaited(HapticFeedback.selectionClick());
+                        unawaited(AppHaptics.selection());
                         cubit.added(mesocycle);
                         if (_name.text.isEmpty) _name.text = mesocycle.name;
                       },

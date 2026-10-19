@@ -269,10 +269,12 @@ class _RangePicker extends StatelessWidget {
 }
 
 /// The header (each series' average over the window, and its dates) and
-/// the plot, read to a screen reader as one summary. Swiping pages to the
-/// window before or after, which screen readers get as actions; pressing
-/// and holding shows the bucket under the finger in a callout over the
-/// header (Swift QuickCharts' scrolling, selection and `chartCallout`).
+/// the plot, read to a screen reader as one summary, then a bucket at a
+/// time. Flinging the plot pages to the window before or after, which
+/// screen readers get as actions; pressing and holding shows the bucket
+/// under the finger in a callout over the header (Swift QuickCharts'
+/// scrolling, selection and `chartCallout`); pinching zooms into the
+/// window.
 /// Windows stay rolling, as #98 set them: a page is the range's length
 /// earlier.
 class _Chart extends StatefulWidget {
@@ -383,7 +385,6 @@ class _ChartState extends State<_Chart> {
     final secondary = AppTextStyles.rowDetail.copyWith(
       color: scheme.onSurfaceVariant,
     );
-    final rtl = Directionality.of(context) == TextDirection.rtl;
     final selected = _selected;
     // Swift's chart header: each series' name in its colour over its
     // figure, then what the figure is and the dates.
@@ -399,6 +400,19 @@ class _ChartState extends State<_Chart> {
         style: secondary,
       ),
     ];
+    // What a bucket holds: one row per series, as the callout shows it
+    // and a screen reader reads it.
+    List<ChartCalloutRow> rowsAt(DateTime bucket) => [
+      for (final s in visible)
+        if (s.points.where((p) => p.date == bucket).firstOrNull
+            case final point?)
+          (
+            name: s.label,
+            color: s.color,
+            mark: s.mark,
+            value: value(point.value),
+          ),
+    ];
     return Semantics(
       container: true,
       label: summary,
@@ -409,90 +423,84 @@ class _ChartState extends State<_Chart> {
         if (_page > 0)
           CustomSemanticsAction(label: l10n.chartNextPeriod): () => _move(-1),
       },
-      child: ExcludeSemantics(
-        child: GestureDetector(
-          onHorizontalDragEnd: (details) {
-            final velocity = details.primaryVelocity ?? 0;
-            if (velocity == 0) return;
-            // A swipe towards the end of the line shows the window before.
-            _move((velocity > 0) != rtl ? 1 : -1);
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: AppSpacing.xs,
-            children: [
-              // Hidden under the callout while a bucket is picked, keeping
-              // its room so nothing moves (Swift's `RangeHeader`).
-              Opacity(
-                opacity: selected == null ? 1 : 0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: AppSpacing.xs,
-                  children: header,
-                ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppSpacing.xs,
+        children: [
+          // Hidden under the callout while a bucket is picked, keeping its
+          // room so nothing moves (Swift's `RangeHeader`). The summary
+          // already says it.
+          ExcludeSemantics(
+            child: Opacity(
+              opacity: selected == null ? 1 : 0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: AppSpacing.xs,
+                children: header,
               ),
-              const SizedBox(height: AppSpacing.s),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s),
+          // An empty window still pages, so the chart stays under its
+          // message.
+          Stack(
+            children: [
+              CartesianChart(
+                interactive: true,
+                data: ChartData(
+                  series: [
+                    for (final s in visible)
+                      ChartSeries(
+                        label: s.label,
+                        color: s.color,
+                        mark: s.mark,
+                        points: [
+                          for (final p in s.points) (x: p.date, y: p.value),
+                        ],
+                      ),
+                  ],
+                  start: start,
+                  end: end,
+                  bucketDays: switch (range) {
+                    MetricRange.week || MetricRange.month => 1,
+                    MetricRange.sixMonths => 7,
+                    MetricRange.year => 365 / 12,
+                  },
+                  // Bars stand on zero; readings fit closely.
+                  yFit: visible.any((s) => s.isBar)
+                      ? ChartYFit.zero
+                      : ChartYFit.tight,
+                ),
+                selected: selected,
+                onSelected: (date) => setState(() => _selected = date),
+                // The chart's -1 is the window before, this one's 1.
+                onPage: (direction) => _move(-direction),
+                bucketLabel: (bucket) => [
+                  bucketText(range, bucket, context.dateLocale),
+                  for (final row in rowsAt(bucket)) '${row.name}, ${row.value}',
+                ].join('. '),
+                callout: selected == null
+                    ? null
+                    : ChartCalloutSummary(
+                        rows: rowsAt(selected),
+                        footer: bucketText(range, selected, context.dateLocale),
+                        noData: l10n.progressNoData,
+                      ),
+              ),
               if (averages.isEmpty)
-                SizedBox(
-                  height: AppChartHeight.regular,
-                  child: Center(
-                    child: Text(l10n.chartNoDataInRange, style: secondary),
+                // Passing touches through to the chart beneath.
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: ExcludeSemantics(
+                      child: Center(
+                        child: Text(l10n.chartNoDataInRange, style: secondary),
+                      ),
+                    ),
                   ),
-                )
-              else
-                CartesianChart(
-                  data: ChartData(
-                    series: [
-                      for (final s in visible)
-                        ChartSeries(
-                          label: s.label,
-                          color: s.color,
-                          mark: s.mark,
-                          points: [
-                            for (final p in s.points) (x: p.date, y: p.value),
-                          ],
-                        ),
-                    ],
-                    start: start,
-                    end: end,
-                    bucketDays: switch (range) {
-                      MetricRange.week || MetricRange.month => 1,
-                      MetricRange.sixMonths => 7,
-                      MetricRange.year => 365 / 12,
-                    },
-                    // Bars stand on zero; readings fit closely.
-                    yFit: visible.any((s) => s.isBar)
-                        ? ChartYFit.zero
-                        : ChartYFit.tight,
-                  ),
-                  selected: selected,
-                  onSelected: (date) => setState(() => _selected = date),
-                  callout: selected == null
-                      ? null
-                      : ChartCalloutSummary(
-                          rows: [
-                            for (final s in visible)
-                              if (s.points
-                                      .where((p) => p.date == selected)
-                                      .firstOrNull
-                                  case final point?)
-                                (
-                                  name: s.label,
-                                  color: s.color,
-                                  value: value(point.value),
-                                ),
-                          ],
-                          footer: bucketText(
-                            range,
-                            selected,
-                            context.dateLocale,
-                          ),
-                          noData: l10n.progressNoData,
-                        ),
                 ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

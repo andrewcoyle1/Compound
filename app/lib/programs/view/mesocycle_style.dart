@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
-import 'package:flutter/services.dart';
 import 'package:program_repository/program_repository.dart';
 
 /// The glyph for a mesocycle's stored SF Symbol name.
@@ -108,7 +107,7 @@ class const _Swatch({
       child: Center(
         child: InkResponse(
           onTap: () {
-            unawaited(HapticFeedback.selectionClick());
+            unawaited(AppHaptics.selection());
             onPressed();
           },
           child: Container(

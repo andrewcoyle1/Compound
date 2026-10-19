@@ -2,10 +2,10 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart' show AppFormat;
 import 'package:bloc/bloc.dart';
 import 'package:body_repository/body_repository.dart';
-import 'package:compound/app/document_id.dart';
 import 'package:compound/log_weight/logic/decimal_wheel_value.dart';
 import 'package:compound/weight_metric/models/weight_metric.dart'
     show weighInsOf;
+import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health_repository/health_repository.dart';
 import 'package:user_repository/user_repository.dart';

@@ -5,7 +5,6 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/report/report_cubit.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:social_repository/social_repository.dart';
 
@@ -22,7 +21,7 @@ Future<void> showReportSheet(
     content: content,
     reporterId: context.read<CircleBloc>().state.viewer?.userId,
   );
-  final messenger = ScaffoldMessenger.of(context);
+  final snackBars = AppSnackBarScope.of(context);
   final l10n = context.l10n;
   final sending = await showAppSheet<Future<bool>>(
     context: context,
@@ -37,14 +36,13 @@ Future<void> showReportSheet(
   await cubit.close();
   if (sent == null) return;
   if (sent) {
-    unawaited(HapticFeedback.mediumImpact());
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(reportSentMessage(l10n, content.type))),
-      );
+    unawaited(AppHaptics.medium());
+    snackBars.show(
+      reportSentMessage(l10n, content.type),
+      style: AppSnackBarStyle.success,
+    );
   } else if (context.mounted) {
-    unawaited(HapticFeedback.heavyImpact());
+    unawaited(AppHaptics.heavy());
     await showAppDialog<void>(
       context: context,
       title: l10n.reportFailed,

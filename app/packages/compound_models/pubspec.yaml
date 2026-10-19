@@ -9,6 +9,8 @@ environment:
 dependencies:
   fuzzy: 0.5.2
   stringr: 1.2.2
+  # Document ids in Swift's UUID().uuidString form (MIT).
+  uuid: 4.6.0
 
 dev_dependencies:
   mocktail: ^1.0.5

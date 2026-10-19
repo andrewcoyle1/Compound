@@ -7,24 +7,6 @@ import 'package:training_library_repository/training_library_repository.dart'
 import '../helpers/contract.dart';
 
 void main() {
-  group('newUuid', () {
-    test("is a random upper-case UUID, as Swift's uuidString", () {
-      final ids = {for (var i = 0; i < 100; i++) newUuid()};
-      expect(ids, hasLength(100));
-      for (final id in ids) {
-        expect(
-          id,
-          matches(
-            RegExp(
-              '^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-'
-              r'[0-9A-F]{12}$',
-            ),
-          ),
-        );
-      }
-    });
-  });
-
   group('recommendedProgramId', () {
     test('matches the program to how often the user trains', () {
       expect(

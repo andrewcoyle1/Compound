@@ -1,5 +1,4 @@
 import 'package:compound_models/compound_models.dart';
-import 'package:program_repository/src/program_rules.dart';
 
 /// The colours a mesocycle can be drawn in, as stored: Swift's
 /// `MesocycleIconPresenter.defaultColours` (primary, red, orange, yellow,
@@ -48,7 +47,7 @@ Mesocycle newMesocycle({
   required String icon,
   required String colour,
   required DateTime now,
-  String Function() newId = newUuid,
+  String Function() newId = newDocumentId,
 }) => Mesocycle(
   id: id,
   authorId: authorId,

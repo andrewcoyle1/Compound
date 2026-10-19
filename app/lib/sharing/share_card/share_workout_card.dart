@@ -25,7 +25,7 @@ Future<void> shareWorkoutCard(
   final l10n = context.l10n;
   final analytics = context.read<AnalyticsRepository>();
   final shareSheet = context.read<ShareSheet>();
-  final messenger = ScaffoldMessenger.of(context);
+  final snackBars = AppSnackBarScope.of(context);
   void track(String outcome, [LogType type = LogType.analytic]) {
     if (eventPrefix != null) {
       analytics.trackEvent(
@@ -60,13 +60,10 @@ Future<void> shareWorkoutCard(
   );
   if (png == null || !context.mounted) {
     track('Fail', LogType.severe);
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('${l10n.shareImageFailed}. ${l10n.socialTryAgain}'),
-        ),
-      );
+    snackBars.show(
+      '${l10n.shareImageFailed}. ${l10n.socialTryAgain}',
+      style: AppSnackBarStyle.error,
+    );
     return;
   }
   track('Success');

@@ -7,6 +7,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/mesocycle_design_page.dart';
 import 'package:compound/programs/view/mesocycle_style.dart';
+import 'package:compound_models/compound_models.dart' show newDocumentId;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
@@ -200,7 +201,7 @@ class _MesocycleIconPageState extends State<MesocycleIconPage> {
       return;
     }
     final mesocycle = newMesocycle(
-      id: newUuid(),
+      id: newDocumentId(),
       authorId: state.user.uid,
       name: widget.mesocycleName,
       icon: _icon,

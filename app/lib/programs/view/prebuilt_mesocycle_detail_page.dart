@@ -8,7 +8,6 @@ import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/training_library/view/workout_template_detail_page.dart'
     show templateTargetsText;
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
@@ -66,10 +65,10 @@ class _PrebuiltMesocycleDetailPageState
     if (!mounted) return;
     setState(() => _starting = false);
     if (ok) {
-      unawaited(HapticFeedback.successNotification());
+      unawaited(AppHaptics.success());
       context.pop();
     } else {
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
       await showFailureAlert(context, context.l10n.programStartFailed);
     }
   }

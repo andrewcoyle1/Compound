@@ -8,7 +8,6 @@ import 'package:compound/app/app.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/view/rest_sound.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -272,16 +271,12 @@ void main() {
       tester,
     ) async {
       final sounds = <String>[];
-      final haptics = <Object?>[];
+      final haptics = <AppHaptic>[];
+      AppHaptics.debugPlay = haptics.add;
+      addTearDown(() => AppHaptics.debugPlay = null);
       final messenger = tester.binding.defaultBinaryMessenger
         ..setMockMethodCallHandler(RestSound.channel, (call) async {
           sounds.add(call.method);
-          return null;
-        })
-        ..setMockMethodCallHandler(SystemChannels.platform, (call) async {
-          if (call.method == 'HapticFeedback.vibrate') {
-            haptics.add(call.arguments);
-          }
           return null;
         });
       addTearDown(
@@ -299,7 +294,7 @@ void main() {
       await tester.pump(end.difference(loggedAt));
       await tester.pump();
       expect(sounds, ['restComplete']);
-      expect(haptics, contains('HapticFeedbackType.warningNotification'));
+      expect(haptics, contains(AppHaptic.warning));
       await cubit.close();
     });
 

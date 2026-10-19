@@ -2,7 +2,6 @@ import 'package:compound_models/compound_models.dart';
 import 'package:program_repository/src/macrocycle_rules.dart';
 import 'package:program_repository/src/mesocycle_schedule.dart';
 import 'package:program_repository/src/program_repository.dart';
-import 'package:program_repository/src/program_rules.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -28,7 +27,7 @@ class ProgramService {
     required this._users,
     required this._sessions,
     this._now = DateTime.now,
-    this._newId = newUuid,
+    this._newId = newDocumentId,
     ProgramEventReporter? onEvent,
   }) : _onEvent = onEvent ?? _ignore;
 

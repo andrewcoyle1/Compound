@@ -30,6 +30,7 @@ void main() {
   late InMemoryFoodRepository foods;
   late MealDraftCubit drafts;
   late FakePhotoPicker picker;
+  late FakeLiveCamera camera;
   late RecordingAnalytics analytics;
 
   setUp(() {
@@ -44,6 +45,7 @@ void main() {
     );
     drafts = MealDraftCubit();
     picker = FakePhotoPicker();
+    camera = FakeLiveCamera();
     analytics = RecordingAnalytics();
   });
 
@@ -51,6 +53,7 @@ void main() {
     WidgetTester tester, {
     AiRepository? aiRepository,
     LabelTextReader? labelTextReader,
+    LiveCamera? liveCamera,
   }) async {
     final router = GoRouter(
       initialLocation: '/log',
@@ -80,6 +83,7 @@ void main() {
       photoPicker: picker,
       aiRepository: aiRepository,
       labelTextReader: labelTextReader,
+      liveCamera: liveCamera ?? camera,
       analyticsRepository: analytics,
     );
     await tester.pumpAndSettle();
@@ -266,6 +270,8 @@ void main() {
 
   group('Label', () {
     Future<void> openLabel(WidgetTester tester) async {
+      // A phone, tall enough for the camera, the field and Parse Label.
+      tester.useSize(const Size(402, 1400));
       await openTab(tester, 'Barcode');
       await tester.tap(
         find.descendant(
@@ -317,7 +323,7 @@ void main() {
       );
     });
 
-    testWidgets('a label that cannot be read says so; Dismiss clears a '
+    testWidgets('a label that cannot be read says so; Scan Again clears a '
         'result', (tester) async {
       final ai = FakeAi()..fails = true;
       await pumpLogger(tester, aiRepository: ai.repository);
@@ -339,30 +345,114 @@ void main() {
       await tester.tap(find.widgetWithText(AppCtaButton, 'Parse Label'));
       await tester.pumpAndSettle();
       expect(find.text('per 100ml'), findsOneWidget);
-      await tester.tap(find.text('Dismiss'));
+      expect(camera.isOpen, isFalse);
+      await tester.tap(find.widgetWithText(AppCtaButton, 'Scan Again'));
       await tester.pumpAndSettle();
       expect(find.text('Oat Milk'), findsNothing);
       expect(find.widgetWithText(AppCtaButton, 'Parse Label'), findsOneWidget);
+      expect(camera.isOpen, isTrue);
     });
 
-    testWidgets("a scanned label's text fills the field, ready to "
-        'parse', (tester) async {
+    testWidgets('the live camera reads a label that holds still, and the '
+        'AI reads it once', (tester) async {
       await pumpLogger(tester);
       await openLabel(tester);
+      expect(find.text('Hold the label in the frame'), findsOneWidget);
+      expect(find.byKey(const Key('FakeLiveCamera.preview')), findsOneWidget);
       expect(
         find.text('Scan a nutrition label, or type or paste its text.'),
         findsOneWidget,
       );
 
-      await tester.tap(find.byKey(const Key('FoodPicker.scanLabel')));
+      // Two reads, half a second apart, that agree.
+      camera.send();
+      await tester.pump(const Duration(milliseconds: 500));
+      camera.send();
       await tester.pumpAndSettle();
-      expect(picker.picks.single.$1, PhotoSource.camera);
+
+      expect(find.text('Protein Shake Mix'), findsOneWidget);
+      expect(camera.isOpen, isFalse);
+      expect(
+        analytics.names,
+        containsAllInOrder(<String>[
+          'BarcodeScanner_LabelLocked',
+          'BarcodeScanner_ParseLabel',
+        ]),
+      );
+      expect(
+        analytics.names.where((name) => name == 'BarcodeScanner_ParseLabel'),
+        hasLength(1),
+      );
+    });
+
+    testWidgets("in staging, the bundled label's frames are read live", (
+      tester,
+    ) async {
+      await pumpLogger(tester, liveCamera: SampleLiveCamera());
+      await openLabel(tester);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Protein Shake Mix'), findsOneWidget);
+      expect(find.text('per 100g'), findsOneWidget);
+    });
+
+    testWidgets("a library photo's text fills the field, ready to parse", (
+      tester,
+    ) async {
+      await pumpLogger(tester);
+      await openLabel(tester);
+
+      await tester.tap(find.byKey(const Key('FoodPicker.labelChoosePhoto')));
+      await tester.pumpAndSettle();
+      expect(picker.picks.single.$1, PhotoSource.library);
+      expect(camera.isOpen, isFalse);
       expect(find.text(SampleLabelTextReader.sampleLabel), findsOneWidget);
       expect(find.text('Label text captured'), findsOneWidget);
 
       await tester.tap(find.widgetWithText(AppCtaButton, 'Parse Label'));
       await tester.pumpAndSettle();
       expect(find.text('Protein Shake Mix'), findsOneWidget);
+    });
+
+    testWidgets('Scan Again goes back to the live camera after a photo', (
+      tester,
+    ) async {
+      await pumpLogger(tester);
+      await openLabel(tester);
+      await tester.tap(find.byKey(const Key('FoodPicker.labelChoosePhoto')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('FoodPicker.labelScanAgain')));
+      await tester.pumpAndSettle();
+      expect(camera.isOpen, isTrue);
+      expect(find.text('Hold the label in the frame'), findsOneWidget);
+    });
+
+    testWidgets('the torch lights and says so', (tester) async {
+      await pumpLogger(tester);
+      await openLabel(tester);
+
+      await tester.tap(find.byTooltip('Turn on flashlight'));
+      await tester.pumpAndSettle();
+
+      expect(camera.torch, isTrue);
+      expect(find.byTooltip('Turn off flashlight'), findsOneWidget);
+    });
+
+    testWidgets('the camera is let go in the background', (tester) async {
+      await pumpLogger(tester);
+      await openLabel(tester);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await tester.pumpAndSettle();
+      expect(camera.isOpen, isFalse);
+      expect(find.byKey(const Key('FakeLiveCamera.preview')), findsNothing);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(camera.isOpen, isTrue);
+      expect(camera.opened, 2);
     });
 
     testWidgets('a photo with no text says so; the library is offered '
@@ -389,12 +479,10 @@ void main() {
 
     testWidgets('a refused camera offers Settings; a missing one says '
         'so', (tester) async {
-      picker.error = const PhotoAccessDeniedException();
+      camera.error = const PhotoAccessDeniedException();
       await pumpLogger(tester);
       await openLabel(tester);
 
-      await tester.tap(find.byKey(const Key('FoodPicker.scanLabel')));
-      await tester.pumpAndSettle();
       expect(
         find.text(
           'Allow camera access in Settings to scan a label, or type its '
@@ -402,12 +490,20 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(find.text('Hold the label in the frame'), findsNothing);
+      expect(find.byKey(const Key('FoodPicker.labelScanAgain')), findsNothing);
       await tester.tap(find.text('Open Settings'));
       expect(picker.settingsOpened, 1);
 
-      picker.error = Exception('no camera');
-      await tester.tap(find.byKey(const Key('FoodPicker.scanLabel')));
+      camera.error = Exception('no camera');
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('FoodPicker.scanningMode')),
+          matching: find.text('Barcode'),
+        ),
+      );
       await tester.pumpAndSettle();
+      await openLabel(tester);
       expect(find.textContaining("The camera isn't available"), findsOneWidget);
       expect(find.text('Open Settings'), findsNothing);
     });

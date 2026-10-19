@@ -52,35 +52,58 @@ List<Widget> galleryCharts(BuildContext context) {
       points: _days([72.9, 72.8, 72.7, 72.6, 72.5, 72.4, 72.3]),
     ),
   ];
+  final charts = [
+    for (final (caption, data) in [
+      ('dots and a line, a week', _week(weight)),
+      (
+        'a line with point markers',
+        _week([
+          ChartSeries(
+            label: l10n.weightTrendSeries,
+            color: colors.expenditure,
+            showsPoints: true,
+            points: _days([72.9, 72.6, 72.7, 72.3, 72.4, 72.1, 71.9]),
+          ),
+        ]),
+      ),
+      (
+        'area, a month',
+        ChartData(
+          start: DateTime(2026, 9, 19),
+          end: DateTime(2026, 10, 19),
+          series: [
+            ChartSeries(
+              label: l10n.progressSteps,
+              color: colors.steps,
+              mark: ChartMark.area,
+              points: [
+                for (var i = 0; i < 30; i++)
+                  (
+                    x: DateTime(2026, 9, 19 + i),
+                    y: 8000 + 2500 * math.sin(i / 4) + i * 60,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      ('stacked bars from zero', _week(macros, yFit: ChartYFit.zero)),
+      ('empty', _week(const [])),
+    ])
+      (caption, data),
+  ];
   return [
     galleryEntry('CartesianChart', [
-      for (final (caption, data) in [
-        ('dots and a line, a week', _week(weight)),
-        (
-          'area, a month',
-          ChartData(
-            start: DateTime(2026, 9, 19),
-            end: DateTime(2026, 10, 19),
-            series: [
-              ChartSeries(
-                label: l10n.progressSteps,
-                color: colors.steps,
-                mark: ChartMark.area,
-                points: [
-                  for (var i = 0; i < 30; i++)
-                    (
-                      x: DateTime(2026, 9, 19 + i),
-                      y: 8000 + 2500 * math.sin(i / 4) + i * 60,
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        ('stacked bars from zero', _week(macros, yFit: ChartYFit.zero)),
-        ('empty', _week(const [])),
-      ])
+      for (final (caption, data) in charts)
         galleryBlock(caption, CartesianChart(data: data)),
+      galleryBlock(
+        'interactive: hold for the trackball, pinch, pan, fling, double tap',
+        _Interactive(data: _week(macros, yFit: ChartYFit.zero)),
+      ),
+      galleryBlock(
+        'morphing through the above (ChartDataTween)',
+        _Morphing(data: [for (final (_, data) in charts) data]),
+      ),
     ]),
     galleryEntry('ChartLegend', [
       galleryBlock('stacked bars', ChartLegend(series: macros)),
@@ -102,11 +125,13 @@ List<Widget> galleryCharts(BuildContext context) {
             (
               name: l10n.scaleWeightTitle,
               color: colors.scaleWeight,
+              mark: ChartMark.dot,
               value: kg(82.5),
             ),
             (
               name: l10n.weightTrendSeries,
               color: colors.expenditure,
+              mark: ChartMark.line,
               value: kg(82.1),
             ),
           ],
@@ -114,7 +139,7 @@ List<Widget> galleryCharts(BuildContext context) {
         (
           'one unnamed series, at the left edge',
           0.0,
-          [(name: null, color: null, value: l10n.calendarLogged)],
+          [(name: null, color: null, mark: null, value: l10n.calendarLogged)],
         ),
         ('no rows (noData), at the right edge', 1.0, <ChartCalloutRow>[]),
       ])
@@ -162,3 +187,86 @@ Widget _plot(double anchor, Widget callout) => Padding(
     ),
   ),
 );
+
+/// A [CartesianChart] stepping through [data] at each press, morphing from
+/// one to the next.
+class _Morphing extends StatefulWidget {
+  const new({required this.data});
+
+  final List<ChartData> data;
+
+  @override
+  State<_Morphing> createState() => _MorphingState();
+}
+
+class _MorphingState extends State<_Morphing> {
+  int _index = 0;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    spacing: AppSpacing.s,
+    children: [
+      CartesianChart(data: widget.data[_index]),
+      AppChip(
+        label: 'Next',
+        onPressed: () =>
+            setState(() => _index = (_index + 1) % widget.data.length),
+      ),
+    ],
+  );
+}
+
+/// An interactive [CartesianChart] keeping its own trackball, with a
+/// callout row per series; paging only counts.
+class _Interactive extends StatefulWidget {
+  const new({required this.data});
+
+  final ChartData data;
+
+  @override
+  State<_Interactive> createState() => _InteractiveState();
+}
+
+class _InteractiveState extends State<_Interactive> {
+  DateTime? _selected;
+  int _page = 0;
+
+  List<ChartCalloutRow> _rowsAt(DateTime bucket) => [
+    for (final s in widget.data.series)
+      if (s.points.where((p) => p.x == bucket).firstOrNull case final point?)
+        (
+          name: s.label,
+          color: s.color,
+          mark: s.mark,
+          value: AppFormat.number(point.y),
+        ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _selected;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: AppSpacing.s,
+      children: [
+        Text('Page $_page', style: AppTextStyles.label),
+        CartesianChart(
+          data: widget.data,
+          interactive: true,
+          selected: selected,
+          onSelected: (date) => setState(() => _selected = date),
+          onPage: (direction) => setState(() => _page += direction),
+          bucketLabel: AppFormat.date,
+          callout: selected == null
+              ? null
+              : ChartCalloutSummary(
+                  rows: _rowsAt(selected),
+                  footer: AppFormat.date(selected),
+                  noData: '',
+                ),
+        ),
+      ],
+    );
+  }
+}

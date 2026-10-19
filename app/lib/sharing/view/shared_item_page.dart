@@ -6,7 +6,6 @@ import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/sharing/cubit/shared_item_cubit.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
@@ -96,7 +95,7 @@ class _SharedItemViewState extends State<SharedItemView> {
   void _onChange(BuildContext context, SharedItemState state) {
     if (state.answered) {
       if (state.status == ShareStatus.accepted) {
-        unawaited(HapticFeedback.successNotification());
+        unawaited(AppHaptics.success());
       }
       context.pop();
       return;
@@ -105,15 +104,17 @@ class _SharedItemViewState extends State<SharedItemView> {
     if (notice == null) return;
     final l10n = context.l10n;
     if (notice == SharedItemNotice.addFailed) {
-      unawaited(HapticFeedback.errorNotification());
+      unawaited(AppHaptics.error());
     }
     final title = switch (notice) {
       SharedItemNotice.addFailed => l10n.sharedItemAddFailed,
       SharedItemNotice.declineFailed => l10n.sharedItemDeclineFailed,
     };
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$title. ${l10n.socialTryAgain}')));
+    showAppSnackBar(
+      context,
+      '$title. ${l10n.socialTryAgain}',
+      style: AppSnackBarStyle.error,
+    );
   }
 
   @override

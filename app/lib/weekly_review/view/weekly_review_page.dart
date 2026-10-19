@@ -336,7 +336,7 @@ class _WeekHeader extends StatelessWidget {
           child: Text(
             '${days(review.weekStart)} – ${days(last)}',
             textAlign: TextAlign.center,
-            style: AppTextStyles.sectionTitle,
+            style: AppTextStyles.rowDetail.semibold,
           ),
         ),
         AppIconButton(

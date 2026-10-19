@@ -172,17 +172,12 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
         if (allComplete) announce(l10n.trackerAllComplete);
       case LogRefusedEffect(:final problem):
         unawaited(HapticFeedback.errorNotification());
-        showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(l10n.trackerLogRefusedTitle),
-            content: Text(TrackerText.problem(l10n, problem)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.keypadDone),
-              ),
-            ],
+        unawaited(
+          showAppDialog<void>(
+            context: context,
+            title: l10n.trackerLogRefusedTitle,
+            message: TrackerText.problem(l10n, problem),
+            actions: [AppDialogAction(label: l10n.keypadDone)],
           ),
         );
       case SetDeletedEffect():
@@ -214,17 +209,12 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
         }
       case GymSaveFailedEffect():
         unawaited(HapticFeedback.errorNotification());
-        showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(l10n.trackerUnableToSaveGym),
-            content: Text(l10n.gymCheckConnection),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.keypadDone),
-              ),
-            ],
+        unawaited(
+          showAppDialog<void>(
+            context: context,
+            title: l10n.trackerUnableToSaveGym,
+            message: l10n.gymCheckConnection,
+            actions: [AppDialogAction(label: l10n.keypadDone)],
           ),
         );
       case BlockMovedEffect(:final position, :final count):
@@ -242,22 +232,18 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
   Future<void> _askStillTraining(BuildContext context, DateTime lastSet) async {
     final l10n = context.l10n;
     final time = TimeOfDay.fromDateTime(lastSet).format(context);
-    final finish = await showDialog<bool>(
+    final finish = await showAppDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.notifIdleTitle),
-        content: Text(l10n.notifIdleBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.trackerKeepGoing),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.trackerFinishAt(time)),
-          ),
-        ],
-      ),
+      title: l10n.notifIdleTitle,
+      message: l10n.notifIdleBody,
+      actions: [
+        AppDialogAction(
+          label: l10n.trackerKeepGoing,
+          value: false,
+          role: AppDialogRole.cancel,
+        ),
+        AppDialogAction(label: l10n.trackerFinishAt(time), value: true),
+      ],
     );
     if (finish != true || !context.mounted) return;
     final firstDay = firstDayOfWeekIndex(context);
@@ -287,72 +273,19 @@ class _NoWorkout extends StatelessWidget {
     final l10n = context.l10n;
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          tooltip: l10n.trackerMinimize,
+        leading: AppToolbarButton(
+          icon: AppSymbols.minimize,
+          semanticLabel: l10n.trackerMinimize,
           onPressed: () => closeTracker(context),
-          icon: const Icon(AppSymbols.minimize),
         ),
       ),
-      body: Center(
-        child: isLoading
-            ? const CircularProgressIndicator.adaptive()
-            : _Unavailable(
-                icon: AppSymbols.workout,
-                title: l10n.trackerNoWorkoutTitle,
-                message: l10n.trackerNoWorkoutMessage,
-              ),
-      ),
-    );
-  }
-}
-
-class _Unavailable extends StatelessWidget {
-  const new({
-    required this.icon,
-    required this.title,
-    required this.message,
-    this.action,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        spacing: AppSpacing.s,
-        children: [
-          Icon(
-            icon,
-            size: AppIconSize.large.of(context),
-            color: scheme.onSurfaceVariant,
-          ),
-          Semantics(
-            header: true,
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.sectionTitle.copyWith(
-                color: scheme.onSurface,
-              ),
+      body: isLoading
+          ? AppLoadingView(label: l10n.launchLoading)
+          : AppEmptyState(
+              icon: AppSymbols.workout,
+              title: l10n.trackerNoWorkoutTitle,
+              description: l10n.trackerNoWorkoutMessage,
             ),
-          ),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.rowDetail.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-          ?action,
-        ],
-      ),
     );
   }
 }
@@ -369,33 +302,35 @@ class _Tracker extends StatelessWidget {
     final session = state.session!;
     return AppScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          tooltip: l10n.trackerMinimize,
+        leading: AppToolbarButton(
+          icon: AppSymbols.minimize,
+          semanticLabel: l10n.trackerMinimize,
           onPressed: () {
             cubit.minimized();
             closeTracker(context);
           },
-          icon: const Icon(AppSymbols.minimize),
         ),
         title: _Title(state: state),
         // On a tablet the bar has room for the workout's controls, which
         // leave the menu (`WorkoutTrackerView+Toolbar`).
         actions: [
           if (context.isRegularWidth) ...[
-            IconButton(
-              tooltip: state.isPaused ? l10n.trackerResume : l10n.trackerPause,
+            AppToolbarButton(
+              icon: state.isPaused ? AppSymbols.start : AppSymbols.pause,
+              semanticLabel: state.isPaused
+                  ? l10n.trackerResume
+                  : l10n.trackerPause,
               onPressed: cubit.togglePause,
-              icon: Icon(state.isPaused ? AppSymbols.start : AppSymbols.pause),
             ),
-            IconButton(
-              tooltip: l10n.trackerFinishMenu,
+            AppToolbarButton(
+              icon: AppSymbols.selected,
+              semanticLabel: l10n.trackerFinishMenu,
               onPressed: () => unawaited(finishWorkout(context)),
-              icon: const Icon(AppSymbols.selected),
             ),
-            IconButton(
-              tooltip: l10n.trackerNotesMenu,
+            AppToolbarButton(
+              icon: AppSymbols.note,
+              semanticLabel: l10n.trackerNotesMenu,
               onPressed: () => unawaited(_workoutNotes(context, state)),
-              icon: const Icon(AppSymbols.note),
             ),
           ],
           _Menu(state: state, compact: !context.isRegularWidth),
@@ -415,19 +350,12 @@ class _Tracker extends StatelessWidget {
             ),
           Expanded(
             child: session.exercises.isEmpty
-                ? Center(
-                    child: SingleChildScrollView(
-                      child: _Unavailable(
-                        icon: AppSymbols.exercise,
-                        title: l10n.trackerNoExercisesTitle,
-                        message: l10n.trackerNoExercisesMessage,
-                        action: FilledButton.icon(
-                          onPressed: () => unawaited(_addExercises(context)),
-                          icon: const Icon(AppSymbols.add),
-                          label: Text(l10n.trackerAddExercise),
-                        ),
-                      ),
-                    ),
+                ? AppEmptyState(
+                    icon: AppSymbols.exercise,
+                    title: l10n.trackerNoExercisesTitle,
+                    description: l10n.trackerNoExercisesMessage,
+                    actionLabel: l10n.trackerAddExercise,
+                    onAction: () => unawaited(_addExercises(context)),
                   )
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(
@@ -484,9 +412,7 @@ class _Title extends StatelessWidget {
                 session.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.rowTitle.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.sectionTitle,
               ),
               Text(
                 '$date · $clock',
@@ -516,7 +442,6 @@ class _Menu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final danger = context.appColors.danger;
     return PopupMenuButton<_MenuAction>(
       tooltip: l10n.trackerOptions,
       icon: Icon(AppSymbols.more),
@@ -530,56 +455,41 @@ class _Menu extends StatelessWidget {
       },
       itemBuilder: (_) => [
         if (compact) ...[
-          PopupMenuItem(
+          AppMenuItem(
             value: _MenuAction.pause,
-            child: ListTile(
-              leading: Icon(
-                state.isPaused ? AppSymbols.start : AppSymbols.pause,
-              ),
-              title: Text(
-                state.isPaused ? l10n.trackerResume : l10n.trackerPause,
-              ),
-            ),
+            icon: state.isPaused ? AppSymbols.start : AppSymbols.pause,
+            label: state.isPaused ? l10n.trackerResume : l10n.trackerPause,
           ),
-          PopupMenuItem(
+          AppMenuItem(
             value: _MenuAction.finish,
-            child: ListTile(
-              leading: const Icon(AppSymbols.selected),
-              title: Text(l10n.trackerFinishMenu),
-            ),
+            icon: AppSymbols.selected,
+            label: l10n.trackerFinishMenu,
           ),
-          PopupMenuItem(
+          AppMenuItem(
             value: _MenuAction.notes,
-            child: ListTile(
-              leading: const Icon(AppSymbols.note),
-              title: Text(l10n.trackerNotesMenu),
-            ),
+            icon: AppSymbols.note,
+            label: l10n.trackerNotesMenu,
           ),
           const PopupMenuDivider(),
         ],
-        PopupMenuItem(
+        AppMenuItem(
           value: _MenuAction.workoutSettings,
-          child: ListTile(
-            leading: const Icon(AppSymbols.settings),
-            title: Text(l10n.settingsWorkoutSettings),
-          ),
+          icon: AppSymbols.settings,
+          label: l10n.settingsWorkoutSettings,
         ),
         // Offered only when the workout has a gym to show.
         if (state.gym != null)
-          PopupMenuItem(
+          AppMenuItem(
             value: _MenuAction.gym,
-            child: ListTile(
-              leading: const Icon(AppSymbols.gym),
-              title: Text(l10n.gymSettingsMenu),
-            ),
+            icon: AppSymbols.gym,
+            label: l10n.gymSettingsMenu,
           ),
         const PopupMenuDivider(),
-        PopupMenuItem(
+        AppMenuItem(
           value: _MenuAction.discard,
-          child: ListTile(
-            leading: Icon(AppSymbols.delete, color: danger),
-            title: Text(l10n.trackerDiscard, style: TextStyle(color: danger)),
-          ),
+          icon: AppSymbols.delete,
+          label: l10n.trackerDiscard,
+          isDestructive: true,
         ),
       ],
     );
@@ -604,27 +514,14 @@ class _Menu extends StatelessWidget {
   Future<void> _discard(BuildContext context) async {
     final l10n = context.l10n;
     final cubit = context.read<ActiveWorkoutCubit>()..discardPressed();
-    final discard = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.trackerDiscardTitle),
-        content: Text(l10n.trackerDiscardMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.trackerCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: context.appColors.danger,
-            ),
-            child: Text(l10n.trackerDiscardConfirm),
-          ),
-        ],
-      ),
+    final discard = await AppDialog.confirmDestructive(
+      context,
+      title: l10n.trackerDiscardTitle,
+      message: l10n.trackerDiscardMessage,
+      confirmLabel: l10n.trackerDiscardConfirm,
+      cancelLabel: l10n.trackerCancel,
     );
-    if (!(discard ?? false)) return;
+    if (!discard) return;
     await cubit.discard();
     if (context.mounted) closeTracker(context);
   }
@@ -675,28 +572,21 @@ Future<void> finishWorkout(BuildContext context) async {
   if (notes == null || !context.mounted) return;
   cubit.setWorkoutNotes(notes.single);
   if (!cubit.state.hasLoggedSet) {
-    final choice = await showDialog<_NoSetsChoice>(
+    final choice = await showAppDialog<_NoSetsChoice>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.trackerNoSetsTitle),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.trackerCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(_NoSetsChoice.discard),
-            style: TextButton.styleFrom(
-              foregroundColor: context.appColors.danger,
-            ),
-            child: Text(l10n.trackerDiscard),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(_NoSetsChoice.save),
-            child: Text(l10n.trackerSaveAnyway),
-          ),
-        ],
-      ),
+      title: l10n.trackerNoSetsTitle,
+      actions: [
+        AppDialogAction(label: l10n.trackerCancel, role: AppDialogRole.cancel),
+        AppDialogAction(
+          label: l10n.trackerDiscard,
+          value: _NoSetsChoice.discard,
+          role: AppDialogRole.destructive,
+        ),
+        AppDialogAction(
+          label: l10n.trackerSaveAnyway,
+          value: _NoSetsChoice.save,
+        ),
+      ],
     );
     if (!context.mounted) return;
     switch (choice) {
@@ -726,8 +616,10 @@ class _Foot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final keypad = state.keypad;
+    // No panel of its own: the button floats on the screen's canvas, as
+    // Swift's does, with the correction card and keypad under it.
     return Material(
-      color: Theme.of(context).colorScheme.surface,
+      type: MaterialType.transparency,
       child: SafeArea(
         top: false,
         child: Tick(

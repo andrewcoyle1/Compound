@@ -202,9 +202,13 @@ class _DayDot extends StatelessWidget {
               style: AppDateStyle.weekdayInitial,
               locale: context.dateLocale,
             ),
-            style: AppTextStyles.label.copyWith(
-              color: isToday ? scheme.onSurface : scheme.onSurfaceVariant,
-            ),
+            style:
+                (isToday ? AppTextStyles.label.semibold : AppTextStyles.label)
+                    .copyWith(
+                      color: isToday
+                          ? scheme.onSurface
+                          : scheme.onSurfaceVariant,
+                    ),
           ),
           DecoratedBox(
             decoration: BoxDecoration(

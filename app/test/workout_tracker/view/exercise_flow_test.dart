@@ -233,7 +233,7 @@ void main() {
     await tester.tap(find.byKey(const Key('ExerciseSettings.note')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(EditableText).last, 'Slow\nNo jerking');
-    await tester.tap(find.text('Save'));
+    await tester.tap(find.byTooltip('Save'));
     await tester.pumpAndSettle();
     expect(find.text('Slow'), findsOneWidget);
     stored = await library.watchExerciseSettings(uid).first;

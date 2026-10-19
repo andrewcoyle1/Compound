@@ -466,13 +466,15 @@ class _Grid extends StatelessWidget {
                       child: Text(
                         letters(days[day]),
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.label.copyWith(
-                          color: day == today
-                              ? scheme.primary
-                              : day == selected
-                              ? scheme.onSurface
-                              : scheme.onSurfaceVariant,
-                        ),
+                        style:
+                            (day == selected
+                                    ? AppTextStyles.label.semibold
+                                    : AppTextStyles.label)
+                                .copyWith(
+                                  color: day == today
+                                      ? scheme.primary
+                                      : scheme.onSurfaceVariant,
+                                ),
                       ),
                     ),
                   ),

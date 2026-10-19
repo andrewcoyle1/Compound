@@ -206,14 +206,11 @@ class WorkoutTemplateDetailView extends StatelessWidget {
                     ),
                     child: Text(l10n.shareWithFriends),
                   ),
-                  PopupMenuItem(
+                  AppMenuItem(
                     value: () => unawaited(_delete(context, ownWorkout)),
-                    child: Text(
-                      l10n.editorDeleteWorkout,
-                      style: AppTextStyles.rowTitle.copyWith(
-                        color: context.appColors.danger,
-                      ),
-                    ),
+                    label: l10n.editorDeleteWorkout,
+                    icon: AppSymbols.delete,
+                    isDestructive: true,
                   ),
                 ],
               ),
@@ -524,7 +521,7 @@ class _MuscleTile extends StatelessWidget {
             children: [
               Text(
                 l10n.muscleName(summary.muscle),
-                style: AppTextStyles.sectionTitle,
+                style: AppTextStyles.rowDetail.semibold,
               ),
               Text(
                 l10n.targetSetsValue(

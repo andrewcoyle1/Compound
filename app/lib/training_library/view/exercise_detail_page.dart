@@ -164,14 +164,11 @@ class ExerciseDetailView extends StatelessWidget {
               enabled: !deleting,
               onSelected: (action) => action(),
               itemBuilder: (_) => [
-                PopupMenuItem(
+                AppMenuItem(
                   value: () => unawaited(_delete(context, exercise)),
-                  child: Text(
-                    l10n.exerciseDeleteTitle,
-                    style: AppTextStyles.rowTitle.copyWith(
-                      color: context.appColors.danger,
-                    ),
-                  ),
+                  label: l10n.exerciseDeleteTitle,
+                  icon: AppSymbols.delete,
+                  isDestructive: true,
                 ),
               ],
             ),

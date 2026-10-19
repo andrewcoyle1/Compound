@@ -48,9 +48,7 @@ class AppTextButton extends StatelessWidget {
       alignment: inline ? AlignmentDirectional.centerStart : null,
       // Padding the target out to 48 would centre the text in it.
       tapTargetSize: inline ? MaterialTapTargetSize.shrinkWrap : null,
-      textStyle: inline
-          ? AppTextStyles.rowDetail.copyWith(fontWeight: FontWeight.w600)
-          : null,
+      textStyle: inline ? AppTextStyles.rowDetail.semibold : null,
     ),
     child: Text(label),
   );

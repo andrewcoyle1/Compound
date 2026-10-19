@@ -15,11 +15,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 Future<GymProfileModel?> showPlateCalculator(
   BuildContext context,
   PlateCalculatorSetup setup,
-) => showModalBottomSheet<GymProfileModel>(
+) => showAppSheet<GymProfileModel>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
+  size: AppSheetSize.full,
   builder: (context) => BlocProvider(
     create: (context) => PlateCalculatorCubit(
       setup,
@@ -51,145 +49,119 @@ class PlateCalculatorView extends StatelessWidget {
     final bars = state.barChoices;
     final base = step.baseWeight;
     final load = state.load;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-          child: Row(
-            children: [
-              IconButton(
-                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                icon: const Icon(AppSymbols.close),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              Expanded(
-                child: Column(
-                  children: [
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        l10n.plateCalculatorTitle,
-                        style: AppTextStyles.rowTitle.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    if (load != null)
-                      Text(
-                        weight(load),
-                        style: AppTextStyles.rowDetail.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppControlSize.row),
-            ],
-          ),
+    return AppScaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
         ),
-        Flexible(
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(AppSpacing.l),
-            children: [
-              if (loading != null)
-                PlateLoadingView(
-                  loading: loading,
-                  plates: step.plates,
-                  unit: state.unit,
-                )
-              else if (notLoadable != null)
-                Row(
-                  spacing: AppSpacing.s,
-                  children: [
-                    Icon(AppSymbols.warning, color: context.appColors.danger),
-                    Expanded(
-                      child: Text(
-                        TrackerText.notLoadable(
-                          l10n,
-                          notLoadable,
-                          state.unit,
-                          locale: locale,
-                        ),
-                        style: AppTextStyles.rowDetail.copyWith(
-                          color: context.appColors.danger,
-                        ),
-                      ),
+        title: Text(l10n.plateCalculatorTitle),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [
+          // The weight on the bar, as the title's subtitle in Swift; here
+          // it keeps the bar one line tall at every text size.
+          if (load != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.m),
+              child: Text(
+                weight(load),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.metric.copyWith(color: scheme.onSurface),
+              ),
+            ),
+          if (loading != null)
+            PlateLoadingView(
+              loading: loading,
+              plates: step.plates,
+              unit: state.unit,
+            )
+          else if (notLoadable != null)
+            Row(
+              spacing: AppSpacing.s,
+              children: [
+                Icon(AppSymbols.warning, color: context.appColors.danger),
+                Expanded(
+                  child: Text(
+                    TrackerText.notLoadable(
+                      l10n,
+                      notLoadable,
+                      state.unit,
+                      locale: locale,
                     ),
-                  ],
+                    style: AppTextStyles.rowDetail.copyWith(
+                      color: context.appColors.danger,
+                    ),
+                  ),
                 ),
-              const SizedBox(height: AppSpacing.l),
-              if (bars.length > 1)
-                AppSection(
-                  header: l10n.plateBarWeight,
-                  footer: l10n.plateBarFooter,
+              ],
+            ),
+          const SizedBox(height: AppSpacing.l),
+          if (bars.length > 1)
+            AppSection(
+              header: l10n.plateBarWeight,
+              footer: l10n.plateBarFooter,
+              children: [
+                for (final bar in bars)
+                  AppSelectableRow(
+                    key: ValueKey('plate-bar-${bar.id}'),
+                    title: _bar(bar, locale),
+                    selected: bar.id == state.chosenBarId,
+                    onPressed: () {
+                      cubit.barChosen(bar.id);
+                      unawaited(HapticFeedback.selectionClick());
+                    },
+                  ),
+              ],
+            )
+          else if (base != null)
+            AppSection(
+              children: [
+                AppListRow(
+                  title: bars.isEmpty ? l10n.plateBase : l10n.plateBarWeight,
+                  accessory: AppListRowValue(weight(base)),
+                ),
+              ],
+            ),
+          const SizedBox(height: AppSpacing.l),
+          AppSection(
+            header: l10n.plateAvailableWeights,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.m),
+                child: Wrap(
+                  spacing: AppSpacing.s,
+                  runSpacing: AppSpacing.s,
                   children: [
-                    for (final bar in bars)
-                      AppSelectableRow(
-                        key: ValueKey('plate-bar-${bar.id}'),
-                        title: _bar(bar, locale),
-                        selected: bar.id == state.chosenBarId,
+                    for (final choice in state.plateChoices)
+                      AppChip(
+                        key: ValueKey('plate-${choice.weight}'),
+                        label: weight(choice.weight),
+                        selected: choice.isOn,
                         onPressed: () {
-                          cubit.barChosen(bar.id);
+                          cubit.plateToggled(choice);
                           unawaited(HapticFeedback.selectionClick());
                         },
                       ),
                   ],
-                )
-              else if (base != null)
-                AppSection(
-                  children: [
-                    AppListRow(
-                      title: bars.isEmpty
-                          ? l10n.plateBase
-                          : l10n.plateBarWeight,
-                      accessory: AppListRowValue(weight(base)),
-                    ),
-                  ],
                 ),
-              const SizedBox(height: AppSpacing.l),
-              AppSection(
-                header: l10n.plateAvailableWeights,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.m),
-                    child: Wrap(
-                      spacing: AppSpacing.s,
-                      runSpacing: AppSpacing.s,
-                      children: [
-                        for (final choice in state.plateChoices)
-                          AppChip(
-                            key: ValueKey('plate-${choice.weight}'),
-                            label: weight(choice.weight),
-                            selected: choice.isOn,
-                            onPressed: () {
-                              cubit.plateToggled(choice);
-                              unawaited(HapticFeedback.selectionClick());
-                            },
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
-        ),
-        AppBottomCta(
-          children: [
-            AppCtaButton(
-              label: l10n.keypadDone,
-              onPressed: () {
-                cubit.done();
-                Navigator.of(context).pop(cubit.state.gym);
-              },
-            ),
-          ],
-        ),
-      ],
+        ],
+      ),
+      bottomNavigationBar: AppBottomCta(
+        children: [
+          AppCtaButton(
+            label: l10n.keypadDone,
+            onPressed: () {
+              cubit.done();
+              Navigator.of(context).pop(cubit.state.gym);
+            },
+          ),
+        ],
+      ),
     );
   }
 

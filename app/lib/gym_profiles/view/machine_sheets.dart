@@ -123,16 +123,14 @@ class _PlateLoadedMachineSheetState extends State<PlateLoadedMachineSheet>
         Text(l10n.gymPlatesGoOn, style: AppTextStyles.sectionTitle),
         // One side: a T-bar row or belt squat takes its plates on a single
         // post, so the smallest change is one plate rather than a pair.
-        SegmentedButton<int>(
-          showSelectedIcon: false,
+        AppSegmentedControl<int>(
           segments: [
-            ButtonSegment(value: 1, label: Text(l10n.gymOneSide)),
-            ButtonSegment(value: 2, label: Text(l10n.gymTwoSides)),
+            AppSegment(value: 1, label: l10n.gymOneSide),
+            AppSegment(value: 2, label: l10n.gymTwoSides),
           ],
-          selected: {machine.sleeves},
-          onSelectionChanged: (selection) => change(
-            (data) => {...data, GymEquipmentKeys.sleeves: selection.single},
-          ),
+          selected: machine.sleeves,
+          onChanged: (sleeves) =>
+              change((data) => {...data, GymEquipmentKeys.sleeves: sleeves}),
         ),
         AppSection(
           footer: l10n.gymPlatesOnlyFooter,
@@ -269,16 +267,15 @@ class _AddGymMachineSheetState extends State<AddGymMachineSheet>
               ));
             },
       children: [
-        SegmentedButton<GymEquipmentList>(
-          showSelectedIcon: false,
+        AppSegmentedControl<GymEquipmentList>(
           segments: [
             for (final kind in AddGymMachineSheet.kinds)
-              ButtonSegment(value: kind, label: Text(_kindTitle(l10n, kind))),
+              AppSegment(value: kind, label: _kindTitle(l10n, kind)),
           ],
-          selected: {_kind},
+          selected: _kind,
           // The previous choice belongs to another kind's catalogue.
-          onSelectionChanged: (selection) => setState(() {
-            _kind = selection.single;
+          onChanged: (kind) => setState(() {
+            _kind = kind;
             _worksAs = null;
           }),
         ),

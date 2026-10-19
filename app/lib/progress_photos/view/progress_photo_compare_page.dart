@@ -63,21 +63,19 @@ class _ProgressPhotoComparePageState extends State<ProgressPhotoComparePage> {
               children: [
                 Semantics(
                   label: l10n.progressPhotoCompareLayout,
-                  child: SegmentedButton<_Mode>(
+                  child: AppSegmentedControl<_Mode>(
                     segments: [
-                      ButtonSegment(
+                      AppSegment(
                         value: _Mode.sideBySide,
-                        label: Text(l10n.progressPhotoCompareSideBySide),
+                        label: l10n.progressPhotoCompareSideBySide,
                       ),
-                      ButtonSegment(
+                      AppSegment(
                         value: _Mode.slider,
-                        label: Text(l10n.progressPhotoCompareSlider),
+                        label: l10n.progressPhotoCompareSlider,
                       ),
                     ],
-                    selected: {_mode},
-                    showSelectedIcon: false,
-                    onSelectionChanged: (modes) =>
-                        setState(() => _mode = modes.single),
+                    selected: _mode,
+                    onChanged: (mode) => setState(() => _mode = mode),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.l),

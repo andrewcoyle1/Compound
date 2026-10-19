@@ -81,61 +81,6 @@ class LibraryFailure extends StatelessWidget {
   }
 }
 
-/// A search field for a library list, with a clear button once it has text.
-class LibrarySearchField extends StatefulWidget {
-  const new({
-    required this.hint,
-    required this.onChanged,
-    this.initialValue = '',
-    super.key,
-  });
-
-  final String hint;
-  final ValueChanged<String> onChanged;
-
-  /// The search the field opens with.
-  final String initialValue;
-
-  @override
-  State<LibrarySearchField> createState() => _LibrarySearchFieldState();
-}
-
-class _LibrarySearchFieldState extends State<LibrarySearchField> {
-  late final _controller = TextEditingController(text: widget.initialValue);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: _controller,
-      onChanged: widget.onChanged,
-      textInputAction: TextInputAction.search,
-      decoration: InputDecoration(
-        hintText: widget.hint,
-        prefixIcon: const Icon(AppSymbols.search),
-        suffixIcon: ListenableBuilder(
-          listenable: _controller,
-          builder: (context, _) => _controller.text.isEmpty
-              ? const SizedBox.shrink()
-              : IconButton(
-                  icon: const Icon(AppSymbols.close),
-                  tooltip: context.l10n.clearSearch,
-                  onPressed: () {
-                    _controller.clear();
-                    widget.onChanged('');
-                  },
-                ),
-        ),
-      ),
-    );
-  }
-}
-
 /// A muscle an exercise works. Primary and secondary differ by fill, weight
 /// and the spoken label, so the difference never rests on colour alone
 /// (Swift `MuscleChip`).

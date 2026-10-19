@@ -30,6 +30,16 @@ final class AppListRowValue extends AppListRowAccessory {
   final String value;
 }
 
+/// The chosen option of a picker row, with an up-and-down chevron after it:
+/// the row opens a menu or sheet of options (iOS's menu picker).
+final class AppListRowMenu extends AppListRowAccessory {
+  /// A picker row's value.
+  const new(this.value);
+
+  /// The chosen option, formatted.
+  final String value;
+}
+
 /// Any trailing widget, such as a switch or a button.
 final class AppListRowCustom extends AppListRowAccessory {
   /// A trailing widget.
@@ -60,6 +70,7 @@ class AppListRow extends StatelessWidget {
     this.thumbnail,
     this.tint,
     this.accessory,
+    this.destructive = false,
     super.key,
   });
 
@@ -86,6 +97,10 @@ class AppListRow extends StatelessWidget {
   /// The trailing accessory, or none.
   final AppListRowAccessory? accessory;
 
+  /// Whether the row destroys something, such as deleting the account: the
+  /// title, and the icon unless [tint] is set, are in `appColors.danger`.
+  final bool destructive;
+
   /// Where the text starts, from the row's leading edge: past the leading
   /// [icon] or [thumbnail] when there is one. [AppSection] starts the
   /// divider below the row there, as iOS does.
@@ -107,6 +122,7 @@ class AppListRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final danger = destructive ? context.appColors.danger : null;
     final scaler = MediaQuery.textScalerOf(context);
     final isAccessibilitySize =
         scaler.scale(AppTextStyles.rowTitle.fontSize!) >=
@@ -119,7 +135,7 @@ class AppListRow extends StatelessWidget {
         ? Icon(
             icon,
             size: scaler.scale(AppControlSize.icon),
-            color: tint ?? scheme.primary,
+            color: tint ?? danger ?? scheme.primary,
           )
         : thumbnail != null
         ? ClipRSuperellipse(
@@ -141,7 +157,9 @@ class AppListRow extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurface),
+          style: AppTextStyles.rowTitle.copyWith(
+            color: danger ?? scheme.onSurface,
+          ),
         ),
         if (subtitle != null)
           Text(
@@ -155,17 +173,34 @@ class AppListRow extends StatelessWidget {
       ],
     );
 
+    final glyphSize = AppIconSize.small.of(context);
     final inline = switch (accessory) {
       AppListRowValue(:final value) => Text(
         value,
         style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurfaceVariant),
         textAlign: isAccessibilitySize ? TextAlign.start : TextAlign.end,
       ),
+      AppListRowMenu(:final value) => Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: AppSpacing.xs,
+        children: [
+          Text(
+            value,
+            style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurface),
+          ),
+          ExcludeSemantics(
+            child: Icon(
+              AppSymbols.choose,
+              size: glyphSize,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
       AppListRowCustom(:final child) => child,
       _ => null,
     };
 
-    final glyphSize = AppIconSize.small.of(context);
     final trailing = switch (accessory) {
       AppListRowChevron() => Icon(
         AppSymbols.disclosure,

@@ -94,13 +94,5 @@ void main() {
         const SessionsMarker(['#FF0000']),
       );
     });
-
-    test('hex colours', () {
-      expect(parseHexColour('#FF9500'), const Color(0xFFFF9500));
-      expect(parseHexColour('0000FF'), const Color(0xFF0000FF));
-      expect(parseHexColour(null), isNull);
-      expect(parseHexColour('#FFF'), isNull);
-      expect(parseHexColour('#GGGGGG'), isNull);
-    });
   });
 }

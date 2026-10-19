@@ -398,7 +398,7 @@ class _Empty extends StatelessWidget {
   }
 }
 
-/// A search field at the top of a tab.
+/// The search field at the top of a tab, inset from the edges.
 class _SearchField extends StatelessWidget {
   const new({
     required this.hint,
@@ -419,13 +419,10 @@ class _SearchField extends StatelessWidget {
       AppSpacing.l,
       0,
     ),
-    child: TextField(
+    child: AppSearchField(
+      hint: hint,
+      clearLabel: context.l10n.clearSearch,
       autofocus: autofocus,
-      textInputAction: TextInputAction.search,
-      decoration: InputDecoration(
-        prefixIcon: const Icon(AppSymbols.search),
-        hintText: hint,
-      ),
       onChanged: onChanged,
     ),
   );
@@ -628,25 +625,24 @@ class _LibraryTabState extends State<_LibraryTab> {
           ),
           child: SizedBox(
             width: double.infinity,
-            child: SegmentedButton<LibrarySegment>(
+            child: AppSegmentedControl<LibrarySegment>(
               key: const Key('FoodPicker.segments'),
-              showSelectedIcon: false,
               segments: [
-                ButtonSegment(
+                AppSegment(
                   value: LibrarySegment.recipes,
-                  label: Text(l10n.addMealLibraryRecipes),
+                  label: l10n.addMealLibraryRecipes,
                 ),
-                ButtonSegment(
+                AppSegment(
                   value: LibrarySegment.foods,
-                  label: Text(l10n.addMealLibraryFoods),
+                  label: l10n.addMealLibraryFoods,
                 ),
-                ButtonSegment(
+                AppSegment(
                   value: LibrarySegment.favourites,
-                  label: Text(l10n.addMealLibraryFavorites),
+                  label: l10n.addMealLibraryFavorites,
                 ),
               ],
-              selected: {_segment},
-              onSelectionChanged: (selected) => _select(selected.single),
+              selected: _segment,
+              onChanged: _select,
             ),
           ),
         ),
@@ -1003,21 +999,14 @@ class _BarcodeTabState extends State<_BarcodeTab> {
             width: double.infinity,
             child: Semantics(
               label: l10n.labelScanningMode,
-              child: SegmentedButton<bool>(
+              child: AppSegmentedControl<bool>(
                 key: const Key('FoodPicker.scanningMode'),
-                showSelectedIcon: false,
                 segments: [
-                  ButtonSegment(
-                    value: false,
-                    label: Text(l10n.addMealModeBarcode),
-                  ),
-                  ButtonSegment(value: true, label: Text(l10n.labelModeLabel)),
+                  AppSegment(value: false, label: l10n.addMealModeBarcode),
+                  AppSegment(value: true, label: l10n.labelModeLabel),
                 ],
-                selected: {_label},
-                onSelectionChanged: (selected) {
-                  unawaited(HapticFeedback.selectionClick());
-                  setState(() => _label = selected.single);
-                },
+                selected: _label,
+                onChanged: (label) => setState(() => _label = label),
               ),
             ),
           ),

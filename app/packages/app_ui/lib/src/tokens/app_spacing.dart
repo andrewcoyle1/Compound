@@ -75,6 +75,9 @@ abstract final class AppControlSize {
   /// A call-to-action button's minimum height (Swift's `CallToActionButton`).
   static const double cta = 56;
 
+  /// A segmented control's track: iOS's 32 pt, inside a 44 pt tap target.
+  static const double segmentedControl = 32;
+
   /// The app bar's height on iOS, as its navigation bar. Android keeps
   /// Material's 56.
   static const double iosToolbar = 44;

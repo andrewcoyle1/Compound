@@ -321,7 +321,7 @@ List<Color> ringColours(
 ) => switch (marker) {
   null => const [],
   SessionsMarker(:final colours) => [
-    for (final hex in colours) parseHexColour(hex) ?? scheme.primary,
+    for (final hex in colours) AppColors.fromHex(hex) ?? scheme.primary,
   ],
   GoalProgressMarker(isOverGoal: true) => [
     colors.danger.withValues(alpha: 0.5),
@@ -332,15 +332,6 @@ List<Color> ringColours(
   GoalProgressMarker() => [colors.calories],
   CountMarker() => [scheme.primary],
 };
-
-/// `#RRGGBB` as a colour, or null when it is not one.
-Color? parseHexColour(String? hex) {
-  if (hex == null) return null;
-  final digits = hex.startsWith('#') ? hex.substring(1) : hex;
-  if (digits.length != 6) return null;
-  final value = int.tryParse(digits, radix: 16);
-  return value == null ? null : Color(0xFF000000 | value);
-}
 
 class _Badge extends StatelessWidget {
   const new(this.count);

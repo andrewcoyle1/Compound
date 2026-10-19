@@ -5,14 +5,6 @@ import 'package:compound/programs/view/mesocycle_style.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:program_repository/program_repository.dart';
 
-/// A mesocycle's own colour, stored as `#RRGGBB`; null when it is not one.
-/// The colours are user data, so they are not tokens.
-Color? mesocycleColour(String hex) {
-  final digits = hex.startsWith('#') ? hex.substring(1) : hex;
-  final value = digits.length == 6 ? int.tryParse(digits, radix: 16) : null;
-  return value == null ? null : Color(0xFF000000 | value);
-}
-
 /// The workouts in one microcycle: its day plans with exercises.
 int workoutCount(Mesocycle mesocycle) =>
     mesocycle.workoutTemplates.where((day) => day.exercises.isNotEmpty).length;
@@ -48,7 +40,7 @@ class const MesocycleHeader({
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final colour = mesocycleColour(mesocycle.colour) ?? scheme.primary;
+    final colour = AppColors.fromHex(mesocycle.colour) ?? scheme.primary;
     final side = MediaQuery.textScalerOf(context).scale(AppControlSize.row);
     final phase = this.phase;
     final trailing = this.trailing;

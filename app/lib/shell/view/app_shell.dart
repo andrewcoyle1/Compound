@@ -17,6 +17,9 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final badge = context.select<InboxBloc, int>(
+      (bloc) => bloc.state.tabBadgeCount,
+    );
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Column(
@@ -26,44 +29,28 @@ class AppShell extends StatelessWidget {
           const ActiveWorkoutBar(),
           // The unlogged meal, when no workout is under way.
           const MealDraftBar(),
-          NavigationBar(
+          AppTabBar(
             selectedIndex: navigationShell.currentIndex,
             // Tapping the current tab again returns it to its root, as on
             // iOS.
-            onDestinationSelected: (index) => navigationShell.goBranch(
+            onSelected: (index) => navigationShell.goBranch(
               index,
               initialLocation: index == navigationShell.currentIndex,
             ),
-            destinations: [
+            items: [
               for (final tab in AppTab.values)
-                NavigationDestination(
-                  icon: tab == AppTab.social
-                      ? const _SocialIcon()
-                      : Icon(tab.icon),
+                AppTabBarItem(
+                  icon: tab.icon,
+                  selectedIcon: tab.selectedIcon,
                   label: tab.label(l10n),
+                  // The comments and mentions unread and the follow requests
+                  // waiting (`TabBarPresenter.unreadActivityCount`).
+                  badgeCount: tab == AppTab.social ? badge : 0,
                 ),
             ],
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Social's tab glyph, badged with the comments and mentions unread and the
-/// follow requests waiting (`TabBarPresenter.unreadActivityCount`).
-class _SocialIcon extends StatelessWidget {
-  const new();
-
-  @override
-  Widget build(BuildContext context) {
-    final count = context.select<InboxBloc, int>(
-      (bloc) => bloc.state.tabBadgeCount,
-    );
-    return Badge.count(
-      count: count,
-      isLabelVisible: count > 0,
-      child: Icon(AppTab.social.icon),
     );
   }
 }

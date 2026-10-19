@@ -49,5 +49,23 @@ void main() {
       expect(find.byIcon(AppSymbols.disclosure), findsNothing);
       expect(find.text('82.5 kg'), findsOneWidget);
     });
+
+    testWidgets('a destructive row is drawn in the danger colour', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        AppListRowButton(
+          title: 'Delete Account',
+          icon: AppSymbols.delete,
+          accessory: null,
+          destructive: true,
+          onPressed: () {},
+        ),
+      );
+      final title = tester.widget<Text>(find.text('Delete Account'));
+      expect(title.style?.color, AppColors.light.danger);
+      final icon = tester.widget<Icon>(find.byIcon(AppSymbols.delete));
+      expect(icon.color, AppColors.light.danger);
+    });
   });
 }

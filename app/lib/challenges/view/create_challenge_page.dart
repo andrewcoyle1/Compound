@@ -183,18 +183,16 @@ class _CreateChallengeViewState extends State<CreateChallengeView> {
                       padding: const EdgeInsets.all(AppSpacing.m),
                       child: Semantics(
                         label: l10n.createChallengeDuration,
-                        child: SegmentedButton<int>(
-                          showSelectedIcon: false,
+                        child: AppSegmentedControl<int>(
                           segments: [
                             for (final days in challengeDurations)
-                              ButtonSegment(
+                              AppSegment(
                                 value: days,
-                                label: Text(l10n.createChallengeDays(days)),
+                                label: l10n.createChallengeDays(days),
                               ),
                           ],
-                          selected: {state.durationDays},
-                          onSelectionChanged: (days) =>
-                              _cubit.durationChanged(days.single),
+                          selected: state.durationDays,
+                          onChanged: _cubit.durationChanged,
                         ),
                       ),
                     ),

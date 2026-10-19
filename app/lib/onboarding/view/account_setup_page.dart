@@ -528,14 +528,13 @@ class _UnitSwitch<T> extends StatelessWidget {
     return Semantics(
       label: l10n.onboardingUnits,
       container: true,
-      child: SegmentedButton<T>(
+      child: AppSegmentedControl<T>(
         segments: [
-          ButtonSegment(value: metric, label: Text(l10n.onboardingMetric)),
-          ButtonSegment(value: imperial, label: Text(l10n.onboardingImperial)),
+          AppSegment(value: metric, label: l10n.onboardingMetric),
+          AppSegment(value: imperial, label: l10n.onboardingImperial),
         ],
-        selected: {selected},
-        showSelectedIcon: false,
-        onSelectionChanged: (selection) => onChanged(selection.single),
+        selected: selected,
+        onChanged: onChanged,
       ),
     );
   }

@@ -194,10 +194,3 @@ enum EquipmentColour {
     purple => l10n.gymColourPurple,
   };
 }
-
-/// A stored `#RRGGBB` colour, or null when unreadable.
-Color? colourFromHex(String? hex) {
-  if (hex == null) return null;
-  final value = int.tryParse(hex.replaceFirst('#', ''), radix: 16);
-  return value == null ? null : Color(0xFF000000 | value);
-}

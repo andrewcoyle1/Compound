@@ -5,6 +5,7 @@
 /// only read it.
 library;
 
+import 'package:compound_models/compound_models.dart' show FuzzyMatch;
 import 'package:food_repository/food_repository.dart';
 
 /// [name] as Swift's `String.capitalized` writes it: each word, split on
@@ -23,16 +24,41 @@ List<T> sortedByName<T>(Iterable<T> items, String Function(T) name) =>
     [...items]
       ..sort((a, b) => name(a).toLowerCase().compareTo(name(b).toLowerCase()));
 
-/// Whether [recipe] matches the recipe list's [filter]
-/// (`RecipeListBuilderPresenter.filteredRecipeTemplates`): its name,
-/// description or an ingredient's name, ignoring case.
-bool matchesRecipeFilter(RecipeTemplateModel recipe, String filter) {
-  final needle = filter.toLowerCase();
-  bool has(String? text) => text != null && text.toLowerCase().contains(needle);
-  return has(recipe.name) ||
-      has(recipe.description) ||
-      recipe.ingredients.any((ingredient) => has(ingredient.name));
-}
+/// What a food is matched on by every food search, most important first.
+List<Iterable<String?>> foodFields(FoodModel food) => [
+  [food.name],
+  [food.brandName],
+  [food.description],
+];
+
+/// What a recipe is matched on by every recipe search, most important
+/// first.
+List<Iterable<String?>> recipeFields(RecipeTemplateModel recipe) => [
+  [recipe.name],
+  [for (final ingredient in recipe.ingredients) ingredient.name],
+  [recipe.description],
+];
+
+/// [foods] matching [query], best first and then by name; every food, by
+/// name, for a blank query (`IngredientListBuilderPresenter.filteredFoods`).
+List<FoodModel> searchFoods(Iterable<FoodModel> foods, String query) =>
+    FuzzyMatch.search(
+      sortedByName(foods, (food) => food.name),
+      query,
+      foodFields,
+    );
+
+/// [recipes] matching [query], best first and then by name; every recipe,
+/// by name, for a blank query
+/// (`RecipeListBuilderPresenter.filteredRecipeTemplates`).
+List<RecipeTemplateModel> searchRecipes(
+  Iterable<RecipeTemplateModel> recipes,
+  String query,
+) => FuzzyMatch.search(
+  sortedByName(recipes, (recipe) => recipe.name),
+  query,
+  recipeFields,
+);
 
 /// The total of the ingredients measured in grams, which Create Recipe
 /// shows under its Ingredients header; null when nothing is weighed
@@ -146,23 +172,18 @@ List<RecentPick> recentPicks(
   return result;
 }
 
-/// The user's recipes matching [query] by name, ignoring case, at most 20
+/// The user's recipes matching [query], best first, at most 20
 /// (`FoodItemSearchPresenter.recipeResults`). A blank query finds nothing.
 List<RecipeTemplateModel> recipeMatches(
   List<RecipeTemplateModel> recipes,
   String query,
-) {
-  final needle = query.trim().toLowerCase();
-  if (needle.isEmpty) return const [];
-  return recipes
-      .where((recipe) => recipe.name.toLowerCase().contains(needle))
-      .take(20)
-      .toList();
-}
+) => FuzzyMatch.isSearching(query)
+    ? searchRecipes(recipes, query).take(20).toList()
+    : const [];
 
 /// The favourites among [items] (`FoodLibraryPresenter.favouriteFoods` and
 /// `.favouriteRecipes`): those whose id is in [ids], an id whose item has
-/// gone dropped, filtered by [query] on the name and sorted by name.
+/// gone dropped, matching [query] on the name, best first and then by name.
 List<T> favourites<T>(
   Iterable<T> items,
   Iterable<String> ids,
@@ -171,11 +192,14 @@ List<T> favourites<T>(
   required String Function(T) name,
 }) {
   final wanted = ids.toSet();
-  final needle = query.trim().toLowerCase();
-  return sortedByName([
-    for (final item in items)
-      if (wanted.contains(id(item)) &&
-          (needle.isEmpty || name(item).toLowerCase().contains(needle)))
-        item,
-  ], name);
+  return FuzzyMatch.search(
+    sortedByName([
+      for (final item in items)
+        if (wanted.contains(id(item))) item,
+    ], name),
+    query,
+    (item) => [
+      [name(item)],
+    ],
+  );
 }

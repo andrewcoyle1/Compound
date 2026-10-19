@@ -1,5 +1,4 @@
 import 'package:compound/training_library/logic/exercise_filters.dart';
-import 'package:compound/training_library/logic/search_match.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -56,37 +55,52 @@ final class const TrainingLibrary({
     ], (exercise) => exercise.name);
   }
 
-  /// Every exercise matching [query] on its name, description, muscles or
-  /// other names, by name. Empty for a blank query.
-  List<ExerciseModel> searchExercises(String query) => byName([
-    for (final exercise in allExercises)
-      if (exerciseMatches(exercise, query)) exercise,
-  ], (exercise) => exercise.name);
+  /// Every exercise matching [query] on its name, other names, muscles or
+  /// description, best first and then by name. Empty for a blank query.
+  List<ExerciseModel> searchExercises(String query) => _search(
+    byName(allExercises, (exercise) => exercise.name),
+    query,
+    exerciseFields,
+  );
 
   /// Every workout template, the user's and the bundled ones, matching
-  /// [query] on its name, description or exercises, by name.
-  List<WorkoutTemplateModel> searchWorkoutTemplates(String query) => byName([
-    for (final template in [...userWorkoutTemplates, ...systemWorkoutTemplates])
-      if (templateMatches(template, query)) template,
-  ], (template) => template.name);
+  /// [query] on its name, exercises or description, best first and then by
+  /// name. Empty for a blank query.
+  List<WorkoutTemplateModel> searchWorkoutTemplates(String query) => _search(
+    byName([
+      ...userWorkoutTemplates,
+      ...systemWorkoutTemplates,
+    ], (template) => template.name),
+    query,
+    templateFields,
+  );
 
   /// The mesocycles with a workout day left after [query], by name, each
   /// with those days in its own order (`WorkoutListPresenterBuilder`). Rest
   /// days are left out, and a blank query keeps every day.
-  List<(Mesocycle, List<WorkoutTemplateModel>)> mesocycleDays(String query) {
-    final searching = SearchMatch.isSearching(query);
-    return [
-      for (final mesocycle in byName(mesocycles, (mesocycle) => mesocycle.name))
-        if ([
-              for (final day in mesocycle.workoutTemplates)
-                if (day.exercises.isNotEmpty &&
-                    (!searching || templateMatches(day, query)))
-                  day,
-            ]
-            case final days when days.isNotEmpty)
-          (mesocycle, days),
+  List<(Mesocycle, List<WorkoutTemplateModel>)> mesocycleDays(String query) => [
+    for (final mesocycle in byName(mesocycles, (mesocycle) => mesocycle.name))
+      if (_daysMatching(mesocycle, query) case final days when days.isNotEmpty)
+        (mesocycle, days),
+  ];
+
+  List<WorkoutTemplateModel> _daysMatching(Mesocycle mesocycle, String query) {
+    final days = [
+      for (final day in mesocycle.workoutTemplates)
+        if (day.exercises.isNotEmpty) day,
     ];
+    final hits = Set<WorkoutTemplateModel>.identity()
+      ..addAll(FuzzyMatch.search(days, query, templateFields));
+    return days.where(hits.contains).toList();
   }
+
+  static List<T> _search<T>(
+    List<T> items,
+    String query,
+    List<Iterable<String?>> Function(T) fields,
+  ) => FuzzyMatch.isSearching(query)
+      ? FuzzyMatch.search(items, query, fields)
+      : const [];
 
   /// The template with [id]: a user's own, a mesocycle's day (with its
   /// mesocycle), or a bundled one.
@@ -183,23 +197,23 @@ final class const TrainingLibrary({
       for (final item in items) (kind, item),
   ];
 
-  /// Whether [exercise] matches [query] (Training's search and the exercise
-  /// list's): name, description, muscles and other names.
-  static bool exerciseMatches(ExerciseModel exercise, String query) =>
-      SearchMatch.matches(query, [
-        exercise.name,
-        exercise.description,
-        for (final muscle in exercise.muscleGroups.keys) muscle.value,
-        ...exercise.alternateNames,
-      ]);
+  /// What Training's search and the exercise list's match an exercise on,
+  /// most important first.
+  static List<Iterable<String?>> exerciseFields(ExerciseModel exercise) => [
+    [exercise.name],
+    exercise.alternateNames,
+    [for (final muscle in exercise.muscleGroups.keys) muscle.value],
+    [exercise.description],
+  ];
 
-  /// Whether [template] matches [query]: name, description and exercises.
-  static bool templateMatches(WorkoutTemplateModel template, String query) =>
-      SearchMatch.matches(query, [
-        template.name,
-        template.description,
-        for (final exercise in template.exercises) exercise.exercise.name,
-      ]);
+  /// What a workout template is matched on, most important first.
+  static List<Iterable<String?>> templateFields(
+    WorkoutTemplateModel template,
+  ) => [
+    [template.name],
+    [for (final exercise in template.exercises) exercise.exercise.name],
+    [template.description],
+  ];
 
   /// [items] sorted by [name], as Swift's `sortedByKeyPath(\.name)`.
   static List<T> byName<T>(Iterable<T> items, String Function(T) name) =>

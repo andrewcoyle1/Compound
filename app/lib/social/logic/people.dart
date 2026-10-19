@@ -57,29 +57,3 @@ String? commonNameOf(UserModel user) {
   if (display != null && display.isNotEmpty) return display;
   return firstNameOf(user) ?? fullNameOf(user);
 }
-
-/// Social's search matching (`SearchMatch`): trimmed of spaces and of any
-/// leading or trailing punctuation, lower case, and contained in a field.
-/// False for a blank query.
-abstract final class SearchMatch {
-  static final _edges = RegExp(
-    r'^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$',
-    unicode: true,
-  );
-
-  /// [text] as compared.
-  static String normalised(String text) =>
-      text.trim().replaceAll(_edges, '').toLowerCase();
-
-  /// Whether there is anything to search for.
-  static bool isSearching(String query) => normalised(query).isNotEmpty;
-
-  /// Whether [query] is in any of [fields].
-  static bool matches(String query, List<String?> fields) {
-    final needle = normalised(query);
-    if (needle.isEmpty) return false;
-    return fields.any(
-      (field) => field != null && normalised(field).contains(needle),
-    );
-  }
-}

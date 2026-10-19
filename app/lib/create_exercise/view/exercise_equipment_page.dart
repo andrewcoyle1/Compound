@@ -10,10 +10,10 @@ import 'package:compound/create_exercise/view/final_exercise_details_page.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/logic/exercise_filters.dart';
-import 'package:compound/training_library/logic/search_match.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
-import 'package:compound_models/compound_models.dart' show EquipmentKind;
+import 'package:compound_models/compound_models.dart'
+    show EquipmentKind, FuzzyMatch;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -241,11 +241,15 @@ class _EquipmentPickerViewState extends State<EquipmentPickerView> {
     final l10n = context.l10n;
     final chosen = context.watch<EquipmentPickerCubit>().state;
     final sections = <EquipmentKind, List<(EquipmentKey, String)>>{};
-    for (final MapEntry(:key, :value) in widget.items.entries) {
-      if (!SearchMatch.isSearching(_query) ||
-          SearchMatch.matches(_query, [value])) {
-        (sections[key.$1] ??= []).add((key, value));
-      }
+    final matches = FuzzyMatch.search(
+      widget.items.entries,
+      _query,
+      (entry) => [
+        [entry.value],
+      ],
+    );
+    for (final MapEntry(:key, :value) in matches) {
+      (sections[key.$1] ??= []).add((key, value));
     }
     final kinds = sections.keys.toList()
       ..sort(

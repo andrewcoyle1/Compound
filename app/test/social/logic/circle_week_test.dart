@@ -250,13 +250,5 @@ void main() {
       );
       expect(commonNameOf(const UserModel(userId: 'x')), isNull);
     });
-
-    test('search matches inside a field, ignoring case and edges', () {
-      expect(SearchMatch.matches('@Ali', ['alice']), isTrue);
-      expect(SearchMatch.matches('ice', [null, 'Alice']), isTrue);
-      expect(SearchMatch.matches('bob', ['alice']), isFalse);
-      expect(SearchMatch.matches('  ', ['alice']), isFalse);
-      expect(SearchMatch.isSearching('@'), isFalse);
-    });
   });
 }

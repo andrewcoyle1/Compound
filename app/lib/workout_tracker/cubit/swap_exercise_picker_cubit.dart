@@ -11,19 +11,25 @@ final class const SwapExercisePickerState({
   required final List<String> alternativeIds,
   final String search = '',
 }) extends Equatable {
-  /// The plan's alternatives the library holds, in the plan's order; an id
-  /// it no longer holds is skipped.
-  List<ExerciseModel> get plannedAlternatives => [
+  /// The plan's alternatives the library holds that the search matches,
+  /// best first, else in the plan's order; an id it no longer holds is
+  /// skipped.
+  List<ExerciseModel> get plannedAlternatives => _search([
     for (final id in alternativeIds)
       ?library.where((e) => e.id == id).firstOrNull,
-  ].where(_matches).toList();
+  ]);
 
-  /// Every exercise the search matches.
-  List<ExerciseModel> get exercises => library.where(_matches).toList();
+  /// Every exercise the search matches, best first.
+  List<ExerciseModel> get exercises => _search(library);
 
-  bool _matches(ExerciseModel exercise) =>
-      search.isEmpty ||
-      exercise.name.toLowerCase().contains(search.toLowerCase());
+  List<ExerciseModel> _search(List<ExerciseModel> exercises) =>
+      FuzzyMatch.search(
+        exercises,
+        search,
+        (exercise) => [
+          [exercise.name],
+        ],
+      );
 
   @override
   List<Object> get props => [library, alternativeIds, search];

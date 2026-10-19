@@ -17,6 +17,7 @@ export 'src/firestore_values.dart';
 export 'src/firestore_writes.dart';
 export 'src/food_log_settings.dart';
 export 'src/food_model.dart';
+export 'src/fuzzy_match.dart';
 export 'src/gym_equipment.dart';
 export 'src/gym_profile_model.dart';
 export 'src/library_enums.dart';

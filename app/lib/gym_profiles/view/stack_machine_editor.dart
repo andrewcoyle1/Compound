@@ -95,9 +95,9 @@ class _StackMachineEditorState extends State<StackMachineEditorPage>
       appBar: AppBar(
         title: Text(machine.name),
         actions: [
-          IconButton(
-            icon: const Icon(AppSymbols.add),
-            tooltip: l10n.gymAddRange,
+          AppToolbarButton(
+            icon: AppSymbols.add,
+            semanticLabel: l10n.gymAddRange,
             onPressed: () => unawaited(_add(machine)),
           ),
         ],
@@ -197,13 +197,10 @@ class _StackRow extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-                TextButton(
+                AppTextButton(
+                  label: l10n.gymEditRange,
                   onPressed: onEditRange,
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(0, 44),
-                  ),
-                  child: Text(l10n.gymEditRange),
+                  inline: true,
                 ),
               ],
             ),
@@ -540,9 +537,9 @@ class _AddField extends StatelessWidget {
             onChanged: onChanged,
           ),
         ),
-        TextButton(
+        AppTextButton(
+          label: context.l10n.gymAdd,
           onPressed: canAdd ? onAdd : null,
-          child: Text(context.l10n.gymAdd),
         ),
       ],
     );

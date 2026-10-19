@@ -230,14 +230,14 @@ class _RatingStepper extends StatelessWidget {
       title: title,
       rating: value,
       trailing: [
-        IconButton(
-          icon: const Icon(AppSymbols.decrease),
-          tooltip: '${l10n.editorDecrease}, $title',
+        AppIconButton(
+          icon: AppSymbols.decrease,
+          semanticLabel: '${l10n.editorDecrease}, $title',
           onPressed: value > 0 ? () => onChanged(value - 1) : null,
         ),
-        IconButton(
-          icon: const Icon(AppSymbols.increase),
-          tooltip: '${l10n.editorIncrease}, $title',
+        AppIconButton(
+          icon: AppSymbols.increase,
+          semanticLabel: '${l10n.editorIncrease}, $title',
           onPressed: value < 5 ? () => onChanged(value + 1) : null,
         ),
       ],

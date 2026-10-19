@@ -497,8 +497,8 @@ class ProgressSectionsView extends StatelessWidget {
     return AppScaffold(
       appBar: AppBar(title: Text(title)),
       body: switch (state.status) {
-        ProgressStatus.loading => const Center(
-          child: CircularProgressIndicator.adaptive(),
+        ProgressStatus.loading => AppLoadingView(
+          label: context.l10n.launchLoading,
         ),
         ProgressStatus.failure => ProgressMessage(
           title: title,

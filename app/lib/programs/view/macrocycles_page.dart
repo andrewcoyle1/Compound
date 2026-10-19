@@ -5,7 +5,8 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/import_program_page.dart';
 import 'package:compound/programs/view/macrocycle_detail_page.dart';
-import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/training_library/view/library_widgets.dart'
+    show LibrarySections;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:program_repository/program_repository.dart';
 
@@ -87,18 +88,16 @@ class _MacrocyclesPageState extends State<MacrocyclesPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      LibraryEmptyState(
+                      AppEmptyState(
                         icon: AppSymbols.macrocycle,
                         title: l10n.programNoMacrocycles,
-                        message: l10n.programNoMacrocyclesMessage,
+                        description: l10n.programNoMacrocyclesMessage,
+                        actionLabel: l10n.programNewMacrocycle,
+                        onAction: () => open(MacrocycleDetailPage.newId),
                       ),
-                      FilledButton(
-                        onPressed: () => open(MacrocycleDetailPage.newId),
-                        child: Text(l10n.programNewMacrocycle),
-                      ),
-                      TextButton(
+                      AppTextButton(
+                        label: l10n.programImportProgramEllipsis,
                         onPressed: () => unawaited(_import(context)),
-                        child: Text(l10n.programImportProgramEllipsis),
                       ),
                     ],
                   ),

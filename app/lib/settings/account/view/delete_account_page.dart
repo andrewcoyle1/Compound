@@ -88,18 +88,11 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
     final deleting = status == DeleteAccountStatus.deleting;
     return BlocListener<DeleteAccountCubit, DeleteAccountStatus>(
       listenWhen: (_, current) => current == DeleteAccountStatus.failure,
-      listener: (context, _) => showAdaptiveDialog<void>(
+      listener: (context, _) => showAppDialog<void>(
         context: context,
-        builder: (context) => AlertDialog.adaptive(
-          title: Text(l10n.deleteAccountFailedTitle),
-          content: Text(l10n.deleteAccountFailedMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.settingsOk),
-            ),
-          ],
-        ),
+        title: l10n.deleteAccountFailedTitle,
+        message: l10n.deleteAccountFailedMessage,
+        actions: [AppDialogAction(label: l10n.settingsOk)],
       ),
       child: PopScope(
         canPop: !deleting,

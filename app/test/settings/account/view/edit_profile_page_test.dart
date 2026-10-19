@@ -106,8 +106,8 @@ void main() {
       await pumpPage(tester);
       await tester.enterText(find.byType(TextField).first, '  ');
       await tester.pump();
-      final save = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, AppSymbols.selected),
+      final save = tester.widget<AppToolbarButton>(
+        find.widgetWithIcon(AppToolbarButton, AppSymbols.confirm),
       );
       expect(save.onPressed, isNull);
     });
@@ -131,7 +131,7 @@ void main() {
     testWidgets('Close leaves without writing', (tester) async {
       await pumpPage(tester);
       await tester.enterText(find.byType(TextField).at(1), 'C');
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byIcon(AppSymbols.close));
       await tester.pumpAndSettle();
       expect(find.text('profile'), findsOneWidget);
       expect((await profile())!.submittedLastName, 'Coyle');

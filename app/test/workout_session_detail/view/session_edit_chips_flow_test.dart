@@ -187,7 +187,7 @@ void main() {
     await tap(tester, find.byKey(const ValueKey('chip-superset-bench')));
     expect(find.text('Add to Group'), findsOneWidget);
     expect(find.text("Pair '${bench.name}' with:"), findsOneWidget);
-    await tap(tester, find.byKey(const ValueKey('pair-second')));
+    await tap(tester, find.text('Second Press').last);
     expect(find.text('Remove Superset'), findsNWidgets(2));
 
     await tap(tester, find.byKey(const ValueKey('session-save')));

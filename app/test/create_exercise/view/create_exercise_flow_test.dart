@@ -128,7 +128,7 @@ void main() {
       expect(find.text('Resistance Equipment'), findsOneWidget);
       expect(find.text('Flat Bench'), findsNothing);
       await tap(tester, find.byKey(const Key('EquipmentPicker.barbell')));
-      await tap(tester, find.byType(CloseButton));
+      await tap(tester, find.byType(AppToolbarButton));
       expect(find.text('Barbell'), findsOneWidget);
       await tap(tester, cta('ExerciseEquipment.next'));
 
@@ -178,12 +178,12 @@ void main() {
         find.byKey(const Key('CreateExercise.name')),
         'Fly',
       );
-      await tap(tester, find.byType(CloseButton));
+      await tap(tester, find.byType(AppToolbarButton));
       expect(find.text('Discard Changes?'), findsOneWidget);
       await tap(tester, find.text('Keep Editing'));
       expect(find.text('Create Custom Exercise'), findsOneWidget);
 
-      await tap(tester, find.byType(CloseButton));
+      await tap(tester, find.byType(AppToolbarButton));
       await tap(tester, find.text('Discard Changes'));
       expect(find.text('Create Custom Exercise'), findsNothing);
     });
@@ -217,7 +217,7 @@ void main() {
     testWidgets('closes at once when nothing was typed', (tester) async {
       await pump(tester, '/training/exercises');
       await tap(tester, find.byKey(const Key('ExerciseList.create')));
-      await tap(tester, find.byType(CloseButton));
+      await tap(tester, find.byType(AppToolbarButton));
       expect(find.text('Create Custom Exercise'), findsNothing);
     });
 

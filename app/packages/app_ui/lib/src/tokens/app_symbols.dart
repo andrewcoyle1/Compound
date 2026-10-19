@@ -67,8 +67,8 @@ abstract final class AppSymbols {
   static const IconData mesocycle = Icons.assignment_outlined;
 
   /// The glyphs a mesocycle can be given, by the SF Symbol name it stores
-  /// (Swift's `MesocycleIconPresenter.defaultIcons`). Any other name draws
-  /// [mesocycle].
+  /// (Swift's `MesocycleIconPresenter.defaultIcons`), and the names the
+  /// templates and older mesocycles store. Any other name draws [mesocycle].
   static const Map<String, IconData> mesocycleIcons = {
     'flag.pattern.checkered': Icons.sports_score_outlined,
     'arcade.stick': Icons.gamepad_outlined,
@@ -77,6 +77,15 @@ abstract final class AppSymbols {
     'airplane.up.right': Icons.flight_takeoff_outlined,
     'sailboat.fill': Icons.sailing_outlined,
     'gauge.with.dots.needle.bottom.100percent': Icons.speed_outlined,
+    // The templates' (`PrebuiltMesocycles.json`).
+    'figure.strengthtraining.traditional': Icons.accessibility_new_outlined,
+    'arrow.up.arrow.down': Icons.swap_vert_outlined,
+    'figure.mixed.cardio': Icons.directions_run_outlined,
+    'chart.line.uptrend.xyaxis': Icons.trending_up_outlined,
+    // Older mesocycles' (Swift's mocks).
+    'dumbbell': Icons.fitness_center_outlined,
+    'pencil': Icons.edit_outlined,
+    'flag': Icons.flag_outlined,
   };
 
   /// A macrocycle: mesocycles run one after another.
@@ -296,6 +305,9 @@ abstract final class AppSymbols {
   /// Deleting.
   static const IconData delete = Icons.delete_outlined;
 
+  /// A handle that drags a row to a new place in a list.
+  static const IconData reorder = Icons.drag_handle_outlined;
+
   /// Duplicating.
   static const IconData duplicate = Icons.library_add_outlined;
 
@@ -449,9 +461,6 @@ abstract final class AppSymbols {
   /// A row that opens another screen: the heavier chevron with round caps,
   /// closest to iOS's.
   static const IconData disclosure = Icons.arrow_forward_ios_rounded;
-
-  /// A handle to drag a row to a new place in its list.
-  static const IconData reorder = Icons.drag_handle_outlined;
 
   /// A chosen option in a choice list.
   static const IconData choiceSelected = Icons.check_circle_rounded;

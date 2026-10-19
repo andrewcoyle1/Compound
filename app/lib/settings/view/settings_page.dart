@@ -287,17 +287,12 @@ class _SettingsViewState extends State<SettingsView> {
   /// the app has no way to open mail yet, so it always says where to write.
   void _showSupport(BuildContext context) {
     final l10n = context.l10n;
-    showAdaptiveDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(l10n.settingsSupport),
+    unawaited(
+      showAppDialog<void>(
+        context: context,
+        title: l10n.settingsSupport,
         content: SelectableText(l10n.settingsSupportMessage(supportEmail)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.settingsOk),
-          ),
-        ],
+        actions: [AppDialogAction(label: l10n.settingsOk)],
       ),
     );
   }

@@ -2,7 +2,8 @@ import 'package:app_ui/app_ui.dart';
 
 /// {@template app_icon_button}
 /// An icon-only button inside content, such as a row's edit pencil: the
-/// glyph in the accent on a circle of the accent's tinted surface. The circle
+/// glyph in the accent on a circle of the accent's tinted surface, or in
+/// `danger` on danger's tinted surface when [isDestructive]. The circle
 /// is [AppControlSize.compact] across and grows with the text size; its tap
 /// target is at least 44 pt.
 ///
@@ -14,6 +15,7 @@ class AppIconButton extends StatelessWidget {
     required this.icon,
     required this.semanticLabel,
     required this.onPressed,
+    this.isDestructive = false,
     super.key,
   });
 
@@ -27,9 +29,13 @@ class AppIconButton extends StatelessWidget {
   /// Called when tapped. `null` disables the button.
   final VoidCallback? onPressed;
 
+  /// Whether the button deletes or removes something.
+  final bool isDestructive;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final tint = isDestructive ? context.appColors.danger : scheme.primary;
     final diameter = MediaQuery.textScalerOf(context)
         .scale(AppControlSize.compact);
     return IconButton(
@@ -38,8 +44,8 @@ class AppIconButton extends StatelessWidget {
       iconSize: AppIconSize.small.of(context),
       icon: Icon(icon),
       style: IconButton.styleFrom(
-        backgroundColor: AppColors.tintedSurface(scheme.primary),
-        foregroundColor: scheme.primary,
+        backgroundColor: AppColors.tintedSurface(tint),
+        foregroundColor: tint,
         disabledBackgroundColor: scheme.surfaceContainerHighest,
         disabledForegroundColor: scheme.onSurfaceVariant,
         fixedSize: Size.square(diameter),

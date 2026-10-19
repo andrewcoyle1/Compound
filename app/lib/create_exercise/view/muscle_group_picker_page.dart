@@ -91,10 +91,10 @@ class MuscleGroupPickerView extends StatelessWidget {
           ),
           actions: [
             if (state.selected.isNotEmpty)
-              TextButton(
+              AppTextButton(
                 key: const Key('MuscleGroupPicker.reset'),
+                label: l10n.createExerciseReset,
                 onPressed: cubit.reset,
-                child: Text(l10n.createExerciseReset),
               ),
           ],
         ),
@@ -199,26 +199,7 @@ class _MuscleTile extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.rowDetail,
                 ),
-                if (selected != null)
-                  DecoratedBox(
-                    decoration: ShapeDecoration(
-                      shape: const StadiumBorder(),
-                      color: scheme.primary,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.s,
-                        vertical: AppSpacing.xxs,
-                      ),
-                      child: Text(
-                        level,
-                        style: AppTextStyles.label.copyWith(
-                          color: scheme.onPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
+                if (selected != null) AppChip(label: level, selected: true),
               ],
             ),
           ),

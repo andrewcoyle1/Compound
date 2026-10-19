@@ -383,6 +383,8 @@
     "expenditureUntilCalibrated": "Se usa la estimación de tu perfil hasta que haya {days} días y {weighIns} pesajes registrados, con la mayoría de los días registrados.",
     "todayLoadFailure": "No se ha podido cargar Hoy.",
     "todayYourDay": "Tu día",
+    "todayStarterHide": "Ocultar",
+    "todayLogMenu": "Registrar",
     "todayDoneCount": "{done} de {total} hechos",
     "todayDayComplete": "Día completado",
     "todayCalorieBandFooter": "Las calorías cuentan como dentro del objetivo con un margen del 10% por encima o por debajo.",

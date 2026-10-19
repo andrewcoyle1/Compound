@@ -150,13 +150,18 @@ class ChoiceMenu<T> extends StatelessWidget {
 }
 
 /// A count with buttons to step it within [min] and [max] (Swift
-/// `Stepper`).
+/// `Stepper`). The buttons read [decreaseLabel] and [increaseLabel],
+/// "Decrease" and "Increase" by default.
 class const CountStepper({
   required final String title,
   required final int value,
   required final int min,
   required final int max,
   required final ValueChanged<int> onChanged,
+  final String? subtitle,
+  final IconData? icon,
+  final String? decreaseLabel,
+  final String? increaseLabel,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -164,18 +169,20 @@ class const CountStepper({
     final l10n = context.l10n;
     return AppListRow(
       title: title,
+      subtitle: subtitle,
+      icon: icon,
       accessory: AppListRowCustom(
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: const Icon(AppSymbols.decrease),
-              tooltip: l10n.editorDecrease,
+            AppIconButton(
+              icon: AppSymbols.decrease,
+              semanticLabel: decreaseLabel ?? l10n.editorDecrease,
               onPressed: value > min ? () => onChanged(value - 1) : null,
             ),
-            IconButton(
-              icon: const Icon(AppSymbols.increase),
-              tooltip: l10n.editorIncrease,
+            AppIconButton(
+              icon: AppSymbols.increase,
+              semanticLabel: increaseLabel ?? l10n.editorIncrease,
               onPressed: value < max ? () => onChanged(value + 1) : null,
             ),
           ],

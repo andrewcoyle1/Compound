@@ -2,6 +2,10 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/mesocycle_style.dart';
+import 'package:compound/training_library/logic/template_summary.dart';
+import 'package:compound/training_library/view/library_names.dart';
+import 'package:compound/training_library/view/library_widgets.dart'
+    show MuscleChips;
 import 'package:compound_models/compound_models.dart';
 import 'package:program_repository/program_repository.dart';
 
@@ -110,7 +114,8 @@ class const MesocycleHeader({
   }
 }
 
-/// A day plan's row: its name, and its exercises or "Rest".
+/// A day plan's row: its name, its exercises or "Rest", and the muscles
+/// they work (Swift `WorkoutTemplateRow`).
 class const DayPlanRow({
   required final WorkoutTemplateModel plan,
   final Widget? leading,
@@ -144,7 +149,7 @@ class const DayPlanRow({
                   children: [
                     Text(
                       plan.name,
-                      style: AppTextStyles.rowTitle.copyWith(
+                      style: AppTextStyles.sectionTitle.copyWith(
                         color: scheme.onSurface,
                       ),
                     ),
@@ -159,6 +164,10 @@ class const DayPlanRow({
                     color: scheme.onSurfaceVariant,
                   ),
                 ),
+                if (plan.exercises.isNotEmpty)
+                  MuscleChips(
+                    TemplateSummary.muscleTags(plan, l10n.muscleName),
+                  ),
               ],
             ),
           ),
@@ -175,29 +184,12 @@ Future<bool> confirmDestructive(
   required String title,
   required String confirmLabel,
   String? message,
-}) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content: message == null ? null : Text(message),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          style: TextButton.styleFrom(
-            foregroundColor: context.appColors.danger,
-          ),
-          child: Text(confirmLabel),
-        ),
-      ],
-    ),
-  );
-  return confirmed ?? false;
-}
+}) => AppDialog.confirmDestructive(
+  context,
+  title: title,
+  confirmLabel: confirmLabel,
+  message: message,
+);
 
 /// Runs one of [ProgramsCubit]'s actions and answers whether it worked.
 extension ProgramActionResult on ProgramsCubit {

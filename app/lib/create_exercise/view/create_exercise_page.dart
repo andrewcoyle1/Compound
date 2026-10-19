@@ -85,21 +85,21 @@ class _CreateExerciseFlowState extends State<CreateExerciseFlow> {
       return _close();
     }
     final l10n = context.l10n;
-    final discard = await showDialog<bool>(
+    final discard = await showAppDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.discardChangesTitle),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.keepEditingButton),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.discardChangesButton),
-          ),
-        ],
-      ),
+      title: l10n.discardChangesTitle,
+      actions: [
+        AppDialogAction(
+          label: l10n.keepEditingButton,
+          value: false,
+          role: AppDialogRole.cancel,
+        ),
+        AppDialogAction(
+          label: l10n.discardChangesButton,
+          value: true,
+          role: AppDialogRole.destructive,
+        ),
+      ],
     );
     if ((discard ?? false) && mounted) _close();
   }
@@ -148,7 +148,8 @@ class CreateExerciseView extends StatelessWidget {
       disappeared: cubit.disappeared,
       child: AppScaffold(
         appBar: AppBar(
-          leading: CloseButton(
+          leading: AppToolbarButton.close(
+            semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
             // Anything typed is lost on closing, so it asks first.
             onPressed: () => CreateExerciseFlow.leave(context),
           ),
@@ -169,7 +170,6 @@ class CreateExerciseView extends StatelessWidget {
                     child: TextFormField(
                       key: const Key('CreateExercise.name'),
                       initialValue: state.name,
-                      autofocus: true,
                       textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(
                         hintText: l10n.createExerciseAddName,
@@ -305,13 +305,10 @@ class OptionRow<T extends Object> extends StatelessWidget {
   Future<void> _choose(BuildContext context) async {
     final l10n = context.l10n;
     final description = this.description;
-    final chosen = await showModalBottomSheet<(T?,)>(
+    final chosen = await showAppSheet<(T?,)>(
       context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
       builder: (context) => SafeArea(
         child: ListView(
-          shrinkWrap: true,
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.l,
             0,

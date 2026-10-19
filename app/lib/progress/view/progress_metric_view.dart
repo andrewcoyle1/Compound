@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
@@ -103,15 +105,15 @@ class ProgressMetricView extends StatelessWidget {
     return BlocListener<ProgressBloc, ProgressState>(
       listenWhen: (previous, current) =>
           current.deleteFailures > previous.deleteFailures,
-      listener: (context, _) => showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(context.l10n.metricDeleteFailed),
-          content: Text(context.l10n.metricTryAgain),
+      listener: (context, _) => unawaited(
+        showAppDialog<void>(
+          context: context,
+          title: context.l10n.metricDeleteFailed,
+          message: context.l10n.metricTryAgain,
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(MaterialLocalizations.of(context).okButtonLabel),
+            AppDialogAction(
+              label: MaterialLocalizations.of(context).okButtonLabel,
+              role: AppDialogRole.preferred,
             ),
           ],
         ),
@@ -122,23 +124,23 @@ class ProgressMetricView extends StatelessWidget {
           actions: [
             if (!allData && info != null) MethodInfoButton(info),
             if (!allData && add != null)
-              IconButton(
-                icon: Icon(add.icon),
-                tooltip: add.label,
+              AppToolbarButton(
+                icon: add.icon,
+                semanticLabel: add.label,
                 onPressed: add.onPressed,
               ),
             if (!allData)
               for (final action in metric.actions)
-                IconButton(
-                  icon: Icon(action.icon),
-                  tooltip: action.label,
+                AppToolbarButton(
+                  icon: action.icon,
+                  semanticLabel: action.label,
                   onPressed: action.onPressed,
                 ),
           ],
         ),
         body: switch (state.status) {
-          ProgressStatus.loading => const Center(
-            child: CircularProgressIndicator.adaptive(),
+          ProgressStatus.loading => AppLoadingView(
+            label: context.l10n.launchLoading,
           ),
           ProgressStatus.failure => ProgressMessage(
             title: metric.title,
@@ -247,34 +249,13 @@ class ProgressMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final action = this.action;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: [
-            Icon(icon, size: AppIconSize.hero.of(context), color: secondary),
-            Text(
-              title,
-              style: AppTextStyles.sectionTitle,
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-              textAlign: TextAlign.center,
-            ),
-            if (action != null)
-              TextButton(
-                onPressed: action.onPressed,
-                child: Text(action.label),
-              ),
-          ],
-        ),
-      ),
+    return AppEmptyState(
+      icon: icon,
+      title: title,
+      description: message,
+      actionLabel: action?.label,
+      onAction: action?.onPressed,
     );
   }
 }

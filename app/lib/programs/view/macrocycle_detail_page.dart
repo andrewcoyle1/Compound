@@ -186,24 +186,24 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
       appBar: AppBar(
         title: Text(existing == null ? l10n.programNewMacrocycle : draft.name),
         actions: [
-          IconButton(
-            icon: const Icon(AppSymbols.success),
-            tooltip: l10n.usernameSave,
+          AppToolbarButton.confirm(
+            semanticLabel: l10n.usernameSave,
+            isSaving: _saving,
             onPressed: canSave
                 ? () =>
                       unawaited(_write((c) => c.saveMacrocycle(_edited(draft))))
                 : null,
           ),
           if (existing != null)
-            PopupMenuButton<void>(
+            PopupMenuButton<VoidCallback>(
+              onSelected: (action) => action(),
               icon: Icon(AppSymbols.more),
+              tooltip: l10n.programMore,
               itemBuilder: (context) => [
-                PopupMenuItem(
-                  onTap: () => unawaited(_delete(existing)),
-                  child: Text(
-                    l10n.programDeleteMacrocycle,
-                    style: TextStyle(color: context.appColors.danger),
-                  ),
+                AppMenuItem(
+                  value: () => unawaited(_delete(existing)),
+                  label: l10n.programDeleteMacrocycle,
+                  isDestructive: true,
                 ),
               ],
             ),
@@ -217,16 +217,15 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
               header: l10n.onboardingGymName,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.l,
-                    vertical: AppSpacing.s,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
                   child: TextField(
                     controller: _name,
                     onChanged: cubit.nameChanged,
                     textCapitalization: TextCapitalization.words,
                     decoration: InputDecoration(
                       hintText: l10n.programMacrocycleNameHint,
+                      border: InputBorder.none,
+                      filled: false,
                     ),
                   ),
                 ),
@@ -256,7 +255,6 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                           trailing: [
                             AppSwipeAction(
                               label: l10n.programDelete,
-                              icon: AppSymbols.delete,
                               isDestructive: true,
                               onPressed: () => cubit.removed(index),
                             ),
@@ -358,7 +356,8 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
   }
 }
 
-/// A row that picks one of [options] from a menu.
+/// A row that picks one of [options] from a menu: its value with the
+/// up-and-down chevron.
 class const _Picker({
   required final String title,
   required final int value,
@@ -376,7 +375,7 @@ class const _Picker({
       ],
       child: AppListRow(
         title: title,
-        accessory: AppListRowValue(options[value] ?? ''),
+        accessory: AppListRowMenu(options[value] ?? ''),
       ),
     );
   }

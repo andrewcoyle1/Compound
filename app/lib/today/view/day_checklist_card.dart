@@ -15,6 +15,7 @@ import 'package:compound/training_library/view/workout_template_detail_page.dart
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
+import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -57,78 +58,49 @@ class DayChecklistCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.appColors;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    final footerStyle = AppTextStyles.label.copyWith(color: secondary);
     final hasSteps = checklist.items.any((item) => item is StepsItem);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.s,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-          child: Row(
-            children: [
-              Expanded(
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    l10n.todayYourDay,
-                    style: AppTextStyles.sectionTitle.copyWith(
-                      color: secondary,
-                    ),
-                  ),
-                ),
-              ),
-              if (checklist.isComplete)
-                AppChip(
+        AppSection(
+          header: l10n.todayYourDay,
+          trailing: checklist.isComplete
+              ? AppChip(
                   label: l10n.todayDayComplete,
                   icon: AppSymbols.success,
                   tint: colors.success,
                 )
-              else
-                Text(
+              : Text(
                   l10n.todayDoneCount(
                     checklist.doneCount,
                     checklist.items.length,
                   ),
-                  style: footerStyle,
                 ),
-            ],
-          ),
-        ),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final (index, item) in checklist.items.indexed) ...[
-                if (index > 0) const Divider(indent: AppSpacing.l),
-                _ItemRow(
-                  item: item,
-                  unit: unit,
-                  workout: workout,
-                  stepGoal: stepGoal,
-                  onPressed: onItemPressed,
-                  onStepGoalSelected: onStepGoalSelected,
-                ),
-              ],
-            ],
-          ),
+          children: [
+            for (final item in checklist.items)
+              _ItemRow(
+                item: item,
+                unit: unit,
+                workout: workout,
+                stepGoal: stepGoal,
+                onPressed: onItemPressed,
+                onStepGoalSelected: onStepGoalSelected,
+              ),
+          ],
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _FooterLine(
-                text: l10n.todayCalorieBandFooter,
-                info: MethodInfo.calorieAdherenceBand(l10n),
-                style: footerStyle,
+          child: _Footer(
+            lines: [
+              (
+                l10n.todayCalorieBandFooter,
+                MethodInfo.calorieAdherenceBand(l10n),
               ),
               if (hasSteps)
-                _FooterLine(
-                  text: l10n.todayStepGoalFooter(AppFormat.number(stepGoal)),
-                  info: MethodInfo.dailyStepGoal(l10n),
-                  style: footerStyle,
+                (
+                  l10n.todayStepGoalFooter(AppFormat.number(stepGoal)),
+                  MethodInfo.dailyStepGoal(l10n),
                 ),
             ],
           ),
@@ -213,24 +185,32 @@ class _ItemRow extends StatelessWidget {
   ) async {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final goal = await showModalBottomSheet<int>(
+    final goal = await showAppSheet<int>(
       context: context,
-      showDragHandle: true,
+      size: AppSheetSize.compact,
       builder: (context) => SafeArea(
-        child: SingleChildScrollView(
-          child: AppSection(
-            header: l10n.todayStepGoal,
-            children: [
-              for (final choice in stepGoalChoices)
-                AppSelectableRow(
-                  title: l10n.todayStepGoalChoice(
-                    AppFormat.number(choice, locale: locale),
-                  ),
-                  selected: choice == stepGoal,
-                  onPressed: () => Navigator.of(context).pop(choice),
-                ),
-            ],
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            0,
+            AppSpacing.l,
+            AppSpacing.l,
           ),
+          children: [
+            AppSection(
+              header: l10n.todayStepGoal,
+              children: [
+                for (final choice in stepGoalChoices)
+                  AppSelectableRow(
+                    title: l10n.todayStepGoalChoice(
+                      AppFormat.number(choice, locale: locale),
+                    ),
+                    selected: choice == stepGoal,
+                    onPressed: () => Navigator.of(context).pop(choice),
+                  ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -273,20 +253,69 @@ class _ItemRow extends StatelessWidget {
   };
 }
 
-class _FooterLine extends StatelessWidget {
-  const new({required this.text, required this.info, required this.style});
+/// The footnotes, one line each, set close as one footer, each sentence
+/// ending in an inline ⓘ that opens its method's sources (Swift's footer
+/// of `Text`s with a `MethodInfoButton`). The ⓘ is a link within the
+/// text, so it keeps the text's size.
+class _Footer extends StatefulWidget {
+  const new({required this.lines});
 
-  final String text;
-  final MethodInfo info;
-  final TextStyle style;
+  final List<(String, MethodInfo)> lines;
+
+  @override
+  State<_Footer> createState() => _FooterState();
+}
+
+class _FooterState extends State<_Footer> {
+  final _taps = <TapGestureRecognizer>[];
+
+  @override
+  void dispose() {
+    for (final tap in _taps) {
+      tap.dispose();
+    }
+    super.dispose();
+  }
+
+  TapGestureRecognizer _tap(int index, MethodInfo info) {
+    while (_taps.length <= index) {
+      _taps.add(TapGestureRecognizer());
+    }
+    return _taps[index]
+      ..onTap = () => unawaited(
+        showAppSheet<void>(
+          context: context,
+          builder: (_) => MethodInfoSheet(info: info),
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Flexible(child: Text(text, style: style)),
-        MethodInfoButton(info),
-      ],
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    final style = AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant);
+    const glyph = AppSymbols.info;
+    return Text.rich(
+      TextSpan(
+        style: style,
+        children: [
+          for (final (index, (text, info)) in widget.lines.indexed) ...[
+            if (index > 0) const TextSpan(text: '\n'),
+            TextSpan(text: '$text '),
+            TextSpan(
+              text: String.fromCharCode(glyph.codePoint),
+              semanticsLabel: l10n.methodInfoButtonLabel(info.title),
+              recognizer: _tap(index, info),
+              style: style.copyWith(
+                fontFamily: glyph.fontFamily,
+                package: glyph.fontPackage,
+                color: scheme.primary,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

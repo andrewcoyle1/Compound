@@ -236,7 +236,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.drag(find.text('1 min'), const Offset(0, -40));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byTooltip('Save'));
       await tester.pumpAndSettle();
       final rest = (await stored(library)).restDurationsByExerciseType['core'];
       expect(rest, isNot(60));
@@ -283,7 +283,7 @@ void main() {
           .reduce((a, b) => a.compareTo(b) <= 0 ? a : b);
       await tester.tap(find.text(first));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byTooltip('Save'));
       await tester.pumpAndSettle();
       expect(find.text(first), findsOneWidget);
       final overrides = await library.watchExerciseSettings(_uid).first;
@@ -313,7 +313,7 @@ void main() {
       );
       await tester.tap(find.text(exercise.name));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byTooltip('Save'));
       await tester.pump();
       expect(find.text('Unable to Save Settings'), findsOneWidget);
     });

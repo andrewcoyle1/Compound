@@ -1944,6 +1944,14 @@
     "@todayYourDay": {
         "description": "Today checklist: section heading"
     },
+    "todayStarterHide": "Hide",
+    "@todayStarterHide": {
+        "description": "Today: the getting-started section header's button that hides the section on this device"
+    },
+    "todayLogMenu": "Log",
+    "@todayLogMenu": {
+        "description": "Today: accessibility label of the toolbar's + menu (Log Meal, Log Weight, Start Empty Workout)"
+    },
     "todayDoneCount": "{done} of {total} done",
     "@todayDoneCount": {
         "description": "Today checklist: how many items are done",

@@ -373,14 +373,14 @@ void main() {
       await tester.tap(find.text('Plank'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Discard Changes?'), findsOneWidget);
       await tester.tap(find.text('Keep Editing'));
       await tester.pumpAndSettle();
       expect(find.text('1 exercise selected'), findsOneWidget);
 
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Discard Changes'));
       await tester.pumpAndSettle();
@@ -391,14 +391,14 @@ void main() {
       await pump(tester, '/launcher');
       await tester.tap(find.text('Pick'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Picked: null'), findsOneWidget);
     });
 
     testWidgets('opened on its own, closing goes to Training', (tester) async {
       await pump(tester, '/exercise-picker');
-      await tester.tap(find.byType(CloseButton));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Library'), findsOneWidget);
     });

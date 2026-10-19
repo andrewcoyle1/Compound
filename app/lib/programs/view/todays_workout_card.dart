@@ -173,9 +173,18 @@ class const _Unscheduled({
             runSpacing: AppSpacing.s,
             alignment: WrapAlignment.center,
             children: [
-              FilledButton(onPressed: onPrimary, child: Text(primary)),
+              AppCtaButton(
+                label: primary,
+                size: AppCtaSize.compact,
+                onPressed: onPrimary,
+              ),
               if (secondary != null)
-                OutlinedButton(onPressed: onSecondary, child: Text(secondary)),
+                AppCtaButton(
+                  label: secondary,
+                  size: AppCtaSize.compact,
+                  variant: AppCtaVariant.secondary,
+                  onPressed: onSecondary,
+                ),
             ],
           ),
         ],
@@ -251,9 +260,10 @@ class const _RestDay({required final TodaysWorkout workout})
           if (next != null)
             Semantics(
               hint: l10n.programStartInsteadHint,
-              child: OutlinedButton.icon(
-                icon: const Icon(AppSymbols.start),
-                label: Text(l10n.programStartInstead(next.dayPlan.name)),
+              child: AppCtaButton(
+                label: l10n.programStartInstead(next.dayPlan.name),
+                size: AppCtaSize.compact,
+                variant: AppCtaVariant.secondary,
                 onPressed: () => unawaited(_startSlot(context, workout, next)),
               ),
             ),
@@ -449,18 +459,17 @@ class const _Start({
               spacing: AppSpacing.m,
               children: [
                 Expanded(
-                  child: FilledButton.icon(
-                    icon: const Icon(AppSymbols.start),
-                    label: Text(l10n.startWorkout),
+                  child: AppCtaButton(
+                    label: l10n.startWorkout,
+                    size: AppCtaSize.compact,
                     onPressed: () =>
                         unawaited(_startSlot(context, workout, slot)),
                   ),
                 ),
                 Semantics(
                   hint: l10n.programSkipHint,
-                  child: TextButton.icon(
-                    icon: const Icon(AppSymbols.skip),
-                    label: Text(l10n.programSkipWorkout),
+                  child: AppTextButton(
+                    label: l10n.programSkipWorkout,
                     onPressed: () => unawaited(_skip(context, slot)),
                   ),
                 ),

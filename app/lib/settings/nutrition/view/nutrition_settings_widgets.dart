@@ -39,7 +39,7 @@ class SettingsDocumentScaffold<C extends SettingsDocumentCubit<T>, T>
       child: AppScaffold(
         appBar: AppBar(title: Text(title)),
         body: settings == null
-            ? const Center(child: CircularProgressIndicator.adaptive())
+            ? AppLoadingView(label: context.l10n.launchLoading)
             : SafeArea(
                 child: ListView(
                   padding: const EdgeInsets.all(AppSpacing.l),
@@ -90,19 +90,15 @@ class ChoiceRow<T> extends StatelessWidget {
     return AppListRowButton(
       title: title,
       icon: icon,
-      accessory: AppListRowValue(label(value)),
+      accessory: AppListRowMenu(label(value)),
       onPressed: () => unawaited(_choose(context)),
     );
   }
 
   Future<void> _choose(BuildContext context) async {
-    final picked = await showModalBottomSheet<T>(
+    final picked = await showAppSheet<T>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
       builder: (context) => ListView(
-        shrinkWrap: true,
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.l,
           0,

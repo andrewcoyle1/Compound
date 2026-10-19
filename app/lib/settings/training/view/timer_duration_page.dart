@@ -102,29 +102,15 @@ class TimerDurationPage extends StatelessWidget {
     );
   }
 
-  static Future<bool> _confirmReset(BuildContext context) async {
+  static Future<bool> _confirmReset(BuildContext context) {
     final l10n = context.l10n;
-    final reset = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.timerDurationResetTitle),
-        content: Text(l10n.timerDurationResetMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.timerDurationCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(l10n.timerDurationResetConfirm),
-          ),
-        ],
-      ),
+    return AppDialog.confirmDestructive(
+      context,
+      title: l10n.timerDurationResetTitle,
+      message: l10n.timerDurationResetMessage,
+      cancelLabel: l10n.timerDurationCancel,
+      confirmLabel: l10n.timerDurationResetConfirm,
     );
-    return reset ?? false;
   }
 }
 
@@ -167,9 +153,9 @@ class _ExerciseTimersSection extends StatelessWidget {
               title: override.name,
               subtitle: AppFormat.duration(Duration(seconds: override.seconds)),
               accessory: AppListRowCustom(
-                IconButton(
-                  icon: const Icon(AppSymbols.delete),
-                  tooltip: l10n.timerDurationRemove,
+                AppIconButton(
+                  icon: AppSymbols.delete,
+                  semanticLabel: l10n.timerDurationRemove,
                   onPressed: () => cubit.remove(override.id),
                 ),
               ),
@@ -201,36 +187,35 @@ class _ExerciseTimersSection extends StatelessWidget {
   static Future<ExerciseModel?> _chooseExercise(
     BuildContext context,
     List<ExerciseModel> exercises,
-  ) => showModalBottomSheet<ExerciseModel>(
+  ) => showAppSheet<ExerciseModel>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
-    builder: (context) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.8,
-      builder: (context, controller) => Column(
-        children: [
-          Semantics(
+    size: AppSheetSize.full,
+    builder: (context) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+          child: Semantics(
             header: true,
             child: Text(
               context.l10n.timerDurationChooseExercise,
               style: AppTextStyles.sectionTitle,
+              textAlign: TextAlign.center,
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              controller: controller,
-              itemCount: exercises.length,
-              itemBuilder: (context, index) => AppListRowButton(
-                title: exercises[index].name,
-                accessory: null,
-                onPressed: () => Navigator.of(context).pop(exercises[index]),
-              ),
+        ),
+        Expanded(
+          // The sheet's primary scroll controller, so the list drags it.
+          child: ListView.builder(
+            itemCount: exercises.length,
+            itemBuilder: (context, index) => AppListRowButton(
+              title: exercises[index].name,
+              accessory: null,
+              onPressed: () => Navigator.of(context).pop(exercises[index]),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
@@ -246,33 +231,32 @@ Future<int?> showRestDurationPicker(
   // Onto the wheel's quarter minutes, so Save never stores a value the
   // wheel isn't showing.
   var remainder = seconds % 60 ~/ 15 * 15;
-  return showModalBottomSheet<int>(
+  return showAppSheet<int>(
     context: context,
-    useSafeArea: true,
+    size: AppSheetSize.compact,
     builder: (context) {
       final l10n = context.l10n;
-      return SafeArea(
+      return SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
-                IconButton(
-                  icon: const Icon(AppSymbols.close),
-                  tooltip: MaterialLocalizations.of(context).closeButtonLabel,
-                  onPressed: () => Navigator.of(context).pop(),
+                AppToolbarButton.close(
+                  semanticLabel: MaterialLocalizations.of(context)
+                      .closeButtonLabel,
                 ),
                 Expanded(
                   child: Text(
                     title,
-                    style: AppTextStyles.rowTitle,
+                    style: AppTextStyles.sectionTitle,
                     textAlign: TextAlign.center,
                   ),
                 ),
-                TextButton(
+                AppToolbarButton.confirm(
+                  semanticLabel: l10n.timerDurationSave,
                   onPressed: () =>
                       Navigator.of(context).pop(minutes * 60 + remainder),
-                  child: Text(l10n.timerDurationSave),
                 ),
               ],
             ),

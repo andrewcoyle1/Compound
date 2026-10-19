@@ -31,11 +31,9 @@ class CalendarSheet extends StatefulWidget {
     required DateTime today,
     required Map<String, CalendarDayMarker> markers,
     DateTime? selectedDay,
-  }) => showModalBottomSheet<DateTime>(
+  }) => showAppSheet<DateTime>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
+    size: AppSheetSize.full,
     builder: (_) =>
         CalendarSheet(today: today, markers: markers, selectedDay: selectedDay),
   );
@@ -70,7 +68,10 @@ class _CalendarSheetState extends State<CalendarSheet> {
     if (target == null || !mounted) return;
     Scrollable.ensureVisible(
       target,
-      duration: animate ? const Duration(milliseconds: 300) : Duration.zero,
+      duration: animate
+          ? AppMotion.standard.durationOf(context)
+          : Duration.zero,
+      curve: AppMotion.standard.curve,
     );
   }
 
@@ -79,66 +80,62 @@ class _CalendarSheetState extends State<CalendarSheet> {
     final l10n = context.l10n;
     // 0 is Sunday, as in the locale's own calendar.
     final firstDay = firstDayOfWeekIndex(context);
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.85,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-            child: Row(
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+          child: Row(
+            children: [
+              AppToolbarButton.close(
+                semanticLabel: MaterialLocalizations.of(context)
+                    .closeButtonTooltip,
+              ),
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    l10n.calendarTitle,
+                    style: AppTextStyles.sectionTitle,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              AppTextButton(
+                label: l10n.calendarToday,
+                onPressed: () => _scrollTo(
+                  DateTime(widget.today.year, widget.today.month),
+                  animate: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.l),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                IconButton(
-                  icon: const Icon(AppSymbols.close),
-                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      l10n.calendarTitle,
-                      style: AppTextStyles.sectionTitle,
-                      textAlign: TextAlign.center,
+                for (final month in _months)
+                  _Month(
+                    key: _keys[month],
+                    month: month,
+                    title: AppFormat.date(
+                      month,
+                      style: AppDateStyle.monthYear,
+                      locale: context.dateLocale,
                     ),
+                    leading: (month.weekday % 7 - firstDay + 7) % 7,
+                    today: widget.today,
+                    selectedDay: widget.selectedDay,
+                    markers: widget.markers,
+                    onPressed: (day) => Navigator.of(context).pop(day),
                   ),
-                ),
-                TextButton(
-                  onPressed: () => _scrollTo(
-                    DateTime(widget.today.year, widget.today.month),
-                    animate: true,
-                  ),
-                  child: Text(l10n.calendarToday),
-                ),
               ],
             ),
           ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.l),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final month in _months)
-                    _Month(
-                      key: _keys[month],
-                      month: month,
-                      title: AppFormat.date(
-                        month,
-                        style: AppDateStyle.monthYear,
-                        locale: context.dateLocale,
-                      ),
-                      leading: (month.weekday % 7 - firstDay + 7) % 7,
-                      today: widget.today,
-                      selectedDay: widget.selectedDay,
-                      markers: widget.markers,
-                      onPressed: (day) => Navigator.of(context).pop(day),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

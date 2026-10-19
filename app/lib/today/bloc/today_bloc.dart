@@ -53,6 +53,14 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
       );
       emit(state.copyWith(weeklyReviewOpened: true));
     });
+    on<TodayStarterDismissed>((event, emit) {
+      _analyticsRepository.analytic('TodayView_Starter_Dismiss', {
+        'remaining': event.remaining,
+      });
+      // Swift keeps it in UserDefaults, per user, on the device.
+      _store.setBool(starterDismissedKey(_uid), value: true);
+      emit(state.copyWith(starterDismissed: true));
+    });
     on<_TodayGoalChanged>(
       (event, emit) => emit(state.copyWith(goal: () => event.goal)),
     );
@@ -87,9 +95,16 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
   static String weeklyReviewOpenedKey(String uid) =>
       'today_weekly_review_opened_$uid';
 
-  /// [state], with the review card opened if it was this week.
+  /// The key holding whether [uid] hid the getting-started section, as
+  /// Swift keys it.
+  static String starterDismissedKey(String uid) =>
+      'today_starter_dismissed_$uid';
+
+  /// [state], with the review card opened if it was this week, and the
+  /// getting-started section hidden if it was.
   static TodayState _initial(TodayState state, DeviceStore? store) =>
       state.copyWith(
+        starterDismissed: store?.getBool(starterDismissedKey(state.uid)),
         weeklyReviewOpened:
             store?.getString(weeklyReviewOpenedKey(state.uid)) ==
             weekStartOf(state.todayKey, firstWeekday: state.firstWeekday),

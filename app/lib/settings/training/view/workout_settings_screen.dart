@@ -99,7 +99,7 @@ class _WorkoutSettingsViewState extends State<_WorkoutSettingsView> {
       child: AppScaffold(
         appBar: AppBar(title: Text(widget.title)),
         body: settings == null
-            ? const Center(child: CircularProgressIndicator.adaptive())
+            ? AppLoadingView(label: context.l10n.launchLoading)
             : SafeArea(
                 child: ListView(
                   padding: const EdgeInsets.all(AppSpacing.l),
@@ -156,7 +156,7 @@ class SettingsMenuRow<T> extends StatelessWidget {
       builder: (context, controller, _) => AppListRowButton(
         title: title,
         icon: icon,
-        accessory: AppListRowValue(current),
+        accessory: AppListRowMenu(current),
         onPressed: () =>
             controller.isOpen ? controller.close() : controller.open(),
       ),

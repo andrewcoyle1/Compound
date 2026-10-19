@@ -84,7 +84,7 @@ class ExerciseSaveView extends StatelessWidget {
           body: SafeArea(
             bottom: false,
             child: library == null
-                ? const Center(child: CircularProgressIndicator.adaptive())
+                ? AppLoadingView(label: context.l10n.launchLoading)
                 : ExerciseAbout(
                     // Only shown: the id and dates are made on Create.
                     exercise: draft.toModel(

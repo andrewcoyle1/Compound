@@ -52,6 +52,15 @@ void main() {
         ),
       ),
       (
+        'Destructive',
+        AppIconButton(
+          icon: AppSymbols.delete,
+          semanticLabel: 'Delete',
+          isDestructive: true,
+          onPressed: () {},
+        ),
+      ),
+      (
         'Disabled',
         const AppIconButton(
           icon: AppSymbols.edit,

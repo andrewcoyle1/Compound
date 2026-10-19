@@ -24,11 +24,8 @@ Future<T?> pushGymPage<T>(BuildContext context, Widget page) {
 /// Shows [sheet] over the gym editor, sharing its cubit.
 Future<T?> showGymSheet<T>(BuildContext context, Widget sheet) {
   final cubit = context.read<GymProfileEditorCubit>();
-  return showModalBottomSheet<T>(
+  return showAppSheet<T>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
     builder: (_) => BlocProvider.value(value: cubit, child: sheet),
   );
 }
@@ -67,22 +64,23 @@ class WeightUnitSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<ExerciseWeightUnit>(
-      showSelectedIcon: false,
-      segments: [
-        for (final unit in ExerciseWeightUnit.values)
-          ButtonSegment(
-            value: unit,
-            label: Text(WorkoutText.weightUnit(unit).symbol),
-          ),
-      ],
-      selected: {unit},
-      onSelectionChanged: (selection) => onChanged(selection.single),
+    // As wide as its two options need, wherever it sits.
+    return IntrinsicWidth(
+      child: AppSegmentedControl<ExerciseWeightUnit>(
+        segments: [
+          for (final unit in ExerciseWeightUnit.values)
+            AppSegment(value: unit, label: WorkoutText.weightUnit(unit).symbol),
+        ],
+        selected: unit,
+        onChanged: onChanged,
+      ),
     );
   }
 }
 
-/// A list header with a trailing control, such as the unit switch.
+/// A list header with a trailing control, such as the unit switch, which
+/// takes the width its options need and drops below the title when both
+/// don't fit.
 class GymListHeader extends StatelessWidget {
   const new({required this.title, required this.trailing, super.key});
 
@@ -108,7 +106,7 @@ class GymListHeader extends StatelessWidget {
             header: true,
             child: Text(title, style: AppTextStyles.sectionTitle),
           ),
-          trailing,
+          IntrinsicWidth(child: trailing),
         ],
       ),
     );
@@ -155,24 +153,10 @@ class NoWeights extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        spacing: AppSpacing.s,
-        children: [
-          Icon(
-            AppSymbols.equipment,
-            size: 40,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          Text(
-            l10n.gymNoUnitWeights(GymText.unitName(l10n, unit)),
-            style: AppTextStyles.rowTitle,
-            textAlign: TextAlign.center,
-          ),
-          Text(l10n.gymNoUnitWeightsMessage, textAlign: TextAlign.center),
-        ],
-      ),
+    return AppEmptyState(
+      icon: AppSymbols.equipment,
+      title: l10n.gymNoUnitWeights(GymText.unitName(l10n, unit)),
+      description: l10n.gymNoUnitWeightsMessage,
     );
   }
 }
@@ -202,62 +186,48 @@ class GymSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final subtitle = this.subtitle;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SingleChildScrollView(
+    return AppScaffold(
+      appBar: AppBar(
+        // Under the sheet's drag handle, not the status bar.
+        primary: false,
+        leading: AppToolbarButton.close(
+          semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip,
+        ),
+        title: Semantics(
+          header: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, textAlign: TextAlign.center),
+              if (subtitle != null)
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.rowDetail.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          if (confirms)
+            AppToolbarButton.confirm(
+              semanticLabel: l10n.gymConfirm,
+              onPressed: onConfirm,
+            ),
+        ],
+      ),
+      body: ListView.separated(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.l,
           0,
           AppSpacing.l,
           AppSpacing.l,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: AppSpacing.m,
-          children: [
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(AppSymbols.close),
-                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Column(
-                      children: [
-                        Text(
-                          title,
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.rowTitle.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (subtitle != null)
-                          Text(
-                            subtitle,
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.rowDetail,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (confirms)
-                  IconButton(
-                    icon: const Icon(AppSymbols.selected),
-                    tooltip: l10n.gymConfirm,
-                    onPressed: onConfirm,
-                  )
-                else
-                  const SizedBox(width: 48),
-              ],
-            ),
-            ...children,
-          ],
-        ),
+        itemCount: children.length,
+        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.m),
+        itemBuilder: (_, index) => children[index],
       ),
     );
   }

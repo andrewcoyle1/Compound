@@ -145,9 +145,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         l10n.socialTryAgain,
       ),
     };
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$title. $message')));
+    showAppSnackBar(context, '$title. $message', style: AppSnackBarStyle.error);
   }
 }
 

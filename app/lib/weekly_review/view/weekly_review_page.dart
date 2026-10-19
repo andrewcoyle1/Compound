@@ -376,7 +376,7 @@ class _ShareButtonState extends State<_ShareButton> {
     final end = review.weekEnd;
     final last = DateTime(end.year, end.month, end.day - 1);
     final shareSheet = context.read<ShareSheet>();
-    final messenger = ScaffoldMessenger.of(context);
+    final snackBars = AppSnackBarScope.of(context);
     context.read<WeeklyReviewBloc>().add(const WeeklyReviewSharePressed());
     setState(() => _sharing = true);
     final png = await renderShareCard(
@@ -411,15 +411,10 @@ class _ShareButtonState extends State<_ShareButton> {
     if (!mounted) return;
     setState(() => _sharing = false);
     if (png == null) {
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              '${l10n.weeklyReviewShareFailed}. ${l10n.socialTryAgain}',
-            ),
-          ),
-        );
+      snackBars.show(
+        '${l10n.weeklyReviewShareFailed}. ${l10n.socialTryAgain}',
+        style: AppSnackBarStyle.error,
+      );
       return;
     }
     await shareSheet.shareImage(context, png, name: 'compound-week.png');

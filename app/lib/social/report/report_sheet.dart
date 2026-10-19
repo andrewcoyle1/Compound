@@ -21,7 +21,7 @@ Future<void> showReportSheet(
     content: content,
     reporterId: context.read<CircleBloc>().state.viewer?.userId,
   );
-  final messenger = ScaffoldMessenger.of(context);
+  final snackBars = AppSnackBarScope.of(context);
   final l10n = context.l10n;
   final sending = await showAppSheet<Future<bool>>(
     context: context,
@@ -37,11 +37,10 @@ Future<void> showReportSheet(
   if (sent == null) return;
   if (sent) {
     unawaited(AppHaptics.medium());
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(reportSentMessage(l10n, content.type))),
-      );
+    snackBars.show(
+      reportSentMessage(l10n, content.type),
+      style: AppSnackBarStyle.success,
+    );
   } else if (context.mounted) {
     unawaited(AppHaptics.heavy());
     await showAppDialog<void>(

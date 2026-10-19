@@ -31,11 +31,11 @@ class SettingsDocumentScaffold<C extends SettingsDocumentCubit<T>, T>
     final settings = context.select<C, T?>((cubit) => cubit.state.settings);
     return BlocListener<C, SettingsDocumentState<T>>(
       listenWhen: (before, after) => after.saveFailures > before.saveFailures,
-      listener: (context, _) => ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(context.l10n.foodLogSettingsSaveFailed)),
-        ),
+      listener: (context, _) => showAppSnackBar(
+        context,
+        context.l10n.foodLogSettingsSaveFailed,
+        style: AppSnackBarStyle.error,
+      ),
       child: AppScaffold(
         appBar: AppBar(title: Text(title)),
         body: settings == null

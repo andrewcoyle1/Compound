@@ -18,19 +18,22 @@ class AppBottomCta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (children.isEmpty) return const SizedBox.shrink();
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.only(
-          left: AppSpacing.l,
-          right: AppSpacing.l,
-          top: AppSpacing.s,
-          bottom: AppSpacing.s,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.s,
-          children: children,
+    // Snack bars sit above the buttons.
+    return AppSnackBarClearance(
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: AppSpacing.l,
+            right: AppSpacing.l,
+            top: AppSpacing.s,
+            bottom: AppSpacing.s,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: AppSpacing.s,
+            children: children,
+          ),
         ),
       ),
     );

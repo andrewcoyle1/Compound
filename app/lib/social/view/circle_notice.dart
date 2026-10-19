@@ -20,7 +20,9 @@ void showCircleNotice(BuildContext context, CircleState state) {
       state.noticeName ?? l10n.socialUnknown,
     ),
   };
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text('$title. ${l10n.socialTryAgain}')));
+  showAppSnackBar(
+    context,
+    '$title. ${l10n.socialTryAgain}',
+    style: AppSnackBarStyle.error,
+  );
 }

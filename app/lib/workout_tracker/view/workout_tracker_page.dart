@@ -181,17 +181,14 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
         );
       case SetDeletedEffect():
         unawaited(AppHaptics.success());
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(l10n.trackerSetDeleted),
-              action: SnackBarAction(
-                label: l10n.trackerUndo,
-                onPressed: _cubit.undo,
-              ),
-            ),
-          );
+        showAppSnackBar(
+          context,
+          l10n.trackerSetDeleted,
+          action: AppSnackBarAction(
+            label: l10n.trackerUndo,
+            onPressed: _cubit.undo,
+          ),
+        );
       case SelectionEffect():
         unawaited(AppHaptics.selection());
       case SavedEffect():

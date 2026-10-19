@@ -47,9 +47,11 @@ class SaveAccountView extends StatelessWidget {
           case SaveAccountStatus.saved:
             context.pop();
           case SaveAccountStatus.failure:
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(l10n.signInFailure)));
+            showAppSnackBar(
+              context,
+              l10n.signInFailure,
+              style: AppSnackBarStyle.error,
+            );
           case SaveAccountStatus.idle || SaveAccountStatus.inProgress:
             break;
         }

@@ -87,11 +87,11 @@ class FeedSessionCard extends StatelessWidget {
     switch (state.status) {
       case SaveSessionTemplateStatus.saved:
         unawaited(AppHaptics.medium());
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(l10n.programCopySaved(state.savedName!))),
-          );
+        showAppSnackBar(
+          context,
+          l10n.programCopySaved(state.savedName!),
+          style: AppSnackBarStyle.success,
+        );
       case SaveSessionTemplateStatus.unresolved:
         unawaited(AppHaptics.heavy());
         unawaited(showFailureAlert(context, l10n.saveAsTemplateUnresolved));

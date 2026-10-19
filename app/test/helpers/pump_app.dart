@@ -319,12 +319,14 @@ extension PumpApp on WidgetTester {
                       AppLocalizations.localizationsDelegates,
                   supportedLocales: AppLocalizations.supportedLocales,
                   routerConfig: router,
+                  builder: (_, child) => AppSnackBarScope(child: child!),
                 )
               : MaterialApp(
                   theme: AppTheme.light,
                   localizationsDelegates:
                       AppLocalizations.localizationsDelegates,
                   supportedLocales: AppLocalizations.supportedLocales,
+                  builder: (_, child) => AppSnackBarScope(child: child!),
                   home: MediaQuery.withClampedTextScaling(
                     minScaleFactor: textScale,
                     maxScaleFactor: textScale,

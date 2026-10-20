@@ -1172,10 +1172,14 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     // as its own chunk as soon as it is built.
     let streamed = false;
     let blocks = null;
+    let attempts = 0;
+    let modelName = null;
     const text = await replyWithRetry({
         models: [COACH_MODEL, COACH_MODEL, COACH_FALLBACK_MODEL],
         hasStreamed: () => streamed,
         attempt: (model) => {
+            attempts += 1;
+            modelName = model === COACH_FALLBACK_MODEL ? "fallback" : "primary";
             // A fresh collector per try: a failed try streamed nothing, so it kept nothing.
             blocks = ui ? coachBlocks({ messageId, onBlock: request.acceptsStreaming ? (block) => { streamed = true; response.sendChunk(blockChunk(block)); } : null }) : null;
             return coachRuntime.reply({
@@ -1193,6 +1197,9 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
         if (isModelBusy(error)) throw new HttpsError("unavailable", "The coach is busy; try again in a moment", { reason: "busy" });
         throw error;
     });
+    // One summary line per reply, with no user data: was the app asking for blocks, how many tries
+    // and which model it took, and how many blocks were shown.
+    console.log(JSON.stringify({ event: "coach_reply", ui: Boolean(ui), streaming: Boolean(request.acceptsStreaming), attempts, model: modelName, blocks: blocks?.list.length ?? 0 }));
     if (!text) throw new HttpsError("internal", "The coach had no answer");
 
     const now = Timestamp.now();

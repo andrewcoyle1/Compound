@@ -289,14 +289,21 @@ const notShown = (reason) => ({ shown: false, reason: `Not shown: ${reason}.` })
 export function coachBlocks({ messageId, onBlock = null }) {
     const list = [];
     let queue = Promise.resolve();
+    // One log line per decision, with no user data: which kind, and why one wasn't shown.
+    const refuse = (kind, reason) => {
+        console.log(JSON.stringify({ event: "coach_block", kind, shown: false, reason }));
+        return notShown(reason);
+    };
     async function add(input, coach) {
-        if (list.length >= COACH_MAX_BLOCKS) return notShown(`at most ${COACH_MAX_BLOCKS} blocks per reply`);
+        const kind = typeof input?.kind === "string" ? input.kind.slice(0, 40) : null;
+        if (list.length >= COACH_MAX_BLOCKS) return refuse(kind, `at most ${COACH_MAX_BLOCKS} blocks per reply`);
         const args = parseBlockArgs(input, coach.env);
-        if (args.error) return notShown(args.error);
+        if (args.error) return refuse(kind, args.error);
         const built = await BUILDERS[args.kind](args, coach);
-        if (built.error) return notShown(built.error);
+        if (built.error) return refuse(kind, built.error);
         const block = a2uiBlock({ surfaceId: `${messageId}-${list.length}`, kind: args.kind, asOf: coach.env.today, ...built });
         list.push(block);
+        console.log(JSON.stringify({ event: "coach_block", kind: args.kind, shown: true }));
         onBlock?.(block);
         return { shown: true, shows: block.fallback };
     }

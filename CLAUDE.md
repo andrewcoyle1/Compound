@@ -181,6 +181,13 @@ SwiftLint config (`.swiftlint.yml`): line limit 300, type body 500 lines, file l
    violations, so any warning fails the job. SwiftLint is **pinned** — see below.
 3. Runs `xcodebuild test` for `Compound - Development` with `-skip-testing:CompoundUITests`,
    writing `TestResults.xcresult`, which is uploaded as an artifact only when the job fails.
+   The fixture suites (`FirestoreContractTests`, `CoachParityTests`, `ProgramParityTests`,
+   `ProgressionParityTests`, `TrackerParityTests`) are skipped there and run in a second step of
+   their own (`test-without-building -only-testing:…`, `TestResults-Fixtures.xcresult`), which
+   fails if they ran no tests. On the runner they take 1–2 minutes each of pure computation, and
+   alongside the rest they starved the CPU until clock-based tests (`TestManagers.eventually`'s
+   60 s, save debounces, rest timers) timed out: #110 failed four runs that way on 20 Oct 2026.
+   A new fixture-heavy suite goes on both lists.
 
 The simulator destination is **discovered, not hardcoded**: a step picks the newest installed iOS
 runtime and the first available iPhone on it, and fails if that runtime is below iOS 26. Do not

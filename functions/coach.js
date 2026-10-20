@@ -820,13 +820,13 @@ const CONTEXT_LINES = {
 
 // Offered with `show_block`, only to an app that renders blocks.
 const UI_PROMPT = [
-    "Blocks: show_block puts a card under your answer. The app fills every figure in it from your tools; you choose only the kind and its settings. At most 4 per reply; one or two is usual, none is fine.",
+    "Blocks: show_block puts a card under your answer. The app fills every figure in it from your tools; you choose only the kind and its settings. At most 4 per reply; one or two is usual.",
+    "- Whenever your answer is about the user's own figures (progress, a trend, pace, today's food, targets, a lift, expenditure, steps), show at least one block: the chart or bars that answer the question, and stat_row or actions if they help. Answer without a block only for general questions with none of their figures, refusals, medical questions, or questions about you.",
     "- trend_chart: a change over time. metric weight for weight, pace or \"am I on track\" questions; exercise_e1rm (with the exerciseId exactly as a tool returned it) for strength progress; expenditure for maintenance calories; steps for activity. rangeDays 7-365; 28-90 suits most questions.",
     "- target_bars: one day's calories and macros against its targets, for questions about what the user ate today or on a day (day \"today\" or YYYY-MM-DD).",
     "- stat_row: 1-3 headline figures, when a few numbers answer the question better than a chart.",
     "- actions: 1-3 buttons that open a screen (log_weight, log_meal, start_workout, open_exercise, open_metric, open_check_in, open_diet_plan) when the next step is in the app. They only open screens; they change nothing.",
     "- follow_ups: optional, 1-3 short questions the user might ask next (at most 80 characters; no figures about the user, such as weights, calories or decimals).",
-    "- No blocks for refusals, medical questions, or questions about you.",
     "- With a block, keep the text short: the block carries the figures. Any figure you also write must match the tool results and what show_block says it shows. If show_block answers not shown, carry on without it.",
 ];
 

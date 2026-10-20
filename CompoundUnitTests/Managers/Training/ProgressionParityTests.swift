@@ -21,7 +21,10 @@ import Testing
 import Foundation
 @testable import Compound
 
-@MainActor
+/// Not on the main actor: the fixture takes 18 s here and over a minute on CI's runner, and Swift
+/// Testing runs suites side by side, so on the main actor it stalled every main-actor test that was
+/// waiting on a clock (`TestManagers.eventually`, debounces, rest timers) until they timed out.
+/// Everything it runs is nonisolated.
 struct ProgressionParityTests {
 
     private static let fixtureURL = URL(fileURLWithPath: #filePath)

@@ -1,0 +1,15 @@
+{
+  "actor_id": "user_contract_full",
+  "actor_image_url": null,
+  "actor_name": "Ada Lovelace",
+  "challenge_id": null,
+  "comment_text": null,
+  "date_created": {
+    "$timestamp": "2026-10-14T10:00:00.250Z"
+  },
+  "is_reply": false,
+  "session_author_id": "user_contract_friend",
+  "session_id": "",
+  "share_id": null,
+  "type": "follow"
+}

@@ -1,0 +1,12 @@
+{
+  "calories": {
+    "$double": "NaN"
+  },
+  "carbs": {
+    "$double": "-Infinity"
+  },
+  "fat_total": 9.5,
+  "protein": {
+    "$double": "Infinity"
+  }
+}

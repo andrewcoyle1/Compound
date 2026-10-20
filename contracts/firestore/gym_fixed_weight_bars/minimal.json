@@ -1,0 +1,9 @@
+{
+  "baseWeights": [
+
+  ],
+  "id": "fixed_weight_bars_contract_minimal",
+  "isActive": false,
+  "name": "Straight Bars",
+  "typeId": "fixed_weight_bars_contract_minimal"
+}

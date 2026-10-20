@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "Dumbbell_InclineFlyChest.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

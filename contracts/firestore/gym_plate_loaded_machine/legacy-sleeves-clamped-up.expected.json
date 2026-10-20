@@ -1,0 +1,10 @@
+{
+  "id": "old_press",
+  "typeId": "old_press",
+  "name": "Legacy old_press",
+  "isActive": false,
+  "baseWeight": 0.0,
+  "unit": "kilograms",
+  "sleeves": 1,
+  "excludesBaseFromLoad": true
+}

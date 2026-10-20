@@ -18,7 +18,7 @@ import {
     stravaTokenNeedsRefresh,
 } from "./lib.js";
 import { genkit } from "genkit";
-import { vertexAI, gemini, imagen3Fast } from "@genkit-ai/vertexai";
+import { vertexAI } from "@genkit-ai/google-genai";
 
 initializeApp();
 
@@ -37,9 +37,15 @@ const STRAVA_CLIENT_SECRET = defineSecret("STRAVA_CLIENT_SECRET");
 const STRAVA_WEBHOOK_VERIFY_TOKEN = defineSecret("STRAVA_WEBHOOK_VERIFY_TOKEN");
 const STRAVA_CALLABLE_OPTIONS = { ...CALLABLE_OPTIONS, secrets: [STRAVA_CLIENT_SECRET] };
 
-// The coach runs in the EU beside Firestore (eur3), and so does its Vertex endpoint: nothing it
-// reads leaves the EU. RevenueCat's V2 key can read customer information and nothing else.
+// The coach runs in the EU beside Firestore (eur3), and so does its Vertex endpoint (the "eu"
+// multi-region; current Gemini models aren't served from single regions): nothing it reads leaves
+// the EU. RevenueCat's V2 key can read customer information and nothing else.
 const COACH_REGION = "europe-west4";
+// One model for every Gemini call, from the multi-region endpoints it is served on: "us" beside
+// the us-central1 functions and "eu" for the coach.
+const GEMINI_MODEL = "gemini-3.8-flash";
+const TEXT_MODEL_LOCATION = "us";
+const COACH_MODEL_LOCATION = "eu";
 const REVENUECAT_SECRET_KEY = defineSecret("REVENUECAT_SECRET_KEY");
 const REVENUECAT_PROJECT_ID = defineString("REVENUECAT_PROJECT_ID");
 const COACH_CALLABLE_OPTIONS = {
@@ -53,12 +59,14 @@ const COACH_CALLABLE_OPTIONS = {
 
 const ai = genkit({
     // The project comes from the runtime, so the dev deploy spends the dev project's Vertex quota.
-    plugins: [vertexAI({ location: REGION })],
+    // Current Gemini models are served from multi-region endpoints only, not from us-central1.
+    plugins: [vertexAI({ location: TEXT_MODEL_LOCATION })],
 });
 
-// gemini-2.0-flash was retired on Vertex AI, and every call to it answered 404, which reached the
-// app as INTERNAL. Thinking is off, as 2.0 Flash had none: these callables want a fast JSON answer.
-const TEXT_MODEL = gemini("gemini-2.5-flash", { thinkingConfig: { thinkingBudget: 0 } });
+// Retired models answer 404, which reaches the app as INTERNAL: gemini-2.0-flash went that way, and
+// gemini-2.5-flash retires on 20 Oct 2026. Check Vertex's model-versions page before a release.
+// Thinking is off: these callables want a fast JSON answer.
+const TEXT_MODEL = vertexAI.model(GEMINI_MODEL, { thinkingConfig: { thinkingBudget: 0 } });
 
 
 async function findOrCreateIngredient(uid, item) {
@@ -261,7 +269,7 @@ export const imageGenerate = onCall(CALLABLE_OPTIONS, async (request) => {
     }
 
     const response = await ai.generate({
-        model: imagen3Fast,
+        model: vertexAI.model("imagen-3.0-fast-generate-001"),
         prompt: prompt.trim(),
         output: { format: "media" },
     });
@@ -1119,21 +1127,29 @@ export const onStravaEventCreated = onDocumentCreated(
 import {
     validateCoachRequest, hasCoachConsent, isCoachPremium, consumeCoachQuota, firestoreSource, coachEnvironment,
     historyForModel, appendChatMessages, chatTitle, defineCoachTools, runCoach, coachRuntime,
+    replyWithRetry, isModelBusy, withTimeout,
 } from "./coach.js";
+import { coachBlocks, defineShowBlockTool, blockChunk, storedBlock, fitStoredBlocks } from "./coach-blocks.js";
 
 const DEV_PROJECT_ID = "compound-development";
 
-const coachAI = genkit({ plugins: [vertexAI({ location: COACH_REGION })] });
+const coachAI = genkit({ plugins: [vertexAI({ location: COACH_MODEL_LOCATION })] });
 // A small thinking budget: choosing which tools to call and reconciling their figures is where a
 // coach goes wrong, and 1k thinking tokens buys that for about a second.
-const COACH_MODEL = gemini("gemini-2.5-flash", { thinkingConfig: { thinkingBudget: 1024 } });
+// gemini-3.5-flash, not the food callables' 3.8: on 20 Oct 2026 3.8 Flash at the eu endpoint was
+// refused or timed out on about half of all calls and took ~12 s for a sentence, while 3.5 Flash
+// answered 12/12 in ~1 s and passed the coach eval (16/16, blocks 4/4). Supported until May 2027
+// or later. The last try goes to 3.8 Flash, also in the EU, so a reply never leaves the EU.
+const COACH_MODEL = vertexAI.model("gemini-3.5-flash", { thinkingConfig: { thinkingBudget: 1024 } });
+const COACH_FALLBACK_MODEL = vertexAI.model(GEMINI_MODEL, { thinkingConfig: { thinkingBudget: 1024 } });
 const COACH_CONFIG = { temperature: 0.3, maxOutputTokens: 4096 };
 const coachTools = defineCoachTools(coachAI);
-coachRuntime.reply ??= (args) => runCoach({ ai: coachAI, model: COACH_MODEL, tools: coachTools, config: COACH_CONFIG, ...args });
+const coachBlockTool = defineShowBlockTool(coachAI);
+coachRuntime.reply ??= (args) => runCoach({ ai: coachAI, model: COACH_MODEL, tools: coachTools, blockTool: coachBlockTool, config: COACH_CONFIG, ...args });
 
 export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response) => {
     const uid = requireAuth(request);
-    const { chatId, message, context } = validateCoachRequest(request.data);
+    const { chatId, message, context, ui } = validateCoachRequest(request.data);
     const db = getFirestore();
     const source = firestoreSource(db, uid);
 
@@ -1153,18 +1169,51 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     const env = await coachEnvironment(source);
     const remainingToday = await consumeCoachQuota(db, uid, { day: env.today, nowMs: env.now.getTime() });
 
-    const text = await coachRuntime.reply({
-        source,
-        env,
-        history: historyForModel(existing?.data()?.messages),
-        message,
-        context,
-        onChunk: request.acceptsStreaming ? (delta) => response.sendChunk({ text: delta }) : null,
+    const messageId = randomUUID();
+    // Generative UI (coach-blocks.js): only for an app that renders the catalog. Each block streams
+    // as its own chunk as soon as it is built.
+    // An empty chunk every 10 s while the coach works: the app gives up on a stream that stays
+    // silent for about 30 s and asks again without streaming, which costs a second message and
+    // loses the live blocks. An empty text chunk is a no-op for every client.
+    const heartbeat = request.acceptsStreaming ? setInterval(() => response.sendChunk({ text: "" }), 10_000) : null;
+    let streamed = false;
+    let blocks = null;
+    let attempts = 0;
+    let modelName = null;
+    const text = await replyWithRetry({
+        models: [COACH_MODEL, COACH_MODEL, COACH_FALLBACK_MODEL],
+        hasStreamed: () => streamed,
+        attempt: (model) => withTimeout((abortSignal) => {
+            attempts += 1;
+            modelName = model === COACH_FALLBACK_MODEL ? "fallback" : "primary";
+            // A fresh collector per try: a failed try streamed nothing, so it kept nothing.
+            blocks = ui ? coachBlocks({ messageId, onBlock: request.acceptsStreaming ? (block) => { streamed = true; response.sendChunk(blockChunk(block)); } : null }) : null;
+            return coachRuntime.reply({
+                model,
+                source,
+                env,
+                history: historyForModel(existing?.data()?.messages),
+                message,
+                context,
+                blocks,
+                onChunk: request.acceptsStreaming ? (delta) => { streamed = true; response.sendChunk({ text: delta }); } : null,
+                abortSignal,
+            });
+        }, model === COACH_FALLBACK_MODEL ? 40_000 : 30_000),
+    }).finally(() => clearInterval(heartbeat)).catch((error) => {
+        if (isModelBusy(error)) throw new HttpsError("unavailable", "The coach is busy; try again in a moment", { reason: "busy" });
+        throw error;
     });
+    // One summary line per reply, with no user data: was the app asking for blocks, how many tries
+    // and which model it took, and how many blocks were shown.
+    console.log(JSON.stringify({ event: "coach_reply", ui: Boolean(ui), uiSent: typeof request.data?.ui, streaming: Boolean(request.acceptsStreaming), attempts, model: modelName, blocks: blocks?.list.length ?? 0 }));
     if (!text) throw new HttpsError("internal", "The coach had no answer");
 
     const now = Timestamp.now();
-    const reply = { id: randomUUID(), role: "assistant", text, created_at: now };
+    const reply = {
+        id: messageId, role: "assistant", text, created_at: now,
+        ...(blocks?.list.length ? { blocks: blocks.list.map(storedBlock) } : {}),
+    };
     // Appended in a transaction: two replies landing together must not drop each other's turns.
     await db.runTransaction(async (tx) => {
         const current = (await tx.get(chatRef)).data();
@@ -1174,9 +1223,10 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
             created_at: current?.created_at ?? now,
             updated_at: now,
             context_kind: current?.context_kind ?? context?.kind ?? null,
-            messages: appendChatMessages(current?.messages, [{ id: randomUUID(), role: "user", text: message, created_at: now }, reply]),
+            messages: fitStoredBlocks(appendChatMessages(current?.messages, [{ id: randomUUID(), role: "user", text: message, created_at: now }, reply])),
         });
     });
-    return { chatId: chatRef.id, messageId: reply.id, text, remainingToday };
+    // The blocks ride in the result too, so an app that asked without streaming can draw them at once.
+    return { chatId: chatRef.id, messageId: reply.id, text, remainingToday, ...(reply.blocks ? { blocks: reply.blocks } : {}) };
 });
 

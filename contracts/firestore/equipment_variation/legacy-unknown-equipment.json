@@ -1,0 +1,17 @@
+{
+  "id": "variation_legacy",
+  "resistance_equipment": [
+    {
+      "id": "x",
+      "kind": "hoverboard"
+    },
+    {
+      "id": "dumbbells",
+      "kind": "freeWeight"
+    },
+    "plates",
+    {
+      "kind": "bands"
+    }
+  ]
+}

@@ -682,6 +682,34 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
             assert.equal(replies[0].env.timeZone, "Europe/London");
             assert.deepEqual(replies[0].history, []);
             assert.equal((await read("coach_usage/u")).count, 1);
+            // Without ui, no blocks are offered or stored.
+            assert.equal(replies[0].blocks, null);
+            assert.equal("blocks" in chat.messages[1], false);
+        });
+
+        test("with ui: 1, blocks stream as text-keyed chunks, are saved with the reply and read back as history", async () => {
+            await seed(consent());
+            const textOnly = coach.coachRuntime.reply;
+            coach.coachRuntime.reply = async (args) => {
+                replies.push(args);
+                args.onChunk?.("Here is your week.");
+                await args.blocks?.add({ kind: "follow_ups", questions: ["How is my squat going?"] }, { source: args.source, env: args.env, cache: new Map() });
+                return "Here is your week.";
+            };
+            try {
+                const { result, chunks } = await ask({ message: "How was my week?", ui: 1 }, { stream: true });
+                assert.deepEqual(chunks.map((c) => Object.keys(c)), [["text"], ["text", "block"]]);
+                const block = chunks[1].block;
+                assert.equal(chunks[1].text, "");
+                assert.equal(block.surfaceId, `${result.messageId}-0`);
+                const reply = (await read(`users/u/coach_chats/${result.chatId}`)).messages[1];
+                assert.deepEqual(reply.blocks, [{ surfaceId: block.surfaceId, kind: "follow_ups", as_of: block.asOf, fallback: block.fallback, messages: block.messages }]);
+
+                await ask({ chatId: result.chatId, message: "And then?", ui: 1 });
+                assert.equal(replies[1].history[1].content[0].text, "Here is your week.\n[Shown: Suggested questions: How is my squat going?]");
+            } finally {
+                coach.coachRuntime.reply = textOnly;
+            }
         });
 
         test("a follow-up carries the conversation; someone else's chat is not found", async () => {

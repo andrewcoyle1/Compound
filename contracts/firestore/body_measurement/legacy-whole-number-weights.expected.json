@@ -1,0 +1,14 @@
+{
+  "id": "body_measurement_legacy",
+  "author_id": "user_legacy",
+  "date": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "source": "manual",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:05.000Z"
+  },
+  "weight_kg": 81.0,
+  "body_fat_percentage": 18.0,
+  "waist_circumference": 84.0
+}

@@ -1,0 +1,10 @@
+{
+  "id": "variation_legacy",
+  "resistance_equipment": [
+    {
+      "id": "dumbbells",
+      "kind": "freeWeight"
+    }
+  ],
+  "support_equipment": []
+}

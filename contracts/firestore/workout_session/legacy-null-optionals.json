@@ -1,0 +1,25 @@
+{
+  "author_id": "user_legacy",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2025-06-01T07:05:30.500Z"
+  },
+  "deleted_at": null,
+  "ended_at": null,
+  "exercises": [],
+  "gym_profile_id": null,
+  "hidden": null,
+  "id": "session_legacy",
+  "is_deload": null,
+  "is_rest_day": false,
+  "liked_by_user_ids": [],
+  "mesocycle_id": null,
+  "name": "Legs",
+  "notes": null,
+  "paused_seconds": null,
+  "strava_activity_id": null,
+  "week_streak_count": null,
+  "workout_template_id": null
+}

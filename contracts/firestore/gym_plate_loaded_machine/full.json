@@ -1,0 +1,12 @@
+{
+  "baseWeight": 12.5,
+  "description": "Back corner",
+  "excludesBaseFromLoad": false,
+  "id": "plate_loaded_machine_contract_full",
+  "imageName": "t_bar_icon",
+  "isActive": true,
+  "name": "Chest-Supported T-Bar",
+  "sleeves": 1,
+  "typeId": "t_bar_row",
+  "unit": "kilograms"
+}

@@ -1,0 +1,19 @@
+{
+  "algorithm_version": "v1",
+  "author_id": "user_contract_full",
+  "bmr_equation": "katchMcArdle",
+  "calculation_mode": "fixed",
+  "calculation_start_date": {
+    "$timestamp": "2026-09-07T00:00:00.000Z"
+  },
+  "check_in_weekday": 5,
+  "estimation_method": "bodyFatAware",
+  "fast_check_in": true,
+  "fasting_enabled": false,
+  "id": "nutrition_strategy_settings",
+  "logging_break_enabled": false,
+  "partial_logging_enabled": false,
+  "predictive_goal_adjustments": false,
+  "step_informed_updates": true,
+  "weigh_in_enabled": false
+}

@@ -1,0 +1,83 @@
+{
+  "author_id": "user_legacy",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2025-06-01T07:05:30.500Z"
+  },
+  "exercises": [
+    {
+      "author_id": "user_legacy",
+      "equipment_variations": [
+        {
+          "id": "variation_legacy",
+          "resistance_equipment": [
+            {
+              "id": "x",
+              "kind": "hoverboard"
+            },
+            {
+              "id": "dumbbells",
+              "kind": "freeWeight"
+            }
+          ]
+        },
+        "barbell"
+      ],
+      "id": "exercise_legacy",
+      "index": 1,
+      "loads_per_set": 2.5,
+      "name": "Back Squat",
+      "set_targets": [
+        {
+          "id": "set_target_legacy",
+          "set_number": 1,
+          "set_type": {
+            "rawValue": "myo"
+          }
+        },
+        {
+          "id": "set_target_legacy",
+          "set_number": 1,
+          "set_type": {
+            "name": "Drop Set"
+          }
+        },
+        {
+          "id": "set_target_legacy",
+          "set_number": 1,
+          "set_type": "superset"
+        }
+      ],
+      "sets": [
+        {
+          "author_id": "user_legacy",
+          "bands": [
+            "Red",
+            3
+          ],
+          "date_created": {
+            "$timestamp": "2025-06-01T07:00:00.000Z"
+          },
+          "id": "set_legacy",
+          "index": 1,
+          "isWarmup": false,
+          "kind": "superDrop",
+          "load_count": "two",
+          "machine_base_kg": "heavy",
+          "side": "up",
+          "weight_unit": "stone"
+        }
+      ],
+      "substitute_exercise_ids": [],
+      "template_id": "back_squat",
+      "tracking_mode": "weightReps",
+      "weight_unit": "stone"
+    }
+  ],
+  "id": "session_legacy",
+  "is_rest_day": false,
+  "liked_by_user_ids": [],
+  "name": "Legs"
+}

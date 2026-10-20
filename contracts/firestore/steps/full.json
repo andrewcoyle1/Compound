@@ -1,0 +1,19 @@
+{
+  "author_id": "user_contract_full",
+  "date": {
+    "$timestamp": "2026-10-12T00:00:00.000Z"
+  },
+  "date_created": {
+    "$timestamp": "2026-10-12T22:10:05.250Z"
+  },
+  "date_modified": {
+    "$timestamp": "2026-10-12T23:55:40.750Z"
+  },
+  "deleted_at": {
+    "$timestamp": "2026-10-13T09:00:00.125Z"
+  },
+  "healthkit_id": "healthkit-steps-1760227200",
+  "id": "steps_contract_full",
+  "number": 10432,
+  "source": "healthkit"
+}

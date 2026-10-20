@@ -1,0 +1,40 @@
+{
+  "author_id": "user_contract_full",
+  "body_fat_percentage": 18.5,
+  "bust_circumference": 99.5,
+  "chest_circumference": 101.75,
+  "date": {
+    "$timestamp": "2026-10-12T06:45:00.250Z"
+  },
+  "date_created": {
+    "$timestamp": "2026-10-12T06:46:10.500Z"
+  },
+  "deleted_at": {
+    "$timestamp": "2026-10-13T09:00:00.125Z"
+  },
+  "healthkit_uuid": "6F9619FF-8B86-D011-B42D-00C04FC964FF",
+  "hip_circumference": 96.25,
+  "id": "body_measurement_contract_full",
+  "left_ankle_circumference": 22.25,
+  "left_bicep_circumference": 35.5,
+  "left_calf_circumference": 38.25,
+  "left_forearm_circumference": 29.5,
+  "left_thigh_circumference": 58.5,
+  "left_wrist_circumference": 17.25,
+  "neck_circumference": 38.5,
+  "notes": "Morning, fasted",
+  "progress_photo_urls": [
+    "https://example.com/front.jpg",
+    "https://example.com/side.jpg"
+  ],
+  "right_ankle_circumference": 22.5,
+  "right_bicep_circumference": 36.25,
+  "right_calf_circumference": 38.5,
+  "right_forearm_circumference": 29.75,
+  "right_thigh_circumference": 58.75,
+  "right_wrist_circumference": 17.5,
+  "shoulder_circumference": 120.25,
+  "source": "healthkit",
+  "waist_circumference": 84.5,
+  "weight_kg": 82.25
+}

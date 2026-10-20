@@ -1,0 +1,119 @@
+import 'package:body_repository/src/body_rules.dart';
+import 'package:compound_models/compound_models.dart';
+
+/// The signed-in user's body data, steps and weight goal.
+abstract interface class BodyRepository {
+  /// The entries at `users/{uid}/body_measurements` whose author is [uid],
+  /// as the Swift app's listener reads them, less deleted ones (screens
+  /// leave out any with a `deleted_at`), oldest first. Re-emitted on every
+  /// change.
+  Stream<List<BodyMeasurementEntry>> watchMeasurements(String uid);
+
+  /// The step counts at `users/{uid}/steps` whose author is [uid], less
+  /// deleted ones, oldest first. Swift listens to the whole collection and
+  /// its screens filter on author and `deleted_at`, as this does.
+  Stream<List<StepsModel>> watchSteps(String uid);
+
+  /// The settings at `users/{uid}/analytics_settings/analytics_settings`,
+  /// or Swift's defaults when there is no document or it cannot be read, as
+  /// `AnalyticsSettingsManager` falls back.
+  Stream<AnalyticsSettings> watchAnalyticsSettings(String uid);
+
+  /// Sets [uid]'s daily step goal and nothing else in
+  /// `users/{uid}/analytics_settings/analytics_settings`. Swift's
+  /// `AnalyticsSettingsManager.saveSettings` writes the whole document, so a
+  /// stale copy of the hidden sections could undo a change made on another
+  /// device; this leaves them alone. A missing document is created with the
+  /// fields Swift's decoder requires (`id`, `author_id` and an empty
+  /// `hidden_section_ids`).
+  Future<void> saveStepGoal(String uid, int goal);
+
+  /// Sets [uid]'s hidden Progress sections and nothing else, as
+  /// [saveStepGoal] does for the goal: the stored step goal is never
+  /// rewritten from a stale copy.
+  Future<void> saveHiddenSections(String uid, List<String> hiddenSectionIds);
+
+  /// The goal at `users/{uid}/goals/{currentGoalId ?? uid}`, as
+  /// `GoalManager.signIn` picks it: pass the user's `currentGoalId`. Goals
+  /// saved before goal ids live under the user id. Null when there is none
+  /// or it cannot be read. Whatever its status, as Swift's `currentGoal`.
+  Stream<WeightGoal?> watchCurrentGoal(String uid, {String? currentGoalId});
+
+  /// Saves [entry] to `users/{entry.authorId}/body_measurements/{entry.id}`,
+  /// merged over anything there, as `BodyMeasurementsManager
+  /// .saveBodyMeasurement` does (`BodyMeasurementsManager.swift:56`;
+  /// `saveDocument` is `setData(merge: true)`). The Apple Health export
+  /// Swift does first is `health_repository`'s `saveMeasurement`.
+  ///
+  /// A merge leaves a field the entry omits as it was, so this cannot clear
+  /// a value: Swift's `withCleared` has exactly that bug
+  /// (`swift-findings.md`). Use [clearMeasurementFields] to clear.
+  Future<void> saveMeasurement(BodyMeasurementEntry entry);
+
+  /// Removes [fields] from `users/{uid}/body_measurements/{entryId}`, with
+  /// `FieldValue.delete()`, so the value is gone on every device (Swift's
+  /// merge cannot do this; see [saveMeasurement]).
+  ///
+  /// Each field must be one of [clearableMeasurementFields]: an optional
+  /// value, never one the model requires. Anything else throws an
+  /// [ArgumentError] before writing. An `update`, so a missing entry is
+  /// refused with `not-found`.
+  Future<void> clearMeasurementFields(
+    String uid,
+    String entryId,
+    Set<String> fields,
+  );
+
+  /// Saves [steps] to `users/{steps.authorId}/steps/{steps.id}`, merged, as
+  /// `StepsManager.createStepsEntry` and its Apple Health import do
+  /// (`saveDocument` is `setData(merge: true)`).
+  Future<void> saveSteps(StepsModel steps);
+
+  /// Saves a new [goal] to `users/{goal.userId}/goals/{goal.goalId}`,
+  /// merged, as `GoalManager.saveGoal` does (`GoalManager.swift:44-47`).
+  ///
+  /// Only for a goal with a new id. The rules freeze `goal_id`, `user_id`,
+  /// `starting_weight_kg` and `created_at` once written, so saving over an
+  /// existing goal with any of them changed is refused; a fresh start is a
+  /// new goal, after which the caller points `submitted_current_goal_id` at
+  /// it and abandons the old one with [abandonGoal].
+  Future<void> saveGoal(WeightGoal goal);
+
+  /// Marks the goal at `users/{uid}/goals/{goalId}` abandoned, writing
+  /// `status` and nothing else, as `GoalManager.saveGoal` does for the goal
+  /// a new one replaces (`GoalManager.swift:52-58`). Swift does this only
+  /// when the replaced goal is active, and ignores a failure. Fails, as
+  /// Firestore's `update` does, when there is no such goal.
+  Future<void> abandonGoal(String uid, String goalId);
+
+  /// Changes what the goal at `users/{uid}/goals/{goalId}` aims for: its
+  /// [objective], [targetWeightKg] and [weeklyChangeKg], and nothing else
+  /// (`GoalManager.updateGoal`). Where it started is frozen by the rules; a
+  /// fresh start is a new goal ([saveGoal]).
+  ///
+  /// An `update`, not Swift's merge: a merge keeps the old objective's key
+  /// beside the new one in the `objective` map, which neither app can then
+  /// decode. Fails, as Firestore's `update` does, when there is no such goal.
+  Future<void> editGoal(
+    String uid,
+    String goalId, {
+    required OverarchingObjective objective,
+    required double targetWeightKg,
+    required double weeklyChangeKg,
+  });
+
+  /// The progress photos at `users/{uid}/progress_photos` whose author is
+  /// [uid], newest first, as `ProgressPhotoManager.photos` lists them
+  /// (Swift listens to the whole collection and filters on the author).
+  Stream<List<ProgressPhotoModel>> watchProgressPhotos(String uid);
+
+  /// Saves [photo] to `users/{photo.authorId}/progress_photos/{photo.id}`,
+  /// merged, as `ProgressPhotoManager.addPhoto` does (`saveDocument` is
+  /// `setData(merge: true)`). Its image must already be in Storage at
+  /// `photo.storagePath`.
+  Future<void> saveProgressPhoto(ProgressPhotoModel photo);
+
+  /// Deletes `users/{uid}/progress_photos/{photoId}`, as
+  /// `ProgressPhotoManager.deletePhoto` does before removing the image.
+  Future<void> deleteProgressPhoto(String uid, String photoId);
+}

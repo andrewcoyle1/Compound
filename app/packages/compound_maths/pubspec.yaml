@@ -1,0 +1,11 @@
+name: compound_maths
+description: "Pure Dart port of the Compound app's parity-checked maths (expenditure, weight trend, formula TDEE, estimated 1RM, weekly muscle sets)."
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  test: ^1.32.0
+  very_good_analysis: ^11.0.0

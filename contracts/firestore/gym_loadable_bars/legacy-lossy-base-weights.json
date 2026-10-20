@@ -1,0 +1,19 @@
+{
+  "id": "old_bar",
+  "name": "Legacy old_bar",
+  "collarWeight": 2,
+  "baseWeights": [
+    {
+      "id": "bw1",
+      "baseWeight": 20
+    },
+    {
+      "id": "bw2"
+    },
+    {
+      "id": "bw3",
+      "baseWeight": 15,
+      "unit": "stone"
+    }
+  ]
+}

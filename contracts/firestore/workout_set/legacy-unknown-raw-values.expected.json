@@ -1,0 +1,12 @@
+{
+  "author_id": "user_legacy",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "id": "set_legacy",
+  "index": 1,
+  "isWarmup": false,
+  "kind": "superDrop",
+  "side": "up",
+  "weight_unit": "stone"
+}

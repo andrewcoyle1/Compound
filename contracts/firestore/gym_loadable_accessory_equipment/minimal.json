@@ -1,0 +1,8 @@
+{
+  "baseWeight": 0.5,
+  "id": "loadable_accessory_equipment_contract_minimal",
+  "isActive": false,
+  "name": "Dip Belt Chain",
+  "typeId": "loadable_accessory_equipment_contract_minimal",
+  "unit": "pounds"
+}

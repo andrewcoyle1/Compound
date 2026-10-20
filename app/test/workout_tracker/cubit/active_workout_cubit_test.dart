@@ -1,0 +1,1173 @@
+import 'dart:async';
+
+import 'package:analytics_repository/analytics_repository.dart';
+import 'package:body_repository/body_repository.dart';
+import 'package:compound/l10n/l10n.dart';
+import 'package:compound/notifications/notifications.dart';
+import 'package:compound/review/review_moment.dart';
+import 'package:compound/workout_tracker/workout_tracker.dart';
+import 'package:compound_models/compound_models.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter/widgets.dart' show Locale;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:health_repository/health_repository.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:notifications_repository/notifications_repository.dart';
+import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:program_repository/program_repository.dart';
+import 'package:strava_repository/strava_repository.dart';
+import 'package:training_library_repository/training_library_repository.dart';
+import 'package:training_rules/training_rules.dart' as r;
+import 'package:training_session/training_session.dart';
+import 'package:user_repository/user_repository.dart';
+import 'package:workout_session_repository/workout_session_repository.dart';
+
+import '../../helpers/fake_store_review.dart';
+
+class _MockAnalytics extends Mock implements AnalyticsRepository;
+
+class _FakeEvent extends Fake implements LoggableEvent;
+
+/// Programs whose mesocycles cannot be read.
+class _UnreadablePrograms extends InMemoryProgramRepository {
+  @override
+  Stream<List<Mesocycle>> watchMesocycles(String uid) =>
+      Stream.error(StateError('unreadable'));
+}
+
+/// A clock the test moves by hand.
+class _Clock {
+  DateTime now = DateTime(2026, 10, 15, 18);
+
+  DateTime call() => now;
+
+  void advance(Duration duration) => now = now.add(duration);
+}
+
+const String uid = sampleUserId;
+
+void main() {
+  setUpAll(() => registerFallbackValue(_FakeEvent()));
+
+  late _Clock clock;
+  late InMemoryWorkoutSessionRepository sessions;
+  late InMemoryUserRepository users;
+  late InMemoryTrainingLibraryRepository library;
+  late InMemoryActiveSessionStore store;
+  late _MockAnalytics analytics;
+  late FakeNotificationsRepository notifications;
+  late FakeLiveActivityRepository liveActivity;
+  late ActiveWorkoutCubit cubit;
+  var ids = 0;
+
+  final template = sampleUserWorkoutTemplates.first;
+
+  ActiveWorkoutCubit build() => ActiveWorkoutCubit(
+    sessions: sessions,
+    users: users,
+    library: library,
+    analytics: analytics,
+    store: store,
+    notifications: notifications,
+    liveActivity: liveActivity,
+    copy: AppNotificationCopy(() => lookupAppLocalizations(const Locale('en'))),
+    clock: clock.call,
+    newId: () => 'ID-${++ids}',
+    wait: (_) async {},
+  );
+
+  Future<void> settle() async {
+    for (var i = 0; i < 5; i++) {
+      await Future<void>.delayed(Duration.zero);
+    }
+  }
+
+  List<String> events() => [
+    for (final call in verify(
+      () => analytics.trackEvent(captureAny()),
+    ).captured)
+      (call as LoggableEvent).eventName,
+  ];
+
+  setUp(() {
+    clock = _Clock();
+    ids = 0;
+    sessions = InMemoryWorkoutSessionRepository(sessions: const []);
+    users = InMemoryUserRepository(users: {uid: sampleUser(now: clock.now)});
+    library = InMemoryTrainingLibraryRepository(
+      workoutSettings: const [
+        WorkoutSettings(authorId: uid, addSmartWarmUps: false),
+      ],
+    );
+    store = InMemoryActiveSessionStore();
+    analytics = _MockAnalytics();
+    notifications = FakeNotificationsRepository();
+    liveActivity = FakeLiveActivityRepository();
+    cubit = build();
+  });
+
+  tearDown(() => cubit.close());
+
+  /// Types 60 kg × 8 into the next set, as a set with no history starts
+  /// empty.
+  void fillNext() {
+    final action = cubit.state.primaryAction;
+    if (action is! r.LogSetAction) return;
+    cubit
+      ..openKeypad(action.setId, SetField.weight)
+      ..keypadKey('6')
+      ..keypadKey('0')
+      ..keypadNext()
+      ..keypadKey('8')
+      ..closeKeypad();
+  }
+
+  /// Logs the next set with the bottom button, past its tap lockout, and
+  /// skips the rest that follows.
+  void logNext() {
+    clock.advance(const Duration(minutes: 1));
+    final action = cubit.state.slotAt(clock.now);
+    expect(action, isA<r.SlotLog>());
+    fillNext();
+    cubit.pressPrimary();
+    clock.advance(const Duration(seconds: 1));
+    if (cubit.state.slotAt(clock.now) is r.SlotSkipRest) cubit.skipRest();
+  }
+
+  group(ActiveWorkoutCubit, () {
+    test('starts with nothing under way, then follows the user', () async {
+      expect(cubit.state.status, ActiveWorkoutStatus.none);
+      await cubit.userChanged(uid);
+      expect(cubit.state.status, ActiveWorkoutStatus.none);
+      await cubit.userChanged(null);
+      expect(cubit.state, const ActiveWorkoutState());
+    });
+
+    test('starts a workout from a template, prefilled and kept', () async {
+      await cubit.userChanged(uid);
+      await settle();
+      await cubit.start(
+        template: template,
+        eventPrefix: 'WorkoutTemplateDetailView_StartWorkout',
+      );
+
+      final state = cubit.state;
+      expect(state.isActive, isTrue);
+      expect(state.session!.workoutTemplateId, template.workoutId);
+      expect(state.session!.exercises, hasLength(template.exercises.length));
+      expect(
+        state.card.single.exercise.name,
+        template.exercises.first.exercise.name,
+      );
+      expect(state.primaryAction, isA<r.LogSetAction>());
+      expect(state.strip, hasLength(template.exercises.length));
+      expect((await store.load())!.session.id, state.session!.id);
+      expect(
+        events(),
+        containsAllInOrder([
+          'WorkoutTemplateDetailView_StartWorkout_Start',
+          'WorkoutTemplateDetailView_StartWorkout_Success',
+        ]),
+      );
+    });
+
+    test('starts an empty workout', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(eventPrefix: 'TodayView_StartBlankWorkout');
+      expect(cubit.state.session!.exercises, isEmpty);
+      expect(cubit.state.session!.name, 'Workout');
+      expect(cubit.state.primaryAction, isNull);
+    });
+
+    test('logs a set: stamped, rest started, kept, reported', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      final setId = (cubit.state.primaryAction! as r.LogSetAction).setId;
+
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      cubit.pressPrimary();
+
+      final logged = cubit.state.set(setId)!;
+      expect(logged.completedAt, clock.now);
+      expect(cubit.state.effect, isA<SetLoggedEffect>());
+      expect(cubit.state.restEnd, isNotNull);
+      expect(cubit.state.slotAt(clock.now), isA<r.SlotSkipRest>());
+      expect(cubit.state.correction?.setId, setId);
+      await settle();
+      final kept = await store.load();
+      expect(
+        kept!.session.exercises.first.sets
+            .firstWhere((s) => s.id == setId)
+            .completedAt
+            ?.isAtSameMomentAs(clock.now),
+        isTrue,
+      );
+      expect(events(), contains('SetTrackerRow_SetCompleted'));
+    });
+
+    test('drops a tap made just after the button changed', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      cubit.pressPrimary();
+      final restEnd = cubit.state.restEnd;
+
+      clock.advance(const Duration(milliseconds: 100));
+      cubit.pressPrimary();
+
+      expect(cubit.state.restEnd, restEnd);
+    });
+
+    test('refuses a set with no reps', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      final setId = (cubit.state.primaryAction! as r.LogSetAction).setId;
+      cubit
+        ..openKeypad(setId, SetField.reps)
+        ..keypadBackspace()
+        ..keypadDone();
+
+      expect(cubit.state.effect, const LogRefusedEffect(r.SetProblem.noReps));
+      expect(cubit.state.set(setId)!.completedAt, isNull);
+      expect(cubit.state.keypad, isNotNull);
+    });
+
+    test('the keypad types into the set and logs it on ✓', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      final setId = (cubit.state.primaryAction! as r.LogSetAction).setId;
+
+      cubit
+        ..openKeypad(setId, SetField.weight)
+        ..keypadKey('6')
+        ..keypadKey('2')
+        ..keypadKey('.')
+        ..keypadKey('5');
+      expect(cubit.state.set(setId)!.weightKg, 62.5);
+      expect(cubit.state.keypad!.text, '62.5');
+
+      cubit.keypadNext();
+      expect(cubit.state.keypad!.field, SetField.reps);
+      cubit
+        ..keypadKey('9')
+        ..keypadRir(2);
+      expect(cubit.state.set(setId)!.reps, 9);
+      expect(cubit.state.set(setId)!.rpe, 8);
+
+      cubit.keypadDone();
+      expect(cubit.state.keypad, isNull);
+      expect(cubit.state.set(setId)!.completedAt, isNotNull);
+    });
+
+    test('steps the weight on the equipment', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      final setId = (cubit.state.primaryAction! as r.LogSetAction).setId;
+      cubit
+        ..openKeypad(setId, SetField.weight)
+        ..keypadBackspace()
+        ..keypadStep(up: true);
+      final first = cubit.state.set(setId)!.weightKg!;
+      cubit.keypadStep(up: true);
+      expect(cubit.state.set(setId)!.weightKg, greaterThan(first));
+      cubit.keypadStep(up: false);
+      expect(cubit.state.set(setId)!.weightKg, first);
+      cubit.closeKeypad();
+      expect(cubit.state.keypad, isNull);
+    });
+
+    test('corrects the set just logged, and undoes it', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      final setId = (cubit.state.primaryAction! as r.LogSetAction).setId;
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      cubit.pressPrimary();
+      final reps = cubit.state.set(setId)!.reps!;
+
+      cubit.correctReps(setId, 1);
+      expect(cubit.state.set(setId)!.reps, reps + 1);
+      cubit.setRir(setId, 1);
+      expect(cubit.state.set(setId)!.rpe, 9);
+      expect(cubit.state.correction!.selectedRir, 1);
+
+      cubit.undo();
+      expect(cubit.state.set(setId)!.reps, reps);
+      cubit.undo();
+      expect(cubit.state.set(setId)!.completedAt, isNull);
+      expect(cubit.state.restEnd, isNull);
+      expect(
+        events(),
+        containsAll([
+          'WorkoutTracker_Correction_Reps',
+          'WorkoutTracker_Correction_RIR',
+          'WorkoutTracker_Correction_Undo',
+        ]),
+      );
+    });
+
+    test('adds and deletes sets and exercises', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(eventPrefix: 'x');
+      final bench = PrebuiltCatalogue.instance.exercises.first;
+      cubit.addExercises([bench]);
+      final exercise = cubit.state.session!.exercises.single;
+      expect(exercise.templateId, bench.id);
+      expect(exercise.sets, hasLength(1));
+
+      cubit.addSet(exercise.id);
+      expect(cubit.state.exercise(exercise.id)!.sets, hasLength(2));
+      cubit.deleteSet(cubit.state.exercise(exercise.id)!.sets.last.id);
+      expect(cubit.state.effect, isA<SetDeletedEffect>());
+      expect(cubit.state.exercise(exercise.id)!.sets, hasLength(1));
+      cubit.undo();
+      expect(cubit.state.exercise(exercise.id)!.sets, hasLength(2));
+
+      cubit.deleteExercise(exercise.id);
+      expect(cubit.state.session!.exercises, isEmpty);
+    });
+
+    test("saves notes: the session's, and the exercise's for every "
+        'workout', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      final exercise = cubit.state.session!.exercises.first;
+
+      cubit.setWorkoutNotes('  Felt strong ');
+      expect(cubit.state.session!.notes, 'Felt strong');
+      await cubit.saveExerciseNotes(
+        exercise.id,
+        sessionNote: 'Elbows in',
+        exerciseNote: 'Seat 4',
+      );
+      await settle();
+
+      expect(cubit.state.exercise(exercise.id)!.notes, 'Elbows in');
+      final saved = await library.watchExerciseSettings(uid).first;
+      expect(saved.single.id, exercise.templateId);
+      expect(saved.single.note, 'Seat 4');
+      expect(cubit.state.card.first.exerciseNote, 'Seat 4');
+    });
+
+    test('pauses and resumes the clock', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      clock.advance(const Duration(minutes: 10));
+      cubit.togglePause();
+      expect(cubit.state.slotAt(clock.now), isA<r.SlotResume>());
+      clock.advance(const Duration(minutes: 5));
+      expect(cubit.state.elapsedAt(clock.now), const Duration(minutes: 10));
+      cubit.pressPrimary();
+      expect(cubit.state.isPaused, isFalse);
+      expect(cubit.state.elapsedAt(clock.now), const Duration(minutes: 10));
+    });
+
+    test('finishing saves exactly the logged sets, then the streak', () async {
+      await cubit.userChanged(uid);
+      await settle();
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+      logNext();
+      final logged = [
+        for (final e in cubit.state.session!.exercises)
+          for (final s in e.sets)
+            if (s.completedAt != null) s.id,
+      ];
+      expect(logged, hasLength(2));
+      clock.advance(const Duration(minutes: 5));
+      final end = clock.now;
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      final finished = cubit.state.finishedSession!;
+      expect(finished.endedAt, end);
+      expect([
+        for (final e in finished.exercises)
+          for (final s in e.sets) s.id,
+      ], logged);
+      final stored = await sessions.session(uid, finished.id);
+      expect(stored!.toFirestore(), {
+        ...finished.toFirestore(),
+        // One session in a week still under way: no full week yet.
+        WorkoutSessionModelKeys.weekStreakCount: 0,
+      });
+      final settings = await users.watchPrivateSettings(uid).first;
+      expect(settings!.weekSessions, 1);
+      expect(settings.lastTrainedAt, finished.dateCreated);
+      expect(await store.load(), isNull);
+      expect(cubit.state.isActive, isFalse);
+      expect(
+        events(),
+        containsAllInOrder([
+          'WorkoutTrackerView_FinishWorkout_Start',
+          'Workout_Finished',
+          'WorkoutTrackerView_FinishWorkout_Success',
+        ]),
+      );
+
+      cubit.summaryShown();
+      expect(cubit.state.finishedSession, isNull);
+    });
+
+    test("the workout that meets the week's goal asks for a rating, "
+        'once', () async {
+      final review = FakeStoreReview();
+      await cubit.close();
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        newId: () => 'ID-${++ids}',
+        wait: (_) async {},
+        reviews: ReviewPrompter(review: review, now: clock.call),
+      );
+      await cubit.userChanged(uid);
+      await settle();
+      final asked = <int>[];
+      // The sample user's goal is three a week.
+      for (var i = 0; i < 4; i++) {
+        await cubit.start(template: template, eventPrefix: 'x');
+        logNext();
+        clock.advance(const Duration(minutes: 5));
+        await cubit.finish(firstWeekday: DateTime.monday);
+        await settle();
+        cubit.summaryShown();
+        asked.add(review.requests);
+      }
+      expect(asked, [0, 0, 1, 1]);
+    });
+
+    test("a program's day starts on its week, cut in a deload, and "
+        'finishing it pre-logs the rest after it', () async {
+      final programs = InMemoryProgramRepository(
+        mesocycles: sampleMesocycles(now: clock.now),
+        macrocycles: sampleMacrocycles(now: clock.now),
+      );
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        wait: (_) async {},
+        programs: ProgramService(
+          programs: programs,
+          users: users,
+          sessions: sessions,
+          now: clock.call,
+        ),
+      );
+      final mesocycle = sampleMesocycles(now: clock.now).first;
+      final legs = mesocycle.workoutTemplates[5];
+      await cubit.userChanged(uid);
+      await settle();
+
+      await cubit.start(
+        template: legs,
+        eventPrefix: 'x',
+        mesocycleId: mesocycle.id,
+        microcycleIndex: 8,
+        isDeload: true,
+      );
+      expect(cubit.state.session!.isDeload, isTrue);
+      expect(cubit.state.session!.mesocycleId, mesocycle.id);
+
+      await cubit.start(
+        template: legs,
+        eventPrefix: 'x',
+        mesocycleId: mesocycle.id,
+        microcycleIndex: 1,
+      );
+      logNext();
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      final rests = [
+        for (final s in await sessions.watchSessions(uid).first)
+          if (s.isRestDay) s,
+      ];
+      expect(
+        rests.single.workoutTemplateId,
+        mesocycle.workoutTemplates[6].workoutId,
+      );
+      expect(rests.single.dateCreated, DateTime(2026, 10, 16));
+    });
+
+    test('a program that cannot be read never fails the finish', () async {
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        wait: (_) async {},
+        programs: ProgramService(
+          programs: _UnreadablePrograms(),
+          users: users,
+          sessions: sessions,
+        ),
+      );
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      expect(
+        events(),
+        containsAllInOrder([
+          'finish_workout_plan_advance_error',
+          'WorkoutTrackerView_FinishWorkout_Success',
+        ]),
+      );
+    });
+
+    test('a failed save keeps the workout on the device to resume', () async {
+      final failing = _FailingSessions();
+      cubit = ActiveWorkoutCubit(
+        sessions: failing,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        wait: (_) async {},
+      );
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      expect(cubit.state.saveNotice, SaveProgress.failed);
+      expect(await store.load(), isNotNull);
+      expect(cubit.state.isActive, isTrue);
+      final names = events();
+      expect(names, contains('WorkoutTrackerView_FinishWorkout_Fail'));
+      // Each failed attempt, as Swift's `saveFinishedWorkout` logs it.
+      expect(
+        names.where((e) => e == 'finish_workout_save_error'),
+        hasLength(1),
+      );
+    });
+
+    test('a save the server refuses is kept for the tracker to offer '
+        'again', () async {
+      final refusing = _RefusingSessions();
+      cubit = ActiveWorkoutCubit(
+        sessions: refusing,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        wait: (_) async {},
+      );
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+      // Saved on the device: the summary shows, the copy waits.
+      expect(cubit.state.finishedSession, isNotNull);
+      expect((await store.load())?.saved, SavedFinish.awaitingServer);
+
+      refusing.server.completeError(Exception('permission-denied'));
+      await settle();
+
+      expect((await store.load())?.saved, SavedFinish.refused);
+      expect(cubit.state.isActive, isTrue);
+      final fail = verify(() => analytics.trackEvent(captureAny())).captured
+          .cast<LoggableEvent>()
+          .where((e) => e.eventName == 'WorkoutTrackerView_FinishWorkout_Fail');
+      expect(fail.single.parameters, {'reason': 'server_refused'});
+    });
+
+    test('a finished workout still waiting for the server after a relaunch '
+        'is not offered, and is forgotten once the server has it', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+      cubit.flush();
+      await settle();
+      final kept = (await store.load())!;
+      await sessions.saveSession(uid, kept.session);
+      await store.save(
+        ActiveSessionState(
+          session: kept.session,
+          saved: SavedFinish.awaitingServer,
+        ),
+      );
+      await cubit.close();
+
+      cubit = build();
+      await cubit.userChanged(uid);
+      expect(cubit.state.isActive, isFalse);
+      await settle();
+      expect(await store.load(), isNull);
+    });
+
+    test('discarding forgets the workout', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      await cubit.discard();
+      expect(cubit.state.isActive, isFalse);
+      expect(await store.load(), isNull);
+      expect(await sessions.watchSessions(uid).first, isEmpty);
+    });
+
+    test(
+      'carries on the workout kept on the device after a relaunch',
+      () async {
+        await cubit.userChanged(uid);
+        await cubit.start(template: template, eventPrefix: 'x');
+        logNext();
+        final id = cubit.state.session!.id;
+        cubit.flush();
+        await settle();
+        await cubit.close();
+
+        cubit = build();
+        await cubit.userChanged(uid);
+        expect(cubit.state.isActive, isTrue);
+        expect(cubit.state.session!.id, id);
+        expect(cubit.state.hasLoggedSet, isTrue);
+      },
+    );
+
+    test("leaves someone else's workout alone", () async {
+      await cubit.userChanged('someone-else');
+      await cubit.start(template: template, eventPrefix: 'x');
+      await cubit.close();
+
+      cubit = build();
+      await cubit.userChanged(uid);
+      expect(cubit.state.isActive, isFalse);
+    });
+
+    testWidgets('ends the rest when it runs out, with a moment of grace', (
+      tester,
+    ) async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      cubit.pressPrimary();
+      final end = cubit.state.restEnd!;
+      final setId = cubit.state.correction!.setId;
+      final card = cubit.state.currentExerciseId;
+
+      final loggedAt = clock.now;
+      clock.now = end;
+      await tester.pump(end.difference(loggedAt));
+      expect(cubit.state.restEnd, isNull);
+      expect(cubit.state.restStartedAt, isNotNull);
+      expect(cubit.state.isInGraceAt(end), isTrue);
+      // The exercise is done, so the card moves on; the set logged last is
+      // still the one to correct, on its own exercise.
+      expect(cubit.state.currentExerciseId, isNot(card));
+      expect(cubit.state.correction?.setId, setId);
+      expect(cubit.state.correction?.exerciseId, card);
+
+      await tester.pump(const Duration(seconds: 1));
+      expect(cubit.state.graceEnd, isNull);
+    });
+  });
+
+  group('$ActiveWorkoutCubit notifications', () {
+    LocalReminder? pending(LocalReminderKind kind) =>
+        notifications.scheduled[kind];
+
+    DateTime? due(LocalReminderKind kind) => switch (pending(kind)?.schedule) {
+      ReminderAt(:final at) => at,
+      _ => null,
+    };
+
+    Future<void> logFirst() async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      cubit.pressPrimary();
+      await cubit.notificationsSettled;
+    }
+
+    test('a rest schedules "Rest Complete" with what is next; skipping '
+        'withdraws it', () async {
+      await logFirst();
+      final restOver = pending(LocalReminderKind.restOver)!;
+      expect(due(LocalReminderKind.restOver), cubit.state.restEnd);
+      expect(restOver.body, startsWith('Next: '));
+      expect(restOver.level, ReminderLevel.timeSensitive);
+      // The first rest asks for permission.
+      expect(notifications.permissionState, PushPermission.authorized);
+
+      cubit.addRestTime();
+      await cubit.notificationsSettled;
+      expect(due(LocalReminderKind.restOver), cubit.state.restEnd);
+
+      cubit.skipRest();
+      await cubit.notificationsSettled;
+      expect(pending(LocalReminderKind.restOver), isNull);
+    });
+
+    test('"Play Sound" off schedules it silent', () async {
+      library = InMemoryTrainingLibraryRepository(
+        workoutSettings: const [
+          WorkoutSettings(
+            authorId: uid,
+            addSmartWarmUps: false,
+            restTimerPlaySound: false,
+          ),
+        ],
+      );
+      await cubit.close();
+      cubit = build();
+      await cubit.userChanged(uid);
+      await settle();
+      await logFirst();
+      expect(pending(LocalReminderKind.restOver)!.sound, isFalse);
+    });
+
+    test('"Still training?" follows the last set; finishing withdraws '
+        'everything', () async {
+      await logFirst();
+      final logged = clock.now;
+      expect(
+        due(LocalReminderKind.idleWorkout),
+        logged.add(IdleWorkout.threshold),
+      );
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await cubit.notificationsSettled;
+      expect(notifications.scheduled, isEmpty);
+    });
+
+    test('discarding withdraws everything', () async {
+      await logFirst();
+      await cubit.discard();
+      await cubit.notificationsSettled;
+      expect(notifications.scheduled, isEmpty);
+    });
+
+    test('asks "Still training?" an hour after the last set, once, and '
+        'can finish as of that set', () async {
+      await logFirst();
+      final lastSet = clock.now;
+      cubit.skipRest();
+
+      clock.advance(const Duration(minutes: 30));
+      cubit.checkStillTraining();
+      expect(cubit.state.effect, isNot(isA<StillTrainingEffect>()));
+
+      clock.advance(const Duration(minutes: 31));
+      cubit.checkStillTraining();
+      expect(cubit.state.effect, StillTrainingEffect(lastSet));
+      final asked = cubit.state.effectId;
+      cubit.checkStillTraining();
+      expect(cubit.state.effectId, asked);
+
+      await cubit.finish(firstWeekday: DateTime.monday, at: lastSet);
+      expect(cubit.state.finishedSession!.endedAt, lastSet);
+    });
+
+    test('"Still training?" is not asked again after a relaunch', () async {
+      await logFirst();
+      cubit.skipRest();
+      clock.advance(const Duration(minutes: 61));
+      cubit.checkStillTraining();
+      expect(cubit.state.effect, isA<StillTrainingEffect>());
+      await cubit.close();
+
+      cubit = build();
+      await cubit.userChanged(uid);
+      cubit.checkStillTraining();
+      expect(cubit.state.effect, isNot(isA<StillTrainingEffect>()));
+    });
+
+    group('with the ongoing notification (Android)', () {
+      setUp(() async {
+        await cubit.close();
+        notifications = FakeNotificationsRepository(showsOngoingWorkout: true);
+        cubit = build();
+      });
+
+      test('shows the workout counting up, then the rest counting down, '
+          'and the stand-in two seconds late', () async {
+        await cubit.userChanged(uid);
+        await cubit.start(template: template, eventPrefix: 'x');
+        await cubit.notificationsSettled;
+        final session = cubit.state.session!;
+        expect(
+          notifications.ongoingWorkout,
+          OngoingWorkout(
+            title: session.name,
+            body: notifications.ongoingWorkout!.body,
+            clock: session.dateCreated,
+            sessionId: session.id,
+          ),
+        );
+        expect(notifications.ongoingWorkout!.body, startsWith('Next: '));
+
+        clock.advance(const Duration(minutes: 1));
+        fillNext();
+        cubit.pressPrimary();
+        await cubit.notificationsSettled;
+        final end = cubit.state.restEnd!;
+        expect(notifications.ongoingWorkout!.clock, end);
+        expect(notifications.ongoingWorkout!.countsDown, isTrue);
+        expect(
+          due(LocalReminderKind.restOver),
+          end.add(RestOverAlert.standInDelay),
+        );
+      });
+
+      testWidgets('on time, the app withdraws the stand-in and the ongoing '
+          'notification alerts', (tester) async {
+        await logFirst();
+        final end = cubit.state.restEnd!;
+        final loggedAt = clock.now;
+        clock.now = end;
+        await tester.pump(end.difference(loggedAt));
+        await cubit.notificationsSettled;
+        expect(cubit.state.effect, isA<RestOverEffect>());
+        expect(pending(LocalReminderKind.restOver), isNull);
+        expect(notifications.ongoingWorkout!.alert, isTrue);
+        expect(notifications.ongoingWorkout!.countsDown, isFalse);
+        await tester.pump(const Duration(seconds: 1));
+      });
+
+      testWidgets('late, the notification has already said it', (tester) async {
+        await logFirst();
+        final end = cubit.state.restEnd!;
+        final loggedAt = clock.now;
+        clock.now = end.add(const Duration(seconds: 5));
+        await tester.pump(end.difference(loggedAt));
+        await cubit.notificationsSettled;
+        expect(pending(LocalReminderKind.restOver), isNotNull);
+        expect(notifications.ongoingWorkout!.alert, isFalse);
+        await tester.pump(const Duration(seconds: 1));
+      });
+
+      test('is withdrawn when the workout ends, and with "Show on Lock '
+          'Screen" off', () async {
+        await logFirst();
+        await cubit.discard();
+        await cubit.notificationsSettled;
+        expect(notifications.ongoingWorkout, isNull);
+
+        library = InMemoryTrainingLibraryRepository(
+          workoutSettings: const [
+            WorkoutSettings(authorId: uid, showOnLockScreen: false),
+          ],
+        );
+        cubit = build();
+        await cubit.userChanged(uid);
+        await settle();
+        await cubit.start(template: template, eventPrefix: 'x');
+        await cubit.notificationsSettled;
+        expect(notifications.ongoingWorkout, isNull);
+      });
+    });
+  });
+
+  group('$ActiveWorkoutCubit with the Live Activity (iOS)', () {
+    setUp(() async {
+      await cubit.close();
+      liveActivity = FakeLiveActivityRepository(showsOngoingWorkout: true);
+      cubit = build();
+    });
+
+    DateTime? due(LocalReminderKind kind) =>
+        switch (notifications.scheduled[kind]?.schedule) {
+          ReminderAt(:final at) => at,
+          _ => null,
+        };
+
+    Future<void> logFirst() async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      cubit.pressPrimary();
+      await cubit.notificationsSettled;
+    }
+
+    test('shows the target, then the rest with the set just logged, '
+        'and the stand-in two seconds late', () async {
+      await cubit.userChanged(uid);
+      await cubit.start(template: template, eventPrefix: 'x');
+      await cubit.notificationsSettled;
+      final session = cubit.state.session!;
+      final shown = liveActivity.shown!;
+      expect(shown.sessionId, session.id);
+      expect(shown.title, session.name);
+      expect(shown.activity!.targetSetId, isNotNull);
+      expect(shown.activity!.restEndsAt, isNull);
+      expect(notifications.ongoingWorkout, isNull);
+
+      clock.advance(const Duration(minutes: 1));
+      fillNext();
+      final logged = (cubit.state.primaryAction! as r.LogSetAction).setId;
+      cubit.pressPrimary();
+      await cubit.notificationsSettled;
+      final activity = liveActivity.shown!.activity!;
+      expect(activity.restEndsAt, cubit.state.restEnd);
+      expect(activity.lastLoggedSetId, logged);
+      expect(activity.lastLoggedReps, 8);
+      expect(
+        due(LocalReminderKind.restOver),
+        cubit.state.restEnd!.add(RestOverAlert.standInDelay),
+      );
+    });
+
+    test('finishing leaves the summary showing', () async {
+      await logFirst();
+      clock.advance(const Duration(minutes: 30));
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await cubit.notificationsSettled;
+      expect(liveActivity.shown, isNull);
+      expect(
+        liveActivity.endedWith,
+        const OngoingWorkoutSummary(
+          duration: Duration(minutes: 31),
+          completedSetsCount: 1,
+          volumeKg: 480,
+        ),
+      );
+
+      await logFirst();
+      await cubit.discard();
+      await cubit.notificationsSettled;
+      expect(liveActivity.endedWith, isNull);
+    });
+
+    group('buttons', () {
+      Future<void> tap(LiveActivityAction action) =>
+          cubit.handleLiveActivityAction(action, firstWeekday: 1);
+
+      test('Complete logs the target and starts its rest', () async {
+        await cubit.userChanged(uid);
+        await cubit.start(template: template, eventPrefix: 'x');
+        clock.advance(const Duration(minutes: 1));
+        fillNext();
+        await cubit.notificationsSettled;
+        final target = liveActivity.shown!.activity!.targetSetId!;
+        await tap(CompleteSetAction(target));
+        expect(cubit.state.set(target)!.completedAt, isNotNull);
+        expect(cubit.state.restEnd, isNotNull);
+        // A set already logged is left as it is.
+        final logged = cubit.state.set(target);
+        await tap(CompleteSetAction(target));
+        expect(cubit.state.set(target), logged);
+      });
+
+      test('the reps and +15s work only during the rest', () async {
+        await logFirst();
+        final set = liveActivity.shown!.activity!.lastLoggedSetId!;
+        final end = cubit.state.restEnd!;
+        await tap(AdjustLastSetRepsAction(set, -1));
+        expect(cubit.state.set(set)!.reps, 7);
+        await tap(const AdjustRestAction(15));
+        expect(cubit.state.restEnd, end.add(const Duration(seconds: 15)));
+        await tap(const SkipRestAction());
+        expect(cubit.state.restEnd, isNull);
+        await tap(AdjustLastSetRepsAction(set, -1));
+        await tap(const AdjustRestAction(15));
+        expect(cubit.state.set(set)!.reps, 7);
+        expect(cubit.state.restEnd, isNull);
+      });
+
+      test('Finish finishes the workout', () async {
+        await logFirst();
+        await tap(const CompleteWorkoutAction());
+        expect(cubit.state.finishedSession, isNotNull);
+        expect(liveActivity.endedWith, isNotNull);
+      });
+
+      test('a tap that launched the app waits for the workout', () async {
+        await logFirst();
+        await cubit.close();
+        cubit = build();
+        final tapped = tap(const SkipRestAction());
+        await cubit.userChanged(uid);
+        await tapped;
+        expect(cubit.state.restEnd, isNull);
+      });
+    });
+  });
+
+  group('$ActiveWorkoutCubit Health and Strava', () {
+    late FakeHealthPlatform health;
+    late FakeStravaApi stravaApi;
+    late StravaRepository strava;
+
+    setUp(() async {
+      health = FakeHealthPlatform();
+      final firestore = FakeFirebaseFirestore();
+      stravaApi = FakeStravaApi(
+        firestore: firestore,
+        uid: uid,
+        athlete: FakeStravaApi.stagingAthlete,
+      );
+      strava = StravaRepository(
+        firestore: firestore,
+        api: stravaApi,
+        sessions: sessions,
+        store: InMemoryStravaAccountStore(),
+        clientId: 'client',
+        uploadContext: (_) async => (
+          library: PrebuiltCatalogue.instance.exercises,
+          weightUnit: WeightUnitPreference.kilograms,
+          distanceUnit: DistanceUnitPreference.kilometers,
+        ),
+        pollInterval: Duration.zero,
+      );
+      await strava.signIn(uid);
+      await cubit.close();
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        copy: AppNotificationCopy(
+          () => lookupAppLocalizations(const Locale('en')),
+        ),
+        clock: clock.call,
+        newId: () => 'ID-${++ids}',
+        wait: (_) async {},
+        health: HealthRepository(
+          platform: health,
+          body: InMemoryBodyRepository(),
+          nutrition: InMemoryNutritionRepository(),
+        ),
+        strava: strava,
+      );
+    });
+
+    test('starting asks for workout access; a saved finish goes to Health, '
+        'then Strava', () async {
+      await cubit.userChanged(uid);
+      await settle();
+      await cubit.start(template: template, eventPrefix: 'x');
+      await settle();
+      expect(health.requested, [HealthScope.workouts]);
+      logNext();
+      clock.advance(const Duration(minutes: 5));
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      final finished = cubit.state.finishedSession!;
+      expect(health.writtenWorkouts.single.start, finished.dateCreated);
+      expect(health.writtenWorkouts.single.end, finished.endedAt);
+      expect(stravaApi.uploads.single.externalId, 'compound-${finished.id}');
+      final stored = await sessions.session(uid, finished.id);
+      expect(stored!.stravaActivityId, isNotNull);
+    });
+
+    test('a workout the server refused, finished again, is not sent to '
+        'Health or Strava again', () async {
+      await cubit.userChanged(uid);
+      await settle();
+      await cubit.start(template: template, eventPrefix: 'x');
+      logNext();
+      cubit.flush();
+      await settle();
+      final kept = (await store.load())!;
+      await store.save(
+        ActiveSessionState(session: kept.session, saved: SavedFinish.refused),
+      );
+      await cubit.close();
+      cubit = ActiveWorkoutCubit(
+        sessions: sessions,
+        users: users,
+        library: library,
+        analytics: analytics,
+        store: store,
+        notifications: notifications,
+        clock: clock.call,
+        wait: (_) async {},
+        health: HealthRepository(
+          platform: health,
+          body: InMemoryBodyRepository(),
+          nutrition: InMemoryNutritionRepository(),
+        ),
+        strava: strava,
+      );
+      await cubit.userChanged(uid);
+      expect(cubit.state.isActive, isTrue);
+
+      await cubit.finish(firstWeekday: DateTime.monday);
+      await settle();
+
+      expect(await sessions.session(uid, kept.session.id), isNotNull);
+      expect(health.writtenWorkouts, isEmpty);
+      expect(stravaApi.uploads, isEmpty);
+      expect(await store.load(), isNull);
+    });
+
+    test(
+      'a refusal is noted, and the workout is not saved to Health',
+      () async {
+        health.granted = false;
+        await cubit.userChanged(uid);
+        await settle();
+        await cubit.start(template: template, eventPrefix: 'x');
+        await settle();
+        expect(
+          events(),
+          contains('WorkoutTrackerView_HealthKitAuthorisation_Fail'),
+        );
+        logNext();
+
+        await cubit.finish(firstWeekday: DateTime.monday);
+        await settle();
+
+        expect(health.writtenWorkouts, isEmpty);
+        expect(stravaApi.uploads, hasLength(1));
+      },
+    );
+  });
+}
+
+class _FailingSessions extends InMemoryWorkoutSessionRepository {
+  new() : super(sessions: const []);
+
+  @override
+  Future<void> saveSession(String uid, WorkoutSessionModel session) =>
+      Future.error(Exception('denied'));
+}
+
+/// Saves on the device; the server answers when the test says.
+class _RefusingSessions extends InMemoryWorkoutSessionRepository {
+  new() : super(sessions: const []);
+
+  final server = Completer<void>();
+
+  @override
+  Future<({Future<void> confirmed})> saveSessionConfirmed(
+    String uid,
+    WorkoutSessionModel session,
+  ) async {
+    await saveSession(uid, session);
+    return (confirmed: server.future);
+  }
+}

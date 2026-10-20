@@ -44,29 +44,8 @@ firestore-debug.log
 ui-debug.log
 functions/*.log
 
-# Sensitive configuration files
-Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Dev.plist
-Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Prod.plist
-!Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist
-
-Compound/Info.plist
-!Compound/Info.plist.example
-
-# API Keys - exclude actual Keys.swift but allow example
-Compound/Utilities/Keys.swift
-!Compound/Utilities/Keys.swift.example
-
 # Agent worktrees created by Claude Code — scratch checkouts, never part of a commit
 .claude/worktrees/
-
-# CI build artefacts. CI resolves packages outside the repo, but keep these
-# ignored so a local `-clonedSourcePackagesDirPath SourcePackages` or a local
-# `-resultBundlePath` never gets committed.
-SourcePackages/
-TestResults.xcresult/
-
-# Output of scripts/screenshots-diff.py
-Screenshots/diff/
 
 # Firebase CLI deploy cache
 .firebase/

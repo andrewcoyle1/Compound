@@ -1,0 +1,130 @@
+//
+//  WidgetSnapshot.swift
+//  Runner and WorkoutSessionActivity
+//
+//  Copied from the Swift app's `Shared/WidgetSnapshot.swift`. What the home-screen widgets show,
+//  written by the app into the App Group's UserDefaults when it goes to the background (the Dart
+//  side builds it: `WidgetSnapshot` in notifications_repository), and read by the widget
+//  extension's timeline provider. Compiled into both targets, so it only uses Foundation and
+//  WidgetKit.
+//
+
+import Foundation
+import WidgetKit
+
+struct WidgetSnapshot: Codable, Equatable {
+
+    struct TodaysWorkout: Codable, Equatable {
+        var name: String
+        var exerciseCount: Int
+        var isRestDay: Bool
+        var isCompleted: Bool
+    }
+
+    /// Today's day plan, for `day` only.
+    var todaysWorkout: TodaysWorkout?
+    /// What the queue holds for any later day: the schedule only moves when a workout is logged,
+    /// so this stays right until the app writes again. Nil in snapshots from before it existed.
+    var upcomingWorkout: TodaysWorkout?
+    /// Start of the day `todaysWorkout` belongs to.
+    var day: Date
+    /// The weekly streak, in weeks. Named from when it counted days; kept so snapshots already in
+    /// the App Group still decode.
+    var currentStreak: Int
+    /// Finished sessions in the calendar week containing `day`.
+    var sessionsThisWeek: Int
+    var weeklyGoal: Int
+    var updatedAt: Date
+
+    /// Today's workout as of `date`: the day it was written for shows `todaysWorkout`, any later
+    /// day the upcoming one, rather than yesterday's plan or nothing until a workout is logged.
+    func todaysWorkout(on date: Date, calendar: Calendar = .current) -> TodaysWorkout? {
+        if calendar.isDate(date, inSameDayAs: day) { return todaysWorkout }
+        return date > day ? upcomingWorkout : nil
+    }
+
+    /// Sessions this week as of `date`: zero once a new week has started.
+    func sessionsThisWeek(on date: Date, calendar: Calendar = .current) -> Int {
+        calendar.isDate(date, equalTo: day, toGranularity: .weekOfYear) ? sessionsThisWeek : 0
+    }
+
+    /// How full the weekly ring is, 0 to 1.
+    func weeklyProgress(on date: Date, calendar: Calendar = .current) -> Double {
+        guard weeklyGoal > 0 else { return 1 }
+        return min(max(Double(sessionsThisWeek(on: date, calendar: calendar)) / Double(weeklyGoal), 0), 1)
+    }
+
+    /// Nothing written yet: signed out, or the app has not finished a session since install.
+    static func empty(now: Date = Date()) -> WidgetSnapshot {
+        WidgetSnapshot(todaysWorkout: nil, upcomingWorkout: nil, day: now, currentStreak: 0, sessionsThisWeek: 0, weeklyGoal: 3, updatedAt: now)
+    }
+
+    /// Gallery and placeholder data.
+    static func placeholder(now: Date = Date()) -> WidgetSnapshot {
+        WidgetSnapshot(
+            todaysWorkout: TodaysWorkout(name: "Push Day", exerciseCount: 6, isRestDay: false, isCompleted: false),
+            upcomingWorkout: nil,
+            day: now,
+            currentStreak: 12,
+            sessionsThisWeek: 2,
+            weeklyGoal: 4,
+            updatedAt: now
+        )
+    }
+}
+
+/// The flavor's App Group (`AppGroupIdentifier` in both Info.plists, from `APP_GROUP_ID`). Development
+/// uses the Swift app's `group.com.compound.app`, as its bundle id is the Swift dev app's: the same key
+/// and format carry the snapshot across the switch, and, as between Swift's own dev and prod builds, two
+/// builds on one device share it. Nil where the build has none (production, until it is configured).
+enum AppGroup {
+    static var defaults: UserDefaults? {
+        guard let id = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String,
+              !id.isEmpty else { return nil }
+        return UserDefaults(suiteName: id)
+    }
+}
+
+/// The App Group slot the snapshot lives in. The app writes it from Dart through the home_widget
+/// plugin (`PluginHomeWidgetRepository`), as the bytes `JSONEncoder` would, and reloads the widgets
+/// only when something they show changed.
+enum WidgetSnapshotStore {
+
+    static let key = "widget.snapshot.v1"
+
+    /// `compound://workout`, which the tab bar turns into the tracker (or the Dashboard's today
+    /// card when nothing is under way).
+    static let workoutURL = URL(string: "compound://workout")!
+
+    /// `compound://tab/training`, where the streak and the weekly goal are counted from.
+    static let trainingURL = URL(string: "compound://tab/training")!
+
+    static func read(from defaults: UserDefaults? = AppGroup.defaults) -> WidgetSnapshot? {
+        guard let data = defaults?.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(WidgetSnapshot.self, from: data)
+    }
+}
+
+struct WidgetSnapshotEntry: TimelineEntry {
+    let date: Date
+    let snapshot: WidgetSnapshot
+}
+
+enum WidgetSnapshotTimeline {
+
+    /// One entry now and one at the next midnight, where the views move on to the upcoming workout
+    /// and, on a new week, drop the session count. Reloaded with `.atEnd`, so the provider runs again after
+    /// midnight and every write from the app reloads it sooner.
+    static func entries(
+        snapshot: WidgetSnapshot?,
+        now: Date,
+        calendar: Calendar = .current
+    ) -> [WidgetSnapshotEntry] {
+        let snapshot = snapshot ?? .empty(now: now)
+        var entries = [WidgetSnapshotEntry(date: now, snapshot: snapshot)]
+        if let midnight = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) {
+            entries.append(WidgetSnapshotEntry(date: midnight, snapshot: snapshot))
+        }
+        return entries
+    }
+}

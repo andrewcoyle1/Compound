@@ -1,0 +1,325 @@
+name: Flutter
+
+# The Flutter app in app/ (see docs/specs/flutter/plan.md). Runs only when the app, the shared
+# fixtures in contracts/ (the Firestore contract, the parity fixtures and the bundled catalogue),
+# the checking scripts or this file change; ci.yml tests the Cloud Functions.
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "contracts/**"
+      - "scripts/flutter-ui-check.py"
+      - "scripts/arb-spanish.py"
+      - "scripts/data/**"
+      - ".github/workflows/flutter.yml"
+
+concurrency:
+  group: flutter-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: Flutter app
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app
+      flutter_version: "3.47.7"
+      # Packages under app/packages are held at 100%; the app itself is reported, not gated
+      # (docs/specs/flutter/plan.md, Coverage).
+      min_coverage: 0
+      # Firebase config is gitignored (public repo); the example has placeholder values, which is
+      # all analysis and tests need. Runs after pub get, before format/analyze/test.
+      setup: cp lib/firebase_options_development.dart.example lib/firebase_options_development.dart && cp lib/firebase_options_production.dart.example lib/firebase_options_production.dart
+
+  compound_models:
+    name: compound_models
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/compound_models
+      dart_sdk: "3.13.5"
+      # The contract test reads ../../../contracts/firestore, so the whole repository is checked
+      # out (the workflow's default). Packages are held at 100%.
+      min_coverage: 100
+
+  app_ui:
+    name: app_ui
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/app_ui
+      flutter_version: "3.47.7"
+      min_coverage: 100
+
+  compound_charts:
+    name: compound_charts
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/compound_charts
+      flutter_version: "3.47.7"
+      # Goldens run as tests, as in app_ui. Packages are held at 100%.
+      min_coverage: 100
+
+  compound_maths:
+    name: compound_maths
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/compound_maths
+      dart_sdk: "3.13.5"
+      min_coverage: 100
+      run_bloc_lint: false
+  auth_repository:
+    name: auth_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/auth_repository
+      flutter_version: "3.47.7"
+      # min_coverage defaults to 100, the gate for every package under app/packages.
+
+  workout_session_repository:
+    name: workout_session_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/workout_session_repository
+      flutter_version: "3.47.7"
+      # Its Firestore test reads ../../../contracts/firestore. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+  user_repository:
+    name: user_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/user_repository
+
+  nutrition_repository:
+    name: nutrition_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/nutrition_repository
+      flutter_version: "3.47.7"
+      # Its Firestore test reads ../../../contracts/firestore. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+  body_repository:
+    name: body_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/body_repository
+      flutter_version: "3.47.7"
+      # Its Firestore test reads ../../../contracts/firestore. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+  checkin_repository:
+    name: checkin_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/checkin_repository
+      flutter_version: "3.47.7"
+      # Its Firestore test reads ../../../contracts/firestore. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+  social_repository:
+    name: social_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/social_repository
+      flutter_version: "3.47.7"
+      # Its Firestore test reads ../../../contracts/firestore. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+  connectivity_repository:
+    name: connectivity_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/connectivity_repository
+      flutter_version: "3.47.7"
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+  strings:
+    name: Spanish strings
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      # Every English message needs its Spanish (the Swift app's 100% rule, carried over; its
+      # catalog is scripts/data/Localizable.xcstrings).
+      - run: python3 scripts/arb-spanish.py --self-test
+      - run: python3 scripts/arb-spanish.py --check
+
+  ui_contract:
+    name: UI contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      # No new styling literals or raw Material widgets in app/lib (docs/specs/flutter/ui-contract.md).
+      - run: python3 scripts/flutter-ui-check.py --self-test
+      - run: python3 scripts/flutter-ui-check.py
+
+  training_rules:
+    name: training_rules
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/training_rules
+      dart_sdk: "3.13.5"
+      min_coverage: 100
+      run_bloc_lint: false
+
+  analytics_repository:
+    name: analytics_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/analytics_repository
+      flutter_version: "3.47.7"
+      # Packages are held at 100%.
+      min_coverage: 100
+
+  training_library_repository:
+    name: training_library_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/training_library_repository
+      flutter_version: "3.47.7"
+      # Its tests read ../../../contracts/firestore and contracts/catalogue/Prebuilt*.json, which
+      # the package embeds byte for byte. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+
+  program_repository:
+    name: program_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/program_repository
+      flutter_version: "3.47.7"
+      # Its tests read ../../../contracts/firestore. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+
+
+  food_repository:
+    name: food_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/food_repository
+      flutter_version: "3.47.7"
+      # Its Firestore test reads ../../../contracts/firestore. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+
+  training_session:
+    name: training_session
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/training_session
+      flutter_version: "3.47.7"
+      # Its tests read ../../../contracts/firestore and the Swift-recorded
+      # contracts/fixtures/tracker-parity.json. Packages are held at 100%.
+      min_coverage: 100
+      # A controller, not a bloc.
+      run_bloc_lint: false
+
+  image_repository:
+    name: image_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/image_repository
+      flutter_version: "3.47.7"
+      # Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+
+  purchases_repository:
+    name: purchases_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/purchases_repository
+      flutter_version: "3.47.7"
+      # Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+
+  device_store:
+    name: device_store
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/device_store
+      flutter_version: "3.47.7"
+      # Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a store.
+      run_bloc_lint: false
+
+  ab_test_repository:
+    name: ab_test_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/ab_test_repository
+      flutter_version: "3.47.7"
+      # Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+
+  notifications_repository:
+    name: notifications_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/notifications_repository
+      flutter_version: "3.47.7"
+      # Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+
+  ai_repository:
+    name: ai_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/ai_repository
+      flutter_version: "3.47.7"
+      # Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+
+  coach_repository:
+    name: coach_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/coach_repository
+      flutter_version: "3.47.7"
+      # Its tests read ../../../contracts/firestore. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+  health_repository:
+    name: health_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/health_repository
+      flutter_version: "3.47.7"
+      # Runs against the in-memory body and nutrition repositories. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
+
+  strava_repository:
+    name: strava_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/strava_repository
+      flutter_version: "3.47.7"
+      # Its tests read ../../../contracts/firestore and
+      # contracts/catalogue/PrebuiltExercises.json. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false

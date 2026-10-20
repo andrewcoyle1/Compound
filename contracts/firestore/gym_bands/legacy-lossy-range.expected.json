@@ -1,0 +1,16 @@
+{
+  "id": "old_bands",
+  "typeId": "old_bands",
+  "name": "Legacy old_bands",
+  "isActive": false,
+  "range": [
+    {
+      "id": "b1",
+      "name": "Light",
+      "bandColour": "",
+      "availableResistance": 4.0,
+      "unit": "kilograms",
+      "isActive": false
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "exercise_legacy",
+  "name": "Old Row",
+  "author_id": 5,
+  "description": 5,
+  "image_url": true,
+  "trackable_metrics": [
+    "reps",
+    "flux",
+    3
+  ],
+  "type": "plyometric",
+  "laterality": 7,
+  "muscle_groups": {
+    "chest": "primary",
+    "wings": "secondary"
+  },
+  "is_bodyweight": 1,
+  "equipment_variations": [
+    {
+      "id": "variation_contract_full",
+      "resistance_equipment": [
+        {
+          "id": "olympic_barbell",
+          "kind": "loadableBar"
+        },
+        {
+          "id": "bumper_plates",
+          "kind": "freeWeight"
+        }
+      ],
+      "support_equipment": [
+        {
+          "id": "flat_bench",
+          "kind": "supportEquipment"
+        }
+      ]
+    },
+    {
+      "resistance_equipment": []
+    }
+  ],
+  "range_of_motion": 3.5,
+  "stability": "high",
+  "body_weight_contribution": 50.0,
+  "alternate_names": [
+    "Row",
+    1
+  ],
+  "is_system_exercise": "no",
+  "date_created": "2025-01-01",
+  "date_modified": {
+    "$timestamp": "2025-02-03T04:05:06.789Z"
+  },
+  "click_count": "1",
+  "bookmark_count": 2.0,
+  "favourite_count": 1.5
+}

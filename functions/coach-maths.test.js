@@ -1,4 +1,4 @@
-// The JS port against the fixture the Swift wrote; CoachParityTests.swift checks the other side.
+// The JS port against the fixture the Swift app recorded; compound_maths' parity test checks the Dart side.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -7,7 +7,7 @@ import {
     estimated1RM, hardSets, energyDensityKcalPerKg,
 } from "./coach-maths.js";
 
-const fixture = JSON.parse(readFileSync(new URL("../CompoundUnitTests/Fixtures/coach-parity.json", import.meta.url), "utf8"));
+const fixture = JSON.parse(readFileSync(new URL("../contracts/fixtures/coach-parity.json", import.meta.url), "utf8"));
 
 // Equal JSON values, numbers within a millionth: the two languages round the last bit apart.
 function assertMatches(actual, expected, path) {

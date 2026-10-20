@@ -1,0 +1,13 @@
+{
+  "user_id": "user_legacy",
+  "objective": {
+    "loseWeight": {}
+  },
+  "starting_weight_kg": 80.5,
+  "target_weight_kg": 74.5,
+  "weekly_change_kg": 0.5,
+  "created_at": {
+    "$timestamp": "2025-03-01T09:00:00.000Z"
+  },
+  "status": "active"
+}

@@ -108,146 +108,146 @@ before adding logging to them.
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`LogMeasurementPresenter`](../../Compound/Core/Analytics/Subviews/BodyMetrics/LogMeasurement/LogMeasurementPresenter.swift) | missing | missing |
-| [`LogWeightPresenter`](../../Compound/Core/Analytics/Subviews/BodyMetrics/LogMeasurement/LogWeightView/LogWeightPresenter.swift) | missing | missing |
-| [`BodyMeasurementDetailPresenter`](../../Compound/Core/Analytics/Subviews/BodyMetrics/MeasurementDetails/BodyMeasurementDetail.swift) | missing | missing |
-| [`BodyRatioPresenter`](../../Compound/Core/Analytics/Subviews/BodyMetrics/MeasurementDetails/BodyRatioMetric.swift) | missing | missing |
-| [`VisualBodyFatPresenter`](../../Compound/Core/Analytics/Subviews/BodyMetrics/MeasurementDetails/VisualBodyFatMetric.swift) | missing | missing |
-| [`ProgressPhotosPresenter`](../../Compound/Core/Analytics/Subviews/BodyMetrics/ProgressPhotos/ProgressPhotosPresenter.swift) | ok | missing |
-| [`ScaleWeightPresenter`](../../Compound/Core/Analytics/Subviews/BodyMetrics/ScaleWeight/ScaleWeightPresenter.swift) | missing | missing |
-| [`ExerciseDetailPresenter`](../../Compound/Core/Analytics/Subviews/ExerciseAnalytics/ExerciseDetail/ExerciseDetailPresenter.swift) | missing | missing |
-| [`FoodLoggingConsistencyPresenter`](../../Compound/Core/Analytics/Subviews/FoodLoggingConsistency/FoodLoggingConsistencyPresenter.swift) | missing | missing |
-| [`EnergyBalancePresenter`](../../Compound/Core/Analytics/Subviews/InsightsAndAnalytics/EnergyBalance/EnergyBalancePresenter.swift) | missing | missing |
-| [`ExpenditureDetailPresenter`](../../Compound/Core/Analytics/Subviews/InsightsAndAnalytics/ExpenditureDetail/ExpenditureDetailPresenter.swift) | missing | missing |
-| [`GoalProgressPresenter`](../../Compound/Core/Analytics/Subviews/InsightsAndAnalytics/GoalProgress/GoalProgressPresenter.swift) | missing | missing |
-| [`MuscleGroupDetailPresenter`](../../Compound/Core/Analytics/Subviews/InsightsAndAnalytics/MuscleGroupDetail/MuscleGroupDetailPresenter.swift) | missing | missing |
-| [`StepsPresenter`](../../Compound/Core/Analytics/Subviews/InsightsAndAnalytics/Steps/StepsPresenter.swift) | missing | missing |
-| [`WeightTrendPresenter`](../../Compound/Core/Analytics/Subviews/InsightsAndAnalytics/WeightTrend/WeightTrendPresenter.swift) | missing | missing |
-| [`WorkoutPresenter`](../../Compound/Core/Analytics/Subviews/InsightsAndAnalytics/Workouts/WorkoutPresenter.swift) | missing | missing |
-| [`MuscleBalancePresenter`](../../Compound/Core/Analytics/Subviews/MuscleBalance/MuscleBalancePresenter.swift) | ok | missing |
-| [`NutritionMetricDetailPresenter`](../../Compound/Core/Analytics/Subviews/NutritionAnalytics/NutritionMetricDetail/NutritionMetricDetailPresenter.swift) | missing | missing |
-| [`WeighInConsistencyPresenter`](../../Compound/Core/Analytics/Subviews/WeighInConsistency/WeighInConsistencyPresenter.swift) | missing | missing |
-| [`WorkoutConsistencyPresenter`](../../Compound/Core/Analytics/Subviews/WorkoutConsistency/WorkoutConsistencyPresenter.swift) | missing | missing |
+| [`LogMeasurementPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/BodyMetrics/LogMeasurement/LogMeasurementPresenter.swift) | missing | missing |
+| [`LogWeightPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/BodyMetrics/LogMeasurement/LogWeightView/LogWeightPresenter.swift) | missing | missing |
+| [`BodyMeasurementDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/BodyMetrics/MeasurementDetails/BodyMeasurementDetail.swift) | missing | missing |
+| [`BodyRatioPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/BodyMetrics/MeasurementDetails/BodyRatioMetric.swift) | missing | missing |
+| [`VisualBodyFatPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/BodyMetrics/MeasurementDetails/VisualBodyFatMetric.swift) | missing | missing |
+| [`ProgressPhotosPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/BodyMetrics/ProgressPhotos/ProgressPhotosPresenter.swift) | ok | missing |
+| [`ScaleWeightPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/BodyMetrics/ScaleWeight/ScaleWeightPresenter.swift) | missing | missing |
+| [`ExerciseDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/ExerciseAnalytics/ExerciseDetail/ExerciseDetailPresenter.swift) | missing | missing |
+| [`FoodLoggingConsistencyPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/FoodLoggingConsistency/FoodLoggingConsistencyPresenter.swift) | missing | missing |
+| [`EnergyBalancePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/InsightsAndAnalytics/EnergyBalance/EnergyBalancePresenter.swift) | missing | missing |
+| [`ExpenditureDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/InsightsAndAnalytics/ExpenditureDetail/ExpenditureDetailPresenter.swift) | missing | missing |
+| [`GoalProgressPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/InsightsAndAnalytics/GoalProgress/GoalProgressPresenter.swift) | missing | missing |
+| [`MuscleGroupDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/InsightsAndAnalytics/MuscleGroupDetail/MuscleGroupDetailPresenter.swift) | missing | missing |
+| [`StepsPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/InsightsAndAnalytics/Steps/StepsPresenter.swift) | missing | missing |
+| [`WeightTrendPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/InsightsAndAnalytics/WeightTrend/WeightTrendPresenter.swift) | missing | missing |
+| [`WorkoutPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/InsightsAndAnalytics/Workouts/WorkoutPresenter.swift) | missing | missing |
+| [`MuscleBalancePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/MuscleBalance/MuscleBalancePresenter.swift) | ok | missing |
+| [`NutritionMetricDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/NutritionAnalytics/NutritionMetricDetail/NutritionMetricDetailPresenter.swift) | missing | missing |
+| [`WeighInConsistencyPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/WeighInConsistency/WeighInConsistencyPresenter.swift) | missing | missing |
+| [`WorkoutConsistencyPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Analytics/Subviews/WorkoutConsistency/WorkoutConsistencyPresenter.swift) | missing | missing |
 
 **Challenges**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`ChallengeDetailPresenter`](../../Compound/Core/Challenges/ChallengeDetail/ChallengeDetailPresenter.swift) | ok | missing |
-| [`CreateChallengePresenter`](../../Compound/Core/Challenges/CreateChallenge/CreateChallengePresenter.swift) | ok | missing |
+| [`ChallengeDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Challenges/ChallengeDetail/ChallengeDetailPresenter.swift) | ok | missing |
+| [`CreateChallengePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Challenges/CreateChallenge/CreateChallengePresenter.swift) | ok | missing |
 
 **Components**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`CalendarPresenter`](../../Compound/Components/Views/CalendarHeader/Calendar/CalendarPresenter.swift) | missing | missing |
+| [`CalendarPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Components/Views/CalendarHeader/Calendar/CalendarPresenter.swift) | missing | missing |
 
 **Notifications**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`NotificationSettingsPresenter`](../../Compound/Core/Notifications/NotificationSettings/NotificationSettingsPresenter.swift) | ok | missing |
+| [`NotificationSettingsPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Notifications/NotificationSettings/NotificationSettingsPresenter.swift) | ok | missing |
 
 **Nutrition**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`FoodsPresenter`](../../Compound/Core/Nutrition/Foods/FoodsPresenter.swift) | missing | missing |
-| [`IngredientAmountPresenter`](../../Compound/Core/Nutrition/MealLog/IngredientAmount/IngredientAmountPresenter.swift) | no event | missing |
-| [`MealDetailPresenter`](../../Compound/Core/Nutrition/MealLog/MealDetail/MealDetailPresenter.swift) | ok | missing |
-| [`NutritionLibraryPickerPresenter`](../../Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/NutritionLibraryPickerPresenter.swift) | missing | missing |
-| [`RecipeAmountPresenter`](../../Compound/Core/Nutrition/MealLog/RecipeAmount/RecipeAmountPresenter.swift) | missing | missing |
-| [`CreateRecipePresenter`](../../Compound/Core/Nutrition/Recipes/CreateRecipe/CreateRecipePresenter.swift) | missing | missing |
-| [`RecipeIngredientAmountPresenter`](../../Compound/Core/Nutrition/Recipes/CreateRecipe/RecipeIngredientAmount/RecipeIngredientAmountPresenter.swift) | missing | missing |
-| [`RecipeDetailPresenter`](../../Compound/Core/Nutrition/Recipes/RecipeDetail/RecipeDetailPresenter.swift) | no event | missing |
-| [`RecipeStartPresenter`](../../Compound/Core/Nutrition/Recipes/RecipeStart/RecipeStartPresenter.swift) | missing | missing |
+| [`FoodsPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Nutrition/Foods/FoodsPresenter.swift) | missing | missing |
+| [`IngredientAmountPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Nutrition/MealLog/IngredientAmount/IngredientAmountPresenter.swift) | no event | missing |
+| [`MealDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Nutrition/MealLog/MealDetail/MealDetailPresenter.swift) | ok | missing |
+| [`NutritionLibraryPickerPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/NutritionLibraryPickerPresenter.swift) | missing | missing |
+| [`RecipeAmountPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Nutrition/MealLog/RecipeAmount/RecipeAmountPresenter.swift) | missing | missing |
+| [`CreateRecipePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Nutrition/Recipes/CreateRecipe/CreateRecipePresenter.swift) | missing | missing |
+| [`RecipeIngredientAmountPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Nutrition/Recipes/CreateRecipe/RecipeIngredientAmount/RecipeIngredientAmountPresenter.swift) | missing | missing |
+| [`RecipeDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Nutrition/Recipes/RecipeDetail/RecipeDetailPresenter.swift) | no event | missing |
+| [`RecipeStartPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Nutrition/Recipes/RecipeStart/RecipeStartPresenter.swift) | missing | missing |
 
 **Onboarding**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`AuthPresenter`](../../Compound/Core/Onboarding/2%20-%20AuthView/AuthPresenter.swift) | missing | missing |
-| [`SubscriptionPresenter`](../../Compound/Core/Onboarding/3%20-%20Subscription/SubscriptionPresenter.swift) | missing | missing |
-| [`NamePhotoPresenter`](../../Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/1%20-%20NamePhoto/NamePhotoPresenter.swift) | missing | missing |
-| [`DateOfBirthPresenter`](../../Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/3%20-%20DateOfBirth/DateOfBirthPresenter.swift) | missing | missing |
-| [`HeightPresenter`](../../Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/4%20-%20Height/HeightPresenter.swift) | missing | missing |
-| [`WeightPresenter`](../../Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/5%20-%20Weight/WeightPresenter.swift) | missing | missing |
-| [`ExerciseFrequencyPresenter`](../../Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/6%20-%20ExerciseFrequency/ExerciseFrequencyPresenter.swift) | missing | missing |
-| [`ActivityPresenter`](../../Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/7%20-%20Activity/ActivityPresenter.swift) | missing | missing |
-| [`ExpenditurePresenter`](../../Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/9%20-%20Expenditure/ExpenditurePresenter.swift) | missing | missing |
-| [`HealthDisclaimerPresenter`](../../Compound/Core/Onboarding/5%20-%20HealthDisclaimer/HealthDisclaimerPresenter.swift) | missing | missing |
-| [`OverarchingObjectivePresenter`](../../Compound/Core/Onboarding/6%20-%20GoalSetting/1%20-%20OverarchingObjective/OverarchingObjectivePresenter.swift) | missing | missing |
-| [`TargetWeightPresenter`](../../Compound/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight/TargetWeightPresenter.swift) | missing | missing |
-| [`WeightRatePresenter`](../../Compound/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate/WeightRatePresenter.swift) | missing | missing |
-| [`GoalSummaryPresenter`](../../Compound/Core/Onboarding/6%20-%20GoalSetting/4%20-%20GoalSummary/GoalSummaryPresenter.swift) | missing | missing |
-| [`PreferredDietPresenter`](../../Compound/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet/PreferredDietPresenter.swift) | missing | missing |
-| [`CalorieFloorPresenter`](../../Compound/Core/Onboarding/8%20-%20OnboardingDiet/2%20-%20CalorieFloor/CalorieFloorPresenter.swift) | missing | missing |
-| [`CalorieDistributionPresenter`](../../Compound/Core/Onboarding/8%20-%20OnboardingDiet/4%20-%20CalorieDistribution/CalorieDistributionPresenter.swift) | missing | missing |
-| [`ProteinIntakePresenter`](../../Compound/Core/Onboarding/8%20-%20OnboardingDiet/5%20-%20ProteinIntake/ProteinIntakePresenter.swift) | missing | missing |
-| [`DietPlanPresenter`](../../Compound/Core/Onboarding/8%20-%20OnboardingDiet/6%20-%20DietPlan/DietPlanPresenter.swift) | missing | missing |
-| [`CustomisingDietProgramPresenter`](../../Compound/Core/Onboarding/8%20-%20OnboardingDiet/CustomisingDietProgramPresenter.swift) | missing | missing |
-| [`OnboardingCompletedPresenter`](../../Compound/Core/Onboarding/9%20-%20OnboardingCompleted/OnboardingCompletedPresenter.swift) | missing | missing |
+| [`AuthPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/2%20-%20AuthView/AuthPresenter.swift) | missing | missing |
+| [`SubscriptionPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/3%20-%20Subscription/SubscriptionPresenter.swift) | missing | missing |
+| [`NamePhotoPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/1%20-%20NamePhoto/NamePhotoPresenter.swift) | missing | missing |
+| [`DateOfBirthPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/3%20-%20DateOfBirth/DateOfBirthPresenter.swift) | missing | missing |
+| [`HeightPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/4%20-%20Height/HeightPresenter.swift) | missing | missing |
+| [`WeightPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/5%20-%20Weight/WeightPresenter.swift) | missing | missing |
+| [`ExerciseFrequencyPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/6%20-%20ExerciseFrequency/ExerciseFrequencyPresenter.swift) | missing | missing |
+| [`ActivityPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/7%20-%20Activity/ActivityPresenter.swift) | missing | missing |
+| [`ExpenditurePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/9%20-%20Expenditure/ExpenditurePresenter.swift) | missing | missing |
+| [`HealthDisclaimerPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/5%20-%20HealthDisclaimer/HealthDisclaimerPresenter.swift) | missing | missing |
+| [`OverarchingObjectivePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/6%20-%20GoalSetting/1%20-%20OverarchingObjective/OverarchingObjectivePresenter.swift) | missing | missing |
+| [`TargetWeightPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight/TargetWeightPresenter.swift) | missing | missing |
+| [`WeightRatePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate/WeightRatePresenter.swift) | missing | missing |
+| [`GoalSummaryPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/6%20-%20GoalSetting/4%20-%20GoalSummary/GoalSummaryPresenter.swift) | missing | missing |
+| [`PreferredDietPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet/PreferredDietPresenter.swift) | missing | missing |
+| [`CalorieFloorPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/8%20-%20OnboardingDiet/2%20-%20CalorieFloor/CalorieFloorPresenter.swift) | missing | missing |
+| [`CalorieDistributionPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/8%20-%20OnboardingDiet/4%20-%20CalorieDistribution/CalorieDistributionPresenter.swift) | missing | missing |
+| [`ProteinIntakePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/8%20-%20OnboardingDiet/5%20-%20ProteinIntake/ProteinIntakePresenter.swift) | missing | missing |
+| [`DietPlanPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/8%20-%20OnboardingDiet/6%20-%20DietPlan/DietPlanPresenter.swift) | missing | missing |
+| [`CustomisingDietProgramPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/8%20-%20OnboardingDiet/CustomisingDietProgramPresenter.swift) | missing | missing |
+| [`OnboardingCompletedPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Onboarding/9%20-%20OnboardingCompleted/OnboardingCompletedPresenter.swift) | missing | missing |
 
 **Profile**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`ProfilePresenter`](../../Compound/Core/Profile/ProfilePresenter.swift) | missing | missing |
-| [`DeleteAccountPresenter`](../../Compound/Core/Profile/Subviews/Account/DeleteAccount/DeleteAccountPresenter.swift) | ok | missing |
-| [`EditUsernamePresenter`](../../Compound/Core/Profile/Subviews/Account/EditUsername/EditUsernamePresenter.swift) | ok | missing |
-| [`FavouriteMeasurementsPresenter`](../../Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/FavouriteMeasurements/FavouriteMeasurementsPresenter.swift) | ok | missing |
-| [`LoggerBannerPresenter`](../../Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/LoggerBanner/LoggerBannerPresenter.swift) | ok | missing |
-| [`LoggerFoodTilesPresenter`](../../Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/LoggerFoodTiles/LoggerFoodTilesPresenter.swift) | ok | missing |
-| [`TimelineFoodTilesPresenter`](../../Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/TimelineFoodTiles/TimelineFoodTilesPresenter.swift) | ok | missing |
+| [`ProfilePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Profile/ProfilePresenter.swift) | missing | missing |
+| [`DeleteAccountPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Profile/Subviews/Account/DeleteAccount/DeleteAccountPresenter.swift) | ok | missing |
+| [`EditUsernamePresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Profile/Subviews/Account/EditUsername/EditUsernamePresenter.swift) | ok | missing |
+| [`FavouriteMeasurementsPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/FavouriteMeasurements/FavouriteMeasurementsPresenter.swift) | ok | missing |
+| [`LoggerBannerPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/LoggerBanner/LoggerBannerPresenter.swift) | ok | missing |
+| [`LoggerFoodTilesPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/LoggerFoodTiles/LoggerFoodTilesPresenter.swift) | ok | missing |
+| [`TimelineFoodTilesPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/TimelineFoodTiles/TimelineFoodTilesPresenter.swift) | ok | missing |
 
 **Sharing**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`ShareToFollowerPresenter`](../../Compound/Core/Sharing/ShareToFollower/ShareToFollowerPresenter.swift) | ok | missing |
-| [`SharedItemPresenter`](../../Compound/Core/Sharing/SharedItem/SharedItemPresenter.swift) | ok | missing |
+| [`ShareToFollowerPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Sharing/ShareToFollower/ShareToFollowerPresenter.swift) | ok | missing |
+| [`SharedItemPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Sharing/SharedItem/SharedItemPresenter.swift) | ok | missing |
 
 **Social**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`WeeklyGoalPresenter`](../../Compound/Core/Social/CircleGoals/WeeklyGoal/WeeklyGoalPresenter.swift) | ok | missing |
-| [`FollowersListPresenter`](../../Compound/Core/Social/SocialProfile/FollowersList/FollowersListPresenter.swift) | missing | missing |
-| [`CommentsPresenter`](../../Compound/Core/Social/WorkoutSessionRow/Comments/CommentsPresenter.swift) | no event | missing |
+| [`WeeklyGoalPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Social/CircleGoals/WeeklyGoal/WeeklyGoalPresenter.swift) | ok | missing |
+| [`FollowersListPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Social/SocialProfile/FollowersList/FollowersListPresenter.swift) | missing | missing |
+| [`CommentsPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Social/WorkoutSessionRow/Comments/CommentsPresenter.swift) | no event | missing |
 
 **TabBar**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`TabBarPresenter`](../../Compound/Core/TabBar/TabBarPresenter.swift) | no event | missing |
+| [`TabBarPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/TabBar/TabBarPresenter.swift) | no event | missing |
 
 **Today**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`WeeklyReviewPresenter`](../../Compound/Core/Today/WeeklyReview/WeeklyReviewPresenter.swift) | ok | missing |
+| [`WeeklyReviewPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Today/WeeklyReview/WeeklyReviewPresenter.swift) | ok | missing |
 
 **Training**
 
 | Presenter | Appear | Disappear |
 |---|---|---|
-| [`EditDayOrderPresenter`](../../Compound/Core/Training/Programs/CreateMesocycle/EditDayOrder/EditDayOrderPresenter.swift) | missing | missing |
-| [`EditDeloadPresenter`](../../Compound/Core/Training/Programs/CreateMesocycle/EditDeload/EditDeloadPresenter.swift) | missing | missing |
-| [`EditMesocycleColourIconPresenter`](../../Compound/Core/Training/Programs/CreateMesocycle/EditMesocycleColourIcon/EditMesocycleColourIconPresenter.swift) | missing | missing |
-| [`RenameWorkoutTemplateModelPresenter`](../../Compound/Core/Training/Programs/CreateMesocycle/RenameWorkoutTemplateModel/RenameWorkoutTemplateModelPresenter.swift) | missing | missing |
-| [`ExercisesPickerPresenter`](../../Compound/Core/Training/Workouts/CreateWorkout/ExercisesPicker/ExercisesPickerPresenter.swift) | missing | missing |
-| [`NameWorkoutPresenter`](../../Compound/Core/Training/Workouts/CreateWorkout/NameWorkout/NameWorkoutPresenter.swift) | missing | missing |
-| [`ExerciseModelDetailPresenter`](../../Compound/Core/Training/Exercises/ExerciseModelDetail/ExerciseTemplateDetailPresenter.swift) | no event | missing |
-| [`ExercisesPresenter`](../../Compound/Core/Training/Exercises/Exercises/ExercisesPresenter.swift) | missing | missing |
-| [`MacrocycleDetailPresenter`](../../Compound/Core/Training/Programs/Macrocycles/MacrocycleDetail/MacrocycleDetailPresenter.swift) | ok | missing |
-| [`MacrocyclesPresenter`](../../Compound/Core/Training/Programs/Macrocycles/MacrocyclesPresenter.swift) | ok | missing |
-| [`PrebuiltMesocycleDetailPresenter`](../../Compound/Core/Training/Programs/MesocycleLibrary/PrebuiltMesocycleDetail/PrebuiltMesocycleDetailPresenter.swift) | ok | missing |
-| [`WorkoutSessionDetailPresenter`](../../Compound/Core/Training/Session/WorkoutSessionDetail/WorkoutSessionDetailPresenter.swift) | missing | missing |
-| [`WorkoutTemplateDetailPresenter`](../../Compound/Core/Training/Workouts/WorkoutTemplateDetail/WorkoutTemplateDetailPresenter.swift) | missing | missing |
-| [`WorkoutNotesPresenter`](../../Compound/Core/Training/Session/WorkoutTracker/WorkoutNotes/WorkoutNotesPresenter.swift) | missing | missing |
-| [`WorkoutTrackerPresenter`](../../Compound/Core/Training/Session/WorkoutTracker/WorkoutTrackerPresenter.swift) | missing | missing |
-| [`WorkoutsPresenter`](../../Compound/Core/Training/Workouts/Workouts/WorkoutsPresenter.swift) | missing | missing |
-| [`TrainingPresenter`](../../Compound/Core/Training/TrainingPresenter.swift) | not called | not called |
+| [`EditDayOrderPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Programs/CreateMesocycle/EditDayOrder/EditDayOrderPresenter.swift) | missing | missing |
+| [`EditDeloadPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Programs/CreateMesocycle/EditDeload/EditDeloadPresenter.swift) | missing | missing |
+| [`EditMesocycleColourIconPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Programs/CreateMesocycle/EditMesocycleColourIcon/EditMesocycleColourIconPresenter.swift) | missing | missing |
+| [`RenameWorkoutTemplateModelPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Programs/CreateMesocycle/RenameWorkoutTemplateModel/RenameWorkoutTemplateModelPresenter.swift) | missing | missing |
+| [`ExercisesPickerPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Workouts/CreateWorkout/ExercisesPicker/ExercisesPickerPresenter.swift) | missing | missing |
+| [`NameWorkoutPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Workouts/CreateWorkout/NameWorkout/NameWorkoutPresenter.swift) | missing | missing |
+| [`ExerciseModelDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Exercises/ExerciseModelDetail/ExerciseTemplateDetailPresenter.swift) | no event | missing |
+| [`ExercisesPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Exercises/Exercises/ExercisesPresenter.swift) | missing | missing |
+| [`MacrocycleDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Programs/Macrocycles/MacrocycleDetail/MacrocycleDetailPresenter.swift) | ok | missing |
+| [`MacrocyclesPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Programs/Macrocycles/MacrocyclesPresenter.swift) | ok | missing |
+| [`PrebuiltMesocycleDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Programs/MesocycleLibrary/PrebuiltMesocycleDetail/PrebuiltMesocycleDetailPresenter.swift) | ok | missing |
+| [`WorkoutSessionDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Session/WorkoutSessionDetail/WorkoutSessionDetailPresenter.swift) | missing | missing |
+| [`WorkoutTemplateDetailPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Workouts/WorkoutTemplateDetail/WorkoutTemplateDetailPresenter.swift) | missing | missing |
+| [`WorkoutNotesPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Session/WorkoutTracker/WorkoutNotes/WorkoutNotesPresenter.swift) | missing | missing |
+| [`WorkoutTrackerPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Session/WorkoutTracker/WorkoutTrackerPresenter.swift) | missing | missing |
+| [`WorkoutsPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/Workouts/Workouts/WorkoutsPresenter.swift) | missing | missing |
+| [`TrainingPresenter`](https://github.com/andrewcoyle1/Compound/blob/swift-final/Compound/Core/Training/TrainingPresenter.swift) | not called | not called |
 
 ## Embedded components that log screen events
 

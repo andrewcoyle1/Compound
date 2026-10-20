@@ -56,7 +56,13 @@ export function validateCoachRequest(data) {
         }
         context = { kind, id: id ?? null, date: date ?? null };
     }
-    return { chatId, message, context, ui: data?.ui === COACH_UI_VERSION ? COACH_UI_VERSION : null };
+    return { chatId, message, context, ui: uiVersion(data?.ui) };
+}
+
+// The block catalog the app draws. Firebase's iOS SDK can send the app's `ui: 1` as `true` (Swift
+// bridges an NSNumber of 1 to Bool), so 1, true and "1" all mean catalog 1.
+function uiVersion(value) {
+    return value === COACH_UI_VERSION || value === true || value === String(COACH_UI_VERSION) ? COACH_UI_VERSION : null;
 }
 
 /// Consent is the boolean the app writes; withdrawing sets it false, and the timestamp stays.

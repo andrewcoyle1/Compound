@@ -1127,7 +1127,7 @@ export const onStravaEventCreated = onDocumentCreated(
 import {
     validateCoachRequest, hasCoachConsent, isCoachPremium, consumeCoachQuota, firestoreSource, coachEnvironment,
     historyForModel, appendChatMessages, chatTitle, defineCoachTools, runCoach, coachRuntime,
-    replyWithRetry, isModelBusy,
+    replyWithRetry, isModelBusy, withTimeout,
 } from "./coach.js";
 import { coachBlocks, defineShowBlockTool, blockChunk, storedBlock, fitStoredBlocks } from "./coach-blocks.js";
 
@@ -1170,6 +1170,10 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     const messageId = randomUUID();
     // Generative UI (coach-blocks.js): only for an app that renders the catalog. Each block streams
     // as its own chunk as soon as it is built.
+    // An empty chunk every 10 s while the coach works: the app gives up on a stream that stays
+    // silent for about 30 s and asks again without streaming, which costs a second message and
+    // loses the live blocks. An empty text chunk is a no-op for every client.
+    const heartbeat = request.acceptsStreaming ? setInterval(() => response.sendChunk({ text: "" }), 10_000) : null;
     let streamed = false;
     let blocks = null;
     let attempts = 0;
@@ -1177,7 +1181,7 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     const text = await replyWithRetry({
         models: [COACH_MODEL, COACH_MODEL, COACH_FALLBACK_MODEL],
         hasStreamed: () => streamed,
-        attempt: (model) => {
+        attempt: (model) => withTimeout((abortSignal) => {
             attempts += 1;
             modelName = model === COACH_FALLBACK_MODEL ? "fallback" : "primary";
             // A fresh collector per try: a failed try streamed nothing, so it kept nothing.
@@ -1191,9 +1195,10 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
                 context,
                 blocks,
                 onChunk: request.acceptsStreaming ? (delta) => { streamed = true; response.sendChunk({ text: delta }); } : null,
+                abortSignal,
             });
-        },
-    }).catch((error) => {
+        }, model === COACH_FALLBACK_MODEL ? 40_000 : 30_000),
+    }).finally(() => clearInterval(heartbeat)).catch((error) => {
         if (isModelBusy(error)) throw new HttpsError("unavailable", "The coach is busy; try again in a moment", { reason: "busy" });
         throw error;
     });
@@ -1219,6 +1224,7 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
             messages: fitStoredBlocks(appendChatMessages(current?.messages, [{ id: randomUUID(), role: "user", text: message, created_at: now }, reply])),
         });
     });
-    return { chatId: chatRef.id, messageId: reply.id, text, remainingToday };
+    // The blocks ride in the result too, so an app that asked without streaming can draw them at once.
+    return { chatId: chatRef.id, messageId: reply.id, text, remainingToday, ...(reply.blocks ? { blocks: reply.blocks } : {}) };
 });
 

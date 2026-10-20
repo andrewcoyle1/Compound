@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import {
     validateCoachRequest, hasCoachConsent, planCoachQuota, isCoachPremium, chatTitle, appendChatMessages, historyForModel,
     fixtureSource, firestoreSource, coachEnvironment, COACH_TOOLS, coachSystemPrompt, mesocycleProgress, shapeSession,
-    COACH_DAILY_LIMIT, COACH_BURST_LIMIT, COACH_MAX_STORED_MESSAGES, MUSCLES, isModelBusy, replyWithRetry,
+    COACH_DAILY_LIMIT, COACH_BURST_LIMIT, COACH_MAX_STORED_MESSAGES, MUSCLES, isModelBusy, replyWithRetry, withTimeout,
 } from "./coach.js";
 import { FIXTURE_ACCOUNTS, FIXTURE_NOW } from "./coach-fixtures.js";
 
@@ -353,4 +353,16 @@ test("replyWithRetry: never retries once something streamed, nor non-busy errors
 test("validateCoachRequest: ui 1 arrives as a number, true (iOS) or \"1\"; anything else is off", () => {
     for (const ui of [1, true, "1"]) assert.equal(validateCoachRequest({ message: "Hi", ui }).ui, 1);
     for (const ui of [undefined, null, 0, false, 2, "2", "true", {}]) assert.equal(validateCoachRequest({ message: "Hi", ui }).ui, null);
+});
+
+test("withTimeout: a call that never answers is aborted and reported busy; a quick one passes through", async () => {
+    assert.equal(await withTimeout(async () => "ok", 1000), "ok");
+    let sawAbort = false;
+    await assert.rejects(
+        withTimeout((signal) => new Promise((_, reject) => signal.addEventListener("abort", () => { sawAbort = true; reject(new Error("aborted")); })), 20),
+        (error) => isModelBusy(error) && /no answer within 20 ms/.test(error.message),
+    );
+    assert.equal(sawAbort, true);
+    const other = new Error("bad request");
+    await assert.rejects(withTimeout(async () => { throw other; }, 1000), (error) => error === other);
 });

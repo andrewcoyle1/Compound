@@ -31,15 +31,11 @@ puts `compound_models` (the Firestore shapes) onto them and keeps the workout un
 - Words (titles, toasts, spoken labels, the bar's chip) are the app's: the controller answers with
   the decisions they are worded from (`LogResult`, `SetCorrection`, `UndoName`, `SaveProgress`).
 
-`test/src/parity_test.dart` checks the port against `CompoundUnitTests/Fixtures/tracker-parity.json`,
-which `TrackerParityTests.swift` records from the Swift: every item of the contract's full gym
-resolved to a weight step in both units, and six sessions built from a template over that gym. To
-regenerate it after changing the Swift:
-
-```bash
-TEST_RUNNER_RECORD_PARITY=1 xcodebuild test -project Compound.xcodeproj \
-  -scheme 'Compound - Development' -destination 'platform=iOS Simulator,id=…' \
-  -only-testing:CompoundUnitTests/TrackerParityTests -parallel-testing-enabled NO
-```
+`test/src/parity_test.dart` checks the port against `contracts/fixtures/tracker-parity.json`,
+which the Swift app's `TrackerParityTests.swift` recorded: every item of the contract's full gym
+resolved to a weight step in both units, and six sessions built from a template over that gym.
+The fixture was recorded from the Swift app, which was removed from the repository on 20 Oct
+2026 (it is archived at the `swift-final` tag and the `archive/swift` branch). It is now frozen:
+this port is the source of truth, and the fixture stays as its regression check.
 
 Coverage is held at 100%.

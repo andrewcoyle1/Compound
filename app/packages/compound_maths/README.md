@@ -1,8 +1,8 @@
 # compound_maths
 
-Pure Dart port of the figures the Compound app computes for the user. The Swift app is the source
-of truth; `functions/coach-maths.js` is the server's copy, and all three are checked against
-`CompoundUnitTests/Fixtures/coach-parity.json`.
+Pure Dart port of the figures the Compound app computes for the user, from the Swift app (archived
+at the `swift-final` tag). `functions/coach-maths.js` is the server's copy, and both are checked
+against `contracts/fixtures/coach-parity.json`.
 
 | Dart | Swift |
 |---|---|
@@ -23,9 +23,9 @@ of truth; `functions/coach-maths.js` is the server's copy, and all three are che
 Dates are day keys (`YYYY-MM-DD`, in the user's time zone), as in the JavaScript: the caller turns
 timestamps into day keys once.
 
-The nutrition rules have their own fixture, `CompoundUnitTests/Fixtures/nutrition-parity.json`,
-recorded from the real Swift by `NutritionParityTests.swift` (`TEST_RUNNER_RECORD_PARITY=1` to
-re-record) and checked here by `test/nutrition_parity_test.dart`.
+The nutrition rules have their own fixture, `contracts/fixtures/nutrition-parity.json`,
+recorded from the Swift app's `NutritionParityTests.swift` and now frozen, checked here by
+`test/nutrition_parity_test.dart`.
 
 `test/parity_test.dart` runs every fixture case with the tolerance the Swift and JavaScript tests
 use (within a millionth); `test/maths_test.dart` covers the rules the Swift suites check and the

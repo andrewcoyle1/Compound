@@ -301,10 +301,10 @@ test("the system prompt carries the rules and the context the user came from", (
     assert.doesNotMatch(coachSystemPrompt(env, null), /Context:/);
 });
 
-test("the built-in exercise data is the app's own file, unchanged", () => {
-    const app = readFileSync(new URL("../Compound/SupportingFiles/Resources/PrebuiltExercises.json", import.meta.url));
+test("the built-in exercise data is the shared catalogue, unchanged", () => {
+    const app = readFileSync(new URL("../contracts/catalogue/PrebuiltExercises.json", import.meta.url));
     const copy = readFileSync(new URL("./data/PrebuiltExercises.json", import.meta.url));
-    assert.ok(app.equals(copy), "functions/data/PrebuiltExercises.json differs from the app's; copy it again");
+    assert.ok(app.equals(copy), "functions/data/PrebuiltExercises.json differs from contracts/catalogue/PrebuiltExercises.json; copy it again");
 });
 
 test("isModelBusy: Vertex capacity answers, not other failures", () => {

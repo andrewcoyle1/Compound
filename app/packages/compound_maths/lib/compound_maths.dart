@@ -4,10 +4,10 @@
 /// weekly training streak, and the nutrition targets, target proposals and
 /// check-in schedule built on them.
 ///
-/// The Swift app is the source of truth. `functions/coach-maths.js` is the
-/// server's copy, and `CompoundUnitTests/Fixtures/coach-parity.json` holds
-/// cases all three are checked against; `nutrition-parity.json` beside it holds
-/// the nutrition cases the Swift and this port are checked against.
+/// Ported from the Swift app, now archived. `functions/coach-maths.js` is the
+/// server's copy, and `contracts/fixtures/coach-parity.json` holds cases both
+/// are checked against; `nutrition-parity.json` beside it holds the nutrition
+/// cases the Swift app recorded for this port.
 library;
 
 export 'src/body_ratio.dart';

@@ -44,7 +44,7 @@ class _Programs extends InMemoryProgramRepository {
 }
 
 List<int> _fixture(String name) =>
-    File('../CompoundUnitTests/Fixtures/programs/$name').readAsBytesSync();
+    File('../contracts/fixtures/programs/$name').readAsBytesSync();
 
 ExerciseModel _exercise(String name, {bool system = true}) => ExerciseModel(
   id: 'ex-${name.toLowerCase().replaceAll(' ', '-')}',

@@ -8,8 +8,7 @@ import 'package:test/test.dart';
 
 import 'parity_test.dart' show Json, mismatch;
 
-const _fixturePath =
-    '../../../CompoundUnitTests/Fixtures/nutrition-parity.json';
+const _fixturePath = '../../../contracts/fixtures/nutrition-parity.json';
 
 double? _double(Object? value) => (value as num?)?.toDouble();
 

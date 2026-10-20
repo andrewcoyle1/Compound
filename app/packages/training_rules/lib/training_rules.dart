@@ -1,7 +1,7 @@
 /// A pure Dart port of the Compound workout tracker's and smart
-/// progression's rules. The Swift app is the source of truth;
-/// `CompoundUnitTests/Fixtures/progression-parity.json` holds cases both
-/// sides are checked against.
+/// progression's rules. `contracts/fixtures/progression-parity.json` holds
+/// cases recorded from the (now archived) Swift app that this port is
+/// checked against.
 library;
 
 export 'src/active_workout.dart';

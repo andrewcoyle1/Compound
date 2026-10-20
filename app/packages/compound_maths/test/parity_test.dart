@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:compound_maths/compound_maths.dart';
 import 'package:test/test.dart';
 
-const _fixturePath = '../../../CompoundUnitTests/Fixtures/coach-parity.json';
+const _fixturePath = '../../../contracts/fixtures/coach-parity.json';
 
 typedef Json = Map<String, dynamic>;
 

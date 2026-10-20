@@ -8,8 +8,7 @@ import 'package:training_library_repository/src/prebuilt_workouts_json.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
 String _swift(String name) =>
-    File('../../../Compound/SupportingFiles/Resources/$name')
-        .readAsStringSync();
+    File('../../../contracts/catalogue/$name').readAsStringSync();
 
 void main() {
   group(PrebuiltCatalogue, () {

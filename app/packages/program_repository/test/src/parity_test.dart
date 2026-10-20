@@ -1,4 +1,4 @@
-// The port against CompoundUnitTests/Fixtures/program-parity.json, which
+// The port against contracts/fixtures/program-parity.json, which
 // ProgramParityTests.swift records from the Swift: MesocycleSchedule over
 // the situations MesocycleScheduleTests covers and seeded random histories,
 // and Macrocycle's advanced and started. Times are milliseconds since 1970;
@@ -11,8 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:program_repository/program_repository.dart';
 
 final Map<String, Object?> _fixture = jsonDecode(
-  File('../../../CompoundUnitTests/Fixtures/program-parity.json')
-      .readAsStringSync(),
+  File('../../../contracts/fixtures/program-parity.json').readAsStringSync(),
 ) as Map<String, Object?>;
 
 /// An exercise for a workout day: the contract mesocycle's first.

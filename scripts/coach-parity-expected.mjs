@@ -1,15 +1,16 @@
-// Rewrites the `expected` value of every case in CompoundUnitTests/Fixtures/coach-parity.json
+// Rewrites the `expected` value of every case in contracts/fixtures/coach-parity.json
 // from functions/coach-maths.js. Run it after changing the maths in both languages:
 //
 //   node scripts/coach-parity-expected.mjs
 //
-// The JS is a line-for-line port of the Swift, and CoachParityTests.swift checks the Swift against
-// the same values, so a Swift change the port has not followed still fails there.
+// The JS is a line-for-line port of the Swift app (archived at the `swift-final` tag). The Flutter
+// app's compound_maths checks the Dart against the same values, so a change the Dart has not
+// followed fails there.
 import { readFileSync, writeFileSync } from "node:fs";
 
 const root = new URL("..", import.meta.url).pathname;
 const m = await import(`${root}functions/coach-maths.js`);
-const path = `${root}CompoundUnitTests/Fixtures/coach-parity.json`;
+const path = `${root}contracts/fixtures/coach-parity.json`;
 const fixture = JSON.parse(readFileSync(path, "utf8"));
 
 // The same runners as functions/coach-maths.test.js.

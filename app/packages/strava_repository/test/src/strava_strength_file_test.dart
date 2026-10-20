@@ -173,7 +173,7 @@ void main() {
     test('has a Strava type for every built-in exercise', () {
       final json = jsonDecode(
         File(
-          '../../../Compound/SupportingFiles/Resources/'
+          '../../../contracts/catalogue/'
           'PrebuiltExercises.json',
         ).readAsStringSync(),
       ) as Map<String, Object?>;

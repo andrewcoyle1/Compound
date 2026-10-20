@@ -1,6 +1,6 @@
 name: Release
 
-# A push to main is a merged release PR from development. This uploads the app to TestFlight and
+# A push to main is a merged release PR from development. This uploads the Flutter app to TestFlight and
 # deploys Cloud Functions to the prod Firebase project.
 #
 # CI is not run again here. The "Protect main" ruleset admits only a PR whose CI checks passed on
@@ -11,11 +11,14 @@ name: Release
 # Submitting a TestFlight build for App Review stays manual, in App Store Connect.
 #
 # Environment secrets:
-#   KEYS_SWIFT                 base64 of Compound/Utilities/Keys.swift
-#   GOOGLE_SERVICE_INFO_PROD   base64 of GoogleService-Info-Prod.plist
-#   ASC_API_KEY_P8             contents of the App Store Connect API key (.p8)
-#   ASC_API_KEY_ID             its Key ID
-#   ASC_API_ISSUER_ID          the team's Issuer ID
+#   FLUTTER_DART_DEFINES              base64 of app/dart_defines.json
+#   FLUTTER_FIREBASE_OPTIONS_PROD     base64 of app/lib/firebase_options_production.dart
+#   FLUTTER_GOOGLE_SERVICE_INFO_PROD  base64 of app/ios/flavors/production/GoogleService-Info.plist
+#   ASC_API_KEY_P8                    contents of the App Store Connect API key (.p8)
+#   ASC_API_KEY_ID                    its Key ID
+#   ASC_API_ISSUER_ID                 the team's Issuer ID
+# Update a FLUTTER_* secret whenever its file changes, or the release ships stale keys.
+# KEYS_SWIFT and GOOGLE_SERVICE_INFO_PROD were the Swift app's; nothing reads them now.
 #
 # Cloud Functions needs no secret: the job proves it is this repo's `release` environment to
 # Google through workload identity federation, and gets an hour-long token for the
@@ -39,15 +42,17 @@ jobs:
     # After the backend, so a build that relies on new Cloud Functions never reaches testers ahead
     # of them, or at all if their deploy fails. It asks for its own approval once that job is done.
     needs: functions
-    # Xcode 27.0 (27A266a), the build releases are archived with by hand. Xcode 26.6's Swift
-    # 6.3.3 crashes in the optimizer's ClosureSpecializer on CoreBuilder.weeklyReviewView, which
-    # only an optimised build reaches, so CI's Debug tests never see it. The xcode-27 image is a
-    # GitHub preview; CI stays on macos-26 until it is GA.
+    # The Flutter app (app/), production flavor: prod Firebase (dialed-c3cb5) and the App Store
+    # app's ids. Swift is no longer released from here (tag swift-final keeps it). Xcode 27.0 on
+    # the xcode-27 image, as the Flutter production builds have been archived by hand.
     runs-on: xcode-27
     timeout-minutes: 60
     environment: release
     env:
       XCODE_APP: /Applications/Xcode_27.app
+    defaults:
+      run:
+        working-directory: app
 
     steps:
       - name: Check out repository
@@ -57,38 +62,55 @@ jobs:
           sudo xcode-select -s "$XCODE_APP"
           xcodebuild -version
 
-      # The same four gitignored files CI makes from examples, but real: a TestFlight build
-      # needs the actual keys and the prod Firebase plist. The Dev plist is only read by Debug
-      # builds, so the example stands in for it.
+      # The Flutter version the app is built and tested with (CI's very_good_workflows too).
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+
+      # The gitignored production config, from secrets: the dart-defines (RevenueCat, Mixpanel and
+      # Strava keys), the prod Firebase options and the production flavor's GoogleService plist.
+      # The development options are only imported by the development entry point, so CI's example
+      # stands in for them.
       - name: Write config and the API key from secrets
         env:
-          KEYS_SWIFT: ${{ secrets.KEYS_SWIFT }}
-          GOOGLE_SERVICE_INFO_PROD: ${{ secrets.GOOGLE_SERVICE_INFO_PROD }}
+          FLUTTER_DART_DEFINES: ${{ secrets.FLUTTER_DART_DEFINES }}
+          FLUTTER_FIREBASE_OPTIONS_PROD: ${{ secrets.FLUTTER_FIREBASE_OPTIONS_PROD }}
+          FLUTTER_GOOGLE_SERVICE_INFO_PROD: ${{ secrets.FLUTTER_GOOGLE_SERVICE_INFO_PROD }}
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
         run: |
           set -euo pipefail
-          printf '%s' "$KEYS_SWIFT" | base64 --decode > Compound/Utilities/Keys.swift
-          cp Compound/Info.plist.example Compound/Info.plist
-          plists=Compound/SupportingFiles/GoogleServicePLists
-          printf '%s' "$GOOGLE_SERVICE_INFO_PROD" | base64 --decode > "$plists/GoogleService-Info-Prod.plist"
-          cp "$plists/GoogleService-Info-Example.plist" "$plists/GoogleService-Info-Dev.plist"
+          printf '%s' "$FLUTTER_DART_DEFINES" | base64 --decode > dart_defines.json
+          printf '%s' "$FLUTTER_FIREBASE_OPTIONS_PROD" | base64 --decode > lib/firebase_options_production.dart
+          mkdir -p ios/flavors/production
+          printf '%s' "$FLUTTER_GOOGLE_SERVICE_INFO_PROD" | base64 --decode > ios/flavors/production/GoogleService-Info.plist
+          cp lib/firebase_options_development.dart.example lib/firebase_options_development.dart
           printf '%s\n' "$ASC_API_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
           chmod 600 "$RUNNER_TEMP/AuthKey.p8"
 
+      # `--config-only` writes the Flutter build settings (the dart-defines, the production target
+      # and flavor) into the Xcode project; the archive below then builds Dart and native together.
+      # Plugins come in through Swift Package Manager (Flutter 3.47's default): no CocoaPods.
+      - name: Prepare the Xcode project
+        run: |
+          flutter pub get
+          flutter build ios --release --config-only --flavor production \
+            -t lib/main_production.dart --dart-define-from-file=dart_defines.json
+
       # Signing is automatic and authenticated by the API key, so the runner needs no
       # certificates of its own: Xcode fetches or creates what the archive needs, and the export
-      # signs for distribution with a cloud-managed certificate. Packages resolve into
-      # DerivedData, not CI's ~/SourcePackages, because the Crashlytics phase looks for its
-      # upload script there.
+      # signs for distribution with a cloud-managed certificate.
       - name: Archive
         env:
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
         run: |
           xcodebuild archive \
-            -project Compound.xcodeproj \
-            -scheme Compound \
-            -configuration Release \
+            -workspace ios/Runner.xcworkspace \
+            -scheme production \
+            -configuration Release-production \
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/Compound.xcarchive" \
             -allowProvisioningUpdates \
@@ -97,7 +119,8 @@ jobs:
             -authenticationKeyIssuerID "$ASC_API_ISSUER_ID"
 
       # manageAppVersionAndBuildNumber takes the next free build number from App Store Connect,
-      # as an upload from Xcode does, so the project's own build number never needs bumping.
+      # as an upload from Xcode does, so the project's own build number never needs bumping. Not
+      # internal-only: a release build must be able to reach external testers and App Review.
       - name: Upload to App Store Connect
         env:
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
@@ -127,9 +150,9 @@ jobs:
             -authenticationKeyID "$ASC_API_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_API_ISSUER_ID"
 
-      - name: Remove the API key
+      - name: Remove the API key and config
         if: always()
-        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8" dart_defines.json lib/firebase_options_production.dart ios/flavors/production/GoogleService-Info.plist
 
   functions:
     name: Deploy Cloud Functions to prod

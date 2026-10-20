@@ -246,20 +246,22 @@ needs approving again. The TestFlight job `needs` the Cloud Functions job, so th
 always deployed first and a failed deploy stops the upload; it therefore asks for its own approval
 once the deploy finishes. App Review submission stays manual in App Store Connect.
 
-**TestFlight job** — archives the `Compound` scheme and uploads with an App Store Connect API key
+**TestFlight job** — builds the **Flutter** app (`app/`, production flavor) since 20 Oct 2026; the
+Swift app is no longer released (tag `swift-final` / branch `archive/swift` keep it). Steps: Flutter
+3.47.7 (`subosito/flutter-action`, pinned), the three gitignored config files from secrets
+(`FLUTTER_DART_DEFINES`, `FLUTTER_FIREBASE_OPTIONS_PROD`, `FLUTTER_GOOGLE_SERVICE_INFO_PROD`, base64
+of `app/dart_defines.json`, `app/lib/firebase_options_production.dart` and
+`app/ios/flavors/production/GoogleService-Info.plist`; update a secret whenever its file changes),
+`flutter build ios --config-only --flavor production`, then `xcodebuild archive` of
+`ios/Runner.xcworkspace`, scheme `production`, and an upload with an App Store Connect API key
 (`ASC_API_KEY_P8`, `ASC_API_KEY_ID`, `ASC_API_ISSUER_ID`; Admin role, because cloud-managed
-distribution signing needs it). `KEYS_SWIFT` and `GOOGLE_SERVICE_INFO_PROD` are base64 of the
-local files; update the secret when either file changes, or the release ships stale keys.
-`manageAppVersionAndBuildNumber` takes the next free build number, so the project's own build
-number stays at 1.
+distribution signing needs it). Plugins come in through Swift Package Manager; there is no
+CocoaPods. `manageAppVersionAndBuildNumber` takes the next free build number. The export is not
+internal-only, so a release build can go to external testers and App Review.
 
-- It runs on the **`xcode-27`** runner image (a GitHub preview), not `macos-26` like CI. Xcode
-  26.6's Swift 6.3.3 crashes in the optimizer's ClosureSpecializer on
-  `CoreBuilder.weeklyReviewView`, which only an optimised build reaches, so CI's Debug tests never
-  see it. `xcode-27` carries Xcode 27.0 27A266a, the same build used locally. Unknown to actionlint;
-  pass `-ignore 'label "xcode-27" is unknown'`.
-- `ITSAppUsesNonExemptEncryption = NO` is set on the app target, so builds skip the export
-  compliance question.
+- It runs on the **`xcode-27`** runner image (a GitHub preview), Xcode 27.0, as the hand-archived
+  Flutter production builds were. Unknown to actionlint; pass `-ignore 'label "xcode-27" is unknown'`.
+- `KEYS_SWIFT` and `GOOGLE_SERVICE_INFO_PROD` were the Swift build's secrets; nothing reads them now.
 
 **Cloud Functions job** — deploys to `dialed-c3cb5` as the **`github-release`** service account
 through workload identity federation; no key is stored anywhere.

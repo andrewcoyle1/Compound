@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import {
     validateCoachRequest, hasCoachConsent, planCoachQuota, isCoachPremium, chatTitle, appendChatMessages, historyForModel,
     fixtureSource, firestoreSource, coachEnvironment, COACH_TOOLS, coachSystemPrompt, mesocycleProgress, shapeSession,
-    COACH_DAILY_LIMIT, COACH_BURST_LIMIT, COACH_MAX_STORED_MESSAGES, MUSCLES,
+    COACH_DAILY_LIMIT, COACH_BURST_LIMIT, COACH_MAX_STORED_MESSAGES, MUSCLES, isModelBusy, replyWithRetry,
 } from "./coach.js";
 import { FIXTURE_ACCOUNTS, FIXTURE_NOW } from "./coach-fixtures.js";
 
@@ -305,4 +305,47 @@ test("the built-in exercise data is the app's own file, unchanged", () => {
     const app = readFileSync(new URL("../Compound/SupportingFiles/Resources/PrebuiltExercises.json", import.meta.url));
     const copy = readFileSync(new URL("./data/PrebuiltExercises.json", import.meta.url));
     assert.ok(app.equals(copy), "functions/data/PrebuiltExercises.json differs from the app's; copy it again");
+});
+
+test("isModelBusy: Vertex capacity answers, not other failures", () => {
+    assert.equal(isModelBusy({ status: "RESOURCE_EXHAUSTED", code: 429 }), true);
+    assert.equal(isModelBusy({ detail: { error: { code: 429, status: "RESOURCE_EXHAUSTED" } } }), true);
+    assert.equal(isModelBusy({ status: "UNAVAILABLE" }), true);
+    assert.equal(isModelBusy({ code: 503 }), true);
+    assert.equal(isModelBusy({ status: "INVALID_ARGUMENT", code: 400 }), false);
+    assert.equal(isModelBusy(new Error("boom")), false);
+    assert.equal(isModelBusy(undefined), false);
+});
+
+test("replyWithRetry: retries busy answers, falls back to the last model, backs off", async () => {
+    const busy = { status: "RESOURCE_EXHAUSTED", code: 429 };
+    const tried = [];
+    const slept = [];
+    const text = await replyWithRetry({
+        models: ["primary", "primary", "fallback"],
+        hasStreamed: () => false,
+        attempt: async (model) => { tried.push(model); if (model === "primary") throw busy; return "answer"; },
+        sleep: async (ms) => { slept.push(ms); },
+        random: () => 0.5,
+    });
+    assert.equal(text, "answer");
+    assert.deepEqual(tried, ["primary", "primary", "fallback"]);
+    assert.deepEqual(slept, [1000, 3000]);
+});
+
+test("replyWithRetry: never retries once something streamed, nor non-busy errors, nor the last model", async () => {
+    const busy = { status: "RESOURCE_EXHAUSTED", code: 429 };
+    const run = (attempt, hasStreamed = () => false) => replyWithRetry({
+        models: ["a", "b", "c"], hasStreamed, attempt, sleep: async () => {}, random: () => 0.5,
+    });
+    let calls = 0;
+    await assert.rejects(run(async () => { calls++; throw busy; }, () => true), (e) => e === busy);
+    assert.equal(calls, 1);
+    calls = 0;
+    const other = new Error("bad request");
+    await assert.rejects(run(async () => { calls++; throw other; }), (e) => e === other);
+    assert.equal(calls, 1);
+    calls = 0;
+    await assert.rejects(run(async () => { calls++; throw busy; }), (e) => e === busy);
+    assert.equal(calls, 3);
 });

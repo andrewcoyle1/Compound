@@ -845,6 +845,31 @@ export function coachSystemPrompt(env, context, ui = null) {
 /// The reply generator `coachChat` calls: `runCoach` on Vertex, replaced in tests.
 export const coachRuntime = { reply: null };
 
+// Vertex answers 429 RESOURCE_EXHAUSTED (and sometimes 503) when its shared capacity for a model is
+// full, which is common straight after a model replaces a retired one. Google's advice is to retry
+// with backoff. A reply is retried only while nothing has been streamed, so the user never sees
+// text or a block twice.
+export function isModelBusy(error) {
+    const status = error?.status ?? error?.detail?.error?.status;
+    const code = error?.code ?? error?.detail?.error?.code;
+    return status === "RESOURCE_EXHAUSTED" || status === "UNAVAILABLE" || code === 429 || code === 503;
+}
+
+// Tries `attempt` with each model in turn (the last is a fallback model), backing off between busy
+// answers. Any other error, or a busy answer after something was streamed, is thrown at once.
+export async function replyWithRetry({ models, attempt, hasStreamed, delaysMs = [1000, 3000],
+    sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)), random = Math.random }) {
+    for (let i = 0; ; i++) {
+        try {
+            return await attempt(models[i]);
+        } catch (error) {
+            const last = i === models.length - 1;
+            if (last || !isModelBusy(error) || hasStreamed()) throw error;
+            await sleep(Math.round((delaysMs[i] ?? delaysMs.at(-1)) * (0.5 + random())));
+        }
+    }
+}
+
 /// One reply: the system prompt, the recent turns and the message, with the tools bound to the
 /// caller's data. `onChunk` gets each piece of text as it arrives. With `blocks` (coach-blocks.js
 /// `coachBlocks`), the model is also offered `blockTool` and told how to use it; without, the

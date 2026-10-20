@@ -36,9 +36,10 @@ const BLOCK_ARGS = {
 
 // MARK: - Request
 
-test("ui is 1 or nothing: an unknown catalog version gets today's text-only coach", () => {
-    assert.equal(validateCoachRequest({ message: "hi", ui: 1 }).ui, 1);
-    for (const ui of [undefined, null, 0, 2, "1", true, 1.5]) assert.equal(validateCoachRequest({ message: "hi", ui }).ui, null, String(ui));
+test("ui is catalog 1 or nothing: an unknown catalog version gets today's text-only coach", () => {
+    // iOS's callable SDK can send the app's 1 as true, so 1, true and "1" all mean catalog 1.
+    for (const ui of [1, true, "1"]) assert.equal(validateCoachRequest({ message: "hi", ui }).ui, 1, String(ui));
+    for (const ui of [undefined, null, 0, false, 2, "2", 1.5]) assert.equal(validateCoachRequest({ message: "hi", ui }).ui, null, String(ui));
 });
 
 // MARK: - Each kind

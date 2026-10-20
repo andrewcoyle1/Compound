@@ -1199,7 +1199,7 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     });
     // One summary line per reply, with no user data: was the app asking for blocks, how many tries
     // and which model it took, and how many blocks were shown.
-    console.log(JSON.stringify({ event: "coach_reply", ui: Boolean(ui), streaming: Boolean(request.acceptsStreaming), attempts, model: modelName, blocks: blocks?.list.length ?? 0 }));
+    console.log(JSON.stringify({ event: "coach_reply", ui: Boolean(ui), uiSent: typeof request.data?.ui, streaming: Boolean(request.acceptsStreaming), attempts, model: modelName, blocks: blocks?.list.length ?? 0 }));
     if (!text) throw new HttpsError("internal", "The coach had no answer");
 
     const now = Timestamp.now();

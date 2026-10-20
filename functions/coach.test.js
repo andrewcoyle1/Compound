@@ -349,3 +349,8 @@ test("replyWithRetry: never retries once something streamed, nor non-busy errors
     await assert.rejects(run(async () => { calls++; throw busy; }), (e) => e === busy);
     assert.equal(calls, 3);
 });
+
+test("validateCoachRequest: ui 1 arrives as a number, true (iOS) or \"1\"; anything else is off", () => {
+    for (const ui of [1, true, "1"]) assert.equal(validateCoachRequest({ message: "Hi", ui }).ui, 1);
+    for (const ui of [undefined, null, 0, false, 2, "2", "true", {}]) assert.equal(validateCoachRequest({ message: "Hi", ui }).ui, null);
+});

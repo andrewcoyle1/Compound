@@ -20,7 +20,8 @@ const project = process.env.GCLOUD_PROJECT ?? "compound-development";
 const ai = genkit({ plugins: [vertexAI({ projectId: project, location: "eu" })] });
 const tools = defineCoachTools(ai);
 const blockTool = defineShowBlockTool(ai);
-const model = vertexAI.model("gemini-3.8-flash", { thinkingConfig: { thinkingBudget: 1024 } });
+// The coach's model (index.js COACH_MODEL); EVAL_MODEL tries another.
+const model = vertexAI.model(process.env.EVAL_MODEL ?? "gemini-3.5-flash", { thinkingConfig: { thinkingBudget: 1024 } });
 
 // Any number in the answer within `tolerance` of `value` (commas and units allowed).
 const near = (value, tolerance = 0.6) => (text) => (text.replace(/(\d),(\d{3})/g, "$1$2").match(/-?\d+(\.\d+)?/g) ?? [])

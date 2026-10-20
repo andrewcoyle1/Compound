@@ -1,0 +1,10 @@
+{
+  "baseWeights": [
+
+  ],
+  "collarWeight": 0.5,
+  "id": "loadable_bars_contract_minimal",
+  "isActive": false,
+  "name": "Trap Bar",
+  "typeId": "loadable_bars_contract_minimal"
+}

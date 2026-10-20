@@ -1,0 +1,9 @@
+{
+  "id": "old_dumbbells",
+  "typeId": "old_dumbbells",
+  "name": "Legacy old_dumbbells",
+  "isActive": false,
+  "needsColour": false,
+  "isPlates": false,
+  "range": []
+}

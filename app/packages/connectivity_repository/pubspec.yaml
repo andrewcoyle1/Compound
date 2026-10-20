@@ -1,0 +1,19 @@
+name: connectivity_repository
+description: Whether the device has a network, for the actions that need the server to answer before they can finish (Swift's NetworkMonitor and ensureOnline).
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  # The device's network interfaces (BSD-3).
+  connectivity_plus: 7.3.2
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^11.0.0

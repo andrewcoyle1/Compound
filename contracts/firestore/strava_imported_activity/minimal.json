@@ -1,0 +1,11 @@
+{
+  "distance": 32400.75,
+  "elapsed_time": 4000,
+  "id": "12345678902",
+  "moving_time": 3700,
+  "name": "Evening Ride",
+  "sport_type": "Ride",
+  "start_date": {
+    "$timestamp": "2026-10-09T17:45:12.500Z"
+  }
+}

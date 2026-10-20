@@ -1,0 +1,31 @@
+name: image_repository
+description: Uploads images to Firebase Storage at the Swift app's paths and picks photos from the camera or library; in memory, with a bundled sample, in the staging flavor.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  app_settings: 9.0.0
+  camera: 0.12.1
+  firebase_storage: 13.6.0
+  flutter:
+    sdk: flutter
+  flutter_image_compress: 2.5.1
+  image_cropper: 12.2.1
+  image_picker: 1.2.3
+
+dev_dependencies:
+  camera_platform_interface: 2.14.0
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0
+
+flutter:
+  # The native libraries' licences (registerPhotoLicenses).
+  assets:
+    - assets/licenses/
+    - assets/sample_label.jpg

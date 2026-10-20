@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "SingleArm45DegreeCableRearDeltFly.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

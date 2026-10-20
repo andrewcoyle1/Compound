@@ -1,0 +1,29 @@
+{
+  "context_kind": "weight_trend",
+  "created_at": {
+    "$timestamp": "2026-10-12T08:15:30.250Z"
+  },
+  "id": "chat_contract_full",
+  "messages": [
+    {
+      "created_at": {
+        "$timestamp": "2026-10-12T08:15:30.250Z"
+      },
+      "id": "m_user",
+      "role": "user",
+      "text": "Why has my weight stalled?"
+    },
+    {
+      "created_at": {
+        "$timestamp": "2026-10-12T08:16:02.500Z"
+      },
+      "id": "m_assistant",
+      "role": "assistant",
+      "text": "You averaged 2,310 kcal against an estimated 2,290 kcal, so you've been at maintenance."
+    }
+  ],
+  "title": "Why has my weight stalled?",
+  "updated_at": {
+    "$timestamp": "2026-10-12T08:16:02.500Z"
+  }
+}

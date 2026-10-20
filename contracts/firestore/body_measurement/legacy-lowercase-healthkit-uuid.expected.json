@@ -1,0 +1,13 @@
+{
+  "id": "body_measurement_legacy",
+  "author_id": "user_legacy",
+  "date": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "source": "healthkit",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:05.000Z"
+  },
+  "weight_kg": 81.5,
+  "healthkit_uuid": "6F9619FF-8B86-D011-B42D-00C04FC964FF"
+}

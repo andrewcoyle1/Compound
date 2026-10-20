@@ -1,0 +1,21 @@
+name: compound_charts
+description: "Compound's charts, drawn on app_ui's tokens."
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  app_ui:
+    path: ../app_ui
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  # Golden tests (docs/specs/flutter/ui-contract.md, rule 6). MIT.
+  alchemist: 0.14.0
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^11.0.0

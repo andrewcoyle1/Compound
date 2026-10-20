@@ -1,0 +1,10 @@
+{
+  "baseWeight": 7.5,
+  "excludesBaseFromLoad": true,
+  "id": "plate_loaded_machine_contract_minimal",
+  "isActive": false,
+  "name": "Hip Thrust",
+  "sleeves": 2,
+  "typeId": "plate_loaded_machine_contract_minimal",
+  "unit": "pounds"
+}

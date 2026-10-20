@@ -1,0 +1,25 @@
+{
+  "author_id": "user_contract_minimal",
+  "date": {
+    "$timestamp": "2026-10-13T12:30:00.000Z"
+  },
+  "day_key": "2026-10-13",
+  "items": [
+    {
+      "amount": 0.5,
+      "displayName": "Quick add",
+      "itemId": "meal_item_contract_minimal",
+      "nutrients": {
+        "calories": 120.5,
+        "protein": {
+          "$double": "NaN"
+        },
+        "vitamin_z_mg": 2.5
+      },
+      "sourceId": "quick_add",
+      "sourceType": "voice",
+      "unit": "serving"
+    }
+  ],
+  "meal_id": "meal_log_contract_minimal"
+}

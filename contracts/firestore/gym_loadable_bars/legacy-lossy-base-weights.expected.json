@@ -1,0 +1,15 @@
+{
+  "id": "old_bar",
+  "typeId": "old_bar",
+  "name": "Legacy old_bar",
+  "isActive": false,
+  "baseWeights": [
+    {
+      "id": "bw1",
+      "baseWeight": 20.0,
+      "unit": "kilograms",
+      "isActive": false
+    }
+  ],
+  "collarWeight": 2.0
+}

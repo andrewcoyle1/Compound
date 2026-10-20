@@ -1,0 +1,43 @@
+{
+  "id": "exercise_legacy",
+  "name": "Old Row",
+  "author_id": "",
+  "trackable_metrics": [
+    "reps"
+  ],
+  "muscle_groups": {},
+  "is_bodyweight": false,
+  "equipment_variations": [
+    {
+      "id": "variation_contract_full",
+      "resistance_equipment": [
+        {
+          "id": "olympic_barbell",
+          "kind": "loadableBar"
+        },
+        {
+          "id": "bumper_plates",
+          "kind": "freeWeight"
+        }
+      ],
+      "support_equipment": [
+        {
+          "id": "flat_bench",
+          "kind": "supportEquipment"
+        }
+      ]
+    }
+  ],
+  "range_of_motion": 0,
+  "stability": 0,
+  "body_weight_contribution": 50,
+  "alternate_names": [],
+  "is_system_exercise": false,
+  "date_created": {
+    "$timestamp": "1970-01-01T00:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2025-02-03T04:05:06.789Z"
+  },
+  "bookmark_count": 2
+}

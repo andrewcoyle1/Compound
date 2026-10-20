@@ -181,6 +181,13 @@ SwiftLint config (`.swiftlint.yml`): line limit 300, type body 500 lines, file l
    violations, so any warning fails the job. SwiftLint is **pinned** — see below.
 3. Runs `xcodebuild test` for `Compound - Development` with `-skip-testing:CompoundUITests`,
    writing `TestResults.xcresult`, which is uploaded as an artifact only when the job fails.
+   The fixture suites (`FirestoreContractTests`, `CoachParityTests`, `ProgramParityTests`,
+   `ProgressionParityTests`, `TrackerParityTests`) are skipped there and run in a second step of
+   their own (`test-without-building -only-testing:…`, `TestResults-Fixtures.xcresult`), which
+   fails if they ran no tests. On the runner they take 1–2 minutes each of pure computation, and
+   alongside the rest they starved the CPU until clock-based tests (`TestManagers.eventually`'s
+   60 s, save debounces, rest timers) timed out: #110 failed four runs that way on 20 Oct 2026.
+   A new fixture-heavy suite goes on both lists.
 
 The simulator destination is **discovered, not hardcoded**: a step picks the newest installed iOS
 runtime and the first available iPhone on it, and fails if that runtime is below iOS 26. Do not
@@ -284,6 +291,44 @@ through workload identity federation; no key is stored anywhere.
   firebase-tools reports any credential failure as "have you run firebase login?".
 - The Cloud Billing API is enabled on the project because firebase-tools checks billing and the
   deploy account cannot enable APIs.
+
+## Flutter app (`app/`)
+
+The Flutter rebuild that will replace this SwiftUI app: Android first, then iOS. The plan, the
+milestones and the Firestore contract are in `docs/specs/flutter/`. Build agents read
+`agent-brief.md` there first, and judgement calls made without the owner are logged in
+`decisions.md`.
+
+- **Stack:** Very Good Core template with VGV layered architecture. Packages live in `app/packages/`
+  and features in `app/lib/<feature>/{bloc,view}`. Bloc, go_router, very_good_analysis.
+- **Flavors:**
+  - `development` uses `compound-development`. Its iOS bundle id is the Swift dev app's,
+    `com.andrewcoyle.compound.dev` (since 16 Oct 2026), so it replaces the Swift dev app on a device
+    and shares its App ID, App Group (`group.com.compound.app`), Firebase iOS app and RevenueCat app.
+  - `staging` uses in-memory fakes and no Firebase.
+  - `production` (iOS only, since 18 Oct 2026, at the owner's request) uses the prod project
+    `dialed-c3cb5` and the App Store app's ids: `com.andrewcoyle.compound`, its extension
+    `com.andrewcoyle.compound.WorkoutSessionActivity` and `group.com.compound.app`. App Attest with a
+    DeviceCheck fallback, RevenueCat (it refuses to start without `REVENUECAT_APPLE_API_KEY_PROD`),
+    Remote Config A/B tests. Keys come from `*_PROD` entries in `dart_defines.json`. Build with
+    `flutter build ios --release --flavor production -t lib/main_production.dart --dart-define-from-file=dart_defines.json`.
+    Agents may read only prod's iOS app config, never write there. Android production is not configured.
+  - Run with `flutter run --flavor development -t lib/main_development.dart` from `app/`.
+- **Firebase config is gitignored** because the repo is public: `lib/firebase_options_*.dart`,
+  `google-services.json` and `GoogleService-Info.plist`. Regenerate them with
+  `flutterfire configure` (the arguments are in `docs/specs/flutter/decisions.md`). CI copies
+  `lib/firebase_options_development.dart.example`.
+- **Tests:** use the very_good_cli MCP `test` tool. A hook blocks `very_good test` and
+  `very_good create` in the shell. Packages are held to 100% coverage.
+- **UI:** follow `docs/specs/flutter/ui-contract.md`. Reuse an `app_ui` widget before building one,
+  and put any new component in `app_ui`, not the screen. Feature code uses tokens only and no raw
+  Material buttons, rows, cards or dialogs; `scripts/flutter-ui-check.py` (CI) blocks new ones.
+- **Strings:** after adding English ARB messages, run `python3 scripts/arb-spanish.py`. It
+  copies the Spanish from `Compound/Localizable.xcstrings`; translate whatever it lists by hand.
+- **CI:** `.github/workflows/flutter.yml` runs on PRs touching `app/`, `contracts/` or itself.
+  `ci.yml` (Swift) skips PRs into `feature/flutter`.
+- **Firestore contract:** shared fixtures in `contracts/firestore/` must round-trip through both
+  the Swift and Dart models. No Flutter code may write to a collection whose model fails it.
 
 ## Branching
 
@@ -693,7 +738,7 @@ so a connection belongs to the Compound account, not the device: signing out kee
   per athlete: every user's uploads, backfills and imports share them.
 
 **AI coach.** `coachChat` (options `COACH_CALLABLE_OPTIONS`) answers read-only questions about the
-caller's own data with Gemini 3.8 Flash on Vertex's `eu` multi-region endpoint, beside Firestore's `eur3`. It
+caller's own data with Gemini 3.5 Flash (3.8 Flash as the last try) on Vertex's `eu` multi-region endpoint, beside Firestore's `eur3`. It
 streams `{ text }` chunks and returns `{ chatId, messageId, text, remainingToday }`. Checks run in
 order, so a refusal costs nothing:
 - Consent: `users/{uid}/private/settings.coach_consent === true`.

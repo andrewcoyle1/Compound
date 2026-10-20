@@ -1,0 +1,21 @@
+{
+  "author_id": "user_legacy",
+  "equipment_variations": [],
+  "id": "exercise_legacy",
+  "index": 1,
+  "name": "Back Squat",
+  "set_targets": [],
+  "sets": [
+    {
+      "author_id": "user_legacy",
+      "date_created": {
+        "$timestamp": "2025-06-01T07:00:00.000Z"
+      },
+      "id": "set_legacy",
+      "index": 1,
+      "isWarmup": false
+    }
+  ],
+  "template_id": "back_squat",
+  "tracking_mode": "weightReps"
+}

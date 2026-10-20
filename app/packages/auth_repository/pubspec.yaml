@@ -1,0 +1,21 @@
+name: auth_repository
+description: "Compound sign-in: Firebase Auth with Google, Apple and anonymous accounts, and an in-memory version for the staging flavor."
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  equatable: ">=2.1.0 <4.0.0"
+  firebase_auth: ^6.7.0
+  flutter:
+    sdk: flutter
+  google_sign_in: ^7.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0

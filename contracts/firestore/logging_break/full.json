@@ -1,0 +1,10 @@
+{
+  "author_id": "user_contract_full",
+  "end_date": {
+    "$timestamp": "2026-08-24T18:40:00.500Z"
+  },
+  "id": "logging_break",
+  "start_date": {
+    "$timestamp": "2026-08-10T09:15:30.250Z"
+  }
+}

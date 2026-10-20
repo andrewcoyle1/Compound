@@ -1,0 +1,199 @@
+/// Which of Strava's `exercise_type` values a Compound exercise is uploaded
+/// as (Swift `StravaExerciseType`). Strava draws its muscle heat map from
+/// these, so a set it cannot place is a set the map never shows.
+///
+/// The values are from https://developers.strava.com/docs/uploads/
+/// (Supported Exercises).
+library;
+
+import 'package:compound_models/compound_models.dart';
+
+/// The type for a logged exercise: its own line in [stravaSystemExercises]
+/// for a built-in exercise, else the generic type for its first primary
+/// muscle, in [Muscles] order so the same exercise always maps the same way.
+/// `null` when neither is known (a custom exercise since deleted, or one
+/// with no primary muscle): its sets are then left out rather than guessed
+/// onto the wrong muscles.
+String? stravaExerciseType(String templateId, List<ExerciseModel> library) {
+  if (stravaSystemExercises[templateId] case final type?) return type;
+  for (final exercise in library) {
+    if (exercise.id != templateId) continue;
+    for (final muscle in Muscles.values) {
+      if (exercise.muscleGroups[muscle] == MuscleTargetType.primary) {
+        return stravaGenericByMuscle[muscle];
+      }
+    }
+    return null;
+  }
+  return null;
+}
+
+/// One line per exercise in `PrebuiltExercises.json`. A test fails when an
+/// exercise is added there without one here.
+const stravaSystemExercises = <String, String>{
+  'system-barbell-bench-press': 'BARBELL_BENCH_PRESS',
+  'system-barbell-incline-bench-press': 'INCLINE_BARBELL_BENCH_PRESS',
+  'system-barbell-romanian-deadlift': 'BARBELL_ROMANIAN_DEADLIFT',
+  'system-barbell-sumo-deadlift': 'SUMO_DEADLIFT',
+  'system-cable-bicep-curl-straight-bar': 'CABLE_BICEPS_CURL',
+  'system-cable-pushdown-straight-bar': 'CABLE_TRICEPS_PUSHDOWN',
+  'system-calf-press-leg-press': 'MACHINE_CALF_PRESS',
+  'system-chest-dip': 'CHEST_DIP',
+  'system-dumbbell-incline-fly': 'INCLINE_DUMBBELL_FLYE',
+  'system-dumbbell-bench-press': 'DUMBBELL_BENCH_PRESS',
+  'system-dumbbell-seated-shoulder-press': 'SEATED_DUMBBELL_SHOULDER_PRESS',
+  'system-ez-barbell-preacher-curl': 'EZ_BAR_PREACHER_CURL',
+  'system-hack-squat': 'MACHINE_HACK_SQUAT',
+  'system-lat-prayer-straight-bar': 'STRAIGHT_ARM_PULLDOWN',
+  'system-overhead-extension-straight-bar': 'CABLE_OVERHEAD_TRICEPS_EXTENSION',
+  'system-reverse-fly': 'MACHINE_REAR_DELT_REVERSE_FLY',
+  'system-seated-leg-extension': 'MACHINE_LEG_EXTENSION',
+  'system-standing-lateral-raise-cable': 'CABLE_LATERAL_RAISE',
+  'system-barbell-squat': 'BARBELL_BACK_SQUAT',
+  'system-bulgarian-split-squat': 'DUMBBELL_BULGARIAN_SPLIT_SQUATS',
+  'system-lying-leg-curl': 'LEG_CURL_GENERIC',
+  'system-seated-row': 'SEATED_CABLE_ROW',
+  'system-single-arm-row': 'DUMBBELL_ROW',
+  'system-t-bar-row': 'T_BAR_ROW',
+  'system-cable-neutral-grip-lat-pulldown': 'NEUTRAL_GRIP_LAT_PULLDOWN',
+  'system-cable-overhead-triceps-extension': 'CABLE_OVERHEAD_TRICEPS_EXTENSION',
+  'system-cable-standing-supinated-face-pull': 'FACE_PULL',
+  'system-lever-hip-thrust': 'MACHINE_HIP_THRUST',
+  'system-lever-incline-hammer-chest-press': 'MACHINE_INCLINE_CHEST_PRESS',
+  'system-lever-pec-deck-fly-chest': 'PEC_DECK_BUTTERFLY',
+  'system-lever-pendulum-squat': 'PENDULUM_SQUAT',
+  'system-weighted-hammer-grip-pull-up-on-dip': 'NEUTRAL_GRIP_PULL_UP',
+  'system-low-to-high-cable-fly': 'LOW_CABLE_FLY_CROSSOVERS',
+  'system-wide-grip-pull-up': 'WIDE_PULL_UP',
+  'system-deficit-pendlay-row': 'BENT_OVER_BARBELL_ROW',
+  'system-single-arm-bayesian-curl': 'BAYESIAN_CURL',
+  'system-smith-machine-back-squat': 'SMITH_MACHINE_SQUAT',
+  'system-seated-plate-loaded-machine-calf-raise': 'SEATED_CALF_RAISE',
+  'system-kneeling-cable-crunch': 'CABLE_CRUNCH',
+  'system-overhand-grip-plate-loaded-row': 'MACHINE_CHEST_SUPPORTED_ROW',
+  'system-single-arm-45-degree-cable-rear-delt-fly': 'CABLE_REAR_DELT_FLY',
+  'system-barbell-shrug': 'BARBELL_SHRUG',
+  'system-pin-loaded-machine-shoulder-press': 'MACHINE_SEATED_SHOULDER_PRESS',
+  'system-dumbbell-fly': 'DUMBBELL_FLYE',
+  // Strava's CABLE_KICKBACK is the glute kickback; this is the closest
+  // triceps one.
+  'system-neutral-grip-cable-triceps-kickback': 'DUMBBELL_KICKBACK',
+  'system-captains-chair-knee-raise': 'HANGING_KNEE_RAISE',
+  'system-45-degree-leg-press': 'MACHINE_LEG_PRESS',
+  'system-seated-hamstring-curl': 'MACHINE_LEG_CURL_SEATED',
+  'system-seated-machine-hip-adduction': 'MACHINE_HIP_ADDUCTION',
+  'system-seated-machine-hip-abduction': 'MACHINE_HIP_ABDUCTION',
+  'system-45-degree-incline-dumbbell-press': 'INCLINE_DUMBBELL_BENCH_PRESS',
+  'system-wide-grip-cable-lat-pulldown': 'LAT_PULLDOWN',
+  'system-bent-over-barbell-row': 'BENT_OVER_BARBELL_ROW',
+  'system-smith-machine-front-foot-elevated-split-squat': 'SMITH_MACHINE_LUNGE',
+  'system-goblet-roman-chair-hip-hinge': 'BACK_EXTENSION',
+  'system-machine-crunch-with-overhead-handles': 'AB_CRUNCH_MACHINE',
+  'system-overhand-grip-cable-lat-pulldown': 'LAT_PULLDOWN',
+  'system-wide-grip-cable-row': 'SEATED_CABLE_ROW',
+  'system-pause-cable-shrug-in': 'SHRUG_GENERIC',
+  'system-cable-rope-hammer-curl': 'CABLE_HAMMER_CURL',
+  'system-dumbbell-concentration-curl': 'CONCENTRATION_CURL',
+  'system-ez-bar-skull-crusher': 'SKULL_CRUSHER',
+  'system-ab-wheel-rollout': 'AB_WHEEL_ROLLOUT',
+  'system-dumbbell-reverse-lunge': 'DUMBBELL_REVERSE_LUNGE',
+  'system-single-arm-cable-lat-pulldown': 'SINGLE_ARM_LAT_PULLDOWN',
+  'system-45-degree-back-extension': 'BACK_EXTENSION',
+  'system-bench-dip': 'BENCH_DIP',
+  'system-cable-fly': 'CABLE_CROSSOVER',
+  'system-cable-hip-abduction': 'CABLE_HIP_ABDUCTION',
+  'system-cable-hip-adduction': 'STANDING_ADDUCTION',
+  'system-cable-lat-pullover': 'STRAIGHT_ARM_PULLDOWN',
+  'system-cable-pull-through': 'HIP_RAISE_GENERIC',
+  'system-cable-shoulder-press': 'SHOULDER_PRESS_GENERIC',
+  'system-cable-wrist-extension': 'BARBELL_REVERSE_WRIST_CURL',
+  'system-cable-y-raise': 'LATERAL_RAISE_GENERIC',
+  'system-chest-supported-dumbbell-row': 'CHEST_SUPPORTED_ROW',
+  'system-chest-supported-machine-row': 'MACHINE_CHEST_SUPPORTED_ROW',
+  'system-close-grip-pull-up': 'PULL_UP_GENERIC',
+  'system-copenhagen-hip-adduction': 'LL_COPENHAGEN_PLANK',
+  'system-dumbbell-curl': 'STANDING_DUMBBELL_BICEPS_CURL',
+  'system-dumbbell-preacher-curl': 'CURL_GENERIC',
+  'system-dumbbell-hammer-curl': 'DUMBBELL_HAMMER_CURL',
+  'system-dumbbell-pullover': 'DUMBBELL_PULLOVER',
+  'system-dumbbell-lateral-raise': 'LATERAL_RAISE_GENERIC',
+  'system-dumbbell-shrug': 'DUMBBELL_SHRUG',
+  'system-dumbbell-skull-crusher': 'DUMBBELL_SKULLCRUSHER',
+  'system-dumbbell-static-lunge': 'DUMBBELL_SPLIT_SQUAT',
+  'system-dumbbell-step-up': 'STEP_UP',
+  'system-dumbbell-triceps-kickback': 'DUMBBELL_KICKBACK',
+  'system-dumbbell-walking-lunge': 'DUMBBELL_WALKING_LUNGES',
+  'system-dumbbell-wrist-curl': 'DUMBBELL_WRIST_CURL',
+  'system-dumbbell-wrist-extension': 'DUMBBELL_REVERSE_WRIST_CURL',
+  'system-weighted-decline-crunch': 'WEIGHTED_DECLINE_CRUNCH',
+  'system-weighted-crunch': 'CRUNCH',
+  'system-donkey-calf-raise': 'CALF_RAISE_GENERIC',
+  'system-dual-handle-elbows-out-cable-row': 'SEATED_CABLE_ROW',
+  'system-ez-bar-curl': 'STANDING_EZ_BAR_BICEPS_CURL',
+  'system-glute-kickback': 'MACHINE_GLUTE_KICKBACK',
+  'system-glute-ham-raise': 'GLUTE_HAM_RAISE',
+  'system-goblet-squat': 'GOBLET_SQUAT',
+  'system-hanging-leg-raise': 'HANGING_LEG_RAISE',
+  'system-helms-row': 'CHEST_SUPPORTED_ROW',
+  'system-incline-dumbbell-curl': 'INCLINE_DUMBBELL_BICEPS_CURL',
+  'system-incline-dumbbell-y-raise': 'LATERAL_RAISE_GENERIC',
+  'system-katana-triceps-extension': 'CABLE_OVERHEAD_TRICEPS_EXTENSION',
+  'system-lateral-band-walk': 'LATERAL_WALK',
+  'system-machine-pulldown': 'LAT_PULLDOWN',
+  'system-lean-in-dumbbell-lateral-raise': 'LATERAL_RAISE_GENERIC',
+  'system-long-lever-plank': 'PLANK_GENERIC',
+  'system-lying-reverse-dumbbell-fly': 'INCLINE_REVERSE_FLY',
+  'system-machine-chest-press': 'MACHINE_CHEST_PRESS',
+  'system-machine-lat-pullover': 'MACHINE_PULLOVER',
+  'system-machine-lateral-raise': 'LATERAL_RAISE_GENERIC',
+  'system-single-arm-machine-lateral-raise': 'LATERAL_RAISE_GENERIC',
+  'system-machine-shrug': 'SHRUG_GENERIC',
+  'system-meadows-row': 'MEADOWS_ROW',
+  'system-modified-candlestick': 'REVERSE_CRUNCH',
+  'system-nordic-hamstring-curl': 'NORDIC_CURL',
+  'system-pull-up': 'PULL_UP_GENERIC',
+  'system-reverse-cable-crossover': 'CABLE_REAR_DELT_REVERSE_FLY',
+  'system-reverse-nordic': 'LEG_EXTENSIONS',
+  'system-roman-chair-leg-raise': 'LEG_RAISE_PARALLEL_BARS',
+  'system-seated-smith-machine-shoulder-press': 'SMITH_MACHINE_OVERHEAD_PRESS',
+  'system-sissy-squat': 'SISSY_SQUAT',
+  'system-smith-machine-bench-press': 'BENCH_PRESS_GENERIC',
+  'system-smith-machine-row': 'SMITH_MACHINE_ROW',
+  'system-smith-machine-static-lunge': 'SMITH_MACHINE_LUNGE',
+  'system-standing-calf-raise': 'STANDING_CALF_RAISE',
+  'system-stiff-leg-deadlift': 'STRAIGHT_LEG_DEADLIFT',
+  'system-swiss-ball-rollout': 'AB_WHEEL_ROLLOUT',
+  'system-cable-rope-pushdown': 'TRICEPS_PRESSDOWN',
+  'system-cable-wrist-curl': 'BARBELL_WRIST_CURL',
+  'system-cable-concentration-curl': 'CONCENTRATION_CURL',
+  'system-seated-high-cable-curl': 'BAYESIAN_CURL',
+  'system-single-arm-reverse-pec-deck': 'MACHINE_REAR_DELT_REVERSE_FLY',
+  'system-dumbbell-romanian-deadlift': 'DUMBBELL_ROMANIAN_DEADLIFTS',
+};
+
+/// A type that works each muscle, for exercises people create themselves. A
+/// test checks every muscle has one.
+const stravaGenericByMuscle = <Muscles, String>{
+  Muscles.chest: 'BENCH_PRESS_GENERIC',
+  Muscles.triceps: 'TRICEPS_EXTENSION_GENERIC',
+  Muscles.biceps: 'CURL_GENERIC',
+  Muscles.forearms: 'BARBELL_WRIST_CURL',
+  Muscles.frontDelts: 'SHOULDER_PRESS_GENERIC',
+  Muscles.sideDelts: 'LATERAL_RAISE_GENERIC',
+  Muscles.rearDelts: 'DUMBBELL_REAR_DELT_FLY',
+  Muscles.lats: 'PULL_UP_GENERIC',
+  Muscles.upperBack: 'ROW_GENERIC',
+  Muscles.upperTraps: 'SHRUG_GENERIC',
+  Muscles.neck: 'SHRUG_GENERIC',
+  Muscles.serratus: 'SERRATUS_SHRUG',
+  Muscles.lowerBack: 'HYPEREXTENSION_GENERIC',
+  Muscles.abs: 'CRUNCH',
+  Muscles.obliques: 'RUSSIAN_TWIST',
+  Muscles.quads: 'SQUAT_GENERIC',
+  Muscles.hamstrings: 'LEG_CURL_GENERIC',
+  Muscles.glutes: 'HIP_RAISE_GENERIC',
+  Muscles.calves: 'CALF_RAISE_GENERIC',
+  Muscles.abductors: 'MACHINE_HIP_ABDUCTION',
+  Muscles.adductors: 'MACHINE_HIP_ADDUCTION',
+  Muscles.tibialis: 'TIBIALIS_RAISE',
+};

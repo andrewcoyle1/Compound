@@ -1,0 +1,21 @@
+name: ai_repository
+description: The AI callables (food photo, meal description, nutrition label, image generation) as typed calls returning the app's models; canned answers in the staging flavor.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  cloud_functions: ^6.5.0
+  compound_models:
+    path: ../compound_models
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0

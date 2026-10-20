@@ -1,0 +1,25 @@
+{
+  "baseWeights": [
+    {
+      "baseWeight": 20.5,
+      "id": "loadable_bars_contract_full_1",
+      "isActive": true,
+      "unit": "kilograms"
+    },
+    {
+      "baseWeight": 44.5,
+      "id": "loadable_bars_contract_full_2",
+      "isActive": false,
+      "unit": "pounds"
+    }
+  ],
+  "chosenBaseWeightId": "loadable_bars_contract_full_2",
+  "collarWeight": 2.5,
+  "defaultBaseWeightId": "loadable_bars_contract_full_1",
+  "description": "Platform two",
+  "id": "loadable_bars_contract_full",
+  "imageName": "barbell_icon",
+  "isActive": true,
+  "name": "Platform Barbell",
+  "typeId": "barbell"
+}

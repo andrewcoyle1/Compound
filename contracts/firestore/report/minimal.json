@@ -1,0 +1,13 @@
+{
+  "date_created": {
+    "$timestamp": "2026-10-14T12:00:00.000Z"
+  },
+  "id": "report_contract_minimal",
+  "note": null,
+  "reason": "spam",
+  "reporter_id": "user_contract_full",
+  "status": "open",
+  "target_author_id": null,
+  "target_id": "user_contract_friend",
+  "target_type": "user"
+}

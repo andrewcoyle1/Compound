@@ -1,0 +1,21 @@
+name: training_library_repository
+description: Reads the training library (exercises, workout templates, gym profiles, exercise and workout settings) from Firestore, or from memory in the staging flavor, with the Swift app's bundled system exercises and workouts.
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  cloud_firestore: ^6.10.0
+  compound_models:
+    path: ../compound_models
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  fake_cloud_firestore: ^4.3.0
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^11.0.0

@@ -1,0 +1,101 @@
+import 'package:analytics_repository/analytics_repository.dart';
+import 'package:app_ui/app_ui.dart' show AppFormat, AppWeightUnit;
+import 'package:bloc/bloc.dart';
+import 'package:body_repository/body_repository.dart';
+import 'package:compound/metric_detail/models/metric_readings.dart';
+import 'package:compound/nutrition/logic/meal_day.dart' show startOfDay;
+import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/weight_metric/models/weight_metric.dart';
+import 'package:compound_models/compound_models.dart'
+    show BodyMeasurementEntryKeys;
+import 'package:equatable/equatable.dart';
+import 'package:user_repository/user_repository.dart';
+
+part 'weight_metric_event.dart';
+part 'weight_metric_state.dart';
+
+/// The Scale Weight or Weight Trend screen: the user's weigh-ins from
+/// [BodyRepository], followed live so a weigh-in imported elsewhere
+/// appears while the screen is open, and the weight unit from their
+/// profile. A weigh-in deleted from All Recorded Data loses its weight and
+/// nothing else logged that day.
+class WeightMetricBloc extends Bloc<WeightMetricEvent, WeightMetricState> {
+  new({
+    required this._bodyRepository,
+    required this._userRepository,
+    required this._analyticsRepository,
+    required this._uid,
+    required WeightMetric metric,
+    DateTime Function() now = DateTime.now,
+  }) : super(WeightMetricState(metric: metric, today: startOfDay(now()))) {
+    on<WeightMetricSubscriptionRequested>(_onSubscriptionRequested);
+    on<WeightMetricRangeSelected>(_onRangeSelected);
+    on<WeightMetricEntryDeleted>(_onEntryDeleted);
+  }
+
+  final BodyRepository _bodyRepository;
+  final UserRepository _userRepository;
+  final AnalyticsRepository _analyticsRepository;
+  final String _uid;
+
+  String get _screen => state.metric.analyticsName;
+
+  Future<void> _onSubscriptionRequested(
+    WeightMetricSubscriptionRequested event,
+    Emitter<WeightMetricState> emit,
+  ) {
+    _analyticsRepository.appear(_screen);
+    return Future.wait([
+      emit.forEach(
+        _bodyRepository.watchMeasurements(_uid),
+        onData: (measurements) {
+          final weighIns = weighInsOf(measurements);
+          return state.copyWith(
+            weighIns: weighIns,
+            trendKg: trendOf(weighIns),
+            failed: false,
+          );
+        },
+        onError: (_, _) => state.copyWith(failed: true),
+      ),
+      // The unit is a nicety: without the profile, kilograms.
+      emit.forEach(
+        _userRepository.watchUser(_uid),
+        onData: (user) => state.copyWith(
+          weightUnitPreference: () => user?.submittedWeightUnitPreference,
+        ),
+        onError: (_, _) => state,
+      ),
+    ]);
+  }
+
+  void _onRangeSelected(
+    WeightMetricRangeSelected event,
+    Emitter<WeightMetricState> emit,
+  ) => emit(state.copyWith(range: event.range));
+
+  /// Clears the weigh-in's weight with a delete, not Swift's merge (which
+  /// loses the clear), logging `<screen>_DeleteEntry_*`. A failure counts
+  /// in [WeightMetricState.deleteFailures] for the screen's alert.
+  Future<void> _onEntryDeleted(
+    WeightMetricEntryDeleted event,
+    Emitter<WeightMetricState> emit,
+  ) async {
+    _analyticsRepository.analytic('${_screen}_DeleteEntry_Start');
+    try {
+      await _bodyRepository.clearMeasurementFields(_uid, event.entryId, {
+        BodyMeasurementEntryKeys.weightKg,
+      });
+      _analyticsRepository.analytic('${_screen}_DeleteEntry_Success');
+    } on Object catch (error) {
+      _analyticsRepository.severe('${_screen}_DeleteEntry_Fail', error);
+      emit(state.copyWith(deleteFailures: state.deleteFailures + 1));
+    }
+  }
+
+  @override
+  Future<void> close() {
+    if (!isClosed) _analyticsRepository.disappear(_screen);
+    return super.close();
+  }
+}

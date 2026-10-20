@@ -5,6 +5,10 @@ name: CI
 # Release starts from the push without running this again.
 on:
   pull_request:
+    # Slice PRs into the Flutter integration branch touch only app/ and docs; flutter.yml checks
+    # them. The feature/flutter → development PR still runs everything here.
+    branches-ignore:
+      - feature/flutter
 
 # One run per ref: a new push supersedes whatever is still in flight.
 concurrency:
@@ -179,6 +183,12 @@ jobs:
       # CODE_SIGNING_ALLOWED=NO skips entitlement processing altogether, which
       # leaves the test host without keychain access and fails the eight
       # StravaManagerTests that read and write tokens.
+      #
+      # The fixture suites below are pure computation over large JSON fixtures (Swift/Dart parity
+      # and the Firestore contract). On this runner they take 1–2 minutes each, and run alongside
+      # the rest they starve the CPU, so tests that wait on a clock (TestManagers.eventually's
+      # 60 s, save debounces, rest timers) time out. They run in a step of their own, on the same
+      # build, so every test still runs and nothing competes. Keep the two lists in step.
       - name: Build and run unit tests
         run: |
           xcodebuild test \
@@ -186,15 +196,42 @@ jobs:
             -scheme "$SCHEME" \
             -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }},OS=${{ steps.sim.outputs.os }}" \
             -skip-testing:CompoundUITests \
+            -skip-testing:CompoundUnitTests/FirestoreContractTests \
+            -skip-testing:CompoundUnitTests/CoachParityTests \
+            -skip-testing:CompoundUnitTests/ProgramParityTests \
+            -skip-testing:CompoundUnitTests/ProgressionParityTests \
+            -skip-testing:CompoundUnitTests/TrackerParityTests \
             -clonedSourcePackagesDirPath "$HOME/SourcePackages" \
             -resultBundlePath TestResults.xcresult
+
+      - name: Run the fixture suites on their own
+        run: |
+          xcodebuild test-without-building \
+            -project Compound.xcodeproj \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }},OS=${{ steps.sim.outputs.os }}" \
+            -only-testing:CompoundUnitTests/FirestoreContractTests \
+            -only-testing:CompoundUnitTests/CoachParityTests \
+            -only-testing:CompoundUnitTests/ProgramParityTests \
+            -only-testing:CompoundUnitTests/ProgressionParityTests \
+            -only-testing:CompoundUnitTests/TrackerParityTests \
+            -clonedSourcePackagesDirPath "$HOME/SourcePackages" \
+            -resultBundlePath TestResults-Fixtures.xcresult
+          # -only-testing that matches nothing still passes, so a renamed suite would silently stop
+          # running. Insist the fixture suites actually ran.
+          count=$(xcrun xcresulttool get test-results summary --path TestResults-Fixtures.xcresult --format json \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin).get("totalTestCount", 0))')
+          echo "Fixture suites ran $count tests"
+          test "$count" -gt 0
 
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: TestResults
-          path: TestResults.xcresult
+          path: |
+            TestResults.xcresult
+            TestResults-Fixtures.xcresult
           retention-days: 7
 
   # The unit tests build Debug, where the optimiser never runs, and on Xcode 26.6. Releases build

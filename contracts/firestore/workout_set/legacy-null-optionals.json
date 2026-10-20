@@ -1,0 +1,23 @@
+{
+  "author_id": "user_legacy",
+  "bands": null,
+  "completed_at": null,
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "distance_meters": null,
+  "duration_sec": null,
+  "id": "set_legacy",
+  "index": 1,
+  "isWarmup": false,
+  "kind": null,
+  "load_count": null,
+  "machine_base_kg": null,
+  "parent_set_id": null,
+  "reps": null,
+  "rpe": null,
+  "side": null,
+  "target_reps": null,
+  "weight_kg": null,
+  "weight_unit": null
+}

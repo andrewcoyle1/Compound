@@ -1,0 +1,23 @@
+name: ab_test_repository
+description: "Compound's A/B tests (Swift's ABTestManager services): Firebase Remote Config, a local draw kept on the device for development, and one in memory for staging and tests."
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: ^3.47.0
+
+dependencies:
+  device_store:
+    path: ../device_store
+  equatable: ">=2.1.0 <4.0.0"
+  # Remote Config, for the production flavor (BSD-3).
+  firebase_remote_config: 6.7.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^11.0.0

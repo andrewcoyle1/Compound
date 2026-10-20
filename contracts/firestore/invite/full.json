@@ -1,0 +1,9 @@
+{
+  "code": "ABCD2345",
+  "date_created": {
+    "$timestamp": "2026-10-02T12:00:00.000Z"
+  },
+  "inviter_id": "user_contract_full",
+  "max_uses": 50,
+  "uses": 0
+}

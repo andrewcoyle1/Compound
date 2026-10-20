@@ -1,0 +1,17 @@
+{
+  "baseWeights": [
+    {
+      "baseWeight": 12.5,
+      "id": "fixed_weight_bars_contract_full_1",
+      "isActive": true,
+      "unit": "kilograms"
+    }
+  ],
+  "defaultBaseWeightId": "fixed_weight_bars_contract_full_1",
+  "description": "On the wall rack",
+  "id": "fixed_weight_bars_contract_full",
+  "imageName": "ez_bar_icon",
+  "isActive": true,
+  "name": "Curl Bars",
+  "typeId": "fixed_weight_ez_bar"
+}

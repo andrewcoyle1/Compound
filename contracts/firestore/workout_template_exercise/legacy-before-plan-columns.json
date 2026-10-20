@@ -1,0 +1,15 @@
+{
+  "id": "template_exercise_legacy",
+  "exercise": {
+    "id": "exercise_legacy",
+    "name": "Old Row"
+  },
+  "set_targets": [
+    {
+      "id": "set_target_contract_minimal",
+      "set_number": 1,
+      "set_type": "standard"
+    }
+  ],
+  "set_rest_timers": false
+}

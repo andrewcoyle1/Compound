@@ -1,0 +1,66 @@
+{
+  "author_id": "user_legacy",
+  "date_created": {
+    "$timestamp": "2025-06-01T07:00:00.000Z"
+  },
+  "date_modified": {
+    "$timestamp": "2025-06-01T07:05:30.500Z"
+  },
+  "exercises": [
+    {
+      "author_id": "user_legacy",
+      "equipment_variations": [
+        {
+          "id": "variation_legacy",
+          "resistance_equipment": [
+            {
+              "id": "dumbbells",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "id": "exercise_legacy",
+      "index": 1,
+      "name": "Back Squat",
+      "set_targets": [
+        {
+          "id": "set_target_legacy",
+          "set_number": 1,
+          "set_type": "myo"
+        },
+        {
+          "id": "set_target_legacy",
+          "set_number": 1,
+          "set_type": "drop"
+        },
+        {
+          "id": "set_target_legacy",
+          "set_number": 1,
+          "set_type": "standard"
+        }
+      ],
+      "sets": [
+        {
+          "author_id": "user_legacy",
+          "date_created": {
+            "$timestamp": "2025-06-01T07:00:00.000Z"
+          },
+          "id": "set_legacy",
+          "index": 1,
+          "isWarmup": false,
+          "kind": "superDrop",
+          "side": "up",
+          "weight_unit": "stone"
+        }
+      ],
+      "template_id": "back_squat",
+      "tracking_mode": "weightReps"
+    }
+  ],
+  "id": "session_legacy",
+  "is_rest_day": false,
+  "liked_by_user_ids": [],
+  "name": "Legs"
+}

@@ -1,0 +1,37 @@
+{
+  "id": "old_dumbbells",
+  "name": "Legacy old_dumbbells",
+  "typeId": "dumbbells",
+  "isActive": true,
+  "isPlates": true,
+  "range": [
+    {
+      "id": "w1",
+      "availableWeights": 2.5
+    },
+    {
+      "id": "w2"
+    },
+    {
+      "id": "w3",
+      "availableWeights": 5.5,
+      "unit": "stone"
+    },
+    {
+      "id": "w4",
+      "availableWeights": 7.5,
+      "count": 2.5
+    },
+    {
+      "id": "w5",
+      "availableWeights": "9"
+    },
+    {
+      "id": "w6",
+      "availableWeights": 10,
+      "unit": "pounds",
+      "isActive": true,
+      "count": 4.0
+    }
+  ]
+}

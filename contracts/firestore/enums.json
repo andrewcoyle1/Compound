@@ -1,0 +1,326 @@
+{
+  "ActivityLevel": [
+    "sedentary",
+    "light",
+    "moderate",
+    "active",
+    "very_active"
+  ],
+  "ActivityType": [
+    "like",
+    "comment",
+    "follow",
+    "nudge",
+    "mention",
+    "followAccepted",
+    "share",
+    "challenge_complete"
+  ],
+  "BMREquation": [
+    "mifflinStJeor",
+    "harrisBenedict",
+    "katchMcArdle"
+  ],
+  "CardioFitnessLevel": [
+    "beginner",
+    "novice",
+    "intermediate",
+    "advanced",
+    "elite"
+  ],
+  "CoachMessageRole": [
+    "user",
+    "assistant"
+  ],
+  "DeloadType": [
+    "none",
+    "start",
+    "end"
+  ],
+  "DistanceUnitPreference": [
+    "kilometers",
+    "miles"
+  ],
+  "EquipmentKind": [
+    "freeWeight",
+    "loadableBar",
+    "fixedWeightBar",
+    "bands",
+    "bodyWeight",
+    "supportEquipment",
+    "accessoryEquipment",
+    "loadableAccessoryEquipment",
+    "cableMachine",
+    "plateLoadedMachine",
+    "pinLoadedMachine"
+  ],
+  "ExerciseFrequency": [
+    "never",
+    "1-2",
+    "3-4",
+    "5-6",
+    "daily"
+  ],
+  "ExerciseType": [
+    "compoundUpper",
+    "compoundLower",
+    "isolationUpper",
+    "isolationLower",
+    "core"
+  ],
+  "ExerciseWeightUnit": [
+    "kilograms",
+    "pounds"
+  ],
+  "ExpenditureAlgorithmVersion": [
+    "v1"
+  ],
+  "ExpenditureCalculationMode": [
+    "dynamic",
+    "fixed"
+  ],
+  "ExpenditureEstimationMethod": [
+    "standard",
+    "bodyFatAware"
+  ],
+  "FollowRequestStatus": [
+    "pending",
+    "accepted",
+    "declined"
+  ],
+  "Gender": [
+    "male",
+    "female",
+    "prefer_not_to_say"
+  ],
+  "GoalStatus": [
+    "active",
+    "completed",
+    "abandoned",
+    "paused"
+  ],
+  "IngredientAmountUnit": [
+    "grams",
+    "milliliters",
+    "units"
+  ],
+  "InitialLogFillOption": [
+    "smartProgression",
+    "previousValues",
+    "empty"
+  ],
+  "Laterality": [
+    "bilateral",
+    "unilateral",
+    "assymetrical",
+    "unilateralBilateral"
+  ],
+  "LengthUnitPreference": [
+    "centimeters",
+    "inches"
+  ],
+  "MacrocycleStatus": [
+    "notStarted",
+    "active",
+    "completed",
+    "ended"
+  ],
+  "MealItemSourceType": [
+    "ingredient",
+    "recipe",
+    "quick_add"
+  ],
+  "MeasurementMethod": [
+    "weight",
+    "volume"
+  ],
+  "Muscles": [
+    "triceps",
+    "upperTraps",
+    "obliques",
+    "neck",
+    "lats",
+    "forearms",
+    "sideDelts",
+    "rearDelts",
+    "frontDelts",
+    "chest",
+    "biceps",
+    "upperBack",
+    "lowerBack",
+    "abs",
+    "serratus",
+    "quads",
+    "hamstrings",
+    "glutes",
+    "calves",
+    "abductors",
+    "adductors",
+    "tibialis"
+  ],
+  "MuscleTargetType": [
+    "primary",
+    "secondary"
+  ],
+  "NutrientKey": [
+    "calories",
+    "protein",
+    "carbs",
+    "fat_total",
+    "fat_saturated",
+    "fat_monounsaturated",
+    "fat_polyunsaturated",
+    "fat_trans",
+    "omega_3",
+    "omega_3_ala",
+    "omega_3_dha",
+    "omega_3_epa",
+    "omega_6",
+    "fiber",
+    "sugar",
+    "added_sugars",
+    "starch",
+    "cysteine",
+    "histidine",
+    "isoleucine",
+    "leucine",
+    "lysine",
+    "methionine",
+    "phenylalanine",
+    "threonine",
+    "tryptophan",
+    "tyrosine",
+    "valine",
+    "sodium_mg",
+    "potassium_mg",
+    "calcium_mg",
+    "iron_mg",
+    "magnesium_mg",
+    "zinc_mg",
+    "copper_mg",
+    "manganese_mg",
+    "phosphorus_mg",
+    "selenium_mcg",
+    "chloride_mg",
+    "chromium_mcg",
+    "molybdenum_mcg",
+    "vitamin_a_mcg",
+    "vitamin_b6_mg",
+    "vitamin_b12_mcg",
+    "vitamin_c_mg",
+    "vitamin_d_mcg",
+    "vitamin_e_mg",
+    "vitamin_k_mcg",
+    "biotin_mcg",
+    "folate_mcg",
+    "iodine_mcg",
+    "niacin_mg",
+    "thiamin_mg",
+    "riboflavin_mg",
+    "pantothenic_acid_mg",
+    "caffeine_mg",
+    "cholesterol_mg",
+    "alcohol",
+    "water"
+  ],
+  "OverarchingObjective": [
+    "loseWeight",
+    "maintain",
+    "gainWeight"
+  ],
+  "PreviousWorkoutReferenceOption": [
+    "anyExercise",
+    "anyWorkout",
+    "workoutsInProgram"
+  ],
+  "ProgressionAdjustmentMode": [
+    "weightFirst",
+    "repsFirst"
+  ],
+  "ProgressPhotoPose": [
+    "front",
+    "side",
+    "back"
+  ],
+  "ReportContentType": [
+    "comment",
+    "session",
+    "user"
+  ],
+  "ReportReason": [
+    "spam",
+    "harassment",
+    "inappropriate",
+    "other"
+  ],
+  "SetKind": [
+    "standard",
+    "drop",
+    "amrap",
+    "myo",
+    "restPause",
+    "cluster",
+    "partials",
+    "stretch",
+    "hold"
+  ],
+  "SetSide": [
+    "left",
+    "right",
+    "both"
+  ],
+  "SetTargetSetType": [
+    "standard",
+    "drop",
+    "myo",
+    "failure",
+    "amrap",
+    "restPause",
+    "cluster",
+    "partials",
+    "stretch",
+    "hold"
+  ],
+  "ShareStatus": [
+    "pending",
+    "accepted",
+    "dismissed"
+  ],
+  "StepsSource": [
+    "manual",
+    "healthkit",
+    "imported"
+  ],
+  "TimestampSide": [
+    "left",
+    "right"
+  ],
+  "TrackableExerciseMetric": [
+    "reps",
+    "repsPerSide",
+    "weight",
+    "weightPerSide",
+    "weightPerSidePersistent",
+    "weightPerSideAssistance",
+    "duration",
+    "durationPerSide",
+    "distanceShort",
+    "distanceShortPerSide",
+    "distanceLong"
+  ],
+  "TrackingMode": [
+    "weightReps",
+    "repsOnly",
+    "timeOnly",
+    "distanceTime"
+  ],
+  "WeightSource": [
+    "manual",
+    "healthkit",
+    "imported"
+  ],
+  "WeightUnitPreference": [
+    "kilograms",
+    "pounds"
+  ]
+}

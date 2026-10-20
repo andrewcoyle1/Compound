@@ -1,0 +1,8 @@
+{
+  "description": "In the stretching area",
+  "id": "accessory_equipment_contract_full",
+  "imageName": "ab_wheel_icon",
+  "isActive": true,
+  "name": "Spare Ab Wheel",
+  "typeId": "ab_wheel"
+}

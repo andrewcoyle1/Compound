@@ -40,7 +40,8 @@ struct ProgramParityTests {
     }()
 
     /// Wednesday 30 September 2026, 09:00 UTC, as `MesocycleScheduleTests`.
-    private static let wednesday: Double = 1_790_758_800_000
+    /// Nonisolated, as `week` is, because `scenario`'s default arguments read them.
+    nonisolated private static let wednesday: Double = 1_790_758_800_000
     private static let hour: Double = 3_600_000
     private static let day: Double = 24 * hour
 
@@ -83,12 +84,12 @@ struct ProgramParityTests {
     // MARK: - Schedules
 
     /// A, rest, B, rest, C, rest, rest: the week-long microcycle `MesocycleScheduleTests` uses.
-    private static let week: [[String: Any]] = [
+    nonisolated private static var week: [[String: Any]] { [
         ["id": "a", "name": "A", "rest": false], ["id": "rest 1", "name": "Rest 1", "rest": true],
         ["id": "b", "name": "B", "rest": false], ["id": "rest 2", "name": "Rest 2", "rest": true],
         ["id": "c", "name": "C", "rest": false], ["id": "rest 3", "name": "Rest 3", "rest": true],
         ["id": "rest 4", "name": "Rest 4", "rest": true]
-    ]
+    ] }
 
     private static func at(_ dayOffset: Int, _ hourOfDay: Int = 10) -> Double {
         // Midnight of Wednesday, then the day and hour.

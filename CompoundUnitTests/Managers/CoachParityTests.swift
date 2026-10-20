@@ -91,7 +91,7 @@ struct CoachParityTests {
     }
 
     /// Equal JSON values, numbers within a millionth: the two languages round the last bit apart.
-    static func matches(_ lhs: Any, _ rhs: Any) -> Bool {
+    nonisolated static func matches(_ lhs: Any, _ rhs: Any) -> Bool {
         switch (lhs, rhs) {
         case (is NSNull, is NSNull): return true
         case let (left as [String: Any], right as [String: Any]):

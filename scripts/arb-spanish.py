@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fill app_es.arb from the Swift app's Spanish, and check it is complete.
 
-The Swift catalog (Compound/Localizable.xcstrings) is 100% Spanish. When a Flutter message's
+The Swift catalog (scripts/data/Localizable.xcstrings) is 100% Spanish. When a Flutter message's
 English text matches a catalog key, its Spanish carries over, placeholders included: `%@`,
 `%lld` and `%1$@` map to the ARB message's `{name}` placeholders in order.
 
@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ARB_DIR = ROOT / "app/lib/l10n/arb"
-CATALOG = ROOT / "Compound/Localizable.xcstrings"
+CATALOG = ROOT / "scripts/data/Localizable.xcstrings"
 
 SWIFT_ARG = re.compile(r"%(?:(\d+)\$)?(?:lld|ld|d|@|lf|f|\.\d+f)")
 ARB_ARG = re.compile(r"\{(\w+)\}")

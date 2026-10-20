@@ -1,8 +1,8 @@
 // The figures the app computes, ported for the coach so its answers match the screens.
 //
-// The Swift originals are the reference; CompoundUnitTests/Fixtures/coach-parity.json holds cases
-// both CoachParityTests.swift and coach-maths.test.js check, so the two copies cannot drift apart
-// unnoticed. Everything here works on day keys ("YYYY-MM-DD") in the user's own time zone: the
+// Ported from the Swift app (archived at the `swift-final` tag). contracts/fixtures/coach-parity.json
+// holds cases both coach-maths.test.js and the Flutter app's compound_maths check, so the two
+// copies cannot drift apart unnoticed. Everything here works on day keys ("YYYY-MM-DD") in the user's own time zone: the
 // caller turns Firestore timestamps into day keys once, and the arithmetic below never meets a
 // time zone or a clock.
 //

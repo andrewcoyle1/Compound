@@ -2,268 +2,284 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Start with `docs/codebase-map.md`** before searching: it explains how to predict a file's path
-from its name and lists every screen module, manager, sync model, Cloud Function, Firestore path
-and test suite with a link. It is generated; after adding or moving files run
-`python3 scripts/codebase-map.py` and commit the result.
+Compound is a training, nutrition and body-composition app. The app is the **Flutter** app in
+`app/` (iOS and Android); its backend is Firebase, with Cloud Functions in `functions/`. The
+SwiftUI app it replaced was removed on 20 Oct 2026 and lives on in the archive (see
+[The SwiftUI app (archived)](#the-swiftui-app-archived)).
 
-## Build & Development
+## Repository layout
 
-**Package manager**: Swift Package Manager only — there is no Podfile and no `.xcworkspace`. Open
-`Compound.xcodeproj` directly; Xcode resolves packages on open.
+```
+app/                 # the Flutter app: lib/<feature>/{bloc,view}, packages/, ios/, android/
+contracts/           # data shared by app/ and functions/: the Firestore contract, parity
+                     #   fixtures and the bundled exercise catalogue (see contracts/README.md)
+functions/           # Firebase Cloud Functions (Node, Genkit/Vertex AI)
+hosting/             # Firebase Hosting public folder
+scripts/             # flutter-ui-check.py, arb-spanish.py (+ data/), coach-parity-expected.mjs,
+                     #   flutter-screenshots.sh, rest-chime.py
+docs/                # specs (docs/specs/flutter/ for the app), research, reviews, privacy
+firestore.rules, storage.rules, firestore.indexes.json, firebase.json
+```
 
-**Schemes** (Production is the plain `Compound` scheme):
+`AppIcons/` (exercise and equipment icon artwork) and `Dialed.icon` (an Icon Composer file from
+the app's earlier name) are source art that nothing builds from; the app's own icons are in
+`app/ios/Runner/AppIcons/`.
 
-| Scheme | Configuration | Backend |
+## Flutter app (`app/`)
+
+The plan, the milestones and the parity table are in `docs/specs/flutter/`. Build agents read
+`agent-brief.md` there first, and judgement calls made without the owner are logged in
+`decisions.md`. Platforms: iOS first (iPhone and iPad), then Android.
+
+- **Stack:** Very Good Core template with VGV layered architecture. Packages live in `app/packages/`
+  and features in `app/lib/<feature>/{bloc,view}`. Bloc, go_router, very_good_analysis.
+- **Flavors:**
+  - `development` uses `compound-development`. Its iOS bundle id is `com.andrewcoyle.compound.dev`
+    (the old Swift dev app's), with App Group `group.com.compound.app`.
+  - `staging` uses in-memory fakes and no Firebase.
+  - `production` (iOS only) uses the prod project `dialed-c3cb5` and the App Store app's ids:
+    `com.andrewcoyle.compound`, its extension `com.andrewcoyle.compound.WorkoutSessionActivity` and
+    `group.com.compound.app`. App Attest with a DeviceCheck fallback, RevenueCat (it refuses to
+    start without `REVENUECAT_APPLE_API_KEY_PROD`), Remote Config A/B tests. Keys come from `*_PROD`
+    entries in `dart_defines.json`. Build with
+    `flutter build ios --release --flavor production -t lib/main_production.dart --dart-define-from-file=dart_defines.json`.
+    Agents may read only prod's iOS app config, never write there. Android production is not configured.
+  - Run with `flutter run --flavor development -t lib/main_development.dart` from `app/`.
+- **Config is gitignored** because the repo is public: `app/dart_defines.json`,
+  `lib/firebase_options_*.dart`, `google-services.json` and `GoogleService-Info.plist`. Regenerate
+  the Firebase ones with `flutterfire configure` (the arguments are in
+  `docs/specs/flutter/decisions.md`); `app/README.md` lists the `dart_defines.json` keys. CI copies
+  `lib/firebase_options_{development,production}.dart.example`.
+- **iOS native code** (Live Activity widget, App Intents, home-screen widget snapshot) is in
+  `app/ios/WorkoutSessionActivity/` and `app/ios/Shared/`. Plugins come in through Swift Package
+  Manager; there is no CocoaPods.
+- **Tests:** use the very_good_cli MCP `test` tool. A hook blocks `very_good test` and
+  `very_good create` in the shell. Packages are held to 100% coverage. Run the narrowest suite
+  that could fail (`paths` for one file, `directory` for one package).
+- **UI:** follow `docs/specs/flutter/ui-contract.md`. Reuse an `app_ui` widget before building one,
+  and put any new component in `app_ui`, not the screen. Feature code uses tokens only and no raw
+  Material buttons, rows, cards or dialogs; `scripts/flutter-ui-check.py` (CI) blocks new ones.
+  `scripts/flutter-screenshots.sh` shoots the staging screens.
+- **Strings:** user-facing strings use US spelling and are 100% Spanish. After adding English ARB
+  messages (`app/lib/l10n/arb/`), run `python3 scripts/arb-spanish.py`. It copies the Spanish from
+  the Swift app's catalog, kept at `scripts/data/Localizable.xcstrings`; translate whatever it
+  lists by hand. CI runs `--check`.
+
+## Shared data (`contracts/`)
+
+`contracts/README.md` is the reference. In short:
+
+- `contracts/firestore/` is the **Firestore contract**: every model's `full`, `minimal` and
+  `legacy-*` documents, which must round-trip through the Dart models
+  (`compound_models/test/contract_test.dart`). No Flutter code may write to a collection whose
+  model fails it. App Store Swift clients still read these documents and silently drop any they
+  cannot decode, so the shapes stay **frozen as Swift-compatible**: new fields optional, nothing
+  renamed or retyped. `docs/specs/flutter/firestore-contract.md` has the rules.
+- `contracts/fixtures/` holds the parity fixtures the Swift app recorded (`coach`, `nutrition`,
+  `progression`, `tracker`, `program`) and the program-import samples. They are frozen; the Dart
+  ports are now the source of truth.
+- `contracts/catalogue/` holds the bundled `Prebuilt*.json`, embedded byte for byte by
+  `training_library_repository` (regenerate with the commands in its README).
+  `functions/data/PrebuiltExercises.json` must stay an exact copy of
+  `contracts/catalogue/PrebuiltExercises.json`; `functions/coach.test.js` checks it.
+
+## Calculations and their sources
+
+Every figure the app works out for the user, rather than reads back from their logs, rests on a
+published source and says so. The research behind each choice, with the full reference list, is
+`docs/research/algorithms-evidence.md`; how each DOI and number was checked is
+`docs/research/citation-verification-checklist.md`.
+
+- `app/lib/science/method_info.dart` holds the catalogue of `Citation`s (named after the first
+  author and year) and the `MethodInfo` for each calculation: a plain summary, the formula exactly
+  as the code computes it, its limits, the constants that are Compound's own choices
+  (`ownChoices`), and the citations. Cite only from it. Never present a design choice as a finding.
+- `MethodInfoButton` is the ⓘ beside the figure and `MethodInfoHeader` puts it at a section
+  header's trailing edge (`app/lib/science/view/method_info_button.dart`).
+- **A new or changed calculation needs its `MethodInfo` updated in the same change**, and a button
+  wherever it is shown.
+
+The maths live in `app/packages/compound_maths` (energy, nutrition, volume) and
+`app/packages/training_rules` (progression, tracker); each README maps them to their specs:
+
+| Area | Method | Spec |
 |---|---|---|
-| `Compound - Development` | Debug | Firebase dev project |
-| `Compound - Mock` | Mock | All mock services, no Firebase |
-| `Compound` | Release | Firebase prod project |
+| Resting energy | Mifflin-St Jeor (default), revised Harris-Benedict, Cunningham 1980 when body fat is known (stored raw value `katchMcArdle`) | `docs/specs/adaptive-expenditure.md` |
+| Formula expenditure | RMR × FAO/WHO/UNU 2004 PAL band (1.4 / 1.55 / 1.7 / 1.85 / 2.0), no exercise-frequency add-on, TEF shown as 10% | same |
+| kcal per kg | `energyDensityKcalPerKg`: Forbes/Hall partition when body fat is known, else 7,700. The only conversion | same |
+| Weight trend and expenditure | One Kalman filter (`ExpenditureFilter`, `weightTrend`): trend weight, intake, expenditure, with an SD and a calibrating state | same |
+| Calorie target | Deadband controller (`evaluateTarget`, `proposeTarget`), at most weekly and ±150 kcal, adherence checked before lowering | same, and `docs/specs/weekly-check-in.md` |
+| Nutrition targets | `proteinGrams`, `dailyMacros`, `calorieFloor`: protein tiers on a reference weight at BMI ≥ 30, fat floor, keto 30 g, sex-specific floors, rates as % of body weight | `docs/specs/adaptive-expenditure.md` |
+| Strength | `estimatedOneRepMax` (Epley on reps + RIR, none past ten), `LoadIncrement`, `MesocycleDeload`, tapered warm-ups, rest by exercise type | `docs/specs/smart-progression.md` |
+| Volume | `hardSets` (RPE ≥ 6, drops 0.5, secondaries 0.5), one 10–20 band with four tiers | `docs/specs/training-volume.md` |
 
-**Build from the command line**:
-```bash
-xcodebuild -project Compound.xcodeproj -scheme 'Compound - Development' \
-  -destination 'platform=iOS Simulator,name=iPhone 17' build
-```
+## UI and the HIG
 
-**Run tests**:
-```bash
-xcodebuild test -project Compound.xcodeproj -scheme 'Compound - Development' \
-  -destination 'platform=iOS Simulator,name=iPhone 17'
-```
-
-The tests compile and pass (3,542 tests in `CompoundUnitTests`). Treat a `TEST FAILED` as a
-regression from your change unless it is only the UI-test flake described below.
-
-`-only-testing` works, but only under the scheme's own name for the target. The productName is
-`DialedInTests`, and `-only-testing:DialedInTests` is rejected; the BlueprintName is
-`CompoundUnitTests`, so a single suite runs with:
+Check iOS UI work against Apple's live Human Interface Guidelines with the **`apple-hig` skill**
+(user-level, `~/.claude/skills/apple-hig`), not from memory. If the skill is not installed, say so
+and mark HIG claims as unverified.
 
 ```bash
-xcodebuild test -project Compound.xcodeproj -scheme 'Compound - Development' \
-  -destination 'platform=iOS Simulator,name=iPhone 17' \
-  -only-testing:CompoundUnitTests/OnboardingHeightConversionTests
+python3 ~/.claude/skills/apple-hig/scripts/hig.py get tab-bars toolbars --platform ios
 ```
 
-**Run the full suite only when pushing.** Not between steps, and not to confirm something a
-narrower run has already shown. Measured on this machine: the whole suite is about fifteen minutes
-with the UI bundle and **2.7 minutes without it** (3,542 unit tests as of the UI framework merge), one suite through
-`-only-testing` is about forty-five seconds, and the package's own `swift test` is under two.
-Nearly all of the fifteen minutes is the UI runner and its simulator clones, so
-`-skip-testing:CompoundUITests` is the single biggest saving available. Pick the narrowest run
-that could actually fail:
+The app ships to iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`). Pass `--platform ios` by
+default and `--platform ipados` when the change affects layout or navigation at regular width.
 
-| Change | Run |
+**Precedence.** Where this project has already decided, the decision wins and the HIG fills in the
+rest: `docs/specs/flutter/ui-contract.md` and the `app_ui` tokens. If a HIG page contradicts one of
+those, report it with the source URL; do not change the contract from inside a feature.
+
+| Area | Read |
 |---|---|
-| A `Swiftful*` package | `swift test` in that package's clone |
-| One module | `-only-testing:` its suite |
-| Docs only | nothing |
-| Chasing a flake | one invocation with `-test-iterations N -run-tests-until-failure` |
+| Tab shell, navigation (`app/lib/shell`) | `tab-bars`, `toolbars`, `searching`, `sheets`, `modality` |
+| Onboarding (`app/lib/onboarding`) | `onboarding`, `privacy`, `healthkit`, `managing-notifications`, `sign-in-with-apple`, `managing-accounts` |
+| Paywalls (`app/lib/paywall`) | `apple-in-app-purchase` |
+| Active workout, Live Activity (`app/lib/workout_tracker`, `app/ios/WorkoutSessionActivity`) | `workouts`, `live-activities`, `playing-haptics` |
+| Analytics and charts | `charting-data`, `charts` |
+| Logging forms (food, sets, measurements) | `entering-data`, `pickers`, `text-fields`, `virtual-keyboards` |
+| Lists and rows | `lists-and-tables`, `buttons`, `menus`, `context-menus` |
+| Everything | `accessibility`, `typography`, `color`, `materials` |
 
-Repeat runs belong in **one** invocation with `-test-iterations`, never N invocations — the build
-and simulator boot dominate, so five separate calls cost five times the setup for the same tests.
+**Reviews** go in `docs/reviews/`, one file per review, in the skill's finding format (severity,
+`file:line`, quoted guideline with source URL, fix). State which appearances and text sizes were
+actually checked.
 
-Add `-skip-testing:CompoundUITests` to anything routine. Its ten tests (plus a smoke deck that
-skips unless `TEST_RUNNER_SMOKE=1`) take about seven minutes serially and need their own simulator
-clone; a launch flake there is also what makes a run report `** TEST FAILED **` when every unit
-test passed. To run it on its own: `-only-testing:CompoundUITests -parallel-testing-enabled NO`.
-Until 4 Oct 2026 the target's `TEST_TARGET_NAME` still said `DialedIn`, so that run failed with
-"UITargetAppPath should be provided" and three tests had gone stale unnoticed; all ten pass now.
+## Backend (Cloud Functions)
 
-**Simulator clones.** A parallel test run clones the destination simulator several times into
-`~/Library/Developer/XCTestDevices` and never removes the clones. On 29 Sep 2026 that had grown
-to 109 clones and about 250 GB, which macOS reports as "System Data".
+`functions/` holds Firebase Cloud Functions v2 (Node, ES modules) using Genkit with Vertex AI.
+Twelve `onCall` callables, all in `us-central1` except `coachChat`: `foodAnalyze`,
+`mealDescribe`, `nutritionLabelAnalyze`, `imageGenerate`, `foodSearch`, `removeFollower`,
+`acceptInvite`, `coachChat`, and four for Strava: `stravaConnect`, `stravaAccessToken`,
+`stravaConnection` and `stravaDisconnect`. Strava's client secret lives only in the
+`STRAVA_CLIENT_SECRET` Functions secret (`firebase functions:secrets:set` per project).
 
-- Run `scripts/clean-simulators.sh` after a full-suite run, and before starting any fan-out. It
-  refuses to run while a test is in progress.
-- When several agents may be testing at once, each passes `-parallel-testing-enabled NO`, so it
-  creates no clones and cannot lose them to another agent's clean-up. A single suite is quick
-  enough serially.
-- `du` counts a clone's shared data once per clone, so its totals can exceed the size of the
-  disk. Judge by free space (`df -h /System/Volumes/Data`), and allow for deletion finishing in
-  the background.
+**Strava.** The tokens live server-side in `strava_connections/{uid}`, which no client can read,
+so a connection belongs to the Compound account, not the device: signing out keeps it.
+- `stravaConnect({clientId, code | refreshToken})` connects. The refresh-token form migrates an
+  older build's Keychain token; a code without `activity:write` is refused with
+  `failed-precondition`. One Compound account per athlete: connecting takes the athlete from any
+  other account.
+- `stravaAccessToken` hands the app a short-lived token, which it uses to call Strava directly. It
+  answers `not-found` when not connected, and `permission-denied` when Strava refuses the
+  refresh, which also drops the connection.
+- `stravaConnection` answers the status and athlete; `stravaDisconnect` revokes at `/oauth/revoke`
+  with Basic client credentials.
+- Imported activities live in `users/{uid}/strava_activities` (owner read-only). Compound's own
+  uploads (`external_id` "compound-…") are never imported. Connecting queues a 365-day import.
+  Imported runs and rides must show on the owner's own screens only, never anywhere followers see, per
+  Strava's terms.
+- `stravaWebhook` (HTTP; verify token in the `STRAVA_WEBHOOK_VERIFY_TOKEN` secret) only queues
+  events in `strava_events`; `onStravaEventCreated` processes them: activity create, update and
+  delete, and a deauthorization, believed only after a forced refresh fails, because webhooks are
+  unsigned.
+- Disconnecting, a refused refresh, deauthorization and account deletion all remove the
+  connection and every imported activity.
+- Removing a function from the source does not delete it: delete it by hand first
+  (`firebase functions:delete <name> --project <id> --force`), or the release's
+  `--non-interactive` deploy aborts.
+- One-time setup per project: set `STRAVA_WEBHOOK_VERIFY_TOKEN`, deploy, then create Strava's
+  push subscription (`POST https://www.strava.com/api/v3/push_subscriptions` with `client_id`,
+  `client_secret`, `callback_url` = the deployed `stravaWebhook` URL, `verify_token`). Strava
+  allows one subscription per app, so dev and prod need separate Strava apps.
+- Strava's rate limits (200 requests per 15 minutes, 2,000 a day by default) are per **app**, not
+  per athlete: every user's uploads, backfills and imports share them.
 
-Read the counts from the result bundle:
+**AI coach** (`docs/specs/ai-coach.md`). `coachChat` (options `COACH_CALLABLE_OPTIONS`) answers
+read-only questions about the caller's own data with Gemini 3.5 Flash (3.8 Flash as the last try)
+on Vertex's `eu` multi-region endpoint, beside Firestore's `eur3`. It streams `{ text }` chunks and
+returns `{ chatId, messageId, text, remainingToday }`. Checks run in order, so a refusal costs
+nothing:
+- Consent: `users/{uid}/private/settings.coach_consent === true`.
+- Premium: RevenueCat REST v2 `active_entitlements`, with a V2 key that can only read customer
+  information (`REVENUECAT_SECRET_KEY` secret; project id `REVENUECAT_PROJECT_ID` in
+  `functions/.env.<project>`). A yes is cached five minutes, a 404 means not premium, any other
+  failure answers `unavailable`, and `compound-development` skips the check.
+- Quota: 50 messages a day in the user's timezone plus 5 a minute, in the server-only
+  `coach_usage/{uid}`.
 
-```bash
-xcrun xcresulttool get test-results summary \
-  --path "$(ls -td ~/Library/Developer/Xcode/DerivedData/Compound-*/Logs/Test/*.xcresult | head -1)"
-```
+The model reads data only through the ten tools in `functions/coach.js`, one allowed area each;
+there is no tool for Strava, progress photos or anything social, and tests enforce that. The
+app's expenditure engine, formula TDEE, weight trend, estimated 1RM and weekly muscle sets are
+copied in `functions/coach-maths.js`. `contracts/fixtures/coach-parity.json` is checked by both
+`coach-maths.test.js` and `compound_maths`' `test/parity_test.dart`, so changing either copy
+without the other fails a test. After changing the maths in both, rewrite its expected values with
+`node scripts/coach-parity-expected.mjs`. Run `node scripts/coach-eval.js` from `functions/`
+(application-default credentials, `GCLOUD_PROJECT=compound-development`) after changing the
+prompt, the tools or the model.
 
-The UI-test runner is flaky in the simulator: it either fails to launch
-(`FBSOpenApplicationServiceErrorDomain Code=1`) or drops the connection mid-test (`Failed to get
-matching snapshot: Lost connection to the application`). This **does** fail the run — the whole
-invocation prints `** TEST FAILED **` on the strength of one UI test — so `** TEST SUCCEEDED **`
-is not a reliable signal on its own. Check the unit bundle's own result instead:
+**Streak reminder.** `streakReminder` reads the app's weekly streak from the private settings doc
+(`week_streak`, `week_sessions`, `week_goal`, `week_ends_at`, `last_trained_at`) and pushes only
+when every remaining day of the week is needed and none is logged today.
 
-```bash
-B="$(ls -td ~/Library/Developer/Xcode/DerivedData/Compound-*/Logs/Test/*.xcresult | head -1)"
-xcrun xcresulttool get test-results tests --path "$B" | python3 -c '
-import json,sys
-d=json.load(sys.stdin)
-def walk(n):
-    for c in n:
-        if c.get("nodeType") in ("Unit test bundle", "UI test bundle"):
-            print(c["nodeType"], "|", c.get("name"), "|", c.get("result"))
-        walk(c.get("children", []))
-walk(d.get("testNodes", []))'
-```
+**App Check.** Every callable shares `CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true }`
+(the Strava ones extend it as `STRAVA_CALLABLE_OPTIONS` with the secret) and calls
+`requireAuth(request)`, which throws `unauthenticated` when `request.auth` is missing. Keep both
+on any new callable: they are the only thing stopping an arbitrary rebuilt client from calling
+the backend, since the Firebase API keys are public by design. The client activates App Check in
+`app/lib/firebase_app.dart`, with the providers chosen per flavor in `app/lib/main_*.dart`: App
+Attest with DeviceCheck fallback and Play Integrity in production, debug providers in
+development. A debug token must be registered in the **dev** Firebase project only, never prod.
+- App Check **enforcement** is a per-service toggle in the Firebase console, separate from the
+  `enforceAppCheck` flag here.
+- Enabling enforcement breaks already-shipped app versions that predate the App Check wiring.
+  Check App Check metrics for unverified traffic before turning it on.
 
-`Unit test bundle | CompoundUnitTests | Passed` is what matters. The summary's top-level
-`failedTests` counts both bundles together, so it reads 1 on a clean unit run that hit the flake.
+**Deploying and testing.** Each release to `main` deploys the functions to prod (see Release).
+Outside a release, deploy with `firebase deploy --only functions --project <id>`; the dev project
+is only ever deployed by hand. In `functions/`:
+- `npm test` runs every `*.test.js` with `node --test`, no emulator: the pure helpers, the coach
+  and its maths, a source check that every `onCall` takes `CALLABLE_OPTIONS` and opens with
+  `requireAuth`, and more. The emulator-backed suites skip.
+- `npm run test:triggers`, `test:rules` and `test:storage-rules` run those suites under the
+  Firestore (and Storage) emulator; they need Java.
+- `npm ci` needs the lock file in sync with `package.json`; if it fails with "Missing: … from lock
+  file", run `npm install` and commit the lock.
 
-Managers take sync engines rather than a services struct, so tests build them through
-**`CompoundUnitTests/Support/TestManagers.swift`**, which wires them the way `Dependencies` does
-for `.mock` but with `enableLocalPersistence: false` — otherwise each engine opens SwiftData
-storage under its `managerKey`, shared between tests and left behind after them.
+## CI
 
-A sync engine applies a write when its listener next emits, on its own task, so
-`currentCollection` and `currentUser` are not up to date the instant `saveDocument` or `signIn`
-returns. Assert through `TestManagers.eventually { … }` rather than reading straight after the
-call or sleeping for a fixed time. For the same reason a manager holds nothing until it has
-signed in, even when its mock remote is already populated.
+Both workflows run on pull requests only.
 
-`UserModel.mock` and the other model mocks are computed properties built from `Date()`, so two
-reads of one are never equal — capture the value once and compare against that.
+- **`.github/workflows/flutter.yml`** runs when a PR touches `app/`, `contracts/`,
+  `scripts/flutter-ui-check.py`, `scripts/arb-spanish.py`, `scripts/data/` or the workflow itself.
+  Its jobs: `Flutter app` (the app, through Very Good Workflows' `flutter_package.yml`, coverage
+  reported, not gated), one job per package in `app/packages/` (held at 100%), `UI contract`
+  (`flutter-ui-check.py`) and `Spanish strings` (`arb-spanish.py --check`). A reusable-workflow
+  job reports as `<job name> / build`, for example `Flutter app / build`.
+- **`.github/workflows/ci.yml`** runs `Cloud Functions unit tests` (`npm ci && npm test` in
+  `functions/`, Node 22, Ubuntu) on every PR except slice PRs into `feature/flutter`.
 
-If a build fails with `build.db is locked`, Xcode is building the same DerivedData
-concurrently — wait and retry rather than changing anything.
-
-**The unit runner hangs when started straight after a UI run on the same simulator** ("The
-test runner hung before establishing connection", seen five times on 6 Oct 2026, never on a
-fresh device). Run unit suites first and the UI suite last, or `xcrun simctl shutdown` then
-`boot` the device between them and wait ~10 s after `bootstatus -b` before launching. Shutting
-a simulator also kills every test host on it, so when several agents test at once, each uses
-its own device name and never touches another's.
-
-**An unsigned app bundle means the build failed, not that signing is broken.** When
-`build-for-testing` fails in the test target, the host `Compound.app` is left without its
-signature (`codesign -dv` says "not signed at all"), and every later `test-without-building`
-fails with `Simulator device failed to launch … No such process`, for unit and UI tests alike.
-Erasing the simulator or restarting CoreSimulatorService does not help. Always check
-`xcodebuild`'s own exit status (in zsh a pipeline's is `${pipestatus[1]}`, lower-case) before
-reading test results; on 6 Oct 2026 an unchecked status hid a test-target compile error for an
-afternoon.
-
-**Known unit flakes under a full-bundle run**, each passing alone: the HealthKit import-observer
-suites (`StepsManagerTests`, `MealLogHealthKitImportTests`, `BodyMeasurementsManagerTests`) time
-out one at a time in `TestManagers.eventually`, and the Live Activity suites fail as a block of
-about eight with `ActivityAuthorizationError.visibility` or "the app has pushed nothing"
-(seen twice on 7 Oct 2026, both on a simulator that had just been erased or cycled). Rerun the
-suite alone before blaming a change. The Live Activity suites are nested in a serialized parent,
-so select them by its path: `-only-testing:CompoundUnitTests/WorkoutRestSharedStateTests`
-(`…/LiveActivityManagerTests` alone selects nothing and reports "Executed 0 tests"). Simulator
-names are not unique either — there are two "iPhone 17" and two "iPhone 17e" — so pass a UDID
-(`-destination 'platform=iOS Simulator,id=…'`).
-
-**Deployment target**: iOS 26.0 (26.1 for some targets). The project-level Swift language
-version is 6.0; the test and extension targets are still on 5.0.
-
-**Lint** (SwiftLint must be installed):
-```bash
-swiftlint
-```
-
-SwiftLint config (`.swiftlint.yml`): line limit 300, type body 500 lines, file length 750 lines, `trailing_whitespace` disabled.
-
-### CI
-
-`.github/workflows/ci.yml` runs on every pull request. Besides the Cloud Functions tests and a
-**Release build (Xcode 27)** job (below), its main job runs on the
-`macos-26` runner with Xcode pinned to `/Applications/Xcode_26.6.app`. In order, it:
-
-1. Recreates the four gitignored config files from their checked-in examples — `Keys.swift`,
-   `Info.plist`, and both `GoogleService-Info-{Dev,Prod}.plist` (all copied from
-   `GoogleService-Info-Example.plist`). The examples are enough because only the Crashlytics
-   run-script phase reads the plists and it exits early on simulator builds. The `Keys.swift`
-   example defines all 33 constants the app references, so it compiles unchanged.
-2. Runs `swiftlint --strict`, before the build so a style failure fails fast. `main` is at zero
-   violations, so any warning fails the job. SwiftLint is **pinned** — see below.
-3. Runs `xcodebuild test` for `Compound - Development` with `-skip-testing:CompoundUITests`,
-   writing `TestResults.xcresult`, which is uploaded as an artifact only when the job fails.
-   The fixture suites (`FirestoreContractTests`, `CoachParityTests`, `ProgramParityTests`,
-   `ProgressionParityTests`, `TrackerParityTests`) are skipped there and run in a second step of
-   their own (`test-without-building -only-testing:…`, `TestResults-Fixtures.xcresult`), which
-   fails if they ran no tests. On the runner they take 1–2 minutes each of pure computation, and
-   alongside the rest they starved the CPU until clock-based tests (`TestManagers.eventually`'s
-   60 s, save debounces, rest timers) timed out: #110 failed four runs that way on 20 Oct 2026.
-   A new fixture-heavy suite goes on both lists.
-
-The simulator destination is **discovered, not hardcoded**: a step picks the newest installed iOS
-runtime and the first available iPhone on it, and fails if that runtime is below iOS 26. Do not
-replace this with a fixed device name — the lineup differs between runner images, and older
-runtimes that cannot run an iOS 26 deployment target are usually installed alongside the new one.
-
-SwiftPM checkouts are cached, keyed on `Package.resolved`, at `~/SourcePackages` via
-`-clonedSourcePackagesDirPath`. That path is **outside the repository on purpose**: the app's
-`Run Script` build phase runs bare `swiftlint` from the project root on every build. Checking
-dependencies out inside the working directory made that phase lint RevenueCat, promises,
-mixpanel-swift and the rest, failing the build on their `force_cast`, `large_tuple` and
-`identifier_name` violations. Locally the equivalent sources sit in DerivedData, well away from the
-linted tree, which is why this only ever appeared on CI.
-
-Belt and braces, `SourcePackages` is also in the `excluded:` list in `.swiftlint.yml` and in
-`.gitignore` (along with `TestResults.xcresult/`), so resolving into the repo locally is safe too.
-Keep both: the exclusion alone would still leave the checkouts inside the tree for every other tool.
-
-Code signing is left **enabled** in the test step. A simulator build needs no provisioning profile
-and signs ad-hoc, as it does locally. `CODE_SIGNING_ALLOWED=NO` looks like a harmless CI tidy-up but
-skips entitlement processing, which costs the test host its keychain access and fails the eight
-`StravaManagerTests` that read and write Strava tokens (`.notConnected`, and a
-`KeychainHelper.read` returning nil).
-
-`concurrency` cancels superseded runs per ref; `timeout-minutes: 60`.
-
-The **Release build (Xcode 27)** job compiles the `Compound` scheme in Release, for the simulator,
-on the `xcode-27` image: the configuration and toolchain releases ship with. The unit tests build
-Debug on Xcode 26.6, where the optimiser never runs, and the first release crashed the compiler
-on code they had passed. Simulator rather than device, so it needs no signing and the Crashlytics
-phase skips.
-
-Every action in both workflows is pinned to a commit SHA, with its tag in a trailing comment, and
+Every action in the workflows is pinned to a commit SHA, with its tag in a trailing comment, and
 the release pins `firebase-tools` to an exact version: the release runs them with prod
 credentials. Bump a pin deliberately, resolving the new tag with
-`gh api repos/<owner>/<repo>/commits/<tag> -q .sha`.
+`gh api repos/<owner>/<repo>/commits/<tag> -q .sha`. Lint the workflows with
+`actionlint -ignore 'label "xcode-27" is unknown' .github/workflows/*.yml`.
 
-**SwiftLint is pinned to a single `SWIFTLINT_VERSION` env var at the top of the workflow**
-(currently `0.59.1`). CI downloads the official `portable_swiftlint.zip` for that exact version,
-caches it keyed on the version, and fails the job if `swiftlint version` does not match before
-linting. It does **not** use `brew install swiftlint`.
-
-This pin exists because Homebrew tracks latest: the first CI run installed a newer SwiftLint whose
-`legacy_swiftui_aspect_ratio` rule reported 12 violations under `--strict` that do not exist
-locally. The pin must stay **in step with the version developers install locally** — if you upgrade
-your local SwiftLint, bump `SWIFTLINT_VERSION` too, and the reverse holds: bumping the pin means
-fixing whatever the new rules report, as its own change rather than folded into an unrelated PR. If
-CI reports violations you cannot reproduce, compare `swiftlint version` first.
-
-### Release (CD)
+## Release
 
 `.github/workflows/release.yml` runs on every push to `main`, which the ruleset allows only by a
-merged PR whose CI passed. Both jobs use the **`release`** environment: it accepts `main` only,
+merged PR whose checks passed. Both jobs use the **`release`** environment: it accepts `main` only,
 holds the secrets, and waits for the owner's approval. Each run, and each **re-run** of a job,
 needs approving again. The TestFlight job `needs` the Cloud Functions job, so the backend is
 always deployed first and a failed deploy stops the upload; it therefore asks for its own approval
 once the deploy finishes. App Review submission stays manual in App Store Connect.
 
-**TestFlight job** — builds the **Flutter** app (`app/`, production flavor) since 20 Oct 2026; the
-Swift app is no longer released (tag `swift-final` / branch `archive/swift` keep it). Steps: Flutter
-3.47.7 (`subosito/flutter-action`, pinned), the three gitignored config files from secrets
-(`FLUTTER_DART_DEFINES`, `FLUTTER_FIREBASE_OPTIONS_PROD`, `FLUTTER_GOOGLE_SERVICE_INFO_PROD`, base64
-of `app/dart_defines.json`, `app/lib/firebase_options_production.dart` and
+**TestFlight job**: the Flutter app, production flavor. Flutter 3.47.7 (`subosito/flutter-action`,
+pinned), the three gitignored config files from secrets (`FLUTTER_DART_DEFINES`,
+`FLUTTER_FIREBASE_OPTIONS_PROD`, `FLUTTER_GOOGLE_SERVICE_INFO_PROD`, base64 of
+`app/dart_defines.json`, `app/lib/firebase_options_production.dart` and
 `app/ios/flavors/production/GoogleService-Info.plist`; update a secret whenever its file changes),
 `flutter build ios --config-only --flavor production`, then `xcodebuild archive` of
 `ios/Runner.xcworkspace`, scheme `production`, and an upload with an App Store Connect API key
 (`ASC_API_KEY_P8`, `ASC_API_KEY_ID`, `ASC_API_ISSUER_ID`; Admin role, because cloud-managed
-distribution signing needs it). Plugins come in through Swift Package Manager; there is no
-CocoaPods. `manageAppVersionAndBuildNumber` takes the next free build number. The export is not
-internal-only, so a release build can go to external testers and App Review.
+distribution signing needs it). `manageAppVersionAndBuildNumber` takes the next free build number.
+The export is not internal-only, so a release build can go to external testers and App Review.
 
-- It runs on the **`xcode-27`** runner image (a GitHub preview), Xcode 27.0, as the hand-archived
-  Flutter production builds were. Unknown to actionlint; pass `-ignore 'label "xcode-27" is unknown'`.
+- It runs on the **`xcode-27`** runner image (a GitHub preview), Xcode 27.0. Unknown to
+  actionlint, hence the `-ignore` above.
 - `KEYS_SWIFT` and `GOOGLE_SERVICE_INFO_PROD` were the Swift build's secrets; nothing reads them now.
 
-**Cloud Functions job** — deploys to `dialed-c3cb5` as the **`github-release`** service account
+**Cloud Functions job**: deploys to `dialed-c3cb5` as the **`github-release`** service account
 through workload identity federation; no key is stored anywhere.
 
 - Pool `github`, provider `github-actions` (issuer `https://token.actions.githubusercontent.com`,
@@ -294,559 +310,40 @@ through workload identity federation; no key is stored anywhere.
 - The Cloud Billing API is enabled on the project because firebase-tools checks billing and the
   deploy account cannot enable APIs.
 
-## Flutter app (`app/`)
-
-The Flutter rebuild that will replace this SwiftUI app: Android first, then iOS. The plan, the
-milestones and the Firestore contract are in `docs/specs/flutter/`. Build agents read
-`agent-brief.md` there first, and judgement calls made without the owner are logged in
-`decisions.md`.
-
-- **Stack:** Very Good Core template with VGV layered architecture. Packages live in `app/packages/`
-  and features in `app/lib/<feature>/{bloc,view}`. Bloc, go_router, very_good_analysis.
-- **Flavors:**
-  - `development` uses `compound-development`. Its iOS bundle id is the Swift dev app's,
-    `com.andrewcoyle.compound.dev` (since 16 Oct 2026), so it replaces the Swift dev app on a device
-    and shares its App ID, App Group (`group.com.compound.app`), Firebase iOS app and RevenueCat app.
-  - `staging` uses in-memory fakes and no Firebase.
-  - `production` (iOS only, since 18 Oct 2026, at the owner's request) uses the prod project
-    `dialed-c3cb5` and the App Store app's ids: `com.andrewcoyle.compound`, its extension
-    `com.andrewcoyle.compound.WorkoutSessionActivity` and `group.com.compound.app`. App Attest with a
-    DeviceCheck fallback, RevenueCat (it refuses to start without `REVENUECAT_APPLE_API_KEY_PROD`),
-    Remote Config A/B tests. Keys come from `*_PROD` entries in `dart_defines.json`. Build with
-    `flutter build ios --release --flavor production -t lib/main_production.dart --dart-define-from-file=dart_defines.json`.
-    Agents may read only prod's iOS app config, never write there. Android production is not configured.
-  - Run with `flutter run --flavor development -t lib/main_development.dart` from `app/`.
-- **Firebase config is gitignored** because the repo is public: `lib/firebase_options_*.dart`,
-  `google-services.json` and `GoogleService-Info.plist`. Regenerate them with
-  `flutterfire configure` (the arguments are in `docs/specs/flutter/decisions.md`). CI copies
-  `lib/firebase_options_development.dart.example`.
-- **Tests:** use the very_good_cli MCP `test` tool. A hook blocks `very_good test` and
-  `very_good create` in the shell. Packages are held to 100% coverage.
-- **UI:** follow `docs/specs/flutter/ui-contract.md`. Reuse an `app_ui` widget before building one,
-  and put any new component in `app_ui`, not the screen. Feature code uses tokens only and no raw
-  Material buttons, rows, cards or dialogs; `scripts/flutter-ui-check.py` (CI) blocks new ones.
-- **Strings:** after adding English ARB messages, run `python3 scripts/arb-spanish.py`. It
-  copies the Spanish from `Compound/Localizable.xcstrings`; translate whatever it lists by hand.
-- **CI:** `.github/workflows/flutter.yml` runs on PRs touching `app/`, `contracts/` or itself.
-  `ci.yml` (Swift) skips PRs into `feature/flutter`.
-- **Firestore contract:** shared fixtures in `contracts/firestore/` must round-trip through both
-  the Swift and Dart models. No Flutter code may write to a collection whose model fails it.
-
 ## Branching
 
 Two long-lived branches, `main` and `development`.
 
 - **`development`** is the stable development build. Cut every feature, fix and agent branch from
-  it and merge back into it. Delete the branch, its worktree and its DerivedData on merge.
+  it and merge back into it. Delete the branch and its worktree on merge.
 - **`main`** is the release branch. Merges into it are periodic, by pull request from
   `development`, and the repository owner decides when. Do not merge or push to `main` unprompted.
 
-CI runs on pull requests only, so a direct push to `development` is not checked by CI: compile
-and run the unit suite locally first.
+CI runs on pull requests only, so a direct push to `development` is not checked by CI: run the
+affected Flutter tests and `npm test` in `functions/` locally first.
 
 `main` is protected by the **Protect main** ruleset: no direct pushes, force pushes or deletion,
-and a PR merges only once `Lint, build and unit test` and `Cloud Functions unit tests` have
-passed on a branch up to date with `main`. Each merge then starts `.github/workflows/release.yml`
-(the push itself, not a second CI run), which waits for the owner's approval on the `release`
-environment, uploads to TestFlight from the `xcode-27` image and deploys Cloud Functions to prod.
+and a PR merges only once its required checks have passed on a branch up to date with `main`.
+With the Swift app gone those are `Cloud Functions unit tests`, `Flutter app / build`,
+`UI contract` and `Spanish strings` (the ruleset is edited by the owner in GitHub's settings).
+Each merge then starts `.github/workflows/release.yml` (the push itself, not a second CI run),
+which waits for the owner's approval on the `release` environment, uploads to TestFlight from the
+`xcode-27` image and deploys Cloud Functions to prod.
 
 Before reviewing or changing code, `git fetch` and confirm the checkout is level with
 `origin/development`. Do not order branches by commit date, because a merge commit is stamped
 when it is merged: compare what each side has that the other lacks
 (`git rev-list --count --no-merges A..B`).
 
-## First-Time Setup
+## The SwiftUI app (archived)
 
-Copy example files and fill in credentials. All three destinations are gitignored, and the app
-will not build or sign in without them:
+The SwiftUI app (`Compound/`, `Compound.xcodeproj`, its unit and UI tests, widget extension and
+SwiftLint config) was removed from this branch on 20 Oct 2026. It is preserved on GitHub:
 
-- `Compound/Utilities/Keys.swift.example` → `Compound/Utilities/Keys.swift` — 33 constants:
-  OpenAI, Mixpanel, the RevenueCat dev and prod SDK keys, the Strava client ID (its secret is the `STRAVA_CLIENT_SECRET` Functions secret), and 28 `*ManagerKey` strings used as
-  local-persistence path names. The manager keys are arbitrary but must stay stable: changing
-  one orphans data already persisted under the old name.
-- `Compound/Info.plist.example` → `Compound/Info.plist` — already contains the real reversed
-  client IDs for both Firebase projects and the `compound` deep-link scheme, so this is a
-  straight copy. Google Sign-In fails at runtime without it.
-- `Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist` →
-  `GoogleService-Info-Dev.plist` and `GoogleService-Info-Prod.plist` (same folder)
+- tag **`swift-app-store`**: exactly what is released on the App Store;
+- tag **`swift-final`** and branch **`archive/swift`**: the newest Swift code.
 
-## Repository Layout
-
-```
-Compound/                    # the app target (Core, Components, Managers, Root, Extensions,
-                             #   Utilities, SupportingFiles)
-WorkoutSessionActivity/      # Live Activity / Dynamic Island widget extension
-Shared/                      # code shared between the app and the widget extension
-CompoundUnitTests/           # unit tests (target productName is DialedInTests)
-CompoundUITests/             # UI tests
-functions/                   # Firebase Cloud Functions (Node, Genkit/Vertex AI)
-```
-
-## Architecture
-
-The app uses a **custom VIPER-like pattern** where `CoreInteractor` is a single global struct that exposes all managers, and each screen defines its own interactor protocol as an extension on `CoreInteractor`.
-
-### The Four Components Per Screen
-
-**1. Interactor (protocol + CoreInteractor extension)**
-Defines the data/operations a screen needs. Never instantiated separately — the screen just receives a `CoreInteractor` typed as its specific protocol:
-```swift
-@MainActor
-protocol BodyMetricsInteractor: GlobalInteractor {
-    var measurementHistory: [BodyMeasurementEntry] { get }
-    func readAllLocalWeightEntries() throws -> [BodyMeasurementEntry]
-}
-
-extension CoreInteractor: BodyMetricsInteractor { }
-```
-
-**2. Presenter (`@Observable @MainActor class`)**
-Holds the interactor and router. Transforms data for the view. All user actions and lifecycle events are methods here:
-```swift
-@Observable
-@MainActor
-class BodyMetricsPresenter {
-    private let interactor: BodyMetricsInteractor
-    private let router: BodyMetricsRouter
-
-    func onViewAppear() { interactor.trackScreenEvent(event: Event.onAppear) }
-    func onSomethingPressed() { router.showSomeView(...) }
-}
-```
-Events are defined as a nested `enum Event: LoggableEvent` on the presenter.
-
-**3. View (SwiftUI View)**
-Holds the presenter as `@State`. Calls presenter methods for all interactions:
-```swift
-struct BodyMetricsView: View {
-    @State var presenter: BodyMetricsPresenter
-
-    var body: some View {
-        // reads presenter properties, calls presenter methods on actions
-    }
-}
-```
-
-**4. Router (protocol extending `GlobalRouter`)**
-Declares navigation methods. The actual implementation uses `SwiftfulRouting`'s `AnyRouter`. `GlobalRouter` provides `dismissScreen()`, `showAlert(...)`, `showLoadingModal()`, etc. for free.
-
-### Dependency Flow
-
-```
-CompoundApp
-  └── Dependencies(config:)        ← creates all managers based on BuildConfiguration
-        └── DependencyContainer    ← service locator, registered by type
-              └── CoreInteractor   ← resolves all managers from container
-                    └── CoreBuilder / screen builders
-```
-
-**Build configurations** (`BuildConfiguration` enum):
-- `.mock(isSignedIn:)` — all mock services, no Firebase. Used for unit tests and previews.
-- `.dev` — Firebase dev project, `LocalABTestService`, RevenueCat
-- `.prod` — Firebase prod project, `FirebaseABTestService`, RevenueCat
-
-### SwiftUI Previews
-
-Use `DevPreview.shared` to get a pre-configured mock container:
-```swift
-#Preview {
-    let container = DevPreview.shared.container()
-    let interactor = CoreInteractor(container: container)
-    let presenter = SomePresenter(interactor: interactor, router: MockRouter())
-    return SomeView(presenter: presenter)
-}
-```
-
-### GlobalInteractor
-
-`GlobalInteractor` protocol provides every interactor with:
-- `trackEvent(event:)` / `trackScreenEvent(event:)` — analytics
-- `playHaptic(option:)` — haptics
-
-All event tracking uses types conforming to `LoggableEvent` (eventName, parameters, LogType).
-
-## Package-Provided Infrastructure
-
-Most of the infrastructure layer is **not in this repo**. It comes from the `Swiftful*` SPM
-packages and is surfaced through `*+Alias.swift` typealias files so app code never imports the
-packages directly:
-
-| Alias file | Provides |
-|---|---|
-| `Managers/Auth/SwiftfulAuthenticating+Alias.swift` | `AuthManager`, `UserAuthInfo`, `SignInOption`, `MockAuthService` |
-| `Managers/Logs/SwiftfulLogging+Alias.swift` | `LogManager`, `LoggableEvent`, `LogType`, the analytics services |
-| `Managers/Purchases/SwiftfulPurchasing+Alias.swift` | `PurchaseManager`, `AnyProduct`, `PurchasedEntitlement` |
-| `Managers/Routing/SwiftfulRouting+Alias.swift` | `AnyRouter`, `RouterView`, `ResizableSheetConfig` |
-| `Managers/DataManagers/SwiftfulDataManagers+Alias.swift` | `CollectionSyncEngine`, `DocumentSyncEngine`, `DataSyncModelProtocol`, the persistence types |
-| `Managers/Haptics`, `Managers/SoundEffects`, `Utilities/SwiftfulUtilities+Alias.swift` | `HapticManager`, `SoundEffectManager`, `Utilities` |
-| `Components/Views/Charts/QuickCharts+Alias.swift` | `TimeSeries`, `TimeSeriesDatapoint`, `ChartScreen`, `LineChart`, `BarChart`, `StackedBarChart`, `ComboChart`, `ChartConfiguration`, `ContributionChart` and its pieces (`ContributionGrid`, `ContributionGridView`, `ContributionLegend`, `ContributionStyle`, `ContributionLayout`, `ContributionCell`) (from `andrewcoyle1/QuickCharts`) |
-
-So when a symbol like `AuthManager` or `CollectionSyncEngine` cannot be found in this
-repository, it is a package type — look in the alias file, then the package source. Editing its
-behaviour means changing the package, not the app.
-
-**Several of these packages are forks under `andrewcoyle1/`** rather than upstream
-`SwiftfulThinking/`: SwiftfulAuthenticating (+Firebase), SwiftfulGamification (+Firebase),
-SwiftfulDataManagers (+Firebase), SwiftfulRouting. The forks carry changes the app depends on,
-and each `*Firebase` wrapper fork must point its dependency at the matching fork or SwiftPM
-reports a conflicting-identity warning for that package.
-
-## Key Managers
-
-App-owned managers live in `Compound/Managers/` and are accessed through `CoreInteractor`.
-Those marked *(package)* are aliases from the section above, not code in this repo:
-
-| Manager | Purpose |
-|---|---|
-| `AuthManager` *(package)* | Firebase auth (Apple, Google, anonymous) |
-| `UserManager` | Firestore user profile |
-| `WorkoutSessionManager` | Logging and syncing workout sessions |
-| `WorkoutTemplateManager` | Workout template CRUD + prebuilt seeding |
-| `ExerciseModelManager` | Exercise library (local SwiftData + Firestore) + prebuilt seeding |
-| `ExerciseUnitPreferenceManager` | Per-exercise weight/distance unit preferences |
-| `MesocycleManager` | Mesocycles (a program of day plans run for N microcycles) with local/remote sync |
-| `MacrocycleManager` | Macrocycles: ordered mesocycles, the current mesocycle's start and skips. `MesocycleSchedule` derives today's workout and microcycle progress from it (a queue, not a calendar) |
-| `GymProfileManager` | Available equipment per gym |
-| `NutritionManager` / `MealLogManager` | Food logging and nutrition targets |
-| `FoodManager` / `RecipeTemplateManager` | Food and recipe library |
-| `BodyMeasurementsManager` | Body measurements and scale weight |
-| `StepsManager` | Daily step history |
-| `GoalManager` | The weight goal. Each goal is its own document in `users/{uid}/goals` (`goal_id`), and the user's `currentGoalId` names the running one; documents from before goal ids sit under the user id. The rules freeze where a goal started (`starting_weight_kg`, `created_at`), so editing changes only objective, target and rate, and a fresh start is a new goal with the old one marked abandoned (`WeightGoalChoices`) |
-| `WeeklyStreak` (`Core/Social/CircleGoals`) | The one streak: consecutive weeks meeting the weekly session goal (`CircleWeek.goal`). Stamped on sessions as `week_streak_count`, and copied to `users/{uid}/private/settings` (`week_streak`, `week_sessions`, `week_goal`, `week_ends_at`, `last_trained_at`) for the streak reminder. SwiftfulGamification (+Firebase) is still linked in the project but nothing imports it; remove it from the project when convenient |
-| `CoachManager` | The AI coach (see Backend and `docs/specs/ai-coach.md`): streams answers from `coachChat`, reads the saved chats in `users/{uid}/coach_chats` (the function writes them; the app only reads and deletes), and holds consent in private settings (`coach_consent`, written `false` on withdrawal because saves merge). The coach screen checks premium, then consent, itself, so every way in behaves the same. A screen offers it by adopting `AskCoachRouter` and passing a `CoachContext` |
-| `HealthKitManager` / `HKWorkoutManager` | HealthKit read/write |
-| `LiveActivityManager` | Dynamic Island / Lock Screen workout tracking |
-| `StravaManager` | Strava, with the tokens on the server (see Backend). Each finished workout is queued and uploaded with its sets (JSON strength format, so Strava draws its muscle map) and a set summary in its description; the queue is kept per account and sent at sign-in and after each finish, like a sync engine's pending writes, and past workouts can be queued from Integrations. The activity id is stamped on the session as `strava_activity_id`. Imported runs and rides (`importedActivities`) show on the owner's own screens only — the weekly review and their own profile — never anywhere followers see, per Strava's terms. Built-in exercises map to Strava types in `StravaExerciseType`; add a line there for each new one |
-| `PurchaseManager` *(package)* | RevenueCat in dev and prod, each with its own SDK key; StoreKit config files for local testing |
-| `LogManager` *(package)* | Multi-service analytics (Console, Firebase, Mixpanel, Crashlytics) |
-| `ABTestManager` | A/B tests via Firebase Remote Config (prod) or local (dev) |
-| `AIManager` | Food photo, meal description and label analysis, and image generation, via Cloud Functions |
-| `PushManager` / `ImageUploadManager` / `ReportManager` | Notifications, image upload, reporting |
-| `WorkoutSettingsManager` / `ExerciseSettingsManager` / `FoodLogSettingsManager` | User-facing settings |
-| `HapticManager` / `SoundEffectManager` *(package)* | Feedback |
-
-The full registration list is in `Dependencies.init(config:)`; `CoreInteractor` resolves each one
-from the container by type.
-
-Each manager has `Mock*Services` and `Production*Services` implementations selected in `Dependencies.swift`.
-
-## Data Sync Pattern
-
-Each manager owns one or more `CollectionSyncEngine` / `DocumentSyncEngine` instances (from
-SwiftfulDataManagers) that listen to Firestore and mirror into local persistence, so screens read
-the manager's in-memory collection rather than fetching.
-
-`CoreInteractor.syncAllRemoteDataIfLoggedIn()` no longer performs a sync itself — the listeners
-already keep data current, so it only posts `Constants.remoteDataSyncDidComplete` via
-`NotificationCenter` for screens that want to refresh derived state. Treat it as "tell everyone
-to re-read", not "go fetch".
-
-**Saves merge unless the model says otherwise.** The package saves with `setData(merge: true)`,
-which skips a nil field and merges a map key by key, so clearing a value or removing a map key
-never reaches Firestore. A model that adopts `ReplacesClearedFields`
-(`Managers/DataManagers/ReplacesClearedFields.swift`; its `CodingKeys` must be `CaseIterable`) is
-saved with each declared key as a merge field instead: nil fields are deleted, maps replaced,
-undeclared fields kept. Adopt it for any model whose save can clear something, unless another
-writer (likes, counts, a server field) shares one of its declared fields. Test such a save with
-`TestManagers.collectionEngine(…, firestoreSaves: true)`; the plain mocks replace the whole
-document and cannot show the bug.
-
-## Live Activities
-
-`WorkoutSessionActivityExtension` target provides the Dynamic Island / Lock Screen UI during workouts. Uses `ActivityKit` guarded with `#if canImport(ActivityKit) && !targetEnvironment(macCatalyst)` throughout.
-
-## Onboarding Flow
-
-Onboarding lives under `Core/Onboarding/`, in folders numbered by step: `0 - WelcomeView`
-through `9 - OnboardingCompleted` (there is no `1 -` or `7 -`; Get Started goes straight to sign-in, and the account-setup and goal folders open on their first question rather than an intro screen). Each step is its own VIPER module.
-Notifications, Apple Health and Strava are not onboarding steps: each is offered where it is
-first used. Progress is
-persisted to Firestore. After completion, `AppState.startingModuleId` is updated to
-`Constants.tabBarModuleId`.
-
-`UserModel.inferredOnboardingStep` derives the resume point from the stored profile, and any
-screen that needs to resume onboarding routes via **`OnboardingStepRouter`**
-(`Core/Onboarding/OnboardingStepRouter.swift`): a protocol whose extension holds the single
-`routeToOnboardingStep(_:onComplete:)` switch. Six presenters used to carry their own copies of
-that switch and had drifted out of sync. Add new steps there, not in a presenter.
-
-## Body Measurements
-
-The eighteen circumference measurements (neck, waist, left bicep, …) are **one** VIPER module,
-not eighteen. `BodyMeasurementKind`
-(`Core/Analytics/Subviews/BodyMetrics/LogMeasurement/BodyMeasurementKind.swift`) is a table with
-one line per measurement carrying everything that differs: display name, cm and inch picker
-ranges, the two defaults, the `KeyPath` that reads it off `BodyMeasurementEntry`, and the
-`CircumferenceUpdate` that writes it back. `LogMeasurementView` and its presenter are driven by
-that kind, and `BodyMetricsRouter` exposes a single `showLogMeasurementView(kind:)`.
-
-To add a measurement: add a field to `BodyMeasurementEntry` with its `CircumferenceUpdate` and
-`ClearedField` cases, then add one line to the `BodyMeasurementKind` table. Do not copy a module.
-
-The detail screens behind those loggers are collapsed the same way:
-`MeasurementDetails/BodyMeasurementDetail.swift` holds one `MetricDetailPresenter` for all
-eighteen, reached by `showBodyMeasurementDetailView(kind:themeColor:)`. `BodyRatioMetric` and
-`VisualBodyFatMetric` are genuinely different and stay as their own files.
-
-`BodyMeasurementKind` is the **only** table for these eighteen. `BodyMetricType` (which also
-covers `scaleWeight` and `visualBodyFat`, so it cannot simply be replaced) maps into it via
-`measurementKind`, and its `value(from:)` and `displayTitle` defer to that rather than keeping
-their own keypath and title dictionaries.
-
-Together these two passes removed ~7,400 lines across 90 files whose only real differences were
-the values now in the table.
-
-## Design System
-
-**Use a token or primitive, never a literal.** Everything lives in
-`Compound/Components/DesignSystem/`, one file per concern, app target only:
-
-| File | Provides |
-|---|---|
-| `Spacing.swift` | `Spacing.xxs…xxl`, `Radius.s…xl` (always `style: .continuous`), `ControlSize`, `ChartHeight`, `ContentWidth.readable` (the 700 pt column every routed screen centres on iPad and Mac, via the SwiftfulRouting fork's `readableContentWidth`, set once in `CompoundApp`) |
-| `Palette.swift` | `surface`, `canvas`, `tintedSurface(_:)`, the macro colours, `success/warning/danger`, `warmup/superset/personalRecord`, `Color.Metric.*`. `onAccent` is generated from the `OnAccent` asset. |
-| `Typography.swift` | `Font.display/metricLarge/metric/metricSmall/sectionTitle/rowTitle/rowDetail/label`, and `.iconSize(_:)` for symbols. All Dynamic Type. |
-| `Motion.swift` | `Animation.quick/standard/emphasis/progress`, applied only through `withReducedMotionAnimation` / `reducedMotionAnimation` |
-| `Symbols.swift` | `Symbol.*`: one SF Symbol per concept |
-| `Format.swift` | `Format.kcal/grams/weight/reps/sets/repRange/duration/distance/percent/placeholder` for every displayed quantity |
-| `Presentation.swift` | Sheet presets `.compact/.half/.full` |
-| `Dashboard.swift` | `Dashboard { Section… }`: a tab root's sections as a `List` on a phone and two card columns from `ContentWidth.twoColumns` up. Today uses it; Progress instead widens via `preferredReadableContentWidth` and lets `AnalyticsCardGrid` add columns (2–4). |
-| `Card.swift`, `Stat.swift`, `Chip.swift`, `ListRow.swift`, `NumberField.swift`, `BottomCTA.swift`, `InlineMessage.swift`, `OnboardingStepScaffold.swift` | The primitives: `.cardSurface`, `Stat`, `Chip` (+ `.chipTapTarget()`), `ListRow`/`ListRowButton`/`ListRowToggle`/`SelectableRow`, `NumberField`, `.bottomCTA`, `InlineMessage`, `OnboardingStepScaffold` |
-
-`docs/specs/ui-framework/CONTRACT.md` is the contract: every name above, the accent rules
-(`.tint`/`Color.accentColor`, never `.primary` or `labelColor` standing in for the brand), and the
-screen patterns (close/confirm roles, one `CallToActionButton` via `.bottomCTA`, inline titles,
-`ContentUnavailableView` empty states, haptics after every save). The accent is two assets,
-`AccentColor` and `OnAccent`; changing both recolours the app.
-
-User-facing strings use US spelling and go through `Localizable.xcstrings`, which is kept 100%
-Spanish-complete. Counts use the catalog's plural variations (`"\(n) sets"`) or `Format.sets`,
-never a hand-written "s".
-
-Eight `custom_rules` in `.swiftlint.yml` enforce this at **error** severity, and CI runs
-`swiftlint --strict`: `no_corner_radius_modifier`, `no_foreground_color`, `no_fixed_font_size`,
-`no_rgb_color_literal`, `no_bare_with_animation`, `accent_spelling`, `no_color_scheme_surfaces`
-and `no_drawn_close_button`. They skip comments. Share cards
-(`Core/Social/ShareCard/`, `WeeklyReviewShareCardView.swift`) render to fixed-size images and
-the widget (`WorkoutSessionActivity/`) has no design system, so both are exempt where a rule
-cannot apply. If a rule fires, use the token; do not suppress it.
-
-## Calculations and their sources
-
-Every figure the app works out for the user, rather than reads back from their logs, rests on a
-published source and says so. The research behind each choice, with the full reference list
-(R1–R113), is `docs/research/algorithms-evidence.md`; how each DOI and number was checked, and the
-ones still to read in the paper, is `docs/research/citation-verification-checklist.md`.
-
-- `Components/Science/Citations.swift` is the catalogue: one `Citation` per source, named after
-  the first author and year (`Citation.morton2018`), linking to its DOI. Cite only from it.
-- `MethodInfo` (`Components/Science/MethodInfo+Energy|Nutrition|Training|Volume|Habits.swift`)
-  is the user-facing account of one calculation: a plain summary, the formula exactly as the code
-  computes it, its limits, the constants that are Compound's own choices (`ownChoices`), and the
-  citations. Never present a design choice as a finding.
-- `MethodInfoButton(.someMethod)` is the ⓘ beside the figure; `MethodInfoHeader(title:info:)` puts
-  it at a section header's trailing edge. Settings › Methods & Sources lists every method.
-- **A new or changed calculation needs its `MethodInfo` updated in the same change**, and a button
-  wherever it is shown.
-
-What the main calculations now are, and where they are specified:
-
-| Area | Method | Spec |
-|---|---|---|
-| Resting energy | Mifflin-St Jeor (default), revised Harris-Benedict, Cunningham 1980 when body fat is known (stored raw value `katchMcArdle`) | `docs/specs/adaptive-expenditure.md` |
-| Formula expenditure | RMR × FAO/WHO/UNU 2004 PAL band (1.4 / 1.55 / 1.7 / 1.85 / 2.0), no exercise-frequency add-on, TEF shown as 10% | same |
-| kcal per kg | `EnergyDensity`: Forbes/Hall partition when body fat is known, else 7,700. The only conversion | same |
-| Weight trend and expenditure | One Kalman filter (`ExpenditureFilter`, `WeightTrendCalculator`): trend weight, intake, expenditure, with an SD and a calibrating state | same |
-| Calorie target | Deadband controller in `TargetProposal`, at most weekly and ±150 kcal, adherence checked before lowering | same, and `weekly-check-in.md` |
-| Nutrition targets | `NutritionTargets`: protein tiers on a reference weight at BMI ≥ 30, fat floor, keto 30 g, sex-specific floors, rates as % of body weight | `adaptive-expenditure.md` |
-| Strength | `ExerciseOneRMAggregator.estimated1RM` (Epley on reps + RIR, none past ten), `LoadIncrement`, `MesocycleDeload`, tapered warm-ups, rest by exercise type | `docs/specs/smart-progression.md` |
-| Volume | `MuscleVolume.hardSets` (RPE ≥ 6, drops 0.5, secondaries 0.5), one 10–20 band with four tiers, `VolumeRecommendation` | `docs/specs/training-volume.md` |
-
-## UI and the HIG
-
-Check UI work against Apple's live Human Interface Guidelines with the **`apple-hig` skill**
-(user-level, `~/.claude/skills/apple-hig`), not from memory — the guidance for bars, buttons,
-materials and colour was rewritten for Liquid Glass and is still changing. If the skill is not
-installed, say so and mark HIG claims as unverified.
-
-```bash
-python3 ~/.claude/skills/apple-hig/scripts/hig.py get tab-bars toolbars --platform ios
-```
-
-**Platforms.** The app ships to iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`), iOS 26.0+,
-with Mac Catalyst enabled on the app and the widget extension. Pass `--platform ios` by default
-and `--platform ipados` when the change affects layout or navigation at regular width. Read
-`designing-for-ios` once per session.
-
-**Precedence.** Where this project has already decided, the decision wins and the HIG fills in the
-rest: the Design System section above, `docs/specs/ui-framework/CONTRACT.md` and the Decisions
-list in that folder's `README.md`. If a HIG page contradicts one of those, report it with the
-source URL — do not change the contract from inside a feature.
-
-**Pages by area:**
-
-| Area | Read |
-|---|---|
-| Tab shell, navigation | `tab-bars`, `toolbars`, `searching`, `sheets`, `modality` |
-| Onboarding (`Core/Onboarding/`) | `onboarding`, `privacy`, `healthkit`, `managing-notifications`, `sign-in-with-apple`, `managing-accounts` |
-| Paywalls | `apple-in-app-purchase` |
-| Active workout, Live Activity (`WorkoutSessionActivity/`) | `workouts`, `live-activities`, `playing-haptics` |
-| Analytics and charts | `charting-data`, `charts` |
-| Logging forms (food, sets, measurements) | `entering-data`, `pickers`, `text-fields`, `virtual-keyboards` |
-| Lists and rows | `lists-and-tables`, `buttons`, `menus`, `context-menus` |
-| Everything | `accessibility`, `typography`, `color`, `materials` |
-
-**Reviews** go in `docs/reviews/`, one file per review, in the skill's finding format (severity,
-`file:line`, quoted guideline with source URL, fix). State which appearances and text sizes were
-actually checked.
-
-## Backend (Cloud Functions)
-
-`functions/` holds Firebase Cloud Functions v2 (Node, ES modules) using Genkit with Vertex AI.
-Twelve `onCall` callables, all in `us-central1` except `coachChat` (`europe-west4`): `foodAnalyze`,
-`mealDescribe`, `nutritionLabelAnalyze`, `imageGenerate`, `foodSearch`, `removeFollower`,
-`acceptInvite`, `coachChat`, and four for Strava: `stravaConnect`, `stravaAccessToken`, `stravaConnection` and
-`stravaDisconnect`. Strava's client secret lives only in the
-`STRAVA_CLIENT_SECRET` Functions secret (`firebase functions:secrets:set` per project).
-
-**Strava.** The tokens live server-side in `strava_connections/{uid}`, which no client can read,
-so a connection belongs to the Compound account, not the device: signing out keeps it.
-- `stravaConnect({clientId, code | refreshToken})` connects. The refresh-token form migrates an
-  older build's Keychain token; a code without `activity:write` is refused with
-  `failed-precondition`. One Compound account per athlete: connecting takes the athlete from any
-  other account.
-- `stravaAccessToken` hands the app a short-lived token, which it uses to call Strava directly. It
-  answers `not-found` when not connected, and `permission-denied` when Strava refuses the
-  refresh, which also drops the connection.
-- `stravaConnection` answers the status and athlete; `stravaDisconnect` revokes at `/oauth/revoke`
-  with Basic client credentials.
-- Imported activities live in `users/{uid}/strava_activities` (owner read-only). Compound's own
-  uploads (`external_id` "compound-…") are never imported. Connecting queues a 365-day import.
-- `stravaWebhook` (HTTP; verify token in the `STRAVA_WEBHOOK_VERIFY_TOKEN` secret) only queues
-  events in `strava_events`; `onStravaEventCreated` processes them: activity create, update and
-  delete, and a deauthorization, believed only after a forced refresh fails, because webhooks are
-  unsigned.
-- Disconnecting, a refused refresh, deauthorization and account deletion all remove the
-  connection and every imported activity.
-- `stravaToken`, which older builds used to keep the tokens themselves, was removed on 13 Oct 2026
-  and deleted from both projects. Removing a function from the source does not delete it: delete
-  it by hand first (`firebase functions:delete <name> --project <id> --force`), or the release's
-  `--non-interactive` deploy aborts.
-- One-time setup per project: set `STRAVA_WEBHOOK_VERIFY_TOKEN`, deploy, then create Strava's
-  push subscription (`POST https://www.strava.com/api/v3/push_subscriptions` with `client_id`,
-  `client_secret`, `callback_url` = the deployed `stravaWebhook` URL, `verify_token`). Strava
-  allows one subscription per app, so dev and prod need separate Strava apps.
-- Strava's rate limits (200 requests per 15 minutes, 2,000 a day by default) are per **app**, not
-  per athlete: every user's uploads, backfills and imports share them.
-
-**AI coach.** `coachChat` (options `COACH_CALLABLE_OPTIONS`) answers read-only questions about the
-caller's own data with Gemini 3.5 Flash (3.8 Flash as the last try) on Vertex's `eu` multi-region endpoint, beside Firestore's `eur3`. It
-streams `{ text }` chunks and returns `{ chatId, messageId, text, remainingToday }`. Checks run in
-order, so a refusal costs nothing:
-- Consent: `users/{uid}/private/settings.coach_consent === true`.
-- Premium: RevenueCat REST v2 `active_entitlements`, with a V2 key that can only read customer
-  information (`REVENUECAT_SECRET_KEY` secret; project id `REVENUECAT_PROJECT_ID` in
-  `functions/.env.<project>`). A yes is cached five minutes, a 404 means not premium, any other
-  failure answers `unavailable`, and `compound-development` skips the check.
-- Quota: 50 messages a day in the user's timezone plus 5 a minute, in the server-only
-  `coach_usage/{uid}`.
-
-The model reads data only through the ten tools in `functions/coach.js`, one allowed area each;
-there is no tool for Strava, progress photos or anything social, and tests enforce that. The
-app's expenditure engine, formula TDEE, weight trend, estimated 1RM (Epley on reps + RIR, none past
-ten reps to failure, Reynolds 2006: `ExerciseOneRMAggregator.estimated1RM`, the app's only copy) and
-weekly muscle sets are copied in `functions/coach-maths.js`. `CompoundUnitTests/Fixtures/coach-parity.json`
-is checked by both `CoachParityTests.swift` and `coach-maths.test.js`, so changing either copy
-without the other fails a test. After changing the maths in both, rewrite its expected values with
-`node scripts/coach-parity-expected.mjs`. `functions/data/PrebuiltExercises.json` must stay a
-byte-for-byte copy of the app's file, which a test checks. Run `node scripts/coach-eval.js` from
-`functions/` (application-default credentials, `GCLOUD_PROJECT=compound-development`) after
-changing the prompt, the tools or the model.
-
-**Streak reminder.** `streakReminder` reads the app's weekly streak from the private settings doc
-and pushes only when every remaining day of the week is needed and none is logged today.
-`user_streaks` is no longer read.
-
-All of them share `CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true }` (the Strava ones
-extend it as `STRAVA_CALLABLE_OPTIONS` with the secret) and call
-`requireAuth(request)`, which throws `unauthenticated` when `request.auth` is missing. Keep both
-on any new callable — they are the only thing stopping an arbitrary rebuilt client from calling
-the backend, since the API keys in the bundled plists are public by design.
-
-App Check on the client is wired in `Compound/Utilities/AppCheckProviderFactory.swift`:
-App Attest where available, DeviceCheck as fallback, and a debug provider for simulators. A
-simulator debug token must be registered in the **dev** Firebase project only, never prod.
-
-Two things live outside the code and are easy to miss:
-- App Check **enforcement** is a per-service toggle in the Firebase console, separate from the
-  `enforceAppCheck` flag here.
-- Enabling enforcement breaks already-shipped app versions that predate the App Check wiring.
-  Check App Check metrics for unverified traffic before turning it on.
-
-Each release to `main` deploys them to prod (see Release (CD)). Outside a release, deploy with
-`firebase deploy --only functions --project <id>`; it is not part of the Xcode build, so changes
-under `functions/` have no effect until deployed, and the dev project is only ever deployed by hand.
-
-`npm test` in `functions/` runs five `node:test` cases (`index.test.js`) with no emulator: the
-pure helpers in `lib.js`, a source check that every `onCall` takes `CALLABLE_OPTIONS` and opens
-with `requireAuth`, and a `.run()` of each callable without auth expecting `unauthenticated`.
-CI runs them in a separate `functions` job on Ubuntu. `npm ci` needs the lock file in sync with
-`package.json`; if it fails with "Missing: … from lock file", run `npm install` and commit the
-lock.
-
-## Code Health Baseline
-
-As of the UI framework merge, the Development and Mock schemes and the
-`WorkoutSessionActivityExtension` scheme build with **zero warnings**, and `swiftlint --strict`
-reports **zero violations** across 1,520 files, including the design-system custom rules.
-
-The Production scheme builds at the default `-O`. Its test action has
-`shouldAutocreateTestPlan = "NO"`, and that is load-bearing under **Xcode 27.0**:
-
-- Xcode 27's auto-created test plan turns code coverage on, and the scheme applies that to every
-  build through it, not only to tests. Production was being compiled with `-profile-generate
-  -profile-coverage-mapping`.
-- Coverage instrumentation plus `-O` crashes the Swift 6.4 compiler: an LLVM verifier failure,
-  "Instruction does not dominate all uses", which Xcode shows as "Command SwiftCompile failed
-  with a nonzero exit code". The function is the optimiser's specialised copy of
-  `WeeklyReviewPresenter.init`, where `self.week` is assigned from a ternary. Without coverage
-  the same source compiles.
-- The crash is reported against whichever file is first in the target, because specialised code
-  is emitted into the first file's unit. Do not chase the named file.
-- A target-level `CLANG_COVERAGE_MAPPING = NO` does not help; the scheme overrides it. Check what
-  a scheme resolves to with `xcodebuild -showBuildSettings -scheme … | grep CLANG_COVERAGE_MAPPING`.
-- Editing the scheme in Xcode may write `shouldAutocreateTestPlan` back to `YES`. If Production
-  stops compiling, look there first.
-
-The Development and Mock schemes still auto-create a plan, so their builds are instrumented. They
-compile at `-Onone`, where it is harmless.
-
-Treat any new warning as something to
-fix rather than accumulate.
-
-Building a scheme does not compile the test target, so a warning in `CompoundUnitTests` shows up
-only under `xcodebuild test`. Check the test run's log for `warning:` as well as the three builds
-before claiming the baseline holds.
-
-Two file-wide suppressions exist, each documented at the site:
-- `Dependencies.swift` disables `type_body_length`/`file_length` — it is one long DI root whose
-  switch arms bind ~32 locals that a shared registration block consumes.
-- `StravaManager.swift` scopes an iOS 26 deprecation on `presentationAnchor(for:)` with
-  `@available(iOS, deprecated: 26.0)` — not a SwiftLint rule — because every spelling of a
-  scene-less `UIWindow` is deprecated and Swift has no per-call suppression.
-
-`DesignSystem/Spacing.swift` disables `identifier_name` so `Spacing.s`, `Radius.m` and the
-rest can be one letter.
-
-`Components/Science/Citations.swift`, `Citations+R56.swift` and the five `MethodInfo+*.swift` files
-disable `line_length`:
-they hold full references and user-facing prose, which read worse broken across lines.
-
-Ten single-line `swiftlint:disable:next` comments also exist:
-- `function_body_length` in `DevPreview.swift`, `CoreInteractor.swift` and
-  `WorkoutSessionModel.swift`; in `Dependencies.swift` it also covers `cyclomatic_complexity`.
-- `large_tuple` in `PushManager.swift` and `NutritionOverviewPresenter.swift`.
-- `function_parameter_count` in `AddMealView.swift` and `ExpenditureEngine.swift`.
-- `cyclomatic_complexity` in `WeightStepper.swift`.
-- `no_rgb_color_literal` in `SignInWithGoogleButtonView.swift`, for the dark fill Google's
-  branding guidelines fix.
+Never delete or move them. Read the Swift source there (`git show swift-final:<path>`) when a spec
+in `docs/` names a Swift file, or to check that a Firestore change stays readable by App Store
+Swift clients. Its build, test, architecture and design-system notes are in that version of this
+file.

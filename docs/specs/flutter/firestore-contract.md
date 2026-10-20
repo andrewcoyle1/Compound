@@ -1,5 +1,10 @@
 # Firestore contract: Swift and Flutter share documents
 
+> **20 Oct 2026:** the Swift app and its contract tests were removed from this repository (they
+> live on at the `swift-final` tag and the `archive/swift` branch), so only the Dart side below
+> still runs. App Store Swift clients still read these documents, so the fixtures stay frozen as
+> Swift-compatible; see `contracts/README.md`.
+
 The safeguard against the Flutter app corrupting data the Swift app reads.
 Both apps write the same documents. Swift **silently drops** any document it can't decode
 (`Query+CollectionChanges.swift:58,67`, `Firestore+EXT.swift:20`), so one bad Flutter write makes

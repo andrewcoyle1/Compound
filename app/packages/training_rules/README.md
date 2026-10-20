@@ -1,9 +1,8 @@
 # training_rules
 
-Pure Dart port of the workout tracker's and smart progression's rules. The Swift app is the source
-of truth. `CompoundUnitTests/Fixtures/progression-parity.json` holds 830 deterministic cases that
-`ProgressionParityTests.swift` records from the Swift and checks; `test/parity_test.dart` checks
-this port against the same file.
+Pure Dart port of the workout tracker's and smart progression's rules.
+`contracts/fixtures/progression-parity.json` holds 830 deterministic cases recorded from the Swift
+app's `ProgressionParityTests.swift`; `test/parity_test.dart` checks this port against them.
 
 | Dart | Swift |
 |---|---|
@@ -23,12 +22,8 @@ later slice's job. Where the Swift returns words (log titles, spoken labels, the
 port returns the decision they are worded from (`ProgressionReason`, `NextPiece`, `SetProblem`) and
 the app words it.
 
-To regenerate the fixture after changing the Swift:
-
-```bash
-TEST_RUNNER_RECORD_PARITY=1 xcodebuild test -project Compound.xcodeproj \
-  -scheme 'Compound - Development' -destination 'platform=iOS Simulator,id=…' \
-  -only-testing:CompoundUnitTests/ProgressionParityTests -parallel-testing-enabled NO
-```
+The fixture was recorded from the Swift app, which was removed from the repository on 20 Oct
+2026 (it is archived at the `swift-final` tag and the `archive/swift` branch). It is now frozen:
+this port is the source of truth, and the fixture stays as its regression check.
 
 Coverage is held at 100%.

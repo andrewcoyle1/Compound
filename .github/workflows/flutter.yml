@@ -1,23 +1,16 @@
 name: Flutter
 
 # The Flutter app in app/ (see docs/specs/flutter/plan.md). Runs only when the app, the shared
-# Firestore contract fixtures or this file change; the Swift CI in ci.yml is unaffected.
+# fixtures in contracts/ (the Firestore contract, the parity fixtures and the bundled catalogue),
+# the checking scripts or this file change; ci.yml tests the Cloud Functions.
 on:
   pull_request:
     paths:
       - "app/**"
       - "contracts/**"
-      # compound_maths' parity test reads the Swift/JS fixture.
-      - "CompoundUnitTests/Fixtures/coach-parity.json"
-      - "CompoundUnitTests/Fixtures/nutrition-parity.json"
-      - "CompoundUnitTests/Fixtures/progression-parity.json"
-      # training_session's parity test reads the Swift-recorded tracker cases.
-      - "CompoundUnitTests/Fixtures/tracker-parity.json"
-      # training_library_repository embeds the bundled exercises and workouts.
-      - "Compound/SupportingFiles/Resources/PrebuiltExercises.json"
-      - "Compound/SupportingFiles/Resources/PrebuiltWorkouts.json"
-      - "Compound/SupportingFiles/Resources/PrebuiltMesocycles.json"
       - "scripts/flutter-ui-check.py"
+      - "scripts/arb-spanish.py"
+      - "scripts/data/**"
       - ".github/workflows/flutter.yml"
 
 concurrency:
@@ -152,7 +145,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-      # Every English message needs its Spanish (the Swift app's 100% rule, carried over).
+      # Every English message needs its Spanish (the Swift app's 100% rule, carried over; its
+      # catalog is scripts/data/Localizable.xcstrings).
       - run: python3 scripts/arb-spanish.py --self-test
       - run: python3 scripts/arb-spanish.py --check
 
@@ -190,7 +184,7 @@ jobs:
     with:
       working_directory: app/packages/training_library_repository
       flutter_version: "3.47.7"
-      # Its tests read ../../../contracts/firestore and the Swift app's Prebuilt*.json, which
+      # Its tests read ../../../contracts/firestore and contracts/catalogue/Prebuilt*.json, which
       # the package embeds byte for byte. Packages are held at 100%.
       min_coverage: 100
       # No blocs in a repository.
@@ -226,7 +220,7 @@ jobs:
       working_directory: app/packages/training_session
       flutter_version: "3.47.7"
       # Its tests read ../../../contracts/firestore and the Swift-recorded
-      # CompoundUnitTests/Fixtures/tracker-parity.json. Packages are held at 100%.
+      # contracts/fixtures/tracker-parity.json. Packages are held at 100%.
       min_coverage: 100
       # A controller, not a bloc.
       run_bloc_lint: false
@@ -324,8 +318,8 @@ jobs:
     with:
       working_directory: app/packages/strava_repository
       flutter_version: "3.47.7"
-      # Its tests read ../../../contracts/firestore and the Swift app's
-      # PrebuiltExercises.json. Packages are held at 100%.
+      # Its tests read ../../../contracts/firestore and
+      # contracts/catalogue/PrebuiltExercises.json. Packages are held at 100%.
       min_coverage: 100
       # No blocs in a repository.
       run_bloc_lint: false

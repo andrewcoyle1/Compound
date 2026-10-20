@@ -86,7 +86,7 @@ Future<T> _read<T>(WidgetTester tester, Future<T> Function() read) async =>
     (await tester.runAsync(read)) as T;
 
 List<int> _fixture(String name) =>
-    File('../CompoundUnitTests/Fixtures/programs/$name').readAsBytesSync();
+    File('../contracts/fixtures/programs/$name').readAsBytesSync();
 
 void main() {
   late AppBloc appBloc;

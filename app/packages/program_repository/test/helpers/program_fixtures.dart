@@ -1,4 +1,4 @@
-// The program-import fixtures in CompoundUnitTests/Fixtures/programs
+// The program-import fixtures in contracts/fixtures/programs
 // (written by make-fixture.py) and a library holding every exercise the
 // sample program names (Swift `ProgramFixtures`).
 import 'dart:io';
@@ -7,8 +7,7 @@ import 'package:compound_models/compound_models.dart';
 import 'package:program_repository/program_repository.dart';
 
 List<int> fixtureBytes(String name) =>
-    File('../../../CompoundUnitTests/Fixtures/programs/$name')
-        .readAsBytesSync();
+    File('../../../contracts/fixtures/programs/$name').readAsBytesSync();
 
 ProgramSheet xlsxSheet() =>
     parseProgramSheet(readXlsx(fixtureBytes('sample-program.xlsx')));

@@ -6,8 +6,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:training_rules/training_rules.dart';
 
-const _fixturePath =
-    '../../../CompoundUnitTests/Fixtures/progression-parity.json';
+const _fixturePath = '../../../contracts/fixtures/progression-parity.json';
 
 typedef Json = Map<String, dynamic>;
 

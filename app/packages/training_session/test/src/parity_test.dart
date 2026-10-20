@@ -1,4 +1,4 @@
-// The port against CompoundUnitTests/Fixtures/tracker-parity.json, which
+// The port against contracts/fixtures/tracker-parity.json, which
 // TrackerParityTests.swift records from the Swift: every item of the
 // contract's full gym resolved to a weight step in both units, and sessions
 // built from a template over that gym.
@@ -11,8 +11,7 @@ import 'package:training_rules/training_rules.dart' as r;
 import 'package:training_session/training_session.dart';
 
 final Map<String, Object?> _fixture = jsonDecode(
-  File('../../../CompoundUnitTests/Fixtures/tracker-parity.json')
-      .readAsStringSync(),
+  File('../../../contracts/fixtures/tracker-parity.json').readAsStringSync(),
 ) as Map<String, Object?>;
 
 final m.GymProfileModel _gym = m.GymProfileModel.fromFirestore(

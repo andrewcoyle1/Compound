@@ -1127,6 +1127,7 @@ export const onStravaEventCreated = onDocumentCreated(
 import {
     validateCoachRequest, hasCoachConsent, isCoachPremium, consumeCoachQuota, firestoreSource, coachEnvironment,
     historyForModel, appendChatMessages, chatTitle, defineCoachTools, runCoach, coachRuntime,
+    replyWithRetry, isModelBusy,
 } from "./coach.js";
 import { coachBlocks, defineShowBlockTool, blockChunk, storedBlock, fitStoredBlocks } from "./coach-blocks.js";
 
@@ -1136,6 +1137,9 @@ const coachAI = genkit({ plugins: [vertexAI({ location: COACH_MODEL_LOCATION })]
 // A small thinking budget: choosing which tools to call and reconciling their figures is where a
 // coach goes wrong, and 1k thinking tokens buys that for about a second.
 const COACH_MODEL = vertexAI.model(GEMINI_MODEL, { thinkingConfig: { thinkingBudget: 1024 } });
+// When gemini-3.8-flash is out of capacity in the EU, the last try goes to its sibling there, so
+// the reply still never leaves the EU.
+const COACH_FALLBACK_MODEL = vertexAI.model("gemini-3.5-flash", { thinkingConfig: { thinkingBudget: 1024 } });
 const COACH_CONFIG = { temperature: 0.3, maxOutputTokens: 4096 };
 const coachTools = defineCoachTools(coachAI);
 const coachBlockTool = defineShowBlockTool(coachAI);
@@ -1166,15 +1170,28 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     const messageId = randomUUID();
     // Generative UI (coach-blocks.js): only for an app that renders the catalog. Each block streams
     // as its own chunk as soon as it is built.
-    const blocks = ui ? coachBlocks({ messageId, onBlock: request.acceptsStreaming ? (block) => response.sendChunk(blockChunk(block)) : null }) : null;
-    const text = await coachRuntime.reply({
-        source,
-        env,
-        history: historyForModel(existing?.data()?.messages),
-        message,
-        context,
-        blocks,
-        onChunk: request.acceptsStreaming ? (delta) => response.sendChunk({ text: delta }) : null,
+    let streamed = false;
+    let blocks = null;
+    const text = await replyWithRetry({
+        models: [COACH_MODEL, COACH_MODEL, COACH_FALLBACK_MODEL],
+        hasStreamed: () => streamed,
+        attempt: (model) => {
+            // A fresh collector per try: a failed try streamed nothing, so it kept nothing.
+            blocks = ui ? coachBlocks({ messageId, onBlock: request.acceptsStreaming ? (block) => { streamed = true; response.sendChunk(blockChunk(block)); } : null }) : null;
+            return coachRuntime.reply({
+                model,
+                source,
+                env,
+                history: historyForModel(existing?.data()?.messages),
+                message,
+                context,
+                blocks,
+                onChunk: request.acceptsStreaming ? (delta) => { streamed = true; response.sendChunk({ text: delta }); } : null,
+            });
+        },
+    }).catch((error) => {
+        if (isModelBusy(error)) throw new HttpsError("unavailable", "The coach is busy; try again in a moment", { reason: "busy" });
+        throw error;
     });
     if (!text) throw new HttpsError("internal", "The coach had no answer");
 

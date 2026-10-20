@@ -21,9 +21,8 @@ docs/                # specs (docs/specs/flutter/ for the app), research, review
 firestore.rules, storage.rules, firestore.indexes.json, firebase.json
 ```
 
-`AppIcons/` (exercise and equipment icon artwork) and `Dialed.icon` (an Icon Composer file from
-the app's earlier name) are source art that nothing builds from; the app's own icons are in
-`app/ios/Runner/AppIcons/`.
+The app's icons are in `app/ios/Runner/AppIcons/`. The old exercise and equipment source art
+(`AppIcons/`) and `Dialed.icon` were removed on 20 Oct 2026; they are in tag `swift-final`.
 
 ## Flutter app (`app/`)
 
@@ -250,7 +249,7 @@ Both workflows run on pull requests only.
   fails only if a job that ran failed or was cancelled; it is the check `main` requires. A new
   job must go in its `needs:` list and get the same `needs: changes` / `if:` pair as the others.
 - **`.github/workflows/ci.yml`** runs `Cloud Functions unit tests` (`npm ci && npm test` in
-  `functions/`, Node 22, Ubuntu) on every PR except slice PRs into `feature/flutter`.
+  `functions/`, Node 22, Ubuntu) on every PR.
 
 Every action in the workflows is pinned to a commit SHA, with its tag in a trailing comment, and
 the release pins `firebase-tools` to an exact version: the release runs them with prod

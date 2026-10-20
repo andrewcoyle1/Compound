@@ -861,6 +861,22 @@ export function isModelBusy(error) {
     return status === "RESOURCE_EXHAUSTED" || status === "UNAVAILABLE" || code === 429 || code === 503;
 }
 
+// Runs `work(signal)` but gives up after `ms`: a model call that never answers (Vertex sometimes
+// holds a request rather than refusing it) is aborted and reported as busy, so the next try runs
+// instead of the whole reply waiting out the function's timeout.
+export async function withTimeout(work, ms) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    try {
+        return await work(controller.signal);
+    } catch (error) {
+        if (controller.signal.aborted) throw Object.assign(new Error(`no answer within ${ms} ms`), { status: "UNAVAILABLE" });
+        throw error;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
 // Tries `attempt` with each model in turn (the last is a fallback model), backing off between busy
 // answers. Any other error, or a busy answer after something was streamed, is thrown at once.
 export async function replyWithRetry({ models, attempt, hasStreamed, delaysMs = [1000, 3000],
@@ -880,9 +896,10 @@ export async function replyWithRetry({ models, attempt, hasStreamed, delaysMs = 
 /// caller's data. `onChunk` gets each piece of text as it arrives. With `blocks` (coach-blocks.js
 /// `coachBlocks`), the model is also offered `blockTool` and told how to use it; without, the
 /// request is exactly the text-only one.
-export async function runCoach({ ai, model, tools, blockTool = null, config, source, env, history, message, context, blocks = null, onChunk }) {
+export async function runCoach({ ai, model, tools, blockTool = null, config, source, env, history, message, context, blocks = null, onChunk, abortSignal }) {
     const { stream, response } = ai.generateStream({
         model,
+        abortSignal,
         system: coachSystemPrompt(env, context, blocks ? COACH_UI_VERSION : null),
         messages: history,
         prompt: message,

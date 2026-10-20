@@ -731,7 +731,7 @@ so a connection belongs to the Compound account, not the device: signing out kee
   per athlete: every user's uploads, backfills and imports share them.
 
 **AI coach.** `coachChat` (options `COACH_CALLABLE_OPTIONS`) answers read-only questions about the
-caller's own data with Gemini 3.8 Flash on Vertex's `eu` multi-region endpoint, beside Firestore's `eur3`. It
+caller's own data with Gemini 3.5 Flash (3.8 Flash as the last try) on Vertex's `eu` multi-region endpoint, beside Firestore's `eur3`. It
 streams `{ text }` chunks and returns `{ chatId, messageId, text, remainingToday }`. Checks run in
 order, so a refusal costs nothing:
 - Consent: `users/{uid}/private/settings.coach_consent === true`.

@@ -1136,10 +1136,12 @@ const DEV_PROJECT_ID = "compound-development";
 const coachAI = genkit({ plugins: [vertexAI({ location: COACH_MODEL_LOCATION })] });
 // A small thinking budget: choosing which tools to call and reconciling their figures is where a
 // coach goes wrong, and 1k thinking tokens buys that for about a second.
-const COACH_MODEL = vertexAI.model(GEMINI_MODEL, { thinkingConfig: { thinkingBudget: 1024 } });
-// When gemini-3.8-flash is out of capacity in the EU, the last try goes to its sibling there, so
-// the reply still never leaves the EU.
-const COACH_FALLBACK_MODEL = vertexAI.model("gemini-3.5-flash", { thinkingConfig: { thinkingBudget: 1024 } });
+// gemini-3.5-flash, not the food callables' 3.8: on 20 Oct 2026 3.8 Flash at the eu endpoint was
+// refused or timed out on about half of all calls and took ~12 s for a sentence, while 3.5 Flash
+// answered 12/12 in ~1 s and passed the coach eval (16/16, blocks 4/4). Supported until May 2027
+// or later. The last try goes to 3.8 Flash, also in the EU, so a reply never leaves the EU.
+const COACH_MODEL = vertexAI.model("gemini-3.5-flash", { thinkingConfig: { thinkingBudget: 1024 } });
+const COACH_FALLBACK_MODEL = vertexAI.model(GEMINI_MODEL, { thinkingConfig: { thinkingBudget: 1024 } });
 const COACH_CONFIG = { temperature: 0.3, maxOutputTokens: 4096 };
 const coachTools = defineCoachTools(coachAI);
 const coachBlockTool = defineShowBlockTool(coachAI);

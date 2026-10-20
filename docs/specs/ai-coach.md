@@ -9,7 +9,7 @@ A chat in which the user asks about their own training, nutrition and body data.
 |---|---|
 | Scope at launch | Read-only. It answers; it never writes. Actions (log a meal, swap an exercise) are v2, behind confirmation cards. |
 | Access | Premium only, checked on the server. |
-| Model | Gemini 3.8 Flash on Vertex AI, through Genkit's Google GenAI plugin, as the existing callables use (2.5 Flash retired on 20 Oct 2026). |
+| Model | Gemini 3.5 Flash on Vertex AI, through Genkit's Google GenAI plugin, with 3.8 Flash as the last try. 3.8 Flash was refused or timed out on about half of all calls at the `eu` endpoint on 20 Oct 2026, when 2.5 Flash retired; 3.5 Flash answered every call in about a second and passed the eval. |
 | Region | `europe-west4` for the function; the Vertex endpoint is the `eu` multi-region, since current Gemini models aren't served from single regions. Firestore is `eur3`, so nothing leaves the EU. |
 | Data access | Server-side tools. The function reads Firestore with the Admin SDK for the caller's uid; no round trips through the app. |
 | Derived figures | Ported to the server (expenditure, weight trend, PRs and e1RM, muscle volume). See "Keeping the maths in step". |

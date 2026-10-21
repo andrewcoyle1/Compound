@@ -277,6 +277,12 @@ pinned), the three gitignored config files from secrets (`FLUTTER_DART_DEFINES`,
 distribution signing needs it). `manageAppVersionAndBuildNumber` takes the next free build number.
 The export is not internal-only, so a release build can go to external testers and App Review.
 
+- **Development certificates.** The archive step creates an Apple Development certificate
+  ("Created via API") for each throwaway runner; at the account's limit of twelve the archive
+  fails with "Your account has reached the maximum number of certificates" (20 Oct 2026, after a
+  month of releases). The job's last step runs `scripts/revoke-ci-dev-certificates.mjs`, which
+  revokes every development certificate named "Created via API". Certificates made in Xcode carry
+  the owner's name and are never touched.
 - It runs on the **`xcode-27`** runner image (a GitHub preview), Xcode 27.0. Unknown to
   actionlint, hence the `-ignore` above.
 - `KEYS_SWIFT` and `GOOGLE_SERVICE_INFO_PROD` were the Swift build's secrets; nothing reads them now.

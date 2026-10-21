@@ -150,6 +150,20 @@ jobs:
             -authenticationKeyID "$ASC_API_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_API_ISSUER_ID"
 
+      # Each run's archive creates an Apple Development certificate for this throwaway machine;
+      # left alone they fill the account's twelve slots and the next archive fails. Revoked
+      # whether or not the upload worked, while the API key is still here.
+      - name: Revoke this machine's development certificate
+        if: always()
+        working-directory: .
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          if [ -f "$RUNNER_TEMP/AuthKey.p8" ]; then
+            ASC_API_KEY_PATH="$RUNNER_TEMP/AuthKey.p8" node scripts/revoke-ci-dev-certificates.mjs
+          fi
+
       - name: Remove the API key and config
         if: always()
         run: rm -f "$RUNNER_TEMP/AuthKey.p8" dart_defines.json lib/firebase_options_production.dart ios/flavors/production/GoogleService-Info.plist

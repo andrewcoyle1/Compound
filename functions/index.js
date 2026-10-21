@@ -1165,6 +1165,7 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     const chatRef = chatId ? chats.doc(chatId) : chats.doc();
     const existing = chatId ? await chatRef.get() : null;
     if (existing && !existing.exists) throw new HttpsError("not-found", "No such chat");
+    const past = historyForModel(existing?.data()?.messages);
 
     const env = await coachEnvironment(source);
     const remainingToday = await consumeCoachQuota(db, uid, { day: env.today, nowMs: env.now.getTime() });
@@ -1192,7 +1193,8 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
                 model,
                 source,
                 env,
-                history: historyForModel(existing?.data()?.messages),
+                history: past.messages,
+                shown: past.shown,
                 message,
                 context,
                 blocks,

@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { genkit } from "genkit";
 import {
-    fixtureSource, coachEnvironment, COACH_TOOLS, coachSystemPrompt, historyForModel, defineCoachTools, runCoach,
+    fixtureSource, coachEnvironment, COACH_TOOLS, coachSystemPrompt, historyForModel, withoutShownNotes, defineCoachTools, runCoach,
     validateCoachRequest,
 } from "./coach.js";
 import {
@@ -333,19 +333,28 @@ test("blocks are emptied, oldest first, before a chat outgrows its document; the
     assert.deepEqual(fitted.filter((m) => m.blocks).map((m) => m.blocks[0].fallback), ["Chart 0", "Chart 1", "Chart 2"]);
 });
 
-test("the model's history reads each block as one [Shown: …] line after its reply", () => {
+test("the model's history keeps replies as written and lists their blocks for the system prompt", async () => {
+    const { env } = await scope("cutting");
     const turns = [
         { role: "user", text: "Am I on track?" },
         { role: "assistant", text: "Yes, right on pace.", blocks: [{ fallback: "Weight trend, 2026-09-08 to 2026-10-05: 81.7 → 79.8 kg." }, { fallback: "You can: Log weight." }] },
         { role: "user", text: "And protein?" },
+        // Saved before this fix: the model had copied the notes into its reply.
+        { role: "assistant", text: "Over target.\n\n[Shown: Food on 2026-10-19: 4,190 of 2,398 kcal.]\n[Shown: You can: Log a meal.]" },
     ];
-    assert.deepEqual(historyForModel(turns).map((m) => m.content[0].text), [
-        "Am I on track?",
-        "Yes, right on pace.\n[Shown: Weight trend, 2026-09-08 to 2026-10-05: 81.7 → 79.8 kg.]\n[Shown: You can: Log weight.]",
-        "And protein?",
-    ]);
+    const { messages, shown } = historyForModel(turns);
+    assert.deepEqual(messages.map((m) => m.content[0].text), ["Am I on track?", "Yes, right on pace.", "And protein?", "Over target."]);
+    assert.deepEqual(shown, ["Weight trend, 2026-09-08 to 2026-10-05: 81.7 → 79.8 kg.", "You can: Log weight."]);
+    const prompt = coachSystemPrompt(env, null, 1, shown);
+    assert.match(prompt, /never write them out:\n- Weight trend, 2026-09-08 to 2026-10-05: 81\.7 → 79\.8 kg\.\n- You can: Log weight\./);
+    assert.doesNotMatch(coachSystemPrompt(env, null, 1), /never write them out/);
     // Without blocks, exactly as before.
-    assert.deepEqual(historyForModel([{ role: "user", text: "hi" }, { role: "assistant", text: "hello" }]).map((m) => m.content), [[{ text: "hi" }], [{ text: "hello" }]]);
+    assert.deepEqual(historyForModel([{ role: "user", text: "hi" }, { role: "assistant", text: "hello" }]).messages.map((m) => m.content), [[{ text: "hi" }], [{ text: "hello" }]]);
+});
+
+test("a reply never keeps a [Shown: …] line the model wrote", () => {
+    assert.equal(withoutShownNotes("You're over.\n\n[Shown: Food on 2026-10-19: 4,190 of 2,398 kcal.]\n[Shown: You can: Log a meal; Open the diet plan.]"), "You're over.");
+    assert.equal(withoutShownNotes("Keep [Shown: inline] text.\nNext line."), "Keep [Shown: inline] text.\nNext line.");
 });
 
 // MARK: - The whole loop, through Genkit

@@ -107,10 +107,10 @@ test("chat titles, the stored cap and the model's history window", () => {
         { role: "user", text: "a".repeat(50) }, { role: "assistant", text: "b".repeat(50) },
         { role: "user", text: "c".repeat(50) }, { role: "assistant", text: "d".repeat(50) },
     ];
-    const window = historyForModel(turns, 120);
+    const window = historyForModel(turns, 120).messages;
     assert.deepEqual(window.map((m) => m.role), ["user", "model"], "budget keeps the newest turns, opening with the user");
     assert.equal(window[0].content[0].text[0], "c");
-    assert.deepEqual(historyForModel(undefined), []);
+    assert.deepEqual(historyForModel(undefined), { messages: [], shown: [] });
 });
 
 // MARK: - Tools
@@ -183,6 +183,21 @@ test("nutrition shows each day against its target, with meals for short ranges o
     assert.ok(Array.isArray(week.days[0].meals));
     const month = await COACH_TOOLS.get_nutrition(source, env, { days: 30 });
     assert.equal(month.days[0].meals, undefined);
+});
+
+test("a day's Apple Health import counts only when nothing else was logged that day, as in the app", async () => {
+    const account = FIXTURE_ACCOUNTS.stalled;
+    const { env } = await envFor("stalled");
+    const before = await COACH_TOOLS.get_nutrition(fixtureSource(account), env, { days: 7 });
+    const logged = before.days.find((d) => d.logged && !d.partiallyLogged);
+    const empty = before.days.find((d) => !d.logged);
+    const sample = account.meals.find((m) => m.day_key === logged.day);
+    // Health holds Compound's own meals for a logged day, and someone else's for an empty one.
+    const healthImport = (day) => ({ ...sample, id: `healthkit-nutrition-${day}`, meal_id: `healthkit-nutrition-${day}`, day_key: day, date: `${day}T21:00:00Z` });
+    const withImports = fixtureSource({ ...account, meals: [...account.meals, healthImport(logged.day), healthImport(empty.day)] });
+    const after = await COACH_TOOLS.get_nutrition(withImports, env, { days: 7 });
+    assert.deepEqual(after.days.find((d) => d.day === logged.day).totals, logged.totals, "not counted twice");
+    assert.ok(after.days.find((d) => d.day === empty.day).logged, "the only record of that day counts");
 });
 
 test("body metrics give weigh-ins with the app's trend", async () => {

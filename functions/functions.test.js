@@ -706,7 +706,8 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
                 assert.deepEqual(reply.blocks, [{ surfaceId: block.surfaceId, kind: "follow_ups", as_of: block.asOf, fallback: block.fallback, messages: block.messages }]);
 
                 await ask({ chatId: result.chatId, message: "And then?", ui: 1 });
-                assert.equal(replies[1].history[1].content[0].text, "Here is your week.\n[Shown: Suggested questions: How is my squat going?]");
+                assert.equal(replies[1].history[1].content[0].text, "Here is your week.");
+                assert.deepEqual(replies[1].shown, ["Suggested questions: How is my squat going?"]);
             } finally {
                 coach.coachRuntime.reply = textOnly;
             }

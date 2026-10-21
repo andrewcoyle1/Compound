@@ -97,7 +97,8 @@ final class const CoachBlockShown(
 ///
 /// [text] is the whole answer; show it in place of what streamed, because
 /// a reply can also arrive whole, with no [CoachText] before it. [blocks]
-/// are the [CoachBlockShown]s that streamed, in order.
+/// are the [CoachBlockShown]s that streamed, in order, or for a reply that
+/// arrived whole, the blocks its result carries.
 final class const CoachFinished({
   /// The chat it was saved in: new when no chat id was sent.
   required final String chatId,
@@ -175,7 +176,9 @@ typedef CoachChatCall = Stream<CoachStreamEvent> Function(
 /// function sends text alone.
 ///
 /// A chunk carrying a `block` becomes a [CoachBlockShown]. One that does not
-/// decode is dropped, never an error: the answer's text still stands.
+/// decode is dropped, never an error: the answer's text still stands. The
+/// result also carries the answer's `blocks` as the chat stores them; those
+/// are the [CoachFinished.blocks] when none streamed, decoded by the same rule.
 ///
 /// cloud_functions 6.5 streams, but drops a refusal's code: on Android the
 /// stream just ends, and on iOS every error arrives as `unknown`. So when
@@ -240,26 +243,34 @@ CoachChatCall firebaseCoachChat(FirebaseFunctions functions) {
   };
 }
 
-CoachFinished _finished(Object? data, [List<CoachBlock>? blocks]) {
+/// The result, with the [streamed] blocks, or when none streamed, the ones
+/// the result carries (the same blocks, as the chat stores them).
+CoachFinished _finished(Object? data, [List<CoachBlock> streamed = const []]) {
   final result = data! as Map;
   return CoachFinished(
     chatId: result['chatId']! as String,
     messageId: result['messageId']! as String,
     text: result['text']! as String,
     remainingToday: readInt(result['remainingToday']),
-    blocks: blocks ?? const [],
+    blocks: streamed.isNotEmpty
+        ? streamed
+        : [
+            if (result['blocks'] case final List<Object?> blocks)
+              for (final block in blocks) ?_block(block, stored: true),
+          ],
   );
 }
 
-/// A chunk's `block`, or null for none or one that does not decode. The
-/// chunk spells the date `asOf`; the chat stores it `as_of`.
-CoachBlock? _block(Object? block) {
+/// A chunk's `block`, or a [stored] one from the result, or null for none or
+/// one that does not decode. The chunk spells the date `asOf`; the chat
+/// stores it `as_of`.
+CoachBlock? _block(Object? block, {bool stored = false}) {
   if (block is! Map) return null;
   try {
     final data = _json(block)! as Map<String, Object?>;
     return CoachBlock.fromFirestore({
       ...data,
-      CoachBlockKeys.asOf: data['asOf'],
+      if (!stored) CoachBlockKeys.asOf: data['asOf'],
     });
   } on Object {
     return null;

@@ -21,9 +21,8 @@ docs/                # specs (docs/specs/flutter/ for the app), research, review
 firestore.rules, storage.rules, firestore.indexes.json, firebase.json
 ```
 
-`AppIcons/` (exercise and equipment icon artwork) and `Dialed.icon` (an Icon Composer file from
-the app's earlier name) are source art that nothing builds from; the app's own icons are in
-`app/ios/Runner/AppIcons/`.
+The app's icons are in `app/ios/Runner/AppIcons/`. The old exercise and equipment source art
+(`AppIcons/`) and `Dialed.icon` were removed on 20 Oct 2026; they are in tag `swift-final`.
 
 ## Flutter app (`app/`)
 
@@ -240,14 +239,17 @@ is only ever deployed by hand. In `functions/`:
 
 Both workflows run on pull requests only.
 
-- **`.github/workflows/flutter.yml`** runs when a PR touches `app/`, `contracts/`,
-  `scripts/flutter-ui-check.py`, `scripts/arb-spanish.py`, `scripts/data/` or the workflow itself.
-  Its jobs: `Flutter app` (the app, through Very Good Workflows' `flutter_package.yml`, coverage
-  reported, not gated), one job per package in `app/packages/` (held at 100%), `UI contract`
-  (`flutter-ui-check.py`) and `Spanish strings` (`arb-spanish.py --check`). A reusable-workflow
-  job reports as `<job name> / build`, for example `Flutter app / build`.
+- **`.github/workflows/flutter.yml`** runs on every PR. Its `Flutter changes` job checks whether
+  the PR touches `app/`, `contracts/`, `scripts/flutter-ui-check.py`, `scripts/arb-spanish.py`,
+  `scripts/data/` or the workflow itself; if not, every other job skips. The jobs: `Flutter app`
+  (the app, through Very Good Workflows' `flutter_package.yml`, coverage reported, not gated), one
+  job per package in `app/packages/` (held at 100%), `UI contract` (`flutter-ui-check.py`) and
+  `Spanish strings` (`arb-spanish.py --check`). A reusable-workflow job reports as
+  `<job name> / build`, for example `Flutter app / build`. **`Flutter CI`** always runs last and
+  fails only if a job that ran failed or was cancelled; it is the check `main` requires. A new
+  job must go in its `needs:` list and get the same `needs: changes` / `if:` pair as the others.
 - **`.github/workflows/ci.yml`** runs `Cloud Functions unit tests` (`npm ci && npm test` in
-  `functions/`, Node 22, Ubuntu) on every PR except slice PRs into `feature/flutter`.
+  `functions/`, Node 22, Ubuntu) on every PR.
 
 Every action in the workflows is pinned to a commit SHA, with its tag in a trailing comment, and
 the release pins `firebase-tools` to an exact version: the release runs them with prod
@@ -324,8 +326,9 @@ affected Flutter tests and `npm test` in `functions/` locally first.
 
 `main` is protected by the **Protect main** ruleset: no direct pushes, force pushes or deletion,
 and a PR merges only once its required checks have passed on a branch up to date with `main`.
-With the Swift app gone those are `Cloud Functions unit tests`, `Flutter app / build`,
-`UI contract` and `Spanish strings` (the ruleset is edited by the owner in GitHub's settings).
+Those are `Cloud Functions unit tests` and `Flutter CI` (the summary job above, so a PR that
+changes nothing Flutter still reports). The ruleset is edited in GitHub's settings or with
+`gh api repos/andrewcoyle1/Compound/rulesets/24390967`.
 Each merge then starts `.github/workflows/release.yml` (the push itself, not a second CI run),
 which waits for the owner's approval on the `release` environment, uploads to TestFlight from the
 `xcode-27` image and deploys Cloud Functions to prod.

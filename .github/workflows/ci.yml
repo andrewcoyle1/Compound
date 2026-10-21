@@ -6,10 +6,7 @@ name: CI
 on:
   pull_request:
     # The Flutter app has its own workflow (flutter.yml). This one runs the Cloud Functions tests
-    # on every pull request (into development and main among them) except slice PRs into
-    # feature/flutter.
-    branches-ignore:
-      - feature/flutter
+    # on every pull request.
 
 # One run per ref: a new push supersedes whatever is still in flight.
 concurrency:

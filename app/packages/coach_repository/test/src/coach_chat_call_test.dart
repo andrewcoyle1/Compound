@@ -229,6 +229,81 @@ void main() {
       },
     );
 
+    group('a reply that arrives whole', () {
+      /// The weight stream's blocks as the chat stores them, in the result.
+      List<Map<String, Object?>> storedBlocks() => [
+        for (final chunk
+            in (recorded('weight_stream.json')['chunks']! as List)
+                .cast<Map<String, Object?>>())
+          if (chunk['block'] case final Map<String, Object?> block)
+            {
+              for (final MapEntry(:key, :value) in block.entries)
+                if (key != 'asOf') key: value,
+              'as_of': block['asOf'],
+            },
+      ];
+
+      Future<List<String>> finishedBlocks(Object? blocks) async {
+        call = () async => _result({..._finishedData, 'blocks': blocks});
+        final finished = await send().single as CoachFinished;
+        return [for (final block in finished.blocks) block.surfaceId];
+      }
+
+      test('shows the blocks its result carries', () async {
+        final blocks = storedBlocks();
+        expect(blocks, hasLength(greaterThan(1)));
+
+        expect(await finishedBlocks(blocks), [
+          for (final block in blocks) block['surfaceId'],
+        ]);
+      });
+
+      test('drops one that does not decode', () async {
+        final [first, ...] = storedBlocks();
+
+        expect(
+          await finishedBlocks([
+            'not a block',
+            first,
+            {'surfaceId': 's'},
+          ]),
+          [first['surfaceId']],
+        );
+      });
+
+      test('shows none when the result carries none', () async {
+        expect(await finishedBlocks(null), isEmpty);
+        expect(await finishedBlocks('not a list'), isEmpty);
+        call = () async => _result(_finishedData);
+        expect((await send().single as CoachFinished).blocks, isEmpty);
+      });
+    });
+
+    test('a streamed answer keeps its streamed blocks, once', () async {
+      final fixture = recorded('weight_stream.json');
+      final chunks = fixture['chunks']! as List<Object?>;
+      stream = () => Stream.fromIterable([
+        for (final chunk in chunks) Chunk(chunk),
+        Result(
+          _result({
+            ...fixture['result']! as Map<String, Object?>,
+            'blocks': [
+              for (final chunk in chunks.cast<Map<String, Object?>>())
+                if (chunk['block'] case final Map<String, Object?> block)
+                  {...block, 'as_of': block['asOf']},
+            ],
+          }),
+        ),
+      ]);
+
+      final events = await send().toList();
+
+      expect((events.last as CoachFinished).blocks.map((b) => b.surfaceId), [
+        for (final event in events)
+          if (event is CoachBlockShown) event.block.surfaceId,
+      ]);
+    });
+
     test(
       'a block alone means it was answering: a drop is not asked again',
       () async {

@@ -1,25 +1,45 @@
 name: Flutter
 
-# The Flutter app in app/ (see docs/specs/flutter/plan.md). Runs only when the app, the shared
-# fixtures in contracts/ (the Firestore contract, the parity fixtures and the bundled catalogue),
-# the checking scripts or this file change; ci.yml tests the Cloud Functions.
+# The Flutter app in app/ (see docs/specs/flutter/plan.md); ci.yml tests the Cloud Functions.
+#
+# Runs on every pull request, but the jobs only do work when the app, the shared fixtures in
+# contracts/ (the Firestore contract, the parity fixtures and the bundled catalogue), the checking
+# scripts or this file change: `changes` decides, and the rest skip otherwise. The "Flutter CI"
+# job at the end always reports, failing only if a job that ran failed. That is the check main's
+# ruleset requires: a path filter on the trigger would leave a docs-only PR waiting for checks that
+# never start, and a skipped reusable-workflow job reports under another name.
 on:
   pull_request:
-    paths:
-      - "app/**"
-      - "contracts/**"
-      - "scripts/flutter-ui-check.py"
-      - "scripts/arb-spanish.py"
-      - "scripts/data/**"
-      - ".github/workflows/flutter.yml"
 
 concurrency:
   group: flutter-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Flutter changes
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.diff.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git diff --name-only "$BASE...HEAD" | grep -qE '^(app/|contracts/|scripts/flutter-ui-check\.py$|scripts/arb-spanish\.py$|scripts/data/|\.github/workflows/flutter\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing the Flutter jobs check changed; they skip."
+          fi
+
   app:
     name: Flutter app
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app
@@ -33,6 +53,8 @@ jobs:
 
   compound_models:
     name: compound_models
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/compound_models
@@ -43,6 +65,8 @@ jobs:
 
   app_ui:
     name: app_ui
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/app_ui
@@ -51,6 +75,8 @@ jobs:
 
   compound_charts:
     name: compound_charts
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/compound_charts
@@ -60,6 +86,8 @@ jobs:
 
   compound_maths:
     name: compound_maths
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/compound_maths
@@ -68,6 +96,8 @@ jobs:
       run_bloc_lint: false
   auth_repository:
     name: auth_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/auth_repository
@@ -76,6 +106,8 @@ jobs:
 
   workout_session_repository:
     name: workout_session_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/workout_session_repository
@@ -86,12 +118,16 @@ jobs:
       run_bloc_lint: false
   user_repository:
     name: user_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/user_repository
 
   nutrition_repository:
     name: nutrition_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/nutrition_repository
@@ -102,6 +138,8 @@ jobs:
       run_bloc_lint: false
   body_repository:
     name: body_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/body_repository
@@ -112,6 +150,8 @@ jobs:
       run_bloc_lint: false
   checkin_repository:
     name: checkin_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/checkin_repository
@@ -122,6 +162,8 @@ jobs:
       run_bloc_lint: false
   social_repository:
     name: social_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/social_repository
@@ -132,6 +174,8 @@ jobs:
       run_bloc_lint: false
   connectivity_repository:
     name: connectivity_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/connectivity_repository
@@ -141,6 +185,8 @@ jobs:
       run_bloc_lint: false
   strings:
     name: Spanish strings
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -152,6 +198,8 @@ jobs:
 
   ui_contract:
     name: UI contract
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -162,6 +210,8 @@ jobs:
 
   training_rules:
     name: training_rules
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/training_rules
@@ -171,6 +221,8 @@ jobs:
 
   analytics_repository:
     name: analytics_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/analytics_repository
@@ -180,6 +232,8 @@ jobs:
 
   training_library_repository:
     name: training_library_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/training_library_repository
@@ -192,6 +246,8 @@ jobs:
 
   program_repository:
     name: program_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/program_repository
@@ -204,6 +260,8 @@ jobs:
 
   food_repository:
     name: food_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/food_repository
@@ -215,6 +273,8 @@ jobs:
 
   training_session:
     name: training_session
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/training_session
@@ -227,6 +287,8 @@ jobs:
 
   image_repository:
     name: image_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/image_repository
@@ -238,6 +300,8 @@ jobs:
 
   purchases_repository:
     name: purchases_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/purchases_repository
@@ -249,6 +313,8 @@ jobs:
 
   device_store:
     name: device_store
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/device_store
@@ -260,6 +326,8 @@ jobs:
 
   ab_test_repository:
     name: ab_test_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/ab_test_repository
@@ -271,6 +339,8 @@ jobs:
 
   notifications_repository:
     name: notifications_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/notifications_repository
@@ -282,6 +352,8 @@ jobs:
 
   ai_repository:
     name: ai_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/ai_repository
@@ -293,6 +365,8 @@ jobs:
 
   coach_repository:
     name: coach_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/coach_repository
@@ -303,6 +377,8 @@ jobs:
       run_bloc_lint: false
   health_repository:
     name: health_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/health_repository
@@ -314,6 +390,8 @@ jobs:
 
   strava_repository:
     name: strava_repository
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/strava_repository
@@ -323,3 +401,16 @@ jobs:
       min_coverage: 100
       # No blocs in a repository.
       run_bloc_lint: false
+
+  flutter-ci:
+    name: Flutter CI
+    if: always()
+    needs: [changes, app, compound_models, app_ui, compound_charts, compound_maths, auth_repository, workout_session_repository, user_repository, nutrition_repository, body_repository, checkin_repository, social_repository, connectivity_repository, strings, ui_contract, training_rules, analytics_repository, training_library_repository, program_repository, food_repository, training_session, image_repository, purchases_repository, device_store, ab_test_repository, notifications_repository, ai_repository, coach_repository, health_repository, strava_repository]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every job that ran passed
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          echo "$RESULTS"
+          if echo "$RESULTS" | grep -qE '"(failure|cancelled)"'; then exit 1; fi

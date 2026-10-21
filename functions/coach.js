@@ -35,8 +35,9 @@ export const COACH_CONTEXT_KINDS = [
 /// The catalog version of generative UI blocks this server builds (`ui` in the request).
 export const COACH_UI_VERSION = 1;
 
-/// The request, checked at the trust boundary: { chatId?, message, context?: { kind, id?, date? }, ui? }.
+/// The request, checked at the trust boundary: { chatId?, message, context?: { kind, id?, date? }, ui?, regenerate? }.
 /// `ui` is the block catalog the app renders; any other value, or none, means text only.
+/// `regenerate: true` asks again for the chat's last answer (`withoutLastExchange`).
 export function validateCoachRequest(data) {
     const message = typeof data?.message === "string" ? data.message.trim() : "";
     if (message.length < 1 || message.length > COACH_MAX_MESSAGE_CHARS) {
@@ -56,7 +57,19 @@ export function validateCoachRequest(data) {
         }
         context = { kind, id: id ?? null, date: date ?? null };
     }
-    return { chatId, message, context, ui: uiVersion(data?.ui) };
+    return { chatId, message, context, ui: uiVersion(data?.ui), regenerate: data?.regenerate === true };
+}
+
+const shiftDay = (day, days) => new Date(Date.parse(`${day}T12:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+
+/// The day a day chat (`chatId` YYYY-MM-DD) is for, or null for any other id. A day chat is open on
+/// the user's today and the days either side, as the app's midnight and the server's can differ by
+/// a few minutes; an older day has ended (`past_day`) and a later one has not begun.
+export function chatDay(chatId, today) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(chatId ?? "")) return null;
+    if (chatId < shiftDay(today, -1)) throw new HttpsError("failed-precondition", "That day has ended; ask in today's chat", { reason: "past_day" });
+    if (chatId > shiftDay(today, 1)) throw new HttpsError("invalid-argument", "chatId is a day that has not begun");
+    return chatId;
 }
 
 // The block catalog the app draws. Firebase's iOS SDK can send the app's `ui: 1` as `true` (Swift
@@ -135,6 +148,13 @@ export async function isCoachPremium(uid, { projectId, apiKey, fetchImpl = fetch
 export function chatTitle(message) {
     const line = message.replace(/\s+/g, " ").trim();
     return line.length <= 60 ? line : `${line.slice(0, 59).trimEnd()}…`;
+}
+
+/// The messages without their last exchange when it is `question` and its answer, so a regenerated
+/// answer replaces the old one; otherwise as they are.
+export function withoutLastExchange(messages, question) {
+    const [asked, answered] = (messages ?? []).slice(-2);
+    return asked?.role === "user" && asked.text === question && answered?.role === "assistant" ? messages.slice(0, -2) : messages;
 }
 
 /// The stored messages with the new ones appended, the oldest dropped past the cap.
@@ -804,11 +824,13 @@ export function callCoachTool(coach, name, input = {}) {
 }
 
 /// The tools on a Genkit instance. The caller's data reaches them through `context.coach`
-/// ({ source, env, cache, blocks }), which the model can neither see nor set.
+/// ({ source, env, cache, blocks, onTool }), which the model can neither see nor set. `onTool` hears
+/// each tool's name as it starts, for the app's "reading your workouts" line.
 export function defineCoachTools(ai) {
     return Object.entries(TOOL_SPECS).map(([name, spec]) => ai.defineTool(
         { name, description: spec.description, inputSchema: spec.input, outputSchema: z.any() },
         async (input, { context }) => {
+            context.coach.onTool?.(name);
             try {
                 return await callCoachTool(context.coach, name, input ?? {});
             } catch (error) {
@@ -878,19 +900,25 @@ export function isModelBusy(error) {
 
 // Runs `work(signal)` but gives up after `ms`: a model call that never answers (Vertex sometimes
 // holds a request rather than refusing it) is aborted and reported as busy, so the next try runs
-// instead of the whole reply waiting out the function's timeout.
-export async function withTimeout(work, ms) {
+// instead of the whole reply waiting out the function's timeout. `stop` (the callable's
+// response.signal, aborted when the app goes away) aborts it too, as `coachStopped`: never busy,
+// so it is not retried.
+export async function withTimeout(work, ms, stop = null) {
+    if (stop?.aborted) throw coachStopped();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), ms);
     try {
-        return await work(controller.signal);
+        return await work(stop ? AbortSignal.any([controller.signal, stop]) : controller.signal);
     } catch (error) {
+        if (stop?.aborted) throw coachStopped();
         if (controller.signal.aborted) throw Object.assign(new Error(`no answer within ${ms} ms`), { status: "UNAVAILABLE" });
         throw error;
     } finally {
         clearTimeout(timer);
     }
 }
+
+const coachStopped = () => Object.assign(new Error("the app stopped the reply"), { stopped: true });
 
 // Tries `attempt` with each model in turn (the last is a fallback model), backing off between busy
 // answers. Any other error, or a busy answer after something was streamed, is thrown at once.
@@ -911,7 +939,7 @@ export async function replyWithRetry({ models, attempt, hasStreamed, delaysMs = 
 /// caller's data. `onChunk` gets each piece of text as it arrives. With `blocks` (coach-blocks.js
 /// `coachBlocks`), the model is also offered `blockTool` and told how to use it; without, the
 /// request is exactly the text-only one.
-export async function runCoach({ ai, model, tools, blockTool = null, config, source, env, history, shown = [], message, context, blocks = null, onChunk, abortSignal }) {
+export async function runCoach({ ai, model, tools, blockTool = null, config, source, env, history, shown = [], message, context, blocks = null, onChunk, onTool = null, abortSignal }) {
     const { stream, response } = ai.generateStream({
         model,
         abortSignal,
@@ -922,7 +950,7 @@ export async function runCoach({ ai, model, tools, blockTool = null, config, sou
         // Each block is a tool call, so a reply with blocks may need a turn or two more.
         maxTurns: blocks ? 12 : 8,
         config,
-        context: { coach: { source, env, cache: new Map(), blocks } },
+        context: { coach: { source, env, cache: new Map(), blocks, onTool } },
     });
     // The reply is everything the model wrote, across every turn: what the app streamed. Genkit's
     // response.text is only the last turn's, and a model that answers and then calls show_block

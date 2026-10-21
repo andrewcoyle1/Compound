@@ -57,6 +57,32 @@ tool, so the exclusions hold by construction rather than by prompt.
   medical questions go to a professional.
 - Replies stream.
 
+## Day chats, status, stop and regenerate
+
+Since 21 Oct 2026 (`coachChat` in `functions/index.js`, helpers in `functions/coach.js`).
+
+- **Day chats.** A `chatId` of the form `YYYY-MM-DD` is that day's chat. It is made on its first
+  message with `day: "<key>"` on the document, so it never answers `not-found`. It is open on the
+  user's today (in the timezone in their private settings) and the days either side, because the
+  app's midnight and the server's can differ by a few minutes (`chatDay`). An older day answers
+  `failed-precondition` with `{ reason: "past_day" }`, after consent and premium and before the
+  quota, so it costs no message. A later day answers `invalid-argument`. Any other `chatId` is an
+  older chat and must exist, as before; no `chatId` still starts a new random-id chat.
+- **Status chunks.** As each tool starts (the ten data tools and `show_block`), a streaming reply
+  sends `{ "text": "", "status": { "tool": "<tool name>" } }`. It holds no user data and keeps a
+  `text` key, so older apps ignore it. It is not part of the answer, so a busy retry can still
+  follow it.
+- **Stop.** The callable's `response.signal` aborts when the app goes away. The model call is
+  aborted with it (combined with each try's timeout in `withTimeout`), nothing is saved, and the
+  call ends `cancelled`, which nobody receives. A stop is never treated as busy, so it is not
+  retried. The message stays counted against the quota, and the `coach_reply` log line has
+  `stopped: true`.
+- **Regenerate.** `regenerate: true` with the same `message`: when the chat's last two stored
+  messages are a user message with exactly that text and then an assistant reply, both are left
+  out of the model's history and dropped when saving (checked again inside the saving
+  transaction), so the new answer replaces the old one. Otherwise the request is answered as
+  usual. It costs a message like any other.
+
 ## Keeping the maths in step
 
 Expenditure, trend, PR and muscle-volume logic will exist in Swift and in JS. To stop them

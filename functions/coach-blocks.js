@@ -346,7 +346,10 @@ export function defineShowBlockTool(ai) {
             inputSchema: SHOW_BLOCK_INPUT,
             outputSchema: z.any(),
         },
-        async (input, { context }) => context.coach.blocks?.add(input, context.coach) ?? notShown("blocks are off"),
+        async (input, { context }) => {
+            context.coach.onTool?.("show_block");
+            return context.coach.blocks?.add(input, context.coach) ?? notShown("blocks are off");
+        },
     );
 }
 

@@ -433,3 +433,16 @@ test("the reply is all the text the model wrote, also when it answers before sho
     ]);
     assert.equal(await runCoach({ ...both, config: {}, source, env, history: [], message: "Am I on track?", context: null, blocks: coachBlocks({ messageId: "m2" }), onChunk: null }), "You're on track. Keep logging.");
 });
+
+test("each tool the model calls is named to onTool as it starts, show_block included", async () => {
+    const run = scripted([
+        { calls: [["get_body_metrics", { days: 28 }], ["show_block", BLOCK_ARGS.trend_chart]] },
+        { calls: [["get_steps", {}]] },
+        { text: "Done." },
+    ]);
+    const { source, env } = await scope("cutting");
+    const started = [];
+    await runCoach({ ...run, config: {}, source, env, history: [], message: "x", context: null, blocks: coachBlocks({ messageId: "m" }), onChunk: null, onTool: (tool) => started.push(tool) });
+    // The block reads its figures through the cached tool, which is not a model tool call.
+    assert.deepEqual(started, ["get_body_metrics", "show_block", "get_steps"]);
+});

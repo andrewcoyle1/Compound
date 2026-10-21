@@ -1121,13 +1121,14 @@ export const onStravaEventCreated = onDocumentCreated(
 // AI coach
 // ---------------------------------------------------------------------------
 // A read-only chat about the caller's own data: docs/specs/ai-coach.md and coach.js. Gated on
-// consent, premium (skipped on the dev project, as dev builds are premium) and a daily quota, in
-// that order, so a refusal never costs a message. Replies stream when the app asks for it.
+// consent, premium (skipped on the dev project, as dev builds are premium), a day chat's day and a
+// daily quota, in that order, so a refusal never costs a message. Replies stream when the app asks
+// for it.
 
 import {
     validateCoachRequest, hasCoachConsent, isCoachPremium, consumeCoachQuota, firestoreSource, coachEnvironment,
     historyForModel, appendChatMessages, chatTitle, defineCoachTools, runCoach, coachRuntime,
-    replyWithRetry, isModelBusy, withTimeout,
+    replyWithRetry, isModelBusy, withTimeout, chatDay, withoutLastExchange,
 } from "./coach.js";
 import { coachBlocks, defineShowBlockTool, blockChunk, storedBlock, fitStoredBlocks } from "./coach-blocks.js";
 
@@ -1149,7 +1150,7 @@ coachRuntime.reply ??= (args) => runCoach({ ai: coachAI, model: COACH_MODEL, too
 
 export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response) => {
     const uid = requireAuth(request);
-    const { chatId, message, context, ui } = validateCoachRequest(request.data);
+    const { chatId, message, context, ui, regenerate } = validateCoachRequest(request.data);
     const db = getFirestore();
     const source = firestoreSource(db, uid);
 
@@ -1161,13 +1162,18 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
         if (!premium) throw new HttpsError("permission-denied", "The coach is a premium feature", { reason: "premium" });
     }
 
+    const env = await coachEnvironment(source);
+    // A day chat (chatId YYYY-MM-DD) is made on its first message; any other id must exist, and none
+    // starts a new chat (older builds).
+    const day = chatDay(chatId, env.today);
     const chats = db.collection("users").doc(uid).collection("coach_chats");
     const chatRef = chatId ? chats.doc(chatId) : chats.doc();
     const existing = chatId ? await chatRef.get() : null;
-    if (existing && !existing.exists) throw new HttpsError("not-found", "No such chat");
-    const past = historyForModel(existing?.data()?.messages);
+    if (existing && !existing.exists && !day) throw new HttpsError("not-found", "No such chat");
+    // Regenerating drops the last question and answer, here and again when saving.
+    const turns = (messages) => (regenerate ? withoutLastExchange(messages, message) : messages);
+    const past = historyForModel(turns(existing?.data()?.messages));
 
-    const env = await coachEnvironment(source);
     const remainingToday = await consumeCoachQuota(db, uid, { day: env.today, nowMs: env.now.getTime() });
 
     const messageId = randomUUID();
@@ -1176,6 +1182,10 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     // An empty chunk every 10 s while the coach works: the app gives up on a stream that stays
     // silent for about 30 s and asks again without streaming, which costs a second message and
     // loses the live blocks. An empty text chunk is a no-op for every client.
+    // A status chunk names each tool as it starts, for the app's "reading your workouts" line; it is
+    // text-keyed too, so older apps ignore it, and it carries no answer, so a retry after one is fine.
+    // `stop` aborts when the app goes away (it stopped the reply): the model call ends and nothing is saved.
+    const stop = response?.signal ?? null;
     const heartbeat = request.acceptsStreaming ? setInterval(() => response.sendChunk({ text: "" }), 10_000) : null;
     let streamed = false;
     let blocks = null;
@@ -1199,16 +1209,21 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
                 context,
                 blocks,
                 onChunk: request.acceptsStreaming ? (delta) => { streamed = true; response.sendChunk({ text: delta }); } : null,
+                onTool: request.acceptsStreaming ? (tool) => response.sendChunk({ text: "", status: { tool } }) : null,
                 abortSignal,
             });
-        }, model === COACH_FALLBACK_MODEL ? 40_000 : 30_000),
+        }, model === COACH_FALLBACK_MODEL ? 40_000 : 30_000, stop),
     }).finally(() => clearInterval(heartbeat)).catch((error) => {
+        if (stop?.aborted) return "";
         if (isModelBusy(error)) throw new HttpsError("unavailable", "The coach is busy; try again in a moment", { reason: "busy" });
         throw error;
     });
+    const stopped = Boolean(stop?.aborted);
     // One summary line per reply, with no user data: was the app asking for blocks, how many tries
-    // and which model it took, and how many blocks were shown.
-    console.log(JSON.stringify({ event: "coach_reply", ui: Boolean(ui), uiSent: typeof request.data?.ui, streaming: Boolean(request.acceptsStreaming), attempts, model: modelName, blocks: blocks?.list.length ?? 0 }));
+    // and which model it took, how many blocks were shown, and whether the app stopped it.
+    console.log(JSON.stringify({ event: "coach_reply", ui: Boolean(ui), uiSent: typeof request.data?.ui, streaming: Boolean(request.acceptsStreaming), attempts, model: modelName, blocks: blocks?.list.length ?? 0, stopped, regenerate }));
+    // Nobody is listening; the message stays counted (ponytail: refund it if that ever matters).
+    if (stopped) throw new HttpsError("cancelled", "The app stopped the reply");
     if (!text) throw new HttpsError("internal", "The coach had no answer");
 
     const now = Timestamp.now();
@@ -1219,13 +1234,15 @@ export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response
     // Appended in a transaction: two replies landing together must not drop each other's turns.
     await db.runTransaction(async (tx) => {
         const current = (await tx.get(chatRef)).data();
+        const chatDayKey = current?.day ?? day;
         tx.set(chatRef, {
             id: chatRef.id,
+            ...(chatDayKey ? { day: chatDayKey } : {}),
             title: current?.title ?? chatTitle(message),
             created_at: current?.created_at ?? now,
             updated_at: now,
             context_kind: current?.context_kind ?? context?.kind ?? null,
-            messages: fitStoredBlocks(appendChatMessages(current?.messages, [{ id: randomUUID(), role: "user", text: message, created_at: now }, reply])),
+            messages: fitStoredBlocks(appendChatMessages(turns(current?.messages), [{ id: randomUUID(), role: "user", text: message, created_at: now }, reply])),
         });
     });
     // The blocks ride in the result too, so an app that asked without streaming can draw them at once.

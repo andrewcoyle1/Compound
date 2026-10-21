@@ -7,6 +7,7 @@ import {
     validateCoachRequest, hasCoachConsent, planCoachQuota, isCoachPremium, chatTitle, appendChatMessages, historyForModel,
     fixtureSource, firestoreSource, coachEnvironment, COACH_TOOLS, coachSystemPrompt, mesocycleProgress, shapeSession,
     COACH_DAILY_LIMIT, COACH_BURST_LIMIT, COACH_MAX_STORED_MESSAGES, MUSCLES, isModelBusy, replyWithRetry, withTimeout,
+    chatDay, withoutLastExchange,
 } from "./coach.js";
 import { FIXTURE_ACCOUNTS, FIXTURE_NOW } from "./coach-fixtures.js";
 
@@ -28,7 +29,7 @@ test("a machine's base kept out of the load is kept out of what the coach reads"
 // MARK: - Request
 
 test("coach requests are checked at the boundary", () => {
-    assert.deepEqual(validateCoachRequest({ message: "  How am I doing?  " }), { chatId: null, message: "How am I doing?", context: null, ui: null });
+    assert.deepEqual(validateCoachRequest({ message: "  How am I doing?  " }), { chatId: null, message: "How am I doing?", context: null, ui: null, regenerate: false });
     assert.deepEqual(validateCoachRequest({ chatId: "abc_1-2", message: "hi", context: { kind: "exercise", id: "system-barbell-bench-press" } }).context,
         { kind: "exercise", id: "system-barbell-bench-press", date: null });
     assert.equal(validateCoachRequest({ message: "x", context: { kind: "nutrition_day", date: "2026-10-01" } }).context.date, "2026-10-01");
@@ -380,4 +381,41 @@ test("withTimeout: a call that never answers is aborted and reported busy; a qui
     assert.equal(sawAbort, true);
     const other = new Error("bad request");
     await assert.rejects(withTimeout(async () => { throw other; }, 1000), (error) => error === other);
+});
+
+test("validateCoachRequest: regenerate is true only when sent as true", () => {
+    assert.equal(validateCoachRequest({ message: "Hi", regenerate: true }).regenerate, true);
+    for (const regenerate of [undefined, null, false, 1, "true"]) assert.equal(validateCoachRequest({ message: "Hi", regenerate }).regenerate, false);
+});
+
+test("chatDay: today and the days either side are open, an older day has ended, other ids are not days", () => {
+    for (const day of ["2026-10-20", "2026-10-21", "2026-10-22"]) assert.equal(chatDay(day, "2026-10-21"), day);
+    assert.equal(chatDay("2026-12-31", "2027-01-01"), "2026-12-31");
+    assert.throws(() => chatDay("2026-10-19", "2026-10-21"), (e) => e.code === "failed-precondition" && e.details.reason === "past_day");
+    assert.throws(() => chatDay("2026-10-23", "2026-10-21"), { code: "invalid-argument" });
+    for (const id of [null, "abcDEF123", "2026-10-2a", "20261021"]) assert.equal(chatDay(id, "2026-10-21"), null);
+});
+
+test("withoutLastExchange drops the last question and answer only when it is the same question", () => {
+    const at = (role, text) => ({ role, text });
+    const chat = [at("user", "First"), at("assistant", "One"), at("user", "Again?"), at("assistant", "Two")];
+    assert.deepEqual(withoutLastExchange(chat, "Again?"), chat.slice(0, 2));
+    assert.equal(withoutLastExchange(chat, "Something else"), chat);
+    assert.equal(withoutLastExchange(chat.slice(0, 3), "Again?").length, 3);
+    assert.equal(withoutLastExchange(undefined, "x"), undefined);
+});
+
+test("withTimeout: the app going away aborts the call as stopped, which is never busy nor retried", async () => {
+    const app = new AbortController();
+    let sawAbort = false;
+    const pending = withTimeout((signal) => new Promise((_, reject) => signal.addEventListener("abort", () => { sawAbort = true; reject(new Error("aborted")); })), 1000, app.signal);
+    app.abort();
+    await assert.rejects(pending, (error) => error.stopped === true && !isModelBusy(error));
+    assert.equal(sawAbort, true);
+    let calls = 0;
+    await assert.rejects(replyWithRetry({
+        models: ["a", "b", "c"], hasStreamed: () => false, sleep: async () => {},
+        attempt: () => withTimeout(async () => { calls++; return "late"; }, 1000, app.signal),
+    }), (error) => error.stopped === true);
+    assert.equal(calls, 0);
 });

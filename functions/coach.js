@@ -142,22 +142,28 @@ export function appendChatMessages(messages, added, cap = COACH_MAX_STORED_MESSA
     return [...(messages ?? []), ...added].slice(-cap);
 }
 
-/// The most recent turns that fit the budget, oldest first, as Genkit messages. A reply's blocks
-/// follow its text as one `[Shown: <fallback>]` line each.
+/// Drops `[Shown: …]` lines. Replies used to carry them in the model's history, so the model took
+/// to writing them itself; some saved replies hold them.
+export function withoutShownNotes(text) {
+    return (text ?? "").replace(/^\[Shown:[^\n]*\]\s*$\n?/gm, "").trim();
+}
+
+/// The most recent turns that fit the budget, oldest first, as Genkit messages, and the fallback of
+/// each block shown under those replies. The blocks go in the system prompt rather than the
+/// replies: a note in its own turns is something the model copies into its next answer.
 export function historyForModel(messages, budget = COACH_HISTORY_CHAR_BUDGET) {
     const kept = [];
     let used = 0;
     for (const message of [...(messages ?? [])].reverse()) {
-        const text = message.blocks?.length
-            ? [message.text, ...message.blocks.map((block) => `[Shown: ${block.fallback}]`)].join("\n")
-            : message.text;
-        used += text?.length ?? 0;
+        const text = message.role === "assistant" ? withoutShownNotes(message.text) : message.text;
+        const shown = (message.blocks ?? []).map((block) => block.fallback).filter(Boolean);
+        used += (text?.length ?? 0) + shown.join("").length;
         if (used > budget) break;
-        kept.unshift({ role: message.role === "assistant" ? "model" : "user", content: [{ text }] });
+        kept.unshift({ role: message.role === "assistant" ? "model" : "user", content: [{ text }], shown });
     }
     // A history must open with the user.
     while (kept.length > 0 && kept[0].role !== "user") kept.shift();
-    return kept;
+    return { messages: kept.map(({ role, content }) => ({ role, content })), shown: kept.flatMap((m) => m.shown) };
 }
 
 // MARK: - Data sources
@@ -173,6 +179,14 @@ const asDate = (value) => {
     if (typeof value._seconds === "number") return new Date(value._seconds * 1000);
     return null;
 };
+
+/// A day's Apple Health import copies the meals logged in Compound (which writes them to Health),
+/// so it counts only on a day with nothing else logged, as in the app (`withoutDuplicateHealthImports`).
+export function withoutDuplicateHealthImports(meals) {
+    const isImport = (m) => (m.meal_id ?? m.id) === `healthkit-nutrition-${m.day_key}`;
+    const logged = new Set(meals.filter((m) => !isImport(m)).map((m) => m.day_key));
+    return meals.filter((m) => !isImport(m) || !logged.has(m.day_key));
+}
 
 /// The caller's data in Firestore. Every read is under users/{uid}, the user's own diet plan, or
 /// their own exercises; nothing here can reach another account or an excluded collection.
@@ -192,7 +206,7 @@ export function firestoreSource(db, uid) {
         loggingBreak: async () => (await all(user.collection("logging_break")))[0] ?? null,
         checkInRecord: async () => (await all(user.collection("check_in_record")))[0] ?? null,
         sessions: (from) => all(since("workout_sessions", "date_created", from)),
-        meals: (from) => all(since("meal_logs", "date", from)),
+        meals: async (from) => withoutDuplicateHealthImports(await all(since("meal_logs", "date", from))),
         measurements: (from) => all(since("body_measurements", "date", from)),
         steps: (from) => all(since("steps", "date", from)),
         mesocycles: () => all(user.collection("mesocycles")),
@@ -215,7 +229,7 @@ export function fixtureSource(account) {
         loggingBreak: async () => account.loggingBreak ?? null,
         checkInRecord: async () => account.checkInRecord ?? null,
         sessions: async (from) => after(account.sessions, "date_created", from),
-        meals: async (from) => after(account.meals, "date", from),
+        meals: async (from) => withoutDuplicateHealthImports(after(account.meals, "date", from)),
         measurements: async (from) => after(account.measurements, "date", from),
         steps: async (from) => after(account.steps, "date", from),
         mesocycles: async () => account.mesocycles ?? [],
@@ -830,7 +844,7 @@ const UI_PROMPT = [
     "- With a block, keep the text short: the block carries the figures. Any figure you also write must match the tool results and what show_block says it shows. If show_block answers not shown, carry on without it.",
 ];
 
-export function coachSystemPrompt(env, context, ui = null) {
+export function coachSystemPrompt(env, context, ui = null, shown = []) {
     return [
         "You are Compound's coach: a knowledgeable, encouraging strength and nutrition coach for this one user, inside the Compound app.",
         `Today is ${env.today} (${env.timeZone}). Use ${env.weightUnit} for weight, ${env.distanceUnit} for distance and ${env.lengthUnit} for body measurements.${env.firstName ? ` The user's first name is ${env.firstName}.` : ""}`,
@@ -844,6 +858,7 @@ export function coachSystemPrompt(env, context, ui = null) {
         "- You have no access to Strava, progress photos, or other people's data, including friends and followers.",
         "- Be concise and concrete: short paragraphs or a few bullets, plain language, no tables unless asked. Answer the question first.",
         ...(ui === COACH_UI_VERSION ? UI_PROMPT : []),
+        ...(shown.length ? ["Cards the app showed under your earlier replies in this chat, oldest first. They are notes for you; never write them out:", ...shown.map((s) => `- ${s}`)] : []),
         context ? `Context: ${CONTEXT_LINES[context.kind](context)}` : "",
     ].filter(Boolean).join("\n");
 }
@@ -896,11 +911,11 @@ export async function replyWithRetry({ models, attempt, hasStreamed, delaysMs = 
 /// caller's data. `onChunk` gets each piece of text as it arrives. With `blocks` (coach-blocks.js
 /// `coachBlocks`), the model is also offered `blockTool` and told how to use it; without, the
 /// request is exactly the text-only one.
-export async function runCoach({ ai, model, tools, blockTool = null, config, source, env, history, message, context, blocks = null, onChunk, abortSignal }) {
+export async function runCoach({ ai, model, tools, blockTool = null, config, source, env, history, shown = [], message, context, blocks = null, onChunk, abortSignal }) {
     const { stream, response } = ai.generateStream({
         model,
         abortSignal,
-        system: coachSystemPrompt(env, context, blocks ? COACH_UI_VERSION : null),
+        system: coachSystemPrompt(env, context, blocks ? COACH_UI_VERSION : null, shown),
         messages: history,
         prompt: message,
         tools: blocks ? [...tools, blockTool] : tools,
@@ -920,5 +935,5 @@ export async function runCoach({ ai, model, tools, blockTool = null, config, sou
         onChunk?.(chunk.text);
     }
     const last = (await response).text;
-    return (written || last).trim();
+    return withoutShownNotes(written || last);
 }

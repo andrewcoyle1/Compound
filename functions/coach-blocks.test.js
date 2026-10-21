@@ -359,8 +359,9 @@ function scripted(steps) {
         requests.push(request);
         const step = steps[requests.length - 1];
         if (step.text) send?.({ content: [{ text: step.text }] });
+        const calls = (step.calls ?? []).map(([name, input], i) => ({ toolRequest: { name, ref: `${i}`, input } }));
         return {
-            message: { role: "model", content: step.text ? [{ text: step.text }] : step.calls.map(([name, input], i) => ({ toolRequest: { name, ref: `${i}`, input } })) },
+            message: { role: "model", content: [...(step.text !== undefined ? [{ text: step.text }] : []), ...calls] },
             finishReason: "stop",
         };
     });
@@ -403,4 +404,23 @@ test("without ui the request is the text-only one: no show_block, no guidance, e
     const lone = scripted([{ calls: [["show_block", BLOCK_ARGS.follow_ups]] }, { text: "ok" }]);
     await runCoach({ ...lone, tools: [...lone.tools, lone.blockTool], config: {}, source, env, history: [], message: "x", context: null });
     assert.match(lone.requests[1].messages.at(-1).content[0].toolResponse.output.reason, /blocks are off/);
+});
+
+test("the reply is all the text the model wrote, also when it answers before show_block and adds nothing after", async () => {
+    const { source, env } = await scope("cutting");
+    // Answers, then calls show_block, then writes nothing: the reply must not come back empty.
+    const quiet = scripted([
+        { text: "You're on track: down 0.4 kg a week.", calls: [["show_block", BLOCK_ARGS.trend_chart]] },
+        { text: "" },
+    ]);
+    const streamed = [];
+    const blocks = coachBlocks({ messageId: "msg" });
+    assert.equal(await runCoach({ ...quiet, config: {}, source, env, history: [], message: "Am I on track?", context: null, blocks, onChunk: (t) => streamed.push(t) }), "You're on track: down 0.4 kg a week.");
+    assert.deepEqual(streamed, ["You're on track: down 0.4 kg a week."]);
+    // Answers, shows a block, then adds a line: the reply keeps both parts, as streamed.
+    const both = scripted([
+        { text: "You're on track. ", calls: [["show_block", BLOCK_ARGS.trend_chart]] },
+        { text: "Keep logging." },
+    ]);
+    assert.equal(await runCoach({ ...both, config: {}, source, env, history: [], message: "Am I on track?", context: null, blocks: coachBlocks({ messageId: "m2" }), onChunk: null }), "You're on track. Keep logging.");
 });

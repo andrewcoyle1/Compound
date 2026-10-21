@@ -909,8 +909,16 @@ export async function runCoach({ ai, model, tools, blockTool = null, config, sou
         config,
         context: { coach: { source, env, cache: new Map(), blocks } },
     });
+    // The reply is everything the model wrote, across every turn: what the app streamed. Genkit's
+    // response.text is only the last turn's, and a model that answers and then calls show_block
+    // writes nothing after the call, so the reply came back empty (an error after the text had
+    // streamed) or kept only its last sentence.
+    let written = "";
     for await (const chunk of stream) {
-        if (chunk.text) onChunk?.(chunk.text);
+        if (!chunk.text) continue;
+        written += chunk.text;
+        onChunk?.(chunk.text);
     }
-    return (await response).text.trim();
+    const last = (await response).text;
+    return (written || last).trim();
 }

@@ -229,6 +229,19 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('a callout repaints its notch for a new target', (tester) async {
+    Widget callout(Rect target) => AppTipCallout(
+      title: 'Title',
+      message: 'Message',
+      dismissLabel: 'Got It',
+      onDismiss: () {},
+      target: () => target,
+    );
+    await tester.pumpApp(callout(const Rect.fromLTWH(0, 0, 10, 10)));
+    await tester.pumpApp(callout(const Rect.fromLTWH(100, 500, 10, 10)));
+    expect(find.text('Title'), findsOneWidget);
+  });
+
   group('AppTipCallout golden', () {
     goldenStates('app_tip_callout', [
       (
@@ -240,6 +253,8 @@ void main() {
           onDismiss: () {},
         ),
       ),
+      ('Notch up', const _Pointing(calloutBelow: true)),
+      ('Notch down', const _Pointing(calloutBelow: false)),
       (
         'Long',
         AppTipCallout(
@@ -253,4 +268,45 @@ void main() {
       ),
     ]);
   });
+}
+
+/// A callout beside a small target, its notch pointing at it.
+class _Pointing extends StatefulWidget {
+  const new({required this.calloutBelow});
+
+  final bool calloutBelow;
+
+  @override
+  State<_Pointing> createState() => _PointingState();
+}
+
+class _PointingState extends State<_Pointing> {
+  final GlobalKey _target = GlobalKey();
+
+  @override
+  Widget build(BuildContext context) {
+    final target = Align(
+      alignment: const Alignment(-0.6, 0),
+      child: Container(
+        key: _target,
+        width: 64,
+        height: 28,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+    );
+    final callout = AppTipCallout(
+      title: 'Rest for one set',
+      message: 'Swipe a set right to give it its own rest time.',
+      dismissLabel: 'Got It',
+      onDismiss: () {},
+      target: () {
+        final box = _target.currentContext!.findRenderObject()! as RenderBox;
+        return box.localToGlobal(Offset.zero) & box.size;
+      },
+    );
+    return Column(
+      spacing: AppSpacing.m,
+      children: widget.calloutBelow ? [target, callout] : [callout, target],
+    );
+  }
 }

@@ -140,8 +140,12 @@ class MealCard extends StatelessWidget {
     this.onOpenMeal,
     this.onEditItem,
     this.onLogAgain,
+    this.wrapFirstItem,
     super.key,
   });
+
+  /// Wraps the first food's row, such as in a tip about its swipe.
+  final Widget Function(Widget row)? wrapFirstItem;
 
   /// The meal.
   final MealLogModel meal;
@@ -192,15 +196,18 @@ class MealCard extends StatelessWidget {
               children: [
                 for (final (index, item) in meal.items.indexed) ...[
                   if (index > 0) const Divider(indent: AppSpacing.l),
-                  _actionable(
-                    context,
-                    item,
-                    _MealItemLabel(
-                      item: item,
-                      settings: settings,
-                      onEdit: onEditItem == null
-                          ? null
-                          : () => onEditItem!(item),
+                  _first(
+                    index,
+                    _actionable(
+                      context,
+                      item,
+                      _MealItemLabel(
+                        item: item,
+                        settings: settings,
+                        onEdit: onEditItem == null
+                            ? null
+                            : () => onEditItem!(item),
+                      ),
                     ),
                   ),
                 ],
@@ -212,6 +219,11 @@ class MealCard extends StatelessWidget {
       ],
     );
   }
+
+  Widget _first(int index, Widget row) => switch (wrapFirstItem) {
+    final wrap? when index == 0 => wrap(row),
+    _ => row,
+  };
 
   Widget _actionable(BuildContext context, MealItemModel item, Widget child) {
     final l10n = context.l10n;

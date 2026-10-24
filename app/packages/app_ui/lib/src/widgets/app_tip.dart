@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:showcaseview/showcaseview.dart';
 
 /// {@template app_tip_callout}
@@ -8,6 +9,10 @@ import 'package:showcaseview/showcaseview.dart';
 /// how to use the feature, and [dismissLabel] ("Got It") to close it. Drawn
 /// as the snack bar is: the dialog's surface, its hairline and a soft
 /// shadow.
+///
+/// Given its [target], a notch on the edge facing it points at the
+/// target's middle: on the top edge when the callout opens below, on the
+/// bottom edge when it opens above.
 ///
 /// A screen reader reads the title as the heading of what has appeared,
 /// then the message, and can close it with Got It or the escape gesture;
@@ -20,6 +25,7 @@ class AppTipCallout extends StatelessWidget {
     required this.message,
     required this.dismissLabel,
     required this.onDismiss,
+    this.target,
     super.key,
   });
 
@@ -28,6 +34,10 @@ class AppTipCallout extends StatelessWidget {
 
   /// How to use it, in a sentence or two.
   final String message;
+
+  /// Where the target is on screen, read as the callout paints; none
+  /// draws no notch.
+  final ValueGetter<Rect?>? target;
 
   /// The close button's label, localized ("Got It").
   final String dismissLabel;
@@ -48,78 +58,160 @@ class AppTipCallout extends StatelessWidget {
         onDismiss: onDismiss,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: maxWidth),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHigh,
-              border: Border.all(color: scheme.outlineVariant, width: 0.5),
-              borderRadius: const BorderRadius.all(
-                Radius.circular(AppRadius.l),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: scheme.shadow.withValues(alpha: 0.12),
-                  blurRadius: AppSpacing.l,
-                  offset: const Offset(0, AppSpacing.xs),
+          child: _Notch(
+            target: target,
+            fill: scheme.surfaceContainerHigh,
+            stroke: scheme.outlineVariant,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHigh,
+                border: Border.all(color: scheme.outlineVariant, width: 0.5),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(AppRadius.l),
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(
-                AppSpacing.l,
-                AppSpacing.m,
-                AppSpacing.s,
-                AppSpacing.xs,
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.shadow.withValues(alpha: 0.12),
+                    blurRadius: AppSpacing.l,
+                    offset: const Offset(0, AppSpacing.xs),
+                  ),
+                ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: AppSpacing.xxs,
-                children: [
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      end: AppSpacing.s,
-                    ),
-                    child: Semantics(
-                      header: true,
-                      namesRoute: true,
-                      child: Text(
-                        title,
-                        style: AppTextStyles.rowTitle.semibold.copyWith(
-                          color: scheme.onSurface,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpacing.l,
+                  AppSpacing.m,
+                  AppSpacing.s,
+                  AppSpacing.xs,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.xxs,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        end: AppSpacing.s,
+                      ),
+                      child: Semantics(
+                        header: true,
+                        namesRoute: true,
+                        child: Text(
+                          title,
+                          style: AppTextStyles.rowTitle.semibold.copyWith(
+                            color: scheme.onSurface,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      end: AppSpacing.s,
-                    ),
-                    child: Text(
-                      message,
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: scheme.onSurfaceVariant,
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        end: AppSpacing.s,
+                      ),
+                      child: Text(
+                        message,
+                        style: AppTextStyles.rowDetail.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
-                  ),
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    // showcaseview hosts the card on Flutter's own
-                    // Material, which the app's buttons do not recognise.
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: AppTextButton(
-                        label: dismissLabel,
-                        onPressed: onDismiss,
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      // showcaseview hosts the card on Flutter's own
+                      // Material, which the app's buttons do not recognise.
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: AppTextButton(
+                          label: dismissLabel,
+                          onPressed: onDismiss,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+/// The callout's notch: a small triangle in the callout's own fill, with
+/// its hairline, on the edge facing the target and over its middle (kept
+/// clear of the rounded corners).
+class _Notch extends SingleChildRenderObjectWidget {
+  const new({
+    required this.target,
+    required this.fill,
+    required this.stroke,
+    required super.child,
+  });
+
+  final ValueGetter<Rect?>? target;
+  final Color fill;
+  final Color stroke;
+
+  @override
+  _RenderNotch createRenderObject(BuildContext context) =>
+      _RenderNotch(target: target, fill: fill, stroke: stroke);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderNotch renderObject) =>
+      renderObject
+        ..target = target
+        ..fill = fill
+        ..stroke = stroke
+        ..markNeedsPaint();
+}
+
+class _RenderNotch extends RenderProxyBox {
+  new({required this.target, required this.fill, required this.stroke});
+
+  ValueGetter<Rect?>? target;
+  Color fill;
+  Color stroke;
+
+  /// Half the notch's width, and its height.
+  static const double half = AppSpacing.s;
+  static const double height = AppSpacing.s;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    super.paint(context, offset);
+    final rect = target?.call();
+    if (rect == null) return;
+    final me = localToGlobal(Offset.zero) & size;
+    // Below the target, the notch is on the top edge and points up.
+    final below = me.center.dy > rect.center.dy;
+    final x = (rect.center.dx - me.left).clamp(
+      AppRadius.l + half,
+      size.width - AppRadius.l - half,
+    );
+    final edge = below ? 0.0 : size.height;
+    final tip = below ? -height : size.height + height;
+    // The base sits just inside the card, over its hairline.
+    final base = edge + (below ? 1 : -1);
+    context.canvas
+      ..drawPath(
+        Path()
+          ..moveTo(offset.dx + x - half, offset.dy + base)
+          ..lineTo(offset.dx + x, offset.dy + tip)
+          ..lineTo(offset.dx + x + half, offset.dy + base)
+          ..close(),
+        Paint()..color = fill,
+      )
+      ..drawPath(
+        Path()
+          ..moveTo(offset.dx + x - half, offset.dy + edge)
+          ..lineTo(offset.dx + x, offset.dy + tip)
+          ..lineTo(offset.dx + x + half, offset.dy + edge),
+        Paint()
+          ..color = stroke
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.5,
+      );
   }
 }
 
@@ -336,6 +428,8 @@ class _AppTipState extends State<AppTip> {
 
   /// Where the target is on screen, once laid out.
   Rect? get rect {
+    // The overlay may paint once more after this has left the tree.
+    if (!_active) return null;
     final box = context.findRenderObject();
     if (box is! RenderBox || !box.attached || !box.hasSize) return null;
     return box.localToGlobal(Offset.zero) & box.size;
@@ -347,6 +441,14 @@ class _AppTipState extends State<AppTip> {
     _scope = context.findAncestorStateOfType<_AppTipScopeState>()?.._add(this);
   }
 
+  bool _active = true;
+
+  @override
+  void deactivate() {
+    _active = false;
+    super.deactivate();
+  }
+
   @override
   void dispose() {
     _scope?._remove(this);
@@ -355,6 +457,8 @@ class _AppTipState extends State<AppTip> {
 
   @override
   Widget build(BuildContext context) {
+    // Back in the tree, as after a move with a global key.
+    _active = true;
     final scope = _scope;
     if (scope == null) return widget.child;
     return Showcase.withWidget(
@@ -365,12 +469,14 @@ class _AppTipState extends State<AppTip> {
       targetPadding: const EdgeInsets.all(AppSpacing.xs),
       targetBorderRadius: const BorderRadius.all(Radius.circular(AppRadius.m)),
       toolTipMargin: AppSpacing.l,
-      targetTooltipGap: AppSpacing.s,
+      // Room for the callout's notch.
+      targetTooltipGap: AppSpacing.m,
       container: AppTipCallout(
         title: widget.title,
         message: widget.message,
         dismissLabel: scope.widget.dismissLabel,
         onDismiss: scope.dismiss,
+        target: () => rect,
       ),
       child: widget.child,
     );

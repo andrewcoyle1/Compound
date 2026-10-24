@@ -233,6 +233,7 @@ class _Day extends StatelessWidget {
     final settings = state.settings!;
     final target = state.target;
     final timeline = state.timeline;
+    final firstMeal = timeline.expand((hour) => hour.meals).firstOrNull;
     void select(DateTime day) =>
         context.read<NutritionDayBloc>().add(NutritionDayDateSelected(day));
     return Column(
@@ -316,28 +317,32 @@ class _Day extends StatelessWidget {
                 for (final meal in hour.meals)
                   Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.s),
-                    // Log Again has only a swipe and the long press.
-                    child: AppTip(
-                      id: FeatureTips.mealSwipe,
-                      title: l10n.tipMealSwipeTitle,
-                      message: l10n.tipMealSwipeMessage,
-                      child: MealCard(
-                        meal: meal,
-                        settings: settings,
-                        onDeleteItem: (item) => context
-                            .read<NutritionDayBloc>()
-                            .add(NutritionDayItemDeleted(meal, item.itemId)),
-                        onOpenMeal: () =>
-                            unawaited(MealDetailPage.show(context, meal)),
-                        onEditItem: (item) =>
-                            unawaited(_edit(context, meal, item)),
-                        onLogAgain: () {
-                          unawaited(AppHaptics.success());
-                          context.read<NutritionDayBloc>().add(
-                            NutritionDayMealLoggedAgain(meal),
-                          );
-                        },
-                      ),
+                    child: MealCard(
+                      // Log Again has only a swipe and the long press;
+                      // the tip points at the day's first food.
+                      wrapFirstItem: identical(meal, firstMeal)
+                          ? (row) => AppTip(
+                              id: FeatureTips.mealSwipe,
+                              title: l10n.tipMealSwipeTitle,
+                              message: l10n.tipMealSwipeMessage,
+                              child: row,
+                            )
+                          : null,
+                      meal: meal,
+                      settings: settings,
+                      onDeleteItem: (item) => context
+                          .read<NutritionDayBloc>()
+                          .add(NutritionDayItemDeleted(meal, item.itemId)),
+                      onOpenMeal: () =>
+                          unawaited(MealDetailPage.show(context, meal)),
+                      onEditItem: (item) =>
+                          unawaited(_edit(context, meal, item)),
+                      onLogAgain: () {
+                        unawaited(AppHaptics.success());
+                        context.read<NutritionDayBloc>().add(
+                          NutritionDayMealLoggedAgain(meal),
+                        );
+                      },
                     ),
                   ),
               ],

@@ -402,6 +402,21 @@ abstract final class AppSymbols {
   /// Sending a comment.
   static const IconData send = Icons.send_outlined;
 
+  /// Stopping an answer while it streams in.
+  static const IconData stop = Icons.stop_rounded;
+
+  /// Scrolling a conversation down to its newest message.
+  static const IconData jumpToLatest = Icons.arrow_downward_rounded;
+
+  /// Copying text to the clipboard.
+  static const IconData copy = Icons.content_copy_outlined;
+
+  /// Rating an answer as helpful.
+  static const IconData helpful = Icons.thumb_up_alt_outlined;
+
+  /// Rating an answer as not helpful.
+  static const IconData notHelpful = Icons.thumb_down_alt_outlined;
+
   /// A username: the `@` handle.
   static const IconData username = Icons.alternate_email_outlined;
 

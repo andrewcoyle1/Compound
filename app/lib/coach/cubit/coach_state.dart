@@ -17,6 +17,41 @@ enum CoachGate {
   chat,
 }
 
+/// Where a question without an answer stands.
+enum CoachQuestionPhase {
+  /// The coach is answering it.
+  answering,
+
+  /// No answer came; it can be retried.
+  failed,
+
+  /// The user stopped the answer; it can be retried.
+  stopped,
+}
+
+/// A question the coach has not answered: one per question, so each
+/// failed or stopped question keeps its own note and Retry. Answered
+/// questions have none.
+final class CoachQuestionStatus extends Equatable {
+  /// Being answered.
+  const new answering() : phase = CoachQuestionPhase.answering, failure = null;
+
+  /// Got no answer, for [failure].
+  const new failed(CoachFailure this.failure)
+    : phase = CoachQuestionPhase.failed;
+
+  /// Stopped by the user.
+  const new stopped() : phase = CoachQuestionPhase.stopped, failure = null;
+
+  final CoachQuestionPhase phase;
+
+  /// Why a failed question got no answer.
+  final CoachFailure? failure;
+
+  @override
+  List<Object?> get props => [phase, failure];
+}
+
 /// The coach screen (Swift `CoachPresenter`'s state).
 final class const CoachState({
   final CoachGate gate = CoachGate.loading,
@@ -43,9 +78,9 @@ final class const CoachState({
   /// The saved chat's title, once there is one.
   final String? chatTitle,
 
-  /// Why the last message got no answer, shown under the conversation.
-  final CoachFailure? failure,
-  final bool isSending = false,
+  /// The questions without an answer, by message id: the one being
+  /// answered, and any that failed or were stopped.
+  final Map<String, CoachQuestionStatus> questions = const {},
   final bool isGivingConsent = false,
 
   /// The message field.
@@ -58,7 +93,7 @@ final class const CoachState({
   /// What is left of today's messages after the last answer.
   final int? remainingToday,
 
-  /// Counts failed sends, for the error haptic.
+  /// Counts failed sends, for the error haptic and the Retry note.
   final int sendFailures = 0,
 
   /// Counts failed consent saves, for the alert.
@@ -74,6 +109,11 @@ final class const CoachState({
     _ => null,
   };
 
+  /// Whether the coach is answering a question.
+  bool get isSending => questions.values.any(
+    (status) => status.phase == CoachQuestionPhase.answering,
+  );
+
   bool get canSend => !isSending && draft.trim().isNotEmpty;
 
   CoachState copyWith({
@@ -84,8 +124,7 @@ final class const CoachState({
     List<CoachBlock>? streamingBlocks,
     String? Function()? chatId,
     String? Function()? chatTitle,
-    CoachFailure? Function()? failure,
-    bool? isSending,
+    Map<String, CoachQuestionStatus>? questions,
     bool? isGivingConsent,
     String? draft,
     int? draftRevision,
@@ -100,8 +139,7 @@ final class const CoachState({
     streamingBlocks: streamingBlocks ?? this.streamingBlocks,
     chatId: chatId == null ? this.chatId : chatId(),
     chatTitle: chatTitle == null ? this.chatTitle : chatTitle(),
-    failure: failure == null ? this.failure : failure(),
-    isSending: isSending ?? this.isSending,
+    questions: questions ?? this.questions,
     isGivingConsent: isGivingConsent ?? this.isGivingConsent,
     draft: draft ?? this.draft,
     draftRevision: draftRevision ?? this.draftRevision,
@@ -119,8 +157,7 @@ final class const CoachState({
     streamingBlocks,
     chatId,
     chatTitle,
-    failure,
-    isSending,
+    questions,
     isGivingConsent,
     draft,
     draftRevision,

@@ -1,13 +1,23 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:markdown/markdown.dart' as md;
 
-/// Light markdown, as an AI answer is written, set as one selectable run of
-/// text in [style]: headings, bulleted and numbered lists, bold, italic,
-/// struck-through and inline code. A link shows as its text and opens
-/// nothing; anything else shows as its text.
+/// Light markdown, as an AI answer is written, set as one run of text in
+/// [style], selectable unless [selectable] is false: headings, bulleted and
+/// numbered lists, bold, italic, struck-through and inline code. A link
+/// shows as its text and opens nothing; anything else shows as its text.
+///
+/// While [streaming], the text is still arriving: bold, italic or code left
+/// open at its end is drawn as if closed, and a marker with nothing after it
+/// yet is left out, so the words never flicker between raw `**` and bold.
 class AppMarkdownText extends StatelessWidget {
   /// [data] in [style], [AppTextStyles.rowTitle] by default.
-  const new(this.data, {this.style, super.key});
+  const new(
+    this.data, {
+    this.style,
+    this.streaming = false,
+    this.selectable = true,
+    super.key,
+  });
 
   /// The markdown.
   final String data;
@@ -15,18 +25,86 @@ class AppMarkdownText extends StatelessWidget {
   /// The body's style; headings are [AppTextStyles.sectionTitle].
   final TextStyle? style;
 
+  /// Whether [data] is an answer still streaming in.
+  final bool streaming;
+
+  /// Whether the text can be selected. Off where a long press opens
+  /// actions of its own, such as Copy.
+  final bool selectable;
+
   /// [data] as plain text, for a screen reader: no markers, lists bulleted.
-  static String plainText(String data) =>
-      TextSpan(children: _spans(data, const TextStyle())).toPlainText();
+  static String plainText(String data, {bool streaming = false}) => TextSpan(
+    children: _spans(streaming ? _closeOpen(data) : data, const TextStyle()),
+  ).toPlainText();
 
   @override
   Widget build(BuildContext context) {
     final style = this.style ?? AppTextStyles.rowTitle;
-    return SelectableText.rich(
-      TextSpan(children: _spans(data, style)),
-      style: style,
+    final span = TextSpan(
+      children: _spans(streaming ? _closeOpen(data) : data, style),
     );
+    return selectable
+        ? SelectableText.rich(span, style: style)
+        : Text.rich(span, style: style);
   }
+}
+
+final _word = RegExp(r'[\p{L}\p{N}]', unicode: true);
+
+/// [data] with the emphasis and code it leaves open closed, and a marker at
+/// its very end dropped, as a streaming answer should read until the rest
+/// arrives. Follows CommonMark's flanking rules closely enough for an AI
+/// answer: a run opens before a non-space, closes after one, and `_` never
+/// opens or closes inside a word.
+String _closeOpen(String data) {
+  final open = <String>[];
+  String? code;
+  var text = data;
+  var i = 0;
+  while (i < text.length) {
+    final char = text[i];
+    if (char != '`' && char != '*' && char != '_') {
+      i++;
+      continue;
+    }
+    var end = i + 1;
+    while (end < text.length && text[end] == char) {
+      end++;
+    }
+    final run = text.substring(i, end);
+    final before = i == 0 ? ' ' : text[i - 1];
+    final after = end == text.length ? ' ' : text[end];
+    final atEnd = end == text.length;
+    if (char == '`') {
+      if (code == run) {
+        code = null;
+      } else if (code == null) {
+        if (atEnd) {
+          text = text.substring(0, i);
+        } else {
+          code = run;
+        }
+      }
+    } else if (code == null) {
+      final underscore = char == '_';
+      final canClose =
+          before.trim().isNotEmpty && !(underscore && _word.hasMatch(after));
+      final canOpen =
+          after.trim().isNotEmpty && !(underscore && _word.hasMatch(before));
+      if (canClose && open.isNotEmpty && open.last == run) {
+        open.removeLast();
+      } else if (canOpen) {
+        open.add(run);
+      } else if (atEnd) {
+        text = text.substring(0, i);
+      }
+    }
+    i = end;
+  }
+  // A fence left open is a code block to the end already.
+  if (code != null && code.length < 3) text += code;
+  if (open.isEmpty) return text;
+  return text.trimRight() + open.reversed.join();
 }
 
 List<InlineSpan> _spans(String data, TextStyle style) {

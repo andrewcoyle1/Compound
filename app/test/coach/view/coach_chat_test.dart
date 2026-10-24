@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
+import 'package:checkin_repository/checkin_repository.dart' show localDayKey;
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -48,23 +49,30 @@ void main() {
     );
     final purchases = FakePurchasesRepository();
     await purchases.logIn(uid);
-    final request = CoachRequest(
-      chat: saved.isEmpty
-          ? null
-          : CoachChat(
-              id: 'chat-1',
+    // Today's chat, as saved.
+    final firestore = FakeFirebaseFirestore();
+    final today = localDayKey(asked);
+    if (saved.isNotEmpty) {
+      await firestore
+          .doc('users/$uid/coach_chats/$today')
+          .set(
+            CoachChat(
+              id: today,
+              day: today,
               title: 'Weight',
               createdAt: asked,
               updatedAt: asked,
               messages: saved,
-            ),
-    );
+            ).toFirestore(),
+          );
+    }
+    const request = CoachRequest();
     var ids = 0;
     final cubit = CoachCubit(
       uid: uid,
       request: request,
       coach: CoachRepository(
-        firestore: FakeFirebaseFirestore(),
+        firestore: firestore,
         users: users,
         coachChat: (_, {chatId, context, regenerate = false}) {
           answers.add(StreamController<CoachStreamEvent>());
@@ -79,7 +87,7 @@ void main() {
     await tester.pumpApp(
       BlocProvider.value(
         value: cubit,
-        child: CoachView(request: request),
+        child: const CoachView(request: request),
       ),
       disableAnimations: disableAnimations,
     );

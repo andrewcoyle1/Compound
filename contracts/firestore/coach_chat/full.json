@@ -3,6 +3,7 @@
   "created_at": {
     "$timestamp": "2026-10-12T08:15:30.250Z"
   },
+  "day": "2026-10-12",
   "id": "chat_contract_full",
   "messages": [
     {

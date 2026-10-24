@@ -82,6 +82,21 @@ void main() {
     });
   });
 
+  test('watchChat follows one chat: null until it exists, and when it does '
+      'not decode', () async {
+    final chat = subject().watchChat(uid, '2026-10-15');
+    final seen = expectLater(
+      chat.map((chat) => chat?.day),
+      emitsInOrder([null, '2026-10-12', null]),
+    );
+    await pumpEventQueue();
+    await chats().doc('2026-10-15').set(storedFixture('coach_chat', 'full'));
+    await pumpEventQueue();
+    await chats().doc('2026-10-15').set({'id': 'bad'});
+    await seen;
+    expect(undecodable, ['users/$uid/coach_chats/2026-10-15']);
+  });
+
   test('deleteChat deletes the one chat', () async {
     await chats().doc('a').set(storedFixture('coach_chat', 'full'));
     await chats().doc('b').set(storedFixture('coach_chat', 'minimal'));
@@ -275,7 +290,11 @@ void main() {
         final stored = (await chats(
           sampleUserId,
         ).doc(finished.chatId).get()).data()!;
-        expect(stored.keys.toSet(), CoachChatKeys.all.toSet());
+        // Not a day chat: no day.
+        expect(
+          stored.keys.toSet(),
+          {...CoachChatKeys.all}..remove(CoachChatKeys.day),
+        );
         final chat = (await CoachRepository(
           firestore: firestore,
           users: users,
@@ -378,6 +397,28 @@ void main() {
         expect(stored[CoachChatKeys.title], 'First');
         expect(stored[CoachChatKeys.contextKind], isNull);
         expect(stored[CoachChatKeys.messages], hasLength(4));
+      });
+
+      test('makes a day chat on its first message, today or yesterday, and '
+          'refuses an older day', () async {
+        for (final day in ['2026-10-15', '2026-10-14']) {
+          final finished = await coachChat('Hi', chatId: day).last;
+          expect((finished as CoachFinished).chatId, day);
+          final stored = (await chats(sampleUserId).doc(day).get()).data()!;
+          expect(stored[CoachChatKeys.day], day);
+        }
+        await coachChat('Again', chatId: '2026-10-15').drain<void>();
+        expect(
+          (await chats(
+            sampleUserId,
+          ).doc('2026-10-15').get()).data()![CoachChatKeys.messages],
+          hasLength(4),
+        );
+
+        await expectLater(
+          coachChat('Hi', chatId: '2026-10-13'),
+          emitsError(_failure(CoachFailure.pastDay)),
+        );
       });
 
       test('refuses a chat that does not exist', () async {

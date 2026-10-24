@@ -2446,8 +2446,6 @@
     "coachDisclaimer": "Las respuestas salen de tus registros y pueden equivocarse. No es consejo médico.",
     "coachYouSaid": "Tú: {text}",
     "coachCoachSaid": "Entrenador: {text}",
-    "coachMore": "Más",
-    "coachNewChat": "Nuevo chat",
     "coachChats": "Chats",
     "coachErrorConsent": "Permite que el entrenador lea tus datos para continuar.",
     "coachErrorPremium": "El entrenador es parte de Premium.",
@@ -3116,5 +3114,11 @@
     "coachThinking": "Pensando…",
     "coachAddingCard": "Añadiendo una tarjeta…",
     "coachRegenerate": "Regenerar",
-    "coachRegenerateFailed": "No se pudo obtener una respuesta nueva. Inténtalo de nuevo."
+    "coachRegenerateFailed": "No se pudo obtener una respuesta nueva. Inténtalo de nuevo.",
+    "coachErrorPastDay": "Ese día ya terminó. Pregunta en el chat de hoy.",
+    "coachDayEnded": "Este día ya terminó.",
+    "coachAskInToday": "Preguntar en el chat de hoy",
+    "coachNewDay": "Ha empezado un nuevo día, así que este es el chat de hoy. Tu pregunta sigue en el campo.",
+    "quickWeighInWeight": "Peso de hoy",
+    "quickWeighInSave": "Guardar pesaje"
 }

@@ -119,7 +119,14 @@ class LogWeightBloc extends Bloc<LogWeightEvent, LogWeightState> {
     Emitter<LogWeightState> emit,
   ) async {
     if (!state.isEditable) return;
-    emit(state.copyWith(status: LogWeightStatus.saving));
+    final typed = switch ((event.weight, state.unit)) {
+      (null, _) => state,
+      (final weight?, WeightUnitPreference.kilograms) => state.withKilograms(
+        weight,
+      ),
+      (final weight?, WeightUnitPreference.pounds) => state.withPounds(weight),
+    };
+    emit(typed.copyWith(status: LogWeightStatus.saving));
     _analyticsRepository.trackEvent(
       const AnalyticsEvent('LogWeightView_Save_Start'),
     );

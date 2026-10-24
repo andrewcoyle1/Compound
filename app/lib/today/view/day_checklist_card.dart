@@ -33,8 +33,13 @@ class DayChecklistCard extends StatelessWidget {
     this.workout,
     this.onItemPressed,
     this.onStepGoalSelected,
+    this.weighIn,
     super.key,
   });
+
+  /// Shown under the weigh-in item while it is not done, such as the
+  /// coach's quick weigh-in.
+  final Widget? weighIn;
 
   /// Today's workout in the active mesocycle: what a planned item opens.
   final TodaysWorkout? workout;
@@ -83,7 +88,7 @@ class DayChecklistCard extends StatelessWidget {
                   ),
                 ),
           children: [
-            for (final item in checklist.items)
+            for (final item in checklist.items) ...[
               _ItemRow(
                 key: ValueKey(item.kind),
                 item: item,
@@ -94,6 +99,9 @@ class DayChecklistCard extends StatelessWidget {
                 onPressed: onItemPressed,
                 onStepGoalSelected: onStepGoalSelected,
               ),
+              if ((item, weighIn) case (WeighInItem(isDone: false), final row?))
+                row,
+            ],
           ],
         ),
         Padding(

@@ -49,6 +49,11 @@ class CoachRepository {
           ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt)),
   );
 
+  /// [uid]'s chat [chatId], re-emitted on every change; null while it does
+  /// not exist (a day chat before its first message) or does not decode.
+  Stream<CoachChat?> watchChat(String uid, String chatId) =>
+      _chats(uid).doc(chatId).snapshots().map(_decode);
+
   /// Deletes [uid]'s chat [chatId]. Completes once Firestore has the delete
   /// locally ([writeLocally]).
   Future<void> deleteChat(String uid, String chatId) =>
@@ -91,9 +96,11 @@ class CoachRepository {
   final _remainingToday = <String, int>{};
 
   /// Sends [uid]'s [message] and streams the answer; a null [chatId] starts
-  /// a new chat. With [regenerate], [message] is [chatId]'s last question,
-  /// asked again so its answer replaces the last one. The function saves
-  /// both sides, so [watchChats] catches up on its own.
+  /// a new chat, and a day key (`YYYY-MM-DD`) is that day's chat, made on
+  /// its first message. A day that has ended fails with
+  /// [CoachFailure.pastDay]. With [regenerate], [message] is [chatId]'s last
+  /// question, asked again so its answer replaces the last one. The function
+  /// saves both sides, so [watchChats] catches up on its own.
   /// [CoachFinished.remainingToday] is what is left of the day's messages,
   /// and is kept for [remainingToday].
   ///
@@ -132,9 +139,11 @@ class CoachRepository {
   Future<void> _delete(DocumentReference<Map<String, dynamic>> document) =>
       writeLocally(document.path, document.delete, _onWriteError);
 
-  CoachChat? _decode(QueryDocumentSnapshot<Map<String, dynamic>> document) {
+  CoachChat? _decode(DocumentSnapshot<Map<String, dynamic>> document) {
+    final data = document.data();
+    if (data == null) return null;
     try {
-      return CoachChat.fromFirestore(_fromFirestore(document.data()));
+      return CoachChat.fromFirestore(_fromFirestore(data));
     } on Object catch (error, stackTrace) {
       _onDecodeError(document.reference.path, error, stackTrace);
       return null;

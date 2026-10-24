@@ -30,6 +30,29 @@ void main() {
       expect(find.bySemanticsLabel(RegExp('Weigh In')), findsOneWidget);
     });
 
+    testWidgets('shows the weigh-in slot under the weigh-in until it is '
+        'done', (tester) async {
+      for (final isToday in [false, true]) {
+        await tester.pumpApp(
+          SingleChildScrollView(
+            child: DayChecklistCard(
+              checklist: TodayChecklist([
+                const TrainingItem(),
+                WeighInItem(isToday: isToday, latestKg: 80),
+              ]),
+              stepGoal: 8000,
+              unit: AppWeightUnit.kilograms,
+              weighIn: const Text('Quick weigh-in'),
+            ),
+          ),
+        );
+        expect(
+          find.text('Quick weigh-in'),
+          isToday ? findsNothing : findsOneWidget,
+        );
+      }
+    });
+
     testWidgets('keeps the footnotes as one footer, each ⓘ opening its '
         'sources', (tester) async {
       await tester.pumpApp(

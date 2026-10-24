@@ -3,24 +3,28 @@ import 'dart:math' as math;
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
+import 'package:checkin_repository/checkin_repository.dart' show localMidnight;
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/coach/cubit/coach_cubit.dart';
 import 'package:compound/coach/view/coach_chats_page.dart';
+import 'package:compound/coach/view/coach_day_card.dart';
 import 'package:compound/coach/view/coach_message_body.dart';
 import 'package:compound/coach/view/coach_text.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/paywall/view/paywall_page.dart';
+import 'package:compound/today/today.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:purchases_repository/purchases_repository.dart';
 
-/// The AI coach (Swift `CoachView`). Every Ask Coach button opens this with
-/// the context it was asked from; it checks premium, then consent, itself,
-/// so every way in behaves the same.
+/// The AI coach (Swift `CoachView`): today's chat, opening on the day's
+/// checklist, or a past day's, read-only. Every Ask Coach button opens
+/// today's chat with the context it was asked from; it checks premium, then
+/// consent, itself, so every way in behaves the same.
 class CoachPage extends StatelessWidget {
   const new({this.request = const CoachRequest(), super.key});
 
@@ -30,7 +34,7 @@ class CoachPage extends StatelessWidget {
   /// The route name.
   static const name = 'coach';
 
-  /// Opens the coach about [coachContext] over the current screen, as
+  /// Opens today's chat about [coachContext] over the current screen, as
   /// Swift's `AskCoachRouter.showCoach`.
   static void open(BuildContext context, CoachContext coachContext) =>
       unawaited(
@@ -46,27 +50,42 @@ class CoachPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.read<AppBloc>().state;
     if (state is! AppAuthenticated) return const SizedBox.shrink();
-    return BlocProvider(
-      create: (context) {
-        final cubit = CoachCubit(
-          uid: state.user.uid,
-          request: request,
-          coach: context.read<CoachRepository>(),
-          purchases: context.read<PurchasesRepository>(),
-          analytics: context.read<AnalyticsRepository>(),
-        );
-        unawaited(cubit.appeared());
-        return cubit;
-      },
-      child: CoachView(request: request),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) {
+            final cubit = CoachCubit(
+              uid: state.user.uid,
+              request: request,
+              coach: context.read<CoachRepository>(),
+              purchases: context.read<PurchasesRepository>(),
+              analytics: context.read<AnalyticsRepository>(),
+            );
+            unawaited(cubit.appeared());
+            return cubit;
+          },
+        ),
+        // The day's checklist, read only when today's chat shows it.
+        BlocProvider(
+          create: (context) => TodayPage.createBloc(
+            context,
+            state.user.uid,
+            tracksAppear: false,
+          ),
+        ),
+      ],
+      child: CoachView(request: request, dayCard: const CoachDayCard()),
     );
   }
 }
 
 class CoachView extends StatefulWidget {
-  const new({required this.request, super.key});
+  const new({required this.request, this.dayCard, super.key});
 
   final CoachRequest request;
+
+  /// The day's checklist, at the top of today's chat.
+  final Widget? dayCard;
 
   @override
   State<CoachView> createState() => _CoachViewState();
@@ -93,9 +112,17 @@ class _CoachViewState extends State<CoachView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<CoachCubit>().state;
-    final title = state.gate == CoachGate.chat
-        ? state.chatTitle ?? widget.request.context.title ?? l10n.coachTitle
-        : l10n.coachTitle;
+    final title = switch (state) {
+      CoachState(gate: CoachGate.chat, readOnly: true, :final day?) =>
+        AppFormat.date(
+          localMidnight(day),
+          style: AppDateStyle.weekdayMedium,
+          locale: context.dateLocale,
+        ),
+      CoachState(gate: CoachGate.chat, readOnly: true, :final chatTitle?) =>
+        chatTitle,
+      _ => l10n.coachTitle,
+    };
     return MultiBlocListener(
       listeners: [
         BlocListener<CoachCubit, CoachState>(
@@ -162,31 +189,19 @@ class _CoachViewState extends State<CoachView> {
               : null,
           title: Text(title),
           actions: [
-            if (state.gate == CoachGate.chat)
-              PopupMenuButton<void Function()>(
-                icon: Icon(AppSymbols.more),
-                tooltip: l10n.coachMore,
-                onSelected: (action) => action(),
-                itemBuilder: (context) => [
-                  AppMenuItem(
-                    value: _cubit.newChatPressed,
-                    icon: AppSymbols.add,
-                    label: l10n.coachNewChat,
-                  ),
-                  AppMenuItem(
-                    value: () {
-                      _cubit.chatsPressed();
-                      unawaited(
-                        context.pushNamed<void>(
-                          CoachChatsPage.name,
-                          extra: widget.request.context,
-                        ),
-                      );
-                    },
-                    icon: AppSymbols.history,
-                    label: l10n.coachChats,
-                  ),
-                ],
+            if (state.gate == CoachGate.chat && !state.readOnly)
+              AppToolbarButton(
+                icon: AppSymbols.history,
+                semanticLabel: l10n.coachChats,
+                onPressed: () {
+                  _cubit.chatsPressed();
+                  unawaited(
+                    context.pushNamed<void>(
+                      CoachChatsPage.name,
+                      extra: widget.request.context,
+                    ),
+                  );
+                },
               ),
           ],
         ),
@@ -194,7 +209,11 @@ class _CoachViewState extends State<CoachView> {
           CoachGate.loading => AppLoadingView(label: l10n.launchLoading),
           CoachGate.premium => const _PremiumGate(),
           CoachGate.consent => const _ConsentGate(),
-          CoachGate.chat => _Chat(request: widget.request, draft: _draft),
+          CoachGate.chat => _Chat(
+            request: widget.request,
+            draft: _draft,
+            dayCard: widget.dayCard,
+          ),
         },
         bottomNavigationBar: state.gate == CoachGate.consent
             ? AppBottomCta(
@@ -324,10 +343,11 @@ class _ConsentGate extends StatelessWidget {
 }
 
 class _Chat extends StatefulWidget {
-  const new({required this.request, required this.draft});
+  const new({required this.request, required this.draft, this.dayCard});
 
   final CoachRequest request;
   final TextEditingController draft;
+  final Widget? dayCard;
 
   @override
   State<_Chat> createState() => _ChatState();
@@ -441,9 +461,35 @@ class _ChatState extends State<_Chat> {
     final latest = messages.lastIndexWhere(
       (message) => message.role == CoachMessageRole.user,
     );
+    final coachContext = widget.request.context;
     void followUp(String question) =>
         unawaited(cubit.suggestionPressed(question));
     void send() => unawaited(cubit.sendPressed());
+
+    /// The questions for where the coach was opened from, under [intro].
+    Widget suggestions(String? intro) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.m,
+      children: [
+        if (intro != null)
+          Text(
+            intro,
+            style: AppTextStyles.rowDetail.copyWith(color: secondary),
+          ),
+        AppSection(
+          header: coachContext.title,
+          children: [
+            for (final question in l10n.coachSuggestions(coachContext.kind))
+              AppListRowButton(
+                icon: AppSymbols.coach,
+                title: question,
+                accessory: null,
+                onPressed: () => followUp(question),
+              ),
+          ],
+        ),
+      ],
+    );
 
     Widget message(int index) {
       final message = messages[index];
@@ -460,7 +506,7 @@ class _ChatState extends State<_Chat> {
               role: message.role,
               text: message.text,
               blocks: message.blocks ?? const [],
-              saved: index < state.savedMessageCount,
+              saved: state.readOnly,
               onFollowUp: followUp,
               actions: [
                 (AppSymbols.copy, l10n.coachCopy, () => _copy(message)),
@@ -537,28 +583,12 @@ class _ChatState extends State<_Chat> {
                             ScrollViewKeyboardDismissBehavior.onDrag,
                         padding: const EdgeInsets.all(AppSpacing.l),
                         children: [
-                          if (state.showsSuggestions) ...[
-                            Text(
-                              l10n.coachEmptyMessage,
-                              style: AppTextStyles.rowDetail.copyWith(
-                                color: secondary,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.m),
-                            AppSection(
-                              children: [
-                                for (final question in l10n.coachSuggestions(
-                                  widget.request.context.kind,
-                                ))
-                                  AppListRowButton(
-                                    icon: AppSymbols.coach,
-                                    title: question,
-                                    accessory: null,
-                                    onPressed: () => followUp(question),
-                                  ),
-                              ],
-                            ),
-                          ],
+                          if (!state.readOnly) ?widget.dayCard,
+                          // Today's questions, on a day not yet asked about.
+                          if (state.showsSuggestions &&
+                              !state.readOnly &&
+                              coachContext.kind == CoachContextKind.today)
+                            suggestions(l10n.coachEmptyMessage),
                           for (
                             var index = 0;
                             index < (latest < 0 ? messages.length : latest);
@@ -593,6 +623,12 @@ class _ChatState extends State<_Chat> {
                                 ],
                               ),
                             ),
+                          // Opened from another screen: its questions, last,
+                          // so just above the field, until one is asked.
+                          if (!state.readOnly &&
+                              !state.hasAsked &&
+                              coachContext.kind != CoachContextKind.today)
+                            suggestions(null),
                         ],
                       ),
                     ),
@@ -628,57 +664,86 @@ class _ChatState extends State<_Chat> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 spacing: AppSpacing.xs,
-                children: [
-                  if (remaining != null)
-                    Text(
-                      l10n.coachMessagesLeft(remaining),
-                      style: AppTextStyles.label.copyWith(color: secondary),
-                    ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    spacing: AppSpacing.s,
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          key: const Key('Coach.draft'),
-                          controller: widget.draft,
-                          minLines: 1,
-                          maxLines: 5,
-                          textInputAction: TextInputAction.send,
-                          onChanged: cubit.draftChanged,
-                          onSubmitted: (_) => send(),
-                          decoration: InputDecoration(
-                            hintText: l10n.coachInputHint,
-                            filled: true,
-                            fillColor: context.appColors.surface,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppRadius.l),
-                              borderSide: BorderSide.none,
+                children: state.readOnly
+                    ? [
+                        Text(
+                          l10n.coachDayEnded,
+                          style: AppTextStyles.label.copyWith(color: secondary),
+                          textAlign: TextAlign.center,
+                        ),
+                        AppCtaButton(
+                          label: l10n.coachAskInToday,
+                          variant: AppCtaVariant.secondary,
+                          // In place of this day: Back goes to the list.
+                          onPressed: () => context.pushReplacementNamed(
+                            CoachPage.name,
+                            extra: CoachRequest(
+                              showsCloseButton: widget.request.showsCloseButton,
                             ),
                           ),
                         ),
-                      ),
-                      // While the coach answers, Send becomes Stop.
-                      if (state.isSending)
-                        AppIconButton(
-                          icon: AppSymbols.stop,
-                          semanticLabel: l10n.coachStop,
-                          onPressed: cubit.stopPressed,
-                        )
-                      else
-                        AppIconButton(
-                          icon: AppSymbols.send,
-                          semanticLabel: l10n.coachSend,
-                          onPressed: state.canSend ? send : null,
+                      ]
+                    : [
+                        if (state.newDayStarted)
+                          AppInlineMessage(
+                            kind: AppInlineMessageKind.info,
+                            text: l10n.coachNewDay,
+                            kindLabel: l10n.coachTitle,
+                          ),
+                        if (remaining != null)
+                          Text(
+                            l10n.coachMessagesLeft(remaining),
+                            style: AppTextStyles.label.copyWith(
+                              color: secondary,
+                            ),
+                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          spacing: AppSpacing.s,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                key: const Key('Coach.draft'),
+                                controller: widget.draft,
+                                minLines: 1,
+                                maxLines: 5,
+                                textInputAction: TextInputAction.send,
+                                onChanged: cubit.draftChanged,
+                                onSubmitted: (_) => send(),
+                                decoration: InputDecoration(
+                                  hintText: l10n.coachInputHint,
+                                  filled: true,
+                                  fillColor: context.appColors.surface,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.l,
+                                    ),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // While the coach answers, Send becomes Stop.
+                            if (state.isSending)
+                              AppIconButton(
+                                icon: AppSymbols.stop,
+                                semanticLabel: l10n.coachStop,
+                                onPressed: cubit.stopPressed,
+                              )
+                            else
+                              AppIconButton(
+                                icon: AppSymbols.send,
+                                semanticLabel: l10n.coachSend,
+                                onPressed: state.canSend ? send : null,
+                              ),
+                          ],
                         ),
-                    ],
-                  ),
-                  Text(
-                    l10n.coachDisclaimer,
-                    style: AppTextStyles.label.copyWith(color: secondary),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                        Text(
+                          l10n.coachDisclaimer,
+                          style: AppTextStyles.label.copyWith(color: secondary),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
               ),
             ),
           ),

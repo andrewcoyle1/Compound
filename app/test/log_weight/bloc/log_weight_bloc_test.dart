@@ -247,6 +247,28 @@ void main() {
     });
 
     group(LogWeightSaveRequested, () {
+      for (final (unit, typed, kg) in [
+        (WeightUnitPreference.kilograms, 81.46, 81.5),
+        (WeightUnitPreference.pounds, 180.0, 81.6),
+      ]) {
+        blocTest<LogWeightBloc, LogWeightState>(
+          'saves a weight typed in ${unit.name}, as the wheels hold it',
+          build: build,
+          seed: () => ready().copyWith(unit: unit),
+          act: (bloc) => bloc.add(LogWeightSaveRequested(typed)),
+          verify: (bloc) {
+            final entry =
+                verify(() => bodyRepository.saveMeasurement(captureAny()))
+                        .captured
+                        .single
+                    as BodyMeasurementEntry;
+            expect(entry.weightKg, closeTo(kg, 0.05));
+            expect(bloc.state.status, LogWeightStatus.saved);
+            expect(bloc.state.unit, unit);
+          },
+        );
+      }
+
       blocTest<LogWeightBloc, LogWeightState>(
         'saves a manual weigh-in, then the profile weight and unit',
         build: build,

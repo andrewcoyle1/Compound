@@ -67,15 +67,11 @@ final class CoachQuestionStatus extends Equatable {
 final class const CoachState({
   final CoachGate gate = CoachGate.loading,
 
-  /// The conversation on screen: the stored chat when one was opened, then
-  /// this session's turns. Every message is drawn by one widget
+  /// The conversation on screen: the chat as saved, then this session's
+  /// turns not saved yet. Every message is drawn by one widget
   /// (`CoachMessageBody`), so structured content can be added to the model
   /// later without touching the rest.
   final List<CoachMessage> messages = const [],
-
-  /// How many of [messages] came from the stored chat: their blocks are
-  /// snapshots, shown with the day they were read.
-  final int savedMessageCount = 0,
 
   /// The answer as it streams in; null when nothing is streaming.
   final String? streamingText,
@@ -83,11 +79,27 @@ final class const CoachState({
   /// The blocks the streaming answer has shown so far, in order.
   final List<CoachBlock> streamingBlocks = const [],
 
-  /// The chat being continued; null until the first answer of a new one.
+  /// The chat on screen: today's is the day's key, `YYYY-MM-DD`.
   final String? chatId,
 
-  /// The saved chat's title, once there is one.
+  /// The day the chat belongs to; null for a chat from before day chats.
+  final String? day,
+
+  /// The saved chat's title.
   final String? chatTitle,
+
+  /// A past day's chat, or one from before day chats: it can be read, not
+  /// added to, and its blocks are snapshots, shown with the day they were
+  /// read.
+  final bool readOnly = false,
+
+  /// Whether a question has been asked on this screen: until then, a
+  /// question about the screen it was opened from is offered.
+  final bool hasAsked = false,
+
+  /// The day ended while the chat was open: the screen moved to the new
+  /// day's chat, with the question back in the field, and says so.
+  final bool newDayStarted = false,
 
   /// The questions without an answer, by message id: the one being
   /// answered, and any that failed or were stopped.
@@ -128,7 +140,7 @@ final class const CoachState({
     (status) => status.phase == CoachQuestionPhase.answering,
   );
 
-  bool get canSend => !isSending && draft.trim().isNotEmpty;
+  bool get canSend => !readOnly && !isSending && draft.trim().isNotEmpty;
 
   /// The tool the coach is running for the question it is answering.
   String? get reading => questions.values
@@ -139,8 +151,8 @@ final class const CoachState({
   /// Whether the last message is an answer to the question before it, in a
   /// saved chat, so it can be asked for again.
   bool get canRegenerate =>
+      !readOnly &&
       !isSending &&
-      chatId != null &&
       messages.length >= 2 &&
       messages.last.role == CoachMessageRole.assistant &&
       messages[messages.length - 2].role == CoachMessageRole.user;
@@ -148,11 +160,14 @@ final class const CoachState({
   CoachState copyWith({
     CoachGate? gate,
     List<CoachMessage>? messages,
-    int? savedMessageCount,
     String? Function()? streamingText,
     List<CoachBlock>? streamingBlocks,
     String? Function()? chatId,
+    String? Function()? day,
     String? Function()? chatTitle,
+    bool? readOnly,
+    bool? hasAsked,
+    bool? newDayStarted,
     Map<String, CoachQuestionStatus>? questions,
     bool? isGivingConsent,
     String? draft,
@@ -164,11 +179,14 @@ final class const CoachState({
   }) => CoachState(
     gate: gate ?? this.gate,
     messages: messages ?? this.messages,
-    savedMessageCount: savedMessageCount ?? this.savedMessageCount,
     streamingText: streamingText == null ? this.streamingText : streamingText(),
     streamingBlocks: streamingBlocks ?? this.streamingBlocks,
     chatId: chatId == null ? this.chatId : chatId(),
+    day: day == null ? this.day : day(),
     chatTitle: chatTitle == null ? this.chatTitle : chatTitle(),
+    readOnly: readOnly ?? this.readOnly,
+    hasAsked: hasAsked ?? this.hasAsked,
+    newDayStarted: newDayStarted ?? this.newDayStarted,
     questions: questions ?? this.questions,
     isGivingConsent: isGivingConsent ?? this.isGivingConsent,
     draft: draft ?? this.draft,
@@ -183,11 +201,14 @@ final class const CoachState({
   List<Object?> get props => [
     gate,
     messages,
-    savedMessageCount,
     streamingText,
     streamingBlocks,
     chatId,
+    day,
     chatTitle,
+    readOnly,
+    hasAsked,
+    newDayStarted,
     questions,
     isGivingConsent,
     draft,

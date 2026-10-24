@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:checkin_repository/checkin_repository.dart' show localDayKey;
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
@@ -105,6 +106,8 @@ void main() {
     expect(find.text('Before You Ask'), findsOneWidget);
     await tap(tester, find.text('Allow and Continue'));
 
+    // Today's chat opens on the day.
+    expect(find.text('Your Day'), findsOneWidget);
     expect(find.text('How did my training go this week?'), findsOneWidget);
     await ask(tester, find.text('How did my training go this week?'));
     expect(answers(), findsOneWidget);
@@ -112,21 +115,15 @@ void main() {
       (tester.widget(answers()) as CoachMessageBody).text,
       contains('bench press'),
     );
-    // The suggestions are gone, and the chat takes its saved title.
+    // The suggestions are gone; the day stays.
     expect(find.text('Am I on track for my goal?'), findsNothing);
-    expect(
-      find.descendant(
-        of: find.byType(AppBar),
-        matching: find.text('How did my training go this week?'),
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Your Day'), findsOneWidget);
 
-    await tap(tester, find.byTooltip('More'));
-    await tap(tester, find.text('Chats'));
+    await tap(tester, find.byTooltip('Chats'));
     expect(find.text('Coach Chats'), findsOneWidget);
+    // Yesterday's chat, from before day chats, and today's.
     expect(find.text('Why has my weight stalled?'), findsOneWidget);
-    expect(find.text('How did my training go this week?'), findsOneWidget);
+    expect(find.byKey(Key('CoachChats.${localDayKey(now)}')), findsOneWidget);
 
     await tester.drag(
       find.byKey(const Key('CoachChats.chat-1')),
@@ -135,8 +132,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Why has my weight stalled?'), findsNothing);
 
+    // Today's chat, from the list, is still today's.
     await ask(tester, find.text('How did my training go this week?'));
     expect(answers(), findsOneWidget);
+    expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
     await tap(tester, find.byType(BackButton));
 
     await tap(tester, find.text('Withdraw Permission and Delete Chats'));
@@ -204,11 +203,6 @@ void main() {
     );
     await ask(tester, find.byTooltip('Send'));
     expect(answers(), findsOneWidget);
-
-    await tap(tester, find.byTooltip('More'));
-    await tap(tester, find.text('New Chat'));
-    expect(answers(), findsNothing);
-    expect(find.text('How did my training go this week?'), findsOneWidget);
   });
 
   testWidgets('Settings opens the saved chats', (tester) async {
@@ -221,8 +215,17 @@ void main() {
     // No consent yet, so nothing to withdraw.
     expect(find.text('Withdraw Permission and Delete Chats'), findsNothing);
 
-    await tap(tester, find.byTooltip('New Chat'));
-    expect(find.text('Before You Ask'), findsOneWidget);
+    // A past day reads, and sends its asker to today.
+    await tap(tester, find.text('Why has my weight stalled?'));
+    await tap(tester, find.text('Allow and Continue'));
+    expect(find.text('This day has ended.'), findsOneWidget);
+    expect(find.byKey(const Key('Coach.draft')), findsNothing);
+    expect(find.text('Your Day'), findsNothing);
+    await tap(tester, find.text("Ask in Today's Chat"));
+    expect(find.text('Your Day'), findsOneWidget);
+    expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
+    await tap(tester, find.byType(BackButton));
+    expect(find.text('Coach Chats'), findsOneWidget);
     // Lets any snack bar's timer run out.
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();

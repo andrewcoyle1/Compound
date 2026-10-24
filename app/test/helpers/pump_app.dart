@@ -10,6 +10,7 @@ import 'package:checkin_repository/checkin_repository.dart';
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/challenges/challenges.dart';
+import 'package:compound/coach/coach.dart' show CoachAccessCubit;
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/l10n.dart';
@@ -95,6 +96,7 @@ extension PumpApp on WidgetTester {
     ProgramsCubit? programsCubit,
     ActiveWorkoutCubit? activeWorkoutCubit,
     CoachRepository? coachRepository,
+    CoachAccessCubit? coachAccessCubit,
     PurchasesRepository? purchasesRepository,
     AbTestRepository? abTestRepository,
     HealthRepository? healthRepository,
@@ -304,6 +306,16 @@ extension PumpApp on WidgetTester {
                   StravaCubit(
                     strava: stravaRepository,
                     authorizer: FakeStravaAuthorizer(),
+                    analytics: analyticsRepository,
+                  ),
+            ),
+            // On, as for a subscriber, unless a test passes one.
+            BlocProvider<CoachAccessCubit>(
+              create: (context) =>
+                  coachAccessCubit ??
+                  CoachAccessCubit(
+                    coach: context.read(),
+                    purchases: context.read(),
                     analytics: analyticsRepository,
                   ),
             ),

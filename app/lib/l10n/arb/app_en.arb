@@ -10324,10 +10324,6 @@
     "@coachConsentFailed": {
         "description": "Alert when consent could not be saved"
     },
-    "coachEmptyMessage": "Ask about your training, food and progress. Answers come from what you've logged.",
-    "@coachEmptyMessage": {
-        "description": "Coach chat before the first message"
-    },
     "coachInputHint": "Ask your coach",
     "@coachInputHint": {
         "description": "Coach message field placeholder"
@@ -10437,10 +10433,6 @@
     "coachWithdrawFailed": "Unable to Withdraw Permission",
     "@coachWithdrawFailed": {
         "description": "Coach"
-    },
-    "coachTodaysFood": "Today's Food",
-    "@coachTodaysFood": {
-        "description": "Coach title when asked about today's protein gap"
     },
     "coachAskToday1": "How did my training go this week?",
     "@coachAskToday1": {
@@ -13711,5 +13703,69 @@
     "quickWeighInSave": "Save Weigh-In",
     "@quickWeighInSave": {
         "description": "Coach day checklist: saves the inline weigh-in"
+    },
+    "todayCoachTurnOn": "Turn On Coach",
+    "@todayCoachTurnOn": {
+        "description": "Today, as the coach's day chat before consent: opens the coach's permission screen"
+    },
+    "settingsCoachHeader": "Coach",
+    "@settingsCoachHeader": {
+        "description": "Settings: header of the AI coach section"
+    },
+    "settingsCoachToggle": "AI Coach",
+    "@settingsCoachToggle": {
+        "description": "Settings: switch that shows or hides the AI coach"
+    },
+    "settingsCoachPremium": "Premium",
+    "@settingsCoachPremium": {
+        "description": "Settings: value beside the AI Coach row when the user is not a subscriber; tapping opens the plans"
+    },
+    "settingsCoachFooter": "Shows the coach on Today and Ask Coach on other screens. Turning it off keeps your chats.",
+    "@settingsCoachFooter": {
+        "description": "Settings: footer under the AI coach section"
+    },
+    "tipGotIt": "Got It",
+    "@tipGotIt": {
+        "description": "Feature tip: button that closes a one-time tip"
+    },
+    "tipMetricChartTitle": "Read the chart",
+    "@tipMetricChartTitle": {
+        "description": "Feature tip on a metric's chart: title"
+    },
+    "tipMetricChartMessage": "Touch and hold for exact values. Pinch to zoom, or swipe sideways for earlier dates.",
+    "@tipMetricChartMessage": {
+        "description": "Feature tip on a metric's chart: the press-and-hold, pinch and swipe gestures"
+    },
+    "tipMealSwipeTitle": "Log a meal again",
+    "@tipMealSwipeTitle": {
+        "description": "Feature tip on the Nutrition tab's first meal: title"
+    },
+    "tipMealSwipeMessage": "Swipe a food right to log its whole meal again now.",
+    "@tipMealSwipeMessage": {
+        "description": "Feature tip on the Nutrition tab's first meal: the swipe that logs it again"
+    },
+    "tipSetSwipeTitle": "Rest for one set",
+    "@tipSetSwipeTitle": {
+        "description": "Feature tip on the workout tracker's set row: title"
+    },
+    "tipSetSwipeMessage": "Swipe a set right to give it its own rest time.",
+    "@tipSetSwipeMessage": {
+        "description": "Feature tip on the workout tracker's set row: the swipe to a set's own rest timer"
+    },
+    "tipSetFillLastTitle": "Repeat last time",
+    "@tipSetFillLastTitle": {
+        "description": "Feature tip on the workout tracker's Last column: title"
+    },
+    "tipSetFillLastMessage": "Tap last time's figures to copy them into this set.",
+    "@tipSetFillLastMessage": {
+        "description": "Feature tip on the workout tracker's Last column: tapping it fills the set"
+    },
+    "devSettingsResetTips": "Reset Tips",
+    "@devSettingsResetTips": {
+        "description": "Developer tools: button that makes every one-time feature tip show again"
+    },
+    "devSettingsTipsReset": "Tips will show again.",
+    "@devSettingsTipsReset": {
+        "description": "Developer tools: notice after Reset Tips"
     }
 }

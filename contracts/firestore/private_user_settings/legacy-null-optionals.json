@@ -19,5 +19,6 @@
   "push_come_back_reminders": null,
   "push_meal_reminders": null,
   "coach_consent": null,
-  "coach_consent_at": null
+  "coach_consent_at": null,
+  "coach_enabled": null
 }

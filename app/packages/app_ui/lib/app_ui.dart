@@ -51,5 +51,6 @@ export 'src/widgets/app_tab_accessory.dart';
 export 'src/widgets/app_tab_bar.dart';
 export 'src/widgets/app_text_button.dart';
 export 'src/widgets/app_text_field_row.dart';
+export 'src/widgets/app_tip.dart';
 export 'src/widgets/app_toolbar_button.dart';
 export 'src/widgets/app_viewfinder.dart';

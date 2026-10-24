@@ -148,6 +148,23 @@ void main() {
     });
   });
 
+  group('enabled', () {
+    test('is on until turned off, and leaves consent alone', () async {
+      final repository = subject();
+      expect(await repository.watchEnabled(uid).first, isTrue);
+      await repository.giveConsent(uid);
+
+      await repository.setEnabled(uid, enabled: false);
+
+      expect(await repository.watchEnabled(uid).first, isFalse);
+      expect(await repository.watchConsent(uid).first, isTrue);
+
+      await repository.setEnabled(uid, enabled: true);
+
+      expect(await repository.watchEnabled(uid).first, isTrue);
+    });
+  });
+
   group('send', () {
     test('passes the message, chat and context to coachChat', () async {
       final events = await subject()

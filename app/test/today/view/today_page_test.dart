@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:checkin_repository/checkin_repository.dart';
+import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/log_weight/log_weight.dart';
@@ -22,6 +25,7 @@ import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound_maths/compound_maths.dart' show checkInWeekStart;
 import 'package:compound_models/compound_models.dart' show WorkoutTemplateModel;
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -38,7 +42,10 @@ class _MockGoRouter extends Mock implements GoRouter;
 class _MockCircleBloc extends MockBloc<CircleEvent, CircleState>
     implements CircleBloc;
 
-/// The Today list, under the large title's scroll view.
+class _MockCoachAccessCubit extends MockCubit<CoachAccess>
+    implements CoachAccessCubit;
+
+/// The Today list.
 final Finder _list = find.byType(Scrollable).last;
 
 void main() {
@@ -62,6 +69,8 @@ void main() {
     ).thenReturn(null);
     when(() => router.go(any())).thenReturn(null);
     when(() => router.pushNamed<Object?>(any())).thenAnswer((_) async => null);
+    when(() => router.pushNamed<void>(any(), extra: any(named: 'extra')))
+        .thenAnswer((_) async {});
     when(
       () => router.pushNamed<Object?>(
         any(),
@@ -85,6 +94,11 @@ void main() {
     BodyRepository? bodyRepository,
     Size size = phoneSize,
     bool reduceMotion = false,
+    // The classic Today unless a test turns the coach on.
+    CoachAccess coach = const CoachAccess(enabled: false),
+    Stream<CoachAccess>? coachChanges,
+    bool consented = true,
+    CoachChatCall? coachChat,
   }) async {
     tester.useSize(size);
     final workouts =
@@ -116,6 +130,16 @@ void main() {
       ],
     );
     final users = InMemoryUserRepository(users: {uid: sampleUser(now: now)});
+    await users.mergePrivateSettings(
+      uid,
+      PrivateUserSettings(coachConsent: consented),
+    );
+    final access = _MockCoachAccessCubit();
+    whenListen(
+      access,
+      coachChanges ?? const Stream<CoachAccess>.empty(),
+      initialState: coach,
+    );
     await tester.pumpApp(
       InheritedGoRouter(
         goRouter: router,
@@ -145,6 +169,14 @@ void main() {
       circleBloc: circleBloc,
       workoutSessionRepository: workouts,
       userRepository: users,
+      coachAccessCubit: access,
+      coachRepository: CoachRepository(
+        firestore: FakeFirebaseFirestore(),
+        users: users,
+        coachChat:
+            coachChat ??
+            (_, {chatId, context, regenerate = false}) => const Stream.empty(),
+      ),
     );
     await tester.pump();
   }
@@ -360,26 +392,8 @@ void main() {
         scrollable: _list,
       );
       expect(find.textContaining('protein to go today'), findsOneWidget);
-      // Swift's CoachTests: Today asks about today, and the gap about
-      // today's food.
-      final contexts = [
-        for (final button in tester.widgetList<AskCoachButton>(
-          find.byType(AskCoachButton),
-        ))
-          button.coachContext,
-      ];
-      expect(
-        contexts.map((context) => context.kind),
-        unorderedEquals([
-          CoachContextKind.today,
-          CoachContextKind.nutritionDay,
-        ]),
-      );
-      final food = contexts.firstWhere(
-        (context) => context.kind == CoachContextKind.nutritionDay,
-      );
-      expect(food.date, localDayKey(DateTime.now()));
-      expect(food.title, "Today's Food");
+      // With the coach off, nothing here offers it: on, Today is its chat.
+      expect(find.byType(AskCoachButton), findsNothing);
       await tester.scrollUntilVisible(
         find.text('Get Started · 3\u00a0of\u00a04'),
         -200,
@@ -665,6 +679,196 @@ void main() {
       when(() => appBloc.state).thenReturn(const AppUnauthenticated());
       await tester.pumpApp(const TodayPage(), appBloc: appBloc);
       expect(find.byType(TodayView), findsNothing);
+    });
+  });
+
+  group("as the coach's day chat", () {
+    /// Lets the coach read its gate and the day arrive.
+    Future<void> settle(WidgetTester tester) async {
+      for (var i = 0; i < 5; i++) {
+        await tester.pump();
+      }
+    }
+
+    ScrollPosition position(WidgetTester tester) =>
+        tester.state<ScrollableState>(find.byType(Scrollable).first).position;
+
+    testWidgets('opens at the top on the day, then the suggestions and the '
+        'composer, under a standard title', (tester) async {
+      await pumpView(tester, coach: const CoachAccess());
+      await settle(tester);
+
+      expect(find.text('Your Day'), findsOneWidget);
+      expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
+      expect(position(tester).pixels, 0);
+      expect(
+        tester.widget<AppScaffold>(find.byType(AppScaffold)).largeTitle,
+        isNull,
+      );
+      expect(find.text('Today'), findsOneWidget);
+      // In the chat, nothing asks to open it.
+      expect(find.byType(AskCoachButton), findsNothing);
+      // Today's questions, as chips just above the field.
+      final chips = find.byKey(const Key('Coach.suggestions'));
+      expect(
+        find.descendant(
+          of: chips,
+          matching: find.text('How did my training go this week?'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.getBottomLeft(chips).dy,
+        lessThan(tester.getTopLeft(find.byKey(const Key('Coach.draft'))).dy),
+      );
+      // The disclaimer is a footnote in the chat, under the day.
+      await tester.scrollUntilVisible(
+        find.text(
+          'Answers come from your logs and can be wrong. Not medical advice.',
+        ),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+    });
+
+    testWidgets("asks about today in today's chat", (tester) async {
+      final sent = <(String, String?, CoachContext?)>[];
+      await pumpView(
+        tester,
+        coach: const CoachAccess(),
+        coachChat: (message, {chatId, context, regenerate = false}) {
+          sent.add((message, chatId, context));
+          return const Stream.empty();
+        },
+      );
+      await settle(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('Coach.draft')),
+        'How is my week?',
+      );
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send'));
+      await settle(tester);
+
+      // Asked: the chips go, and the footnote follows the exchange.
+      expect(find.byKey(const Key('Coach.suggestions')), findsNothing);
+      expect(sent.single.$1, 'How is my week?');
+      expect(sent.single.$2, localDayKey(DateTime.now()));
+      expect(sent.single.$3?.kind, CoachContextKind.today);
+    });
+
+    testWidgets('History opens the past days', (tester) async {
+      await pumpView(tester, coach: const CoachAccess());
+      await settle(tester);
+
+      await tester.tap(find.byTooltip('Chats'));
+      await tester.pump();
+
+      verify(
+        () => router.pushNamed<void>(
+          CoachChatsPage.name,
+          extra: CoachContext.today,
+        ),
+      ).called(1);
+    });
+
+    testWidgets("before consent, Turn On Coach takes the composer's place, "
+        'opens the permission and reads it again on return', (tester) async {
+      await pumpView(tester, coach: const CoachAccess(), consented: false);
+      await settle(tester);
+
+      expect(find.byKey(const Key('Coach.draft')), findsNothing);
+      expect(find.text('Your Day'), findsOneWidget);
+      // Permission given on the coach's own screen.
+      final users = tester
+          .element(find.byType(TodayView))
+          .read<UserRepository>();
+      when(
+        () =>
+            router.pushNamed<void>(CoachPage.name, extra: any(named: 'extra')),
+      ).thenAnswer(
+        (_) => users.mergePrivateSettings(
+          uid,
+          const PrivateUserSettings(coachConsent: true),
+        ),
+      );
+
+      await tester.tap(find.text('Turn On Coach'));
+      await settle(tester);
+
+      expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
+    });
+
+    testWidgets('turned off, Today is the classic day', (tester) async {
+      await pumpView(tester);
+      await settle(tester);
+
+      expect(find.byKey(const Key('Coach.draft')), findsNothing);
+      // The same standard title as the coach's Today.
+      expect(
+        tester.widget<AppScaffold>(find.byType(AppScaffold)).largeTitle,
+        isNull,
+      );
+      expect(find.widgetWithText(AppBar, 'Today'), findsOneWidget);
+    });
+
+    testWidgets('without premium, Today is the classic day, with no way to '
+        'the coach', (tester) async {
+      await pumpView(tester, coach: const CoachAccess(premium: false));
+      await settle(tester);
+
+      expect(find.byKey(const Key('Coach.draft')), findsNothing);
+      expect(find.byType(AskCoachButton), findsNothing);
+      expect(find.text('Turn On Coach'), findsNothing);
+    });
+
+    double maxWidth(WidgetTester tester) => tester
+        .widget<AppReadableWidth>(find.byType(AppReadableWidth).first)
+        .maxWidth;
+
+    testWidgets('on a wide window the chat keeps to a readable column', (
+      tester,
+    ) async {
+      await pumpView(
+        tester,
+        coach: const CoachAccess(),
+        size: const Size(1366, 1024),
+      );
+      await settle(tester);
+      expect(maxWidth(tester), AppContentWidth.readable);
+      expect(find.byType(AppDashboard), findsNothing);
+    });
+
+    testWidgets('on a wide window the classic day is a dashboard', (
+      tester,
+    ) async {
+      await pumpView(tester, size: const Size(1366, 1024));
+      await settle(tester);
+      expect(maxWidth(tester), AppContentWidth.dashboard);
+      expect(find.byType(AppDashboard), findsOneWidget);
+    });
+
+    testWidgets('a purchase or the switch changes Today at once', (
+      tester,
+    ) async {
+      final changes = StreamController<CoachAccess>();
+      addTearDown(changes.close);
+      await pumpView(
+        tester,
+        coach: const CoachAccess(premium: false),
+        coachChanges: changes.stream,
+      );
+      await settle(tester);
+      expect(find.byKey(const Key('Coach.draft')), findsNothing);
+
+      changes.add(const CoachAccess());
+      await settle(tester);
+      expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
+
+      changes.add(const CoachAccess(enabled: false));
+      await settle(tester);
+      expect(find.byKey(const Key('Coach.draft')), findsNothing);
     });
   });
 }

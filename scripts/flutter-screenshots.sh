@@ -19,7 +19,7 @@ cd "$app"
 # Two runs: the screens, then the workout screens with a workout under way,
 # which every other screen would otherwise show in its tab bar.
 for workout in false true; do
-  defines=(--dart-define=SHOTS_ONLY="${3:-}" --dart-define=SHOTS_WORKOUT=$workout)
+  defines=(--dart-define=SHOTS_ONLY="${3:-}" --dart-define=SHOTS_WORKOUT=$workout --dart-define=STAGING_TIPS=false)
   if [ $workout = true ]; then
     defines+=(--dart-define=STAGING_WORKOUT=user-workout-upper --dart-define=STAGING_WORKOUT_LOGGED=3)
   fi

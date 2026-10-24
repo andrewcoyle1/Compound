@@ -25,6 +25,10 @@ packages.
   `screenshot`, `flutter_slidable`, `haptic_feedback`, `another_flushbar` (1.12.x; 2.x adds a
   remote-message service), `shimmer`, `flutter_spinkit`, `home_widget`, `app_links`,
   `quick_actions`, `flutter_soloud`, and `camera` (in place of `flutter_camera_ml_vision`).
+- **Adopted 24 Oct 2026:** `showcaseview` 5.1.0 (MIT), the owner's pick for one-time tips on
+  features hidden behind a gesture (Swift had no TipKit). Wrapped as `app_ui`'s `AppTip`,
+  `AppTipScope` and `AppTipCallout`; `flutter-ui-check.py`'s `showcase-import` rule keeps it
+  out of everything else. The app's `FeatureTips` remembers each tip per device.
 - **Before then:** Firebase (core, auth, Firestore, Functions, Storage, Analytics, Crashlytics,
   Messaging, Remote Config, App Check), `go_router`, `google_sign_in`, `purchases_flutter`,
   `health`, `mobile_scanner`, `image_picker`, `share_plus`, `url_launcher`, `wakelock_plus`,
@@ -37,7 +41,6 @@ packages.
 |---|---|---|
 | `csv` | Program import parses CSV by hand (`program_repository/lib/src/import/sheet_readers.dart`, a port of Swift's `CSVReader`). Keep its behaviour: UTF-8 with a Latin-1 fallback, empty cells as null | Ready: one small PR |
 | `animations` | Shared-axis, fade-through and container-transform transitions, through `AppMotion` so Reduce Motion applies | Ready, if wanted |
-| `showcaseview` | One-time tips for hidden features: chart press-and-hold and pinch, quick actions, live label reading. New: Swift had no TipKit | Owner's call |
 | `markdown` | Rendering for the coach overhaul (generative UI); replaces the bold/italic parser in `coach/view/coach_message_body.dart` | With the coach overhaul |
 | `gleap_sdk` | Support chat, bug reports, feedback. Paid service | Parked |
 | `device_info_plus` | Already transitive; use directly to attach the device model to support reports | With Gleap |

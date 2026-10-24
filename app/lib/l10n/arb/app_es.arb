@@ -2440,7 +2440,6 @@
     "coachConsentAllow": "Permitir y continuar",
     "coachConsentNotNow": "Ahora no",
     "coachConsentFailed": "No se pudo guardar tu elección",
-    "coachEmptyMessage": "Pregunta sobre tu entrenamiento, tu alimentación y tu progreso. Las respuestas salen de lo que has registrado.",
     "coachInputHint": "Pregunta a tu entrenador",
     "coachSend": "Enviar",
     "coachDisclaimer": "Las respuestas salen de tus registros y pueden equivocarse. No es consejo médico.",

@@ -114,7 +114,12 @@ class _CoachConversationState extends State<CoachConversation> {
 
   /// The answer grew, or the keyboard came up: keep the newest in view.
   bool _onMetrics(ScrollMetricsNotification notification) {
-    if (_following && !_gliding) _jumpToLatest();
+    final metrics = notification.metrics;
+    // A glide aims at the end as it was; when the list comes out shorter
+    // (a long opener, laid out again), it would run past the end, so it
+    // lands at once instead.
+    final overshot = _gliding && metrics.pixels > metrics.maxScrollExtent;
+    if ((_following && !_gliding) || overshot) _jumpToLatest();
     return false;
   }
 
@@ -158,29 +163,35 @@ class _CoachConversationState extends State<CoachConversation> {
         unawaited(cubit.suggestionPressed(question));
     void send() => unawaited(cubit.sendPressed());
 
-    /// The questions for where the coach was opened from, under [intro].
-    Widget suggestions(String? intro) => Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppSpacing.m,
+    final isToday = coachContext.kind == CoachContextKind.today;
+
+    /// Today's questions, on a day not yet asked about: chips just above
+    /// the field.
+    final chips = !state.readOnly && isToday && state.showsSuggestions;
+
+    /// The questions for where the coach was opened from.
+    Widget suggestions() => AppSection(
+      header: coachContext.title,
       children: [
-        if (intro != null)
-          Text(
-            intro,
-            style: AppTextStyles.rowDetail.copyWith(color: secondary),
+        for (final question in l10n.coachSuggestions(coachContext.kind))
+          AppListRowButton(
+            icon: AppSymbols.coach,
+            title: question,
+            accessory: null,
+            onPressed: () => followUp(question),
           ),
-        AppSection(
-          header: coachContext.title,
-          children: [
-            for (final question in l10n.coachSuggestions(coachContext.kind))
-              AppListRowButton(
-                icon: AppSymbols.coach,
-                title: question,
-                accessory: null,
-                onPressed: () => followUp(question),
-              ),
-          ],
-        ),
       ],
+    );
+
+    /// One quiet line under the conversation, rather than in the composer,
+    /// so the field keeps its room at large text sizes.
+    final footnote = Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.s),
+      child: Text(
+        l10n.coachDisclaimer,
+        style: AppTextStyles.label.copyWith(color: secondary),
+        textAlign: TextAlign.center,
+      ),
     );
 
     Widget message(int index) {
@@ -310,11 +321,6 @@ class _CoachConversationState extends State<CoachConversation> {
                         padding: const EdgeInsets.all(AppSpacing.l),
                         children: [
                           if (!state.readOnly) ?widget.opener,
-                          // Today's questions, on a day not yet asked about.
-                          if (state.showsSuggestions &&
-                              !state.readOnly &&
-                              coachContext.kind == CoachContextKind.today)
-                            suggestions(l10n.coachEmptyMessage),
                           for (
                             var index = 0;
                             index < (latest < 0 ? messages.length : latest);
@@ -345,16 +351,18 @@ class _CoachConversationState extends State<CoachConversation> {
                                       blocks: state.streamingBlocks,
                                       reading: state.reading,
                                       onFollowUp: followUp,
-                                    ),
+                                    )
+                                  else
+                                    footnote,
                                 ],
                               ),
                             ),
                           // Opened from another screen: its questions, last,
                           // so just above the field, until one is asked.
-                          if (!state.readOnly &&
-                              !state.hasAsked &&
-                              coachContext.kind != CoachContextKind.today)
-                            suggestions(null),
+                          if (!state.readOnly && !state.hasAsked && !isToday)
+                            suggestions(),
+                          // Nothing asked yet: under what is there.
+                          if (latest < 0) footnote,
                         ],
                       ),
                     ),
@@ -383,95 +391,122 @@ class _CoachConversationState extends State<CoachConversation> {
           ),
           SafeArea(
             top: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.l,
-                vertical: AppSpacing.s,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: AppSpacing.xs,
-                children: state.readOnly
-                    ? [
-                        Text(
-                          l10n.coachDayEnded,
-                          style: AppTextStyles.label.copyWith(color: secondary),
-                          textAlign: TextAlign.center,
-                        ),
-                        AppCtaButton(
-                          label: l10n.coachAskInToday,
-                          variant: AppCtaVariant.secondary,
-                          // In place of this day: Back goes to the list.
-                          onPressed: () => context.pushReplacementNamed(
-                            CoachPage.name,
-                            extra: CoachRequest(
-                              showsCloseButton: widget.request.showsCloseButton,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (chips)
+                  SingleChildScrollView(
+                    key: const Key('Coach.suggestions'),
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.l,
+                      AppSpacing.s,
+                      AppSpacing.l,
+                      0,
+                    ),
+                    child: Row(
+                      spacing: AppSpacing.xs,
+                      children: [
+                        for (final question in l10n.coachSuggestions(
+                          coachContext.kind,
+                        ))
+                          AppChip(
+                            label: question,
+                            icon: AppSymbols.coach,
+                            onPressed: () => followUp(question),
+                          ),
+                      ],
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.l,
+                    vertical: AppSpacing.s,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: AppSpacing.xs,
+                    children: state.readOnly
+                        ? [
+                            Text(
+                              l10n.coachDayEnded,
+                              style: AppTextStyles.label.copyWith(
+                                color: secondary,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                          ),
-                        ),
-                      ]
-                    : [
-                        if (state.newDayStarted)
-                          AppInlineMessage(
-                            kind: AppInlineMessageKind.info,
-                            text: l10n.coachNewDay,
-                            kindLabel: l10n.coachTitle,
-                          ),
-                        if (remaining != null)
-                          Text(
-                            l10n.coachMessagesLeft(remaining),
-                            style: AppTextStyles.label.copyWith(
-                              color: secondary,
-                            ),
-                          ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          spacing: AppSpacing.s,
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                key: const Key('Coach.draft'),
-                                controller: widget.draft,
-                                minLines: 1,
-                                maxLines: 5,
-                                textInputAction: TextInputAction.send,
-                                onChanged: cubit.draftChanged,
-                                onSubmitted: (_) => send(),
-                                decoration: InputDecoration(
-                                  hintText: l10n.coachInputHint,
-                                  filled: true,
-                                  fillColor: context.appColors.surface,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      AppRadius.l,
-                                    ),
-                                    borderSide: BorderSide.none,
-                                  ),
+                            AppCtaButton(
+                              label: l10n.coachAskInToday,
+                              variant: AppCtaVariant.secondary,
+                              // In place of this day: Back goes to the list.
+                              onPressed: () => context.pushReplacementNamed(
+                                CoachPage.name,
+                                extra: CoachRequest(
+                                  showsCloseButton:
+                                      widget.request.showsCloseButton,
                                 ),
                               ),
                             ),
-                            // While the coach answers, Send becomes Stop.
-                            if (state.isSending)
-                              AppIconButton(
-                                icon: AppSymbols.stop,
-                                semanticLabel: l10n.coachStop,
-                                onPressed: cubit.stopPressed,
-                              )
-                            else
-                              AppIconButton(
-                                icon: AppSymbols.send,
-                                semanticLabel: l10n.coachSend,
-                                onPressed: state.canSend ? send : null,
+                          ]
+                        : [
+                            if (state.newDayStarted)
+                              AppInlineMessage(
+                                kind: AppInlineMessageKind.info,
+                                text: l10n.coachNewDay,
+                                kindLabel: l10n.coachTitle,
                               ),
+                            if (remaining != null)
+                              Text(
+                                l10n.coachMessagesLeft(remaining),
+                                style: AppTextStyles.label.copyWith(
+                                  color: secondary,
+                                ),
+                              ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              spacing: AppSpacing.s,
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    key: const Key('Coach.draft'),
+                                    controller: widget.draft,
+                                    minLines: 1,
+                                    maxLines: 5,
+                                    textInputAction: TextInputAction.send,
+                                    onChanged: cubit.draftChanged,
+                                    onSubmitted: (_) => send(),
+                                    decoration: InputDecoration(
+                                      hintText: l10n.coachInputHint,
+                                      filled: true,
+                                      fillColor: context.appColors.surface,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          AppRadius.l,
+                                        ),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // While the coach answers, Send becomes Stop.
+                                if (state.isSending)
+                                  AppIconButton(
+                                    icon: AppSymbols.stop,
+                                    semanticLabel: l10n.coachStop,
+                                    onPressed: cubit.stopPressed,
+                                  )
+                                else
+                                  AppIconButton(
+                                    icon: AppSymbols.send,
+                                    semanticLabel: l10n.coachSend,
+                                    onPressed: state.canSend ? send : null,
+                                  ),
+                              ],
+                            ),
                           ],
-                        ),
-                        Text(
-                          l10n.coachDisclaimer,
-                          style: AppTextStyles.label.copyWith(color: secondary),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-              ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

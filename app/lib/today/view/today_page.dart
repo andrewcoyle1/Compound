@@ -140,14 +140,18 @@ class TodayView extends StatelessWidget {
       // With the coach on, the day is the top of the coach's day chat.
       child: coachOn
           ? const _CoachToday()
+          // A standard title, as the coach's Today has: a large one could
+          // not collapse over the chat's own scrolling list.
           : AppScaffold(
               maxWidth: AppContentWidth.dashboard,
-              largeTitle: l10n.tabToday,
-              actions: [
-                if (DevSettingsPage.isAvailable) const _DevButton(),
-                const _LogMenu(),
-                const ProfileButton(),
-              ],
+              appBar: AppBar(
+                title: Text(l10n.tabToday),
+                actions: [
+                  if (DevSettingsPage.isAvailable) const _DevButton(),
+                  const _LogMenu(),
+                  const ProfileButton(),
+                ],
+              ),
               body: switch (state.status) {
                 TodayStatus.loading => AppLoadingView(
                   label: l10n.launchLoading,

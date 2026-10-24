@@ -119,6 +119,31 @@ void main() {
   ScrollPosition position(WidgetTester tester) =>
       tester.state<ScrollableState>(find.byType(Scrollable).first).position;
 
+  testWidgets('the disclaimer is a footnote under the last answer, not in '
+      'the composer', (tester) async {
+    await pumpChat(
+      tester,
+      saved: [
+        message('m1', CoachMessageRole.user, 'How am I doing?'),
+        message('m2', CoachMessageRole.assistant, 'Well.'),
+      ],
+    );
+
+    final footnote = find.text(
+      'Answers come from your logs and can be wrong. Not medical advice.',
+    );
+    expect(
+      find.descendant(of: find.byType(ListView), matching: footnote),
+      findsOneWidget,
+    );
+    expect(
+      tester.getTopLeft(footnote).dy,
+      greaterThan(
+        tester.getBottomLeft(find.text('Well.', findRichText: true)).dy,
+      ),
+    );
+  });
+
   testWidgets('the answer is prose; the question a bubble', (tester) async {
     await pumpChat(
       tester,

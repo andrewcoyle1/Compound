@@ -10324,10 +10324,6 @@
     "@coachConsentFailed": {
         "description": "Alert when consent could not be saved"
     },
-    "coachEmptyMessage": "Ask about your training, food and progress. Answers come from what you've logged.",
-    "@coachEmptyMessage": {
-        "description": "Coach chat before the first message"
-    },
     "coachInputHint": "Ask your coach",
     "@coachInputHint": {
         "description": "Coach message field placeholder"

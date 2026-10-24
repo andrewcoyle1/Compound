@@ -45,7 +45,7 @@ class _MockCircleBloc extends MockBloc<CircleEvent, CircleState>
 class _MockCoachAccessCubit extends MockCubit<CoachAccess>
     implements CoachAccessCubit;
 
-/// The Today list, under the large title's scroll view.
+/// The Today list.
 final Finder _list = find.byType(Scrollable).last;
 
 void main() {
@@ -708,12 +708,25 @@ void main() {
       expect(find.text('Today'), findsOneWidget);
       // In the chat, nothing asks to open it.
       expect(find.byType(AskCoachButton), findsNothing);
+      // Today's questions, as chips just above the field.
+      final chips = find.byKey(const Key('Coach.suggestions'));
+      expect(
+        find.descendant(
+          of: chips,
+          matching: find.text('How did my training go this week?'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.getBottomLeft(chips).dy,
+        lessThan(tester.getTopLeft(find.byKey(const Key('Coach.draft'))).dy),
+      );
+      // The disclaimer is a footnote in the chat, under the day.
       await tester.scrollUntilVisible(
         find.text(
-          'Ask about your training, food and progress. Answers come from '
-          "what you've logged.",
+          'Answers come from your logs and can be wrong. Not medical advice.',
         ),
-        200,
+        300,
         scrollable: find.byType(Scrollable).first,
       );
     });
@@ -738,6 +751,8 @@ void main() {
       await tester.tap(find.byTooltip('Send'));
       await settle(tester);
 
+      // Asked: the chips go, and the footnote follows the exchange.
+      expect(find.byKey(const Key('Coach.suggestions')), findsNothing);
       expect(sent.single.$1, 'How is my week?');
       expect(sent.single.$2, localDayKey(DateTime.now()));
       expect(sent.single.$3?.kind, CoachContextKind.today);
@@ -790,10 +805,12 @@ void main() {
       await settle(tester);
 
       expect(find.byKey(const Key('Coach.draft')), findsNothing);
+      // The same standard title as the coach's Today.
       expect(
         tester.widget<AppScaffold>(find.byType(AppScaffold)).largeTitle,
-        'Today',
+        isNull,
       );
+      expect(find.widgetWithText(AppBar, 'Today'), findsOneWidget);
     });
 
     testWidgets('without premium, Today is the classic day, with no way to '

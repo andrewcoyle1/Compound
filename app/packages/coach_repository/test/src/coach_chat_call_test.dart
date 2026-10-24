@@ -390,6 +390,7 @@ void main() {
   group('a refusal the stream reports with its code', () {
     for (final (code, reason, failure) in [
       ('failed-precondition', 'consent', CoachFailure.consentRequired),
+      ('failed-precondition', 'past_day', CoachFailure.pastDay),
       ('failed-precondition', null, CoachFailure.failed),
       ('permission-denied', 'premium', CoachFailure.premiumRequired),
       ('permission-denied', null, CoachFailure.failed),

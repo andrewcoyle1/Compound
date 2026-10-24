@@ -45,26 +45,31 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 class TodayPage extends StatelessWidget {
   const new({super.key});
 
+  /// [uid]'s day, followed live: Today's, and the coach's day opener's.
+  static TodayBloc createBloc(BuildContext context, String uid) {
+    // The locale's first day of the week (0 = Sunday), as the Nutrition
+    // calendar uses; ISO counts Sunday as 7.
+    final firstDay = firstDayOfWeekIndex(context);
+    return TodayBloc(
+      workoutSessionRepository: context.read<WorkoutSessionRepository>(),
+      nutritionRepository: context.read<NutritionRepository>(),
+      bodyRepository: context.read<BodyRepository>(),
+      userRepository: context.read<UserRepository>(),
+      analyticsRepository: context.read<AnalyticsRepository>(),
+      checkInRepository: context.read<CheckInRepository>(),
+      uid: uid,
+      firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
+      store: context.read<DeviceStore>(),
+    )..add(const TodaySubscriptionRequested());
+  }
+
   @override
   Widget build(BuildContext context) {
     // The router only shows the tabs while someone is signed in.
     final state = context.read<AppBloc>().state;
     if (state is! AppAuthenticated) return const SizedBox.shrink();
-    // The locale's first day of the week (0 = Sunday), as the Nutrition
-    // calendar uses; ISO counts Sunday as 7.
-    final firstDay = firstDayOfWeekIndex(context);
     return BlocProvider(
-      create: (context) => TodayBloc(
-        workoutSessionRepository: context.read<WorkoutSessionRepository>(),
-        nutritionRepository: context.read<NutritionRepository>(),
-        bodyRepository: context.read<BodyRepository>(),
-        userRepository: context.read<UserRepository>(),
-        analyticsRepository: context.read<AnalyticsRepository>(),
-        checkInRepository: context.read<CheckInRepository>(),
-        uid: state.user.uid,
-        firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
-        store: context.read<DeviceStore>(),
-      )..add(const TodaySubscriptionRequested()),
+      create: (context) => createBloc(context, state.user.uid),
       // The streak reminder is offered once the streak reaches two weeks,
       // on the visit that shows it.
       child: ReminderOfferScope(

@@ -53,7 +53,7 @@ final class const CoachChatsState({
 }
 
 /// The coach's saved chats (Swift `CoachChatsPresenter`): reached from the
-/// coach's menu and from Settings. The function writes the chats; this
+/// coach and from Settings. The function writes the chats; this
 /// only reads and deletes them. Withdrawing the permission deletes every
 /// chat, as Swift does.
 class CoachChatsCubit extends Cubit<CoachChatsState> {
@@ -92,9 +92,6 @@ class CoachChatsCubit extends Cubit<CoachChatsState> {
 
   /// A chat tapped; the view opens it.
   void chatPressed() => _analytics.analytic('CoachChatsView_Chat_Press');
-
-  /// New Chat; the view opens the coach.
-  void newChatPressed() => _analytics.analytic('CoachChatsView_NewChat_Press');
 
   /// Deletes [chat]; a failure is a warning and a notice.
   Future<void> deleteChat(CoachChat chat) async {

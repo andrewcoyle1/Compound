@@ -146,6 +146,9 @@ enum CoachFailure {
   /// [dailyLimitReached]; the function tells them apart.
   tooManyAtOnce,
 
+  /// The chat is a day's that has ended: ask in today's chat instead.
+  pastDay,
+
   /// Not reachable, timed out or failed on the server: try again.
   unavailable,
 
@@ -169,9 +172,10 @@ class const CoachException(
 }
 
 /// Sends one [message] and streams the answer (Swift `CoachService`). A
-/// null [chatId] starts a new chat. With `regenerate`, [message] is the
-/// chat's last question asked again, and the new answer replaces its last
-/// one. The stream fails with a [CoachException].
+/// null [chatId] starts a new chat; a day key, that day's chat. With
+/// `regenerate`, [message] is the chat's last question asked again, and the
+/// new answer replaces its last one. The stream fails with a
+/// [CoachException].
 typedef CoachChatCall = Stream<CoachStreamEvent> Function(
   String message, {
   String? chatId,
@@ -318,6 +322,7 @@ CoachFailure _failure(Object error) {
   return switch (error.code) {
     'failed-precondition' when reason == 'consent' =>
       CoachFailure.consentRequired,
+    'failed-precondition' when reason == 'past_day' => CoachFailure.pastDay,
     'permission-denied' when reason == 'premium' =>
       CoachFailure.premiumRequired,
     'resource-exhausted' when reason == 'burst' => CoachFailure.tooManyAtOnce,

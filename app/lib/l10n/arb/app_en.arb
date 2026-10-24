@@ -10358,14 +10358,6 @@
             }
         }
     },
-    "coachMore": "More",
-    "@coachMore": {
-        "description": "Coach menu button"
-    },
-    "coachNewChat": "New Chat",
-    "@coachNewChat": {
-        "description": "Starts a new coach chat"
-    },
     "coachChats": "Chats",
     "@coachChats": {
         "description": "Opens the saved coach chats"
@@ -13695,5 +13687,29 @@
     "coachRegenerateFailed": "Couldn't get a new answer. Try again.",
     "@coachRegenerateFailed": {
         "description": "Notice when asking the coach for a new answer fails; the previous answer is kept"
+    },
+    "coachErrorPastDay": "That day has ended. Ask in today's chat.",
+    "@coachErrorPastDay": {
+        "description": "Coach: the chat's day ended before the question was sent"
+    },
+    "coachDayEnded": "This day has ended.",
+    "@coachDayEnded": {
+        "description": "Coach: footer of a past day's chat, which is read-only"
+    },
+    "coachAskInToday": "Ask in Today's Chat",
+    "@coachAskInToday": {
+        "description": "Coach: button under a past day's chat; opens today's chat"
+    },
+    "coachNewDay": "A new day has started, so this is today's chat. Your question is still in the field.",
+    "@coachNewDay": {
+        "description": "Coach: note after midnight moved the coach to the new day's chat"
+    },
+    "quickWeighInWeight": "Today's Weight",
+    "@quickWeighInWeight": {
+        "description": "Coach day checklist: label of the inline weigh-in field"
+    },
+    "quickWeighInSave": "Save Weigh-In",
+    "@quickWeighInSave": {
+        "description": "Coach day checklist: saves the inline weigh-in"
     }
 }

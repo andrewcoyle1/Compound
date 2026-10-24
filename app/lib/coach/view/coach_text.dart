@@ -60,6 +60,7 @@ extension CoachWords on AppLocalizations {
     CoachFailure.premiumRequired => coachErrorPremium,
     CoachFailure.dailyLimitReached => coachErrorDailyLimit,
     CoachFailure.tooManyAtOnce => coachErrorTooManyAtOnce,
+    CoachFailure.pastDay => coachErrorPastDay,
     CoachFailure.unavailable => coachErrorUnavailable,
     CoachFailure.failed => coachErrorFailed,
   };

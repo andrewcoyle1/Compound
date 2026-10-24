@@ -41,7 +41,10 @@ final class const LogWeightTenthsChanged(final int tenths)
   List<Object> get props => [tenths];
 }
 
-/// The user confirmed: save the weigh-in.
-final class LogWeightSaveRequested extends LogWeightEvent {
-  const new();
+/// The user confirmed: save the weigh-in, or [weight], typed in the unit
+/// shown, as the wheels would hold it.
+final class const LogWeightSaveRequested([final double? weight])
+    extends LogWeightEvent {
+  @override
+  List<Object> get props => [?weight];
 }

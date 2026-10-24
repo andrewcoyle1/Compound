@@ -375,8 +375,8 @@ const assertNotificationShape = (written) => {
 const enumsFixture = JSON.parse(readFileSync(new URL("../contracts/firestore/enums.json", import.meta.url), "utf8"));
 
 test("coachChat writes and reads the coach_chat fixture's shape", () => {
-    // The chat it sets in its transaction, and the turns appendChatMessages stores.
-    assert.deepEqual(keysOf("coach_chat").sort(), ["context_kind", "created_at", "id", "messages", "title", "updated_at"]);
+    // The chat it sets in its transaction (`day` on a day chat only), and the turns appendChatMessages stores.
+    assert.deepEqual(keysOf("coach_chat").sort(), ["context_kind", "created_at", "day", "id", "messages", "title", "updated_at"]);
     assert.deepEqual(Object.keys(contractFixture("coach_chat").messages[0]).sort(), ["created_at", "id", "role", "text"]);
     assert.deepEqual(enumsFixture.CoachMessageRole, ["user", "assistant"]);
     // Read back when it appends a turn, and by historyForModel.

@@ -204,9 +204,11 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     TodaySubscriptionRequested event,
     Emitter<TodayState> emit,
   ) {
-    _analyticsRepository.trackScreenView(
-      const AnalyticsEvent('TodayView_Appear'),
-    );
+    if (event.tracksAppear) {
+      _analyticsRepository.trackScreenView(
+        const AnalyticsEvent('TodayView_Appear'),
+      );
+    }
     _watchGoal(null);
     TodayState failed(Object _, StackTrace _) => state.copyWith(failed: true);
     // The checklist's inputs still to arrive, each once, in data or error.

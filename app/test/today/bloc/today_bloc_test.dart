@@ -181,6 +181,15 @@ void main() {
     });
 
     blocTest<TodayBloc, TodayState>(
+      "doesn't log TodayView_Appear for the coach's opener",
+      build: build,
+      act: (bloc) =>
+          bloc.add(const TodaySubscriptionRequested(tracksAppear: false)),
+      verify: (_) =>
+          verifyNever(() => analyticsRepository.trackScreenView(any())),
+    );
+
+    blocTest<TodayBloc, TodayState>(
       'builds the day from every repository',
       build: build,
       act: (bloc) => bloc.add(const TodaySubscriptionRequested()),

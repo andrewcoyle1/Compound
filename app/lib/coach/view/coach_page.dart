@@ -67,7 +67,11 @@ class CoachPage extends StatelessWidget {
         ),
         // The day's checklist, read only when today's chat shows it.
         BlocProvider(
-          create: (context) => TodayPage.createBloc(context, state.user.uid),
+          create: (context) => TodayPage.createBloc(
+            context,
+            state.user.uid,
+            tracksAppear: false,
+          ),
         ),
       ],
       child: CoachView(request: request, dayCard: const CoachDayCard()),

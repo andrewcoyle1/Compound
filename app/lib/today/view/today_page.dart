@@ -46,7 +46,11 @@ class TodayPage extends StatelessWidget {
   const new({super.key});
 
   /// [uid]'s day, followed live: Today's, and the coach's day opener's.
-  static TodayBloc createBloc(BuildContext context, String uid) {
+  static TodayBloc createBloc(
+    BuildContext context,
+    String uid, {
+    bool tracksAppear = true,
+  }) {
     // The locale's first day of the week (0 = Sunday), as the Nutrition
     // calendar uses; ISO counts Sunday as 7.
     final firstDay = firstDayOfWeekIndex(context);
@@ -60,7 +64,7 @@ class TodayPage extends StatelessWidget {
       uid: uid,
       firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay,
       store: context.read<DeviceStore>(),
-    )..add(const TodaySubscriptionRequested());
+    )..add(TodaySubscriptionRequested(tracksAppear: tracksAppear));
   }
 
   @override

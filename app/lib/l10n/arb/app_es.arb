@@ -3102,5 +3102,19 @@
     "coachCopied": "Copiado",
     "coachHelpful": "Útil",
     "coachNotHelpful": "No útil",
-    "coachFeedbackThanks": "Gracias por tu opinión"
+    "coachFeedbackThanks": "Gracias por tu opinión",
+    "coachReadingProfile": "Revisando tu perfil y tus objetivos…",
+    "coachReadingWorkouts": "Leyendo tus entrenamientos…",
+    "coachReadingExercise": "Revisando tu progreso en el ejercicio…",
+    "coachReadingVolume": "Revisando tu volumen de entrenamiento…",
+    "coachReadingNutrition": "Revisando tu nutrición…",
+    "coachReadingBody": "Leyendo tus medidas corporales…",
+    "coachReadingExpenditure": "Revisando tu gasto energético…",
+    "coachReadingSteps": "Contando tus pasos…",
+    "coachReadingPlan": "Leyendo tu plan…",
+    "coachReadingCheckIns": "Leyendo tus revisiones semanales…",
+    "coachThinking": "Pensando…",
+    "coachAddingCard": "Añadiendo una tarjeta…",
+    "coachRegenerate": "Regenerar",
+    "coachRegenerateFailed": "No se pudo obtener una respuesta nueva. Inténtalo de nuevo."
 }

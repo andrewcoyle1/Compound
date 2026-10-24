@@ -18,7 +18,8 @@ void main() {
     final subject = CoachRepository(
       firestore: firestore,
       users: users,
-      coachChat: (_, {chatId, context}) => const Stream.empty(),
+      coachChat: (_, {chatId, context, regenerate = false}) =>
+          const Stream.empty(),
       onWriteError: (path, error, _) =>
           refused.add((path, (error as FirebaseException).code)),
     );

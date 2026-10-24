@@ -66,7 +66,7 @@ void main() {
       coach: CoachRepository(
         firestore: FakeFirebaseFirestore(),
         users: users,
-        coachChat: (_, {chatId, context}) {
+        coachChat: (_, {chatId, context, regenerate = false}) {
           answers.add(StreamController<CoachStreamEvent>());
           return answers.last.stream;
         },
@@ -292,12 +292,177 @@ void main() {
           label: 'Coach: You are on track.',
           customActions: const [
             CustomSemanticsAction(label: 'Copy'),
+            CustomSemanticsAction(label: 'Regenerate'),
             CustomSemanticsAction(label: 'Helpful'),
             CustomSemanticsAction(label: 'Not Helpful'),
           ],
         ),
       );
       semantics.dispose();
+    });
+  });
+
+  group('while answering', () {
+    const block = CoachBlock(
+      surfaceId: 'a1-0',
+      kind: 'stat_row',
+      asOf: '2026-10-21',
+      fallback: 'Calories today: 1,640 kcal.',
+      messages: [],
+    );
+
+    testWidgets('a line says what the coach reads, until text follows', (
+      tester,
+    ) async {
+      await pumpChat(tester);
+      await send(tester, 'How is my week?');
+      expect(find.text('Thinking…'), findsOneWidget);
+
+      answers.last.add(const CoachStatus('get_workout_history'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reading your workouts…'), findsOneWidget);
+      expect(find.text('Thinking…'), findsNothing);
+      expect(find.byType(AppSpinner), findsOneWidget);
+
+      answers.last.add(const CoachStatus('get_nutrition'));
+      await tester.pumpAndSettle();
+      expect(find.text('Checking your nutrition…'), findsOneWidget);
+      expect(find.text('Reading your workouts…'), findsNothing);
+
+      answers.last.add(const CoachText('You trained 4 times.'));
+      await tester.pumpAndSettle();
+      expect(find.text('Checking your nutrition…'), findsNothing);
+      expect(find.byType(AppSpinner), findsNothing);
+
+      // Another tool after some text: the line comes back below it.
+      answers.last.add(const CoachStatus('get_a_tool_from_later'));
+      await tester.pumpAndSettle();
+      expect(find.text('Thinking…'), findsOneWidget);
+
+      finish('You trained 4 times.');
+      await tester.pumpAndSettle();
+      expect(find.text('Thinking…'), findsNothing);
+    });
+
+    testWidgets('a placeholder holds the place of a block being laid out', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpChat(tester);
+      await send(tester, 'How is my week?');
+      answers.last
+        ..add(const CoachText('Here it is.'))
+        ..add(const CoachStatus('show_block'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppPlaceholder), findsOneWidget);
+      expect(find.bySemanticsLabel('Adding a card…'), findsOneWidget);
+      expect(find.text('Thinking…'), findsNothing);
+
+      answers.last.add(const CoachBlockShown(block));
+      await tester.pumpAndSettle();
+      expect(find.byType(AppPlaceholder), findsNothing);
+      expect(find.byType(CoachSurface), findsOneWidget);
+
+      // One that never arrives goes when the answer ends.
+      answers.last.add(const CoachStatus('show_block'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AppPlaceholder), findsOneWidget);
+      finish('Here it is.');
+      await tester.pumpAndSettle();
+      expect(find.byType(AppPlaceholder), findsNothing);
+      semantics.dispose();
+    });
+  });
+
+  group('Regenerate', () {
+    final saved = [
+      message('m1', CoachMessageRole.user, 'How am I doing?'),
+      message('m2', CoachMessageRole.assistant, 'You are on track.'),
+    ];
+
+    Future<void> regenerate(WidgetTester tester) async {
+      await tester.longPress(
+        find.text('You are on track.', findRichText: true),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Regenerate'));
+      await tester.pump();
+      await tester.pump();
+    }
+
+    testWidgets('is offered on the latest answer only', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpChat(
+        tester,
+        saved: [
+          ...saved,
+          message('m3', CoachMessageRole.user, 'And now?'),
+          message('m4', CoachMessageRole.assistant, 'Still on track.'),
+        ],
+      );
+
+      List<String> actions(String label) => [
+        for (final action
+            in tester
+                .getSemantics(find.bySemanticsLabel(label))
+                .getSemanticsData()
+                .customSemanticsActionIds!)
+          CustomSemanticsAction.getAction(action)!.label!,
+      ];
+      expect(actions('Coach: You are on track.'), [
+        'Copy',
+        'Helpful',
+        'Not Helpful',
+      ]);
+      expect(actions('Coach: Still on track.'), contains('Regenerate'));
+      semantics.dispose();
+    });
+
+    testWidgets('replaces the answer in place', (tester) async {
+      await pumpChat(tester, saved: saved);
+
+      await regenerate(tester);
+
+      expect(find.text('You are on track.', findRichText: true), findsNothing);
+      expect(find.text('How am I doing?', findRichText: true), findsOneWidget);
+      expect(find.text('Thinking…'), findsOneWidget);
+      expect(analytics.parameters('CoachView_Regenerate_Press'), {
+        'context': 'today',
+      });
+
+      finish('You are ahead of plan.');
+      await tester.pumpAndSettle();
+      expect(
+        find.text('You are ahead of plan.', findRichText: true),
+        findsOneWidget,
+      );
+      expect(find.text('You are on track.', findRichText: true), findsNothing);
+    });
+
+    testWidgets('brings the old answer back when it fails', (tester) async {
+      await pumpChat(tester, saved: saved);
+
+      await regenerate(tester);
+      answers.last.addError(const CoachException(CoachFailure.unavailable));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('You are on track.', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.text("Couldn't get a new answer. Try again."),
+        findsOneWidget,
+      );
+      expect(find.text('Retry'), findsNothing);
+      // The old answer is not read out as new.
+      expect(
+        tester.takeAnnouncements().map((a) => a.message),
+        isNot(contains('Coach: You are on track.')),
+      );
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
     });
   });
 

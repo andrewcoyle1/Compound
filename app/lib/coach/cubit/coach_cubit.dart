@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
@@ -172,23 +173,69 @@ class CoachCubit extends Cubit<CoachState> {
     await _ask(question.text);
   }
 
+  /// Regenerate, on the latest answer: asks its question again with
+  /// `regenerate`, so the new answer replaces it in the chat. The old answer
+  /// is hidden while the new one streams, and comes back if it fails or is
+  /// stopped.
+  Future<void> regeneratePressed() async {
+    if (!state.canRegenerate) return;
+    _analytics.analytic('CoachView_Regenerate_Press', _contextParameter);
+    final messages = state.messages;
+    _replaced = (messages.last, state.savedMessageCount);
+    emit(
+      state.copyWith(
+        messages: messages.sublist(0, messages.length - 1),
+        savedMessageCount: math.min(
+          state.savedMessageCount,
+          messages.length - 1,
+        ),
+      ),
+    );
+    await _ask(messages[messages.length - 2].text, regenerating: true);
+  }
+
+  /// The answer a regeneration hides, and how many messages were saved
+  /// with it, while the new one streams.
+  (CoachMessage, int)? _replaced;
+
+  /// Ends a regeneration that got no new answer: [from], with the question
+  /// no longer pending, then the answer it hid back in place. False when
+  /// nothing is being regenerated.
+  ///
+  /// In two steps, so the old answer coming back is not announced as a new
+  /// one: the view announces an answer that arrives as answering ends.
+  bool _restored(CoachState from) {
+    final replaced = _replaced;
+    if (replaced == null) return false;
+    _replaced = null;
+    final (reply, savedMessageCount) = replaced;
+    emit(from.copyWith(questions: {...from.questions}..remove(_answering)));
+    emit(
+      state.copyWith(
+        messages: [...state.messages, reply],
+        savedMessageCount: savedMessageCount,
+      ),
+    );
+    return true;
+  }
+
   /// Stop, while the coach answers: drops what has streamed and leaves the
-  /// question marked stopped, with Retry. The quota stays spent.
+  /// question marked stopped, with Retry; or for a regeneration, brings the
+  /// old answer back. The quota stays spent.
   void stopPressed() {
     final questionId = _answering;
     if (questionId == null) return;
     _analytics.analytic('CoachView_Stop_Press', _contextParameter);
-    _endAnswer();
-    emit(
-      state.copyWith(
-        questions: {
-          ...state.questions,
-          questionId: const CoachQuestionStatus.stopped(),
-        },
-        streamingText: () => null,
-        streamingBlocks: const [],
-      ),
+    final stopped = state.copyWith(
+      questions: {
+        ...state.questions,
+        questionId: const CoachQuestionStatus.stopped(),
+      },
+      streamingText: () => null,
+      streamingBlocks: const [],
     );
+    if (!_restored(stopped)) emit(stopped);
+    _endAnswer();
   }
 
   /// Copy, from a message's actions; the view copies it.
@@ -212,13 +259,17 @@ class CoachCubit extends Cubit<CoachState> {
   /// after it. On a failure the question stays, marked failed, to retry; a
   /// refusal for consent or premium takes it off, puts it back in the
   /// field and goes back to that gate instead.
-  Future<void> _ask(String text) {
-    final question = CoachMessage(
-      id: _newId(),
-      role: CoachMessageRole.user,
-      text: text,
-      createdAt: _now(),
-    );
+  ///
+  /// [regenerating] asks the last message, already shown, again.
+  Future<void> _ask(String text, {bool regenerating = false}) {
+    final question = regenerating
+        ? state.messages.last
+        : CoachMessage(
+            id: _newId(),
+            role: CoachMessageRole.user,
+            text: text,
+            createdAt: _now(),
+          );
     emit(
       state.copyWith(
         questions: {
@@ -227,7 +278,7 @@ class CoachCubit extends Cubit<CoachState> {
         },
         streamingText: () => '',
         streamingBlocks: const [],
-        messages: [...state.messages, question],
+        messages: regenerating ? null : [...state.messages, question],
       ),
     );
     _analytics.analytic('CoachView_Send_Start', {
@@ -237,7 +288,13 @@ class CoachCubit extends Cubit<CoachState> {
     final answered = _answered = Completer<void>();
     _answering = question.id;
     _answer = _coach
-        .send(_uid, text, chatId: state.chatId, context: _request.context)
+        .send(
+          _uid,
+          text,
+          chatId: state.chatId,
+          context: _request.context,
+          regenerate: regenerating,
+        )
         .listen(
           _received,
           onError: (Object error) => _failed(question, error),
@@ -254,19 +311,33 @@ class CoachCubit extends Cubit<CoachState> {
     return answered.future;
   }
 
+  /// The answering question, running [tool]: text or a block means the
+  /// last tool is done.
+  Map<String, CoachQuestionStatus> _running([String? tool]) => {
+    ...state.questions,
+    ?_answering: CoachQuestionStatus.answering(tool),
+  };
+
   void _received(CoachStreamEvent event) {
     switch (event) {
+      case CoachStatus(:final tool):
+        emit(state.copyWith(questions: _running(tool)));
       case CoachText(:final text):
         emit(
           state.copyWith(
+            questions: _running(),
             streamingText: () => (state.streamingText ?? '') + text,
           ),
         );
       case CoachBlockShown(:final block):
         emit(
-          state.copyWith(streamingBlocks: [...state.streamingBlocks, block]),
+          state.copyWith(
+            questions: _running(),
+            streamingBlocks: [...state.streamingBlocks, block],
+          ),
         );
       case CoachFinished(:final chatId, :final messageId, :final text):
+        _replaced = null;
         emit(
           state.copyWith(
             chatId: () => chatId,
@@ -291,7 +362,6 @@ class CoachCubit extends Cubit<CoachState> {
   }
 
   void _failed(CoachMessage question, Object error) {
-    _endAnswer();
     final failure = switch (error) {
       CoachException(:final failure) => failure,
       CoachFailure() => error,
@@ -315,6 +385,16 @@ class CoachCubit extends Cubit<CoachState> {
       sendFailures: state.sendFailures + 1,
       remainingToday: failure == CoachFailure.dailyLimitReached ? 0 : null,
     );
+    // A regeneration that failed keeps the old answer, and says so unless
+    // a gate takes over.
+    final restored = _restored(
+      common.copyWith(
+        gate: gate,
+        regenerateFailures: gate == null ? state.regenerateFailures + 1 : null,
+      ),
+    );
+    _endAnswer();
+    if (restored) return;
     emit(
       gate == null
           ? common.copyWith(
@@ -351,6 +431,7 @@ class CoachCubit extends Cubit<CoachState> {
   /// New Chat from the menu: the next message starts a chat of its own.
   void newChatPressed() {
     _analytics.analytic('CoachView_NewChat_Press');
+    _replaced = null;
     emit(
       state.copyWith(
         chatId: () => null,

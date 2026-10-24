@@ -408,6 +408,10 @@ abstract final class AppSymbols {
   /// Scrolling a conversation down to its newest message.
   static const IconData jumpToLatest = Icons.arrow_downward_rounded;
 
+  /// Asking again for a new answer to the same question (Swift
+  /// `arrow.clockwise`).
+  static const IconData regenerate = Icons.refresh_rounded;
+
   /// Copying text to the clipboard.
   static const IconData copy = Icons.content_copy_outlined;
 

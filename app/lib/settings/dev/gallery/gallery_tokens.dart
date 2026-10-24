@@ -166,6 +166,7 @@ final gallerySymbols = <(String, IconData)>[
   ('send', AppSymbols.send),
   ('stop', AppSymbols.stop),
   ('jumpToLatest', AppSymbols.jumpToLatest),
+  ('regenerate', AppSymbols.regenerate),
   ('copy', AppSymbols.copy),
   ('helpful', AppSymbols.helpful),
   ('notHelpful', AppSymbols.notHelpful),

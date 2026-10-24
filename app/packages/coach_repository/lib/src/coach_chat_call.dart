@@ -83,6 +83,17 @@ final class const CoachText(
   this;
 }
 
+/// The coach started a tool: it is reading [tool]'s data (one of the
+/// function's ten, such as `get_workout_history`), or for `show_block`,
+/// laying out a block. Names the app does not know pass through as sent.
+final class const CoachStatus(
+  /// The tool's name.
+  final String tool,
+) extends CoachStreamEvent {
+  /// Creates a [CoachStatus].
+  this;
+}
+
 /// A block of generative UI the answer shows after its text: a chart,
 /// target bars, a stat row, actions or follow-up questions.
 final class const CoachBlockShown(
@@ -158,24 +169,28 @@ class const CoachException(
 }
 
 /// Sends one [message] and streams the answer (Swift `CoachService`). A
-/// null [chatId] starts a new chat. The stream fails with a
-/// [CoachException].
+/// null [chatId] starts a new chat. With `regenerate`, [message] is the
+/// chat's last question asked again, and the new answer replaces its last
+/// one. The stream fails with a [CoachException].
 typedef CoachChatCall = Stream<CoachStreamEvent> Function(
   String message, {
   String? chatId,
   CoachContext? context,
+  bool regenerate,
 });
 
 /// [CoachChatCall] on the `coachChat` callable (Swift
 /// `ProductionCoachService`), allowed 120 seconds because its tools read
 /// history before the model answers.
 ///
-/// The request is `{chatId?, message, context?: {kind, id?, date?}, ui: 1}`,
-/// with absent values left out as Swift's encoder leaves them. `ui` is the
+/// The request is `{chatId?, message, context?: {kind, id?, date?}, ui: 1,
+/// regenerate?: true}`, with absent values left out as Swift's encoder
+/// leaves them. `ui` is the
 /// block catalog this build draws (`compound.coach.v1`); without it the
 /// function sends text alone.
 ///
-/// A chunk carrying a `block` becomes a [CoachBlockShown]. One that does not
+/// A chunk carrying a `status` becomes a [CoachStatus], and one carrying a
+/// `block` a [CoachBlockShown]. One that does not
 /// decode is dropped, never an error: the answer's text still stands. The
 /// result also carries the answer's `blocks` as the chat stores them; those
 /// are the [CoachFinished.blocks] when none streamed, decoded by the same rule.
@@ -198,7 +213,7 @@ CoachChatCall firebaseCoachChat(FirebaseFunctions functions) {
     'coachChat',
     options: HttpsCallableOptions(timeout: const Duration(seconds: 120)),
   );
-  return (message, {chatId, context}) async* {
+  return (message, {chatId, context, regenerate = false}) async* {
     final request = <String, Object?>{
       'chatId': ?chatId,
       'message': message,
@@ -209,6 +224,7 @@ CoachChatCall firebaseCoachChat(FirebaseFunctions functions) {
           'date': ?context.date,
         },
       'ui': 1,
+      if (regenerate) 'regenerate': true,
     };
     var answering = false;
     final blocks = <CoachBlock>[];
@@ -220,6 +236,9 @@ CoachChatCall firebaseCoachChat(FirebaseFunctions functions) {
             final text = chunk['text']! as String;
             answering = true;
             if (text.isNotEmpty) yield CoachText(text);
+            if (chunk['status'] case {'tool': final String tool}) {
+              yield CoachStatus(tool);
+            }
             if (_block(chunk['block']) case final block?) {
               blocks.add(block);
               yield CoachBlockShown(block);

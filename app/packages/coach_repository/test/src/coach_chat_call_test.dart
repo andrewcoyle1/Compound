@@ -102,6 +102,22 @@ void main() {
       });
     });
 
+    test('asks to regenerate only when told to', () async {
+      stream = () => Stream.value(Result(_result(_finishedData)));
+      await firebaseCoachChat(functions)(
+        'Hi',
+        chatId: 'chat-1',
+        regenerate: true,
+      ).drain<void>();
+
+      expect(
+        verify(() => callable.stream<Object?, Object?>(captureAny<Object?>()))
+            .captured
+            .single,
+        {'chatId': 'chat-1', 'message': 'Hi', 'ui': 1, 'regenerate': true},
+      );
+    });
+
     test('sends the chat and the whole context, less its title', () async {
       expect(
         await sent(
@@ -141,6 +157,52 @@ void main() {
     expect(finished.messageId, 'm-2');
     expect(finished.text, 'Hello there');
     expect(finished.remainingToday, 48);
+    verifyNever(() => callable.call<Object?>(any<Object?>()));
+  });
+
+  test('streams each tool status, unknown names too, ignoring a malformed '
+      'one', () async {
+    stream = () => Stream.fromIterable([
+      Chunk({
+        'text': '',
+        'status': {'tool': 'get_workout_history'},
+      }),
+      Chunk({
+        'text': '',
+        'status': {'tool': 'get_something_new'},
+      }),
+      Chunk({'text': '', 'status': 'show_block'}),
+      Chunk({'text': 'Hi'}),
+      Result(_result(_finishedData)),
+    ]);
+
+    final events = await send().toList();
+
+    expect(
+      [
+        for (final event in events)
+          if (event is CoachStatus) event.tool,
+      ],
+      ['get_workout_history', 'get_something_new'],
+    );
+    expect(events, hasLength(4));
+  });
+
+  test('a stream that drops after a status does not ask again', () async {
+    stream = () => Stream<StreamResponse<Object?, Object?>>.value(
+      Chunk({
+        'text': '',
+        'status': {'tool': 'get_nutrition'},
+      }),
+    );
+
+    await expectLater(
+      send(),
+      emitsInOrder([
+        isA<CoachStatus>(),
+        emitsError(_failure(CoachFailure.unavailable)),
+      ]),
+    );
     verifyNever(() => callable.call<Object?>(any<Object?>()));
   });
 
@@ -192,6 +254,7 @@ void main() {
                 switch (event) {
                   CoachText(:final text) => text,
                   CoachBlockShown(:final block) => block.surfaceId,
+                  CoachStatus(:final tool) => tool,
                   CoachFinished() => null,
                 },
             ],

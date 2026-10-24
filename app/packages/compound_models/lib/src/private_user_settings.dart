@@ -66,6 +66,9 @@ abstract final class PrivateUserSettingsKeys {
   /// `coach_consent_at`.
   static const coachConsentAt = 'coach_consent_at';
 
+  /// `coach_enabled`.
+  static const coachEnabled = 'coach_enabled';
+
   /// Every field, in declaration order.
   static const List<String> all = [
     fcmToken,
@@ -89,6 +92,7 @@ abstract final class PrivateUserSettingsKeys {
     pushMealReminders,
     coachConsent,
     coachConsentAt,
+    coachEnabled,
   ];
 }
 
@@ -160,6 +164,10 @@ class const PrivateUserSettings({
 
   /// When coach consent was last given.
   final DateTime? coachConsentAt,
+
+  /// The Coach switch in Settings; absent means on. Off hides the coach
+  /// without withdrawing consent.
+  final bool? coachEnabled,
 }) {
   /// Creates a [PrivateUserSettings].
   this;
@@ -195,6 +203,7 @@ class const PrivateUserSettings({
     pushMealReminders: data[PrivateUserSettingsKeys.pushMealReminders] as bool?,
     coachConsent: data[PrivateUserSettingsKeys.coachConsent] as bool?,
     coachConsentAt: data[PrivateUserSettingsKeys.coachConsentAt] as DateTime?,
+    coachEnabled: data[PrivateUserSettingsKeys.coachEnabled] as bool?,
   );
 
   /// The Firestore-shaped map Swift writes: a null field is left out,
@@ -221,5 +230,6 @@ class const PrivateUserSettings({
     PrivateUserSettingsKeys.pushMealReminders: ?pushMealReminders,
     PrivateUserSettingsKeys.coachConsent: ?coachConsent,
     PrivateUserSettingsKeys.coachConsentAt: ?coachConsentAt,
+    PrivateUserSettingsKeys.coachEnabled: ?coachEnabled,
   };
 }

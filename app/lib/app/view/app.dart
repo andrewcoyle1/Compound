@@ -343,6 +343,13 @@ class const App({
             ),
           ),
           BlocProvider(
+            create: (_) => CoachAccessCubit(
+              coach: coachRepository,
+              purchases: purchasesRepository,
+              analytics: analyticsRepository,
+            ),
+          ),
+          BlocProvider(
             create: (context) => HealthCubit(
               health: context.read(),
               analytics: analyticsRepository,
@@ -869,6 +876,7 @@ class _AppViewState extends State<AppView> {
       );
     }
     context.read<ProgramsCubit>().userChanged(uid);
+    context.read<CoachAccessCubit>().userChanged(uid);
     unawaited(
       context.read<NotificationsCubit>().userChanged(
         uid,

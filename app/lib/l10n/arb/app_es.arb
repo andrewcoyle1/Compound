@@ -2466,7 +2466,6 @@
     "coachDelete": "Eliminar",
     "coachDeleteFailed": "No se pudo eliminar el chat",
     "coachWithdrawFailed": "No se pudo retirar el permiso",
-    "coachTodaysFood": "Comida de hoy",
     "coachAskToday1": "¿Cómo fue mi entrenamiento esta semana?",
     "coachAskToday2": "¿Qué debería comer hoy para alcanzar mi proteína?",
     "coachAskToday3": "¿Voy bien para mi objetivo?",
@@ -3120,5 +3119,10 @@
     "coachAskInToday": "Preguntar en el chat de hoy",
     "coachNewDay": "Ha empezado un nuevo día, así que este es el chat de hoy. Tu pregunta sigue en el campo.",
     "quickWeighInWeight": "Peso de hoy",
-    "quickWeighInSave": "Guardar pesaje"
+    "quickWeighInSave": "Guardar pesaje",
+    "settingsCoachHeader": "Entrenador",
+    "settingsCoachPremium": "Premium",
+    "todayCoachTurnOn": "Activar el entrenador",
+    "settingsCoachToggle": "Entrenador con IA",
+    "settingsCoachFooter": "Muestra el entrenador en Hoy y «Preguntar al entrenador» en otras pantallas. Si lo desactivas, tus chats se conservan."
 }

@@ -1,9 +1,13 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
+import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/coach/coach.dart';
 import 'package:compound/goal_editing/goal_editing_routes.dart';
 import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
+import 'package:compound/paywall/paywall.dart';
 import 'package:compound/review/review_moment.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
 import 'package:compound/settings/account/view/save_account_page.dart';
@@ -19,14 +23,19 @@ import 'package:compound/settings/nutrition/view/food_log_settings_page.dart';
 import 'package:compound/settings/nutrition/view/strategy_settings_page.dart';
 import 'package:compound/settings/settings.dart';
 import 'package:compound/settings/training/view/workout_settings_page.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
+import 'package:purchases_repository/purchases_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 import '../../helpers/helpers.dart';
+
+class _MockCoachAccessCubit extends MockCubit<CoachAccess>
+    implements CoachAccessCubit;
 
 void main() {
   const appleUser = AuthUser(
@@ -55,6 +64,8 @@ void main() {
       email: 'ada@example.com',
     ),
     BodyRepository? body,
+    UserRepository? users,
+    CoachAccessCubit? coach,
   }) async {
     when(() => appBloc.state).thenReturn(
       AppAuthenticated(
@@ -72,7 +83,8 @@ void main() {
       analyticsRepository: analytics,
       reviews: ReviewPrompter(review: store),
       // The screens the rows open read these.
-      userRepository: InMemoryUserRepository(),
+      userRepository: users ?? InMemoryUserRepository(),
+      coachAccessCubit: coach,
       bodyRepository: body ?? InMemoryBodyRepository(),
       nutritionRepository: InMemoryNutritionRepository(),
       router: GoRouter(
@@ -86,6 +98,8 @@ void main() {
           for (final (path, name) in [
             (WeightGoalRoute.path, WeightGoalRoute.name),
             (DietPlanRoute.path, DietPlanRoute.name),
+            (PaywallPage.path, PaywallPage.name),
+            (CoachChatsPage.path, CoachChatsPage.name),
           ])
             GoRoute(
               path: path,
@@ -227,6 +241,60 @@ void main() {
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
       expect(find.text('OK'), findsNothing);
+    });
+
+    group('Coach', () {
+      testWidgets('AI Coach turns the coach off and on; its chats show '
+          'while it is on', (tester) async {
+        final users = InMemoryUserRepository();
+        final coach = CoachAccessCubit(
+          coach: CoachRepository(
+            firestore: FakeFirebaseFirestore(),
+            users: users,
+            coachChat: (_, {chatId, context, regenerate = false}) =>
+                const Stream.empty(),
+          ),
+          purchases: FakePurchasesRepository(),
+          analytics: analytics,
+        )..userChanged('uid');
+        await pumpSettings(tester, users: users, coach: coach);
+
+        final toggle = find.widgetWithText(AppListRowToggle, 'AI Coach');
+        expect(tester.widget<AppListRowToggle>(toggle).value, isTrue);
+        expect(find.text('Chats'), findsOneWidget);
+
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+
+        expect(tester.widget<AppListRowToggle>(toggle).value, isFalse);
+        expect(find.text('Chats'), findsNothing);
+        expect(analytics.parameters('SettingsView_Coach_Toggle'), {
+          'enabled': false,
+        });
+        final settings = await users.watchPrivateSettings('uid').first;
+        expect(settings?.coachEnabled, isFalse);
+
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Chats'));
+        await tester.pumpAndSettle();
+        expect(find.text('coachChats screen'), findsOneWidget);
+      });
+
+      testWidgets('without premium, AI Coach says Premium and opens the '
+          'plans', (tester) async {
+        final coach = _MockCoachAccessCubit();
+        when(() => coach.state).thenReturn(const CoachAccess(premium: false));
+        await pumpSettings(tester, coach: coach);
+
+        expect(find.byType(AppListRowToggle), findsNothing);
+        expect(find.text('Premium'), findsOneWidget);
+        expect(find.text('Chats'), findsNothing);
+
+        await tester.tap(find.text('AI Coach'));
+        await tester.pumpAndSettle();
+        expect(find.text('paywall screen'), findsOneWidget);
+      });
     });
 
     testWidgets('signs out, and says so when that fails', (tester) async {

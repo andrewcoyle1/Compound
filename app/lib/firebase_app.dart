@@ -193,6 +193,7 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     );
   }
   return App(
+    showsTips: true,
     appVersion: await AppVersion.load(),
     connectivityRepository: ConnectivityRepository(),
     healthRepository: HealthRepository(

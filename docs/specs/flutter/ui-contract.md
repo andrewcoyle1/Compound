@@ -81,6 +81,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | Nothing to show, or a failure | `AppEmptyState`, `AppErrorState` |
 | Loading | `AppPlaceholderRow` / `AppPlaceholder` in place of the content (they shimmer, and hold still under reduced motion); `AppLoadingView` for a screen's first load |
 | Work under way in a control or beside text (saving, connecting, looking up) | `AppSpinner`, `AppSpinnerSize.small` in a row, button or line of text; never `CircularProgressIndicator` or `CupertinoActivityIndicator`. A ring or bar showing real progress (a `value:`) is not a spinner |
+| A one-time tip on a feature hidden behind a gesture | `AppTip` around the target, inside the screen's `ScreenTips` (`lib/tips/`), which remembers it per device |
 | A chart, or the readout over one | `compound_charts`: `ChartCallout` with a `ChartCalloutSummary`. A new chart piece goes there, not in `app_ui` or the screen |
 
 Every icon-only button takes a required `semanticLabel`, which is also its tooltip.
@@ -185,7 +186,8 @@ screens never branch on platform themselves.
 and 3 on `app/lib/` and `compound_charts/lib/` (and `framework-import` on `app/test/` and
 `compound_charts/test/`). Its `raw-haptic` rule holds rule 4's haptics to `AppHaptics` there and in
 `app_ui/lib/`, where only `AppHaptics` itself calls `HapticFeedback`. Its `raw-snackbar` rule holds snack bars to
-`showAppSnackBar` everywhere in `app/lib/`, share cards included. Its `raw-spinner` rule holds
+`showAppSnackBar` everywhere in `app/lib/`, share cards included. Its `showcase-import` rule keeps
+`showcaseview` inside `app_ui`. Its `raw-spinner` rule holds
 spinners to `AppSpinner` in `app/lib/` and `app_ui/lib/`: an indeterminate
 `CircularProgressIndicator`, `LinearProgressIndicator` or `CupertinoActivityIndicator` fails, and
 one given its own `value:` (the progress rings and macro bars) is allowed. Every screen was moved onto

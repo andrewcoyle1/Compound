@@ -51,6 +51,7 @@ import 'package:compound/social/comments/comments_page.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
 import 'package:compound/social/profile/social_profile_page.dart';
 import 'package:compound/social/social.dart';
+import 'package:compound/tips/feature_tips.dart';
 import 'package:compound/today/today.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_analytics/training_analytics_routes.dart';
@@ -194,6 +195,10 @@ class const App({
 
   /// The store's rating prompt; tests pass one that records requests.
   final StoreReview storeReview = const StoreReview(),
+
+  /// Whether the one-time feature tips show ([FeatureTips]); off for tests
+  /// that leave it out, so no tip covers the screen they drive.
+  final bool showsTips = false,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -251,6 +256,14 @@ class const App({
               ReviewPrompter(review: storeReview, store: context.read()),
         ),
         RepositoryProvider<StravaRepository?>.value(value: stravaRepository),
+        RepositoryProvider<FeatureTips?>(
+          create: (context) => showsTips
+              ? FeatureTips(
+                  store: context.read(),
+                  analytics: analyticsRepository,
+                )
+              : null,
+        ),
         RepositoryProvider<HealthRepository>(
           create: (_) =>
               healthRepository ??

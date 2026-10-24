@@ -3123,5 +3123,16 @@
     "settingsCoachPremium": "Premium",
     "todayCoachTurnOn": "Activar el entrenador",
     "settingsCoachToggle": "Entrenador con IA",
-    "settingsCoachFooter": "Muestra el entrenador en Hoy y «Preguntar al entrenador» en otras pantallas. Si lo desactivas, tus chats se conservan."
+    "settingsCoachFooter": "Muestra el entrenador en Hoy y «Preguntar al entrenador» en otras pantallas. Si lo desactivas, tus chats se conservan.",
+    "tipGotIt": "Entendido",
+    "tipMetricChartTitle": "Lee la gráfica",
+    "tipMetricChartMessage": "Mantén pulsado para ver los valores exactos. Pellizca para hacer zoom o desliza hacia los lados para ver fechas anteriores.",
+    "tipMealSwipeTitle": "Registra una comida otra vez",
+    "tipMealSwipeMessage": "Desliza un alimento a la derecha para volver a registrar toda su comida ahora.",
+    "tipSetSwipeTitle": "Descanso para una serie",
+    "tipSetSwipeMessage": "Desliza una serie a la derecha para darle su propio tiempo de descanso.",
+    "tipSetFillLastTitle": "Repite la última vez",
+    "tipSetFillLastMessage": "Toca las cifras de la última vez para copiarlas en esta serie.",
+    "devSettingsResetTips": "Restablecer consejos",
+    "devSettingsTipsReset": "Los consejos se volverán a mostrar."
 }

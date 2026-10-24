@@ -33,23 +33,34 @@ enum CoachQuestionPhase {
 /// failed or stopped question keeps its own note and Retry. Answered
 /// questions have none.
 final class CoachQuestionStatus extends Equatable {
-  /// Being answered.
-  const new answering() : phase = CoachQuestionPhase.answering, failure = null;
+  /// Being answered, while the coach runs [tool], if it said.
+  const new answering([this.tool])
+    : phase = CoachQuestionPhase.answering,
+      failure = null;
 
   /// Got no answer, for [failure].
   const new failed(CoachFailure this.failure)
-    : phase = CoachQuestionPhase.failed;
+    : phase = CoachQuestionPhase.failed,
+      tool = null;
 
   /// Stopped by the user.
-  const new stopped() : phase = CoachQuestionPhase.stopped, failure = null;
+  const new stopped()
+    : phase = CoachQuestionPhase.stopped,
+      failure = null,
+      tool = null;
 
   final CoachQuestionPhase phase;
 
   /// Why a failed question got no answer.
   final CoachFailure? failure;
 
+  /// The tool the coach is running for the answer ([CoachStatus]), such as
+  /// `get_nutrition` or `show_block`; null once the answer moves on to text
+  /// or a block, or before it says.
+  final String? tool;
+
   @override
-  List<Object?> get props => [phase, failure];
+  List<Object?> get props => [phase, failure, tool];
 }
 
 /// The coach screen (Swift `CoachPresenter`'s state).
@@ -98,6 +109,9 @@ final class const CoachState({
 
   /// Counts failed consent saves, for the alert.
   final int consentFailures = 0,
+
+  /// Counts failed regenerations, for the notice: the old answer stays.
+  final int regenerateFailures = 0,
 }) extends Equatable {
   /// The questions offered before the first message.
   bool get showsSuggestions => messages.isEmpty && streamingText == null;
@@ -116,6 +130,21 @@ final class const CoachState({
 
   bool get canSend => !isSending && draft.trim().isNotEmpty;
 
+  /// The tool the coach is running for the question it is answering.
+  String? get reading => questions.values
+      .where((status) => status.phase == CoachQuestionPhase.answering)
+      .firstOrNull
+      ?.tool;
+
+  /// Whether the last message is an answer to the question before it, in a
+  /// saved chat, so it can be asked for again.
+  bool get canRegenerate =>
+      !isSending &&
+      chatId != null &&
+      messages.length >= 2 &&
+      messages.last.role == CoachMessageRole.assistant &&
+      messages[messages.length - 2].role == CoachMessageRole.user;
+
   CoachState copyWith({
     CoachGate? gate,
     List<CoachMessage>? messages,
@@ -131,6 +160,7 @@ final class const CoachState({
     int? remainingToday,
     int? sendFailures,
     int? consentFailures,
+    int? regenerateFailures,
   }) => CoachState(
     gate: gate ?? this.gate,
     messages: messages ?? this.messages,
@@ -146,6 +176,7 @@ final class const CoachState({
     remainingToday: remainingToday ?? this.remainingToday,
     sendFailures: sendFailures ?? this.sendFailures,
     consentFailures: consentFailures ?? this.consentFailures,
+    regenerateFailures: regenerateFailures ?? this.regenerateFailures,
   );
 
   @override
@@ -164,5 +195,6 @@ final class const CoachState({
     remainingToday,
     sendFailures,
     consentFailures,
+    regenerateFailures,
   ];
 }

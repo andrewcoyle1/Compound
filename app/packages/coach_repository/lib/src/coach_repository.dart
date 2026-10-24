@@ -91,9 +91,11 @@ class CoachRepository {
   final _remainingToday = <String, int>{};
 
   /// Sends [uid]'s [message] and streams the answer; a null [chatId] starts
-  /// a new chat. The function saves both sides, so [watchChats] catches up
-  /// on its own. [CoachFinished.remainingToday] is what is left of the
-  /// day's messages, and is kept for [remainingToday].
+  /// a new chat. With [regenerate], [message] is [chatId]'s last question,
+  /// asked again so its answer replaces the last one. The function saves
+  /// both sides, so [watchChats] catches up on its own.
+  /// [CoachFinished.remainingToday] is what is left of the day's messages,
+  /// and is kept for [remainingToday].
   ///
   /// The stream fails with a [CoachException]. On
   /// [CoachFailure.dailyLimitReached] none are left.
@@ -102,12 +104,14 @@ class CoachRepository {
     String message, {
     String? chatId,
     CoachContext? context,
+    bool regenerate = false,
   }) async* {
     try {
       await for (final event in _coachChat(
         message,
         chatId: chatId,
         context: context,
+        regenerate: regenerate,
       )) {
         if (event is CoachFinished) {
           _remainingToday[uid] = event.remainingToday;

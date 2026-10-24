@@ -16,15 +16,15 @@ void main() {
   late FakeFirebaseFirestore firestore;
   late InMemoryUserRepository users;
   late List<String> undecodable;
-  late List<(String, String?, CoachContext?)> sent;
+  late List<(String, String?, CoachContext?, bool)> sent;
 
   CoachRepository subject({CoachChatCall? coachChat}) => CoachRepository(
     firestore: firestore,
     users: users,
     coachChat:
         coachChat ??
-        (message, {chatId, context}) {
-          sent.add((message, chatId, context));
+        (message, {chatId, context, regenerate = false}) {
+          sent.add((message, chatId, context, regenerate));
           return Stream.value(const CoachText('hi'));
         },
     now: () => now,
@@ -74,7 +74,8 @@ void main() {
       final repository = CoachRepository(
         firestore: firestore,
         users: users,
-        coachChat: (_, {chatId, context}) => const Stream.empty(),
+        coachChat: (_, {chatId, context, regenerate = false}) =>
+            const Stream.empty(),
       );
 
       expect(await repository.watchChats(uid).first, isEmpty);
@@ -123,7 +124,8 @@ void main() {
       await CoachRepository(
         firestore: firestore,
         users: users,
-        coachChat: (_, {chatId, context}) => const Stream.empty(),
+        coachChat: (_, {chatId, context, regenerate = false}) =>
+            const Stream.empty(),
       ).giveConsent(uid);
 
       final settings = await users.watchPrivateSettings(uid).first;
@@ -138,7 +140,15 @@ void main() {
           .toList();
 
       expect((events.single as CoachText).text, 'hi');
-      expect(sent.single, ('Hi', 'chat-1', CoachContext.today));
+      expect(sent.single, ('Hi', 'chat-1', CoachContext.today, false));
+    });
+
+    test('passes regenerate to coachChat', () async {
+      await subject()
+          .send(uid, 'Hi', chatId: 'c', regenerate: true)
+          .drain<void>();
+
+      expect(sent.single, ('Hi', 'c', null, true));
     });
 
     test(
@@ -146,7 +156,8 @@ void main() {
       () async {
         var refusal = CoachFailure.dailyLimitReached;
         final repository = subject(
-          coachChat: (message, {chatId, context}) => message == 'ok'
+          coachChat: (message, {chatId, context, regenerate = false}) =>
+              message == 'ok'
               ? Stream.value(
                   const CoachFinished(
                     chatId: 'c',
@@ -286,6 +297,71 @@ void main() {
         expect(finished.blocks.map((b) => b.surfaceId), shown);
         expect(chat.messages.last.blocks!.map((b) => b.surfaceId), shown);
         expect(chat.messages.first.blocks, isNull);
+      });
+
+      test(
+        'says what it reads, then shows each block after a status',
+        () async {
+          final events = await coachChat(
+            'Hi',
+            context: const CoachContext(kind: CoachContextKind.weightTrend),
+          ).toList();
+
+          expect((events.first as CoachStatus).tool, 'get_body_metrics');
+          for (var i = 0; i < events.length; i++) {
+            if (events[i] is CoachBlockShown) {
+              expect((events[i - 1] as CoachStatus).tool, 'show_block');
+            }
+          }
+          final today = await coachChat('Hi').first;
+          expect((today as CoachStatus).tool, 'get_workout_history');
+        },
+      );
+
+      test('regenerating replaces the last exchange when it is that '
+          'question', () async {
+        final first = await coachChat('First').last as CoachFinished;
+        final chatId = first.chatId;
+        await coachChat('Second', chatId: chatId).drain<void>();
+
+        Future<List<Object?>> texts() async => [
+          for (final message
+              in (await chats(
+                    sampleUserId,
+                  ).doc(chatId).get()).data()![CoachChatKeys.messages]!
+                  as List<Object?>)
+            (message! as Map)[CoachMessageKeys.text],
+        ];
+
+        // Not the last question: answered as a new one.
+        await coachChat(
+          'First',
+          chatId: chatId,
+          regenerate: true,
+        ).drain<void>();
+        expect(await texts(), hasLength(6));
+
+        final again =
+            await coachChat('First', chatId: chatId, regenerate: true).last
+                as CoachFinished;
+        expect(await texts(), [
+          'First',
+          first.text,
+          'Second',
+          first.text,
+          'First',
+          again.text,
+        ]);
+        final ids = [
+          for (final message
+              in (await chats(
+                    sampleUserId,
+                  ).doc(chatId).get()).data()![CoachChatKeys.messages]!
+                  as List<Object?>)
+            (message! as Map)[CoachMessageKeys.id],
+        ];
+        expect(ids.last, again.messageId);
+        expect(ids, isNot(contains('$chatId-3')));
       });
 
       test('continues a chat, keeping its title, start and context', () async {

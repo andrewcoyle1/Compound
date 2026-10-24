@@ -49,12 +49,12 @@ class CoachMessageBody extends StatelessWidget {
   /// Sends a block's follow-up question.
   final ValueChanged<String> onFollowUp;
 
-  /// The actions as a compact sheet of rows; the chosen one runs once the
-  /// sheet has closed.
+  /// The actions as a sheet of rows, compact for up to three; the chosen
+  /// one runs once the sheet has closed.
   Future<void> _showActions(BuildContext context) async {
     final chosen = await showAppSheet<VoidCallback>(
       context: context,
-      size: AppSheetSize.compact,
+      size: actions.length > 3 ? AppSheetSize.half : AppSheetSize.compact,
       builder: (context) => ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [

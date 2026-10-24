@@ -18,7 +18,7 @@ void main() {
   late FakeFirebaseFirestore firestore;
   late InMemoryUserRepository users;
   late AnalyticsRecorder analytics;
-  late List<(String, String?, CoachContext?)> sent;
+  late List<(String, String?, CoachContext?, bool)> sent;
   late List<CoachStreamEvent> events;
   late CoachFailure? refusal;
   late int ids;
@@ -45,8 +45,8 @@ void main() {
   CoachRepository coach() => CoachRepository(
     firestore: firestore,
     users: users,
-    coachChat: (message, {chatId, context}) {
-      sent.add((message, chatId, context));
+    coachChat: (message, {chatId, context, regenerate = false}) {
+      sent.add((message, chatId, context, regenerate));
       final failure = refusal;
       return failure == null
           ? Stream.fromIterable(events)
@@ -257,7 +257,7 @@ void main() {
       final repository = CoachRepository(
         firestore: firestore,
         users: users,
-        coachChat: (message, {chatId, context}) async* {
+        coachChat: (message, {chatId, context, regenerate = false}) async* {
           yield const CoachBlockShown(
             CoachBlock(
               surfaceId: 'a1-0',
@@ -354,7 +354,7 @@ void main() {
               repository: CoachRepository(
                 firestore: firestore,
                 users: users,
-                coachChat: (_, {chatId, context}) =>
+                coachChat: (_, {chatId, context, regenerate = false}) =>
                     Stream.error(StateError('x')),
               ),
             )
@@ -497,7 +497,8 @@ void main() {
               repository: CoachRepository(
                 firestore: firestore,
                 users: users,
-                coachChat: (_, {chatId, context}) => answer.stream,
+                coachChat: (_, {chatId, context, regenerate = false}) =>
+                    answer.stream,
               ),
             )
             ..draftChanged('Hi');
@@ -527,7 +528,8 @@ void main() {
           CoachRepository(
             firestore: firestore,
             users: users,
-            coachChat: (_, {chatId, context}) => answer.stream,
+            coachChat: (_, {chatId, context, regenerate = false}) =>
+                answer.stream,
           ),
       purchases: FakePurchasesRepository(),
       analytics: analytics,
@@ -665,6 +667,211 @@ void main() {
         );
       },
     );
+  });
+
+  group('status and regenerate', () {
+    late StreamController<CoachStreamEvent> answer;
+
+    setUp(() {
+      answer = StreamController<CoachStreamEvent>();
+      sent = [];
+    });
+    tearDown(() => unawaited(answer.close()));
+
+    CoachCubit build({CoachRequest request = const CoachRequest()}) =>
+        CoachCubit(
+          uid: uid,
+          request: request,
+          coach: CoachRepository(
+            firestore: firestore,
+            users: users,
+            coachChat: (message, {chatId, context, regenerate = false}) {
+              sent.add((message, chatId, context, regenerate));
+              return answer.stream;
+            },
+          ),
+          purchases: FakePurchasesRepository(),
+          analytics: analytics,
+          now: () => asked,
+          newId: () => 'q${++ids}',
+        );
+
+    const finished = CoachFinished(
+      chatId: 'chat-1',
+      messageId: 'm3',
+      text: 'Fresh answer',
+      remainingToday: 48,
+    );
+
+    test('each status names the tool until text or a block follows', () async {
+      final cubit = build()..draftChanged('Hi');
+      final sending = cubit.sendPressed();
+      final tools = <String?>[];
+      final subscription = cubit.stream.listen(
+        (state) => tools.add(state.reading),
+      );
+
+      expect(cubit.state.reading, isNull);
+      [
+        const CoachStatus('get_workout_history'),
+        const CoachStatus('get_nutrition'),
+        const CoachText('You trained'),
+        const CoachStatus('show_block'),
+        const CoachBlockShown(
+          CoachBlock(
+            surfaceId: 'b',
+            kind: 'stat_row',
+            asOf: '2026-10-14',
+            fallback: 'x',
+            messages: [],
+          ),
+        ),
+        const CoachStatus('get_brand_new_tool'),
+        finished,
+      ].forEach(answer.add);
+      await answer.close();
+      await sending;
+
+      expect(tools, [
+        'get_workout_history',
+        'get_nutrition',
+        null,
+        'show_block',
+        null,
+        'get_brand_new_tool',
+        null,
+      ]);
+      expect(cubit.state.questions, isEmpty);
+      await subscription.cancel();
+      await cubit.close();
+    });
+
+    test('Regenerate is offered on the latest answer of a chat only', () {
+      final question = sampleChat.messages.first;
+      final reply = sampleChat.messages.last;
+      bool can(List<CoachMessage> messages, {String? chatId = 'c'}) =>
+          CoachState(chatId: chatId, messages: messages).canRegenerate;
+
+      expect(can([question, reply]), isTrue);
+      expect(can([question, reply], chatId: null), isFalse);
+      expect(can([reply]), isFalse);
+      expect(can([reply, reply]), isFalse);
+      expect(can([question, reply, question]), isFalse);
+      expect(
+        CoachState(
+          chatId: 'c',
+          messages: [question, reply],
+          questions: const {'q': CoachQuestionStatus.answering()},
+        ).canRegenerate,
+        isFalse,
+      );
+    });
+
+    test('Regenerate replaces the latest answer in place', () async {
+      final cubit = build(
+        request: CoachRequest.forChat(sampleChat, CoachContext.today),
+      );
+      final shown = <List<String>>[];
+      final subscription = cubit.stream.listen(
+        (state) => shown.add([for (final m in state.messages) m.id]),
+      );
+
+      final regenerating = cubit.regeneratePressed();
+      expect(cubit.state.messages.map((m) => m.id), ['m1']);
+      expect(cubit.state.savedMessageCount, 1);
+      expect(cubit.state.questions, {
+        'm1': const CoachQuestionStatus.answering(),
+      });
+      expect(cubit.state.canRegenerate, isFalse);
+      // Nothing else to regenerate while it answers.
+      await cubit.regeneratePressed();
+      answer
+        ..add(const CoachText('Fresh '))
+        ..add(finished);
+      await answer.close();
+      await regenerating;
+
+      expect(sent.single.$1, 'Why has my weight stalled?');
+      expect(sent.single.$2, 'chat-1');
+      expect(sent.single.$4, isTrue);
+      expect(cubit.state.messages.map((m) => (m.id, m.text)), [
+        ('m1', 'Why has my weight stalled?'),
+        ('m3', 'Fresh answer'),
+      ]);
+      expect(cubit.state.savedMessageCount, 1);
+      expect(cubit.state.questions, isEmpty);
+      // The old answer stays hidden throughout.
+      expect(shown.where((ids) => ids.contains('m2')), isEmpty);
+      expect(analytics.parameters('CoachView_Regenerate_Press'), {
+        'context': 'weight_trend',
+      });
+      await subscription.cancel();
+      await cubit.close();
+    });
+
+    test('a failed regeneration brings the old answer back', () async {
+      final cubit = build(
+        request: CoachRequest.forChat(sampleChat, CoachContext.today),
+      );
+      final regenerating = cubit.regeneratePressed();
+      answer
+        ..add(const CoachText('Half'))
+        ..addError(const CoachException(CoachFailure.unavailable));
+      await regenerating;
+
+      expect(cubit.state.messages, sampleChat.messages);
+      expect(cubit.state.savedMessageCount, 2);
+      expect(cubit.state.questions, isEmpty);
+      expect(cubit.state.streamingText, isNull);
+      expect(cubit.state.regenerateFailures, 1);
+      expect(cubit.state.sendFailures, 1);
+      expect(cubit.state.canRegenerate, isTrue);
+      await cubit.close();
+    });
+
+    test('a regeneration refused at a gate keeps the old answer', () async {
+      final cubit = build(
+        request: CoachRequest.forChat(sampleChat, CoachContext.today),
+      );
+      final regenerating = cubit.regeneratePressed();
+      answer.addError(const CoachException(CoachFailure.premiumRequired));
+      await regenerating;
+
+      expect(cubit.state.gate, CoachGate.premium);
+      expect(cubit.state.messages, sampleChat.messages);
+      expect(cubit.state.draft, isEmpty);
+      expect(cubit.state.regenerateFailures, 0);
+      await cubit.close();
+    });
+
+    test('a stopped regeneration brings the old answer back', () async {
+      final cubit = build(
+        request: CoachRequest.forChat(sampleChat, CoachContext.today),
+      );
+      final regenerating = cubit.regeneratePressed();
+      answer.add(const CoachText('Half'));
+      await pumpEventQueue();
+      cubit.stopPressed();
+      await regenerating;
+
+      expect(cubit.state.messages, sampleChat.messages);
+      expect(cubit.state.questions, isEmpty);
+      expect(cubit.state.regenerateFailures, 0);
+      await cubit.close();
+    });
+
+    test('New Chat forgets an answer being regenerated', () async {
+      final cubit = build(
+        request: CoachRequest.forChat(sampleChat, CoachContext.today),
+      );
+      final regenerating = cubit.regeneratePressed();
+      cubit.newChatPressed();
+      answer.addError(const CoachException(CoachFailure.unavailable));
+      await regenerating;
+
+      expect(cubit.state.messages, isEmpty);
+      await cubit.close();
+    });
   });
 
   group('CoachRequest.forChat', () {

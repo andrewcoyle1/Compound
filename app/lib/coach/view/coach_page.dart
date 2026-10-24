@@ -115,6 +115,15 @@ class _CoachViewState extends State<CoachView> {
         ),
         BlocListener<CoachCubit, CoachState>(
           listenWhen: (previous, current) =>
+              current.regenerateFailures != previous.regenerateFailures,
+          listener: (context, _) => showAppSnackBar(
+            context,
+            l10n.coachRegenerateFailed,
+            style: AppSnackBarStyle.error,
+          ),
+        ),
+        BlocListener<CoachCubit, CoachState>(
+          listenWhen: (previous, current) =>
               current.consentFailures != previous.consentFailures,
           listener: (context, _) => unawaited(
             showFailureAlert(
@@ -456,6 +465,13 @@ class _ChatState extends State<_Chat> {
               actions: [
                 (AppSymbols.copy, l10n.coachCopy, () => _copy(message)),
                 if (message.role == CoachMessageRole.assistant) ...[
+                  // Only the latest answer can be asked for again.
+                  if (index == messages.length - 1 && state.canRegenerate)
+                    (
+                      AppSymbols.regenerate,
+                      l10n.coachRegenerate,
+                      () => unawaited(cubit.regeneratePressed()),
+                    ),
                   (
                     AppSymbols.helpful,
                     l10n.coachHelpful,
@@ -568,25 +584,11 @@ class _ChatState extends State<_Chat> {
                                   )
                                     message(index),
                                   if (streaming != null)
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      spacing: AppSpacing.m,
-                                      children: [
-                                        if (streaming.isEmpty)
-                                          const Align(
-                                            alignment: AlignmentDirectional
-                                                .centerStart,
-                                            child: AppSpinner(),
-                                          ),
-                                        CoachMessageBody(
-                                          role: CoachMessageRole.assistant,
-                                          text: streaming,
-                                          blocks: state.streamingBlocks,
-                                          streaming: true,
-                                          onFollowUp: followUp,
-                                        ),
-                                      ],
+                                    _Answering(
+                                      text: streaming,
+                                      blocks: state.streamingBlocks,
+                                      reading: state.reading,
+                                      onFollowUp: followUp,
                                     ),
                                 ],
                               ),
@@ -682,6 +684,81 @@ class _ChatState extends State<_Chat> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The answer as it streams, and under it what the coach is doing: while
+/// it runs a data tool, or before any text, a line saying what it reads;
+/// while it lays out a block, a placeholder where the block will land. The
+/// line goes once text follows the tool (and comes back for the next one),
+/// so it never sits between a sentence and the rest of it.
+class _Answering extends StatelessWidget {
+  const new({
+    required this.text,
+    required this.blocks,
+    required this.reading,
+    required this.onFollowUp,
+  });
+
+  final String text;
+  final List<CoachBlock> blocks;
+
+  /// The tool the coach is running ([CoachState.reading]).
+  final String? reading;
+  final ValueChanged<String> onFollowUp;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final placesBlock = reading == 'show_block';
+    final showsLine = !placesBlock && (reading != null || text.isEmpty);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.m,
+      children: [
+        if (text.isNotEmpty || blocks.isNotEmpty)
+          CoachMessageBody(
+            role: CoachMessageRole.assistant,
+            text: text,
+            blocks: blocks,
+            streaming: true,
+            onFollowUp: onFollowUp,
+          ),
+        if (placesBlock)
+          AppPlaceholder(
+            height: MediaQuery.textScalerOf(context)
+                .scale(AppChartHeight.compact),
+            radius: AppRadius.xl,
+            semanticLabel: l10n.coachAddingCard,
+          ),
+        if (showsLine)
+          Semantics(
+            liveRegion: true,
+            child: AnimatedSwitcher(
+              duration: AppMotion.quick.durationOf(context),
+              layoutBuilder: (current, previous) => Stack(
+                alignment: AlignmentDirectional.centerStart,
+                children: [...previous, ?current],
+              ),
+              child: Row(
+                key: ValueKey(reading),
+                spacing: AppSpacing.s,
+                children: [
+                  const AppSpinner(size: AppSpinnerSize.small),
+                  Flexible(
+                    child: Text(
+                      l10n.coachReading(reading),
+                      style: AppTextStyles.rowDetail.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

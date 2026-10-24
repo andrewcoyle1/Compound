@@ -178,9 +178,10 @@ extension PumpApp on WidgetTester {
                 CoachRepository(
                   firestore: FakeFirebaseFirestore(),
                   users: userRepository ?? MockUserRepository(),
-                  coachChat: (_, {chatId, context}) => Stream.error(
-                    const CoachException(CoachFailure.unavailable),
-                  ),
+                  coachChat: (_, {chatId, context, regenerate = false}) =>
+                      Stream.error(
+                        const CoachException(CoachFailure.unavailable),
+                      ),
                 ),
           ),
           RepositoryProvider<PurchasesRepository>.value(

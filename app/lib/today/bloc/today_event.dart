@@ -7,9 +7,12 @@ sealed class TodayEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Start following everything the day is built from.
+/// Start following everything the day is built from. [tracksAppear] logs
+/// `TodayView_Appear`; the coach's opener, which reads the same day, does not.
 final class TodaySubscriptionRequested extends TodayEvent {
-  const new();
+  const new({this.tracksAppear = true});
+
+  final bool tracksAppear;
 }
 
 /// The current weight goal changed, or the user's goal id did.

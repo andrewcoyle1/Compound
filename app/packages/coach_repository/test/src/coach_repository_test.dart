@@ -16,15 +16,15 @@ void main() {
   late FakeFirebaseFirestore firestore;
   late InMemoryUserRepository users;
   late List<String> undecodable;
-  late List<(String, String?, CoachContext?)> sent;
+  late List<(String, String?, CoachContext?, bool)> sent;
 
   CoachRepository subject({CoachChatCall? coachChat}) => CoachRepository(
     firestore: firestore,
     users: users,
     coachChat:
         coachChat ??
-        (message, {chatId, context}) {
-          sent.add((message, chatId, context));
+        (message, {chatId, context, regenerate = false}) {
+          sent.add((message, chatId, context, regenerate));
           return Stream.value(const CoachText('hi'));
         },
     now: () => now,
@@ -74,11 +74,27 @@ void main() {
       final repository = CoachRepository(
         firestore: firestore,
         users: users,
-        coachChat: (_, {chatId, context}) => const Stream.empty(),
+        coachChat: (_, {chatId, context, regenerate = false}) =>
+            const Stream.empty(),
       );
 
       expect(await repository.watchChats(uid).first, isEmpty);
     });
+  });
+
+  test('watchChat follows one chat: null until it exists, and when it does '
+      'not decode', () async {
+    final chat = subject().watchChat(uid, '2026-10-15');
+    final seen = expectLater(
+      chat.map((chat) => chat?.day),
+      emitsInOrder([null, '2026-10-12', null]),
+    );
+    await pumpEventQueue();
+    await chats().doc('2026-10-15').set(storedFixture('coach_chat', 'full'));
+    await pumpEventQueue();
+    await chats().doc('2026-10-15').set({'id': 'bad'});
+    await seen;
+    expect(undecodable, ['users/$uid/coach_chats/2026-10-15']);
   });
 
   test('deleteChat deletes the one chat', () async {
@@ -123,7 +139,8 @@ void main() {
       await CoachRepository(
         firestore: firestore,
         users: users,
-        coachChat: (_, {chatId, context}) => const Stream.empty(),
+        coachChat: (_, {chatId, context, regenerate = false}) =>
+            const Stream.empty(),
       ).giveConsent(uid);
 
       final settings = await users.watchPrivateSettings(uid).first;
@@ -138,7 +155,15 @@ void main() {
           .toList();
 
       expect((events.single as CoachText).text, 'hi');
-      expect(sent.single, ('Hi', 'chat-1', CoachContext.today));
+      expect(sent.single, ('Hi', 'chat-1', CoachContext.today, false));
+    });
+
+    test('passes regenerate to coachChat', () async {
+      await subject()
+          .send(uid, 'Hi', chatId: 'c', regenerate: true)
+          .drain<void>();
+
+      expect(sent.single, ('Hi', 'c', null, true));
     });
 
     test(
@@ -146,7 +171,8 @@ void main() {
       () async {
         var refusal = CoachFailure.dailyLimitReached;
         final repository = subject(
-          coachChat: (message, {chatId, context}) => message == 'ok'
+          coachChat: (message, {chatId, context, regenerate = false}) =>
+              message == 'ok'
               ? Stream.value(
                   const CoachFinished(
                     chatId: 'c',
@@ -264,7 +290,11 @@ void main() {
         final stored = (await chats(
           sampleUserId,
         ).doc(finished.chatId).get()).data()!;
-        expect(stored.keys.toSet(), CoachChatKeys.all.toSet());
+        // Not a day chat: no day.
+        expect(
+          stored.keys.toSet(),
+          {...CoachChatKeys.all}..remove(CoachChatKeys.day),
+        );
         final chat = (await CoachRepository(
           firestore: firestore,
           users: users,
@@ -288,6 +318,71 @@ void main() {
         expect(chat.messages.first.blocks, isNull);
       });
 
+      test(
+        'says what it reads, then shows each block after a status',
+        () async {
+          final events = await coachChat(
+            'Hi',
+            context: const CoachContext(kind: CoachContextKind.weightTrend),
+          ).toList();
+
+          expect((events.first as CoachStatus).tool, 'get_body_metrics');
+          for (var i = 0; i < events.length; i++) {
+            if (events[i] is CoachBlockShown) {
+              expect((events[i - 1] as CoachStatus).tool, 'show_block');
+            }
+          }
+          final today = await coachChat('Hi').first;
+          expect((today as CoachStatus).tool, 'get_workout_history');
+        },
+      );
+
+      test('regenerating replaces the last exchange when it is that '
+          'question', () async {
+        final first = await coachChat('First').last as CoachFinished;
+        final chatId = first.chatId;
+        await coachChat('Second', chatId: chatId).drain<void>();
+
+        Future<List<Object?>> texts() async => [
+          for (final message
+              in (await chats(
+                    sampleUserId,
+                  ).doc(chatId).get()).data()![CoachChatKeys.messages]!
+                  as List<Object?>)
+            (message! as Map)[CoachMessageKeys.text],
+        ];
+
+        // Not the last question: answered as a new one.
+        await coachChat(
+          'First',
+          chatId: chatId,
+          regenerate: true,
+        ).drain<void>();
+        expect(await texts(), hasLength(6));
+
+        final again =
+            await coachChat('First', chatId: chatId, regenerate: true).last
+                as CoachFinished;
+        expect(await texts(), [
+          'First',
+          first.text,
+          'Second',
+          first.text,
+          'First',
+          again.text,
+        ]);
+        final ids = [
+          for (final message
+              in (await chats(
+                    sampleUserId,
+                  ).doc(chatId).get()).data()![CoachChatKeys.messages]!
+                  as List<Object?>)
+            (message! as Map)[CoachMessageKeys.id],
+        ];
+        expect(ids.last, again.messageId);
+        expect(ids, isNot(contains('$chatId-3')));
+      });
+
       test('continues a chat, keeping its title, start and context', () async {
         final first = await coachChat('First').last as CoachFinished;
         final second =
@@ -302,6 +397,28 @@ void main() {
         expect(stored[CoachChatKeys.title], 'First');
         expect(stored[CoachChatKeys.contextKind], isNull);
         expect(stored[CoachChatKeys.messages], hasLength(4));
+      });
+
+      test('makes a day chat on its first message, today or yesterday, and '
+          'refuses an older day', () async {
+        for (final day in ['2026-10-15', '2026-10-14']) {
+          final finished = await coachChat('Hi', chatId: day).last;
+          expect((finished as CoachFinished).chatId, day);
+          final stored = (await chats(sampleUserId).doc(day).get()).data()!;
+          expect(stored[CoachChatKeys.day], day);
+        }
+        await coachChat('Again', chatId: '2026-10-15').drain<void>();
+        expect(
+          (await chats(
+            sampleUserId,
+          ).doc('2026-10-15').get()).data()![CoachChatKeys.messages],
+          hasLength(4),
+        );
+
+        await expectLater(
+          coachChat('Hi', chatId: '2026-10-13'),
+          emitsError(_failure(CoachFailure.pastDay)),
+        );
       });
 
       test('refuses a chat that does not exist', () async {

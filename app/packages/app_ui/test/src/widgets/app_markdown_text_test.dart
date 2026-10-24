@@ -86,10 +86,64 @@ void main() {
     expect(AppMarkdownText.plainText(''), '');
   });
 
+  group('streaming', () {
+    String streamed(String data) =>
+        AppMarkdownText.plainText(data, streaming: true);
+
+    test('closes bold, italic and code left open at the end', () {
+      expect(streamed('Your trend is **down 0.4'), 'Your trend is down 0.4');
+      expect(streamed('It is _slower '), 'It is slower');
+      expect(streamed('Check in on `Sun'), 'Check in on Sun');
+      expect(streamed('**Bold and _both'), 'Bold and both');
+      expect(streamed('**Bold and `code'), 'Bold and code');
+    });
+
+    test('drops a marker that has nothing after it yet', () {
+      expect(streamed('Your trend is **'), 'Your trend is');
+      expect(streamed('**Bold*'), 'Bold');
+      expect(streamed('Check `'), 'Check');
+    });
+
+    test('leaves closed markers, lists, words and fences alone', () {
+      expect(streamed('**Done** and _done_'), 'Done and done');
+      expect(streamed('* one\n* two'), '• one\n• two');
+      expect(streamed('snake_case_name'), 'snake_case_name');
+      expect(streamed('a `**` b'), 'a ** b');
+      expect(streamed('```\nfenced'), 'fenced\n');
+      expect(streamed('2 * 3 = 6'), '2 * 3 = 6');
+    });
+
+    test('only while streaming', () {
+      expect(AppMarkdownText.plainText('**open'), '**open');
+    });
+
+    testWidgets('can be plain text, not selectable', (tester) async {
+      await tester.pumpApp(
+        const AppMarkdownText('**Bold**', selectable: false),
+      );
+      expect(find.byType(SelectableText), findsNothing);
+      expect(find.text('Bold', findRichText: true), findsOneWidget);
+    });
+
+    testWidgets('draws the closed text', (tester) async {
+      await tester.pumpApp(
+        const AppMarkdownText('Trend **down', streaming: true),
+      );
+      expect(_leaf(tester, 'down').style?.fontWeight, FontWeight.w600);
+    });
+  });
+
   group('AppMarkdownText golden', () {
     goldenStates('app_markdown_text', [
       ('Answer', const AppMarkdownText(_answer)),
       ('Plain', const AppMarkdownText('Just a sentence, as typed.')),
+      (
+        'Streaming',
+        const AppMarkdownText(
+          'Your trend is **down 0.4 kg a week**, *a little fast',
+          streaming: true,
+        ),
+      ),
     ]);
   });
 }

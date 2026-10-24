@@ -62,12 +62,16 @@ Future<CoachRepository> inMemoryCoachRepository({
 }
 
 /// `coachChat` played over [firestore] for [uid], as Swift's
-/// `MockCoachService` answers: word by word, [wordDelay] apart, with a
-/// canned answer for the screen it was asked from.
+/// `MockCoachService` answers: a status naming the tool it reads, then word
+/// by word, [wordDelay] apart, with a canned answer for the screen it was
+/// asked from, and a `show_block` status before each block.
 ///
 /// Like the function, it refuses without consent (read from [users]),
-/// refuses a chat id that does not exist, counts 50 messages a day, and
-/// saves both sides of the exchange so the chat list catches up.
+/// makes a day chat (`YYYY-MM-DD`) on its first message and refuses one more
+/// than a day old, refuses any other chat id that does not exist, counts 50
+/// messages a day, and saves both sides of the exchange so the chat list
+/// catches up. A regenerated question replaces the chat's last exchange when
+/// that is the same question and its answer.
 CoachChatCall stagingCoachChat({
   required FirebaseFirestore firestore,
   required UserRepository users,
@@ -77,19 +81,30 @@ CoachChatCall stagingCoachChat({
 }) {
   final clock = now ?? () => DateTime.now().toUtc();
   var sent = 0;
-  return (message, {chatId, context}) async* {
+  return (message, {chatId, context, regenerate = false}) async* {
     final settings = await users.watchPrivateSettings(uid).first;
     if (settings?.coachConsent != true) {
       throw const CoachException(CoachFailure.consentRequired);
     }
+    // A day chat is made on its first message; one more than a day old
+    // has ended, as the function's day is the user's and may be behind.
+    final day = _dayKey.hasMatch(chatId ?? '') ? chatId : null;
+    final today = clock().toLocal();
+    if (day != null &&
+        DateTime.parse(day)
+            .isBefore(DateTime(today.year, today.month, today.day - 1))) {
+      throw const CoachException(CoachFailure.pastDay);
+    }
     final chats = firestore.collection('users/$uid/coach_chats');
     final chat = chats.doc(chatId);
     final existing = (await chat.get()).data();
-    if (chatId != null && existing == null) {
+    if (chatId != null && existing == null && day == null) {
       throw const CoachException(CoachFailure.failed);
     }
     if (sent == 50) throw const CoachException(CoachFailure.dailyLimitReached);
     sent++;
+    yield CoachStatus(_tools[context?.kind] ?? 'get_workout_history');
+    await Future<void>.delayed(wordDelay * 20);
     final answer = _answers[context?.kind] ?? _answer;
     for (final word in answer.split(' ')) {
       await Future<void>.delayed(wordDelay);
@@ -106,18 +121,32 @@ CoachChatCall stagingCoachChat({
       exerciseName: context?.title,
     );
     for (final block in blocks) {
-      await Future<void>.delayed(wordDelay);
+      yield const CoachStatus('show_block');
+      await Future<void>.delayed(wordDelay * 10);
       yield CoachBlockShown(block);
+    }
+    final kept = [...?existing?[CoachChatKeys.messages] as List<Object?>?];
+    if (kept.length >= 2 ? (kept[kept.length - 2], kept.last) : null
+        case (
+          {
+            CoachMessageKeys.role: 'user',
+            CoachMessageKeys.text: final String text,
+          },
+          {CoachMessageKeys.role: 'assistant'},
+        )
+        when regenerate && text == message) {
+      kept.length -= 2;
     }
     await chat.set({
       CoachChatKeys.id: chat.id,
+      CoachChatKeys.day: ?(existing?[CoachChatKeys.day] ?? day),
       CoachChatKeys.title: existing?[CoachChatKeys.title] ?? message,
       CoachChatKeys.createdAt: existing?[CoachChatKeys.createdAt] ?? time,
       CoachChatKeys.updatedAt: time,
       CoachChatKeys.contextKind:
           existing?[CoachChatKeys.contextKind] ?? context?.kind.value,
       CoachChatKeys.messages: [
-        ...?existing?[CoachChatKeys.messages] as List<Object?>?,
+        ...kept,
         for (final (id, role, text, shown) in [
           ('$reply-q', CoachMessageRole.user, message, <CoachBlock>[]),
           (reply, CoachMessageRole.assistant, answer, blocks),
@@ -144,6 +173,8 @@ CoachChatCall stagingCoachChat({
   };
 }
 
+final _dayKey = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+
 /// A model's value as Firestore stores it: a [DateTime] as a [Timestamp].
 Object? _stored(Object? value) => switch (value) {
   final DateTime date => Timestamp.fromDate(date),
@@ -158,6 +189,16 @@ const _answer =
     'Over the last four weeks you trained 3.5 times a week and your bench '
     'press estimated 1RM rose from 95 kg to 101 kg. Based on your 14 '
     'sessions since 7 September.';
+
+/// The tool the staging coach says it reads for each screen; the rest
+/// read the workouts.
+const Map<CoachContextKind, String> _tools = {
+  CoachContextKind.weightTrend: 'get_body_metrics',
+  CoachContextKind.nutritionDay: 'get_nutrition',
+  CoachContextKind.checkIn: 'get_check_ins',
+  CoachContextKind.expenditure: 'get_expenditure',
+  CoachContextKind.exercise: 'get_exercise_progress',
+};
 
 /// Canned answers for the screens with most to say; the rest get [_answer].
 const Map<CoachContextKind, String> _answers = {

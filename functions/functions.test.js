@@ -644,9 +644,9 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
         });
 
         const consent = (over = {}) => ({ "users/u/private/settings": { timezone: "Europe/London", coach_consent: true, ...over } });
-        const ask = (data, { stream = false, uid = "u" } = {}) => {
+        const ask = (data, { stream = false, uid = "u", signal } = {}) => {
             const chunks = [];
-            const out = fns.coachChat.run({ data, auth: { uid }, acceptsStreaming: stream }, { sendChunk: async (chunk) => { chunks.push(chunk); } });
+            const out = fns.coachChat.run({ data, auth: { uid }, acceptsStreaming: stream }, { sendChunk: async (chunk) => { chunks.push(chunk); }, signal });
             return out.then((result) => ({ result, chunks }));
         };
 
@@ -706,7 +706,8 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
                 assert.deepEqual(reply.blocks, [{ surfaceId: block.surfaceId, kind: "follow_ups", as_of: block.asOf, fallback: block.fallback, messages: block.messages }]);
 
                 await ask({ chatId: result.chatId, message: "And then?", ui: 1 });
-                assert.equal(replies[1].history[1].content[0].text, "Here is your week.\n[Shown: Suggested questions: How is my squat going?]");
+                assert.equal(replies[1].history[1].content[0].text, "Here is your week.");
+                assert.deepEqual(replies[1].shown, ["Suggested questions: How is my squat going?"]);
             } finally {
                 coach.coachRuntime.reply = textOnly;
             }
@@ -740,6 +741,91 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
             await assert.rejects(ask({ message: "hi", }, { uid: "w" }), { code: "failed-precondition" });
             await seed({ "users/w/private/settings": { coach_consent: true } });
             await assert.rejects(ask({ message: "hi" }, { uid: "w" }), { code: "unavailable" });
+        });
+
+        // The stubbed model swapped for `reply` while `body` runs.
+        const withReply = async (reply, body) => {
+            const stub = coach.coachRuntime.reply;
+            coach.coachRuntime.reply = async (args) => { replies.push(args); return reply(args); };
+            try { await body(); } finally { coach.coachRuntime.reply = stub; }
+        };
+        const londonDay = (offsetDays = 0) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(new Date(Date.now() + offsetDays * 86_400_000));
+
+        test("a day chat is made on its first message, keeps its day, and yesterday's is still open", async () => {
+            await seed(consent());
+            const today = londonDay();
+            const first = (await ask({ chatId: today, message: "Morning" })).result;
+            assert.equal(first.chatId, today);
+            await ask({ chatId: today, message: "And now?" });
+            const chat = await read(`users/u/coach_chats/${today}`);
+            assert.equal(chat.day, today);
+            assert.equal(chat.messages.length, 4);
+            assert.equal(replies[1].history.length, 2);
+
+            // Midnight on the server came first: yesterday's chat still takes the question.
+            const yesterday = londonDay(-1);
+            await ask({ chatId: yesterday, message: "Late one" });
+            assert.equal((await read(`users/u/coach_chats/${yesterday}`)).day, yesterday);
+            // A chat that is not a day chat carries no day.
+            const plain = (await ask({ message: "No day" })).result;
+            assert.equal("day" in (await read(`users/u/coach_chats/${plain.chatId}`)), false);
+        });
+
+        test("an older day is refused as past_day before the quota or the model", async () => {
+            await seed(consent());
+            await assert.rejects(ask({ chatId: londonDay(-3), message: "Too late" }), (e) => e.code === "failed-precondition" && e.details?.reason === "past_day");
+            assert.equal(await exists("coach_usage/u"), false);
+            assert.equal(replies.length, 0);
+        });
+
+        test("each tool streams a status chunk with its name only, and only to a streaming app", async () => {
+            await seed(consent());
+            await withReply(async (args) => {
+                args.onTool?.("get_workout_history");
+                args.onTool?.("show_block");
+                args.onChunk?.("Done.");
+                return "Done.";
+            }, async () => {
+                const { chunks } = await ask({ message: "My week?", ui: 1 }, { stream: true });
+                assert.deepEqual(chunks, [
+                    { text: "", status: { tool: "get_workout_history" } },
+                    { text: "", status: { tool: "show_block" } },
+                    { text: "Done." },
+                ]);
+                await ask({ message: "Again" });
+                assert.equal(replies[1].onTool, null);
+            });
+        });
+
+        test("stopping a reply aborts the model call and saves nothing; the message stays counted", async () => {
+            await seed(consent());
+            const app = new AbortController();
+            await withReply(async (args) => {
+                args.onChunk?.("Your ");
+                app.abort(); // The app goes away mid-answer.
+                if (args.abortSignal.aborted) throw new Error("aborted");
+                return "Your answer.";
+            }, async () => {
+                await assert.rejects(ask({ chatId: londonDay(), message: "Stop me" }, { stream: true, signal: app.signal }), { code: "cancelled" });
+            });
+            assert.equal(replies.length, 1, "a stop is not retried");
+            assert.equal(await exists(`users/u/coach_chats/${londonDay()}`), false);
+            assert.equal((await read("coach_usage/u")).count, 1);
+        });
+
+        test("regenerate replaces the last answer to the same question, and is ignored for another", async () => {
+            await seed(consent());
+            const first = (await ask({ message: "How is my bench?" })).result;
+            const again = (await ask({ chatId: first.chatId, message: "How is my bench?", regenerate: true })).result;
+            assert.deepEqual(replies[1].history, []);
+            let chat = await read(`users/u/coach_chats/${first.chatId}`);
+            assert.deepEqual(chat.messages.map((m) => m.role), ["user", "assistant"]);
+            assert.equal(chat.messages[1].id, again.messageId);
+
+            await ask({ chatId: first.chatId, message: "Something else", regenerate: true });
+            assert.equal(replies[2].history.length, 2);
+            chat = await read(`users/u/coach_chats/${first.chatId}`);
+            assert.deepEqual(chat.messages.map((m) => m.text), ["How is my bench?", "Your bench is going up.", "Something else", "Your bench is going up."]);
         });
 
         test("the dev project skips the premium check", async () => {

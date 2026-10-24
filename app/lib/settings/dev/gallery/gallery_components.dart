@@ -101,6 +101,16 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppFloatingButton', [
+      galleryInline(
+        'icon, label',
+        AppFloatingButton(
+          icon: AppSymbols.jumpToLatest,
+          label: l10n.coachJumpToLatest,
+          onPressed: galleryNoop,
+        ),
+      ),
+    ]),
     galleryEntry('AppIconBadge', [
       galleryInline('filled', const AppIconBadge(icon: AppSymbols.meal)),
       galleryInline(
@@ -1077,6 +1087,15 @@ List<Widget> galleryContent(BuildContext context) {
             '## What to try\n\nYour trend is down **0.1 kg a week**, '
             '*slower* than planned.\n\n- Log every meal\n- Weigh in each '
             'morning\n\n1. Check in on `Sunday`',
+          ),
+        ),
+      ),
+      galleryBlock(
+        'streaming',
+        padded(
+          const AppMarkdownText(
+            'Your trend is **down 0.4 kg a week**, *a little fast',
+            streaming: true,
           ),
         ),
       ),

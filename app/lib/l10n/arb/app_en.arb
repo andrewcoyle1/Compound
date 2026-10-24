@@ -10358,14 +10358,6 @@
             }
         }
     },
-    "coachMore": "More",
-    "@coachMore": {
-        "description": "Coach menu button"
-    },
-    "coachNewChat": "New Chat",
-    "@coachNewChat": {
-        "description": "Starts a new coach chat"
-    },
     "coachChats": "Chats",
     "@coachChats": {
         "description": "Opens the saved coach chats"
@@ -13603,5 +13595,121 @@
     "coachFollowUpsTitle": "Ask Next",
     "@coachFollowUpsTitle": {
         "description": "Heading of the coach's suggested follow-up questions"
+    },
+    "coachStop": "Stop",
+    "@coachStop": {
+        "description": "Coach button in place of Send while the coach answers: stops the answer"
+    },
+    "coachStopped": "Stopped",
+    "@coachStopped": {
+        "description": "Note under a question whose answer the user stopped"
+    },
+    "coachRetry": "Retry",
+    "@coachRetry": {
+        "description": "Button under a failed or stopped coach question: asks it again"
+    },
+    "coachJumpToLatest": "Jump to Latest",
+    "@coachJumpToLatest": {
+        "description": "Floating button in the coach chat: scrolls down to the newest message"
+    },
+    "coachCopy": "Copy",
+    "@coachCopy": {
+        "description": "Coach message action: copies the message"
+    },
+    "coachCopied": "Copied",
+    "@coachCopied": {
+        "description": "Notice after a coach message is copied"
+    },
+    "coachHelpful": "Helpful",
+    "@coachHelpful": {
+        "description": "Coach answer action: rates the answer as helpful (thumbs up)"
+    },
+    "coachNotHelpful": "Not Helpful",
+    "@coachNotHelpful": {
+        "description": "Coach answer action: rates the answer as not helpful (thumbs down)"
+    },
+    "coachFeedbackThanks": "Thanks for the feedback",
+    "@coachFeedbackThanks": {
+        "description": "Notice after rating a coach answer"
+    },
+    "coachReadingProfile": "Checking your profile and targets…",
+    "@coachReadingProfile": {
+        "description": "Line under a coach question while the coach reads the user's profile and targets"
+    },
+    "coachReadingWorkouts": "Reading your workouts…",
+    "@coachReadingWorkouts": {
+        "description": "Line under a coach question while the coach reads the workout history"
+    },
+    "coachReadingExercise": "Checking your exercise progress…",
+    "@coachReadingExercise": {
+        "description": "Line under a coach question while the coach reads an exercise's progress"
+    },
+    "coachReadingVolume": "Checking your training volume…",
+    "@coachReadingVolume": {
+        "description": "Line under a coach question while the coach reads weekly training volume"
+    },
+    "coachReadingNutrition": "Checking your nutrition…",
+    "@coachReadingNutrition": {
+        "description": "Line under a coach question while the coach reads meal logs and nutrition"
+    },
+    "coachReadingBody": "Reading your body metrics…",
+    "@coachReadingBody": {
+        "description": "Line under a coach question while the coach reads weight and body measurements"
+    },
+    "coachReadingExpenditure": "Checking your expenditure…",
+    "@coachReadingExpenditure": {
+        "description": "Line under a coach question while the coach reads the energy expenditure estimate"
+    },
+    "coachReadingSteps": "Counting your steps…",
+    "@coachReadingSteps": {
+        "description": "Line under a coach question while the coach reads step counts"
+    },
+    "coachReadingPlan": "Reading your plan…",
+    "@coachReadingPlan": {
+        "description": "Line under a coach question while the coach reads the training plan"
+    },
+    "coachReadingCheckIns": "Reading your check-ins…",
+    "@coachReadingCheckIns": {
+        "description": "Line under a coach question while the coach reads weekly check-ins"
+    },
+    "coachThinking": "Thinking…",
+    "@coachThinking": {
+        "description": "Line under a coach question while the coach works, before it says what it reads"
+    },
+    "coachAddingCard": "Adding a card…",
+    "@coachAddingCard": {
+        "description": "Screen reader label of the placeholder where the coach's next card will appear"
+    },
+    "coachRegenerate": "Regenerate",
+    "@coachRegenerate": {
+        "description": "Action on the latest coach answer: asks the same question again for a new answer"
+    },
+    "coachRegenerateFailed": "Couldn't get a new answer. Try again.",
+    "@coachRegenerateFailed": {
+        "description": "Notice when asking the coach for a new answer fails; the previous answer is kept"
+    },
+    "coachErrorPastDay": "That day has ended. Ask in today's chat.",
+    "@coachErrorPastDay": {
+        "description": "Coach: the chat's day ended before the question was sent"
+    },
+    "coachDayEnded": "This day has ended.",
+    "@coachDayEnded": {
+        "description": "Coach: footer of a past day's chat, which is read-only"
+    },
+    "coachAskInToday": "Ask in Today's Chat",
+    "@coachAskInToday": {
+        "description": "Coach: button under a past day's chat; opens today's chat"
+    },
+    "coachNewDay": "A new day has started, so this is today's chat. Your question is still in the field.",
+    "@coachNewDay": {
+        "description": "Coach: note after midnight moved the coach to the new day's chat"
+    },
+    "quickWeighInWeight": "Today's Weight",
+    "@quickWeighInWeight": {
+        "description": "Coach day checklist: label of the inline weigh-in field"
+    },
+    "quickWeighInSave": "Save Weigh-In",
+    "@quickWeighInSave": {
+        "description": "Coach day checklist: saves the inline weigh-in"
     }
 }

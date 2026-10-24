@@ -14,6 +14,6 @@ SocialRepository emptySocialRepository() => SocialRepository(
 CoachRepository silentCoachRepository() => CoachRepository(
   firestore: FakeFirebaseFirestore(),
   users: InMemoryUserRepository(),
-  coachChat: (_, {chatId, context}) =>
+  coachChat: (_, {chatId, context, regenerate = false}) =>
       Stream.error(const CoachException(CoachFailure.unavailable)),
 );

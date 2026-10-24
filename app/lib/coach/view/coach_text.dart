@@ -60,7 +60,25 @@ extension CoachWords on AppLocalizations {
     CoachFailure.premiumRequired => coachErrorPremium,
     CoachFailure.dailyLimitReached => coachErrorDailyLimit,
     CoachFailure.tooManyAtOnce => coachErrorTooManyAtOnce,
+    CoachFailure.pastDay => coachErrorPastDay,
     CoachFailure.unavailable => coachErrorUnavailable,
     CoachFailure.failed => coachErrorFailed,
+  };
+
+  /// What the coach is doing while it runs [tool] (`coachChat`'s ten data
+  /// tools), grouped by what they read; "Thinking" for none or a tool this
+  /// build does not know.
+  String coachReading(String? tool) => switch (tool) {
+    'get_profile_and_targets' => coachReadingProfile,
+    'get_workout_history' => coachReadingWorkouts,
+    'get_exercise_progress' => coachReadingExercise,
+    'get_training_volume' => coachReadingVolume,
+    'get_nutrition' => coachReadingNutrition,
+    'get_body_metrics' => coachReadingBody,
+    'get_expenditure' => coachReadingExpenditure,
+    'get_steps' => coachReadingSteps,
+    'get_plan' => coachReadingPlan,
+    'get_check_ins' => coachReadingCheckIns,
+    _ => coachThinking,
   };
 }

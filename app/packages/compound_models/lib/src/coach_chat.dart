@@ -26,6 +26,9 @@ abstract final class CoachChatKeys {
   /// `messages`.
   static const messages = 'messages';
 
+  /// `day`: a day chat's day, `YYYY-MM-DD`.
+  static const day = 'day';
+
   /// Every field, in declaration order.
   static const List<String> all = [
     id,
@@ -34,6 +37,7 @@ abstract final class CoachChatKeys {
     updatedAt,
     contextKind,
     messages,
+    day,
   ];
 }
 
@@ -204,6 +208,11 @@ class const CoachChat({
   /// Where it was opened from: a `CoachContext` kind such as
   /// `weight_trend`, kept as the stored string.
   final String? contextKind,
+
+  /// For a day chat (its id is the day too), the user's day it belongs to,
+  /// `YYYY-MM-DD`; absent for a chat from before day chats. Swift ignores
+  /// it.
+  final String? day,
 }) {
   /// Creates a [CoachChat].
   this;
@@ -217,6 +226,7 @@ class const CoachChat({
     createdAt: data[CoachChatKeys.createdAt]! as DateTime,
     updatedAt: data[CoachChatKeys.updatedAt]! as DateTime,
     contextKind: data[CoachChatKeys.contextKind] as String?,
+    day: data[CoachChatKeys.day] as String?,
     messages: [
       for (final message in data[CoachChatKeys.messages]! as List<Object?>)
         CoachMessage.fromFirestore(message! as Map<String, Object?>),
@@ -234,5 +244,6 @@ class const CoachChat({
     CoachChatKeys.messages: [
       for (final message in messages) message.toFirestore(),
     ],
+    CoachChatKeys.day: ?day,
   };
 }

@@ -57,6 +57,61 @@ tool, so the exclusions hold by construction rather than by prompt.
   medical questions go to a professional.
 - Replies stream.
 
+## Day chats, status, stop and regenerate
+
+Since 21 Oct 2026 (`coachChat` in `functions/index.js`, helpers in `functions/coach.js`).
+
+- **Day chats.** A `chatId` of the form `YYYY-MM-DD` is that day's chat. It is made on its first
+  message with `day: "<key>"` on the document, so it never answers `not-found`. It is open on the
+  user's today (in the timezone in their private settings) and the days either side, because the
+  app's midnight and the server's can differ by a few minutes (`chatDay`). An older day answers
+  `failed-precondition` with `{ reason: "past_day" }`, after consent and premium and before the
+  quota, so it costs no message. A later day answers `invalid-argument`. Any other `chatId` is an
+  older chat and must exist, as before; no `chatId` still starts a new random-id chat.
+- **Status chunks.** As each tool starts (the ten data tools and `show_block`), a streaming reply
+  sends `{ "text": "", "status": { "tool": "<tool name>" } }`. It holds no user data and keeps a
+  `text` key, so older apps ignore it. It is not part of the answer, so a busy retry can still
+  follow it.
+- **Stop.** The callable's `response.signal` aborts when the app goes away. The model call is
+  aborted with it (combined with each try's timeout in `withTimeout`), nothing is saved, and the
+  call ends `cancelled`, which nobody receives. A stop is never treated as busy, so it is not
+  retried. The message stays counted against the quota, and the `coach_reply` log line has
+  `stopped: true`.
+- **Regenerate.** `regenerate: true` with the same `message`: when the chat's last two stored
+  messages are a user message with exactly that text and then an assistant reply, both are left
+  out of the model's history and dropped when saving (checked again inside the saving
+  transaction), so the new answer replaces the old one. Otherwise the request is answered as
+  usual. It costs a message like any other.
+
+### In the app (one chat a day)
+
+Since 24 Oct 2026 (`app/lib/coach/`, `CoachRepository.watchChat`).
+
+- **Opening the coach opens today's chat**: its id is the local day key (`localDayKey`, the same
+  helper as meals and check-ins). Every Ask Coach button opens it, with the screen's context sent
+  with each message on that screen; the screen's suggested questions sit after the conversation,
+  just above the field, until one is asked. There is no New Chat.
+- **Messages** come from following that chat's document, then this session's turns it does not
+  have yet (a pending, failed or stopped question, and an answer not yet saved). The function
+  saves the exchange under ids of its own; once the document holds the answer id the result gave
+  (`CoachFinished.messageId`), that answer and the question before it leave the session's list.
+  The document is held while a question is answered, as it is saved just before the answer
+  arrives and both would show.
+- **The opener**, at the top of today's chat, is built by the app, not the model: the date, then
+  the day's checklist (`DayChecklistCard`, from a `TodayBloc` made as Today makes it), then
+  Today's suggested questions until the first message. It stays live all day. Items open their
+  screens as on Today; the weigh-in, until it is done, also has an inline weigh-in, prefilled
+  with the latest weight in the user's unit and saved as Log Weight saves it (`LogWeightBloc`,
+  within the wheels' span). That is the only thing the opener writes. Finished items are
+  celebrated only on Today, so a day never celebrates twice.
+- **Chats** is a list of days, newest first: a day chat under its `day`, an older chat under the
+  local day of its `created_at`, by title. Swipe to delete.
+- **Past days and older chats are read-only**: no field, no opener, no Regenerate; a footer says
+  the day has ended, with Ask in Today's Chat. Copy and feedback still work, and their blocks
+  are dated as snapshots.
+- **Midnight.** A `past_day` refusal (`CoachFailure.pastDay`) moves the screen to the new day's
+  chat with the question back in the field and a note saying a new day has started.
+
 ## Keeping the maths in step
 
 Expenditure, trend, PR and muscle-volume logic will exist in Swift and in JS. To stop them

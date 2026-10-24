@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:bloc_test/bloc_test.dart';
+import 'package:checkin_repository/checkin_repository.dart' show localDayKey;
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -17,9 +19,10 @@ void main() {
   late FakeFirebaseFirestore firestore;
   late InMemoryUserRepository users;
   late AnalyticsRecorder analytics;
-  late List<(String, String?, CoachContext?)> sent;
+  late List<(String, String?, CoachContext?, bool)> sent;
   late List<CoachStreamEvent> events;
   late CoachFailure? refusal;
+  late int ids;
 
   setUp(() {
     firestore = FakeFirebaseFirestore();
@@ -37,13 +40,14 @@ void main() {
       ),
     ];
     refusal = null;
+    ids = 0;
   });
 
   CoachRepository coach() => CoachRepository(
     firestore: firestore,
     users: users,
-    coachChat: (message, {chatId, context}) {
-      sent.add((message, chatId, context));
+    coachChat: (message, {chatId, context, regenerate = false}) {
+      sent.add((message, chatId, context, regenerate));
       final failure = refusal;
       return failure == null
           ? Stream.fromIterable(events)
@@ -70,7 +74,7 @@ void main() {
       purchases: purchases,
       analytics: analytics,
       now: () => asked,
-      newId: () => 'q1',
+      newId: () => 'q${++ids}',
     );
   }
 
@@ -94,6 +98,19 @@ void main() {
         createdAt: asked,
       ),
     ],
+  );
+
+  final today = localDayKey(asked);
+
+  /// [sampleChat] as today's chat.
+  final todaysChat = CoachChat(
+    id: today,
+    day: today,
+    title: sampleChat.title,
+    createdAt: asked,
+    updatedAt: asked,
+    contextKind: 'weight_trend',
+    messages: sampleChat.messages,
   );
 
   group('the gate', () {
@@ -174,7 +191,8 @@ void main() {
       expect(cubit.state.streamingText, isNull);
       expect(streamed, containsAllInOrder(['', 'Hello ', 'Hello there']));
       expect(sent.single.$3?.id, 'bench');
-      expect(sent.single.$2, isNull);
+      // Today's chat.
+      expect(sent.single.$2, today);
       expect(analytics.parameters('CoachView_Send_Start'), {
         'context': 'exercise',
         'is_new_chat': true,
@@ -182,8 +200,10 @@ void main() {
 
       cubit.draftChanged('And squat?');
       await cubit.sendPressed();
-      expect(sent.last.$2, 'c1');
+      expect(sent.last.$2, today);
+      expect(sent.last.$3?.id, 'bench');
       await subscription.cancel();
+      await cubit.close();
     });
 
     test('blocks accumulate as they stream and stay with the answer', () async {
@@ -236,7 +256,7 @@ void main() {
       expect(cubit.state.streamingBlocks, isEmpty);
       expect(cubit.state.messages.last.blocks, [chart, followUps]);
       expect(cubit.state.messages.first.blocks, isNull);
-      expect(cubit.state.savedMessageCount, 0);
+      expect(cubit.state.readOnly, isFalse);
       await subscription.cancel();
     });
 
@@ -254,7 +274,7 @@ void main() {
       final repository = CoachRepository(
         firestore: firestore,
         users: users,
-        coachChat: (message, {chatId, context}) async* {
+        coachChat: (message, {chatId, context, regenerate = false}) async* {
           yield const CoachBlockShown(
             CoachBlock(
               surfaceId: 'a1-0',
@@ -274,7 +294,9 @@ void main() {
       await cubit.sendPressed();
 
       expect(cubit.state.streamingBlocks, isEmpty);
-      expect(cubit.state.failure, CoachFailure.unavailable);
+      expect(cubit.state.questions, {
+        'q1': const CoachQuestionStatus.failed(CoachFailure.unavailable),
+      });
     });
 
     test("a saved chat replays its answers' blocks", () async {
@@ -309,7 +331,8 @@ void main() {
       );
 
       expect(cubit.state.messages.last.blocks, [block]);
-      expect(cubit.state.savedMessageCount, 2);
+      // Not today's: a snapshot, dated.
+      expect(cubit.state.readOnly, isTrue);
     });
 
     test('an empty message is not sent', () async {
@@ -322,7 +345,7 @@ void main() {
       expect(sent, isEmpty);
     });
 
-    test('a failed message goes back in the field', () async {
+    test('a failed question stays in the conversation, marked', () async {
       refusal = CoachFailure.dailyLimitReached;
       final cubit = await screen()
         ..draftChanged('How was my week?');
@@ -330,10 +353,12 @@ void main() {
       await cubit.sendPressed();
 
       expect(cubit.state.isSending, isFalse);
-      expect(cubit.state.messages, isEmpty);
-      expect(cubit.state.draft, 'How was my week?');
-      expect(cubit.state.draftRevision, 2);
-      expect(cubit.state.failure, CoachFailure.dailyLimitReached);
+      expect(cubit.state.messages.map((m) => m.text), ['How was my week?']);
+      expect(cubit.state.draft, isEmpty);
+      expect(cubit.state.draftRevision, 1);
+      expect(cubit.state.questions, {
+        'q1': const CoachQuestionStatus.failed(CoachFailure.dailyLimitReached),
+      });
       expect(cubit.state.remainingToday, 0);
       expect(cubit.state.sendFailures, 1);
       expect(analytics.parameters('CoachView_Send_Fail'), {
@@ -347,7 +372,7 @@ void main() {
               repository: CoachRepository(
                 firestore: firestore,
                 users: users,
-                coachChat: (_, {chatId, context}) =>
+                coachChat: (_, {chatId, context, regenerate = false}) =>
                     Stream.error(StateError('x')),
               ),
             )
@@ -355,7 +380,10 @@ void main() {
 
       await cubit.sendPressed();
 
-      expect(cubit.state.failure, CoachFailure.unavailable);
+      expect(
+        cubit.state.questions['q1'],
+        const CoachQuestionStatus.failed(CoachFailure.unavailable),
+      );
     });
 
     test('a refusal for consent or premium returns to the gate', () async {
@@ -364,7 +392,10 @@ void main() {
         ..draftChanged('hi');
       await consentRefused.sendPressed();
       expect(consentRefused.state.gate, CoachGate.consent);
-      expect(consentRefused.state.failure, isNull);
+      // As before: the question goes back in the field.
+      expect(consentRefused.state.questions, isEmpty);
+      expect(consentRefused.state.messages, isEmpty);
+      expect(consentRefused.state.draft, 'hi');
 
       refusal = CoachFailure.premiumRequired;
       final premiumRefused = await screen()
@@ -388,53 +419,199 @@ void main() {
       expect(cubit.state.showsSuggestions, isFalse);
     });
 
-    test('an opened chat shows its messages and continues it', () async {
+    test('a chat from before day chats, or a past day, is read-only', () async {
+      for (final chat in [
+        sampleChat,
+        CoachChat(
+          id: '2026-10-12',
+          day: '2026-10-12',
+          title: sampleChat.title,
+          createdAt: asked,
+          updatedAt: asked,
+          messages: sampleChat.messages,
+        ),
+      ]) {
+        final cubit = await screen(
+          request: CoachRequest.forChat(chat, CoachContext.today),
+        );
+        await cubit.appeared();
+        expect(cubit.state.messages, hasLength(2));
+        expect(cubit.state.readOnly, isTrue);
+        expect(cubit.state.chatId, chat.id);
+        expect(cubit.state.day, chat.day);
+        expect(cubit.state.chatTitle, 'Why has my weight stalled?');
+        expect(cubit.state.canRegenerate, isFalse);
+
+        cubit.draftChanged('And now?');
+        expect(cubit.state.canSend, isFalse);
+        await cubit.sendPressed();
+        await cubit.regeneratePressed();
+        expect(sent, isEmpty);
+        await cubit.close();
+      }
+    });
+
+    test("today's chat opened from the list is today's chat", () async {
       final cubit = await screen(
-        request: CoachRequest.forChat(sampleChat, CoachContext.today),
+        request: CoachRequest.forChat(todaysChat, CoachContext.today),
       );
+      expect(cubit.state.readOnly, isFalse);
       expect(cubit.state.messages, hasLength(2));
-      expect(cubit.state.savedMessageCount, 2);
-      expect(cubit.state.chatTitle, 'Why has my weight stalled?');
 
       cubit.draftChanged('And now?');
       await cubit.sendPressed();
-      expect(sent.single.$2, 'chat-1');
-      // The saved replies replay as saved; this session's are live.
+      expect(sent.single.$2, today);
+      expect(sent.single.$3, CoachContext.today);
       expect(cubit.state.messages, hasLength(4));
-      expect(cubit.state.savedMessageCount, 2);
+    });
 
-      cubit.newChatPressed();
-      expect(cubit.state.messages, isEmpty);
-      expect(cubit.state.savedMessageCount, 0);
-      expect(cubit.state.chatId, isNull);
-      expect(analytics.names.last, 'CoachView_NewChat_Press');
+    test("today's chat is its saved document, then this session's turns, "
+        'each shown once', () async {
+      final answer = StreamController<CoachStreamEvent>();
+      final cubit = await screen(
+        repository: CoachRepository(
+          firestore: firestore,
+          users: users,
+          coachChat: (_, {chatId, context, regenerate = false}) =>
+              answer.stream,
+        ),
+      );
+      await cubit.appeared();
+      final chat = firestore.doc('users/$uid/coach_chats/$today');
+      Future<void> save(List<CoachMessage> messages) async {
+        await chat.set({
+          ...todaysChat.toFirestore(),
+          'messages': [for (final m in messages) m.toFirestore()],
+        });
+        await pumpEventQueue();
+      }
+
+      await save(sampleChat.messages);
+      expect(cubit.state.messages.map((m) => m.id), ['m1', 'm2']);
+      expect(analytics.parameters('CoachView_Appear'), {'context': 'today'});
+
+      cubit.draftChanged('And this week?');
+      final sending = cubit.sendPressed();
+      await pumpEventQueue();
+      expect(
+        analytics.parameters('CoachView_Send_Start')?['is_new_chat'],
+        false,
+      );
+      // The function saves the exchange just before it answers: held until
+      // the answer is in, so the question shows once.
+      final saved = [
+        ...sampleChat.messages,
+        CoachMessage(
+          id: 'server-q',
+          role: CoachMessageRole.user,
+          text: 'And this week?',
+          createdAt: asked,
+        ),
+        CoachMessage(
+          id: 'a2',
+          role: CoachMessageRole.assistant,
+          text: 'Steady.',
+          createdAt: asked,
+        ),
+      ];
+      await save(saved);
+      expect(cubit.state.messages.map((m) => m.id), ['m1', 'm2', 'q1']);
+      answer.add(
+        const CoachFinished(
+          chatId: '2026-10-14',
+          messageId: 'a2',
+          text: 'Steady.',
+          remainingToday: 48,
+        ),
+      );
+      await answer.close();
+      await sending;
+
+      expect(cubit.state.messages.map((m) => m.id), [
+        'm1',
+        'm2',
+        'server-q',
+        'a2',
+      ]);
+      await cubit.close();
     });
 
     test(
-      'a new chat takes its saved title once the function saves it',
+      'an answer saved after it arrives replaces its session copy',
       () async {
         final cubit = await screen();
         await cubit.appeared();
         cubit.draftChanged('How am I doing?');
         await cubit.sendPressed();
+        expect(cubit.state.messages.map((m) => m.id), ['q1', 'a1']);
 
-        await firestore
-            .doc('users/$uid/coach_chats/c1')
-            .set(
-              CoachChat(
-                id: 'c1',
-                title: 'How am I doing?',
+        await firestore.doc('users/$uid/coach_chats/$today').set({
+          ...todaysChat.toFirestore(),
+          'messages': [
+            for (final m in [
+              CoachMessage(
+                id: 'server-q',
+                role: CoachMessageRole.user,
+                text: 'How am I doing?',
                 createdAt: asked,
-                updatedAt: asked,
-                messages: const [],
-              ).toFirestore(),
-            );
+              ),
+              CoachMessage(
+                id: 'a1',
+                role: CoachMessageRole.assistant,
+                text: 'Hello there',
+                createdAt: asked,
+              ),
+            ])
+              m.toFirestore(),
+          ],
+        });
         await pumpEventQueue();
 
-        expect(cubit.state.chatTitle, 'How am I doing?');
+        expect(cubit.state.messages.map((m) => m.id), ['server-q', 'a1']);
         await cubit.close();
       },
     );
+
+    test('a refused past day moves to the new day, the question back in the '
+        'field', () async {
+      refusal = CoachFailure.pastDay;
+      var now = asked;
+      final purchases = FakePurchasesRepository();
+      await purchases.logIn(uid);
+      final cubit = CoachCubit(
+        uid: uid,
+        request: const CoachRequest(),
+        coach: coach(),
+        purchases: purchases,
+        analytics: analytics,
+        now: () => now,
+        newId: () => 'q${++ids}',
+      );
+      await cubit.appeared();
+      now = DateTime(asked.year, asked.month, asked.day + 2, 9);
+      await firestore.doc('users/$uid/coach_chats/${localDayKey(now)}').set({
+        ...todaysChat.toFirestore(),
+        'messages': <Object?>[],
+      });
+      cubit.draftChanged('Still there?');
+
+      await cubit.sendPressed();
+      await pumpEventQueue();
+
+      expect(cubit.state.chatId, localDayKey(now));
+      expect(cubit.state.day, localDayKey(now));
+      expect(cubit.state.newDayStarted, isTrue);
+      expect(cubit.state.messages, isEmpty);
+      expect(cubit.state.questions, isEmpty);
+      expect(cubit.state.draft, 'Still there?');
+      expect(cubit.state.draftRevision, 2);
+
+      refusal = null;
+      await cubit.sendPressed();
+      expect(sent.last.$2, localDayKey(now));
+      expect(cubit.state.newDayStarted, isFalse);
+      await cubit.close();
+    });
 
     test('the few messages left are shown', () async {
       final repository = coach();
@@ -484,7 +661,8 @@ void main() {
               repository: CoachRepository(
                 firestore: firestore,
                 users: users,
-                coachChat: (_, {chatId, context}) => answer.stream,
+                coachChat: (_, {chatId, context, regenerate = false}) =>
+                    answer.stream,
               ),
             )
             ..draftChanged('Hi');
@@ -496,6 +674,351 @@ void main() {
       await sending;
 
       expect(cubit.isClosed, isTrue);
+    });
+  });
+
+  group('stop, retry and feedback', () {
+    late StreamController<CoachStreamEvent> answer;
+
+    setUp(() => answer = StreamController<CoachStreamEvent>());
+    // Not awaited: a stream nobody listened to never reports done.
+    tearDown(() => unawaited(answer.close()));
+
+    CoachCubit build({CoachRepository? repository}) => CoachCubit(
+      uid: uid,
+      request: const CoachRequest(),
+      coach:
+          repository ??
+          CoachRepository(
+            firestore: firestore,
+            users: users,
+            coachChat: (_, {chatId, context, regenerate = false}) =>
+                answer.stream,
+          ),
+      purchases: FakePurchasesRepository(),
+      analytics: analytics,
+      now: () => asked,
+      newId: () => 'q${++ids}',
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'Stop drops what streamed and leaves the question stopped',
+      build: build,
+      act: (cubit) async {
+        cubit.draftChanged('How is my week?');
+        final sending = cubit.sendPressed();
+        answer.add(const CoachText('Your week'));
+        await pumpEventQueue();
+        expect(cubit.state.isSending, isTrue);
+        cubit.stopPressed();
+        await sending;
+        // Too late: the answer is no longer read.
+        answer.add(const CoachText(' was good'));
+        await pumpEventQueue();
+      },
+      verify: (cubit) {
+        expect(cubit.state.isSending, isFalse);
+        expect(cubit.state.streamingText, isNull);
+        expect(cubit.state.messages.map((m) => m.text), ['How is my week?']);
+        expect(cubit.state.questions, {
+          'q1': const CoachQuestionStatus.stopped(),
+        });
+        expect(analytics.parameters('CoachView_Stop_Press'), {
+          'context': 'today',
+        });
+        // Nothing to stop once it has.
+        cubit.stopPressed();
+        expect(
+          analytics.names.where((name) => name == 'CoachView_Stop_Press'),
+          hasLength(1),
+        );
+      },
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'Retry asks a failed question again, as the newest message',
+      setUp: () => refusal = CoachFailure.unavailable,
+      build: () => build(repository: coach()),
+      act: (cubit) async {
+        cubit.draftChanged('First?');
+        await cubit.sendPressed();
+        refusal = null;
+        cubit.draftChanged('Second?');
+        await cubit.sendPressed();
+
+        await cubit.retryPressed('q1');
+        // Not a question, or not one left to retry.
+        await cubit.retryPressed('q1');
+      },
+      verify: (cubit) {
+        expect(cubit.state.messages.map((m) => m.text), [
+          'Second?',
+          'Hello there',
+          'First?',
+          'Hello there',
+        ]);
+        expect(cubit.state.questions, isEmpty);
+        expect(sent.map((call) => call.$1), ['First?', 'Second?', 'First?']);
+        expect(analytics.parameters('CoachView_Retry_Press'), {
+          'context': 'today',
+        });
+      },
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'an answer that ends without finishing fails the question',
+      build: build,
+      act: (cubit) async {
+        cubit.draftChanged('Hi');
+        final sending = cubit.sendPressed();
+        answer.add(const CoachText('Hel'));
+        await answer.close();
+        await sending;
+      },
+      verify: (cubit) {
+        expect(
+          cubit.state.questions['q1'],
+          const CoachQuestionStatus.failed(CoachFailure.unavailable),
+        );
+        expect(cubit.state.streamingText, isNull);
+        expect(cubit.state.sendFailures, 1);
+      },
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'Retry waits while another question is answered',
+      build: build,
+      seed: () => CoachState(
+        gate: CoachGate.chat,
+        messages: [
+          CoachMessage(
+            id: 'old',
+            role: CoachMessageRole.user,
+            text: 'Old?',
+            createdAt: asked,
+          ),
+        ],
+        questions: const {
+          'old': CoachQuestionStatus.stopped(),
+          'now': CoachQuestionStatus.answering(),
+        },
+      ),
+      act: (cubit) => cubit.retryPressed('old'),
+      expect: () => <CoachState>[],
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'copy and feedback carry the rating and context, never the text',
+      build: build,
+      act: (cubit) => cubit
+        ..copyPressed(CoachMessageRole.assistant)
+        ..feedbackGiven(helpful: true)
+        ..feedbackGiven(helpful: false),
+      verify: (_) {
+        expect(analytics.parameters('CoachView_Copy_Press'), {
+          'context': 'today',
+          'role': 'assistant',
+        });
+        expect(
+          [
+            for (final event in analytics.events)
+              if (event.eventName == 'CoachView_Feedback') event.parameters,
+          ],
+          [
+            {'context': 'today', 'rating': 'up'},
+            {'context': 'today', 'rating': 'down'},
+          ],
+        );
+      },
+    );
+  });
+
+  group('status and regenerate', () {
+    late StreamController<CoachStreamEvent> answer;
+
+    setUp(() {
+      answer = StreamController<CoachStreamEvent>();
+      sent = [];
+    });
+    tearDown(() => unawaited(answer.close()));
+
+    CoachCubit build({CoachRequest request = const CoachRequest()}) =>
+        CoachCubit(
+          uid: uid,
+          request: request,
+          coach: CoachRepository(
+            firestore: firestore,
+            users: users,
+            coachChat: (message, {chatId, context, regenerate = false}) {
+              sent.add((message, chatId, context, regenerate));
+              return answer.stream;
+            },
+          ),
+          purchases: FakePurchasesRepository(),
+          analytics: analytics,
+          now: () => asked,
+          newId: () => 'q${++ids}',
+        );
+
+    const finished = CoachFinished(
+      chatId: 'chat-1',
+      messageId: 'm3',
+      text: 'Fresh answer',
+      remainingToday: 48,
+    );
+
+    test('each status names the tool until text or a block follows', () async {
+      final cubit = build()..draftChanged('Hi');
+      final sending = cubit.sendPressed();
+      final tools = <String?>[];
+      final subscription = cubit.stream.listen(
+        (state) => tools.add(state.reading),
+      );
+
+      expect(cubit.state.reading, isNull);
+      [
+        const CoachStatus('get_workout_history'),
+        const CoachStatus('get_nutrition'),
+        const CoachText('You trained'),
+        const CoachStatus('show_block'),
+        const CoachBlockShown(
+          CoachBlock(
+            surfaceId: 'b',
+            kind: 'stat_row',
+            asOf: '2026-10-14',
+            fallback: 'x',
+            messages: [],
+          ),
+        ),
+        const CoachStatus('get_brand_new_tool'),
+        finished,
+      ].forEach(answer.add);
+      await answer.close();
+      await sending;
+
+      expect(tools, [
+        'get_workout_history',
+        'get_nutrition',
+        null,
+        'show_block',
+        null,
+        'get_brand_new_tool',
+        null,
+      ]);
+      expect(cubit.state.questions, isEmpty);
+      await subscription.cancel();
+      await cubit.close();
+    });
+
+    test("Regenerate is offered on the latest answer of today's chat only", () {
+      final question = sampleChat.messages.first;
+      final reply = sampleChat.messages.last;
+      bool can(List<CoachMessage> messages, {bool readOnly = false}) =>
+          CoachState(messages: messages, readOnly: readOnly).canRegenerate;
+
+      expect(can([question, reply]), isTrue);
+      expect(can([question, reply], readOnly: true), isFalse);
+      expect(can([reply]), isFalse);
+      expect(can([reply, reply]), isFalse);
+      expect(can([question, reply, question]), isFalse);
+      expect(
+        CoachState(
+          chatId: 'c',
+          messages: [question, reply],
+          questions: const {'q': CoachQuestionStatus.answering()},
+        ).canRegenerate,
+        isFalse,
+      );
+    });
+
+    test('Regenerate replaces the latest answer in place', () async {
+      final cubit = build(
+        request: CoachRequest.forChat(todaysChat, CoachContext.today),
+      );
+      final shown = <List<String>>[];
+      final subscription = cubit.stream.listen(
+        (state) => shown.add([for (final m in state.messages) m.id]),
+      );
+
+      final regenerating = cubit.regeneratePressed();
+      expect(cubit.state.messages.map((m) => m.id), ['m1']);
+      expect(cubit.state.questions, {
+        'm1': const CoachQuestionStatus.answering(),
+      });
+      expect(cubit.state.canRegenerate, isFalse);
+      // Nothing else to regenerate while it answers.
+      await cubit.regeneratePressed();
+      answer
+        ..add(const CoachText('Fresh '))
+        ..add(finished);
+      await answer.close();
+      await regenerating;
+
+      expect(sent.single.$1, 'Why has my weight stalled?');
+      expect(sent.single.$2, today);
+      expect(sent.single.$4, isTrue);
+      expect(cubit.state.messages.map((m) => (m.id, m.text)), [
+        ('m1', 'Why has my weight stalled?'),
+        ('m3', 'Fresh answer'),
+      ]);
+      expect(cubit.state.questions, isEmpty);
+      // The old answer stays hidden throughout.
+      expect(shown.where((ids) => ids.contains('m2')), isEmpty);
+      expect(analytics.parameters('CoachView_Regenerate_Press'), {
+        'context': 'today',
+      });
+      await subscription.cancel();
+      await cubit.close();
+    });
+
+    test('a failed regeneration brings the old answer back', () async {
+      final cubit = build(
+        request: CoachRequest.forChat(todaysChat, CoachContext.today),
+      );
+      final regenerating = cubit.regeneratePressed();
+      answer
+        ..add(const CoachText('Half'))
+        ..addError(const CoachException(CoachFailure.unavailable));
+      await regenerating;
+
+      expect(cubit.state.messages, sampleChat.messages);
+      expect(cubit.state.questions, isEmpty);
+      expect(cubit.state.streamingText, isNull);
+      expect(cubit.state.regenerateFailures, 1);
+      expect(cubit.state.sendFailures, 1);
+      expect(cubit.state.canRegenerate, isTrue);
+      await cubit.close();
+    });
+
+    test('a regeneration refused at a gate keeps the old answer', () async {
+      final cubit = build(
+        request: CoachRequest.forChat(todaysChat, CoachContext.today),
+      );
+      final regenerating = cubit.regeneratePressed();
+      answer.addError(const CoachException(CoachFailure.premiumRequired));
+      await regenerating;
+
+      expect(cubit.state.gate, CoachGate.premium);
+      expect(cubit.state.messages, sampleChat.messages);
+      expect(cubit.state.draft, isEmpty);
+      expect(cubit.state.regenerateFailures, 0);
+      await cubit.close();
+    });
+
+    test('a stopped regeneration brings the old answer back', () async {
+      final cubit = build(
+        request: CoachRequest.forChat(todaysChat, CoachContext.today),
+      );
+      final regenerating = cubit.regeneratePressed();
+      answer.add(const CoachText('Half'));
+      await pumpEventQueue();
+      cubit.stopPressed();
+      await regenerating;
+
+      expect(cubit.state.messages, sampleChat.messages);
+      expect(cubit.state.questions, isEmpty);
+      expect(cubit.state.regenerateFailures, 0);
+      await cubit.close();
     });
   });
 
@@ -517,6 +1040,13 @@ void main() {
         const CoachContext(kind: CoachContextKind.session),
       );
       expect(unknown.context.kind, CoachContextKind.session);
+
+      // A day chat is about where the list was opened from, as today's is.
+      final day = CoachRequest.forChat(
+        todaysChat,
+        const CoachContext(kind: CoachContextKind.session),
+      );
+      expect(day.context.kind, CoachContextKind.session);
     });
   });
 
@@ -590,8 +1120,7 @@ void main() {
           .set(sampleChat.toFirestore());
       final cubit = list()
         ..appeared()
-        ..chatPressed()
-        ..newChatPressed();
+        ..chatPressed();
 
       await cubit.deleteChat(sampleChat);
 
@@ -603,7 +1132,6 @@ void main() {
       expect(analytics.names, [
         'CoachChatsView_Appear',
         'CoachChatsView_Chat_Press',
-        'CoachChatsView_NewChat_Press',
         'CoachChatsView_DeleteChat_Start',
         'CoachChatsView_DeleteChat_Success',
         'CoachChatsView_Disappear',

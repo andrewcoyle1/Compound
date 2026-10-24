@@ -404,8 +404,10 @@ class const _Start({
                 spacing: AppSpacing.s,
                 children: [
                   ExcludeSemantics(
-                    child: Row(
+                    // Wraps at large text sizes rather than overflowing.
+                    child: Wrap(
                       spacing: AppSpacing.s,
+                      runSpacing: AppSpacing.s,
                       children: [
                         for (final exercise in plan.exercises.take(4))
                           ClipOval(

@@ -71,6 +71,17 @@ class CoachRepository {
     PrivateUserSettings(coachConsent: true, coachConsentAt: _now()),
   );
 
+  /// Whether [uid]'s Coach switch is on (`coach_enabled`, on unless written
+  /// `false`).
+  Stream<bool> watchEnabled(String uid) => _users
+      .watchPrivateSettings(uid)
+      .map((settings) => settings?.coachEnabled ?? true);
+
+  /// Turns [uid]'s Coach switch [enabled]. Consent and chats are left as
+  /// they are.
+  Future<void> setEnabled(String uid, {required bool enabled}) => _users
+      .mergePrivateSettings(uid, PrivateUserSettings(coachEnabled: enabled));
+
   /// Stops the coach reading anything, then deletes every chat. The flag
   /// goes first, as in Swift: a chat that failed to delete is worth less
   /// than consent that failed to be withdrawn. It is written `false`, not

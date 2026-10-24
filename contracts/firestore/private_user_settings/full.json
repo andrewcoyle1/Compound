@@ -3,6 +3,7 @@
   "coach_consent_at": {
     "$timestamp": "2026-09-01T12:00:00.500Z"
   },
+  "coach_enabled": false,
   "fcm_token": "fcm-token",
   "last_trained_at": {
     "$timestamp": "2026-10-13T17:45:30.250Z"

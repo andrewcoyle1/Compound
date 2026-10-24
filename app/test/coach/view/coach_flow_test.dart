@@ -20,9 +20,9 @@ import 'package:workout_session_repository/workout_session_repository.dart';
 import '../../helpers/app_repositories.dart';
 
 // The whole app on the staging flavor's in-memory data, signed in as the
-// sample user: Ask Coach from Today and Weight Trend, consent, a streamed
-// answer, the saved chats, opening and deleting one, withdrawing, Settings'
-// Coach row, and the premium gate.
+// sample user: Today as the coach's day chat and Ask Coach from Weight
+// Trend, consent, a streamed answer, the saved chats, opening and deleting
+// one, withdrawing, Settings' Coach section, and premium.
 void main() {
   const uid = sampleUserId;
   final now = DateTime.now();
@@ -102,22 +102,37 @@ void main() {
       'delete, open and withdraw', (tester) async {
     final users = await pumpApp(tester);
 
-    await tap(tester, askCoach().first);
+    // Today is the day's chat; before consent it asks to turn it on.
+    expect(find.text('Your Day'), findsOneWidget);
+    expect(find.byKey(const Key('Coach.draft')), findsNothing);
+    await tap(tester, find.text('Turn On Coach'));
     expect(find.text('Before You Ask'), findsOneWidget);
     await tap(tester, find.text('Allow and Continue'));
 
-    // Today's chat opens on the day.
+    // Back on Today, which is now the chat, under the day.
+    expect(find.byType(CoachView), findsNothing);
     expect(find.text('Your Day'), findsOneWidget);
-    expect(find.text('How did my training go this week?'), findsOneWidget);
+    expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
+    // The suggestions, under the day.
+    final chat = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(
+      find.text('How did my training go this week?'),
+      300,
+      scrollable: chat,
+    );
     await ask(tester, find.text('How did my training go this week?'));
     expect(answers(), findsOneWidget);
     expect(
       (tester.widget(answers()) as CoachMessageBody).text,
       contains('bench press'),
     );
-    // The suggestions are gone; the day stays.
+    // The suggestions are gone; the day stays, above.
     expect(find.text('Am I on track for my goal?'), findsNothing);
-    expect(find.text('Your Day'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Your Day'),
+      -300,
+      scrollable: chat,
+    );
 
     await tap(tester, find.byTooltip('Chats'));
     expect(find.text('Coach Chats'), findsOneWidget);
@@ -133,7 +148,7 @@ void main() {
     expect(find.text('Why has my weight stalled?'), findsNothing);
 
     // Today's chat, from the list, is still today's.
-    await ask(tester, find.text('How did my training go this week?'));
+    await tap(tester, find.byKey(Key('CoachChats.${localDayKey(now)}')));
     expect(answers(), findsOneWidget);
     expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
     await tap(tester, find.byType(BackButton));
@@ -191,11 +206,12 @@ void main() {
   ) async {
     await pumpApp(tester);
 
-    await tap(tester, askCoach().first);
+    await tap(tester, find.text('Turn On Coach'));
     await tap(tester, find.text('Not Now'));
     expect(find.byType(CoachView), findsNothing);
+    expect(find.text('Turn On Coach'), findsOneWidget);
 
-    await tap(tester, askCoach().first);
+    await tap(tester, find.text('Turn On Coach'));
     await tap(tester, find.text('Allow and Continue'));
     await tester.enterText(
       find.byKey(const Key('Coach.draft')),
@@ -208,7 +224,7 @@ void main() {
   testWidgets('Settings opens the saved chats', (tester) async {
     await pumpApp(tester, location: '/profile/settings');
 
-    await tap(tester, find.text('Coach'));
+    await tap(tester, find.text('Chats'));
 
     expect(find.text('Coach Chats'), findsOneWidget);
     expect(find.text('Why has my weight stalled?'), findsOneWidget);
@@ -231,22 +247,46 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('without Premium, the gate; See Plans opens the paywall, and '
-      'buying unlocks the coach', (tester) async {
+  testWidgets('without Premium there is no coach; Settings opens the plans, '
+      'and buying turns it on', (tester) async {
     final purchases = FakePurchasesRepository(premium: false);
     await pumpApp(tester, purchases: purchases);
 
-    await tap(tester, askCoach().first);
+    // The classic Today, and no way to the coach.
+    expect(find.text('Your Day'), findsOneWidget);
+    expect(find.byKey(const Key('Coach.draft')), findsNothing);
+    expect(find.text('Turn On Coach'), findsNothing);
+    expect(askCoach(), findsNothing);
 
-    expect(find.text('Coach Is Part of Premium'), findsOneWidget);
-    await tap(tester, find.text('See Plans'));
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .go('/profile/settings');
+    await tester.pumpAndSettle();
+    expect(find.text('Premium'), findsOneWidget);
+    await tap(tester, find.text('AI Coach'));
     expect(find.text('Pro Annual'), findsOneWidget);
     await tap(tester, find.text('Subscribe'));
 
-    // Back on the coach, which reads the gate again: consent is next.
-    expect(find.text('Pro Annual'), findsNothing);
-    expect(find.text('Coach Is Part of Premium'), findsNothing);
-    expect(find.text('Before You Ask'), findsOneWidget);
     expect(purchases.state.isPremiumWith(), isTrue);
+    expect(find.text('Premium'), findsNothing);
+    expect(find.widgetWithText(AppListRowToggle, 'AI Coach'), findsOneWidget);
+    GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/today');
+    await tester.pumpAndSettle();
+    expect(find.text('Turn On Coach'), findsOneWidget);
+  });
+
+  testWidgets('the switch in Settings turns Today back to the day, and '
+      'hides Ask Coach', (tester) async {
+    await pumpApp(tester, location: '/profile/settings');
+
+    await tap(tester, find.text('AI Coach'));
+    GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/today');
+    await tester.pumpAndSettle();
+    expect(find.text('Turn On Coach'), findsNothing);
+    expect(find.text('Your Day'), findsOneWidget);
+
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .go('/progress/weight-trend');
+    await tester.pumpAndSettle();
+    expect(askCoach(), findsNothing);
   });
 }

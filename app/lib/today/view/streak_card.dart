@@ -137,20 +137,25 @@ class StreakCard extends StatelessWidget {
                   ],
                 ),
                 const Divider(height: 1),
+                // Each takes up to half at large text sizes, rather than
+                // overflowing.
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
+                    Flexible(
                       child: AppStat(
                         value: l10n.streakWeeks(streak.best),
                         label: l10n.streakBest,
                         size: AppStatSize.small,
                       ),
                     ),
-                    AppStat(
-                      value: AppFormat.number(totalWorkouts),
-                      label: l10n.streakTotalWorkouts,
-                      size: AppStatSize.small,
-                      alignment: CrossAxisAlignment.end,
+                    Flexible(
+                      child: AppStat(
+                        value: AppFormat.number(totalWorkouts),
+                        label: l10n.streakTotalWorkouts,
+                        size: AppStatSize.small,
+                        alignment: CrossAxisAlignment.end,
+                      ),
                     ),
                   ],
                 ),

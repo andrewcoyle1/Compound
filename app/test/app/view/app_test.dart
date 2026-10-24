@@ -687,7 +687,7 @@ void main() {
     });
 
     testWidgets('on a wide window, spans the app bar across it, centres '
-        'each screen in a readable column and gives Today a dashboard', (
+        "each screen in a readable column, the coach's Today too", (
       tester,
     ) async {
       tester.useSize(const Size(1366, 1024));
@@ -732,7 +732,9 @@ void main() {
       }
 
       expect(barWidth('Today'), 1366);
-      expect(columnWidth('Today'), AppContentWidth.dashboard);
+      // Today is the coach's day chat: one readable column. With the coach
+      // off it is a dashboard (today_page_test).
+      expect(columnWidth('Today'), AppContentWidth.readable);
 
       await tester.tap(
         find.descendant(

@@ -10324,10 +10324,6 @@
     "@coachConsentFailed": {
         "description": "Alert when consent could not be saved"
     },
-    "coachEmptyMessage": "Ask about your training, food and progress. Answers come from what you've logged.",
-    "@coachEmptyMessage": {
-        "description": "Coach chat before the first message"
-    },
     "coachInputHint": "Ask your coach",
     "@coachInputHint": {
         "description": "Coach message field placeholder"
@@ -10437,10 +10433,6 @@
     "coachWithdrawFailed": "Unable to Withdraw Permission",
     "@coachWithdrawFailed": {
         "description": "Coach"
-    },
-    "coachTodaysFood": "Today's Food",
-    "@coachTodaysFood": {
-        "description": "Coach title when asked about today's protein gap"
     },
     "coachAskToday1": "How did my training go this week?",
     "@coachAskToday1": {
@@ -13711,6 +13703,26 @@
     "quickWeighInSave": "Save Weigh-In",
     "@quickWeighInSave": {
         "description": "Coach day checklist: saves the inline weigh-in"
+    },
+    "todayCoachTurnOn": "Turn On Coach",
+    "@todayCoachTurnOn": {
+        "description": "Today, as the coach's day chat before consent: opens the coach's permission screen"
+    },
+    "settingsCoachHeader": "Coach",
+    "@settingsCoachHeader": {
+        "description": "Settings: header of the AI coach section"
+    },
+    "settingsCoachToggle": "AI Coach",
+    "@settingsCoachToggle": {
+        "description": "Settings: switch that shows or hides the AI coach"
+    },
+    "settingsCoachPremium": "Premium",
+    "@settingsCoachPremium": {
+        "description": "Settings: value beside the AI Coach row when the user is not a subscriber; tapping opens the plans"
+    },
+    "settingsCoachFooter": "Shows the coach on Today and Ask Coach on other screens. Turning it off keeps your chats.",
+    "@settingsCoachFooter": {
+        "description": "Settings: footer under the AI coach section"
     },
     "tipGotIt": "Got It",
     "@tipGotIt": {

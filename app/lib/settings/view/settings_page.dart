@@ -144,12 +144,6 @@ class _SettingsViewState extends State<SettingsView> {
                     icon: AppSymbols.integrations,
                     onPressed: () => _open(IntegrationsPage.name),
                   ),
-                  // The coach's chats and the permission behind them.
-                  AppListRowButton(
-                    title: l10n.coachTitle,
-                    icon: AppSymbols.coach,
-                    onPressed: () => _open(CoachChatsPage.name),
-                  ),
                   AppListRowButton(
                     title: l10n.settingsUnits,
                     icon: AppSymbols.measurement,
@@ -169,6 +163,8 @@ class _SettingsViewState extends State<SettingsView> {
                     ),
                 ],
               ),
+              const SizedBox(height: AppSpacing.xl),
+              const _CoachSection(),
               const SizedBox(height: AppSpacing.xl),
               AppSection(
                 header: l10n.settingsNutritionHeader,
@@ -396,6 +392,47 @@ class _SecuritySection extends StatelessWidget {
             unawaited(context.pushNamed(DeleteAccountPage.name));
           },
         ),
+      ],
+    );
+  }
+}
+
+/// The coach's switch, and while it is on its chats (with the permission
+/// behind them). The coach is premium only: without premium the row offers
+/// the plans instead of a switch.
+class _CoachSection extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final access = context.watch<CoachAccessCubit>().state;
+    return AppSection(
+      header: l10n.settingsCoachHeader,
+      footer: l10n.settingsCoachFooter,
+      children: [
+        if (access.premium)
+          AppListRowToggle(
+            title: l10n.settingsCoachToggle,
+            icon: AppSymbols.coach,
+            value: access.enabled,
+            onChanged: (enabled) => unawaited(
+              context.read<CoachAccessCubit>().enabledChanged(enabled: enabled),
+            ),
+          )
+        else
+          AppListRowButton(
+            title: l10n.settingsCoachToggle,
+            icon: AppSymbols.coach,
+            accessory: AppListRowValue(l10n.settingsCoachPremium),
+            onPressed: () => unawaited(context.pushNamed(PaywallPage.name)),
+          ),
+        if (access.isOn)
+          AppListRowButton(
+            title: l10n.coachChats,
+            icon: AppSymbols.history,
+            onPressed: () => unawaited(context.pushNamed(CoachChatsPage.name)),
+          ),
       ],
     );
   }

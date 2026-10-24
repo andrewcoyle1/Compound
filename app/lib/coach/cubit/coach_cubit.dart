@@ -23,6 +23,10 @@ final class const CoachRequest({
   /// Opened over the screen it was asked from, it closes; pushed from the
   /// chat list, it goes back instead.
   final bool showsCloseButton = true,
+
+  /// Opened only to ask permission, by Today's Turn On Coach: it closes
+  /// once permission is given, back to Today's chat.
+  final bool closesOnConsent = false,
 }) {
   /// Creates a [CoachRequest].
   this;

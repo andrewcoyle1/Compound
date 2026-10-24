@@ -6,6 +6,7 @@ import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:device_store/device_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -59,6 +60,8 @@ void main() {
   Future<void> pumpApp(
     WidgetTester tester, {
     ShareSheet shareSheet = const ShareSheet(),
+    DeviceStore? deviceStore,
+    bool showsTips = false,
   }) async {
     tester.view
       ..physicalSize = const Size(2400, 9000)
@@ -71,6 +74,8 @@ void main() {
         appVersion: const AppVersion(version: '1.4.0', build: '27'),
         storeReview: store,
         shareSheet: shareSheet,
+        deviceStore: deviceStore,
+        showsTips: showsTips,
         analyticsRepository: analytics,
         purchasesRepository: purchases,
         programRepository: InMemoryProgramRepository(),
@@ -261,5 +266,22 @@ void main() {
       [for (final (name, png) in shares.images) (name, png.isNotEmpty)],
       [('compound-story.png', true), ('compound-square.png', true)],
     );
+  });
+
+  testWidgets('the developer tools reset the tips seen', (tester) async {
+    final device = InMemoryDeviceStore({'tip_seen_meal_swipe': true});
+    await pumpApp(tester, deviceStore: device, showsTips: true);
+    await go(tester, '/profile/settings/developer');
+    await tap(tester, find.text('Reset Tips'));
+    expect(find.text('Tips will show again.'), findsOneWidget);
+    expect(device.keys, isNot(contains('tip_seen_meal_swipe')));
+  });
+
+  testWidgets('the developer tools offer no tip reset without tips', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await go(tester, '/profile/settings/developer');
+    expect(find.text('Reset Tips'), findsNothing);
   });
 }

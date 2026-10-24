@@ -37,6 +37,9 @@ dependencies:
   # AppPlaceholder's moving highlight (BSD-3-Clause); its licence ships in
   # the app's NOTICES.
   shimmer: 4.0.0
+  # AppTip's spotlight and callout placement (MIT); its licence ships in
+  # the app's NOTICES.
+  showcaseview: 5.1.0
 
 dev_dependencies:
   # Golden tests (docs/specs/flutter/ui-contract.md, rule 6). MIT.

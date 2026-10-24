@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/tips/feature_tips.dart';
 import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart'
     show TrackerExercise;
 import 'package:compound/workout_tracker/logic/set_keypad.dart';
@@ -350,26 +351,30 @@ class SetTableRow extends StatelessWidget {
       ),
       // A tap copies last time's figures into an open set
       // (`SetColumnValue`'s fill).
-      last: Semantics(
-        label: '${l10n.trackerColumnLast}, $lastText',
-        hint: canFill ? l10n.trackerFillsSet : null,
-        button: canFill,
-        excludeSemantics: true,
-        onTap: canFill ? () => fill(set.id) : null,
-        child: InkWell(
-          key: ValueKey('last-${set.id}'),
+      last: _lastTip(
+        l10n,
+        canFill: canFill,
+        child: Semantics(
+          label: '${l10n.trackerColumnLast}, $lastText',
+          hint: canFill ? l10n.trackerFillsSet : null,
+          button: canFill,
+          excludeSemantics: true,
           onTap: canFill ? () => fill(set.id) : null,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: AppControlSize.row - 8,
-            ),
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Text(
-                lastText,
-                style: secondary,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+          child: InkWell(
+            key: ValueKey('last-${set.id}'),
+            onTap: canFill ? () => fill(set.id) : null,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppControlSize.row - 8,
+              ),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  lastText,
+                  style: secondary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
           ),
@@ -417,7 +422,7 @@ class SetTableRow extends StatelessWidget {
     // Swift's swipe actions, neither on a full swipe: the rest timer
     // leading (live tracker only), delete trailing. The long press offers
     // the same.
-    return AppSwipeActions(
+    final row = AppSwipeActions(
       leading: [
         if (onCustomRest != null)
           AppSwipeAction(
@@ -456,7 +461,30 @@ class SetTableRow extends StatelessWidget {
         ),
       ),
     );
+    // The rest timer has only the swipe and the long press.
+    return onCustomRest == null
+        ? row
+        : AppTip(
+            id: FeatureTips.setSwipe,
+            title: l10n.tipSetSwipeTitle,
+            message: l10n.tipSetSwipeMessage,
+            child: row,
+          );
   }
+
+  /// The tip on last time's figures, where a tap fills the set.
+  Widget _lastTip(
+    AppLocalizations l10n, {
+    required bool canFill,
+    required Widget child,
+  }) => canFill && onCustomRest != null
+      ? AppTip(
+          id: FeatureTips.setFillLast,
+          title: l10n.tipSetFillLastTitle,
+          message: l10n.tipSetFillLastMessage,
+          child: child,
+        )
+      : child;
 
   /// The live text while the keypad types into the cell, else the stored
   /// value; empty shows the placeholder.

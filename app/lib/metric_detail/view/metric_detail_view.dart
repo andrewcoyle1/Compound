@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
+import 'package:compound/tips/feature_tips.dart';
 import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 
@@ -109,49 +110,53 @@ class MetricDetailView extends StatelessWidget {
           accessory: AppListRowValue(value(average)),
         ),
     ];
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.l),
-      children: [
-        MetricChartPanel(
-          title: title,
-          series: series,
-          range: range,
-          today: today,
-          value: value,
-          onRangeSelected: onRangeSelected,
-        ),
-        if (rows.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xl),
-          AppSection(children: [rows.first]),
-          if (rows.length > 1)
-            Center(
-              child: AppTextButton(
-                label: l10n.metricShowMoreData(title),
-                onPressed: () => showAppSheet<void>(
-                  context: context,
-                  size: AppSheetSize.compact,
-                  builder: (_) => ListView(
-                    padding: const EdgeInsets.all(AppSpacing.l),
-                    children: [AppSection(header: title, children: rows)],
+    return ScreenTips(
+      screen: 'MetricDetailView',
+      tips: const [FeatureTips.metricChart],
+      child: ListView(
+        padding: const EdgeInsets.all(AppSpacing.l),
+        children: [
+          MetricChartPanel(
+            title: title,
+            series: series,
+            range: range,
+            today: today,
+            value: value,
+            onRangeSelected: onRangeSelected,
+          ),
+          if (rows.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xl),
+            AppSection(children: [rows.first]),
+            if (rows.length > 1)
+              Center(
+                child: AppTextButton(
+                  label: l10n.metricShowMoreData(title),
+                  onPressed: () => showAppSheet<void>(
+                    context: context,
+                    size: AppSheetSize.compact,
+                    builder: (_) => ListView(
+                      padding: const EdgeInsets.all(AppSpacing.l),
+                      children: [AppSection(header: title, children: rows)],
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
-        if (summary case final summary?) ...[
-          const SizedBox(height: AppSpacing.xl),
-          summary,
-        ],
-        const SizedBox(height: AppSpacing.xl),
-        AppSection(
-          children: [
-            AppListRowButton(
-              title: l10n.metricShowAllData,
-              onPressed: onShowAllData,
-            ),
           ],
-        ),
-      ],
+          if (summary case final summary?) ...[
+            const SizedBox(height: AppSpacing.xl),
+            summary,
+          ],
+          const SizedBox(height: AppSpacing.xl),
+          AppSection(
+            children: [
+              AppListRowButton(
+                title: l10n.metricShowAllData,
+                onPressed: onShowAllData,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -443,62 +448,76 @@ class _ChartState extends State<_Chart> {
           const SizedBox(height: AppSpacing.s),
           // An empty window still pages, so the chart stays under its
           // message.
-          Stack(
-            children: [
-              CartesianChart(
-                interactive: true,
-                data: ChartData(
-                  series: [
-                    for (final s in visible)
-                      ChartSeries(
-                        label: s.label,
-                        color: s.color,
-                        mark: s.mark,
-                        points: [
-                          for (final p in s.points) (x: p.date, y: p.value),
-                        ],
-                      ),
-                  ],
-                  start: start,
-                  end: end,
-                  bucketDays: switch (range) {
-                    MetricRange.week || MetricRange.month => 1,
-                    MetricRange.sixMonths => 7,
-                    MetricRange.year => 365 / 12,
-                  },
-                  // Bars stand on zero; readings fit closely.
-                  yFit: visible.any((s) => s.isBar)
-                      ? ChartYFit.zero
-                      : ChartYFit.tight,
+          // The gestures have nothing on screen to show them.
+          AppTip(
+            id: FeatureTips.metricChart,
+            title: l10n.tipMetricChartTitle,
+            message: l10n.tipMetricChartMessage,
+            child: Stack(
+              children: [
+                CartesianChart(
+                  interactive: true,
+                  data: ChartData(
+                    series: [
+                      for (final s in visible)
+                        ChartSeries(
+                          label: s.label,
+                          color: s.color,
+                          mark: s.mark,
+                          points: [
+                            for (final p in s.points) (x: p.date, y: p.value),
+                          ],
+                        ),
+                    ],
+                    start: start,
+                    end: end,
+                    bucketDays: switch (range) {
+                      MetricRange.week || MetricRange.month => 1,
+                      MetricRange.sixMonths => 7,
+                      MetricRange.year => 365 / 12,
+                    },
+                    // Bars stand on zero; readings fit closely.
+                    yFit: visible.any((s) => s.isBar)
+                        ? ChartYFit.zero
+                        : ChartYFit.tight,
+                  ),
+                  selected: selected,
+                  onSelected: (date) => setState(() => _selected = date),
+                  // The chart's -1 is the window before, this one's 1.
+                  onPage: (direction) => _move(-direction),
+                  bucketLabel: (bucket) => [
+                    bucketText(range, bucket, context.dateLocale),
+                    for (final row in rowsAt(bucket))
+                      '${row.name}, ${row.value}',
+                  ].join('. '),
+                  callout: selected == null
+                      ? null
+                      : ChartCalloutSummary(
+                          rows: rowsAt(selected),
+                          footer: bucketText(
+                            range,
+                            selected,
+                            context.dateLocale,
+                          ),
+                          noData: l10n.progressNoData,
+                        ),
                 ),
-                selected: selected,
-                onSelected: (date) => setState(() => _selected = date),
-                // The chart's -1 is the window before, this one's 1.
-                onPage: (direction) => _move(-direction),
-                bucketLabel: (bucket) => [
-                  bucketText(range, bucket, context.dateLocale),
-                  for (final row in rowsAt(bucket)) '${row.name}, ${row.value}',
-                ].join('. '),
-                callout: selected == null
-                    ? null
-                    : ChartCalloutSummary(
-                        rows: rowsAt(selected),
-                        footer: bucketText(range, selected, context.dateLocale),
-                        noData: l10n.progressNoData,
-                      ),
-              ),
-              if (averages.isEmpty)
-                // Passing touches through to the chart beneath.
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: ExcludeSemantics(
-                      child: Center(
-                        child: Text(l10n.chartNoDataInRange, style: secondary),
+                if (averages.isEmpty)
+                  // Passing touches through to the chart beneath.
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: ExcludeSemantics(
+                        child: Center(
+                          child: Text(
+                            l10n.chartNoDataInRange,
+                            style: secondary,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

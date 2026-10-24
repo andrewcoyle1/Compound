@@ -3120,5 +3120,16 @@
     "coachAskInToday": "Preguntar en el chat de hoy",
     "coachNewDay": "Ha empezado un nuevo día, así que este es el chat de hoy. Tu pregunta sigue en el campo.",
     "quickWeighInWeight": "Peso de hoy",
-    "quickWeighInSave": "Guardar pesaje"
+    "quickWeighInSave": "Guardar pesaje",
+    "tipGotIt": "Entendido",
+    "tipMetricChartTitle": "Lee la gráfica",
+    "tipMetricChartMessage": "Mantén pulsado para ver los valores exactos. Pellizca para hacer zoom o desliza hacia los lados para ver fechas anteriores.",
+    "tipMealSwipeTitle": "Registra una comida otra vez",
+    "tipMealSwipeMessage": "Desliza un alimento a la derecha para volver a registrar toda su comida ahora.",
+    "tipSetSwipeTitle": "Descanso para una serie",
+    "tipSetSwipeMessage": "Desliza una serie a la derecha para darle su propio tiempo de descanso.",
+    "tipSetFillLastTitle": "Repite la última vez",
+    "tipSetFillLastMessage": "Toca las cifras de la última vez para copiarlas en esta serie.",
+    "devSettingsResetTips": "Restablecer consejos",
+    "devSettingsTipsReset": "Los consejos se volverán a mostrar."
 }

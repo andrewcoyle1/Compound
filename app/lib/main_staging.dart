@@ -59,6 +59,9 @@ const _workoutFinished = bool.fromEnvironment('STAGING_WORKOUT_FINISHED');
 /// Subscribe?".
 const _premium = bool.fromEnvironment('STAGING_PREMIUM', defaultValue: true);
 
+/// `false` hides the one-time feature tips, for the screenshot run.
+const _tips = bool.fromEnvironment('STAGING_TIPS', defaultValue: true);
+
 /// What the fake store does, in turn, comma-separated: `cancelled`,
 /// `pending`, `failed` or `owned` for the next purchases and restores, and
 /// `loadFailed` or `noProducts` for loading the plans. Each later purchase
@@ -184,6 +187,8 @@ Future<void> main() async {
   );
   await bootstrap(
     () async => App(
+      // Every launch, as staging keeps nothing on the device.
+      showsTips: _tips,
       appVersion: await AppVersion.load(),
       // The Live Activity and the home-screen widgets are the device's own,
       // with nothing leaving it, so staging drives the real ones, as the

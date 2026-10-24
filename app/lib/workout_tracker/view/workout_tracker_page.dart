@@ -6,6 +6,7 @@ import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/settings/training/view/workout_settings_page.dart';
 import 'package:compound/shell/app_tab.dart';
+import 'package:compound/tips/feature_tips.dart';
 import 'package:compound/training_library/view/exercise_picker_page.dart';
 import 'package:compound/workout_session_detail/view/workout_session_detail_page.dart';
 import 'package:compound/workout_tracker/cubit/active_workout_cubit.dart';
@@ -296,78 +297,82 @@ class _Tracker extends StatelessWidget {
     final l10n = context.l10n;
     final cubit = context.read<ActiveWorkoutCubit>();
     final session = state.session!;
-    return AppScaffold(
-      appBar: AppBar(
-        leading: AppToolbarButton(
-          icon: AppSymbols.minimize,
-          semanticLabel: l10n.trackerMinimize,
-          onPressed: () {
-            cubit.minimized();
-            closeTracker(context);
-          },
+    return ScreenTips(
+      screen: 'WorkoutTrackerView',
+      tips: const [FeatureTips.setSwipe, FeatureTips.setFillLast],
+      child: AppScaffold(
+        appBar: AppBar(
+          leading: AppToolbarButton(
+            icon: AppSymbols.minimize,
+            semanticLabel: l10n.trackerMinimize,
+            onPressed: () {
+              cubit.minimized();
+              closeTracker(context);
+            },
+          ),
+          title: _Title(state: state),
+          // On a tablet the bar has room for the workout's controls, which
+          // leave the menu (`WorkoutTrackerView+Toolbar`).
+          actions: [
+            if (context.isRegularWidth) ...[
+              AppToolbarButton(
+                icon: state.isPaused ? AppSymbols.start : AppSymbols.pause,
+                semanticLabel: state.isPaused
+                    ? l10n.trackerResume
+                    : l10n.trackerPause,
+                onPressed: cubit.togglePause,
+              ),
+              AppToolbarButton(
+                icon: AppSymbols.selected,
+                semanticLabel: l10n.trackerFinishMenu,
+                onPressed: () => unawaited(finishWorkout(context)),
+              ),
+              AppToolbarButton(
+                icon: AppSymbols.note,
+                semanticLabel: l10n.trackerNotesMenu,
+                onPressed: () => unawaited(_workoutNotes(context, state)),
+              ),
+            ],
+            _Menu(state: state, compact: !context.isRegularWidth),
+          ],
         ),
-        title: _Title(state: state),
-        // On a tablet the bar has room for the workout's controls, which
-        // leave the menu (`WorkoutTrackerView+Toolbar`).
-        actions: [
-          if (context.isRegularWidth) ...[
-            AppToolbarButton(
-              icon: state.isPaused ? AppSymbols.start : AppSymbols.pause,
-              semanticLabel: state.isPaused
-                  ? l10n.trackerResume
-                  : l10n.trackerPause,
-              onPressed: cubit.togglePause,
-            ),
-            AppToolbarButton(
-              icon: AppSymbols.selected,
-              semanticLabel: l10n.trackerFinishMenu,
-              onPressed: () => unawaited(finishWorkout(context)),
-            ),
-            AppToolbarButton(
-              icon: AppSymbols.note,
-              semanticLabel: l10n.trackerNotesMenu,
-              onPressed: () => unawaited(_workoutNotes(context, state)),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (session.exercises.isNotEmpty)
+              ExerciseStrip(
+                items: state.strip,
+                onSelected: cubit.selectExercise,
+                onAddExercise: () => unawaited(_addExercises(context)),
+                onDoNext: cubit.doNext,
+                onDoLater: cubit.doLater,
+                onMove: cubit.moveBlock,
+              ),
+            Expanded(
+              child: session.exercises.isEmpty
+                  ? AppEmptyState(
+                      icon: AppSymbols.exercise,
+                      title: l10n.trackerNoExercisesTitle,
+                      description: l10n.trackerNoExercisesMessage,
+                      actionLabel: l10n.trackerAddExercise,
+                      onAction: () => unawaited(_addExercises(context)),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.l,
+                        0,
+                        AppSpacing.l,
+                        AppSpacing.l,
+                      ),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.manual,
+                      children: [ExerciseCard(state: state)],
+                    ),
             ),
           ],
-          _Menu(state: state, compact: !context.isRegularWidth),
-        ],
+        ),
+        bottomNavigationBar: _Foot(state: state),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (session.exercises.isNotEmpty)
-            ExerciseStrip(
-              items: state.strip,
-              onSelected: cubit.selectExercise,
-              onAddExercise: () => unawaited(_addExercises(context)),
-              onDoNext: cubit.doNext,
-              onDoLater: cubit.doLater,
-              onMove: cubit.moveBlock,
-            ),
-          Expanded(
-            child: session.exercises.isEmpty
-                ? AppEmptyState(
-                    icon: AppSymbols.exercise,
-                    title: l10n.trackerNoExercisesTitle,
-                    description: l10n.trackerNoExercisesMessage,
-                    actionLabel: l10n.trackerAddExercise,
-                    onAction: () => unawaited(_addExercises(context)),
-                  )
-                : ListView(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.l,
-                      0,
-                      AppSpacing.l,
-                      AppSpacing.l,
-                    ),
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.manual,
-                    children: [ExerciseCard(state: state)],
-                  ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _Foot(state: state),
     );
   }
 }

@@ -28,6 +28,7 @@ import 'package:compound/profile/profile.dart';
 import 'package:compound/review/review_moment.dart';
 import 'package:compound/settings/nutrition/view/food_log_settings_page.dart'
     show FoodLogSettingsPage;
+import 'package:compound/tips/feature_tips.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -78,7 +79,11 @@ class NutritionPage extends StatelessWidget {
         child: OnAppear(
           onAppear: () =>
               unawaited(context.read<HealthCubit>().nutritionAppeared()),
-          child: const NutritionView(),
+          child: const ScreenTips(
+            screen: 'NutritionView',
+            tips: [FeatureTips.mealSwipe],
+            child: NutritionView(),
+          ),
         ),
       ),
     );
@@ -228,6 +233,7 @@ class _Day extends StatelessWidget {
     final settings = state.settings!;
     final target = state.target;
     final timeline = state.timeline;
+    final firstMeal = timeline.expand((hour) => hour.meals).firstOrNull;
     void select(DateTime day) =>
         context.read<NutritionDayBloc>().add(NutritionDayDateSelected(day));
     return Column(
@@ -312,6 +318,16 @@ class _Day extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.s),
                     child: MealCard(
+                      // Log Again has only a swipe and the long press;
+                      // the tip points at the day's first food.
+                      wrapFirstItem: identical(meal, firstMeal)
+                          ? (row) => AppTip(
+                              id: FeatureTips.mealSwipe,
+                              title: l10n.tipMealSwipeTitle,
+                              message: l10n.tipMealSwipeMessage,
+                              child: row,
+                            )
+                          : null,
                       meal: meal,
                       settings: settings,
                       onDeleteItem: (item) => context

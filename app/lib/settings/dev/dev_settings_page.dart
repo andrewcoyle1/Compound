@@ -14,6 +14,7 @@ import 'package:compound/sharing/share_card/share_card_content.dart';
 import 'package:compound/sharing/share_card/share_card_renderer.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
 import 'package:compound/sharing/share_sheet.dart';
+import 'package:compound/tips/feature_tips.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -113,6 +114,20 @@ class DevSettingsView extends StatelessWidget {
                 header: l10n.devSettingsDebugActions,
                 footer: l10n.devSettingsSignOutFooter,
                 children: [
+                  if (context.read<FeatureTips?>() case final tips?)
+                    AppListRowButton(
+                      title: l10n.devSettingsResetTips,
+                      accessory: null,
+                      onPressed: () {
+                        tips.reset();
+                        unawaited(AppHaptics.success());
+                        showAppSnackBar(
+                          context,
+                          l10n.devSettingsTipsReset,
+                          style: AppSnackBarStyle.success,
+                        );
+                      },
+                    ),
                   AppListRowButton(
                     title: l10n.signOutButton,
                     accessory: null,

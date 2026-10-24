@@ -704,7 +704,8 @@ List<Widget> galleryNavigation(BuildContext context) {
 }
 
 /// [showAppDialog] and [AppDialog], [showAppSnackBar] and [AppSnackBar],
-/// [showAppSheet] and [AppSheetPage], and [AppMenuItem].
+/// [showAppSheet] and [AppSheetPage], [AppMenuItem], and [AppTip] with its
+/// [AppTipScope] and [AppTipCallout].
 List<Widget> galleryOverlays(BuildContext context) {
   final l10n = context.l10n;
   final keep = AppDialogAction<void>(label: l10n.devGallerySampleKeepEditing);
@@ -853,7 +854,61 @@ List<Widget> galleryOverlays(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppTipCallout', [
+      galleryBlock(
+        'title, message',
+        AppTipCallout(
+          title: l10n.tipMetricChartTitle,
+          message: l10n.tipMetricChartMessage,
+          dismissLabel: l10n.tipGotIt,
+          onDismiss: () {},
+        ),
+      ),
+    ]),
+    galleryEntry(
+      'AppTip',
+      const [_TipDemo()],
+      note:
+          'An AppTipScope shows its first new AppTip a second after the '
+          'screen settles, once per visit. Here it is never seen.',
+    ),
   ];
+}
+
+/// A row that, once asked, carries a tip its [AppTipScope] shows.
+class _TipDemo extends StatefulWidget {
+  const new();
+
+  @override
+  State<_TipDemo> createState() => _TipDemoState();
+}
+
+class _TipDemoState extends State<_TipDemo> {
+  bool _on = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final row = AppListRowButton(
+      title: 'show the tip',
+      accessory: null,
+      onPressed: _on ? null : () => setState(() => _on = true),
+    );
+    if (!_on) return row;
+    return AppTipScope(
+      tips: const ['gallery'],
+      isSeen: (_) => false,
+      onShown: (_) {},
+      onDismissed: (_) => setState(() => _on = false),
+      dismissLabel: l10n.tipGotIt,
+      child: AppTip(
+        id: 'gallery',
+        title: l10n.tipMetricChartTitle,
+        message: l10n.tipMetricChartMessage,
+        child: row,
+      ),
+    );
+  }
 }
 
 /// [AppEmptyState], [AppErrorState], [AppLoadingView], [AppSpinner],

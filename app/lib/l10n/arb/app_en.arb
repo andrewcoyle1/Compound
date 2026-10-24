@@ -13711,5 +13711,49 @@
     "quickWeighInSave": "Save Weigh-In",
     "@quickWeighInSave": {
         "description": "Coach day checklist: saves the inline weigh-in"
+    },
+    "tipGotIt": "Got It",
+    "@tipGotIt": {
+        "description": "Feature tip: button that closes a one-time tip"
+    },
+    "tipMetricChartTitle": "Read the chart",
+    "@tipMetricChartTitle": {
+        "description": "Feature tip on a metric's chart: title"
+    },
+    "tipMetricChartMessage": "Touch and hold for exact values. Pinch to zoom, or swipe sideways for earlier dates.",
+    "@tipMetricChartMessage": {
+        "description": "Feature tip on a metric's chart: the press-and-hold, pinch and swipe gestures"
+    },
+    "tipMealSwipeTitle": "Log a meal again",
+    "@tipMealSwipeTitle": {
+        "description": "Feature tip on the Nutrition tab's first meal: title"
+    },
+    "tipMealSwipeMessage": "Swipe a food right to log its whole meal again now.",
+    "@tipMealSwipeMessage": {
+        "description": "Feature tip on the Nutrition tab's first meal: the swipe that logs it again"
+    },
+    "tipSetSwipeTitle": "Rest for one set",
+    "@tipSetSwipeTitle": {
+        "description": "Feature tip on the workout tracker's set row: title"
+    },
+    "tipSetSwipeMessage": "Swipe a set right to give it its own rest time.",
+    "@tipSetSwipeMessage": {
+        "description": "Feature tip on the workout tracker's set row: the swipe to a set's own rest timer"
+    },
+    "tipSetFillLastTitle": "Repeat last time",
+    "@tipSetFillLastTitle": {
+        "description": "Feature tip on the workout tracker's Last column: title"
+    },
+    "tipSetFillLastMessage": "Tap last time's figures to copy them into this set.",
+    "@tipSetFillLastMessage": {
+        "description": "Feature tip on the workout tracker's Last column: tapping it fills the set"
+    },
+    "devSettingsResetTips": "Reset Tips",
+    "@devSettingsResetTips": {
+        "description": "Developer tools: button that makes every one-time feature tip show again"
+    },
+    "devSettingsTipsReset": "Tips will show again.",
+    "@devSettingsTipsReset": {
+        "description": "Developer tools: notice after Reset Tips"
     }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bloc_test/bloc_test.dart';
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -20,6 +21,7 @@ void main() {
   late List<(String, String?, CoachContext?)> sent;
   late List<CoachStreamEvent> events;
   late CoachFailure? refusal;
+  late int ids;
 
   setUp(() {
     firestore = FakeFirebaseFirestore();
@@ -37,6 +39,7 @@ void main() {
       ),
     ];
     refusal = null;
+    ids = 0;
   });
 
   CoachRepository coach() => CoachRepository(
@@ -70,7 +73,7 @@ void main() {
       purchases: purchases,
       analytics: analytics,
       now: () => asked,
-      newId: () => 'q1',
+      newId: () => 'q${++ids}',
     );
   }
 
@@ -274,7 +277,9 @@ void main() {
       await cubit.sendPressed();
 
       expect(cubit.state.streamingBlocks, isEmpty);
-      expect(cubit.state.failure, CoachFailure.unavailable);
+      expect(cubit.state.questions, {
+        'q1': const CoachQuestionStatus.failed(CoachFailure.unavailable),
+      });
     });
 
     test("a saved chat replays its answers' blocks", () async {
@@ -322,7 +327,7 @@ void main() {
       expect(sent, isEmpty);
     });
 
-    test('a failed message goes back in the field', () async {
+    test('a failed question stays in the conversation, marked', () async {
       refusal = CoachFailure.dailyLimitReached;
       final cubit = await screen()
         ..draftChanged('How was my week?');
@@ -330,10 +335,12 @@ void main() {
       await cubit.sendPressed();
 
       expect(cubit.state.isSending, isFalse);
-      expect(cubit.state.messages, isEmpty);
-      expect(cubit.state.draft, 'How was my week?');
-      expect(cubit.state.draftRevision, 2);
-      expect(cubit.state.failure, CoachFailure.dailyLimitReached);
+      expect(cubit.state.messages.map((m) => m.text), ['How was my week?']);
+      expect(cubit.state.draft, isEmpty);
+      expect(cubit.state.draftRevision, 1);
+      expect(cubit.state.questions, {
+        'q1': const CoachQuestionStatus.failed(CoachFailure.dailyLimitReached),
+      });
       expect(cubit.state.remainingToday, 0);
       expect(cubit.state.sendFailures, 1);
       expect(analytics.parameters('CoachView_Send_Fail'), {
@@ -355,7 +362,10 @@ void main() {
 
       await cubit.sendPressed();
 
-      expect(cubit.state.failure, CoachFailure.unavailable);
+      expect(
+        cubit.state.questions['q1'],
+        const CoachQuestionStatus.failed(CoachFailure.unavailable),
+      );
     });
 
     test('a refusal for consent or premium returns to the gate', () async {
@@ -364,7 +374,10 @@ void main() {
         ..draftChanged('hi');
       await consentRefused.sendPressed();
       expect(consentRefused.state.gate, CoachGate.consent);
-      expect(consentRefused.state.failure, isNull);
+      // As before: the question goes back in the field.
+      expect(consentRefused.state.questions, isEmpty);
+      expect(consentRefused.state.messages, isEmpty);
+      expect(consentRefused.state.draft, 'hi');
 
       refusal = CoachFailure.premiumRequired;
       final premiumRefused = await screen()
@@ -497,6 +510,161 @@ void main() {
 
       expect(cubit.isClosed, isTrue);
     });
+  });
+
+  group('stop, retry and feedback', () {
+    late StreamController<CoachStreamEvent> answer;
+
+    setUp(() => answer = StreamController<CoachStreamEvent>());
+    // Not awaited: a stream nobody listened to never reports done.
+    tearDown(() => unawaited(answer.close()));
+
+    CoachCubit build({CoachRepository? repository}) => CoachCubit(
+      uid: uid,
+      request: const CoachRequest(),
+      coach:
+          repository ??
+          CoachRepository(
+            firestore: firestore,
+            users: users,
+            coachChat: (_, {chatId, context}) => answer.stream,
+          ),
+      purchases: FakePurchasesRepository(),
+      analytics: analytics,
+      now: () => asked,
+      newId: () => 'q${++ids}',
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'Stop drops what streamed and leaves the question stopped',
+      build: build,
+      act: (cubit) async {
+        cubit.draftChanged('How is my week?');
+        final sending = cubit.sendPressed();
+        answer.add(const CoachText('Your week'));
+        await pumpEventQueue();
+        expect(cubit.state.isSending, isTrue);
+        cubit.stopPressed();
+        await sending;
+        // Too late: the answer is no longer read.
+        answer.add(const CoachText(' was good'));
+        await pumpEventQueue();
+      },
+      verify: (cubit) {
+        expect(cubit.state.isSending, isFalse);
+        expect(cubit.state.streamingText, isNull);
+        expect(cubit.state.messages.map((m) => m.text), ['How is my week?']);
+        expect(cubit.state.questions, {
+          'q1': const CoachQuestionStatus.stopped(),
+        });
+        expect(analytics.parameters('CoachView_Stop_Press'), {
+          'context': 'today',
+        });
+        // Nothing to stop once it has.
+        cubit.stopPressed();
+        expect(
+          analytics.names.where((name) => name == 'CoachView_Stop_Press'),
+          hasLength(1),
+        );
+      },
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'Retry asks a failed question again, as the newest message',
+      setUp: () => refusal = CoachFailure.unavailable,
+      build: () => build(repository: coach()),
+      act: (cubit) async {
+        cubit.draftChanged('First?');
+        await cubit.sendPressed();
+        refusal = null;
+        cubit.draftChanged('Second?');
+        await cubit.sendPressed();
+
+        await cubit.retryPressed('q1');
+        // Not a question, or not one left to retry.
+        await cubit.retryPressed('q1');
+      },
+      verify: (cubit) {
+        expect(cubit.state.messages.map((m) => m.text), [
+          'Second?',
+          'Hello there',
+          'First?',
+          'Hello there',
+        ]);
+        expect(cubit.state.questions, isEmpty);
+        expect(sent.map((call) => call.$1), ['First?', 'Second?', 'First?']);
+        expect(analytics.parameters('CoachView_Retry_Press'), {
+          'context': 'today',
+        });
+      },
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'an answer that ends without finishing fails the question',
+      build: build,
+      act: (cubit) async {
+        cubit.draftChanged('Hi');
+        final sending = cubit.sendPressed();
+        answer.add(const CoachText('Hel'));
+        await answer.close();
+        await sending;
+      },
+      verify: (cubit) {
+        expect(
+          cubit.state.questions['q1'],
+          const CoachQuestionStatus.failed(CoachFailure.unavailable),
+        );
+        expect(cubit.state.streamingText, isNull);
+        expect(cubit.state.sendFailures, 1);
+      },
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'Retry waits while another question is answered',
+      build: build,
+      seed: () => CoachState(
+        gate: CoachGate.chat,
+        messages: [
+          CoachMessage(
+            id: 'old',
+            role: CoachMessageRole.user,
+            text: 'Old?',
+            createdAt: asked,
+          ),
+        ],
+        questions: const {
+          'old': CoachQuestionStatus.stopped(),
+          'now': CoachQuestionStatus.answering(),
+        },
+      ),
+      act: (cubit) => cubit.retryPressed('old'),
+      expect: () => <CoachState>[],
+    );
+
+    blocTest<CoachCubit, CoachState>(
+      'copy and feedback carry the rating and context, never the text',
+      build: build,
+      act: (cubit) => cubit
+        ..copyPressed(CoachMessageRole.assistant)
+        ..feedbackGiven(helpful: true)
+        ..feedbackGiven(helpful: false),
+      verify: (_) {
+        expect(analytics.parameters('CoachView_Copy_Press'), {
+          'context': 'today',
+          'role': 'assistant',
+        });
+        expect(
+          [
+            for (final event in analytics.events)
+              if (event.eventName == 'CoachView_Feedback') event.parameters,
+          ],
+          [
+            {'context': 'today', 'rating': 'up'},
+            {'context': 'today', 'rating': 'down'},
+          ],
+        );
+      },
+    );
   });
 
   group('CoachRequest.forChat', () {

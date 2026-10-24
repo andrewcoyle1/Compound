@@ -13603,5 +13603,41 @@
     "coachFollowUpsTitle": "Ask Next",
     "@coachFollowUpsTitle": {
         "description": "Heading of the coach's suggested follow-up questions"
+    },
+    "coachStop": "Stop",
+    "@coachStop": {
+        "description": "Coach button in place of Send while the coach answers: stops the answer"
+    },
+    "coachStopped": "Stopped",
+    "@coachStopped": {
+        "description": "Note under a question whose answer the user stopped"
+    },
+    "coachRetry": "Retry",
+    "@coachRetry": {
+        "description": "Button under a failed or stopped coach question: asks it again"
+    },
+    "coachJumpToLatest": "Jump to Latest",
+    "@coachJumpToLatest": {
+        "description": "Floating button in the coach chat: scrolls down to the newest message"
+    },
+    "coachCopy": "Copy",
+    "@coachCopy": {
+        "description": "Coach message action: copies the message"
+    },
+    "coachCopied": "Copied",
+    "@coachCopied": {
+        "description": "Notice after a coach message is copied"
+    },
+    "coachHelpful": "Helpful",
+    "@coachHelpful": {
+        "description": "Coach answer action: rates the answer as helpful (thumbs up)"
+    },
+    "coachNotHelpful": "Not Helpful",
+    "@coachNotHelpful": {
+        "description": "Coach answer action: rates the answer as not helpful (thumbs down)"
+    },
+    "coachFeedbackThanks": "Thanks for the feedback",
+    "@coachFeedbackThanks": {
+        "description": "Notice after rating a coach answer"
     }
 }

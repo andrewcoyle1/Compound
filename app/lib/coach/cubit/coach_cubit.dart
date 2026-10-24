@@ -144,14 +144,76 @@ class CoachCubit extends Cubit<CoachState> {
     return sendPressed();
   }
 
-  /// Sends the trimmed draft. The question shows at once and the answer
-  /// streams in after it. On a failure the message comes off the
-  /// conversation and goes back in the field to try again; a refusal for
-  /// consent or premium goes back to that gate instead of an error.
+  /// Sends the trimmed draft.
   Future<void> sendPressed() async {
     final text = state.draft.trim();
     if (text.isEmpty || state.isSending) return;
-    final pending = CoachMessage(
+    emit(state.copyWith(draft: '', draftRevision: state.draftRevision + 1));
+    await _ask(text);
+  }
+
+  /// Retry under a failed or stopped question: asks it again, as the
+  /// newest message.
+  Future<void> retryPressed(String questionId) async {
+    final question = state.messages
+        .where((message) => message.id == questionId)
+        .firstOrNull;
+    if (question == null || state.isSending) return;
+    _analytics.analytic('CoachView_Retry_Press', _contextParameter);
+    emit(
+      state.copyWith(
+        messages: [
+          for (final message in state.messages)
+            if (message.id != questionId) message,
+        ],
+        questions: {...state.questions}..remove(questionId),
+      ),
+    );
+    await _ask(question.text);
+  }
+
+  /// Stop, while the coach answers: drops what has streamed and leaves the
+  /// question marked stopped, with Retry. The quota stays spent.
+  void stopPressed() {
+    final questionId = _answering;
+    if (questionId == null) return;
+    _analytics.analytic('CoachView_Stop_Press', _contextParameter);
+    _endAnswer();
+    emit(
+      state.copyWith(
+        questions: {
+          ...state.questions,
+          questionId: const CoachQuestionStatus.stopped(),
+        },
+        streamingText: () => null,
+        streamingBlocks: const [],
+      ),
+    );
+  }
+
+  /// Copy, from a message's actions; the view copies it.
+  void copyPressed(CoachMessageRole role) => _analytics.analytic(
+    'CoachView_Copy_Press',
+    {..._contextParameter, 'role': role.name},
+  );
+
+  /// Thumbs up or down on an answer. Never the text.
+  void feedbackGiven({required bool helpful}) => _analytics.analytic(
+    'CoachView_Feedback',
+    {..._contextParameter, 'rating': helpful ? 'up' : 'down'},
+  );
+
+  /// The question being answered, while one is.
+  String? _answering;
+  StreamSubscription<CoachStreamEvent>? _answer;
+  Completer<void>? _answered;
+
+  /// Asks [text]. The question shows at once and the answer streams in
+  /// after it. On a failure the question stays, marked failed, to retry; a
+  /// refusal for consent or premium takes it off, puts it back in the
+  /// field and goes back to that gate instead.
+  Future<void> _ask(String text) {
+    final question = CoachMessage(
       id: _newId(),
       role: CoachMessageRole.user,
       text: text,
@@ -159,101 +221,130 @@ class CoachCubit extends Cubit<CoachState> {
     );
     emit(
       state.copyWith(
-        draft: '',
-        draftRevision: state.draftRevision + 1,
-        failure: () => null,
-        isSending: true,
+        questions: {
+          ...state.questions,
+          question.id: const CoachQuestionStatus.answering(),
+        },
         streamingText: () => '',
         streamingBlocks: const [],
-        messages: [...state.messages, pending],
+        messages: [...state.messages, question],
       ),
     );
     _analytics.analytic('CoachView_Send_Start', {
       ..._contextParameter,
       'is_new_chat': state.chatId == null,
     });
-    try {
-      await for (final event in _coach.send(
-        _uid,
-        text,
-        chatId: state.chatId,
-        context: _request.context,
-      )) {
-        if (isClosed) return;
-        switch (event) {
-          case CoachText(:final text):
-            emit(
-              state.copyWith(
-                streamingText: () => (state.streamingText ?? '') + text,
-              ),
-            );
-          case CoachBlockShown(:final block):
-            emit(
-              state.copyWith(
-                streamingBlocks: [...state.streamingBlocks, block],
-              ),
-            );
-          case CoachFinished(:final chatId, :final messageId, :final text):
-            emit(
-              state.copyWith(
-                chatId: () => chatId,
-                chatTitle: () => _savedTitle(chatId),
-                remainingToday: event.remainingToday,
-                streamingBlocks: const [],
-                messages: [
-                  ...state.messages,
-                  CoachMessage(
-                    id: messageId,
-                    role: CoachMessageRole.assistant,
-                    text: text,
-                    createdAt: _now(),
-                    blocks: event.blocks.isEmpty ? null : event.blocks,
-                  ),
-                ],
-              ),
-            );
-        }
-      }
-      _analytics.analytic('CoachView_Send_Success');
-      if (isClosed) return;
-      emit(state.copyWith(isSending: false, streamingText: () => null));
-    } on Object catch (error) {
-      final failure = error is CoachException
-          ? error.failure
-          : CoachFailure.unavailable;
-      _analytics.trackEvent(
-        AnalyticsEvent(
-          'CoachView_Send_Fail',
-          parameters: {'reason': failure.name},
-          type: LogType.warning,
-        ),
-      );
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          isSending: false,
-          streamingText: () => null,
-          streamingBlocks: const [],
-          messages: [
-            for (final message in state.messages)
-              if (message.id != pending.id) message,
-          ],
-          draft: text,
-          draftRevision: state.draftRevision + 1,
-          sendFailures: state.sendFailures + 1,
-          remainingToday: failure == CoachFailure.dailyLimitReached ? 0 : null,
-          gate: switch (failure) {
-            CoachFailure.consentRequired => CoachGate.consent,
-            CoachFailure.premiumRequired => CoachGate.premium,
-            _ => null,
+    final answered = _answered = Completer<void>();
+    _answering = question.id;
+    _answer = _coach
+        .send(_uid, text, chatId: state.chatId, context: _request.context)
+        .listen(
+          _received,
+          onError: (Object error) => _failed(question, error),
+          onDone: () {
+            if (state.questions.containsKey(question.id)) {
+              // Ended without an answer.
+              return _failed(question, CoachFailure.unavailable);
+            }
+            _analytics.analytic('CoachView_Send_Success');
+            _endAnswer();
           },
-          failure: () => switch (failure) {
-            CoachFailure.consentRequired ||
-            CoachFailure.premiumRequired => null,
-            _ => failure,
-          },
-        ),
-      );
+          cancelOnError: true,
+        );
+    return answered.future;
+  }
+
+  void _received(CoachStreamEvent event) {
+    switch (event) {
+      case CoachText(:final text):
+        emit(
+          state.copyWith(
+            streamingText: () => (state.streamingText ?? '') + text,
+          ),
+        );
+      case CoachBlockShown(:final block):
+        emit(
+          state.copyWith(streamingBlocks: [...state.streamingBlocks, block]),
+        );
+      case CoachFinished(:final chatId, :final messageId, :final text):
+        emit(
+          state.copyWith(
+            chatId: () => chatId,
+            chatTitle: () => _savedTitle(chatId),
+            remainingToday: event.remainingToday,
+            questions: {...state.questions}..remove(_answering),
+            streamingText: () => null,
+            streamingBlocks: const [],
+            messages: [
+              ...state.messages,
+              CoachMessage(
+                id: messageId,
+                role: CoachMessageRole.assistant,
+                text: text,
+                createdAt: _now(),
+                blocks: event.blocks.isEmpty ? null : event.blocks,
+              ),
+            ],
+          ),
+        );
+    }
+  }
+
+  void _failed(CoachMessage question, Object error) {
+    _endAnswer();
+    final failure = switch (error) {
+      CoachException(:final failure) => failure,
+      CoachFailure() => error,
+      _ => CoachFailure.unavailable,
+    };
+    _analytics.trackEvent(
+      AnalyticsEvent(
+        'CoachView_Send_Fail',
+        parameters: {'reason': failure.name},
+        type: LogType.warning,
+      ),
+    );
+    final gate = switch (failure) {
+      CoachFailure.consentRequired => CoachGate.consent,
+      CoachFailure.premiumRequired => CoachGate.premium,
+      _ => null,
+    };
+    final common = state.copyWith(
+      streamingText: () => null,
+      streamingBlocks: const [],
+      sendFailures: state.sendFailures + 1,
+      remainingToday: failure == CoachFailure.dailyLimitReached ? 0 : null,
+    );
+    emit(
+      gate == null
+          ? common.copyWith(
+              questions: {
+                ...state.questions,
+                question.id: CoachQuestionStatus.failed(failure),
+              },
+            )
+          // The gate's way: the question goes back in the field.
+          : common.copyWith(
+              gate: gate,
+              questions: {...state.questions}..remove(question.id),
+              messages: [
+                for (final message in state.messages)
+                  if (message.id != question.id) message,
+              ],
+              draft: question.text,
+              draftRevision: state.draftRevision + 1,
+            ),
+    );
+  }
+
+  /// Lets go of the answer: the stream is cancelled (not awaited, as a
+  /// generator only stops at its next chunk) and [_ask]'s future completes.
+  void _endAnswer() {
+    unawaited(_answer?.cancel());
+    _answer = null;
+    _answering = null;
+    if (_answered case final answered? when !answered.isCompleted) {
+      answered.complete();
     }
   }
 
@@ -266,7 +357,7 @@ class CoachCubit extends Cubit<CoachState> {
         chatTitle: () => null,
         messages: const [],
         savedMessageCount: 0,
-        failure: () => null,
+        questions: const {},
       ),
     );
   }
@@ -276,6 +367,7 @@ class CoachCubit extends Cubit<CoachState> {
 
   @override
   Future<void> close() async {
+    _endAnswer();
     await _chats?.cancel();
     await super.close();
   }

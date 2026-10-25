@@ -5,9 +5,10 @@ import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound_maths/compound_maths.dart';
 
-/// The weekly streak on Today (Swift `WorkoutStreakCard`): weeks in a row
-/// with the weekly goal met, this week's progress and badge, a dot for each
-/// day of the week, the best run and the total.
+/// The weekly streak on Today (Swift `WorkoutStreakCard`), as a summary
+/// card: weeks in a row with the weekly goal met, this week's badge, a
+/// mark for each day of the week, and this week's count, the best run and
+/// the total in the footer.
 class StreakCard extends StatelessWidget {
   const new({
     required this.streak,
@@ -37,140 +38,58 @@ class StreakCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.appColors;
-    final scheme = Theme.of(context).colorScheme;
-    final state = streak.state;
-    final accent = state == StreakState.atRisk
-        ? colors.warning
-        : streak.weeks > 0
-        ? colors.workouts
-        : scheme.onSurfaceVariant;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppSpacing.s,
-      children: [
-        Padding(
-          padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
-          child: Row(
-            children: [
+    return AppSummaryCard(
+      title: l10n.streakTitle,
+      icon: AppSymbols.streak,
+      tint: colors.workouts,
+      size: AppSummaryCardSize.large,
+      trailing: MethodInfoButton(MethodInfo.weeklySessionGoal(l10n)),
+      value: AppFormat.number(streak.weeks),
+      unit: l10n.streakWeeksUnit(streak.weeks),
+      // This week's goal met is the user's own progress: the accent.
+      delta: switch (streak.state) {
+        StreakState.met => AppChip(
+          label: l10n.streakGoalMet,
+          icon: AppSymbols.success,
+          selected: true,
+        ),
+        StreakState.atRisk => AppChip(
+          label: l10n.streakAtRisk,
+          icon: AppSymbols.warning,
+          tint: colors.warning,
+        ),
+        _ => null,
+      },
+      // Graphics, not text: they grow with it only so far, so seven still
+      // fit across the card.
+      chart: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: AppScaffold.largeTitleMaxTextScale,
+        child: Row(
+          children: [
+            for (final day in weekDays)
               Expanded(
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    l10n.streakTitle,
-                    style: AppTextStyles.sectionTitle.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
+                child: _Day(
+                  day: day,
+                  hasWorkout: workoutDays.contains(dayKeyOf(day)),
+                  isToday: dayKeyOf(day) == dayKeyOf(today),
+                  isFuture: day.isAfter(today),
                 ),
               ),
-              MethodInfoButton(MethodInfo.weeklySessionGoal(l10n)),
-            ],
-          ),
+          ],
         ),
-        AppCard(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: AppSpacing.l,
-              children: [
-                Row(
-                  spacing: AppSpacing.m,
-                  children: [
-                    ExcludeSemantics(
-                      child: Icon(
-                        AppSymbols.streak,
-                        size: AppIconSize.medium.of(context),
-                        color: accent,
-                      ),
-                    ),
-                    Expanded(
-                      child: MergeSemantics(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: AppSpacing.xxs,
-                          children: [
-                            Text(
-                              l10n.streakWeeks(streak.weeks),
-                              style: AppTextStyles.display.copyWith(
-                                color: accent,
-                              ),
-                            ),
-                            Text(
-                              l10n.streakThisWeek(
-                                streak.sessionsThisWeek,
-                                streak.goal,
-                              ),
-                              style: AppTextStyles.rowDetail.copyWith(
-                                color: scheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    if (state == StreakState.atRisk)
-                      AppChip(
-                        label: l10n.streakAtRisk,
-                        icon: AppSymbols.warning,
-                        tint: colors.warning,
-                      )
-                    else if (state == StreakState.met)
-                      AppChip(
-                        label: l10n.streakGoalMet,
-                        icon: AppSymbols.success,
-                        tint: colors.workouts,
-                      ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    for (final day in weekDays)
-                      Expanded(
-                        child: _DayDot(
-                          day: day,
-                          hasWorkout: workoutDays.contains(dayKeyOf(day)),
-                          isToday: dayKeyOf(day) == dayKeyOf(today),
-                          isFuture: day.isAfter(today),
-                        ),
-                      ),
-                  ],
-                ),
-                const Divider(height: 1),
-                // Each takes up to half at large text sizes, rather than
-                // overflowing.
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: AppStat(
-                        value: l10n.streakWeeks(streak.best),
-                        label: l10n.streakBest,
-                        size: AppStatSize.small,
-                      ),
-                    ),
-                    Flexible(
-                      child: AppStat(
-                        value: AppFormat.number(totalWorkouts),
-                        label: l10n.streakTotalWorkouts,
-                        size: AppStatSize.small,
-                        alignment: CrossAxisAlignment.end,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
+      footer: [
+        l10n.streakThisWeek(streak.sessionsThisWeek, streak.goal),
+        l10n.streakRecord(l10n.streakWeeks(streak.best), totalWorkouts),
+      ].join(' · '),
     );
   }
 }
 
-/// One day of the week: its letter, and a dot filled when a workout was
-/// logged, ringed on today, faint in the future.
-class _DayDot extends StatelessWidget {
+/// One day of the week: its letter over a solid volt mark when a workout
+/// was logged, an empty circle when not: outlined in the text colour
+/// today, faint in the future.
+class _Day extends StatelessWidget {
   const new({
     required this.day,
     required this.hasWorkout,
@@ -185,51 +104,34 @@ class _DayDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final fill = hasWorkout
-        ? context.appColors.workouts
-        : scheme.outlineVariant.withValues(alpha: isFuture ? 0.4 : 1);
-    return Semantics(
-      label: AppFormat.date(
-        day,
-        style: AppDateStyle.weekday,
-        locale: context.dateLocale,
-      ),
-      value: hasWorkout ? l10n.streakWorkoutLogged : l10n.streakNoWorkout,
-      excludeSemantics: true,
-      child: Column(
-        spacing: AppSpacing.xs,
-        children: [
-          Text(
-            AppFormat.date(
-              day,
-              style: AppDateStyle.weekdayInitial,
-              locale: context.dateLocale,
-            ),
-            style:
-                (isToday ? AppTextStyles.label.semibold : AppTextStyles.label)
-                    .copyWith(
-                      color: isToday
-                          ? scheme.onSurface
-                          : scheme.onSurfaceVariant,
-                    ),
+    final colors = context.appColors;
+    return Column(
+      spacing: AppSpacing.xs,
+      children: [
+        Text(
+          AppFormat.date(
+            day,
+            style: AppDateStyle.weekdayInitial,
+            locale: context.dateLocale,
           ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: fill,
-              border: isToday && !hasWorkout
-                  ? Border.all(
-                      color: scheme.onSurface.withValues(alpha: 0.35),
-                      width: 1.5,
-                    )
-                  : null,
-            ),
-            child: const SizedBox.square(dimension: 10),
+          style: isToday
+              ? AppTextStyles.label.semibold
+              : AppTextStyles.label.secondary(context),
+        ),
+        if (hasWorkout)
+          const AppDoneMark()
+        else
+          Icon(
+            AppSymbols.choiceUnselected,
+            size: AppIconSize.medium.of(context),
+            color: isToday
+                ? scheme.onSurface
+                : isFuture
+                ? colors.separator
+                : colors.tertiaryLabel,
           ),
-        ],
-      ),
+      ],
     );
   }
 }

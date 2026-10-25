@@ -298,6 +298,7 @@ List<Widget> galleryTokens(BuildContext context) {
         ('areaOpacity', AppChartMark.areaOpacity),
         ('arcWidth', AppChartMark.arcWidth),
         ('arcWidthSmall', AppChartMark.arcWidthSmall),
+        ('arcWidthHero', AppChartMark.arcWidthHero),
         ('lapShadowOpacity', AppChartMark.lapShadowOpacity),
         ('bulletWidth', AppChartMark.bulletWidth),
         ('bulletWidthSmall', AppChartMark.bulletWidthSmall),

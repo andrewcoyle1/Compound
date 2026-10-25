@@ -2104,15 +2104,6 @@
     "@todayFirstWeighIn": {
         "description": "Getting-started step"
     },
-    "todayProteinGap": "{grams} protein to go today",
-    "@todayProteinGap": {
-        "description": "Evening reminder: protein still to eat today, e.g. '45 g protein to go today'",
-        "placeholders": {
-            "grams": {
-                "type": "String"
-            }
-        }
-    },
     "streakTitle": "Weekly Streak",
     "@streakTitle": {
         "description": "Streak card heading"
@@ -2138,6 +2129,35 @@
             }
         }
     },
+    "streakWeeksUnit": "{weeks, plural, =1{week} other{weeks}}",
+    "@streakWeeksUnit": {
+        "description": "Streak card: the unit after the number of weeks in a row, e.g. '6' then 'weeks'. Shown upper-cased",
+        "placeholders": {
+            "weeks": {
+                "type": "int"
+            }
+        }
+    },
+    "streakRecord": "Best {best} · {count, plural, =1{1 workout} other{{count} workouts}}",
+    "@streakRecord": {
+        "description": "Streak card footer: the longest streak and every workout ever finished, e.g. 'Best 6 weeks · 20 workouts'",
+        "placeholders": {
+            "best": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayDoneUnit": "done",
+    "@todayDoneUnit": {
+        "description": "Today's hero card: the unit after the day's done items, e.g. '3/4' then 'done'. Shown upper-cased"
+    },
+    "todayProteinToGo": "g to go",
+    "@todayProteinToGo": {
+        "description": "Today's evening protein card: the unit after the grams of protein still to eat today, e.g. '45' then 'g to go'. Shown upper-cased"
+    },
     "streakAtRisk": "At Risk",
     "@streakAtRisk": {
         "description": "Streak card badge: the streak will be lost unless every remaining day is trained"
@@ -2145,22 +2165,6 @@
     "streakGoalMet": "Goal Met",
     "@streakGoalMet": {
         "description": "Streak card badge: this week's goal is met"
-    },
-    "streakBest": "Best streak",
-    "@streakBest": {
-        "description": "Streak card stat label"
-    },
-    "streakTotalWorkouts": "Total workouts",
-    "@streakTotalWorkouts": {
-        "description": "Streak card stat label"
-    },
-    "streakWorkoutLogged": "Workout logged",
-    "@streakWorkoutLogged": {
-        "description": "Accessibility value of a day with a workout on the streak card"
-    },
-    "streakNoWorkout": "No workout",
-    "@streakNoWorkout": {
-        "description": "Accessibility value of a day without a workout on the streak card"
     },
     "weeklyGoalMethodTitle": "Weekly Goal and Streak",
     "@weeklyGoalMethodTitle": {

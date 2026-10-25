@@ -135,8 +135,14 @@ class AppSummaryCard extends StatelessWidget {
       AppTextStyles.overline.fontSize! * AppTextStyles.overline.height!,
     );
     final secondaryOverline = AppTextStyles.overline.secondary(context);
+    // At accessibility sizes there is no room across: a chart beside the
+    // number moves under it, and the header's chip or button under the
+    // title.
+    final stacked =
+        scaler.scale(AppTextStyles.rowTitle.fontSize!) >=
+        AppTextStyles.rowTitle.fontSize! * AppListRow.accessibilityTextScale;
 
-    final header = Row(
+    final titleRow = Row(
       spacing: AppSpacing.s,
       children: [
         Expanded(
@@ -153,7 +159,8 @@ class AppSummaryCard extends StatelessWidget {
             ),
           ),
         ),
-        if (trailing != null) Semantics(container: true, child: trailing),
+        if (trailing != null && !stacked)
+          Semantics(container: true, child: trailing),
         if (onTap != null)
           ExcludeSemantics(
             child: Icon(
@@ -164,6 +171,16 @@ class AppSummaryCard extends StatelessWidget {
           ),
       ],
     );
+    final header = trailing != null && stacked
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.xs,
+            children: [
+              titleRow,
+              Semantics(container: true, child: trailing),
+            ],
+          )
+        : titleRow;
 
     Widget? number;
     if (value != null) {
@@ -205,9 +222,6 @@ class AppSummaryCard extends StatelessWidget {
         children: [stat, ?delta],
       );
     }
-    final stacked =
-        scaler.scale(AppTextStyles.rowTitle.fontSize!) >=
-        AppTextStyles.rowTitle.fontSize! * AppListRow.accessibilityTextScale;
     final hero = switch ((number, chart)) {
       (null, null) => null,
       (final number?, null) => number,

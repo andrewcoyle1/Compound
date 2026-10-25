@@ -1072,8 +1072,8 @@ List<Widget> galleryStates(BuildContext context) {
 }
 
 /// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppSummaryCard],
-/// [AppChip], [AppConfetti], [AppInlineMessage], [AppMarkdownText] and
-/// [AppViewfinder].
+/// [AppChip], [AppConfetti], [AppFootnote], [AppInlineMessage],
+/// [AppMarkdownText] and [AppViewfinder].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
   final colors = context.appColors;
@@ -1265,6 +1265,21 @@ List<Widget> galleryContent(BuildContext context) {
               onPressed: () => update(bursts + 1),
             ),
           ),
+        ),
+      ),
+    ]),
+    galleryEntry('AppFootnote', [
+      galleryBlock(
+        'lines, one with ⓘ',
+        AppFootnote(
+          lines: [
+            AppFootnoteLine(
+              l10n.devGallerySampleMessage,
+              infoLabel: l10n.infoLabel,
+              onInfo: () {},
+            ),
+            AppFootnoteLine(l10n.devGallerySampleSubtitle),
+          ],
         ),
       ),
     ]),

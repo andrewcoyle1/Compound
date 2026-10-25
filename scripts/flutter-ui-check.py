@@ -86,20 +86,15 @@ STYLE_KEYS = ('color', 'fontSize', 'fontWeight', 'fontFeatures', 'fontFamily', '
 # folder and None for any number. Each has its reason.
 ALLOWED = {
     'style-copywith': {
-        'app/lib/today/': None,  # design/today removes
         # A keypad key's digits and icon take the key's state (pressed, disabled, selected).
         'app/lib/workout_tracker/view/set_keypad_view.dart': 1,
         # A warm-up set's number and kind chip are in the warm-up colour, the set type's own.
         'app/lib/workout_tracker/view/set_row_parts.dart': 2,
     },
-    'alpha-literal': {
-        'app/lib/today/': None,  # design/today removes
-    },
-    'box-decoration': {
-        'app/lib/today/': None,  # design/today removes
-    },
+    # Listed, though nothing is let through, so they stay clean-up rules that charts skip.
+    'alpha-literal': {},
+    'box-decoration': {},
     'raw-tap': {
-        'app/lib/today/': None,  # design/today removes
         # A tap or a horizontal swipe flips consumed and remaining.
         'app/lib/nutrition/view/widgets/macro_header.dart': 1,
         # A horizontal swipe moves the week.
@@ -301,7 +296,8 @@ def self_test():
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]
         assert sorted(got) == sorted(expected), (line, got, expected)
-    assert allowed('style-copywith', 'app/lib/today/view/x.dart', 9)
+    assert not allowed('style-copywith', 'app/lib/today/view/x.dart', 1)
+    assert not allowed('alpha-literal', 'app/lib/today/view/x.dart', 1)
     assert allowed('style-copywith', 'app/lib/workout_tracker/view/set_row_parts.dart', 2)
     assert not allowed('style-copywith', 'app/lib/workout_tracker/view/set_row_parts.dart', 3)
     assert not allowed('style-copywith', 'app/lib/todays/x.dart', 1)

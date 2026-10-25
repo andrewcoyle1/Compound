@@ -23,6 +23,12 @@ import '../../helpers/app_repositories.dart';
 // sample user: Today as the coach's day chat and Ask Coach from Weight
 // Trend, consent, a streamed answer, the saved chats, opening and deleting
 // one, withdrawing, Settings' Coach section, and premium.
+/// The day's checklist: Today's hero card ("YOUR DAY") or the coach
+/// chat's day card ("Your Day").
+final Finder _yourDay = find.textContaining(
+  RegExp(r'^Your Day$', caseSensitive: false),
+);
+
 void main() {
   const uid = sampleUserId;
   final now = DateTime.now();
@@ -103,7 +109,7 @@ void main() {
     final users = await pumpApp(tester);
 
     // Today is the day's chat; before consent it asks to turn it on.
-    expect(find.text('Your Day'), findsOneWidget);
+    expect(_yourDay, findsOneWidget);
     expect(find.byKey(const Key('Coach.draft')), findsNothing);
     await tap(tester, find.text('Turn On Coach'));
     expect(find.text('Before You Ask'), findsOneWidget);
@@ -111,7 +117,7 @@ void main() {
 
     // Back on Today, which is now the chat, under the day.
     expect(find.byType(CoachView), findsNothing);
-    expect(find.text('Your Day'), findsOneWidget);
+    expect(_yourDay, findsOneWidget);
     expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
     // The suggestions, under the day.
     final chat = find.byType(Scrollable).first;
@@ -128,11 +134,7 @@ void main() {
     );
     // The suggestions are gone; the day stays, above.
     expect(find.text('Am I on track for my goal?'), findsNothing);
-    await tester.scrollUntilVisible(
-      find.text('Your Day'),
-      -300,
-      scrollable: chat,
-    );
+    await tester.scrollUntilVisible(_yourDay, -300, scrollable: chat);
 
     await tap(tester, find.byTooltip('Chats'));
     expect(find.text('Coach Chats'), findsOneWidget);
@@ -236,9 +238,9 @@ void main() {
     await tap(tester, find.text('Allow and Continue'));
     expect(find.text('This day has ended.'), findsOneWidget);
     expect(find.byKey(const Key('Coach.draft')), findsNothing);
-    expect(find.text('Your Day'), findsNothing);
+    expect(_yourDay, findsNothing);
     await tap(tester, find.text("Ask in Today's Chat"));
-    expect(find.text('Your Day'), findsOneWidget);
+    expect(_yourDay, findsOneWidget);
     expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
     await tap(tester, find.byType(BackButton));
     expect(find.text('Coach Chats'), findsOneWidget);
@@ -253,7 +255,7 @@ void main() {
     await pumpApp(tester, purchases: purchases);
 
     // The classic Today, and no way to the coach.
-    expect(find.text('Your Day'), findsOneWidget);
+    expect(_yourDay, findsOneWidget);
     expect(find.byKey(const Key('Coach.draft')), findsNothing);
     expect(find.text('Turn On Coach'), findsNothing);
     expect(askCoach(), findsNothing);
@@ -282,7 +284,7 @@ void main() {
     GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/today');
     await tester.pumpAndSettle();
     expect(find.text('Turn On Coach'), findsNothing);
-    expect(find.text('Your Day'), findsOneWidget);
+    expect(_yourDay, findsOneWidget);
 
     GoRouter.of(tester.element(find.byType(Scaffold).first))
         .go('/progress/weight-trend');

@@ -9,6 +9,7 @@ class AppListRowButton extends StatelessWidget {
   const new({
     required this.title,
     required this.onPressed,
+    this.onLongPress,
     this.subtitle,
     this.icon,
     this.thumbnail,
@@ -23,6 +24,10 @@ class AppListRowButton extends StatelessWidget {
 
   /// Called when the row is tapped. `null` disables it.
   final VoidCallback? onPressed;
+
+  /// Called when the row is held, for a shortcut such as choosing a goal.
+  /// Pair it with a custom semantics action so screen readers reach it.
+  final VoidCallback? onLongPress;
 
   /// See [AppListRow.subtitle].
   final String? subtitle;
@@ -49,6 +54,7 @@ class AppListRowButton extends StatelessWidget {
         button: true,
         child: InkWell(
           onTap: onPressed,
+          onLongPress: onLongPress,
           // Faded when it does nothing, as a disabled iOS row is; it
           // looked like a live row before.
           child: Opacity(

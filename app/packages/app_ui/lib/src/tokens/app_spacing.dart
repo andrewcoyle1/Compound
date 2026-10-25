@@ -133,6 +133,9 @@ abstract final class AppChartMark {
   /// A small ring's stroke, beside a row's text.
   static const double arcWidthSmall = 6;
 
+  /// A dashboard hero's ring: heavy, beside the hero number.
+  static const double arcWidthHero = 14;
+
   /// How dark the shadow is that a ring's tip casts on the lap beneath it,
   /// once it is past a full turn.
   static const double lapShadowOpacity = 0.45;

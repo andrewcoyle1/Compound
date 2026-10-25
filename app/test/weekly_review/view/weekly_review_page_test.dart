@@ -145,19 +145,57 @@ void main() {
 
       expect(find.text('Weekly Review'), findsOneWidget);
       expect(find.text('Mar 9 – Mar 15'), findsOneWidget);
-      expect(find.text('Volume up 11% on last week.'), findsOneWidget);
-      expect(find.text('1 of 3'), findsOneWidget);
-      expect(find.text('+11% vs last week'), findsOneWidget);
+      // The hero: the sessions against the goal, missed, so no badge.
+      expect(
+        find.bySemanticsLabel('1/3, Sessions, Volume up 11% on last week.'),
+        findsOneWidget,
+      );
+      expect(find.text('SESSIONS'), findsOneWidget);
+      expect(find.text('Goal Met'), findsNothing);
+      expect(find.text('+11%'), findsOneWidget);
+      expect(find.text('VS LAST WEEK'), findsOneWidget);
       expect(find.text('500\u00a0kg'), findsOneWidget);
-      expect(find.text('Average RPE'), findsOneWidget);
-      expect(find.text('Sets per Muscle'), findsOneWidget);
-      expect(find.text('Chest'), findsOneWidget);
-      expect(find.text(bench), findsOneWidget);
-      expect(find.text('Personal Records'), findsOneWidget);
-      expect(find.text('100\u00a0kg × 5'), findsOneWidget);
+      expect(find.text('AVERAGE RPE'), findsOneWidget);
+      for (final text in [
+        'Sets per Muscle',
+        'Chest',
+        bench,
+        'Personal Records',
+        '100\u00a0kg × 5',
+        'Body & Nutrition',
+      ]) {
+        await tester.scrollUntilVisible(find.text(text), 100);
+        expect(find.text(text), findsOneWidget);
+      }
+      await tester.scrollUntilVisible(
+        find.textContaining('logged days on target'),
+        100,
+      );
       expect(find.textContaining('kg (−'), findsOneWidget);
-      expect(find.text('Body & Nutrition'), findsOneWidget);
-      expect(find.textContaining('logged days on target'), findsOneWidget);
+    });
+
+    testWidgets('celebrates a week that met its goal', (tester) async {
+      final haptics = <AppHaptic>[];
+      AppHaptics.debugPlay = haptics.add;
+      addTearDown(() => AppHaptics.debugPlay = null);
+      await pumpView(
+        tester,
+        sessions: [
+          for (final day in [9, 10, 11])
+            fixtureSession(
+              's$day',
+              day: day,
+              author: uid,
+              exercises: [
+                fixtureExercise(bench, sets: [fixtureSet()]),
+              ],
+            ),
+        ],
+      );
+
+      expect(find.text('Goal Met'), findsOneWidget);
+      expect(find.text('3/3'), findsOneWidget);
+      expect(haptics, [AppHaptic.success]);
     });
 
     testWidgets('moves between weeks', (tester) async {
@@ -179,6 +217,7 @@ void main() {
 
       expect(find.text('No sessions logged this week.'), findsOneWidget);
       expect(find.text('Personal Records'), findsNothing);
+      await tester.scrollUntilVisible(find.text('Body & Nutrition'), 100);
       expect(find.text('Body & Nutrition'), findsOneWidget);
       expect(find.text('Calories'), findsNothing);
     });

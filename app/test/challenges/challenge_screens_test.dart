@@ -92,22 +92,24 @@ void main() {
       await pump(tester);
 
       await tester.scrollUntilVisible(
-        find.text('October Grind'),
+        find.text('OCTOBER GRIND'),
         200,
         scrollable: dashboard.first,
       );
-      await tester.ensureVisible(find.text('October Grind'));
+      await tester.ensureVisible(find.text('OCTOBER GRIND'));
       await tester.pump();
       expect(find.text('Challenges'), findsOneWidget);
-      expect(find.text('Two-Week Kickstart'), findsOneWidget);
+      expect(find.text('TWO-WEEK KICKSTART'), findsOneWidget);
       // October Grind: Maya 7, the viewer 5, Charlie 4, by display name.
-      expect(find.text('1. Maya Chen 7'), findsOneWidget);
-      expect(find.text('2. You 5'), findsOneWidget);
+      expect(
+        find.text('1. Maya Chen 7 · 2. You 5 · 3. Charlie Nguyen 4'),
+        findsOneWidget,
+      );
 
-      await tester.tap(find.text('October Grind'));
+      await tester.tap(find.text('OCTOBER GRIND'));
       await settle(tester);
       expect(find.byType(ChallengeDetailPage), findsOneWidget);
-      expect(find.text('Train 12 times'), findsOneWidget);
+      expect(find.text('TRAIN 12 TIMES'), findsOneWidget);
       expect(find.text('Standings'), findsOneWidget);
       expect(analytics.names, contains('SocialView_Challenge_Press'));
       expect(analytics.names, contains('ChallengeDetailView_Appear'));
@@ -155,13 +157,13 @@ void main() {
         'Push Week',
       );
       await tester.scrollUntilVisible(
-        find.text('Push Week'),
+        find.text('PUSH WEEK'),
         200,
         scrollable: dashboard.first,
       );
-      await tester.ensureVisible(find.text('Push Week'));
+      await tester.ensureVisible(find.text('PUSH WEEK'));
       await tester.pump();
-      expect(find.text('Push Week'), findsOneWidget);
+      expect(find.text('PUSH WEEK'), findsOneWidget);
     });
 
     testWidgets('closing with something typed asks first', (tester) async {
@@ -194,13 +196,13 @@ void main() {
       unawaited(challenges.refresh());
       await settle(tester);
       await tester.scrollUntilVisible(
-        find.text('Two-Week Kickstart'),
+        find.text('TWO-WEEK KICKSTART'),
         200,
         scrollable: dashboard.first,
       );
-      await tester.ensureVisible(find.text('Two-Week Kickstart'));
+      await tester.ensureVisible(find.text('TWO-WEEK KICKSTART'));
       await tester.pump();
-      await tester.tap(find.text('Two-Week Kickstart'));
+      await tester.tap(find.text('TWO-WEEK KICKSTART'));
       await settle(tester);
 
       await tester.tap(find.byTooltip('More actions'));
@@ -220,7 +222,7 @@ void main() {
       await settle(tester);
       expect(find.byType(ChallengeDetailPage), findsNothing);
       expect(challenges.state.challenge('mock_challenge_2'), isNull);
-      expect(find.text('Two-Week Kickstart'), findsNothing);
+      expect(find.text('TWO-WEEK KICKSTART'), findsNothing);
     });
 
     testWidgets('a challenge that cannot be read says so', (tester) async {
@@ -256,6 +258,8 @@ void main() {
       await pump(tester);
       // The sample user has more than five finished workouts.
       expect(find.text('Invite a friend'), findsOneWidget);
+      await tester.ensureVisible(find.text('Invite a friend'));
+      await tester.pump();
       await tester.tap(find.text('Invite a friend'));
       await settle(tester);
       expect(find.text('Invite a friend'), findsNothing);
@@ -265,6 +269,8 @@ void main() {
 
     testWidgets('the invite card can be closed', (tester) async {
       await pump(tester);
+      await tester.ensureVisible(find.text('Invite a friend'));
+      await tester.pump();
       await tester.tap(
         find.descendant(
           of: find.ancestor(

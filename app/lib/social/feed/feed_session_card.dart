@@ -22,10 +22,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:social_repository/social_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
-/// A workout in the feed (`WorkoutSessionRowView`): who did it, the
-/// workout, likes, comments, and More: Save as Template, Share with Friends
-/// (the workout's template, when the reader has it), Share Image and, on
-/// someone else's workout, Report. Share sends its summary and web page.
+/// A workout in the feed (`WorkoutSessionRowView`), on the summary card's
+/// anatomy: who did it with More in the header, the workout as the hero,
+/// and likes, comments and Share under it. More holds Save as Template,
+/// Share with Friends (the workout's template, when the reader has it),
+/// Share Image and, on someone else's workout, Report. Share sends its
+/// summary and web page.
 class FeedSessionCard extends StatelessWidget {
   const new({
     required this.entry,
@@ -66,17 +68,46 @@ class FeedSessionCard extends StatelessWidget {
       ],
       child: BlocListener<SaveSessionTemplateCubit, SaveSessionTemplateState>(
         listener: _onSaveTemplate,
-        child: WorkoutSessionCard(
-          entry: entry,
-          header: AuthorHeader(
-            author: author,
-            date: session.dateCreated,
-            onPressed: () => SocialNavigation.openProfile(context, author),
+        child: AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header: who, when, and More at the trailing edge.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.l,
+                  AppSpacing.l,
+                  AppSpacing.xs,
+                  0,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AuthorHeader(
+                        author: author,
+                        date: session.dateCreated,
+                        onPressed: () =>
+                            SocialNavigation.openProfile(context, author),
+                      ),
+                    ),
+                    _MoreMenu(session: session, author: author, viewer: viewer),
+                  ],
+                ),
+              ),
+              _Workout(
+                entry: entry,
+                // A note is its author's private reminder, not a caption.
+                showsNote: viewer?.userId == session.authorId,
+                onPressed: () => SocialNavigation.openSession(context, session),
+              ),
+              const Divider(
+                height: 1,
+                indent: AppSpacing.l,
+                endIndent: AppSpacing.l,
+              ),
+              _Actions(session: session, author: author, viewer: viewer),
+            ],
           ),
-          onPressed: () => SocialNavigation.openSession(context, session),
-          // A note is its author's private reminder, not a caption.
-          showsNote: viewer?.userId == session.authorId,
-          footer: _Actions(session: session, author: author, viewer: viewer),
         ),
       ),
     );
@@ -108,6 +139,156 @@ class FeedSessionCard extends StatelessWidget {
         break;
     }
   }
+}
+
+/// The workout, Strava's way: its name in the display face, its stats as
+/// big numbers over their labels, its highlights, and the exercises in one
+/// line. Opens the workout.
+class _Workout extends StatelessWidget {
+  const new({
+    required this.entry,
+    required this.showsNote,
+    required this.onPressed,
+  });
+
+  final WorkoutHistoryEntry entry;
+  final bool showsNote;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.appColors;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final session = entry.session;
+    final volume = WorkoutText.sessionVolume(session, locale: locale);
+    final duration = session.activeDuration;
+    final note = session.notes?.trim();
+    final streak = WorkoutText.streak(l10n, session.weekStreakCount);
+    final weekly = WorkoutText.weeklyWorkout(l10n, entry.weeklyWorkoutNumber);
+    final highlights = [
+      for (final record in entry.personalRecords)
+        _Highlight(
+          text: l10n.highlightPersonalRecord(
+            record.exerciseName,
+            WorkoutText.recordDetail(l10n, record, locale: locale),
+          ),
+          icon: AppSymbols.personalRecord,
+          tint: colors.personalRecord,
+        ),
+      if (streak != null)
+        _Highlight(
+          text: streak,
+          icon: AppSymbols.streak,
+          tint: colors.workouts,
+        ),
+      if (weekly != null)
+        _Highlight(
+          text: weekly,
+          icon: AppSymbols.calendar,
+          tint: colors.exercises,
+        ),
+    ];
+    final exercises = session.doneExercises;
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        child: AppPressable(
+          onTap: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.l),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: AppSpacing.m,
+              children: [
+                Text(session.name, style: AppTextStyles.metricLarge),
+                Wrap(
+                  spacing: AppSpacing.xl,
+                  runSpacing: AppSpacing.s,
+                  children: [
+                    if (duration != null)
+                      AppStat(
+                        value: AppFormat.duration(duration),
+                        label: l10n.statDuration,
+                      ),
+                    if (volume != null)
+                      AppStat(value: volume, label: l10n.statVolume),
+                    AppStat(
+                      value: AppFormat.number(
+                        session.loggedSetCount,
+                        locale: locale,
+                      ),
+                      label: l10n.statSets,
+                    ),
+                  ],
+                ),
+                if (highlights.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: AppSpacing.xs,
+                    children: highlights,
+                  ),
+                if (exercises.isNotEmpty)
+                  Text(
+                    [
+                      l10n.exerciseCount(exercises.length),
+                      ...exercises.map((exercise) => exercise.name),
+                    ].join(' · '),
+                    style: AppTextStyles.rowDetail.secondary(context),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                if (showsNote && note != null && note.isNotEmpty)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: AppSpacing.xs,
+                    children: [
+                      ExcludeSemantics(
+                        child: Icon(
+                          AppSymbols.note,
+                          size: AppIconSize.small.of(context),
+                          color: colors.secondaryLabel,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          note,
+                          style: AppTextStyles.label.secondary(context),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A highlight: a record, the streak or the week's count. The icon carries
+/// the data colour; the text stays in the text colour, since the data
+/// colours fail contrast as text.
+class _Highlight extends StatelessWidget {
+  const new({required this.text, required this.icon, required this.tint});
+
+  final String text;
+  final IconData icon;
+  final Color tint;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    spacing: AppSpacing.xs,
+    children: [
+      ExcludeSemantics(
+        child: Icon(icon, color: tint, size: AppIconSize.small.of(context)),
+      ),
+      Flexible(child: Text(text, style: AppTextStyles.label.semibold)),
+    ],
+  );
 }
 
 class _Actions extends StatelessWidget {
@@ -160,9 +341,6 @@ class _Actions extends StatelessWidget {
               semanticLabel: l10n.shareWorkout,
               onPressed: () => unawaited(_share(context)),
             ),
-          ),
-          Expanded(
-            child: _MoreMenu(session: session, author: author, viewer: viewer),
           ),
         ],
       ),

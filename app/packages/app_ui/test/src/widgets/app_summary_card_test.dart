@@ -69,6 +69,43 @@ void main() {
       );
     });
 
+    testWidgets('reads a chart under a number after the number', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const AppSummaryCard(
+          title: 'Steps',
+          value: '6,240',
+          chart: _ring,
+          semanticValue: 'Up from 5,100',
+          footer: 'Today',
+        ),
+      );
+      expect(
+        tester.getSemantics(_card),
+        matchesSemantics(label: 'Steps', value: '6,240, Up from 5,100, Today'),
+      );
+    });
+
+    testWidgets("reads a chart's own figures after the number", (tester) async {
+      await tester.pumpApp(
+        const AppSummaryCard(
+          title: 'Calories',
+          value: '1,367',
+          unit: 'of 2,250 kcal',
+          chart: _ring,
+          semanticValue: 'Protein, 104 of 165 g',
+        ),
+      );
+      expect(
+        tester.getSemantics(_card),
+        matchesSemantics(
+          label: 'Calories',
+          value: '1,367 of 2,250 kcal, Protein, 104 of 165 g',
+        ),
+      );
+    });
+
     testWidgets('as a button: one tap target, a haptic and a chevron', (
       tester,
     ) async {
@@ -250,6 +287,33 @@ void main() {
       expect(ring.top, greaterThanOrEqualTo(number.bottom));
     });
 
+    testWidgets('puts its actions under the summary, each its own button', (
+      tester,
+    ) async {
+      var opened = 0;
+      var started = 0;
+      await tester.pumpApp(
+        AppSummaryCard(
+          title: "Today's Workout",
+          value: 'Push Day A',
+          onTap: () => opened++,
+          actions: AppCtaButton(
+            label: 'Start Workout',
+            size: AppCtaSize.compact,
+            onPressed: () => started++,
+          ),
+        ),
+      );
+      expect(
+        tester.getTopLeft(find.text('Start Workout')).dy,
+        greaterThan(tester.getBottomLeft(find.text('Push Day A')).dy),
+      );
+      await tester.tap(find.text('Start Workout'));
+      expect((opened, started), (0, 1));
+      await tester.tap(find.text('Push Day A'));
+      expect((opened, started), (1, 1));
+    });
+
     testWidgets('can show only a header', (tester) async {
       await tester.pumpApp(const AppSummaryCard(title: 'Empty'));
       expect(tester.getSemantics(_card), matchesSemantics(label: 'Empty'));
@@ -387,6 +451,39 @@ void main() {
               label: 'Goal Met',
               icon: AppSymbols.success,
               selected: true,
+            ),
+          ),
+        ),
+      ),
+    ]);
+  });
+
+  group('AppSummaryCard actions golden', () {
+    goldenStates('app_summary_card_actions', [
+      (
+        'Button with actions',
+        Builder(
+          builder: (context) => AppSummaryCard(
+            title: "Today's Workout",
+            icon: AppSymbols.workout,
+            tint: context.appColors.workouts,
+            value: 'Push Day A',
+            unit: 'Week 1 of 8 · Day 1',
+            size: AppSummaryCardSize.large,
+            footer: 'Bench Press · 80 kg × 8',
+            onTap: () {},
+            actions: Row(
+              spacing: AppSpacing.m,
+              children: [
+                Expanded(
+                  child: AppCtaButton(
+                    label: 'Start Workout',
+                    size: AppCtaSize.compact,
+                    onPressed: () {},
+                  ),
+                ),
+                AppTextButton(label: 'Skip', onPressed: () {}),
+              ],
             ),
           ),
         ),

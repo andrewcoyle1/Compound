@@ -100,6 +100,8 @@ class ExerciseOneRepMaxCard extends StatelessWidget {
           ? number(inUnit(card.bestKg))
           : AppFormat.placeholder,
       unit: unit.symbol,
+      icon: AppSymbols.exercise,
+      tint: context.appColors.exercises,
       onTap:
           onTap ??
           () => context.goNamed(

@@ -70,8 +70,11 @@ void main() {
       await pump(tester, Stream.value([before, recent]));
       await tester.pump();
 
-      expect(find.text('Completed Workouts'), findsOneWidget);
+      // The hero: every workout finished.
+      expect(find.text('COMPLETED WORKOUTS'), findsOneWidget);
       expect(find.text('2'), findsWidgets);
+      // Each card opens on the workout glyph and its day as an overline.
+      expect(find.byIcon(AppSymbols.workout), findsNWidgets(2));
       expect(find.text('Session b'), findsOneWidget);
       expect(find.text('Session a'), findsOneWidget);
       expect(find.text('PR: Bench 100\u00a0kg × 5'), findsOneWidget);

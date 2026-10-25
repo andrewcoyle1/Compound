@@ -277,8 +277,8 @@ class _SocialProfileViewState extends State<SocialProfileView> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     spacing: AppSpacing.xl,
                     children: [
-                      _ThisWeek(summary: summary),
                       _Consistency(summary: summary),
+                      _ThisWeek(summary: summary),
                       // Strava's terms keep an athlete's data to the
                       // athlete: the reader's own profile only.
                       if (summary.isOwn)
@@ -315,7 +315,6 @@ class _Header extends StatelessWidget {
     final viewer = summary.viewer!;
     final name = fullNameOf(user);
     final secondary = AppTextStyles.label.secondary(context);
-    final count = summary.workoutCount;
     final streak = summary.latestStreak;
     // Only the reader's own mesocycle is known without reading someone
     // else's (`SocialProfilePresenter.mesocycleName`).
@@ -329,9 +328,7 @@ class _Header extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: AppSpacing.xs,
       children: [
-        if (name != null) Text(name, style: AppTextStyles.sectionTitle),
-        if (count != null)
-          Text(l10n.socialWorkoutCount(count), style: secondary),
+        if (name != null) Text(name, style: AppTextStyles.metricLarge),
         if (summary.followsYou) Text(l10n.socialFollowsYou, style: secondary),
         if (streak != null)
           Row(
@@ -343,27 +340,13 @@ class _Header extends StatelessWidget {
                 size: AppIconSize.small.of(context),
                 color: colors.workouts,
               ),
-              Text(l10n.highlightStreak(streak), style: secondary),
+              Flexible(
+                child: Text(l10n.highlightStreak(streak), style: secondary),
+              ),
             ],
           ),
         if (summary.isOwn && mesocycle != null)
           Text(l10n.profileFollowingMesocycle(mesocycle), style: secondary),
-        if (summary.isOwn)
-          Semantics(
-            hint: l10n.socialChangeGoalHint,
-            child: AppChip(
-              icon: AppSymbols.goal,
-              label: user.weeklySessionGoal == null
-                  ? l10n.socialSetWeeklyGoal
-                  : l10n.socialGoalText(
-                      weeklySessionGoal(user.weeklySessionGoal),
-                    ),
-              onPressed: () {
-                cubit.weeklyGoalPressed();
-                unawaited(showWeeklyGoalSheet(context, viewer));
-              },
-            ),
-          ),
       ],
     );
     final follow = summary.showsFollowButton
@@ -380,161 +363,162 @@ class _Header extends StatelessWidget {
         : null;
     void openPeople(PeopleListRequest request) =>
         SocialNavigation.openPeople(context, user.userId, request);
-    return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.l),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: AppSpacing.l,
-          children: [
-            if (isLargeText)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: AppSpacing.l,
-                children: [
-                  UserAvatar(imageUrl: profileImageOf(user), size: 80),
-                  details,
-                  ?follow,
-                ],
-              )
-            else
-              Row(
-                spacing: AppSpacing.l,
-                children: [
-                  UserAvatar(imageUrl: profileImageOf(user), size: 80),
-                  Expanded(child: details),
-                  ?follow,
-                ],
-              ),
-            const Divider(height: 1),
-            if (summary.isBlocked)
-              _IconLine(icon: AppSymbols.block, text: l10n.socialBlockedAccount)
-            else
-              Row(
-                spacing: AppSpacing.xxl,
-                children: [
-                  _CountButton(
-                    value: AppFormat.number(followers.length, locale: locale),
-                    label: l10n.socialFollowers,
-                    onPressed: summary.isLocked
-                        ? null
-                        : () => openPeople(
-                            PeopleListRequest(
-                              kind: PeopleListKind.followers,
-                              people: followers,
-                              canRemove: summary.isOwn,
-                            ),
-                          ),
-                  ),
-                  _CountButton(
-                    value: AppFormat.number(
-                      user.followingIds?.length ?? 0,
-                      locale: locale,
-                    ),
-                    label: l10n.socialFollowing,
-                    onPressed: summary.isLocked
-                        ? null
-                        : () => cubit.followingPressed(viewer),
-                  ),
-                ],
-              ),
-            if (summary.isOwn)
-              Row(
-                spacing: AppSpacing.s,
-                children: [
-                  Expanded(
-                    child: AppCtaButton(
-                      label: l10n.profileEditProfile,
-                      size: AppCtaSize.compact,
-                      variant: AppCtaVariant.secondary,
-                      onPressed: () {
-                        cubit.editProfilePressed();
-                        unawaited(context.pushNamed(EditProfilePage.name));
-                      },
-                    ),
-                  ),
-                  // The invite link is the profile's shareable link:
-                  // accepting it opens this profile.
-                  Expanded(
-                    child: AppCtaButton(
-                      label: l10n.profileShareProfile,
-                      size: AppCtaSize.compact,
-                      variant: AppCtaVariant.secondary,
-                      onPressed: () => unawaited(
-                        context.read<InviteCubit>().shareRequested(
-                          user.userId,
-                          pressedEvent:
-                              'SocialProfileView_ShareProfile_Pressed',
+    const avatar = 2 * AppControlSize.cta;
+    final numbers = summary.isBlocked
+        ? _IconLine(icon: AppSymbols.block, text: l10n.socialBlockedAccount)
+        : Wrap(
+            spacing: AppSpacing.xxl,
+            runSpacing: AppSpacing.s,
+            children: [
+              if (summary.workoutCount case final count?)
+                AppStat(
+                  value: AppFormat.number(count, locale: locale),
+                  label: l10n.socialWorkouts,
+                ),
+              _CountButton(
+                value: AppFormat.number(followers.length, locale: locale),
+                label: l10n.socialFollowers,
+                onPressed: summary.isLocked
+                    ? null
+                    : () => openPeople(
+                        PeopleListRequest(
+                          kind: PeopleListKind.followers,
+                          people: followers,
+                          canRemove: summary.isOwn,
                         ),
                       ),
-                    ),
-                  ),
-                ],
               ),
-            if (!summary.isBlocked && summary.isLocked)
-              _IconLine(icon: AppSymbols.lock, text: l10n.socialPrivateLocked),
-            if (!summary.isBlocked &&
-                !summary.isLocked &&
-                summary.mutualFollowers.isNotEmpty) ...[
-              const Divider(height: 1),
-              Row(
-                spacing: AppSpacing.s,
-                children: [
-                  ExcludeSemantics(
-                    child: SizedBox(
-                      height: AppControlSize.thumbnail,
-                      width:
-                          AppControlSize.thumbnail +
-                          (summary.mutualFollowers.take(5).length - 1) *
-                              (AppControlSize.thumbnail - AppSpacing.m),
-                      child: Stack(
-                        children: [
-                          for (final (index, mutual)
-                              in summary.mutualFollowers.take(5).indexed)
-                            Positioned(
-                              left:
-                                  index *
-                                  (AppControlSize.thumbnail - AppSpacing.m),
-                              child: DecoratedBox(
-                                decoration: ShapeDecoration(
-                                  shape: CircleBorder(
-                                    side: BorderSide(
-                                      color: colors.canvas,
-                                      width: 2,
-                                    ),
-                                  ),
-                                ),
-                                child: UserAvatar(
-                                  imageUrl: profileImageOf(mutual),
-                                  size: AppControlSize.thumbnail,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      l10n.socialPeopleYouBothFollow,
-                      style: secondary,
-                    ),
-                  ),
-                  AppTextButton(
-                    label: l10n.socialSeeAll,
-                    onPressed: () => openPeople(
-                      PeopleListRequest(
-                        kind: PeopleListKind.mutual,
-                        people: summary.mutualFollowers,
-                      ),
-                    ),
-                  ),
-                ],
+              _CountButton(
+                value: AppFormat.number(
+                  user.followingIds?.length ?? 0,
+                  locale: locale,
+                ),
+                label: l10n.socialFollowing,
+                onPressed: summary.isLocked
+                    ? null
+                    : () => cubit.followingPressed(viewer),
               ),
             ],
-          ],
-        ),
-      ),
+          );
+    // Who they are on the canvas, as an athlete's page opens: the face,
+    // the name in the display face, then their numbers as stats.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.l,
+      children: [
+        if (isLargeText)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.l,
+            children: [
+              UserAvatar(imageUrl: profileImageOf(user), size: avatar),
+              details,
+            ],
+          )
+        else
+          Row(
+            spacing: AppSpacing.l,
+            children: [
+              UserAvatar(imageUrl: profileImageOf(user), size: avatar),
+              Expanded(child: details),
+            ],
+          ),
+        // Their numbers, with Follow at the trailing edge; under them at
+        // the largest text sizes.
+        if (isLargeText)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.l,
+            children: [numbers, ?follow],
+          )
+        else
+          Row(
+            spacing: AppSpacing.l,
+            children: [
+              Expanded(child: numbers),
+              ?follow,
+            ],
+          ),
+        if (summary.isOwn) ...[
+          Row(
+            spacing: AppSpacing.s,
+            children: [
+              Expanded(
+                child: AppCtaButton(
+                  label: l10n.profileEditProfile,
+                  size: AppCtaSize.compact,
+                  variant: AppCtaVariant.secondary,
+                  onPressed: () {
+                    cubit.editProfilePressed();
+                    unawaited(context.pushNamed(EditProfilePage.name));
+                  },
+                ),
+              ),
+              // The invite link is the profile's shareable link:
+              // accepting it opens this profile.
+              Expanded(
+                child: AppCtaButton(
+                  label: l10n.profileShareProfile,
+                  size: AppCtaSize.compact,
+                  variant: AppCtaVariant.secondary,
+                  onPressed: () => unawaited(
+                    context.read<InviteCubit>().shareRequested(
+                      user.userId,
+                      pressedEvent: 'SocialProfileView_ShareProfile_Pressed',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Semantics(
+              hint: l10n.socialChangeGoalHint,
+              child: AppChip(
+                icon: AppSymbols.goal,
+                label: user.weeklySessionGoal == null
+                    ? l10n.socialSetWeeklyGoal
+                    : l10n.socialGoalText(
+                        weeklySessionGoal(user.weeklySessionGoal),
+                      ),
+                onPressed: () {
+                  cubit.weeklyGoalPressed();
+                  unawaited(showWeeklyGoalSheet(context, viewer));
+                },
+              ),
+            ),
+          ),
+        ],
+        if (!summary.isBlocked && summary.isLocked)
+          _IconLine(icon: AppSymbols.lock, text: l10n.socialPrivateLocked),
+        if (!summary.isBlocked &&
+            !summary.isLocked &&
+            summary.mutualFollowers.isNotEmpty)
+          AppSection(
+            children: [
+              AppListRowButton(
+                title: l10n.socialPeopleYouBothFollow,
+                thumbnail: UserAvatar(
+                  imageUrl: profileImageOf(summary.mutualFollowers.first),
+                  size: AppControlSize.thumbnail,
+                ),
+                accessory: AppListRowValue(
+                  AppFormat.number(
+                    summary.mutualFollowers.length,
+                    locale: locale,
+                  ),
+                ),
+                onPressed: () => openPeople(
+                  PeopleListRequest(
+                    kind: PeopleListKind.mutual,
+                    people: summary.mutualFollowers,
+                  ),
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 }
@@ -576,13 +560,15 @@ class _CountButton extends StatelessWidget {
         onTap: onPressed,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: AppControlSize.row),
-          child: AppStat(value: value, label: label, size: AppStatSize.small),
+          child: AppStat(value: value, label: label),
         ),
       ),
     );
   }
 }
 
+/// This week's workouts as a summary card: the count, with the time and
+/// the volume as stats under it.
 class _ThisWeek extends StatelessWidget {
   const new({required this.summary});
 
@@ -595,47 +581,26 @@ class _ThisWeek extends StatelessWidget {
     final unit = WorkoutText.preferredWeightUnit(
       summary.viewer?.submittedWeightUnitPreference,
     );
-    return AppSection(
-      header: l10n.socialThisWeek,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: Wrap(
-            spacing: AppSpacing.xxl,
-            runSpacing: AppSpacing.s,
-            children: [
-              AppStat(
-                value: AppFormat.number(
-                  summary.thisWeek.length,
-                  locale: locale,
-                ),
-                label: l10n.socialWorkouts,
-                size: AppStatSize.small,
-              ),
-              AppStat(
-                value: AppFormat.duration(summary.thisWeekDuration),
-                label: l10n.socialTime,
-                size: AppStatSize.small,
-              ),
-              AppStat(
-                value: AppFormat.weight(
-                  summary.thisWeekVolumeKg,
-                  unit,
-                  locale: locale,
-                ),
-                label: l10n.statVolume,
-                size: AppStatSize.small,
-              ),
-            ],
-          ),
-        ),
-      ],
+    final time = AppFormat.duration(summary.thisWeekDuration);
+    final volume = AppFormat.weight(
+      summary.thisWeekVolumeKg,
+      unit,
+      locale: locale,
+    );
+    return AppSummaryCard(
+      title: l10n.socialThisWeek,
+      icon: AppSymbols.workout,
+      tint: context.appColors.workouts,
+      value: AppFormat.number(summary.thisWeek.length, locale: locale),
+      unit: l10n.socialWorkouts,
+      footer: '${l10n.socialTime} $time · ${l10n.statVolume} $volume',
     );
   }
 }
 
-/// Training days over the last twelve weeks, a square per day, a column
-/// per week (Swift's `ContributionChart`).
+/// The hero: training days over the last twelve weeks, the count in the
+/// display face over a square per day, a column per week (Swift's
+/// `ContributionChart`).
 class _Consistency extends StatelessWidget {
   const new({required this.summary});
 
@@ -644,69 +609,63 @@ class _Consistency extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final colors = context.appColors;
     final firstDay = firstDayOfWeekIndex(context);
     final now = DateTime.now();
     final thisWeek = WorkoutSessionHighlights.weekStart(now, firstDay);
     final today = DateTime(now.year, now.month, now.day);
     const weeks = 12;
-    return AppSection(
-      header: l10n.socialConsistency,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: Semantics(
-            label: l10n.socialTrainingDays(summary.trainingDays.length),
-            excludeSemantics: true,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                const gap = AppSpacing.xs;
-                final side = (constraints.maxWidth - gap * (weeks - 1)) / weeks;
-                return Row(
+    final days = summary.trainingDays.length;
+    return AppSummaryCard(
+      title: l10n.socialConsistency,
+      icon: AppSymbols.calendar,
+      tint: colors.workouts,
+      size: AppSummaryCardSize.large,
+      value: AppFormat.number(days),
+      unit: l10n.socialTrainingDaysUnit(days),
+      chart: LayoutBuilder(
+        builder: (context, constraints) {
+          const gap = AppSpacing.xs;
+          final side = (constraints.maxWidth - gap * (weeks - 1)) / weeks;
+          return Row(
+            spacing: gap,
+            children: [
+              for (var week = weeks - 1; week >= 0; week--)
+                Column(
                   spacing: gap,
                   children: [
-                    for (var week = weeks - 1; week >= 0; week--)
-                      Column(
-                        spacing: gap,
-                        children: [
-                          for (var day = 0; day < 7; day++)
-                            () {
-                              final date = DateTime(
-                                thisWeek.year,
-                                thisWeek.month,
-                                thisWeek.day - week * 7 + day,
-                              );
-                              final trained = summary.trainingDays.contains(
-                                date,
-                              );
-                              return SizedBox.square(
-                                dimension: side,
-                                child: date.isAfter(today)
-                                    ? null
-                                    : DecoratedBox(
-                                        decoration: ShapeDecoration(
-                                          shape: RoundedSuperellipseBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              AppRadius.s / 2,
-                                            ),
-                                          ),
-                                          color: trained
-                                              ? colors.workouts
-                                              : scheme.surfaceContainerHighest,
-                                        ),
+                    for (var day = 0; day < 7; day++)
+                      () {
+                        final date = DateTime(
+                          thisWeek.year,
+                          thisWeek.month,
+                          thisWeek.day - week * 7 + day,
+                        );
+                        final trained = summary.trainingDays.contains(date);
+                        return SizedBox.square(
+                          dimension: side,
+                          child: date.isAfter(today)
+                              ? null
+                              : DecoratedBox(
+                                  decoration: ShapeDecoration(
+                                    shape: RoundedSuperellipseBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.s / 2,
                                       ),
-                              );
-                            }(),
-                        ],
-                      ),
+                                    ),
+                                    color: trained
+                                        ? colors.workouts
+                                        : colors.raised,
+                                  ),
+                                ),
+                        );
+                      }(),
                   ],
-                );
-              },
-            ),
-          ),
-        ),
-      ],
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

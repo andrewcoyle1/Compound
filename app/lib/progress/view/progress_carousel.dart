@@ -115,9 +115,10 @@ class _Title extends StatelessWidget {
         Expanded(
           child: Semantics(
             header: true,
+            // An overline, as a summary card's header.
             child: Text(
-              title,
-              style: AppTextStyles.sectionTitle.secondary(context),
+              title.toUpperCase(),
+              style: AppTextStyles.overline.secondary(context),
             ),
           ),
         ),

@@ -77,19 +77,20 @@ void main() {
         ) async {
           await pumpPage(tester);
           expect(find.text('Nutrition Overview'), findsOneWidget);
-          expect(find.text('Weekly check-in ready'), findsOneWidget);
-          expect(find.text('New targets suggested'), findsNothing);
-          expect(find.textContaining('consumed'), findsOneWidget);
-          expect(find.text('Macros'), findsOneWidget);
+          expect(find.text('WEEKLY CHECK-IN READY'), findsOneWidget);
+          expect(find.text('NEW TARGETS SUGGESTED'), findsNothing);
+          expect(find.text('CALORIES'), findsOneWidget);
+          expect(find.textContaining(RegExp('^OF .*KCAL')), findsOneWidget);
+          // The macros' method, at the hero's header.
           expect(find.byType(MethodInfoButton), findsOneWidget);
-          // Calories and each macro, as a share of the day's target.
-          final bars = tester.widgetList<BulletBar>(find.byType(BulletBar));
-          expect(bars, hasLength(4));
-          for (final bar in bars) {
-            expect(bar.value, inInclusiveRange(0, 1));
-          }
+          // Calories as a share of the day's target, and a ring per macro.
+          final bar = tester.widget<BulletBar>(find.byType(BulletBar));
+          expect(bar.value, inInclusiveRange(0, 1));
+          expect(find.byType(ProgressArc), findsNWidgets(3));
+          expect(find.text('PROTEIN'), findsOneWidget);
 
-          await tester.tap(find.text('Start'));
+          // The check-in card starts it, as Today's does.
+          await tester.tap(find.text('WEEKLY CHECK-IN READY'));
           verify(
             () => router.pushNamed<Object?>(
               'checkIn',
@@ -97,9 +98,15 @@ void main() {
             ),
           ).called(1);
 
-          await tester.tap(find.byType(Switch));
-          await tester.pump();
           expect(find.text('Top Contributors'), findsOneWidget);
+          // A food's macros, as each contributor's row gives them.
+          final contributor = find.textContaining('P · ');
+          expect(contributor, findsNothing);
+          await tester.ensureVisible(find.text('Contributors'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Contributors'));
+          await tester.pump();
+          expect(contributor, findsWidgets);
 
           await tester.scrollUntilVisible(find.text('Fiber'), 300);
           expect(find.text('Carb Breakdown'), findsOneWidget);
@@ -111,14 +118,14 @@ void main() {
           await pumpPage(tester);
           await tester.tap(find.text('Skip This Week'));
           await tester.pump();
-          expect(find.text('Weekly check-in ready'), findsNothing);
-          expect(find.text('New targets suggested'), findsOneWidget);
+          expect(find.text('WEEKLY CHECK-IN READY'), findsNothing);
+          expect(find.text('NEW TARGETS SUGGESTED'), findsOneWidget);
           expect(find.textContaining('kcal a day, down from'), findsOneWidget);
           // The card's info button joins the macros'.
           expect(find.byType(MethodInfoButton), findsNWidgets(2));
           await tester.tap(find.text('Not now'));
           await tester.pump();
-          expect(find.text('New targets suggested'), findsNothing);
+          expect(find.text('NEW TARGETS SUGGESTED'), findsNothing);
         });
 
         testWidgets('alerts when the plan does not save', (tester) async {
@@ -161,7 +168,12 @@ void main() {
     ) async {
       await pumpPage(tester, dayKey: '2026-01-01');
       expect(find.text('Carb Breakdown'), findsNothing);
-      expect(find.text('—'), findsNWidgets(3));
+      // Nothing eaten: every ring empty.
+      for (final ring in tester.widgetList<ProgressArc>(
+        find.byType(ProgressArc),
+      )) {
+        expect(ring.value, 0);
+      }
     });
 
     testWidgets('says when the day cannot be read', (tester) async {

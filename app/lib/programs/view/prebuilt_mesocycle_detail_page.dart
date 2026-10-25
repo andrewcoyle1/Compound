@@ -93,17 +93,17 @@ class _PrebuiltMesocycleDetailPageState
               )
             : LibrarySections(
                 children: [
-                  AppSection(children: [MesocycleHeader(mesocycle: mesocycle)]),
+                  // The hero: how many workouts a microcycle asks for.
+                  AppHeroStat(
+                    value: AppFormat.number(workoutCount(mesocycle)),
+                    unit: l10n.programWorkoutsPerMicrocycle,
+                  ),
                   AppSection(
                     header: l10n.onboardingOverview,
                     children: [
                       _value(
                         l10n.programDaysPerMicrocycle,
                         mesocycle.workoutTemplates.length,
-                      ),
-                      _value(
-                        l10n.programWorkoutsPerMicrocycle,
-                        workoutCount(mesocycle),
                       ),
                       _value(l10n.programMicrocycles, mesocycle.numMicrocycles),
                       AppListRow(

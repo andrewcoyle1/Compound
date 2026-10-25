@@ -744,7 +744,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(barWidth('Training'), 1366);
-      expect(columnWidth('Training'), AppContentWidth.readable);
+      // Training is a dashboard, in two columns at this width.
+      expect(columnWidth('Training'), AppContentWidth.dashboard);
       // The dock spans the window; its tabs keep to the readable column.
       expect(tester.getSize(find.byType(AppTabBar)).width, 1366);
       expect(
@@ -831,10 +832,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      // Below the header carousel.
-      await reveal(tester, find.text('Weight Trend'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Weight Trend'));
+      // The tab's hero; its title is an overline.
+      await tester.tap(find.text('WEIGHT TREND'));
       await tester.pumpAndSettle();
       expect(find.byType(WeightMetricView), findsOneWidget);
       expect(find.widgetWithText(AppBar, 'Weight Trend'), findsOneWidget);
@@ -902,7 +901,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.text('Scale Weight'),
+        find.text('SCALE WEIGHT'),
         200,
         scrollable: find
             .descendant(
@@ -912,7 +911,7 @@ void main() {
             .first,
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Scale Weight'));
+      await tester.tap(find.text('SCALE WEIGHT'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byTooltip('Log Weight'));

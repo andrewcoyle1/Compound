@@ -35,13 +35,17 @@ enum AppSummaryCardSize {
 /// - **Rows:** optionally, the rows the hero sums up, under it on the same
 ///   card with hairlines between them, such as a day's checklist under
 ///   its count. Only on a card without [onTap].
+/// - **Actions:** optionally, the buttons that act on what the card shows,
+///   such as a workout's Start and Skip, at its foot. They sit outside the
+///   card's own tap target, so each stays its own button.
 ///
 /// With [onTap] the whole card is one button: one pressed state, one
 /// haptic and a chevron, with no buttons inside but [trailing]. Without it
 /// the card only shows. Screen readers read the summary as one element,
-/// "title, value unit, delta, footer"; give [semanticValue] when the hero
-/// is a [chart] without a [value]. [trailing] and each of [rows] stay
-/// their own elements.
+/// "title, value unit, chart, delta, footer"; give [semanticValue] for
+/// what a [chart] says (a ring's own figures, say), which it needs when
+/// there is no [value]. [trailing] and each of [rows] stay their own
+/// elements.
 ///
 /// A goal the user hit shows the accent as a volt fill: pass a selected
 /// [AppChip] as the [delta], or a ring filled in volt as the [chart].
@@ -68,6 +72,7 @@ class AppSummaryCard extends StatelessWidget {
     this.size = AppSummaryCardSize.regular,
     this.semanticValue,
     this.rows = const [],
+    this.actions,
     super.key,
   }) : assert(onTap == null || rows.length == 0, 'A button has no rows');
 
@@ -110,11 +115,15 @@ class AppSummaryCard extends StatelessWidget {
   /// How loud [value] is.
   final AppSummaryCardSize size;
 
-  /// What screen readers hear for the hero when it has no [value].
+  /// What screen readers hear for [chart], after the [value] if any.
   final String? semanticValue;
 
   /// The rows the hero sums up, usually `AppListRowButton`s.
   final List<Widget> rows;
+
+  /// The buttons at the card's foot, usually [AppCtaButton]s in
+  /// [AppCtaSize.compact] laid out in a row or a wrap.
+  final Widget? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +138,7 @@ class AppSummaryCard extends StatelessWidget {
     final footer = this.footer;
     final trailing = this.trailing;
     final onTap = this.onTap;
+    final actions = this.actions;
     // As tall as the overline's line, so the glyph is no bigger than the
     // title beside it.
     final glyph = scaler.scale(
@@ -265,7 +275,7 @@ class AppSummaryCard extends StatelessWidget {
 
     final heard = [
       [?value, ?unit].join(' '),
-      if (value == null) ?semanticValue,
+      ?semanticValue,
       ?delta?.label,
       ?footer,
     ].where((part) => part.isNotEmpty).join(', ');
@@ -280,7 +290,7 @@ class AppSummaryCard extends StatelessWidget {
             child: Semantics(label: title, value: heard, child: content),
           );
     return AppCard(
-      child: rows.isEmpty
+      child: rows.isEmpty && actions == null
           ? summary
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -294,6 +304,16 @@ class AppSummaryCard extends StatelessWidget {
                   ),
                   row,
                 ],
+                if (actions != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.l,
+                      0,
+                      AppSpacing.l,
+                      AppSpacing.l,
+                    ),
+                    child: actions,
+                  ),
               ],
             ),
     );

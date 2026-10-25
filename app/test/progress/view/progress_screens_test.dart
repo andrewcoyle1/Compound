@@ -133,10 +133,10 @@ void main() {
       ]) {
         expect(find.text(header), findsOneWidget);
       }
-      expect(find.text('Left Ankle'), findsOneWidget);
+      expect(find.text('LEFT ANKLE'), findsOneWidget);
       expect(analytics.names, contains('BodyMetricsView_Appear'));
 
-      await tapText(tester, 'Waist');
+      await tapText(tester, 'WAIST');
       expect(find.text('Waist Circumference'), findsWidgets);
       expect(find.byType(MetricDetailView), findsOneWidget);
       expect(analytics.parameters('BodyMeasurementDetailView_Appear'), {
@@ -146,7 +146,7 @@ void main() {
 
     testWidgets('opens scale weight', (tester) async {
       await pumpAt(tester, '/progress/body-metrics');
-      await tapText(tester, 'Scale Weight');
+      await tapText(tester, 'SCALE WEIGHT');
       expect(find.text('scaleWeight screen'), findsOneWidget);
     });
 
@@ -338,12 +338,17 @@ void main() {
         'Mineral Breakdown',
         'Other Breakdown',
       ]) {
+        await tester.scrollUntilVisible(find.text(header), 300);
         expect(find.text(header), findsOneWidget);
+        if (header == 'Vitamin Breakdown') {
+          await tester.scrollUntilVisible(find.text('B12, COBALAMIN'), 300);
+        }
       }
-      expect(find.text('B12, Cobalamin'), findsOneWidget);
       expect(analytics.names, contains('NutritionAnalyticsView_Appear'));
 
-      await tapText(tester, 'Protein');
+      // Back at the top.
+      await pumpAt(tester, '/progress/nutrition-analytics');
+      await tapText(tester, 'PROTEIN');
       expect(find.byType(MetricDetailView), findsOneWidget);
       expect(analytics.parameters('NutritionMetricDetailView_Appear'), {
         'metric': 'protein',
@@ -361,7 +366,8 @@ void main() {
 
     testWidgets('Macros stacks the three and lists each day', (tester) async {
       await pumpAt(tester, '/progress/nutrition-analytics/macros');
-      expect(find.text('Protein'), findsWidgets);
+      // Protein leads the header; the others follow it.
+      expect(find.text('PROTEIN'), findsOneWidget);
       expect(find.text('Carbs'), findsWidgets);
       expect(find.text('Fat'), findsWidgets);
       await tapText(tester, 'Show All Data');
@@ -418,7 +424,7 @@ void main() {
       await pumpAt(tester, '/progress/habits');
       expect(find.byType(HabitGridChart), findsNWidgets(3));
       expect(find.textContaining('/7'), findsOneWidget);
-      await tapText(tester, 'Food Logging');
+      await tapText(tester, 'FOOD LOGGING');
       expect(find.byType(ContributionGrid), findsOneWidget);
     });
 
@@ -426,7 +432,7 @@ void main() {
       tester,
     ) async {
       await pumpAt(tester, '/progress/habits');
-      await tapText(tester, 'Workouts');
+      await tapText(tester, 'WORKOUTS');
       expect(find.text('workoutConsistency screen'), findsOneWidget);
     });
 
@@ -436,7 +442,7 @@ void main() {
         expect(find.text(header), findsOneWidget);
       }
       expect(find.byType(MethodInfoButton), findsNWidgets(2));
-      await tapText(tester, 'Goal Progress');
+      await tapText(tester, 'GOAL PROGRESS');
       expect(find.text('Lose weight'), findsOneWidget);
     });
   });

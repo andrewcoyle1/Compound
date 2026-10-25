@@ -113,14 +113,14 @@ void main() {
 
       expect(find.text('Exercises'), findsWidgets);
       final card = find.ancestor(
-        of: find.text('Press'),
+        of: find.text('PRESS'),
         matching: find.byType(ExerciseOneRepMaxCard),
       );
       await tester.ensureVisible(card);
       await tester.pumpAndSettle();
       // 100 kg × (1 + (5 + 2) / 30).
       expect(
-        find.descendant(of: card, matching: find.text('123.3')),
+        find.descendant(of: card, matching: find.text('123.3 KG')),
         findsOneWidget,
       );
       await tester.tap(card);
@@ -160,14 +160,20 @@ void main() {
     testWidgets('shows both regions and opens a muscle', (tester) async {
       await pump(tester, '/progress/muscles');
 
+      // The hero: the muscles with any sets this week, out of all.
+      expect(find.text('MUSCLES TRAINED'), findsOneWidget);
+      expect(find.textContaining('/${Muscles.values.length}'), findsOneWidget);
       expect(find.text('Upper'), findsOneWidget);
       expect(find.text('Lower'), findsOneWidget);
       expect(find.byType(MuscleSetsCard), findsNWidgets(Muscles.values.length));
       final card = find.ancestor(
-        of: find.text('Side Delts'),
+        of: find.text('SIDE DELTS'),
         matching: find.byType(MuscleSetsCard),
       );
-      expect(find.descendant(of: card, matching: find.text('4')), findsOne);
+      expect(
+        find.descendant(of: card, matching: find.text('4 SETS')),
+        findsOne,
+      );
       await tester.tap(card);
       await tester.pumpAndSettle();
 
@@ -207,6 +213,8 @@ void main() {
       await tester.tap(find.byTooltip('Muscle Balance'));
       await tester.pumpAndSettle();
 
+      expect(find.text('MUSCLES PRODUCTIVE'), findsOneWidget);
+      expect(find.text('0/${Muscles.values.length}'), findsOneWidget);
       expect(find.text('Side Delts · Maintaining'), findsOneWidget);
       expect(find.text('Chest · Below maintenance'), findsOneWidget);
       expect(find.byType(Sparkline), findsNothing);

@@ -19,6 +19,7 @@ import 'package:compound/workout_tracker/view/rest_sound.dart';
 import 'package:compound/workout_tracker/view/set_keypad_view.dart';
 import 'package:compound/workout_tracker/view/tick.dart';
 import 'package:compound/workout_tracker/view/tracker_text.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -120,7 +121,8 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
               current.finishedSession != null,
           listener: (context, state) {
             final session = state.finishedSession!;
-            unawaited(AppHaptics.success());
+            // The summary's hero plays the success haptic as its count
+            // lands, so the finish is felt once.
             _cubit.summaryShown();
             context.pushReplacementNamed(
               WorkoutSessionDetailPage.summaryName,
@@ -348,6 +350,9 @@ class _Tracker extends StatelessWidget {
                 onDoLater: cubit.doLater,
                 onMove: cubit.moveBlock,
               ),
+            // Out of the way while typing into a set.
+            if (session.exercises.isNotEmpty && state.keypad == null)
+              _Now(state: state),
             Expanded(
               child: session.exercises.isEmpty
                   ? AppEmptyState(
@@ -650,6 +655,111 @@ class _Foot extends StatelessWidget {
   }
 }
 
+/// What is happening now, at arm's length (design-language.md, "Live"):
+/// the rest's countdown and its bar while it runs, else the next set's
+/// figures, in the display face at its largest. Hidden when there is
+/// neither, such as once every set is logged.
+class _Now extends StatelessWidget {
+  const new({required this.state});
+
+  final ActiveWorkoutState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return Tick(
+      builder: (context, now) {
+        final end = state.restEnd;
+        final left = end?.difference(now);
+        final String overline;
+        final String figure;
+        double? fraction;
+        if (left != null && !left.isNegative) {
+          overline = l10n.trackerLiveRest;
+          figure = AppFormat.duration(left + const Duration(milliseconds: 999));
+          final length = state.restLength;
+          fraction = length == null || length.inMilliseconds == 0
+              ? 1
+              : 1 - left.inMilliseconds / length.inMilliseconds;
+        } else if (state.primaryAction case r.LogSetAction(:final setId)) {
+          final set = state.set(setId);
+          final exercise = state.exerciseHolding(setId);
+          final figures = set == null || exercise == null
+              ? null
+              : TrackerText.figures(
+                  l10n,
+                  set,
+                  exercise.trackingMode,
+                  exercise.weightUnit ?? ExerciseWeightUnit.kilograms,
+                  locale: locale,
+                );
+          if (set == null || exercise == null || figures == null) {
+            return const SizedBox.shrink();
+          }
+          final name = switch (set) {
+            WorkoutSetModel(isWarmup: true) => l10n.trackerSetTypeWarmup,
+            WorkoutSetModel(parentSetId: final _?) => l10n.trackerSetTypeDrop,
+            _ => l10n.trackerSetName(TrackerText.badge(l10n, set, exercise)),
+          };
+          overline = '$name · ${exercise.name}';
+          figure = figures;
+        } else {
+          return const SizedBox.shrink();
+        }
+        final secondaryOverline = AppTextStyles.overline.secondary(context);
+        return Semantics(
+          container: true,
+          label: overline,
+          value: figure,
+          excludeSemantics: true,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.l,
+              AppSpacing.s,
+              AppSpacing.l,
+              AppSpacing.m,
+            ),
+            child: Column(
+              spacing: AppSpacing.xxs,
+              children: [
+                Text(
+                  overline.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: secondaryOverline,
+                ),
+                // Already larger than any text size makes body text, and
+                // growing it would push the sets off the screen.
+                MediaQuery.withNoTextScaling(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(figure, maxLines: 1, style: AppTextStyles.hero),
+                  ),
+                ),
+                // The bar's room is kept for a set too, so the card under
+                // it stays put as a rest starts and ends.
+                SizedBox(
+                  height: AppSpacing.xs,
+                  child: fraction == null
+                      ? null
+                      : LinearProgressIndicator(
+                          value: fraction.clamp(0, 1).toDouble(),
+                          minHeight: AppSpacing.xs,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(AppRadius.s),
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 /// One button for every action, with +15s beside it while resting.
 class _PrimaryButton extends StatelessWidget {
   const new({required this.state, required this.slot, required this.now});
@@ -698,7 +808,9 @@ class _PrimaryButton extends StatelessWidget {
         final clock = AppFormat.duration(
           left + const Duration(milliseconds: 999),
         );
-        title = isLarge
+        // The countdown is already up top, at its largest, unless the
+        // keypad has taken its place.
+        title = isLarge || state.keypad == null
             ? l10n.trackerSkipRest
             : '${l10n.trackerSkipRest} $clock';
         name = l10n.trackerSkipRest;

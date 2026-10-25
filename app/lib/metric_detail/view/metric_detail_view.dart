@@ -22,8 +22,13 @@ class MetricDetailView extends StatelessWidget {
     required this.onShowAllData,
     this.summary,
     this.decimals,
+    this.hero = 0,
     super.key,
   });
+
+  /// The index in [series] of the one whose average leads the chart, such
+  /// as Weight Trend's trend line over the readings it is drawn from.
+  final int hero;
 
   /// The decimal places each figure is shown to; by default none for a
   /// total and one for a reading.
@@ -85,8 +90,8 @@ class MetricDetailView extends StatelessWidget {
     final highest = readings.highest;
     final lowest = readings.lowest;
     final average = readings.average;
-    // Latest under the chart, and the rest one tap away in a sheet
-    // (QuickCharts' Show More), so the chart keeps the screen.
+    // The details under the chart, as grouped rows (design-language.md,
+    // "Detail").
     final rows = [
       if (latest != null)
         AppListRow(
@@ -123,24 +128,12 @@ class MetricDetailView extends StatelessWidget {
             today: today,
             value: value,
             onRangeSelected: onRangeSelected,
+            hero: hero,
           ),
           if (rows.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.xl),
-            AppSection(children: [rows.first]),
-            if (rows.length > 1)
-              Center(
-                child: AppTextButton(
-                  label: l10n.metricShowMoreData(title),
-                  onPressed: () => showAppSheet<void>(
-                    context: context,
-                    size: AppSheetSize.compact,
-                    builder: (_) => ListView(
-                      padding: const EdgeInsets.all(AppSpacing.l),
-                      children: [AppSection(header: title, children: rows)],
-                    ),
-                  ),
-                ),
-              ),
+            // Every entry, not the chart's window: say so beside its hero.
+            AppSection(header: l10n.metricAllTime, children: rows),
           ],
           if (summary case final summary?) ...[
             const SizedBox(height: AppSpacing.xl),
@@ -191,8 +184,12 @@ class MetricChartPanel extends StatelessWidget {
     required this.value,
     required this.onRangeSelected,
     this.ranges = MetricRange.values,
+    this.hero = 0,
     super.key,
   });
+
+  /// The index in [series] of the one whose average leads the chart.
+  final int hero;
 
   /// The chart's name, for its accessibility summary.
   final String title;
@@ -228,6 +225,7 @@ class MetricChartPanel extends StatelessWidget {
           range: range,
           today: today,
           value: value,
+          hero: hero,
         ),
       ],
     );
@@ -289,8 +287,10 @@ class _Chart extends StatefulWidget {
     required this.range,
     required this.today,
     required this.value,
+    required this.hero,
   });
 
+  final int hero;
   final String title;
   final List<MetricChartSeries> series;
   final MetricRange range;
@@ -357,19 +357,22 @@ class _ChartState extends State<_Chart> {
     ];
     // A total's header is its daily average, over the days in the window
     // that have one; a reading's, the average of what is plotted.
+    double? averageIn(MetricChartSeries s, DateTime windowEnd) {
+      final shown = range.visible(s.points, windowEnd);
+      if (shown.isEmpty) return null;
+      if (!s.isTotal) return MetricReadings(shown).average;
+      final first = range.start(windowEnd);
+      final last = DateTime(windowEnd.year, windowEnd.month, windowEnd.day + 1);
+      return MetricReadings([
+        for (final p in s.points)
+          if (!p.date.isBefore(first) && p.date.isBefore(last)) p,
+      ], total: true).average;
+    }
+
     final averages = [
       for (final s in series)
-        if (range.visible(s.points, shownEnd) case final shown
-            when shown.isNotEmpty)
-          (
-            series: s,
-            average: s.isTotal
-                ? MetricReadings([
-                    for (final p in s.points)
-                      if (!p.date.isBefore(start) && p.date.isBefore(end)) p,
-                  ], total: true).average!
-                : MetricReadings(shown).average!,
-          ),
+        if (averageIn(s, shownEnd) case final average?)
+          (series: s, average: average),
     ];
     String dates(DateTime date) =>
         AppFormat.date(date, locale: context.dateLocale);
@@ -388,19 +391,35 @@ class _ChartState extends State<_Chart> {
     );
     final secondary = AppTextStyles.rowDetail.secondary(context);
     final selected = _selected;
-    // Swift's chart header: each series' name in its colour over its
-    // figure, then what the figure is and the dates.
+    // The hero: the first series' average over the window, with its change
+    // from the window before; any other series under it, smaller.
+    final lead = series[widget.hero];
+    final primary = averages.where((a) => a.series == lead).firstOrNull;
+    final previous = primary == null
+        ? null
+        : averageIn(primary.series, _endOf(_page + 1));
     final header = [
-      for (final a in averages)
-        _SeriesLine(series: a.series, value: value(a.average)),
-      Text(
-        l10n.metricHeaderDates(
-          series.first.isTotal ? l10n.metricDailyAverage : l10n.metricAverage,
+      _Hero(
+        series: lead,
+        figure: primary == null ? null : value(primary.average),
+        change: primary == null || previous == null
+            ? null
+            : (
+                text: value((primary.average - previous).abs()),
+                sign: (primary.average - previous).sign,
+                zero: value(0),
+                days: range.days,
+              ),
+        keyed: series.length > 1,
+        caption: l10n.metricHeaderDates(
+          lead.isTotal ? l10n.metricDailyAverage : l10n.metricAverage,
           from,
           to,
         ),
-        style: secondary,
       ),
+      for (final a in averages)
+        if (a != primary)
+          _SeriesLine(series: a.series, value: value(a.average)),
     ];
     // What a bucket holds: one row per series, as the callout shows it
     // and a screen reader reads it.
@@ -437,7 +456,7 @@ class _ChartState extends State<_Chart> {
               opacity: selected == null ? 1 : 0,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: AppSpacing.xs,
+                spacing: AppSpacing.s,
                 children: header,
               ),
             ),
@@ -545,8 +564,74 @@ String bucketText(MetricRange range, DateTime bucket, String locale) {
   };
 }
 
-/// One series in the header: its key and name in its colour, over its
-/// figure with the unit set small.
+/// A figure and its unit, split at the last space, as [MetricChartPanel]'s
+/// `value` writes them ("82.4 kg"); a figure without a unit stays whole.
+(String, String?) _split(String value) {
+  final split = value.lastIndexOf(' ');
+  return split < 0
+      ? (value, null)
+      : (value.substring(0, split), value.substring(split + 1));
+}
+
+/// The chart's hero (design-language.md, "Detail"): the first series'
+/// average over the window in the hero face, its change from the window
+/// before as a chip, and the dates. [keyed] puts the series' swatch and
+/// name over it, when other series share the chart.
+class _Hero extends StatelessWidget {
+  const new({
+    required this.series,
+    required this.figure,
+    required this.change,
+    required this.keyed,
+    required this.caption,
+  });
+
+  final MetricChartSeries series;
+
+  /// The average with its unit, or null for an empty window.
+  final String? figure;
+
+  /// The change from the window before: its size with the unit, its sign,
+  /// zero as shown, and the window's length.
+  final ({String text, double sign, String zero, int days})? change;
+
+  final bool keyed;
+  final String caption;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final (number, unit) = _split(figure ?? AppFormat.placeholder);
+    final change = this.change;
+    final steady = change == null || change.text == change.zero;
+    return AppHeroStat(
+      label: keyed ? series.label : null,
+      leading: keyed
+          ? ChartSwatch(mark: series.mark, color: series.color)
+          : null,
+      value: number,
+      unit: unit,
+      delta: change == null
+          ? null
+          : AppChip(
+              label: l10n.metricChangeFromPrevious(
+                steady
+                    ? change.zero
+                    : '${change.sign > 0 ? '+' : '−'}${change.text}',
+                change.days,
+              ),
+              icon: steady
+                  ? AppSymbols.steady
+                  : change.sign > 0
+                  ? AppSymbols.increase
+                  : AppSymbols.reduce,
+            ),
+      caption: caption,
+    );
+  }
+}
+
+/// Another series in the header: its key and name, then its average.
 class _SeriesLine extends StatelessWidget {
   const new({required this.series, required this.value});
 
@@ -556,40 +641,17 @@ class _SeriesLine extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) {
-    // The unit is the last word, when there is one.
-    final split = value.lastIndexOf(' ');
-    final (figure, unit) = split < 0
-        ? (value, null)
-        : (value.substring(0, split), value.substring(split));
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          spacing: AppSpacing.s,
-          children: [
-            ChartSwatch(mark: series.mark, color: series.color),
-            Flexible(
-              child: Text(
-                series.label,
-                style: AppTextStyles.rowDetail.secondary(context),
-              ),
-            ),
-          ],
+  Widget build(BuildContext context) => Row(
+    spacing: AppSpacing.s,
+    children: [
+      ChartSwatch(mark: series.mark, color: series.color),
+      Flexible(
+        child: Text(
+          series.label,
+          style: AppTextStyles.rowDetail.secondary(context),
         ),
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: figure, style: AppTextStyles.metricLarge),
-              if (unit != null)
-                TextSpan(
-                  text: unit,
-                  style: AppTextStyles.rowDetail.secondary(context),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+      Text(value, style: AppTextStyles.metricSmall),
+    ],
+  );
 }

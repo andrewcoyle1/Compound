@@ -1,6 +1,8 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound_models/compound_models.dart'
     show WorkoutSessionModel, WorkoutSessionModelKeys;
@@ -10,6 +12,9 @@ import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
 import '../../helpers/helpers.dart';
+
+class _MockCircleBloc extends MockBloc<CircleEvent, CircleState>
+    implements CircleBloc;
 
 void main() {
   const authUser = AuthUser(uid: 'friend', isAnonymous: false);
@@ -105,9 +110,14 @@ void main() {
       expect(find.widgetWithText(AppBar, 'Session s'), findsOneWidget);
       expect(find.text('Workout Details'), findsOneWidget);
       expect(find.text('1:04:00'), findsOneWidget);
-      // 2 × 8 × 80 + 6 × 60 + 2 × 10 × 20 kg = 2,040 kg, in the user's pounds.
-      expect(find.text('4,497.4\u00a0lb'), findsOneWidget);
+      // 2 × 8 × 80 + 6 × 60 + 2 × 10 × 20 kg = 2,040 kg, in the user's
+      // pounds: the hero, which a past workout only shows.
+      expect(find.text('4,497\u00a0lb'), findsOneWidget);
+      expect(find.text('VOLUME'), findsOneWidget);
+      expect(find.text('Workout Complete'), findsNothing);
+      expect(find.text('1h 4m'), findsOneWidget);
       expect(find.text('Felt strong'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Exercise Details'), 100);
       expect(find.text('Exercise Details'), findsOneWidget);
       expect(find.text('2 sets · 1,640\u00a0kg volume'), findsOneWidget);
       // Each exercise opens onto its note and sets, as Swift's disclosure.
@@ -154,9 +164,12 @@ void main() {
           disableAnimations: false,
         );
         await tester.pump();
+        await tester.pump();
         expect(burst, findsOneWidget);
+        expect(find.text('Workout Complete'), findsOneWidget);
         await tester.pumpAndSettle();
         expect(burst, findsNothing);
+        expect(find.text('4,497\u00a0lb'), findsOneWidget);
       });
 
       testWidgets('stays still for a past workout', (tester) async {
@@ -166,6 +179,48 @@ void main() {
         await tester.pump();
         expect(burst, findsNothing);
       });
+    });
+
+    testWidgets('leads the summary with a personal record, and lists them', (
+      tester,
+    ) async {
+      final haptics = <AppHaptic>[];
+      AppHaptics.debugPlay = haptics.add;
+      addTearDown(() => AppHaptics.debugPlay = null);
+      final earlier = fixtureSession(
+        'e',
+        day: 1,
+        exercises: [
+          fixtureExercise('Bench', sets: [fixtureSet(reps: 8, weightKg: 70)]),
+        ],
+      );
+      when(() => sessions.session('friend', 's'))
+          .thenAnswer((_) async => session);
+      final circle = _MockCircleBloc();
+      when(() => circle.state)
+          .thenReturn(CircleState(ownSessions: [earlier, session]));
+      await tester.pumpApp(
+        WorkoutSessionDetailPage(
+          sessionId: 's',
+          session: session,
+          isWorkoutSummary: true,
+        ),
+        appBloc: appBloc,
+        userRepository: users,
+        workoutSessionRepository: sessions,
+        circleBloc: circle,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('New PR'), findsOneWidget);
+      expect(find.text('BENCH'), findsOneWidget);
+      // The heaviest set beat 70 kg, in the author's kilograms.
+      expect(find.text('80\u00a0kg × 8'), findsOneWidget);
+      // The volume is not the hero, so its row stays.
+      expect(find.text('Volume'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Personal Records'), 100);
+      expect(find.text('80\u00a0kg × 8'), findsNWidgets(2));
+      expect(haptics, [AppHaptic.success]);
     });
 
     testWidgets('links a workout on Strava for its author', (tester) async {
@@ -182,6 +237,8 @@ void main() {
       await pump(tester, analytics: analytics, links: links);
       await tester.pump();
 
+      await tester.ensureVisible(find.text('View on Strava'));
+      await tester.pump();
       await tester.tap(find.text('View on Strava'));
 
       expect(links.opened, [Uri.parse('https://www.strava.com/activities/99')]);

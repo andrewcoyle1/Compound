@@ -1071,8 +1071,9 @@ List<Widget> galleryStates(BuildContext context) {
   ];
 }
 
-/// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppSummaryCard],
-/// [AppChip], [AppConfetti], [AppFootnote], [AppInlineMessage],
+/// [AppCard], [AppCarousel], [AppHeroStat], [AppStat], [AppStatTile],
+/// [AppSummaryCard], [AppChip], [AppConfetti], [AppMomentHero], [AppFootnote],
+/// [AppInlineMessage],
 /// [AppMarkdownText] and [AppViewfinder].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
@@ -1153,6 +1154,21 @@ List<Widget> galleryContent(BuildContext context) {
         ),
       ],
     ),
+    galleryEntry('AppHeroStat', [
+      galleryBlock(
+        'label, unit, delta, caption',
+        AppHeroStat(
+          label: l10n.devGallerySampleTitle,
+          value: AppFormat.number(82.4, maxFractionDigits: 1, locale: locale),
+          unit: 'kg',
+          delta: AppChip(
+            label: l10n.devGallerySampleShortAction,
+            icon: AppSymbols.reduce,
+          ),
+          caption: l10n.devGallerySampleSubtitle,
+        ),
+      ),
+    ]),
     galleryEntry('AppSummaryCard', [
       galleryBlock(
         'value, unit, delta, footer, onTap',
@@ -1214,6 +1230,22 @@ List<Widget> galleryContent(BuildContext context) {
           ),
         ),
       ),
+      galleryBlock(
+        'size: large, onTap, actions',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          icon: AppSymbols.workout,
+          tint: colors.workouts,
+          value: l10n.devGallerySampleSubtitle,
+          size: AppSummaryCardSize.large,
+          onTap: () {},
+          actions: AppCtaButton(
+            label: l10n.devGallerySampleShortAction,
+            size: AppCtaSize.compact,
+            onPressed: () {},
+          ),
+        ),
+      ),
     ]),
     galleryEntry('AppChip', [
       galleryInline('label', AppChip(label: l10n.devGallerySampleTextAction)),
@@ -1265,6 +1297,43 @@ List<Widget> galleryContent(BuildContext context) {
               onPressed: () => update(bursts + 1),
             ),
           ),
+        ),
+      ),
+    ]),
+    galleryEntry('AppMomentHero', [
+      // Plays again on each tap: the count keys a fresh one.
+      galleryBlock(
+        'badge, caption, stats, confetti',
+        GalleryLive(
+          initial: 0,
+          builder: (shows, update) => AppPressable(
+            onTap: () => update(shows + 1),
+            child: AppMomentHero(
+              key: ValueKey(shows),
+              value: 12450,
+              format: (value) => AppFormat.number(value, locale: locale),
+              label: l10n.devGallerySampleWeight,
+              badge: l10n.devGallerySampleShortAction,
+              caption: l10n.devGallerySampleSubtitle,
+              stats: [(value: weight, label: l10n.devGallerySampleTitle)],
+              celebration: AppMomentCelebration.confetti,
+            ),
+          ),
+        ),
+      ),
+      galleryBlock(
+        'celebration: none, info',
+        AppMomentHero(
+          value: 82.5,
+          format: (value) =>
+              AppFormat.weight(value, AppWeightUnit.kilograms, locale: locale),
+          label: l10n.devGallerySampleWeight,
+          info: AppIconButton(
+            icon: AppSymbols.info,
+            semanticLabel: l10n.infoLabel,
+            onPressed: () {},
+          ),
+          celebration: AppMomentCelebration.none,
         ),
       ),
     ]),

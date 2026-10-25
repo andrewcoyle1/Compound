@@ -103,7 +103,6 @@ void main() {
       expect(find.byType(CartesianChart), findsOneWidget);
       expect(find.text('Latest: Today'), findsOneWidget);
       expect(find.textContaining('Average, '), findsOneWidget);
-      expect(find.text('Show More Scale Weight Data'), findsOneWidget);
       expect(find.byType(MethodInfoButton), findsNothing);
       // The chart reads as one summary.
       expect(
@@ -135,7 +134,9 @@ void main() {
       tester,
     ) async {
       await pumpView(tester, WeightMetric.weightTrend);
-      expect(find.text('Trend Weight'), findsOneWidget);
+      // The trend leads, over the readings it is drawn from.
+      expect(find.text('TREND WEIGHT'), findsOneWidget);
+      expect(find.text('Scale Weight'), findsOneWidget);
       await tester.tap(find.byType(MethodInfoButton));
       await tester.pumpAndSettle();
       expect(find.byType(MethodInfoSheet), findsOneWidget);

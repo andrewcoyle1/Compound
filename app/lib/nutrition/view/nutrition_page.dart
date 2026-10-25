@@ -141,6 +141,7 @@ class NutritionView extends StatelessWidget {
         ),
       ],
       child: AppScaffold(
+        maxWidth: AppContentWidth.dashboard,
         largeTitle: l10n.tabNutrition,
         // Swift's order: the coach, +, the calendar, then the profile.
         actions: [
@@ -235,6 +236,148 @@ class _Day extends StatelessWidget {
     final firstMeal = timeline.expand((hour) => hour.meals).firstOrNull;
     void select(DateTime day) =>
         context.read<NutritionDayBloc>().add(NutritionDayDateSelected(day));
+    void overview() => context.goNamed(
+      NutritionOverviewPage.name,
+      queryParameters: {
+        NutritionOverviewPage.dayParameter: dayKeyOf(state.selectedDay),
+      },
+    );
+    // A day without a plan, or with every bar and ring turned off, has no
+    // hero.
+    final hero = target != null && NutritionHero.shows(settings);
+    // The day's meals hour by hour: the empty state, or each hour's header
+    // and its meals.
+    final meals = <Widget>[
+      if (timeline.isEmpty)
+        AppEmptyState(
+          icon: AppSymbols.meal,
+          title: l10n.nutritionNothingLoggedTitle,
+          description: l10n.nutritionNothingLoggedMessage,
+          // With Hide Empty Hours on there are no hour
+          // buttons; this keeps the day's one job reachable.
+          actionLabel: l10n.nutritionLogMeal,
+          onAction: () => openMealLogger(
+            context,
+            date: toolbarMealDate(
+              selectedDay: state.selectedDay,
+              now: DateTime.now(),
+            ),
+          ),
+        ),
+      for (final hour in timeline) ...[
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
+          child: MealHourHeader(
+            hour: hour.hour,
+            meals: hour.meals,
+            showTotals: settings.showHourlyMacroTotals,
+            onAdd: settings.showAddFoodsButton
+                ? () => openMealLogger(
+                    context,
+                    date: hourMealDate(
+                      hour: hour.hour,
+                      now: DateTime.now(),
+                      autoSetCurrentTime: settings.autoSetCurrentTime,
+                    ),
+                  )
+                : null,
+          ),
+        ),
+        for (final meal in hour.meals)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.s),
+            child: MealCard(
+              // Log Again has only a swipe and the long
+              // press; the tip points at the day's first
+              // food.
+              wrapFirstItem: identical(meal, firstMeal)
+                  ? (row) => AppTip(
+                      id: FeatureTips.mealSwipe,
+                      title: l10n.tipMealSwipeTitle,
+                      message: l10n.tipMealSwipeMessage,
+                      child: row,
+                    )
+                  : null,
+              meal: meal,
+              settings: settings,
+              onDeleteItem: (item) => context.read<NutritionDayBloc>().add(
+                NutritionDayItemDeleted(meal, item.itemId),
+              ),
+              onOpenMeal: () => unawaited(MealDetailPage.show(context, meal)),
+              onEditItem: (item) => unawaited(_edit(context, meal, item)),
+              onLogAgain: () {
+                unawaited(AppHaptics.success());
+                context.read<NutritionDayBloc>().add(
+                  NutritionDayMealLoggedAgain(meal),
+                );
+              },
+            ),
+          ),
+      ],
+    ];
+    // The hero first: the day's calories and macros against its target,
+    // opening the day's overview.
+    final heroCard = hero
+        ? NutritionHero(
+            key: const Key('Nutrition.overview'),
+            totals: state.totals,
+            target: target,
+            settings: settings,
+            onTap: overview,
+          )
+        : null;
+    // After the meals, the library and the actions.
+    final rest = <Widget>[
+      // The foods and recipes the user has made, otherwise
+      // reachable only from inside the meal logger (Swift's
+      // Library section).
+      AppSection(
+        header: l10n.nutritionLibraryHeader,
+        children: [
+          AppListRowButton(
+            key: const Key('Nutrition.foods'),
+            title: l10n.nutritionFoods,
+            icon: AppSymbols.food,
+            onPressed: () => unawaited(showFoods(context)),
+          ),
+          AppListRowButton(
+            key: const Key('Nutrition.recipes'),
+            title: l10n.nutritionRecipes,
+            icon: AppSymbols.recipe,
+            onPressed: () => unawaited(RecipesPage.show(context)),
+          ),
+        ],
+      ),
+      AppSection(
+        children: [
+          AppListRowButton(
+            key: const Key('Nutrition.timelineActions'),
+            title: l10n.nutritionTimelineActions,
+            icon: AppSymbols.more,
+            onPressed: () =>
+                unawaited(showTimelineActions(context, state.selectedDay)),
+          ),
+          // The hero opens the overview; without one, a row
+          // does, as in Swift.
+          if (!hero)
+            AppListRowButton(
+              key: const Key('Nutrition.overview'),
+              title: l10n.nutritionOverviewTitle,
+              icon: AppSymbols.nutrition,
+              onPressed: overview,
+            ),
+          // Swift's `onCustomiseFoodLogPressed`, which logs no
+          // event of its own.
+          AppListRowButton(
+            key: const Key('Nutrition.customizeFoodLog'),
+            title: l10n.nutritionCustomizeFoodLog,
+            icon: AppSymbols.settings,
+            onPressed: () =>
+                unawaited(context.pushNamed(FoodLogSettingsPage.name)),
+          ),
+        ],
+      ),
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -270,137 +413,40 @@ class _Day extends StatelessWidget {
             markers: state.markers,
             onDaySelected: select,
           ),
-        if (target != null)
-          MacroHeader(totals: state.totals, target: target, settings: settings),
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            children: [
-              if (timeline.isEmpty)
-                AppEmptyState(
-                  icon: AppSymbols.meal,
-                  title: l10n.nutritionNothingLoggedTitle,
-                  description: l10n.nutritionNothingLoggedMessage,
-                  // With Hide Empty Hours on there are no hour buttons;
-                  // this keeps the day's one job reachable.
-                  actionLabel: l10n.nutritionLogMeal,
-                  onAction: () => openMealLogger(
-                    context,
-                    date: toolbarMealDate(
-                      selectedDay: state.selectedDay,
-                      now: DateTime.now(),
-                    ),
-                  ),
-                ),
-              for (final hour in timeline) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
-                  child: MealHourHeader(
-                    hour: hour.hour,
-                    meals: hour.meals,
-                    showTotals: settings.showHourlyMacroTotals,
-                    onAdd: settings.showAddFoodsButton
-                        ? () => openMealLogger(
-                            context,
-                            date: hourMealDate(
-                              hour: hour.hour,
-                              now: DateTime.now(),
-                              autoSetCurrentTime: settings.autoSetCurrentTime,
-                            ),
-                          )
-                        : null,
-                  ),
-                ),
-                for (final meal in hour.meals)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.s),
-                    child: MealCard(
-                      // Log Again has only a swipe and the long press;
-                      // the tip points at the day's first food.
-                      wrapFirstItem: identical(meal, firstMeal)
-                          ? (row) => AppTip(
-                              id: FeatureTips.mealSwipe,
-                              title: l10n.tipMealSwipeTitle,
-                              message: l10n.tipMealSwipeMessage,
-                              child: row,
-                            )
-                          : null,
-                      meal: meal,
-                      settings: settings,
-                      onDeleteItem: (item) => context
-                          .read<NutritionDayBloc>()
-                          .add(NutritionDayItemDeleted(meal, item.itemId)),
-                      onOpenMeal: () =>
-                          unawaited(MealDetailPage.show(context, meal)),
-                      onEditItem: (item) =>
-                          unawaited(_edit(context, meal, item)),
-                      onLogAgain: () {
-                        unawaited(AppHaptics.success());
-                        context.read<NutritionDayBloc>().add(
-                          NutritionDayMealLoggedAgain(meal),
-                        );
-                      },
-                    ),
-                  ),
-              ],
-              // The foods and recipes the user has made, otherwise
-              // reachable only from inside the meal logger (Swift's Library
-              // section).
-              const SizedBox(height: AppSpacing.l),
-              AppSection(
-                header: l10n.nutritionLibraryHeader,
-                children: [
-                  AppListRowButton(
-                    key: const Key('Nutrition.foods'),
-                    title: l10n.nutritionFoods,
-                    icon: AppSymbols.food,
-                    onPressed: () => unawaited(showFoods(context)),
-                  ),
-                  AppListRowButton(
-                    key: const Key('Nutrition.recipes'),
-                    title: l10n.nutritionRecipes,
-                    icon: AppSymbols.recipe,
-                    onPressed: () => unawaited(RecipesPage.show(context)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.l),
-              AppSection(
-                children: [
-                  AppListRowButton(
-                    key: const Key('Nutrition.timelineActions'),
-                    title: l10n.nutritionTimelineActions,
-                    icon: AppSymbols.more,
-                    onPressed: () => unawaited(
-                      showTimelineActions(context, state.selectedDay),
-                    ),
-                  ),
-                  // A row, as in Swift, rather than a fifth toolbar button.
-                  AppListRowButton(
-                    key: const Key('Nutrition.overview'),
-                    title: l10n.nutritionOverviewTitle,
-                    icon: AppSymbols.nutrition,
-                    onPressed: () => context.goNamed(
-                      NutritionOverviewPage.name,
-                      queryParameters: {
-                        NutritionOverviewPage.dayParameter: dayKeyOf(
-                          state.selectedDay,
+          child: SafeArea(
+            top: false,
+            child: LayoutBuilder(
+              // One column keeps each hour and meal an item of the list's
+              // own, built as it scrolls in; two put the meals beside the
+              // hero.
+              builder: (context, constraints) =>
+                  constraints.maxWidth < AppContentWidth.twoColumns
+                  ? ListView(
+                      padding: const EdgeInsets.all(AppSpacing.l),
+                      children: [
+                        if (heroCard != null) ...[
+                          heroCard,
+                          const SizedBox(height: AppSpacing.xl),
+                        ],
+                        ...meals,
+                        for (final section in rest) ...[
+                          const SizedBox(height: AppSpacing.xl),
+                          section,
+                        ],
+                      ],
+                    )
+                  : AppDashboard(
+                      sections: [
+                        ?heroCard,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: meals,
                         ),
-                      },
+                        ...rest,
+                      ],
                     ),
-                  ),
-                  // Swift's `onCustomiseFoodLogPressed`, which logs no
-                  // event of its own.
-                  AppListRowButton(
-                    key: const Key('Nutrition.customizeFoodLog'),
-                    title: l10n.nutritionCustomizeFoodLog,
-                    icon: AppSymbols.settings,
-                    onPressed: () =>
-                        unawaited(context.pushNamed(FoodLogSettingsPage.name)),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ],

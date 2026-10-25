@@ -149,11 +149,27 @@ void main() {
       final setId = nextSetId();
 
       expect(find.text('Log set 1 · 60\u00a0kg × 8'), findsOneWidget);
+      // The set up next, at arm's length.
+      expect(
+        find.bySemanticsLabel('Set 1 · Barbell Bench Press'),
+        findsOneWidget,
+      );
+      expect(find.text('SET 1 · BARBELL BENCH PRESS'), findsOneWidget);
+      expect(find.text('60\u00a0kg × 8'), findsOneWidget);
       await tester.tap(find.text('Log set 1 · 60\u00a0kg × 8'));
       await tester.pumpAndSettle();
 
       expect(cubit.state.set(setId)!.completedAt, clock.now);
-      expect(find.textContaining('Skip Rest'), findsOneWidget);
+      // The rest's countdown takes its place; the button leaves it out.
+      expect(find.text('REST'), findsOneWidget);
+      expect(find.text('Skip Rest'), findsOneWidget);
+      clock.now = clock.now.add(const Duration(seconds: 30));
+      await tester.pump(const Duration(seconds: 1));
+      final left = cubit.state.restEnd!.difference(clock.now);
+      expect(
+        find.text(AppFormat.duration(left + const Duration(milliseconds: 999))),
+        findsOneWidget,
+      );
       expect(find.text('+15s'), findsOneWidget);
       expect(
         find.text('Barbell Bench Press · Set 1 · 60\u00a0kg × 8'),

@@ -4,6 +4,10 @@
     "@signInTitle": {
         "description": "Heading on the sign-in screen"
     },
+    "signInSubtitle": "Your training, nutrition and body in one place. Sign in to keep them on every device.",
+    "@signInSubtitle": {
+        "description": "Sign-in screen: the line under the heading saying what signing in gives"
+    },
     "signInWithAppleButton": "Continue with Apple",
     "@signInWithAppleButton": {
         "description": "Button that signs in with an Apple account (iOS only)"
@@ -4008,26 +4012,25 @@
     "@onboardingOverview": {
         "description": "Diet plan: header"
     },
-    "onboardingPlanMesocycle": "Mesocycle: {name}, {days} days/week",
-    "@onboardingPlanMesocycle": {
-        "description": "Diet plan: the mesocycle it was built for",
-        "placeholders": {
-            "name": {
-                "type": "String"
-            },
-            "days": {
-                "type": "int"
-            }
-        }
+    "onboardingPlanBadge": "Your Plan",
+    "@onboardingPlanBadge": {
+        "description": "Diet plan step at the end of onboarding: the badge over the daily calorie figure"
     },
-    "onboardingPlanTdee": "Estimated TDEE: {kcal} kcal/day",
-    "@onboardingPlanTdee": {
-        "description": "Diet plan: the expenditure it was built on",
-        "placeholders": {
-            "kcal": {
-                "type": "int"
-            }
-        }
+    "onboardingPlanAverageCalories": "kcal a day, on average",
+    "@onboardingPlanAverageCalories": {
+        "description": "Diet plan step: the label under the plan's average daily calorie target"
+    },
+    "onboardingPlanProteinStat": "Protein a day",
+    "@onboardingPlanProteinStat": {
+        "description": "Diet plan step: the label under the daily protein target, e.g. 144 g"
+    },
+    "onboardingPlanTrainingDaysStat": "Workouts a week",
+    "@onboardingPlanTrainingDaysStat": {
+        "description": "Diet plan step: the label under the number of workouts a week in the user's program"
+    },
+    "onboardingPlanBurnStat": "Est. burn a day",
+    "@onboardingPlanBurnStat": {
+        "description": "Diet plan step: the label under the estimated calories burned a day (TDEE), in kcal; Est. abbreviates Estimated"
     },
     "onboardingPlanDiet": "Preferred diet: {diet}",
     "@onboardingPlanDiet": {

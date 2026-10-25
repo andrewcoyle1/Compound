@@ -58,8 +58,9 @@ class OnboardingQuestion extends StatelessWidget {
   }
 }
 
-/// A choice list: one [AppSelectableRow] per option, with the selection
-/// tick (Swift's `.selection` haptic) on every pick.
+/// A choice list: one [AppSelectableRow] tile per option, standing apart so
+/// each is a big target, with the selection tick (Swift's `.selection`
+/// haptic) on every pick.
 class OnboardingOptions<T> extends StatelessWidget {
   const new({
     required this.options,
@@ -85,9 +86,11 @@ class OnboardingOptions<T> extends StatelessWidget {
     return AppSection(
       header: header,
       footer: footer,
+      grouped: false,
       children: [
         for (final option in options)
           AppSelectableRow(
+            tile: true,
             title: title(option),
             subtitle: subtitle?.call(option),
             selected: option == selected,

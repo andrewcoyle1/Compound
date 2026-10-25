@@ -462,6 +462,27 @@ List<Widget> galleryRows(BuildContext context) {
         onPressed: null,
       ),
     ]),
+    galleryEntry('AppSelectableRow (tile)', [
+      GalleryLive(
+        initial: 0,
+        builder: (selected, update) => AppSection(
+          grouped: false,
+          children: [
+            for (final (index, caption) in [
+              'tile, selected',
+              'tile, not selected',
+            ].indexed)
+              AppSelectableRow(
+                tile: true,
+                title: caption,
+                subtitle: index == 0 ? l10n.devGallerySampleSubtitle : null,
+                selected: selected == index,
+                onPressed: () => update(index),
+              ),
+          ],
+        ),
+      ),
+    ]),
     AppSection(
       header: 'AppSection: header, trailing Text, footer',
       trailing: Text(AppFormat.number(3)),

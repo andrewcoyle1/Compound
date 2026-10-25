@@ -239,6 +239,14 @@ abstract final class CircleWeek {
     });
   }
 
+  /// [standing]'s place on the leaderboard: one more than the number with
+  /// more sessions, so a tie shares a place (volume only orders the rows).
+  /// Null with no sessions yet: a place nobody earned is not shown.
+  static int? place(List<CircleStanding> standings, CircleStanding standing) {
+    if (standing.sessions == 0) return null;
+    return 1 + standings.where((s) => s.sessions > standing.sessions).length;
+  }
+
   /// Last week's recap, on the first day of the week only, until dismissed
   /// for that week. [circle] includes [reader]; the goal is today's.
   static CircleSummary? summary({

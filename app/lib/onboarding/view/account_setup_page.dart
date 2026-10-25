@@ -370,7 +370,7 @@ class _NamePhoto extends StatelessWidget {
     final glyph = Icon(
       AppSymbols.profile,
       size: AppIconSize.hero.of(context),
-      color: scheme.primary,
+      color: context.appColors.accentInk,
     );
     final invite = Column(
       spacing: AppSpacing.s,

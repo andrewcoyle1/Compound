@@ -10,6 +10,7 @@ CropLook deviceCropLook() {
   final device = WidgetsBinding.instance.platformDispatcher;
   final dark = device.platformBrightness == Brightness.dark;
   final scheme = (dark ? AppTheme.dark : AppTheme.light).colorScheme;
+  final colors = dark ? AppColors.dark : AppColors.light;
   final l10n = lookupAppLocalizations(
     basicLocaleListResolution(
       device.locales,
@@ -22,8 +23,8 @@ CropLook deviceCropLook() {
     cancel: l10n.photoCropCancel,
     toolbar: scheme.surface,
     onToolbar: scheme.onSurface,
-    accent: scheme.primary,
-    background: (dark ? AppColors.dark : AppColors.light).canvas,
+    accent: colors.accentInk,
+    background: colors.canvas,
     brightness: scheme.brightness,
   );
 }

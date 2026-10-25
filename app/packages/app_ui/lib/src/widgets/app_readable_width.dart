@@ -215,7 +215,7 @@ class _LargeTitleScaffoldState extends State<_LargeTitleScaffold> {
                     header: true,
                     child: Text(
                       widget.title,
-                      style: AppTextStyles.display.copyWith(
+                      style: AppTextStyles.largeTitle.copyWith(
                         color: scheme.onSurface,
                       ),
                     ),

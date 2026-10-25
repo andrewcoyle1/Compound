@@ -330,10 +330,9 @@ class _StandingRow extends StatelessWidget {
                 ),
               ),
               if (entry.isComplete)
-                Icon(
-                  AppSymbols.success,
-                  color: context.appColors.success,
-                  semanticLabel: l10n.challengeFinished,
+                Semantics(
+                  label: l10n.challengeFinished,
+                  child: const AppDoneMark(),
                 ),
               Text(
                 '${entry.sessions}/$target',

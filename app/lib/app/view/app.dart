@@ -1041,6 +1041,7 @@ class _AppViewState extends State<AppView> {
       child: MaterialApp.router(
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
+        highContrastTheme: AppTheme.lightHighContrast,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: _router,

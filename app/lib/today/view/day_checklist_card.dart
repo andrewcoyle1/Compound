@@ -67,7 +67,6 @@ class DayChecklistCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = context.appColors;
     final hasSteps = checklist.items.any((item) => item is StepsItem);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -76,11 +75,7 @@ class DayChecklistCard extends StatelessWidget {
         AppSection(
           header: l10n.todayYourDay,
           trailing: checklist.isComplete
-              ? AppChip(
-                  label: l10n.todayDayComplete,
-                  icon: AppSymbols.success,
-                  tint: colors.success,
-                )
+              ? AppChip(label: l10n.todayDayComplete, icon: AppSymbols.success)
               : Text(
                   l10n.todayDoneCount(
                     checklist.doneCount,
@@ -180,15 +175,13 @@ class _ItemRow extends StatelessWidget {
               ExcludeSemantics(
                 child: AppConfetti(
                   play: celebrate,
-                  child: Icon(
-                    item.isDone
-                        ? AppSymbols.success
-                        : AppSymbols.choiceUnselected,
-                    size: AppIconSize.medium.of(context),
-                    color: item.isDone
-                        ? context.appColors.success
-                        : scheme.outline,
-                  ),
+                  child: item.isDone
+                      ? const AppDoneMark()
+                      : Icon(
+                          AppSymbols.choiceUnselected,
+                          size: AppIconSize.medium.of(context),
+                          color: scheme.outline,
+                        ),
                 ),
               ),
               pinned: true,
@@ -332,7 +325,7 @@ class _FooterState extends State<_Footer> {
               style: style.copyWith(
                 fontFamily: glyph.fontFamily,
                 package: glyph.fontPackage,
-                color: scheme.primary,
+                color: context.appColors.accentInk,
               ),
             ),
           ],

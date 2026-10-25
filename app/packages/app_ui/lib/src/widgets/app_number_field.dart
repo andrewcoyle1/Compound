@@ -193,12 +193,14 @@ class _AppNumberFieldState extends State<AppNumberField> {
             children: [
               Text(
                 unit!,
-                style: AppTextStyles.rowTitle.copyWith(color: scheme.primary),
+                style: AppTextStyles.rowTitle.copyWith(
+                  color: context.appColors.accentInk,
+                ),
               ),
               Icon(
                 AppSymbols.choose,
                 size: AppIconSize.small.of(context),
-                color: scheme.primary,
+                color: context.appColors.accentInk,
               ),
             ],
           ),

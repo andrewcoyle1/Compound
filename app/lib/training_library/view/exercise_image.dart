@@ -59,11 +59,11 @@ class _Initials extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final letters = initials(name);
     return ColoredBox(
-      color: AppColors.tintedSurface(scheme.primary),
+      color: context.appColors.raised,
       child: Center(
         child: Text(
           letters,
-          style: AppTextStyles.sectionTitle.copyWith(color: scheme.primary),
+          style: AppTextStyles.sectionTitle.copyWith(color: scheme.onSurface),
         ),
       ),
     );

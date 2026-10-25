@@ -73,7 +73,7 @@ class AppOnboardingStepScaffold extends StatelessWidget {
     final progress = this.progress;
     final subtitle = this.subtitle;
     final secondaryLabel = this.secondaryLabel;
-    // AppScaffold's large title: drawn at display size above the content,
+    // AppScaffold's large title: drawn in largeTitle above the content,
     // and in the app bar at the standard size once it scrolls away. A
     // SliverAppBar.large drew both from the app bar theme's title style.
     return AppScaffold(

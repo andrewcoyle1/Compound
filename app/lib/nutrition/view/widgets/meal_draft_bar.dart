@@ -34,7 +34,7 @@ class MealDraftBar extends StatelessWidget {
       child: Row(
         spacing: AppSpacing.m,
         children: [
-          Icon(AppSymbols.meal, color: scheme.primary),
+          Icon(AppSymbols.meal, color: context.appColors.accentInk),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -100,7 +100,8 @@ class AppListRow extends StatelessWidget {
   /// Ignored when [icon] is set.
   final Widget? thumbnail;
 
-  /// The icon's colour. Defaults to the accent.
+  /// The icon's colour. Defaults to the text colour: a row's icon is plain
+  /// information, which the accent never marks (design-language.md).
   final Color? tint;
 
   /// The trailing accessory, or none.
@@ -144,7 +145,7 @@ class AppListRow extends StatelessWidget {
         ? Icon(
             icon,
             size: scaler.scale(AppControlSize.icon),
-            color: tint ?? danger ?? scheme.primary,
+            color: tint ?? danger ?? scheme.onSurface,
           )
         : thumbnail != null
         ? ClipRSuperellipse(
@@ -220,7 +221,7 @@ class AppListRow extends StatelessWidget {
       AppListRowCheckmark(:final selected) => Icon(
         selected ? AppSymbols.choiceSelected : AppSymbols.choiceUnselected,
         size: glyphSize,
-        color: selected ? scheme.primary : scheme.outline,
+        color: selected ? context.appColors.accentInk : scheme.outline,
       ),
       AppListRowCustom(pinned: true, :final child) => child,
       _ => null,

@@ -8,8 +8,10 @@ import '../../helpers/helpers.dart';
 
 void main() {
   group('AppTextStyles', () {
-    test('metrics use tabular figures', () {
+    test('number styles use tabular figures', () {
       for (final style in [
+        AppTextStyles.largeTitle,
+        AppTextStyles.display,
         AppTextStyles.metricLarge,
         AppTextStyles.metric,
         AppTextStyles.metricSmall,
@@ -22,22 +24,38 @@ void main() {
     });
 
     test('match iOS text styles at the default size', () {
-      expect(AppTextStyles.display.fontSize, 34);
       expect(AppTextStyles.rowTitle.fontSize, 17);
       expect(AppTextStyles.rowDetail.fontSize, 15);
       expect(AppTextStyles.label.fontSize, 12);
     });
 
-    test('numbers are set in the bundled rounded face', () {
-      for (final style in [
-        AppTextStyles.display,
-        AppTextStyles.metricLarge,
-        AppTextStyles.metric,
-        AppTextStyles.metricSmall,
+    test('titles and numbers are set in Barlow Condensed, a step up', () {
+      for (final (style, size, weight) in [
+        (AppTextStyles.largeTitle, 40, FontWeight.w800),
+        (AppTextStyles.display, 44, FontWeight.w800),
+        (AppTextStyles.metricLarge, 34, FontWeight.w800),
+        (AppTextStyles.metric, 24, FontWeight.w700),
       ]) {
-        expect(style.fontFamily, 'packages/app_ui/Nunito');
+        expect(style.fontFamily, startsWith('packages/app_ui/BarlowCondensed'));
+        expect(style.fontSize, size);
+        expect(style.fontWeight, weight);
         expect(style.letterSpacing, 0);
       }
+    });
+
+    test('a compact stat is in the system face, semibold', () {
+      expect(
+        AppTextStyles.metricSmall.fontFamily,
+        AppTextStyles.rowDetail.fontFamily,
+      );
+      expect(AppTextStyles.metricSmall.fontSize, 15);
+      expect(AppTextStyles.metricSmall.fontWeight, FontWeight.w600);
+    });
+
+    test('an overline is 12 pt semibold, tracked', () {
+      expect(AppTextStyles.overline.fontSize, 12);
+      expect(AppTextStyles.overline.fontWeight, FontWeight.w600);
+      expect(AppTextStyles.overline.letterSpacing, 0.6);
     });
 
     group('system text', () {
@@ -61,7 +79,7 @@ void main() {
       });
     });
 
-    test("registers Nunito's licence", () async {
+    test("registers Barlow Condensed's licence", () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMessageHandler('flutter/assets', (message) async {
             final key = utf8.decode(message!.buffer.asUint8List());
@@ -74,11 +92,11 @@ void main() {
       );
       AppTextStyles.registerFontLicense();
       final entries = await LicenseRegistry.licenses.toList();
-      final nunito = entries.singleWhere(
-        (entry) => entry.packages.contains('Nunito'),
+      final barlow = entries.singleWhere(
+        (entry) => entry.packages.contains('Barlow Condensed'),
       );
       expect(
-        nunito.paragraphs.map((paragraph) => paragraph.text).join(),
+        barlow.paragraphs.map((paragraph) => paragraph.text).join(),
         contains('Open Font License'),
       );
     });
@@ -100,6 +118,22 @@ void main() {
       expect(label.semibold.fontWeight, FontWeight.w600);
       expect(label.semibold.fontSize, label.fontSize);
       expect(label.semibold.fontFamily, label.fontFamily);
+    });
+  });
+
+  group('AppTextStyleColor', () {
+    testWidgets('secondary takes the secondary text grey', (tester) async {
+      late TextStyle style;
+      await tester.pumpApp(
+        Builder(
+          builder: (context) {
+            style = AppTextStyles.rowDetail.secondary(context);
+            return const SizedBox();
+          },
+        ),
+      );
+      expect(style.color, AppColors.light.secondaryLabel);
+      expect(style.fontSize, AppTextStyles.rowDetail.fontSize);
     });
   });
 

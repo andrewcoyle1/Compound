@@ -76,6 +76,34 @@ void main() {
           );
         }
         expect(_contrast(scheme.onPrimary, scheme.primary), greaterThan(4.5));
+        // The accent as text, on its own, and on its tint.
+        for (final background in [colors.surface, colors.canvas]) {
+          final tint = Color.alphaBlend(
+            AppColors.tintedSurface(colors.accentInk),
+            background,
+          );
+          expect(_contrast(colors.accentInk, background), greaterThan(4.5));
+          expect(_contrast(colors.accentInk, tint), greaterThan(4.5));
+        }
+      });
+
+      test('the accent is volt, with black on it, in both modes', () {
+        expect(scheme.primary, const Color(0xFFC8F31D));
+        expect(scheme.onPrimary, const Color(0xFF000000));
+      });
+
+      test('wires the theme roles to the colour tokens', () {
+        expect(scheme.onSurfaceVariant, colors.secondaryLabel);
+        expect(scheme.outlineVariant, colors.separator);
+        expect(scheme.surfaceContainerHighest, colors.raised);
+        expect(theme.dividerTheme.color, colors.separator);
+        expect(theme.inputDecorationTheme.fillColor, colors.raised);
+        expect(theme.progressIndicatorTheme.color, colors.accentInk);
+        expect(theme.textSelectionTheme.cursorColor, colors.accentInk);
+        expect(
+          theme.textButtonTheme.style?.foregroundColor?.resolve({}),
+          colors.accentInk,
+        );
       });
 
       test('buttons meet the 44 pt minimum', () {
@@ -114,15 +142,16 @@ void main() {
         );
       });
 
-      test('the tab bar marks the selected tab in the accent on a capsule', () {
+      test('the tab bar marks the selected tab on a volt capsule', () {
         final on = {WidgetState.selected};
         final tabs = theme.navigationBarTheme;
         expect(tabs.backgroundColor, const Color(0x00000000));
-        expect(tabs.indicatorColor, AppColors.tintedSurface(scheme.primary));
-        expect(tabs.indicatorShape, isA<StadiumBorder>());
-        expect(tabs.iconTheme?.resolve(on)?.color, scheme.primary);
+        expect(tabs.indicatorColor, scheme.primary);
+        expect(tabs.indicatorShape, const StadiumBorder());
+        expect(tabs.iconTheme?.resolve(on)?.color, scheme.onPrimary);
         expect(tabs.iconTheme?.resolve({})?.color, scheme.onSurfaceVariant);
-        expect(tabs.labelTextStyle?.resolve(on)?.color, scheme.primary);
+        expect(tabs.labelTextStyle?.resolve(on)?.color, scheme.onSurface);
+        expect(tabs.labelTextStyle?.resolve(on)?.fontWeight, FontWeight.w600);
         expect(
           tabs.labelTextStyle?.resolve(on)?.overflow,
           TextOverflow.ellipsis,
@@ -140,4 +169,52 @@ void main() {
       });
     });
   }
+
+  group('AppTheme iOS switch', () {
+    SwitchThemeData adapted(ThemeData theme, TargetPlatform platform) => theme
+        .getAdaptation<SwitchThemeData>()!
+        .adapt(theme.copyWith(platform: platform), theme.switchTheme);
+    const on = {WidgetState.selected};
+
+    test('is volt with a white knob when on', () {
+      final ios = adapted(AppTheme.light, TargetPlatform.iOS);
+      expect(ios.trackColor?.resolve(on), AppTheme.light.colorScheme.primary);
+      expect(ios.trackColor?.resolve({}), isNull);
+      expect(ios.thumbColor?.resolve(on), const Color(0xFFFFFFFF));
+      expect(ios.trackOutlineColor?.resolve(on), isNull);
+    });
+
+    test('gains a black edge under Increase Contrast', () {
+      final ios = adapted(AppTheme.lightHighContrast, TargetPlatform.iOS);
+      expect(ios.trackOutlineColor?.resolve(on), const Color(0xFF000000));
+      expect(ios.trackOutlineColor?.resolve({}), isNull);
+    });
+
+    test('leaves the Material switch to the theme elsewhere', () {
+      final theme = AppTheme.light;
+      expect(adapted(theme, TargetPlatform.android), same(theme.switchTheme));
+    });
+  });
+
+  group('AppTheme.lightHighContrast', () {
+    final theme = AppTheme.lightHighContrast;
+
+    test("darkens the accent's ink and outlines volt fills", () {
+      final colors = theme.extension<AppColors>()!;
+      expect(colors.accentInk, const Color(0xFF3A4D00));
+      expect(theme.colorScheme.primary, AppTheme.light.colorScheme.primary);
+      const edge = BorderSide();
+      expect(
+        theme.navigationBarTheme.indicatorShape,
+        const StadiumBorder(side: edge),
+      );
+      final shape = theme.filledButtonTheme.style?.shape?.resolve({});
+      expect(shape!.side, edge);
+    });
+
+    test('the standard light theme has no outline', () {
+      final shape = AppTheme.light.filledButtonTheme.style?.shape?.resolve({});
+      expect(shape!.side, BorderSide.none);
+    });
+  });
 }

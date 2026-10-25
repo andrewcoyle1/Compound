@@ -127,7 +127,7 @@ class AppDialog<T> extends StatelessWidget {
               textStyle: TextStyle(
                 color: action.role == AppDialogRole.destructive
                     ? danger
-                    : scheme.primary,
+                    : context.appColors.accentInk,
               ),
               child: Text(action.label),
             ),
@@ -158,7 +158,7 @@ class AppDialog<T> extends StatelessWidget {
             style: TextButton.styleFrom(
               foregroundColor: action.role == AppDialogRole.destructive
                   ? danger
-                  : scheme.primary,
+                  : context.appColors.accentInk,
               textStyle: text.bodyMedium!.copyWith(
                 fontWeight: action.role == AppDialogRole.preferred
                     ? FontWeight.w600

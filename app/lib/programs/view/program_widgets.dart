@@ -44,7 +44,8 @@ class const MesocycleHeader({
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final colour = AppColors.fromHex(mesocycle.colour) ?? scheme.primary;
+    final colour =
+        AppColors.fromHex(mesocycle.colour) ?? context.appColors.accentInk;
     final side = MediaQuery.textScalerOf(context).scale(AppControlSize.row);
     final phase = this.phase;
     final trailing = this.trailing;

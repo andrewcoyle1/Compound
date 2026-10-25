@@ -40,7 +40,7 @@ class AppSpinner extends StatelessWidget {
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: SpinKitFadingCircle(
-          color: color ?? Theme.of(context).colorScheme.primary,
+          color: color ?? context.appColors.accentInk,
           size: switch (size) {
             AppSpinnerSize.small => AppIconSize.small,
             AppSpinnerSize.regular => AppIconSize.medium,

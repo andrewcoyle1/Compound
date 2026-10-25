@@ -22,6 +22,7 @@ export 'src/widgets/app_confetti.dart';
 export 'src/widgets/app_cta_button.dart';
 export 'src/widgets/app_dashboard.dart';
 export 'src/widgets/app_dialog.dart';
+export 'src/widgets/app_done_mark.dart';
 export 'src/widgets/app_empty_state.dart';
 export 'src/widgets/app_floating_button.dart';
 export 'src/widgets/app_icon_badge.dart';

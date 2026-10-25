@@ -111,6 +111,10 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppDoneMark', [
+      galleryInline('medium', const AppDoneMark()),
+      galleryInline('small', const AppDoneMark(size: AppIconSize.small)),
+    ]),
     galleryEntry('AppIconBadge', [
       galleryInline('filled', const AppIconBadge(icon: AppSymbols.meal)),
       galleryInline(

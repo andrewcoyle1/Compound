@@ -64,10 +64,7 @@ class SessionExerciseEditor extends StatelessWidget {
             if (warmups.isNotEmpty)
               ExpansionTile(
                 key: ValueKey('warmups-${exercise.id}'),
-                leading: Icon(
-                  AppSymbols.success,
-                  color: context.appColors.success,
-                ),
+                leading: const AppDoneMark(),
                 title: Text(
                   l10n.warmupCount(warmups.length),
                   style: AppTextStyles.rowDetail,
@@ -112,7 +109,7 @@ class _Header extends StatelessWidget {
       _ => null,
     };
     final progressColor = isDone
-        ? context.appColors.success
+        ? context.appColors.accentInk
         : scheme.onSurfaceVariant;
     return Row(
       spacing: AppSpacing.m,
@@ -141,12 +138,7 @@ class _Header extends StatelessWidget {
                 child: Row(
                   spacing: AppSpacing.xs,
                   children: [
-                    if (isDone)
-                      Icon(
-                        AppSymbols.success,
-                        size: AppIconSize.small.of(context),
-                        color: progressColor,
-                      ),
+                    if (isDone) const AppDoneMark(size: AppIconSize.small),
                     Text(
                       l10n.sessionSetProgress(
                         logged + 1 < total ? logged + 1 : total,

@@ -471,7 +471,7 @@ class ExerciseRatingRow extends StatelessWidget {
                   decoration: ShapeDecoration(
                     shape: const StadiumBorder(),
                     color: value <= rating
-                        ? scheme.primary
+                        ? context.appColors.accentInk
                         : scheme.surfaceContainerHighest,
                   ),
                 ),

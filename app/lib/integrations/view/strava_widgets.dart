@@ -191,7 +191,7 @@ class StravaActivityRow extends StatelessWidget {
               Text(
                 l10n.stravaViewOn,
                 style: AppTextStyles.label.copyWith(
-                  color: theme.colorScheme.primary,
+                  color: context.appColors.accentInk,
                 ),
               ),
             ],

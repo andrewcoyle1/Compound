@@ -223,6 +223,7 @@ List<Widget> galleryTokens(BuildContext context) {
         ),
       ),
       for (final (name, style) in [
+        ('hero', AppTextStyles.hero),
         ('display', AppTextStyles.display),
         ('metricLarge', AppTextStyles.metricLarge),
         ('metric', AppTextStyles.metric),

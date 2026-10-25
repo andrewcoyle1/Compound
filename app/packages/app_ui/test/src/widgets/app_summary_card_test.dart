@@ -113,26 +113,84 @@ void main() {
       );
     });
 
-    testWidgets('draws a prominent value in the display style', (tester) async {
+    testWidgets('sizes the value, the unit after or under it', (tester) async {
       await tester.pumpApp(
         const Column(
           children: [
-            AppSummaryCard(title: 'Day', value: '3/4', prominent: true),
-            AppSummaryCard(title: 'Week', value: '12'),
+            AppSummaryCard(
+              title: 'Day',
+              value: '3/4',
+              unit: 'done',
+              size: AppSummaryCardSize.hero,
+            ),
+            AppSummaryCard(
+              title: 'Streak',
+              value: '6',
+              unit: 'weeks',
+              size: AppSummaryCardSize.large,
+            ),
+            AppSummaryCard(title: 'Week', value: '12', unit: 'sets'),
           ],
         ),
       );
-      TextStyle? style(String text) => tester
-          .widget<Text>(
-            find.byWidgetPredicate(
-              (widget) =>
-                  widget is Text && widget.textSpan?.toPlainText() == text,
+      expect(tester.widget<Text>(find.text('3/4')).style, AppTextStyles.hero);
+      expect(tester.widget<Text>(find.text('6')).style, AppTextStyles.display);
+      expect(
+        tester.getTopLeft(find.text('DONE')).dy,
+        greaterThan(tester.getBottomLeft(find.text('3/4')).dy - 1),
+      );
+      final regular = find.byWidgetPredicate(
+        (widget) =>
+            widget is Text && widget.textSpan?.toPlainText() == '12 SETS',
+      );
+      expect(
+        tester.widget<Text>(regular).textSpan?.style,
+        AppTextStyles.metricLarge,
+      );
+    });
+
+    testWidgets('a hero number stops growing at 150%', (tester) async {
+      await tester.pumpApp(
+        const AppSummaryCard(
+          title: 'Day',
+          value: '3/4',
+          size: AppSummaryCardSize.hero,
+        ),
+        textScale: 2,
+      );
+      final scaler = MediaQuery.textScalerOf(tester.element(find.text('3/4')));
+      expect(scaler.scale(10), 15);
+    });
+
+    testWidgets('holds the rows it sums up, each its own element', (
+      tester,
+    ) async {
+      var taps = 0;
+      await tester.pumpApp(
+        AppSummaryCard(
+          title: 'Your Day',
+          value: '1/2',
+          rows: [
+            AppListRowButton(
+              title: 'Train',
+              icon: AppSymbols.workout,
+              onPressed: () => taps++,
             ),
-          )
-          .textSpan
-          ?.style;
-      expect(style('3/4'), AppTextStyles.display);
-      expect(style('12'), AppTextStyles.metricLarge);
+            AppListRowButton(title: 'Steps', onPressed: () {}),
+          ],
+        ),
+      );
+      expect(find.byType(Divider), findsNWidgets(2));
+      await tester.tap(find.text('Train'));
+      expect(taps, 1);
+      expect(
+        tester.getSemantics(find.byType(AppListRowButton).first),
+        isSemantics(label: 'Train', isButton: true),
+      );
+      expect(
+        tester.getSemantics(_card),
+        matchesSemantics(label: 'Your Day', value: '1/2'),
+      );
     });
 
     testWidgets('puts a chart beside the number, under it at large text', (
@@ -210,7 +268,7 @@ void main() {
         ),
       ),
       (
-        'Prominent, ring beside',
+        'Hero, ring beside',
         Builder(
           builder: (context) => AppSummaryCard(
             title: 'Your Day',
@@ -220,7 +278,7 @@ void main() {
             unit: 'done',
             chart: _ring,
             chartBeside: true,
-            prominent: true,
+            size: AppSummaryCardSize.hero,
             footer: 'Next: Steps',
           ),
         ),
@@ -248,6 +306,29 @@ void main() {
         ),
       ),
       (
+        'Rows',
+        AppSummaryCard(
+          title: 'Your Day',
+          icon: AppSymbols.today,
+          value: '1/2',
+          unit: 'done',
+          size: AppSummaryCardSize.hero,
+          rows: [
+            AppListRowButton(
+              title: 'Train',
+              subtitle: 'Push Day A',
+              icon: AppSymbols.workout,
+              onPressed: () {},
+            ),
+            AppListRowButton(
+              title: 'Steps',
+              icon: AppSymbols.steps,
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+      (
         'Chart only',
         const AppSummaryCard(
           title: 'Rings',
@@ -256,11 +337,12 @@ void main() {
         ),
       ),
       (
-        'Goal met, high contrast',
+        'Large, goal met, high contrast',
         _highContrast(
           const AppSummaryCard(
             title: 'Weekly Streak',
             icon: AppSymbols.streak,
+            size: AppSummaryCardSize.large,
             value: '6',
             unit: 'weeks',
             delta: AppChip(

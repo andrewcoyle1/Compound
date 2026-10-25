@@ -11,6 +11,7 @@ void main() {
     test('number styles use tabular figures', () {
       for (final style in [
         AppTextStyles.largeTitle,
+        AppTextStyles.hero,
         AppTextStyles.display,
         AppTextStyles.metricLarge,
         AppTextStyles.metric,
@@ -32,6 +33,7 @@ void main() {
     test('titles and numbers are set in Barlow Condensed, a step up', () {
       for (final (style, size, weight) in [
         (AppTextStyles.largeTitle, 40, FontWeight.w800),
+        (AppTextStyles.hero, 80, FontWeight.w800),
         (AppTextStyles.display, 44, FontWeight.w800),
         (AppTextStyles.metricLarge, 34, FontWeight.w800),
         (AppTextStyles.metric, 24, FontWeight.w700),

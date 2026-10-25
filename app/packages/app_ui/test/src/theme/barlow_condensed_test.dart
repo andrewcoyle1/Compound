@@ -60,6 +60,7 @@ void main() {
       const bold = TextStyle(fontWeight: FontWeight.bold);
       for (final style in [
         AppTextStyles.largeTitle,
+        AppTextStyles.hero,
         AppTextStyles.display,
         AppTextStyles.metricLarge,
         AppTextStyles.metric,

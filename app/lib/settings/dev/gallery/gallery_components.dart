@@ -1086,13 +1086,13 @@ List<Widget> galleryContent(BuildContext context) {
         ),
       ),
       galleryBlock(
-        'prominent, chart beside, goal met',
+        'size: hero, chart beside, goal met',
         AppSummaryCard(
           title: l10n.devGallerySampleTitle,
           icon: AppSymbols.today,
           tint: colors.accentInk,
           value: '4/4',
-          prominent: true,
+          size: AppSummaryCardSize.hero,
           delta: AppChip(
             label: l10n.devGallerySampleShortAction,
             icon: AppSymbols.success,
@@ -1103,6 +1103,21 @@ List<Widget> galleryContent(BuildContext context) {
             child: CircularProgressIndicator(value: 1),
           ),
           chartBeside: true,
+        ),
+      ),
+      galleryBlock(
+        'size: large, rows',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          value: '6',
+          unit: 'weeks',
+          size: AppSummaryCardSize.large,
+          rows: [
+            AppListRowButton(
+              title: l10n.devGallerySampleSubtitle,
+              onPressed: () {},
+            ),
+          ],
         ),
       ),
       galleryBlock(

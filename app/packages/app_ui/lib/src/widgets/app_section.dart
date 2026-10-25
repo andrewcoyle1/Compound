@@ -41,7 +41,9 @@ class AppSection extends StatelessWidget {
   /// Whether the children share one card, with dividers between them.
   final bool grouped;
 
-  static double _dividerIndent(Widget row, TextScaler scaler) => switch (row) {
+  /// Where the hairline under [row] starts: past the leading icon or
+  /// thumbnail of an `app_ui` row, 16 pt in otherwise.
+  static double dividerIndent(Widget row, TextScaler scaler) => switch (row) {
     AppListRow(:final icon, :final thumbnail) ||
     AppListRowButton(
       :final icon,
@@ -96,9 +98,7 @@ class AppSection extends StatelessWidget {
               children: [
                 for (final (index, child) in children.indexed) ...[
                   if (index > 0)
-                    Divider(
-                      indent: _dividerIndent(children[index - 1], scaler),
-                    ),
+                    Divider(indent: dividerIndent(children[index - 1], scaler)),
                   child,
                 ],
               ],

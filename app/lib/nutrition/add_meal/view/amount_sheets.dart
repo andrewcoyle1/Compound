@@ -419,7 +419,8 @@ class _AmountFieldState extends State<_AmountField> {
         spacing: AppSpacing.m,
         children: [
           Expanded(
-            child: TextField(
+            child: AppTextField(
+              label: widget.label ?? context.l10n.addMealAmount,
               controller: _controller,
               autofocus: true,
               keyboardType: const TextInputType.numberWithOptions(
@@ -428,11 +429,8 @@ class _AmountFieldState extends State<_AmountField> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
               ],
-              decoration: InputDecoration(
-                labelText: widget.label ?? context.l10n.addMealAmount,
-              ),
-              style: AppTextStyles.metric,
               onChanged: context.read<AmountCubit>().textChanged,
+              textStyle: AppTextStyles.metric,
             ),
           ),
           ?widget.unit,

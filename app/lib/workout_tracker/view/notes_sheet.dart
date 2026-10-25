@@ -58,7 +58,6 @@ class _NotesSheetState extends State<_NotesSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     return AppScaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -86,25 +85,14 @@ class _NotesSheetState extends State<_NotesSheet> {
                   l10n.trackerLastTimeNote(hint),
                   style: AppTextStyles.rowDetail.secondary(context),
                 ),
-              TextField(
+              AppTextField(
+                label: field.label,
+                helper: field.footer,
                 controller: _controllers[index],
                 autofocus: index == 0,
+                textCapitalization: TextCapitalization.sentences,
                 minLines: 3,
                 maxLines: 8,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  labelText: field.label,
-                  helperText: field.footer,
-                  helperMaxLines: 3,
-                  filled: true,
-                  fillColor: scheme.surfaceContainerHighest,
-                  border: const OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(AppRadius.m),
-                    ),
-                  ),
-                ),
               ),
             ],
           ],

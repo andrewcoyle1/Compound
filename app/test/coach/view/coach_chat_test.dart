@@ -222,7 +222,12 @@ void main() {
     // The field is free for the next question.
     expect(
       tester
-          .widget<TextField>(find.byKey(const Key('Coach.draft')))
+          .widget<TextField>(
+            find.descendant(
+              of: find.byKey(const Key('Coach.draft')),
+              matching: find.byType(TextField),
+            ),
+          )
           .controller
           ?.text,
       isEmpty,

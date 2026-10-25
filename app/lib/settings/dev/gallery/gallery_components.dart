@@ -512,7 +512,7 @@ List<Widget> galleryRows(BuildContext context) {
   ];
 }
 
-/// [AppSearchField], [AppNumberField], [AppTextFieldRow] and
+/// [AppSearchField], [AppNumberField], [AppTextFieldRow], [AppTextField] and
 /// [AppSegmentedControl].
 List<Widget> galleryInputs(BuildContext context) {
   final l10n = context.l10n;
@@ -617,6 +617,46 @@ List<Widget> galleryInputs(BuildContext context) {
               onChanged: (_) {},
             ),
           ],
+        ),
+      ),
+      galleryBlock(
+        'prefixText, suffixText',
+        AppSection(
+          children: [
+            AppTextFieldRow(
+              label: l10n.devGallerySampleTitle,
+              initialValue: '50',
+              keyboardType: TextInputType.number,
+              prefixText: '@',
+              suffixText: '%',
+              onChanged: (_) {},
+            ),
+          ],
+        ),
+      ),
+    ]),
+    galleryEntry('AppTextField', [
+      galleryBlock(
+        'boxed: label, helper',
+        AppTextField(
+          label: l10n.devGallerySampleTitle,
+          helper: l10n.devGallerySampleSubtitle,
+        ),
+      ),
+      galleryBlock(
+        'composer',
+        AppTextField(
+          hint: l10n.devGallerySampleTitle,
+          style: AppTextFieldStyle.composer,
+          minLines: 1,
+          maxLines: 5,
+        ),
+      ),
+      galleryBlock(
+        'plain',
+        AppTextField(
+          hint: l10n.devGallerySampleTitle,
+          style: AppTextFieldStyle.plain,
         ),
       ),
     ]),

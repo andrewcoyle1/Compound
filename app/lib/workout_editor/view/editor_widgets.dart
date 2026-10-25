@@ -87,12 +87,13 @@ class _RepsFieldState extends State<RepsField> {
   Widget build(BuildContext context) {
     return Semantics(
       label: widget.label,
-      child: TextField(
+      child: AppTextField(
+        hint: widget.hint,
+        dense: true,
         controller: _controller,
-        textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(hintText: widget.hint, isDense: true),
+        textAlign: TextAlign.center,
         onChanged: (text) =>
             widget.onChanged(WorkoutEditorRules.typedReps(text)),
       ),

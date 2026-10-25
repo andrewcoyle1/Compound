@@ -1096,12 +1096,12 @@ class _BarcodeEntryDialogState extends State<_BarcodeEntryDialog> {
     final l10n = context.l10n;
     return AppDialog<String>(
       title: l10n.addMealBarcodeEnter,
-      content: TextField(
+      content: AppTextField(
+        hint: l10n.addMealBarcodeField,
         controller: _controller,
         autofocus: true,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(hintText: l10n.addMealBarcodeField),
         onSubmitted: (_) => _submit(),
       ),
       actions: [

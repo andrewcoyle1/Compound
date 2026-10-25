@@ -833,16 +833,14 @@ class _NotesFieldState extends State<_NotesField> {
     final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.l),
-      child: TextField(
+      child: AppTextField(
         key: const ValueKey('session-notes'),
+        label: l10n.sessionNotesLabel,
+        hint: l10n.sessionNotesPrompt,
         controller: _controller,
+        textCapitalization: TextCapitalization.sentences,
         minLines: 3,
         maxLines: null,
-        textCapitalization: TextCapitalization.sentences,
-        decoration: InputDecoration(
-          labelText: l10n.sessionNotesLabel,
-          hintText: l10n.sessionNotesPrompt,
-        ),
         onChanged: context.read<SessionEditCubit>().setNotes,
       ),
     );

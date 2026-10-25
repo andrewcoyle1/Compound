@@ -457,20 +457,14 @@ class _ExercisePlan extends StatelessWidget {
                 accessory: AppListRowMenu(text.restTitle(exercise.restSeconds)),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: TextFormField(
-                key: const Key('SetTarget.notes'),
-                initialValue: exercise.notes ?? '',
-                minLines: 2,
-                maxLines: 6,
-                decoration: InputDecoration(
-                  hintText: l10n.editorNotes,
-                  border: InputBorder.none,
-                  filled: false,
-                ),
-                onChanged: cubit.notesChanged,
-              ),
+            AppTextFieldRow(
+              key: const Key('SetTarget.notes'),
+              label: l10n.editorNotes,
+              initialValue: exercise.notes ?? '',
+              minLines: 2,
+              maxLines: 6,
+              onChanged: cubit.notesChanged,
+              textCapitalization: TextCapitalization.none,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
@@ -481,18 +475,15 @@ class _ExercisePlan extends StatelessWidget {
                     onFocusChange: (focused) {
                       if (!focused) cubit.linkSubmitted();
                     },
-                    child: TextFormField(
+                    child: AppTextField(
                       key: const Key('SetTarget.link'),
+                      hint: l10n.editorLink,
                       initialValue: state.linkText,
                       keyboardType: TextInputType.url,
                       autocorrect: false,
-                      decoration: InputDecoration(
-                        hintText: l10n.editorLink,
-                        border: InputBorder.none,
-                        filled: false,
-                      ),
                       onChanged: cubit.linkChanged,
-                      onFieldSubmitted: (_) => cubit.linkSubmitted(),
+                      style: AppTextFieldStyle.plain,
+                      onSubmitted: (_) => cubit.linkSubmitted(),
                     ),
                   ),
                   if (state.showsLinkError)

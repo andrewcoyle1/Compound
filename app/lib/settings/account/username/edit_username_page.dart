@@ -125,27 +125,21 @@ class _EditUsernameViewState extends State<EditUsernameView> {
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
               AppCard(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    controller: _controller,
-                    autofocus: true,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    textInputAction: TextInputAction.done,
-                    autofillHints: const [AutofillHints.username],
-                    decoration: InputDecoration(
-                      prefixText: '@',
-                      hintText: l10n.usernamePlaceholder,
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                    onChanged: (text) =>
-                        _bloc.add(EditUsernameTextChanged(text, widget.viewer)),
-                    onSubmitted: (_) {
-                      if (state.canSave) _save();
-                    },
-                  ),
+                child: AppTextFieldRow(
+                  label: l10n.usernamePlaceholder,
+                  controller: _controller,
+                  autofocus: true,
+                  textInputAction: TextInputAction.done,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  autofillHints: const [AutofillHints.username],
+                  onChanged: (text) =>
+                      _bloc.add(EditUsernameTextChanged(text, widget.viewer)),
+                  textCapitalization: TextCapitalization.none,
+                  prefixText: '@',
+                  onSubmitted: (_) {
+                    if (state.canSave) _save();
+                  },
                 ),
               ),
               Padding(

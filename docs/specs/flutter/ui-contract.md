@@ -69,6 +69,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A destructive row | `AppListRowButton(destructive: true)`: the title in `appColors.danger` |
 | A section header's note or action | `AppSection(trailing:)`: a `Text` ("Required", a count) or an `AppChip` with `onPressed` ("See All", "New", "Hide") |
 | A search | `AppSearchField` |
+| Text entry | `AppTextFieldRow` in an `AppSection` (`prefixText`/`suffixText` for `@` or `%`); `AppTextField` anywhere else: `boxed` in a sheet or dialog, `composer` for a message bar, `plain` inside a row or title the screen lays out. Never `TextField` or `TextFormField` |
 | A choice between a few options | `AppSegmentedControl` |
 | The tab bar | `AppTabBar`: an inset card dock, with `accessory:` for the bars above it |
 | A bar above the tab bar (the workout under way, the unlogged meal) | `AppTabAccessory` |
@@ -200,7 +201,9 @@ spinners to `AppSpinner` in `app/lib/` and `app_ui/lib/`: an indeterminate
 one given its own `value:` (the progress rings and macro bars) is allowed. Its `style-copywith` rule
 holds text styles in `app/lib` to those tokens, `alpha-literal` its colours' opacities, and `box-decoration` its boxes to app_ui's widgets, and `raw-tap` its taps to `AppPressable` (`InkWell`,
 `InkResponse` and `GestureDetector` fail; a drag or swipe is allowed); its `ALLOWED` list names each file a rule lets
-through, and why. Every screen was moved onto
+through, and why. Its `raw-text-field` rule holds text entry to `AppTextFieldRow`, `AppTextField`,
+`AppSearchField` and `AppNumberField`: `TextField`, `TextFormField` and `CupertinoTextField` fail.
+Every screen was moved onto
 `app_ui` by 19 Oct 2026 (#212–#217), so there is no baseline: any match fails CI.
 
 ```bash

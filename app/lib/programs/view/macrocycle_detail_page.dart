@@ -213,18 +213,11 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
             AppSection(
               header: l10n.onboardingGymName,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    controller: _name,
-                    onChanged: cubit.nameChanged,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      hintText: l10n.programMacrocycleNameHint,
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                  ),
+                AppTextFieldRow(
+                  label: l10n.programMacrocycleNameHint,
+                  controller: _name,
+                  textCapitalization: TextCapitalization.words,
+                  onChanged: cubit.nameChanged,
                 ),
               ],
             ),

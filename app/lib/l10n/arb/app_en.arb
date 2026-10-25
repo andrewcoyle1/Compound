@@ -984,22 +984,38 @@
             }
         }
     },
-    "nutritionMacroLeft": "{amount} left",
-    "@nutritionMacroLeft": {
-        "description": "Macro header: how much of the day's target is left",
+    "nutritionHeroOf": "of {amount}",
+    "@nutritionHeroOf": {
+        "description": "Nutrition tab's hero: the day's target under what has been eaten, e.g. of 2,250 kcal or of 165 g",
         "placeholders": {
             "amount": {
                 "type": "String"
             }
         }
     },
-    "nutritionMacroHeaderShowRemaining": "Show what's left",
-    "@nutritionMacroHeaderShowRemaining": {
-        "description": "Macro header: accessibility hint for switching to the remaining figures"
+    "nutritionHeroKcalLeft": "kcal left",
+    "@nutritionHeroKcalLeft": {
+        "description": "Nutrition tab's hero: the unit under the calories left today"
     },
-    "nutritionMacroHeaderShowConsumed": "Show what's eaten",
-    "@nutritionMacroHeaderShowConsumed": {
-        "description": "Macro header: accessibility hint for switching back to the eaten figures"
+    "nutritionHeroKcalOver": "kcal over",
+    "@nutritionHeroKcalOver": {
+        "description": "Nutrition tab's hero: the unit under the calories eaten past the target"
+    },
+    "nutritionHeroGramsLeft": "g left",
+    "@nutritionHeroGramsLeft": {
+        "description": "Nutrition tab's hero: under a macro's grams left today"
+    },
+    "nutritionHeroGramsOver": "g over",
+    "@nutritionHeroGramsOver": {
+        "description": "Nutrition tab's hero: under a macro's grams eaten past its target"
+    },
+    "nutritionHeroShowLeft": "Show Left",
+    "@nutritionHeroShowLeft": {
+        "description": "Nutrition tab's hero: chip that switches the figures to what is left"
+    },
+    "nutritionHeroShowEaten": "Show Eaten",
+    "@nutritionHeroShowEaten": {
+        "description": "Nutrition tab's hero: chip that switches the figures back to what has been eaten"
     },
     "nutritionItemProtein": "{grams}\u00a0P",
     "@nutritionItemProtein": {

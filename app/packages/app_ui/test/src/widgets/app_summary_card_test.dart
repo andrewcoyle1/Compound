@@ -87,6 +87,25 @@ void main() {
       );
     });
 
+    testWidgets("reads a chart's own figures after the number", (tester) async {
+      await tester.pumpApp(
+        const AppSummaryCard(
+          title: 'Calories',
+          value: '1,367',
+          unit: 'of 2,250 kcal',
+          chart: _ring,
+          semanticValue: 'Protein, 104 of 165 g',
+        ),
+      );
+      expect(
+        tester.getSemantics(_card),
+        matchesSemantics(
+          label: 'Calories',
+          value: '1,367 of 2,250 kcal, Protein, 104 of 165 g',
+        ),
+      );
+    });
+
     testWidgets('as a button: one tap target, a haptic and a chevron', (
       tester,
     ) async {

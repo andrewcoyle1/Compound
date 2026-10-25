@@ -43,8 +43,9 @@ enum AppSummaryCardSize {
 /// haptic and a chevron, with no buttons inside but [trailing]. Without it
 /// the card only shows. Screen readers read the summary as one element,
 /// "title, value unit, chart, delta, footer"; give [semanticValue] for
-/// what a [chart] says, which it needs when there is no [value].
-/// [trailing] and each of [rows] stay their own elements.
+/// what a [chart] says (a ring's own figures, say), which it needs when
+/// there is no [value]. [trailing] and each of [rows] stay their own
+/// elements.
 ///
 /// A goal the user hit shows the accent as a volt fill: pass a selected
 /// [AppChip] as the [delta], or a ring filled in volt as the [chart].

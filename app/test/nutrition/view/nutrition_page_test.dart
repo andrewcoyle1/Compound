@@ -198,9 +198,9 @@ void main() {
 
       expect(find.text('Sep 21, 2026'), findsOneWidget);
       expect(find.byType(CalendarHeader), findsOneWidget);
-      expect(find.byType(MacroHeader), findsOneWidget);
+      expect(find.byType(NutritionHero), findsOneWidget);
       // Monday is a training day: 2,550 kcal.
-      expect(find.textContaining(' / 2,550'), findsOneWidget);
+      expect(find.text('OF 2,550\u00a0KCAL'), findsOneWidget);
       expect(find.text('7:00 AM'), findsOneWidget);
       // Breakfast, with its time beside its first food only.
       expect(find.text('Rolled Oats'), findsOneWidget);
@@ -238,33 +238,49 @@ void main() {
       expect(find.text('07:30'), findsOneWidget);
     });
 
-    testWidgets('turns the macro header to what is left, and back', (
-      tester,
-    ) async {
+    testWidgets('turns the hero to what is left, and back', (tester) async {
       await pumpView(tester);
-      List<double> bars() => [
+      List<double> marks() => [
         for (final bar in tester.widgetList<BulletBar>(
           find.descendant(
-            of: find.byType(MacroHeader),
+            of: find.byType(NutritionHero),
             matching: find.byType(BulletBar),
           ),
         ))
           bar.value,
+        for (final ring in tester.widgetList<ProgressArc>(
+          find.descendant(
+            of: find.byType(NutritionHero),
+            matching: find.byType(ProgressArc),
+          ),
+        ))
+          ring.value,
       ];
-      final eaten = bars();
+      final eaten = marks();
       expect(eaten, hasLength(4));
+      // Read with the number, protein first.
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Calories')).value,
+        contains('Protein, '),
+      );
 
-      await tester.tap(find.byType(MacroHeader));
+      await tester.tap(find.text('Show Left'));
       await tester.pump();
-      expect(find.textContaining(' left'), findsNWidgets(4));
-      // The bars drain to what is left.
-      for (final (i, left) in bars().indexed) {
+      expect(find.text('KCAL LEFT'), findsOneWidget);
+      expect(find.text('g left'), findsNWidgets(3));
+      // The bar and rings drain to what is left.
+      for (final (i, left) in marks().indexed) {
         expect(left, closeTo(math.max(1 - eaten[i], 0), 0.001));
       }
 
-      await tester.fling(find.byType(MacroHeader), const Offset(-200, 0), 800);
+      await tester.fling(
+        find.byType(NutritionHero),
+        const Offset(-200, 0),
+        800,
+      );
       await tester.pump();
-      expect(find.textContaining(' left'), findsNothing);
+      expect(find.text('KCAL LEFT'), findsNothing);
+      expect(find.text('Show Left'), findsOneWidget);
     });
 
     testWidgets('picks another day, and returns to today', (tester) async {
@@ -345,7 +361,7 @@ void main() {
 
       expect(cellValues(tester), contains('Today, Logged'));
       // A target of zero calories is still a target for the header.
-      expect(find.byType(MacroHeader), findsOneWidget);
+      expect(find.byType(NutritionHero), findsOneWidget);
     });
 
     testWidgets('hides the header without a plan', (tester) async {
@@ -354,7 +370,7 @@ void main() {
         repository: InMemoryNutritionRepository(meals: sampleMeals),
       );
 
-      expect(find.byType(MacroHeader), findsNothing);
+      expect(find.byType(NutritionHero), findsNothing);
       expect(find.text('Rolled Oats'), findsOneWidget);
     });
 
@@ -429,9 +445,10 @@ void main() {
         settings: const FoodLogSettings(authorId: uid, showOverages: true),
       );
 
-      await tester.tap(find.byType(MacroHeader));
+      await tester.tap(find.text('Show Left'));
       await tester.pump();
-      expect(find.text('-700 left'), findsOneWidget);
+      expect(find.text('700'), findsOneWidget);
+      expect(find.text('KCAL OVER'), findsOneWidget);
     });
   });
 
@@ -513,8 +530,29 @@ void main() {
       return opened;
     }
 
-    testWidgets('opens the Nutrition Overview for the day', (tester) async {
+    testWidgets('the hero opens the Nutrition Overview for the day', (
+      tester,
+    ) async {
       await pumpRouted(tester);
+      await tester.tap(find.byKey(const Key('Nutrition.overview')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('overview 2026-'), findsOneWidget);
+    });
+
+    testWidgets('without a hero, a row opens the Nutrition Overview', (
+      tester,
+    ) async {
+      await pumpRouted(
+        tester,
+        settings: const FoodLogSettings(
+          authorId: uid,
+          showCaloriesRing: false,
+          showProteinRing: false,
+          showFatRing: false,
+          showCarbsRing: false,
+        ),
+      );
+      expect(find.byType(NutritionHero), findsNothing);
       // A row in the day's last section, as in Swift.
       await tester.scrollUntilVisible(
         find.byKey(const Key('Nutrition.overview')),

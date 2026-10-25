@@ -74,9 +74,23 @@ class MuscleGroupsView extends StatelessWidget {
               ],
             ),
           );
+          final trained = lastSeven.values
+              .where((days) => days.any((sets) => sets > 0))
+              .length;
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
+              // The hero: how many muscles the week has worked.
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+                child: AppHeroStat(
+                  label: l10n.progressLast7Days,
+                  value:
+                      '${AppFormat.number(trained)}/'
+                      '${AppFormat.number(lastSeven.length)}',
+                  unit: l10n.trainingMusclesTrainedUnit,
+                ),
+              ),
               region(l10n.muscleRegionUpper, upper: true),
               region(l10n.muscleRegionLower, upper: false),
             ],
@@ -112,6 +126,8 @@ class MuscleSetsCard extends StatelessWidget {
       // The week the chart draws.
       value: number(total),
       unit: l10n.progressSetsUnit,
+      icon: AppSymbols.muscleGroup,
+      tint: context.appColors.muscleGroups,
       onTap: () => context.goNamed(
         MuscleGroupDetailPage.name,
         pathParameters: {MuscleGroupDetailPage.muscleParameter: muscle.value},

@@ -99,9 +99,25 @@ class MuscleBalanceView extends StatelessWidget {
             );
           }
 
+          final productive = weekly.values
+              .where(
+                (weeks) => VolumeTier.of(weeks.last) == VolumeTier.productive,
+              )
+              .length;
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
+              // The hero: how many muscles get a productive week's sets.
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+                child: AppHeroStat(
+                  label: l10n.progressLast7Days,
+                  value:
+                      '${AppFormat.number(productive)}/'
+                      '${AppFormat.number(weekly.length)}',
+                  unit: l10n.trainingMusclesProductiveUnit,
+                ),
+              ),
               region(l10n.muscleRegionUpper, upper: true),
               region(l10n.muscleRegionLower, upper: false),
             ],
@@ -186,11 +202,22 @@ class _Tile extends StatelessWidget {
         child: AppSelectionRing(
           selected: isSelected,
           radius: AppRadius.l,
-          child: AppStatTile(
-            value: value,
-            label: '$name · $label',
-            icon: _icon(tier),
-            tint: color,
+          // A plain tile: the tier's colour marks its glyph only, beside
+          // the word, so status never tints a whole surface.
+          child: AppCard(
+            style: AppCardStyle.tile,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.l),
+              child: SizedBox(
+                width: double.infinity,
+                child: AppStat(
+                  value: value,
+                  label: '$name · $label',
+                  icon: _icon(tier),
+                  tint: color,
+                ),
+              ),
+            ),
           ),
         ),
       ),

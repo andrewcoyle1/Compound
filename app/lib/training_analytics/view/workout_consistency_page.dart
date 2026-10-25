@@ -235,34 +235,13 @@ class _ContributionGridState extends State<ContributionGrid> {
                 child: ExcludeSemantics(
                   child: Opacity(
                     opacity: selected == null ? 1 : 0,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: AppSpacing.xs,
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: AppFormat.number(
-                                  daysLogged,
-                                  locale: locale,
-                                ),
-                                style: AppTextStyles.metric,
-                              ),
-                              TextSpan(
-                                text: ' ${l10n.contributionOfDays(span)}',
-                              ),
-                            ],
-                          ),
-                          style: AppTextStyles.rowDetail.secondary(context),
-                        ),
-                        Text(
-                          l10n.contributionDaysLogged(
-                            '${date(first)} – ${date(today)}',
-                          ),
-                          style: AppTextStyles.label.secondary(context),
-                        ),
-                      ],
+                    // The screen's hero: the days logged, loudest.
+                    child: AppHeroStat(
+                      value: AppFormat.number(daysLogged, locale: locale),
+                      unit: l10n.contributionOfDays(span),
+                      caption: l10n.contributionDaysLogged(
+                        '${date(first)} – ${date(today)}',
+                      ),
                     ),
                   ),
                 ),

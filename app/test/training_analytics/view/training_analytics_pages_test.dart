@@ -160,6 +160,9 @@ void main() {
     testWidgets('shows both regions and opens a muscle', (tester) async {
       await pump(tester, '/progress/muscles');
 
+      // The hero: the muscles with any sets this week, out of all.
+      expect(find.text('MUSCLES TRAINED'), findsOneWidget);
+      expect(find.textContaining('/${Muscles.values.length}'), findsOneWidget);
       expect(find.text('Upper'), findsOneWidget);
       expect(find.text('Lower'), findsOneWidget);
       expect(find.byType(MuscleSetsCard), findsNWidgets(Muscles.values.length));
@@ -210,6 +213,8 @@ void main() {
       await tester.tap(find.byTooltip('Muscle Balance'));
       await tester.pumpAndSettle();
 
+      expect(find.text('MUSCLES PRODUCTIVE'), findsOneWidget);
+      expect(find.text('0/${Muscles.values.length}'), findsOneWidget);
       expect(find.text('Side Delts · Maintaining'), findsOneWidget);
       expect(find.text('Chest · Below maintenance'), findsOneWidget);
       expect(find.byType(Sparkline), findsNothing);

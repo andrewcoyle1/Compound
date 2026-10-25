@@ -155,7 +155,6 @@ class WorkoutTemplateDetailView extends StatelessWidget {
       _ => null,
     };
     final template = found?.$1;
-    final description = template?.description;
     final app = context.read<AppBloc>().state;
     // A day of the user's own mesocycle lives there, not in the library: it
     // is changed there, and kept apart only as a copy the user asks for.
@@ -240,21 +239,7 @@ class WorkoutTemplateDetailView extends StatelessWidget {
                 ],
               ),
           ],
-          title: template == null
-              ? null
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(template.name),
-                    if (description != null && description.isNotEmpty)
-                      Text(
-                        description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.rowDetail.secondary(context),
-                      ),
-                  ],
-                ),
+          title: template == null ? null : Text(template.name),
         ),
         body: SafeArea(
           bottom: false,
@@ -392,8 +377,22 @@ class _Plan extends StatelessWidget {
     final exercises = template.exercises;
     final letters = TemplateSummary.supersetLetters(exercises);
     final allExercises = library.allExercises;
+    final sets = exercises.fold<int>(
+      0,
+      (sum, exercise) => sum + exercise.setTargets.length,
+    );
+    final description = template.description?.trim();
     return LibrarySections(
       children: [
+        // The hero: how much the workout holds, and what it is.
+        AppHeroStat(
+          value: AppFormat.number(exercises.length),
+          unit: l10n.workoutExercisesUnit(exercises.length),
+          caption: [
+            l10n.setCount(sets),
+            if (description != null && description.isNotEmpty) description,
+          ].join(' · '),
+        ),
         TargetMusclesSection(exercises: exercises),
         AppSection(
           header: l10n.workoutExercisesHeader(exercises.length),

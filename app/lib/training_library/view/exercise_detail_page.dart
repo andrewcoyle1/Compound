@@ -114,6 +114,7 @@ class ExerciseDetailView extends StatelessWidget {
         ),
       ),
       TrainingLibraryLoaded(:final library) when exercise != null => _Tabs(
+        header: _Hero(weightUnit: weightUnit),
         labels: [
           l10n.exerciseAboutTab,
           l10n.exerciseHistoryTab,
@@ -171,12 +172,7 @@ class ExerciseDetailView extends StatelessWidget {
               ],
             ),
         ],
-        title: exercise == null
-            ? null
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [Text(exercise.name), const _PerformedSubtitle()],
-              ),
+        title: exercise == null ? null : Text(exercise.name),
       ),
       body: SafeArea(bottom: false, child: body),
     );
@@ -187,11 +183,17 @@ class ExerciseDetailView extends StatelessWidget {
   }
 }
 
-/// The detail's four views under a segmented control (Swift's segmented
-/// `Picker`), the chosen one filling the rest of the screen.
+/// The detail's hero, then its four views under a segmented control
+/// (Swift's segmented `Picker`). The hero and the control scroll away with
+/// the chosen view.
 class _Tabs extends StatefulWidget {
-  const new({required this.labels, required this.children});
+  const new({
+    required this.header,
+    required this.labels,
+    required this.children,
+  });
 
+  final Widget header;
   final List<String> labels;
   final List<Widget> children;
 
@@ -204,33 +206,36 @@ class _TabsState extends State<_Tabs> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.l,
-            AppSpacing.xs,
-            AppSpacing.l,
-            0,
-          ),
-          child: AppSegmentedControl<int>(
-            key: const Key('ExerciseDetail.tabs'),
-            segments: [
-              for (final (index, label) in widget.labels.indexed)
-                AppSegment(value: index, label: label),
-            ],
-            selected: _index,
-            onChanged: (index) => setState(() => _index = index),
-          ),
-        ),
-        Expanded(
-          child: KeyedSubtree(
-            key: ValueKey(_index),
-            child: widget.children[_index],
+    return NestedScrollView(
+      headerSliverBuilder: (context, _) => [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.l,
+              AppSpacing.xs,
+              AppSpacing.l,
+              0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: AppSpacing.l,
+              children: [
+                widget.header,
+                AppSegmentedControl<int>(
+                  key: const Key('ExerciseDetail.tabs'),
+                  segments: [
+                    for (final (index, label) in widget.labels.indexed)
+                      AppSegment(value: index, label: label),
+                  ],
+                  selected: _index,
+                  onChanged: (index) => setState(() => _index = index),
+                ),
+              ],
+            ),
           ),
         ),
       ],
+      body: KeyedSubtree(key: ValueKey(_index), child: widget.children[_index]),
     );
   }
 }
@@ -267,24 +272,72 @@ Future<void> _deleted(BuildContext context, DeleteExerciseStatus status) async {
   }
 }
 
-/// "Performed 3 times · last 12 Oct 2026", or "No history yet".
-class _PerformedSubtitle extends StatelessWidget {
-  const new();
+/// The exercise's hero (a Detail screen's stat block): its best estimated
+/// one-rep max, a volt New PR when the latest session set it, and how often
+/// and when it was last done. Before any history, only "No history yet";
+/// without a load to estimate from, the reps done in all.
+class _Hero extends StatelessWidget {
+  const new({required this.weightUnit});
+
+  final AppWeightUnit weightUnit;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
     final state = context.watch<ExerciseHistoryBloc>().state;
     if (state is! ExerciseHistoryLoaded) return const SizedBox.shrink();
-    final latest = state.stats.mostRecentFirst.firstOrNull;
-    return Text(
-      latest == null
-          ? l10n.exerciseNoHistory
-          : l10n.exercisePerformed(
-              state.stats.performances.length,
-              AppFormat.date(latest.date.toLocal(), locale: context.dateLocale),
+    final stats = state.stats;
+    final latest = stats.mostRecentFirst.firstOrNull;
+    if (latest == null) {
+      return Text(
+        l10n.exerciseNoHistory,
+        style: AppTextStyles.rowDetail.secondary(context),
+      );
+    }
+    final performed = l10n.exercisePerformed(
+      stats.performances.length,
+      AppFormat.date(latest.date.toLocal(), locale: context.dateLocale),
+    );
+    final best = stats.bestOneRepMaxKg;
+    if (best <= 0) {
+      return AppHeroStat(
+        label: l10n.exerciseTotalReps,
+        value: AppFormat.number(stats.totalReps, locale: locale),
+        caption: performed,
+      );
+    }
+    final record = stats.oneRepMaxRecords.firstOrNull;
+    // A personal record is the user's own: the accent, as a fill.
+    final isNew = record != null && record.date == latest.date;
+    final value = switch (weightUnit) {
+      AppWeightUnit.kilograms => best,
+      AppWeightUnit.pounds => best * AppFormat.poundsPerKilogram,
+    };
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: AppHeroStat(
+            label: l10n.exerciseEstimatedOneRepMax,
+            value: AppFormat.number(
+              value,
+              maxFractionDigits: 1,
+              locale: locale,
             ),
-      style: AppTextStyles.rowDetail.secondary(context),
+            unit: weightUnit.symbol,
+            delta: isNew
+                ? AppChip(
+                    label: l10n.exerciseNewRecord,
+                    icon: AppSymbols.personalRecord,
+                    selected: true,
+                  )
+                : null,
+            caption: performed,
+          ),
+        ),
+        MethodInfoButton(MethodInfo.estimatedOneRepMax(l10n)),
+      ],
     );
   }
 }
@@ -468,8 +521,10 @@ class ExerciseRatingRow extends StatelessWidget {
                   height: AppSpacing.s,
                   decoration: ShapeDecoration(
                     shape: const StadiumBorder(),
+                    // An attribute of the exercise, not the user's own
+                    // progress: neutral, not the accent.
                     color: value <= rating
-                        ? context.appColors.accentInk
+                        ? scheme.onSurface
                         : scheme.surfaceContainerHighest,
                   ),
                 ),
@@ -841,7 +896,10 @@ class _Records extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(AppSpacing.l),
-                  child: Row(
+                  // Wraps rather than breaking a number at large text.
+                  child: Wrap(
+                    spacing: AppSpacing.xxl,
+                    runSpacing: AppSpacing.m,
                     children: [
                       for (final (value, label) in [
                         (
@@ -854,13 +912,7 @@ class _Records extends StatelessWidget {
                         ),
                         (weight(stats.totalVolumeKg), l10n.exerciseTotalVolume),
                       ])
-                        Expanded(
-                          child: AppStat(
-                            value: value,
-                            label: label,
-                            size: AppStatSize.small,
-                          ),
-                        ),
+                        AppStat(value: value, label: label),
                     ],
                   ),
                 ),

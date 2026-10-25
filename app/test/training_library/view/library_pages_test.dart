@@ -312,6 +312,40 @@ void main() {
         expect(find.text('1,310\u00a0kg'), findsOneWidget);
       });
 
+      testWidgets('leads with the best estimated 1RM, New PR when just set', (
+        tester,
+      ) async {
+        await pump(tester, '/training/exercises/plank', sessions: sessions);
+        expect(find.text('EST. 1RM'), findsOneWidget);
+        expect(find.text('132'), findsOneWidget);
+        expect(find.text('New PR'), findsOneWidget);
+        expect(find.textContaining('Performed 3 times'), findsOneWidget);
+
+        // The record was set before the latest session: no chip.
+        await pump(
+          tester,
+          '/training/exercises/plank',
+          sessions: [
+            ...sessions,
+            plankSession('d', 0, [fixtureSet()]),
+          ],
+        );
+        expect(find.text('132'), findsOneWidget);
+        expect(find.text('New PR'), findsNothing);
+      });
+
+      testWidgets('without a load, leads with the reps', (tester) async {
+        await pump(
+          tester,
+          '/training/exercises/plank',
+          sessions: [
+            plankSession('a', 1, [fixtureSet(weightKg: null)]),
+          ],
+        );
+        expect(find.text('TOTAL REPS'), findsOneWidget);
+        expect(find.text('EST. 1RM'), findsNothing);
+      });
+
       testWidgets('say when the exercise was never logged', (tester) async {
         await pump(tester, '/training/exercises/plank');
         await tester.tap(find.text('Charts'));
@@ -443,7 +477,9 @@ void main() {
   group(WorkoutTemplateDetailPage, () {
     testWidgets("shows the plan's muscles and exercises", (tester) async {
       await pump(tester, '/training/workouts/mine');
-      expect(find.text('Abs, briefly.'), findsOneWidget);
+      // The hero: the exercises, then the sets and the description.
+      expect(find.text('EXERCISES'), findsOneWidget);
+      expect(find.textContaining('Abs, briefly.'), findsOneWidget);
       expect(find.text('Target Muscles'), findsOneWidget);
       expect(find.text('Target: 3 sets'), findsOneWidget);
       expect(find.text('2 sets · 8–12'), findsOneWidget);

@@ -4224,6 +4224,14 @@
     "@exerciseNoHistory": {
         "description": "Exercise detail: subtitle when the exercise has never been logged"
     },
+    "exerciseEstimatedOneRepMax": "Est. 1RM",
+    "@exerciseEstimatedOneRepMax": {
+        "description": "Exercise detail: the label over its hero number, the best estimated one-rep max (shown upper-cased)."
+    },
+    "exerciseNewRecord": "New PR",
+    "@exerciseNewRecord": {
+        "description": "Exercise detail: the chip beside the hero number when the latest session set a new best estimated one-rep max."
+    },
     "exercisePerformed": "{count, plural, =1{Performed 1 time · last {date}} other{Performed {count} times · last {date}}}",
     "@exercisePerformed": {
         "description": "Exercise detail: subtitle with how often and when the exercise was last done",
@@ -4363,11 +4371,11 @@
             }
         }
     },
-    "exerciseResistanceLabel": "Resistance:",
+    "exerciseResistanceLabel": "Resistance",
     "@exerciseResistanceLabel": {
         "description": "Exercise detail: label before resistance equipment"
     },
-    "exerciseSupportLabel": "Support:",
+    "exerciseSupportLabel": "Support",
     "@exerciseSupportLabel": {
         "description": "Exercise detail: label before support equipment"
     },
@@ -4435,6 +4443,13 @@
     "workoutNotFound": "This workout is no longer in your library.",
     "@workoutNotFound": {
         "description": "Workout detail: opened for a workout that doesn't exist"
+    },
+    "workoutExercisesUnit": "{count, plural, =1{exercise} other{exercises}}",
+    "@workoutExercisesUnit": {
+        "description": "Workout detail: the unit under its hero number, the exercises the workout holds (shown upper-cased).",
+        "placeholders": {
+            "count": {"type": "int"}
+        }
     },
     "workoutExercisesHeader": "{count, plural, =1{1 Exercise} other{{count} Exercises}}",
     "@workoutExercisesHeader": {
@@ -7163,6 +7178,14 @@
     "muscleBalanceTitle": "Muscle Balance",
     "@muscleBalanceTitle": {
         "description": "Screen and button: every muscle's weekly sets against the volume tiers"
+    },
+    "trainingMusclesTrainedUnit": "muscles trained",
+    "@trainingMusclesTrainedUnit": {
+        "description": "Muscle Groups: the unit under its hero, the muscles with any hard sets in the last 7 days out of all, as in 14/21 MUSCLES TRAINED (shown upper-cased)."
+    },
+    "trainingMusclesProductiveUnit": "muscles productive",
+    "@trainingMusclesProductiveUnit": {
+        "description": "Muscle Balance: the unit under its hero, the muscles with a productive week of hard sets out of all, as in 3/21 MUSCLES PRODUCTIVE (shown upper-cased)."
     },
     "muscleBalanceFooter": "Hard sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend.",
     "@muscleBalanceFooter": {

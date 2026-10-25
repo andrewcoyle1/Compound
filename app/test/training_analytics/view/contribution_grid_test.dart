@@ -65,7 +65,8 @@ void main() {
 
   testWidgets('counts the days logged and names the weekdays', (tester) async {
     await pump(tester);
-    expect(find.textContaining('of '), findsOneWidget);
+    // The hero: the days logged over "of N days".
+    expect(find.textContaining('OF '), findsOneWidget);
     expect(find.textContaining('Days Logged, '), findsOneWidget);
     expect(find.textContaining('Oct 14, 2026'), findsOneWidget);
     // Monday to Sunday, by initial.
@@ -76,9 +77,8 @@ void main() {
     // The header covers every week the grid shows, back past the first
     // entry's (31 August, 45 days to today) to fill the width.
     expect(find.textContaining('Days Logged, Aug 31,'), findsNothing);
-    final span = RegExp(r'of (\d+) days').firstMatch(
-      tester.widget<Text>(find.textContaining('of ')).textSpan!.toPlainText(),
-    )!;
+    final span = RegExp(r'OF (\d+) DAYS')
+        .firstMatch(tester.widget<Text>(find.textContaining('OF ')).data!)!;
     expect(int.parse(span[1]!), greaterThan(45));
     expect(int.parse(span[1]!) % 7, 3);
   });

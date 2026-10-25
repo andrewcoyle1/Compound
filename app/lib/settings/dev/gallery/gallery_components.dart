@@ -188,6 +188,15 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
       galleryInline(
+        'isProminent',
+        AppIconButton(
+          icon: AppSymbols.send,
+          semanticLabel: l10n.devGallerySampleEdit,
+          isProminent: true,
+          onPressed: galleryNoop,
+        ),
+      ),
+      galleryInline(
         'disabled',
         AppIconButton(
           icon: AppSymbols.edit,

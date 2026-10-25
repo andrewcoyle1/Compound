@@ -78,6 +78,45 @@ void main() {
       expect(opacity.opacity, AppListRow.disabledOpacity);
     });
 
+    group('prominent', () {
+      ButtonStyle style(WidgetTester tester) =>
+          tester.widget<IconButton>(find.byType(IconButton)).style!;
+
+      Future<void> pump(WidgetTester tester, {bool highContrast = false}) =>
+          tester.pumpApp(
+            Builder(
+              builder: (context) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(highContrast: highContrast),
+                child: AppIconButton(
+                  icon: AppSymbols.send,
+                  semanticLabel: 'Send',
+                  isProminent: true,
+                  onPressed: () {},
+                ),
+              ),
+            ),
+          );
+
+      testWidgets('is the glyph in onPrimary on a volt fill', (tester) async {
+        await pump(tester);
+        final scheme = AppTheme.light.colorScheme;
+        expect(style(tester).backgroundColor!.resolve({}), scheme.primary);
+        expect(style(tester).foregroundColor!.resolve({}), scheme.onPrimary);
+        expect(style(tester).side?.resolve({}), isNull);
+      });
+
+      testWidgets('is outlined under Increase Contrast in light mode', (
+        tester,
+      ) async {
+        await pump(tester, highContrast: true);
+        expect(
+          style(tester).side!.resolve({})!.color,
+          AppTheme.light.colorScheme.onPrimary,
+        );
+      });
+    });
+
     testWidgets('grows with the text size', (tester) async {
       await tester.pumpApp(
         const Center(
@@ -113,6 +152,25 @@ void main() {
           semanticLabel: 'Delete',
           isDestructive: true,
           onPressed: () {},
+        ),
+      ),
+      (
+        'Prominent, and disabled',
+        Row(
+          children: [
+            AppIconButton(
+              icon: AppSymbols.send,
+              semanticLabel: 'Send',
+              isProminent: true,
+              onPressed: () {},
+            ),
+            const AppIconButton(
+              icon: AppSymbols.send,
+              semanticLabel: 'Send',
+              isProminent: true,
+              onPressed: null,
+            ),
+          ],
         ),
       ),
       (

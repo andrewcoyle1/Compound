@@ -5,8 +5,9 @@ enum AppCtaVariant {
   /// The screen's main action: an accent capsule.
   primary,
 
-  /// Another action: a capsule tinted with [AppColors.accentInk], its label
-  /// in that ink, as Swift's `.bordered`. Never an outline.
+  /// Another action: a neutral capsule, the text colour on `raised`, as
+  /// Swift's `.bordered`. Never an outline, and never the accent, which is
+  /// the primary action's.
   secondary,
 
   /// A quiet alternative such as "Skip for now": text only.
@@ -115,8 +116,8 @@ class AppCtaButton extends StatelessWidget {
       AppCtaVariant.secondary => FilledButton(
         onPressed: onPressed,
         style: filled(
-          background: AppColors.tintedSurface(context.appColors.accentInk),
-          foreground: context.appColors.accentInk,
+          background: context.appColors.raised,
+          foreground: scheme.onSurface,
         ),
         child: child,
       ),

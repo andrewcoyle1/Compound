@@ -186,7 +186,7 @@ class _ProgressRing extends StatelessWidget {
                 value: fraction,
                 strokeWidth: 3,
                 backgroundColor: AppColors.tintedSurface(
-                  context.appColors.accentInk,
+                  Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),

@@ -9,11 +9,22 @@ ShapeDecoration _decoration(WidgetTester tester) =>
 
 void main() {
   group('AppChip', () {
-    testWidgets('unselected is the tint on its tinted surface', (tester) async {
+    testWidgets('unselected with a tint is the tint on its tinted surface', (
+      tester,
+    ) async {
+      final protein = AppColors.light.protein;
+      await tester.pumpApp(AppChip(label: 'Protein', tint: protein));
+      expect(_decoration(tester).color, AppColors.tintedSurface(protein));
+      expect(tester.widget<Text>(find.text('Protein')).style?.color, protein);
+    });
+
+    testWidgets('unselected without a tint is neutral', (tester) async {
       await tester.pumpApp(const AppChip(label: 'All'));
-      final accent = AppColors.light.accentInk;
-      expect(_decoration(tester).color, AppColors.tintedSurface(accent));
-      expect(tester.widget<Text>(find.text('All')).style?.color, accent);
+      expect(_decoration(tester).color, AppColors.light.raised);
+      expect(
+        tester.widget<Text>(find.text('All')).style?.color,
+        AppTheme.light.colorScheme.onSurface,
+      );
       expect(tester.getSize(find.byType(AppChip)).height, lessThan(44));
     });
 

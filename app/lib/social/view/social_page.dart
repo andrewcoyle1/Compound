@@ -622,7 +622,7 @@ class _Leaderboard extends StatelessWidget {
                   excludeSemantics: true,
                   child: Material(
                     color: isOwn
-                        ? AppColors.tintedSurface(colors.accentInk)
+                        ? AppColors.tintedSurface(scheme.primary)
                         : Colors.transparent,
                     shape: RoundedSuperellipseBorder(
                       borderRadius: BorderRadius.circular(AppRadius.m),

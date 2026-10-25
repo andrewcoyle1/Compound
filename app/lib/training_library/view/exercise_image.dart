@@ -56,14 +56,14 @@ class _Initials extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ink = context.appColors.accentInk;
+    final scheme = Theme.of(context).colorScheme;
     final letters = initials(name);
     return ColoredBox(
-      color: AppColors.tintedSurface(ink),
+      color: context.appColors.raised,
       child: Center(
         child: Text(
           letters,
-          style: AppTextStyles.sectionTitle.copyWith(color: ink),
+          style: AppTextStyles.sectionTitle.copyWith(color: scheme.onSurface),
         ),
       ),
     );

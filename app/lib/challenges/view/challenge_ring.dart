@@ -31,7 +31,9 @@ class ChallengeRing extends StatelessWidget {
       strokeWidth: large ? AppChartMark.arcWidth : AppChartMark.arcWidthSmall,
       // Done is the accent, not success green: a closed ring stays in it.
       color: ink,
-      trackColor: AppColors.tintedSurface(ink),
+      trackColor: AppColors.tintedSurface(
+        Theme.of(context).colorScheme.primary,
+      ),
       semanticLabel: context.l10n.challengeRingLabel(sessions, target),
       child: Text(
         '$sessions/$target',

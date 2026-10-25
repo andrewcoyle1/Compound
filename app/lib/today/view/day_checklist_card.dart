@@ -67,7 +67,6 @@ class DayChecklistCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = context.appColors;
     final hasSteps = checklist.items.any((item) => item is StepsItem);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -76,11 +75,7 @@ class DayChecklistCard extends StatelessWidget {
         AppSection(
           header: l10n.todayYourDay,
           trailing: checklist.isComplete
-              ? AppChip(
-                  label: l10n.todayDayComplete,
-                  icon: AppSymbols.success,
-                  tint: colors.accentInk,
-                )
+              ? AppChip(label: l10n.todayDayComplete, icon: AppSymbols.success)
               : Text(
                   l10n.todayDoneCount(
                     checklist.doneCount,

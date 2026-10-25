@@ -170,6 +170,32 @@ void main() {
     });
   }
 
+  group('AppTheme iOS switch', () {
+    SwitchThemeData adapted(ThemeData theme, TargetPlatform platform) => theme
+        .getAdaptation<SwitchThemeData>()!
+        .adapt(theme.copyWith(platform: platform), theme.switchTheme);
+    const on = {WidgetState.selected};
+
+    test('is volt with a white knob when on', () {
+      final ios = adapted(AppTheme.light, TargetPlatform.iOS);
+      expect(ios.trackColor?.resolve(on), AppTheme.light.colorScheme.primary);
+      expect(ios.trackColor?.resolve({}), isNull);
+      expect(ios.thumbColor?.resolve(on), const Color(0xFFFFFFFF));
+      expect(ios.trackOutlineColor?.resolve(on), isNull);
+    });
+
+    test('gains a black edge under Increase Contrast', () {
+      final ios = adapted(AppTheme.lightHighContrast, TargetPlatform.iOS);
+      expect(ios.trackOutlineColor?.resolve(on), const Color(0xFF000000));
+      expect(ios.trackOutlineColor?.resolve({}), isNull);
+    });
+
+    test('leaves the Material switch to the theme elsewhere', () {
+      final theme = AppTheme.light;
+      expect(adapted(theme, TargetPlatform.android), same(theme.switchTheme));
+    });
+  });
+
   group('AppTheme.lightHighContrast', () {
     final theme = AppTheme.lightHighContrast;
 

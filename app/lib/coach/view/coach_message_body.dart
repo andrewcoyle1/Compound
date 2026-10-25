@@ -113,7 +113,7 @@ class CoachMessageBody extends StatelessWidget {
                               padding: const EdgeInsets.all(AppSpacing.m),
                               decoration: BoxDecoration(
                                 color: AppColors.tintedSurface(
-                                  context.appColors.accentInk,
+                                  Theme.of(context).colorScheme.primary,
                                 ),
                                 borderRadius: BorderRadius.circular(
                                   AppRadius.l,

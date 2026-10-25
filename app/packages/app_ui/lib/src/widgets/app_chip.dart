@@ -14,8 +14,9 @@ enum AppChipSize {
 /// {@template app_chip}
 /// A capsule label: a tag, a filter or a badge.
 ///
-/// Unselected it is [tint] on `tintedSurface(tint)`. Selected it is a solid
-/// [tint] with `onPrimary` text. Leave [tint] as the accent for anything
+/// Unselected it is the text colour on `raised`, or [tint] on
+/// `tintedSurface(tint)` when one is passed. Selected it is a solid [tint]
+/// (volt by default) with `onPrimary` text. Leave [tint] unset for anything
 /// selectable, and pass a data colour only for a chip that carries that
 /// data's meaning.
 ///
@@ -41,8 +42,8 @@ class AppChip extends StatelessWidget {
   /// An icon before the text.
   final IconData? icon;
 
-  /// The chip's colour. Defaults to the accent: volt when [selected],
-  /// [AppColors.accentInk] otherwise.
+  /// The chip's colour. Unset, a chip is neutral, and volt when
+  /// [selected].
   final Color? tint;
 
   /// Whether the chip is selected: filled, and announced as selected.
@@ -57,14 +58,14 @@ class AppChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // Unselected, the default tint is text on a tint, so it takes the
-    // accent's ink; selected, it is a volt fill.
-    final tint =
-        this.tint ?? (selected ? scheme.primary : context.appColors.accentInk);
+    // Selected, the default is a volt fill. Unselected and untinted it is
+    // neutral, the text colour on `raised`: the accent marks only what the
+    // user chose (design-language.md).
+    final tint = this.tint;
     final large = size == AppChipSize.large;
     final foreground = selected
         ? scheme.onPrimary
-        : large
+        : large || tint == null
         ? scheme.onSurface
         : tint;
     final icon = this.icon;
@@ -75,9 +76,11 @@ class AppChip extends StatelessWidget {
       decoration: ShapeDecoration(
         shape: const StadiumBorder(),
         color: selected
-            ? tint
+            ? tint ?? scheme.primary
             : large
             ? context.appColors.surface
+            : tint == null
+            ? context.appColors.raised
             : AppColors.tintedSurface(tint),
       ),
       child: ConstrainedBox(

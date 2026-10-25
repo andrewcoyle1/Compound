@@ -470,7 +470,7 @@ class _ProgressionNote extends StatelessWidget {
         0,
       ),
       child: Material(
-        color: AppColors.tintedSurface(context.appColors.accentInk),
+        color: AppColors.tintedSurface(Theme.of(context).colorScheme.primary),
         shape: shape,
         clipBehavior: Clip.antiAlias,
         child: Column(

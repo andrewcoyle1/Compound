@@ -199,6 +199,7 @@ abstract final class AppTheme {
           foregroundColor: colors.accentInk,
         ),
       ),
+      adaptations: [_IosSwitch(scheme, highContrast: highContrast)],
       switchTheme: SwitchThemeData(
         // Off, the thumb is the secondary label colour: the surface colour
         // it used to be all but vanished on the dark track.
@@ -247,4 +248,33 @@ abstract final class AppTheme {
   static ShapeBorder _continuous(double radius) => RoundedSuperellipseBorder(
     borderRadius: BorderRadius.all(Radius.circular(radius)),
   );
+}
+
+/// The switch on iOS. `Switch.adaptive` draws a `CupertinoSwitch` there and
+/// swaps the theme's `switchTheme` for this adaptation, so without it "on"
+/// was iOS green. Here it is volt with the white knob, and under Increase
+/// Contrast a black edge, since the knob is 1.3:1 on volt.
+class _IosSwitch extends Adaptation<SwitchThemeData> {
+  const new(this.scheme, {required this.highContrast});
+
+  final ColorScheme scheme;
+  final bool highContrast;
+
+  @override
+  SwitchThemeData adapt(ThemeData theme, SwitchThemeData defaultValue) =>
+      switch (theme.platform) {
+        TargetPlatform.iOS || TargetPlatform.macOS => SwitchThemeData(
+          trackColor: WidgetStateProperty.resolveWith(
+            (states) =>
+                states.contains(WidgetState.selected) ? scheme.primary : null,
+          ),
+          thumbColor: const WidgetStatePropertyAll(Color(0xFFFFFFFF)),
+          trackOutlineColor: WidgetStateProperty.resolveWith(
+            (states) => highContrast && states.contains(WidgetState.selected)
+                ? scheme.onPrimary
+                : null,
+          ),
+        ),
+        _ => defaultValue,
+      };
 }

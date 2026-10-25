@@ -66,8 +66,13 @@ class AppIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     if (_plain) return _buildPlain(context, scheme);
+    // Neutral, the text colour on `raised`: a small control in a row is not
+    // the screen's action, so it does not take the accent.
     final colors = context.appColors;
-    final tint = isDestructive ? colors.danger : colors.accentInk;
+    final background = isDestructive
+        ? AppColors.tintedSurface(colors.danger)
+        : colors.raised;
+    final foreground = isDestructive ? colors.danger : scheme.onSurface;
     final diameter = MediaQuery.textScalerOf(context)
         .scale(AppControlSize.compact);
     return IconButton(
@@ -76,8 +81,8 @@ class AppIconButton extends StatelessWidget {
       iconSize: AppIconSize.small.of(context),
       icon: Icon(icon),
       style: IconButton.styleFrom(
-        backgroundColor: AppColors.tintedSurface(tint),
-        foregroundColor: tint,
+        backgroundColor: background,
+        foregroundColor: foreground,
         disabledBackgroundColor: scheme.surfaceContainerHighest,
         disabledForegroundColor: scheme.onSurfaceVariant,
         fixedSize: Size.square(diameter),

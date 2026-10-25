@@ -301,7 +301,6 @@ class SetTableRow extends StatelessWidget {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final scheme = Theme.of(context).colorScheme;
-    final colors = context.appColors;
     final cubit = actions;
     final exercise = member.exercise;
     final isLogged = set.completedAt != null;
@@ -448,7 +447,7 @@ class SetTableRow extends StatelessWidget {
         onLongPress: () => unawaited(_menu(context, badge)),
         child: ColoredBox(
           color: isNext
-              ? AppColors.tintedSurface(colors.accentInk)
+              ? AppColors.tintedSurface(scheme.primary)
               : Colors.transparent,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AppControlSize.row),

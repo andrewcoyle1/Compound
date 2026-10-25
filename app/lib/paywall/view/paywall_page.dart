@@ -254,7 +254,7 @@ class _Hero extends StatelessWidget {
     final l10n = context.l10n;
     final colors = Theme.of(context).colorScheme;
     return AppCard(
-      style: AppCardStyle.tinted(colors.primary),
+      style: AppCardStyle.tinted(Theme.of(context).colorScheme.primary),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
@@ -299,7 +299,7 @@ class _PlanCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<PaywallCubit>();
-    final primary = Theme.of(context).colorScheme.primary;
+    final accent = Theme.of(context).colorScheme.primary;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.m,
@@ -307,7 +307,7 @@ class _PlanCards extends StatelessWidget {
         for (final product in state.products)
           AppCard(
             style: product == state.selected
-                ? AppCardStyle.tinted(primary)
+                ? AppCardStyle.tinted(accent)
                 : AppCardStyle.tile,
             child: AppSelectableRow(
               title: product.title,

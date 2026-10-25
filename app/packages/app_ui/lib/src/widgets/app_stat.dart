@@ -3,18 +3,20 @@ import 'package:app_ui/app_ui.dart';
 /// The size of an [AppStat]'s value.
 enum AppStatSize {
   /// [AppTextStyles.metricSmall].
-  small(AppTextStyles.metricSmall),
+  small,
 
   /// [AppTextStyles.metric].
-  medium(AppTextStyles.metric),
+  medium,
 
   /// [AppTextStyles.metricLarge].
-  large(AppTextStyles.metricLarge);
-
-  new(this.style);
+  large;
 
   /// The value's text style.
-  final TextStyle style;
+  TextStyle get style => switch (this) {
+    small => AppTextStyles.metricSmall,
+    medium => AppTextStyles.metric,
+    large => AppTextStyles.metricLarge,
+  };
 }
 
 /// {@template app_stat}

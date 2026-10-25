@@ -29,7 +29,7 @@ class ProgressCards {
   new(BuildContext context, this.state)
     : l10n = context.l10n,
       colors = context.appColors,
-      accent = Theme.of(context).colorScheme.primary,
+      accent = context.appColors.accentInk,
       router = GoRouter.maybeOf(context),
       locale = Localizations.localeOf(context).toLanguageTag();
 

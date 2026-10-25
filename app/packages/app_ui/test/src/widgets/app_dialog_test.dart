@@ -7,7 +7,6 @@ import '../../helpers/helpers.dart';
 
 void main() {
   const colors = AppColors.light;
-  final scheme = AppTheme.light.colorScheme;
 
   ThemeData on(TargetPlatform platform) =>
       AppTheme.light.copyWith(platform: platform);
@@ -53,7 +52,7 @@ void main() {
           .widgetList<CupertinoDialogAction>(find.byType(CupertinoDialogAction))
           .toList();
       expect(actions.first.isDefaultAction, isTrue);
-      expect(actions.first.textStyle?.color, scheme.primary);
+      expect(actions.first.textStyle?.color, colors.accentInk);
       expect(actions.last.isDestructiveAction, isTrue);
       expect(actions.last.textStyle?.color, colors.danger);
 
@@ -74,7 +73,10 @@ void main() {
       final cancel = tester.widget<TextButton>(
         find.widgetWithText(TextButton, 'Cancel'),
       );
-      expect(cancel.style?.foregroundColor?.resolve(const {}), scheme.primary);
+      expect(
+        cancel.style?.foregroundColor?.resolve(const {}),
+        colors.accentInk,
+      );
 
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();

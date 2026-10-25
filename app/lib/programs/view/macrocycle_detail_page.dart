@@ -334,7 +334,10 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                       },
                       child: MesocycleHeader(
                         mesocycle: mesocycle,
-                        trailing: Icon(AppSymbols.add, color: scheme.primary),
+                        trailing: Icon(
+                          AppSymbols.add,
+                          color: context.appColors.accentInk,
+                        ),
                       ),
                     ),
                   ),

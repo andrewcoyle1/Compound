@@ -388,17 +388,17 @@ class const _DayRow({
           child: DayPlanRow(
             plan: item.slot.dayPlan,
             badge: badge,
-            trailing: ExcludeSemantics(
-              child: Icon(
-                item.isCompleted
-                    ? AppSymbols.success
-                    : item.isSkipped
-                    ? AppSymbols.skip
-                    : AppSymbols.choiceUnselected,
-                size: AppIconSize.small.of(context),
-                color: item.isCompleted ? scheme.primary : scheme.outline,
-              ),
-            ),
+            trailing: item.isCompleted
+                ? const AppDoneMark(size: AppIconSize.small)
+                : ExcludeSemantics(
+                    child: Icon(
+                      item.isSkipped
+                          ? AppSymbols.skip
+                          : AppSymbols.choiceUnselected,
+                      size: AppIconSize.small.of(context),
+                      color: scheme.outline,
+                    ),
+                  ),
           ),
         ),
       ),

@@ -6,6 +6,11 @@ import 'package:compound/settings/dev/gallery/gallery_entry.dart';
 final galleryColors = <(String, Color Function(AppColors))>[
   ('canvas', (c) => c.canvas),
   ('surface', (c) => c.surface),
+  ('raised', (c) => c.raised),
+  ('accentInk', (c) => c.accentInk),
+  ('secondaryLabel', (c) => c.secondaryLabel),
+  ('tertiaryLabel', (c) => c.tertiaryLabel),
+  ('separator', (c) => c.separator),
   ('calories', (c) => c.calories),
   ('protein', (c) => c.protein),
   ('carbs', (c) => c.carbs),
@@ -203,14 +208,22 @@ List<Widget> galleryTokens(BuildContext context) {
   return [
     galleryEntry('AppTextStyles', [
       for (final (name, style) in [
-        ('display', AppTextStyles.display),
+        ('largeTitle', AppTextStyles.largeTitle),
         ('sectionTitle', AppTextStyles.sectionTitle),
         ('rowTitle', AppTextStyles.rowTitle),
         ('rowDetail', AppTextStyles.rowDetail),
         ('label', AppTextStyles.label),
       ])
         galleryBlock(name, Text(l10n.devGallerySampleTitle, style: style)),
+      galleryBlock(
+        'overline',
+        Text(
+          l10n.devGallerySampleTitle.toUpperCase(),
+          style: AppTextStyles.overline,
+        ),
+      ),
       for (final (name, style) in [
+        ('display', AppTextStyles.display),
         ('metricLarge', AppTextStyles.metricLarge),
         ('metric', AppTextStyles.metric),
         ('metricSmall', AppTextStyles.metricSmall),

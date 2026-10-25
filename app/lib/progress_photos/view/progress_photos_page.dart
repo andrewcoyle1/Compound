@@ -424,7 +424,7 @@ class _PhotoCell extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppRadius.m),
               border: isSelected
-                  ? Border.all(color: scheme.primary, width: 3)
+                  ? Border.all(color: context.appColors.accentInk, width: 3)
                   : null,
             ),
             child: Stack(

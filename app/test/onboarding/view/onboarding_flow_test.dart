@@ -193,7 +193,12 @@ void main() {
     ) async {
       await pumpAt(tester, step, textScale: 3.1);
       expect(tester.takeException(), isNull);
-      expect(find.bySemanticsLabel('Onboarding progress'), findsOneWidget);
+      // A long large title in the test font (every glyph a square) can fill
+      // the screen at this size, leaving the bar below it.
+      expect(
+        find.bySemanticsLabel('Onboarding progress', skipOffstage: false),
+        findsOneWidget,
+      );
     });
   }
 

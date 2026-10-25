@@ -65,7 +65,7 @@ void main() {
       );
       expect(
         tester.widget<Text>(large).style?.fontSize,
-        AppTextStyles.display.fontSize,
+        AppTextStyles.largeTitle.fontSize,
       );
       double barTitleOpacity() => tester
           .widget<AnimatedOpacity>(

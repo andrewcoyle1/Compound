@@ -391,7 +391,7 @@ class EquipmentColourPicker extends StatelessWidget {
                           : AppColors.fromHex(colour.hex),
                       border: Border.all(
                         color: colour == selected
-                            ? scheme.primary
+                            ? context.appColors.accentInk
                             : Colors.transparent,
                         width: 4,
                       ),

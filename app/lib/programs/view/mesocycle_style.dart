@@ -117,7 +117,9 @@ class const _Swatch({
               color: AppColors.tintedSurface(tint),
               shape: BoxShape.circle,
               border: Border.all(
-                color: selected ? scheme.primary : Colors.transparent,
+                color: selected
+                    ? context.appColors.accentInk
+                    : Colors.transparent,
                 width: 3,
               ),
             ),

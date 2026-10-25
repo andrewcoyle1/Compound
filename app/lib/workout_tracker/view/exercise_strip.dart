@@ -175,7 +175,10 @@ class _Tile extends StatelessWidget {
                       Radius.circular(AppRadius.s),
                     ),
                     side: item.isCurrent
-                        ? BorderSide(color: scheme.primary, width: 2)
+                        ? BorderSide(
+                            color: context.appColors.accentInk,
+                            width: 2,
+                          )
                         : BorderSide.none,
                   ),
                 ),
@@ -217,7 +220,6 @@ class _Tile extends StatelessWidget {
               ),
               LinearProgressIndicator(
                 value: item.fraction,
-                color: item.isComplete ? context.appColors.success : null,
                 borderRadius: const BorderRadius.all(
                   Radius.circular(AppRadius.s),
                 ),

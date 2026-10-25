@@ -301,7 +301,6 @@ class SetTableRow extends StatelessWidget {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final scheme = Theme.of(context).colorScheme;
-    final colors = context.appColors;
     final cubit = actions;
     final exercise = member.exercise;
     final isLogged = set.completedAt != null;
@@ -410,11 +409,13 @@ class SetTableRow extends StatelessWidget {
           onTap: () => cubit.toggleSet(set.id),
           child: SizedBox.square(
             dimension: AppControlSize.row,
-            child: Icon(
-              isLogged ? AppSymbols.success : AppSymbols.choiceUnselected,
-              size: AppIconSize.medium.of(context),
-              color: isLogged ? colors.success : scheme.onSurfaceVariant,
-            ),
+            child: isLogged
+                ? const AppDoneMark()
+                : Icon(
+                    AppSymbols.choiceUnselected,
+                    size: AppIconSize.medium.of(context),
+                    color: scheme.onSurfaceVariant,
+                  ),
           ),
         ),
       ),
@@ -612,7 +613,7 @@ class _Cell extends StatelessWidget {
                 Radius.circular(AppRadius.s),
               ),
               side: isActive
-                  ? BorderSide(color: scheme.primary, width: 2)
+                  ? BorderSide(color: context.appColors.accentInk, width: 2)
                   : BorderSide.none,
             ),
           ),

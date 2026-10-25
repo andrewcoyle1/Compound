@@ -179,7 +179,7 @@ class _MuscleTile extends StatelessWidget {
           side: selected == null
               ? BorderSide.none
               : BorderSide(
-                  color: scheme.primary,
+                  color: context.appColors.accentInk,
                   width: selected == MuscleTargetType.primary ? 4 : 2,
                 ),
         ),

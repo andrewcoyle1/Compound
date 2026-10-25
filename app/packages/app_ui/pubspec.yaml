@@ -53,14 +53,23 @@ flutter:
   assets:
     - assets/
     - assets/fonts/OFL.txt
-  # Nunito 3.602 (google/fonts at 8b0a1d0f), instanced from the variable
-  # font at the two weights used (700, 800) and subset to Latin. SIL Open
+  # Barlow Condensed 1.408 (google/fonts at e7db6ca6), the bold, extra-bold
+  # and black weights, subset to Latin with pyftsubset (tnum kept). SIL Open
   # Font License 1.1: assets/fonts/OFL.txt, registered by
-  # AppTextStyles.registerFontLicense.
+  # AppTextStyles.registerFontLicense. Two families, so Bold Text never makes
+  # an extra-bold style lighter (AppTextStyles' `_display`).
   fonts:
-    - family: Nunito
+    - family: BarlowCondensed
       fonts:
-        - asset: assets/fonts/Nunito-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Nunito-ExtraBold.ttf
+        - asset: assets/fonts/BarlowCondensed-ExtraBold.ttf
           weight: 800
+        - asset: assets/fonts/BarlowCondensed-Black.ttf
+          weight: 900
+    - family: BarlowCondensedBold
+      fonts:
+        - asset: assets/fonts/BarlowCondensed-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/BarlowCondensed-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/BarlowCondensed-Black.ttf
+          weight: 900

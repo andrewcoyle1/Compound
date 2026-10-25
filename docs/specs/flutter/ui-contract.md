@@ -10,6 +10,9 @@ The design system is the `app_ui` package (`app/packages/app_ui/`). Charts live 
 `compound_charts` (`app/packages/compound_charts/`), which draws on `app_ui`'s tokens and depends on
 nothing else. Feature code in `app/lib/` uses the two and styles nothing itself.
 
+What the app should look and feel like (the accent, type, cards, screen types, motion, voice) is
+`design-language.md`. This contract is how to build it.
+
 ## 1. Reuse before you build
 
 - **Look in `app_ui` first.** If a widget there fits, use it, even if it is not quite what you
@@ -26,8 +29,8 @@ nothing else. Feature code in `app/lib/` uses the two and styles nothing itself.
 
 | Instead of | Use |
 |---|---|
-| `Colors.white`, `Color(0x…)` | `context.appColors.*` (`canvas`, `surface`, `tintedSurface`, the macro, metric and status colours) or the `ColorScheme` (`primary` is the accent, `onPrimary` the text on it) |
-| `TextStyle(…)`, `fontSize:`, `fontWeight:` | `AppTextStyles.display`, `metricLarge`, `metric`, `metricSmall`, `sectionTitle`, `rowTitle`, `rowDetail`, `label` |
+| `Colors.white`, `Color(0x…)` | `context.appColors.*` (`canvas`, `surface`, `raised`, `secondaryLabel`, `tertiaryLabel`, `separator`, `accentInk`, `tintedSurface`, the macro, metric and status colours) or the `ColorScheme` (`primary` is the accent as a fill, `onPrimary` the text on it) |
+| `TextStyle(…)`, `fontSize:`, `fontWeight:` | `AppTextStyles.largeTitle`, `display`, `metricLarge`, `metric`, `metricSmall`, `sectionTitle`, `rowTitle`, `rowDetail`, `label`, `overline`; `.secondary(context)` for secondary text |
 | A number in `EdgeInsets` or `SizedBox` | `AppSpacing.xxs` … `xxl` (2–32); `AppControlSize`, `AppChartHeight`, `AppContentWidth` for sizes |
 | `BorderRadius.circular(12)` | `AppRadius.s` … `xl` |
 | `Duration(…)` on an animation | `AppMotion.quick` / `standard` / `emphasis` / `progress`, through `durationOf` so reduced motion is honoured |
@@ -35,7 +38,8 @@ nothing else. Feature code in `app/lib/` uses the two and styles nothing itself.
 | Formatting a number by hand | `AppFormat` |
 | `DateFormat`, `formatTimeOfDay`, a date built by hand | `AppFormat.date` (with an `AppDateStyle`), `time`, `hour`, `dateTime`, passing `locale: context.dateLocale` and `use24HourFormat: context.use24HourFormat`: the app's language with the device's region and clock, as iOS does |
 
-- The accent is never written as its current value. Text on an accent fill is `onPrimary`.
+- The accent is never written as its current value. Text on an accent fill is `onPrimary`; the
+  accent as text, an icon or a line on the canvas or a surface is `appColors.accentInk`.
 - Status colours are never the only signal: pair them with an icon or text.
 - Exempt: share cards (`lib/sharing/share_card/`, `weekly_review_share_card.dart`), which render
   to fixed-size images, and user data such as a gym's chosen colour.
@@ -128,7 +132,7 @@ device.
     Linux alike, because glyph rasterisation differs between the two and blocks do not. Up to 0.5% of pixels may
     differ (`test/flutter_test_config.dart`), for the anti-aliasing an arm64 Mac and the x86
     runner disagree on.
-  - `goldens/macos/`: the same images with real text (Nunito, Material Icons, and Roboto in place
+  - `goldens/macos/`: the same images with real text (Barlow Condensed, Material Icons, and Roboto in place
     of San Francisco, which may not be redistributed), for people to look at. They are made and
     checked only on request, on a Mac.
 - `compound_charts` has its own copy of `goldenStates` and `flutter_test_config.dart` in its

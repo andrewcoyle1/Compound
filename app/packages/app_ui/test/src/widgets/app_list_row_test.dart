@@ -56,7 +56,7 @@ void main() {
         ),
       );
       final icons = tester.widgetList<Icon>(find.byType(Icon)).toList();
-      expect(icons[0].color, scheme.primary);
+      expect(icons[0].color, scheme.onSurface);
       expect(icons[1].color, const Color(0xFF00C7BE));
       expect(icons[0].size, AppControlSize.icon);
     });

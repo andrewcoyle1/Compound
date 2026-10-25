@@ -190,13 +190,14 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final scheme = Theme.of(context).colorScheme;
     final initials = this.initials;
     final fallback = initials == null || initials.isEmpty
         ? Icon(glyph, size: AppControlSize.compact)
         : CircleAvatar(
-            backgroundColor: AppColors.tintedSurface(scheme.primary),
-            foregroundColor: scheme.primary,
+            backgroundColor: colors.raised,
+            foregroundColor: scheme.onSurface,
             child: Text(
               initials,
               style: AppTextStyles.label.copyWith(fontWeight: FontWeight.w600),

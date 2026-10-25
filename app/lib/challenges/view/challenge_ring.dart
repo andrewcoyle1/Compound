@@ -24,13 +24,16 @@ class ChallengeRing extends StatelessWidget {
       sessions: sessions,
       target: target,
     );
-    final scheme = Theme.of(context).colorScheme;
+    final ink = context.appColors.accentInk;
     return ProgressArc(
       value: progress,
       diameter: size,
       strokeWidth: large ? AppChartMark.arcWidth : AppChartMark.arcWidthSmall,
-      color: progress >= 1 ? context.appColors.success : scheme.primary,
-      trackColor: AppColors.tintedSurface(scheme.primary),
+      // Done is the accent, not success green: a closed ring stays in it.
+      color: ink,
+      trackColor: AppColors.tintedSurface(
+        Theme.of(context).colorScheme.primary,
+      ),
       semanticLabel: context.l10n.challengeRingLabel(sessions, target),
       child: Text(
         '$sessions/$target',

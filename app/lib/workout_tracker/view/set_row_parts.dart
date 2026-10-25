@@ -367,7 +367,7 @@ class _SetStopwatchState extends State<SetStopwatch> {
                 : Icon(
                     AppSymbols.start,
                     size: AppIconSize.small.of(context),
-                    color: scheme.primary,
+                    color: context.appColors.accentInk,
                   ),
           ),
         ),

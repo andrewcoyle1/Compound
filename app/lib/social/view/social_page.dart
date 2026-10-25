@@ -323,7 +323,7 @@ class _Dashboard extends StatelessWidget {
             padding: gutter,
             child: _Banner(
               icon: AppSymbols.username,
-              iconColor: Theme.of(context).colorScheme.primary,
+              iconColor: context.appColors.accentInk,
               text: l10n.socialPickUsername,
               dismissLabel: l10n.socialDismiss,
               onPressed: () {
@@ -340,7 +340,7 @@ class _Dashboard extends StatelessWidget {
             padding: gutter,
             child: _Banner(
               icon: AppSymbols.streak,
-              iconColor: context.appColors.success,
+              iconColor: context.appColors.accentInk,
               text: l10n.socialWeeklySummary(
                 summary.circleSessions,
                 summary.ownSessions,
@@ -357,7 +357,7 @@ class _Dashboard extends StatelessWidget {
             padding: gutter,
             child: _Banner(
               icon: AppSymbols.invite,
-              iconColor: Theme.of(context).colorScheme.primary,
+              iconColor: context.appColors.accentInk,
               text: l10n.inviteCardTitle,
               detail: l10n.inviteCardMessage,
               dismissLabel: l10n.socialDismiss,
@@ -667,7 +667,7 @@ class _Leaderboard extends StatelessWidget {
                               '${standing.sessions}/${standing.goal}',
                               style: AppTextStyles.metricSmall.copyWith(
                                 color: met
-                                    ? colors.success
+                                    ? colors.accentInk
                                     : scheme.onSurfaceVariant,
                               ),
                             ),

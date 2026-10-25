@@ -342,10 +342,7 @@ class GoalProgressHeader extends StatelessWidget {
         ),
         // The percentage above already says how far.
         ExcludeSemantics(
-          child: BulletBar(
-            value: fraction,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          child: BulletBar(value: fraction, color: context.appColors.accentInk),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -125,7 +125,7 @@ class MethodInfoSheet extends StatelessWidget {
                       SelectableText(
                         link,
                         style: AppTextStyles.label.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: context.appColors.accentInk,
                         ),
                       ),
                   ],

@@ -78,8 +78,9 @@ class _TolerantComparator extends LocalFileComparator {
   }
 }
 
-/// Loads the faces the app draws with, so text and icons are real: Nunito
-/// from app_ui, and Material Icons and Roboto from the Flutter SDK.
+/// Loads the faces the app draws with, so text and icons are real: Barlow
+/// Condensed from app_ui, and Material Icons and Roboto from the Flutter
+/// SDK.
 /// Roboto also stands in for San Francisco, which may not be redistributed.
 Future<void> _loadFonts() async {
   final sdk =
@@ -101,9 +102,19 @@ Future<void> _loadFonts() async {
       await file('$material/Roboto-$weight.ttf'),
   ];
   final families = <String, List<Future<ByteData>>>{
-    'packages/app_ui/Nunito': [
-      rootBundle.load('packages/app_ui/assets/fonts/Nunito-Bold.ttf'),
-      rootBundle.load('packages/app_ui/assets/fonts/Nunito-ExtraBold.ttf'),
+    // Barlow Condensed's two families, as app_ui's pubspec declares them.
+    'packages/app_ui/BarlowCondensed': [
+      rootBundle.load(
+        'packages/app_ui/assets/fonts/BarlowCondensed-ExtraBold.ttf',
+      ),
+      rootBundle.load('packages/app_ui/assets/fonts/BarlowCondensed-Black.ttf'),
+    ],
+    'packages/app_ui/BarlowCondensedBold': [
+      rootBundle.load('packages/app_ui/assets/fonts/BarlowCondensed-Bold.ttf'),
+      rootBundle.load(
+        'packages/app_ui/assets/fonts/BarlowCondensed-ExtraBold.ttf',
+      ),
+      rootBundle.load('packages/app_ui/assets/fonts/BarlowCondensed-Black.ttf'),
     ],
     'MaterialIcons': [file('$material/MaterialIcons-Regular.otf')],
     // FlutterTest is what a style with no family falls back to in a test.

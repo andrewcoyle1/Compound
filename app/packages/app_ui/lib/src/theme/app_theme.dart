@@ -5,74 +5,78 @@ import 'package:flutter/foundation.dart';
 /// Compound's look as [ThemeData]: the brand on both platforms, not stock
 /// Material 3 and not Cupertino.
 ///
-/// Pass [light] and [dark] to `MaterialApp.theme` and `darkTheme`.
+/// Pass [light], [dark] and [lightHighContrast] to `MaterialApp.theme`,
+/// `darkTheme` and `highContrastTheme`.
 ///
 /// Platform touches are left to Flutter where users expect them: page
 /// transitions and the iOS back swipe, adaptive switches and spinners, and
 /// the system font with text scaling.
 /// {@endtemplate}
 abstract final class AppTheme {
-  /// The light theme. The accent is black, as `labelColor` is in the Swift
-  /// app, with white on it.
-  static ThemeData get light => _theme(
-    const ColorScheme(
-      brightness: Brightness.light,
-      primary: Color(0xFF000000),
-      onPrimary: Color(0xFFFFFFFF),
-      secondary: Color(0xFF000000),
-      onSecondary: Color(0xFFFFFFFF),
-      secondaryContainer: Color(0xFFE5E5EA),
-      onSecondaryContainer: Color(0xFF000000),
-      error: Color(0xFFD70015),
-      onError: Color(0xFFFFFFFF),
-      surface: Color(0xFFFFFFFF),
-      onSurface: Color(0xFF000000),
+  /// Volt, the accent: a fill in both modes, with [_onVolt] on it.
+  static const _volt = Color(0xFFC8F31D);
+  static const _onVolt = Color(0xFF000000);
+
+  /// The light theme: volt fills with black on them, and the accent as text
+  /// in [AppColors.accentInk]'s dark olive.
+  static ThemeData get light => _theme(Brightness.light, AppColors.light);
+
+  /// The dark theme, which the design starts from: volt on black.
+  static ThemeData get dark => _theme(Brightness.dark, AppColors.dark);
+
+  /// [light] under Increase Contrast (`MaterialApp.highContrastTheme`): the
+  /// accent's text darkens to `#3A4D00` (9.4:1 on white), and volt buttons
+  /// and the selected tab's capsule gain a 1 pt black outline, since volt
+  /// on white is 1.3:1. Dark mode needs no variant: volt on black is 16:1.
+  static ThemeData get lightHighContrast => _theme(
+    Brightness.light,
+    AppColors.light.copyWith(accentInk: const Color(0xFF3A4D00)),
+    highContrast: true,
+  );
+
+  static ColorScheme _scheme(Brightness brightness, AppColors colors) {
+    final light = brightness == Brightness.light;
+    final label = light ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
+    return ColorScheme(
+      brightness: brightness,
+      primary: _volt,
+      onPrimary: _onVolt,
+      secondary: _volt,
+      onSecondary: _onVolt,
+      secondaryContainer: colors.raised,
+      onSecondaryContainer: label,
+      error: colors.danger,
+      onError: const Color(0xFFFFFFFF),
+      surface: colors.surface,
+      onSurface: label,
       // iOS's secondaryLabel is 3.4:1 on white; this grey passes 4.5:1 on
       // both the surface and the canvas.
-      onSurfaceVariant: Color(0xFF6C6C70),
-      outline: Color(0xFFC7C7CC),
-      outlineVariant: Color(0xFFC6C6C8),
-      surfaceContainerHighest: Color(0xFFE5E5EA),
-      surfaceContainerHigh: Color(0xFFFFFFFF),
-      surfaceTint: Color(0x00000000),
+      onSurfaceVariant: colors.secondaryLabel,
+      outline: light ? const Color(0xFFC7C7CC) : const Color(0xFF48484A),
+      outlineVariant: colors.separator,
+      surfaceContainerHighest: colors.raised,
+      surfaceContainerHigh: light ? colors.surface : colors.raised,
+      surfaceTint: const Color(0x00000000),
       // A segmented control's thumb, raised on its track.
-      surfaceBright: Color(0xFFFFFFFF),
-    ),
-    AppColors.light,
-  );
+      surfaceBright: light ? colors.surface : const Color(0xFF636366),
+    );
+  }
 
-  /// The dark theme: a white accent with black on it.
-  static ThemeData get dark => _theme(
-    const ColorScheme(
-      brightness: Brightness.dark,
-      primary: Color(0xFFFFFFFF),
-      onPrimary: Color(0xFF000000),
-      secondary: Color(0xFFFFFFFF),
-      onSecondary: Color(0xFF000000),
-      secondaryContainer: Color(0xFF2C2C2E),
-      onSecondaryContainer: Color(0xFFFFFFFF),
-      error: Color(0xFFFF453A),
-      onError: Color(0xFFFFFFFF),
-      surface: Color(0xFF1C1C1E),
-      onSurface: Color(0xFFFFFFFF),
-      onSurfaceVariant: Color(0xFFAEAEB2),
-      outline: Color(0xFF48484A),
-      outlineVariant: Color(0xFF38383A),
-      surfaceContainerHighest: Color(0xFF2C2C2E),
-      surfaceContainerHigh: Color(0xFF2C2C2E),
-      surfaceTint: Color(0x00000000),
-      surfaceBright: Color(0xFF636366),
-    ),
-    AppColors.dark,
-  );
-
-  static ThemeData _theme(ColorScheme scheme, AppColors colors) {
+  static ThemeData _theme(
+    Brightness brightness,
+    AppColors colors, {
+    bool highContrast = false,
+  }) {
+    final scheme = _scheme(brightness, colors);
+    // Increase Contrast's 1 pt black outline on a volt fill.
+    final voltEdge = highContrast ? const BorderSide() : BorderSide.none;
     // A capsule at one line, as on iOS. A label that wraps at a large text
     // size keeps capsule-sized corners rather than turning the button into
     // an oval that clips its text.
     const pill = RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(AppControlSize.cta / 2)),
     );
+    final filledPill = pill.copyWith(side: voltEdge);
     const minimumSize = Size(AppControlSize.row, AppControlSize.row);
     return ThemeData(
       colorScheme: scheme,
@@ -106,17 +110,20 @@ abstract final class AppTheme {
         ),
       ),
       // The tab bar: AppTabBar's card supplies the fill, and the selected
-      // tab sits on a tinted capsule in the accent.
+      // tab's filled glyph sits on a volt capsule, in black, over a bold
+      // label: never the accent alone, which is faint on white.
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: const Color(0x00000000),
         surfaceTintColor: const Color(0x00000000),
-        indicatorColor: AppColors.tintedSurface(scheme.primary),
-        indicatorShape: const StadiumBorder(),
+        indicatorColor: scheme.primary,
+        indicatorShape: StadiumBorder(side: voltEdge),
         overlayColor: const WidgetStatePropertyAll(Color(0x00000000)),
         elevation: 0,
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
-            color: _tabColor(scheme, states),
+            color: states.contains(WidgetState.selected)
+                ? scheme.onPrimary
+                : scheme.onSurfaceVariant,
             size: AppIconSize.medium.points,
           ),
         ),
@@ -124,10 +131,15 @@ abstract final class AppTheme {
         // its tab ("Entrenamiento"), rather than broken onto a clipped
         // second line.
         labelTextStyle: WidgetStateProperty.resolveWith(
-          (states) => AppTextStyles.label.copyWith(
-            color: _tabColor(scheme, states),
-            overflow: TextOverflow.ellipsis,
-          ),
+          (states) => states.contains(WidgetState.selected)
+              ? AppTextStyles.label.semibold.copyWith(
+                  color: scheme.onSurface,
+                  overflow: TextOverflow.ellipsis,
+                )
+              : AppTextStyles.label.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  overflow: TextOverflow.ellipsis,
+                ),
         ),
       ),
       cardTheme: CardThemeData(
@@ -159,14 +171,14 @@ abstract final class AppTheme {
         textStyle: AppTextStyles.rowTitle.copyWith(color: scheme.onSurface),
       ),
       dividerTheme: DividerThemeData(
-        color: scheme.outlineVariant,
+        color: colors.separator,
         thickness: 0.5,
         space: 0.5,
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: minimumSize,
-          shape: pill,
+          shape: filledPill,
           // Swift's CTA label is body, not headline.
           textStyle: AppTextStyles.rowTitle,
           padding: const EdgeInsets.symmetric(
@@ -183,8 +195,11 @@ abstract final class AppTheme {
           minimumSize: minimumSize,
           shape: pill,
           textStyle: AppTextStyles.rowTitle,
+          // The accent as text: accentInk, as volt on white is unreadable.
+          foregroundColor: colors.accentInk,
         ),
       ),
+      adaptations: [_IosSwitch(scheme, highContrast: highContrast)],
       switchTheme: SwitchThemeData(
         // Off, the thumb is the secondary label colour: the surface colour
         // it used to be all but vanished on the dark track.
@@ -204,17 +219,24 @@ abstract final class AppTheme {
         ),
         trackOutlineColor: const WidgetStatePropertyAll(Color(0x00000000)),
       ),
+      // A progress stroke is a line on its track, so it takes accentInk:
+      // volt on the light track is 1.03:1.
       progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: scheme.primary,
+        color: colors.accentInk,
         linearTrackColor: scheme.surfaceContainerHighest,
         circularTrackColor: scheme.surfaceContainerHighest,
       ),
+      // The caret and selection are the accent drawn on a field, so its ink:
+      // a volt caret vanishes on white.
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: colors.accentInk,
+        selectionHandleColor: colors.accentInk,
+        selectionColor: colors.accentInk.withValues(alpha: 0.3),
+      ),
       inputDecorationTheme: InputDecorationThemeData(
         filled: true,
-        fillColor: scheme.surfaceContainerHighest,
-        hintStyle: AppTextStyles.rowTitle.copyWith(
-          color: scheme.onSurfaceVariant,
-        ),
+        fillColor: colors.raised,
+        hintStyle: AppTextStyles.rowTitle.copyWith(color: colors.tertiaryLabel),
         border: OutlineInputBorder(
           borderSide: BorderSide.none,
           borderRadius: BorderRadius.circular(AppRadius.m),
@@ -223,12 +245,36 @@ abstract final class AppTheme {
     );
   }
 
-  static Color _tabColor(ColorScheme scheme, Set<WidgetState> states) =>
-      states.contains(WidgetState.selected)
-      ? scheme.primary
-      : scheme.onSurfaceVariant;
-
   static ShapeBorder _continuous(double radius) => RoundedSuperellipseBorder(
     borderRadius: BorderRadius.all(Radius.circular(radius)),
   );
+}
+
+/// The switch on iOS. `Switch.adaptive` draws a `CupertinoSwitch` there and
+/// swaps the theme's `switchTheme` for this adaptation, so without it "on"
+/// was iOS green. Here it is volt with the white knob, and under Increase
+/// Contrast a black edge, since the knob is 1.3:1 on volt.
+class _IosSwitch extends Adaptation<SwitchThemeData> {
+  const new(this.scheme, {required this.highContrast});
+
+  final ColorScheme scheme;
+  final bool highContrast;
+
+  @override
+  SwitchThemeData adapt(ThemeData theme, SwitchThemeData defaultValue) =>
+      switch (theme.platform) {
+        TargetPlatform.iOS || TargetPlatform.macOS => SwitchThemeData(
+          trackColor: WidgetStateProperty.resolveWith(
+            (states) =>
+                states.contains(WidgetState.selected) ? scheme.primary : null,
+          ),
+          thumbColor: const WidgetStatePropertyAll(Color(0xFFFFFFFF)),
+          trackOutlineColor: WidgetStateProperty.resolveWith(
+            (states) => highContrast && states.contains(WidgetState.selected)
+                ? scheme.onPrimary
+                : null,
+          ),
+        ),
+        _ => defaultValue,
+      };
 }

@@ -154,7 +154,9 @@ class ActiveWorkoutBar extends StatelessWidget {
                     ? l10n.trackerPaused
                     : AppFormat.duration(state.elapsedAt(now)),
                 style: digits.copyWith(
-                  color: resting ? scheme.primary : scheme.onSurfaceVariant,
+                  color: resting
+                      ? context.appColors.accentInk
+                      : scheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -173,7 +175,6 @@ class _ProgressRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return ExcludeSemantics(
       child: SizedBox.square(
         dimension: 32,
@@ -184,13 +185,15 @@ class _ProgressRing extends StatelessWidget {
               child: CircularProgressIndicator(
                 value: fraction,
                 strokeWidth: 3,
-                backgroundColor: AppColors.tintedSurface(scheme.primary),
+                backgroundColor: AppColors.tintedSurface(
+                  Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
             Icon(
               AppSymbols.workout,
               size: AppIconSize.small.of(context),
-              color: scheme.primary,
+              color: context.appColors.accentInk,
             ),
           ],
         ),

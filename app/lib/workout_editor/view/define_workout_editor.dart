@@ -262,7 +262,7 @@ class const _ExerciseRow({
               selected
                   ? AppSymbols.choiceSelected
                   : AppSymbols.choiceUnselected,
-              color: selected ? scheme.primary : scheme.outline,
+              color: selected ? context.appColors.accentInk : scheme.outline,
             ),
           ExcludeSemantics(
             child: ClipRSuperellipse(

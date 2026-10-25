@@ -468,7 +468,7 @@ class _Grid extends StatelessWidget {
                                   : AppTextStyles.label)
                               .copyWith(
                                 color: day == today
-                                    ? scheme.primary
+                                    ? context.appColors.accentInk
                                     : scheme.onSurfaceVariant,
                               ),
                     ),
@@ -533,7 +533,9 @@ class _TargetCell extends StatelessWidget {
         decoration: BoxDecoration(
           color: scheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppRadius.s),
-          border: selected ? Border.all(color: scheme.primary, width: 2) : null,
+          border: selected
+              ? Border.all(color: context.appColors.accentInk, width: 2)
+              : null,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -910,7 +912,7 @@ class _EnergyBalance extends StatelessWidget {
       for (final day in days) (intake: day.intake, comparison: comparison(day)),
     ]);
     final comparisonColour = comparesTargets
-        ? scheme.primary
+        ? colors.accentInk
         : colors.expenditure;
     String figure(double Function(({double intake, double comparison})) of) =>
         averages == null ? AppFormat.placeholder : _whole(of(averages), locale);

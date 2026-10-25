@@ -267,7 +267,9 @@ class CalendarDayCell extends StatelessWidget {
                               locale: context.dateLocale,
                             ),
                             style: weighted(AppTextStyles.rowTitle).copyWith(
-                              color: isToday ? scheme.primary : null,
+                              color: isToday
+                                  ? context.appColors.accentInk
+                                  : null,
                               fontFeatures: const [
                                 FontFeature.tabularFigures(),
                               ],
@@ -287,7 +289,7 @@ class CalendarDayCell extends StatelessWidget {
                             decoration: ShapeDecoration(
                               shape: const CircleBorder(),
                               color: isToday
-                                  ? scheme.primary
+                                  ? context.appColors.accentInk
                                   : Colors.transparent,
                             ),
                             child: const SizedBox.square(
@@ -319,16 +321,17 @@ List<Color> ringColours(
 ) => switch (marker) {
   null => const [],
   SessionsMarker(:final colours) => [
-    for (final hex in colours) AppColors.fromHex(hex) ?? scheme.primary,
+    for (final hex in colours) AppColors.fromHex(hex) ?? colors.accentInk,
   ],
   GoalProgressMarker(isOverGoal: true) => [
     colors.danger.withValues(alpha: 0.5),
   ],
+  // A goal met is done, so the accent, not success green.
   GoalProgressMarker(isGoalMet: true) => [
-    colors.success.withValues(alpha: 0.5),
+    colors.accentInk.withValues(alpha: 0.5),
   ],
   GoalProgressMarker() => [colors.calories],
-  CountMarker() => [scheme.primary],
+  CountMarker() => [colors.accentInk],
 };
 
 class _Badge extends StatelessWidget {

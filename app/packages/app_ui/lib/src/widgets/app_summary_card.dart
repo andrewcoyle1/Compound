@@ -40,7 +40,8 @@ enum AppSummaryCardSize {
 /// haptic and a chevron, with no buttons inside but [trailing]. Without it
 /// the card only shows. Screen readers read the summary as one element,
 /// "title, value unit, delta, footer"; give [semanticValue] when the hero
-/// is a [chart] without a [value]. [trailing] and each of [rows] stay
+/// is a [chart] without a [value], or a [chart] that carries figures of
+/// its own, which follow the value. [trailing] and each of [rows] stay
 /// their own elements.
 ///
 /// A goal the user hit shows the accent as a volt fill: pass a selected
@@ -110,7 +111,8 @@ class AppSummaryCard extends StatelessWidget {
   /// How loud [value] is.
   final AppSummaryCardSize size;
 
-  /// What screen readers hear for the hero when it has no [value].
+  /// What screen readers hear for [chart]: the hero without a [value], or
+  /// after it.
   final String? semanticValue;
 
   /// The rows the hero sums up, usually `AppListRowButton`s.
@@ -265,7 +267,7 @@ class AppSummaryCard extends StatelessWidget {
 
     final heard = [
       [?value, ?unit].join(' '),
-      if (value == null) ?semanticValue,
+      ?semanticValue,
       ?delta?.label,
       ?footer,
     ].where((part) => part.isNotEmpty).join(', ');

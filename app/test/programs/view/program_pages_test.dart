@@ -106,9 +106,10 @@ void main() {
     List<Macrocycle>? macrocycles,
     List<WorkoutSessionModel> history = const [],
     String? active = 'm1',
+    Size size = const Size(1200, 3000),
   }) async {
     tester.view
-      ..physicalSize = const Size(1200, 3000)
+      ..physicalSize = size
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final world = ProgramWorld.seeded(
@@ -158,17 +159,65 @@ void main() {
         '/training',
         history: [programSession('upper', yesterday, id: 'done')],
       );
-      expect(find.text('Active Mesocycle'), findsOneWidget);
-      expect(find.text('Block m1'), findsOneWidget);
+      // The hero: the microcycle's workouts done, then its days.
+      expect(find.text('BLOCK M1'), findsOneWidget);
+      expect(find.text('1/2'), findsOneWidget);
+      expect(find.text('WORKOUTS DONE'), findsOneWidget);
       expect(find.text('Micro 1/2'), findsOneWidget);
-      expect(find.text('Today'), findsOneWidget);
+      expect(find.textContaining('Today · '), findsOneWidget);
+      // The last workout, which opens the history too.
+      expect(find.text('LAST WORKOUT'), findsOneWidget);
       expect(find.text('Macrocycles'), findsOneWidget);
       expect(find.text('Mesocycles'), findsOneWidget);
 
       // A finished day opens its session.
-      await tester.tap(find.text('Upper'));
+      await tester.tap(find.text('Upper').first);
       await tester.pumpAndSettle();
       expect(find.text('Session done'), findsOneWidget);
+    });
+
+    testWidgets('the last workout opens its session, See All the history', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        '/training',
+        history: [programSession('upper', yesterday, id: 'done')],
+      );
+      await tester.tap(find.text('LAST WORKOUT'));
+      await tester.pumpAndSettle();
+      expect(find.text('Session done'), findsOneWidget);
+
+      await pump(
+        tester,
+        '/training',
+        history: [programSession('upper', yesterday, id: 'done')],
+      );
+      await tester.tap(find.text('See All'));
+      await tester.pumpAndSettle();
+      expect(find.text('History screen'), findsOneWidget);
+    });
+
+    testWidgets('with every workout done, the microcycle is done', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        '/training',
+        history: [
+          programSession('upper', yesterday),
+          programSession('lower', yesterday.add(const Duration(minutes: 1))),
+        ],
+      );
+      // The user is on to the next microcycle; the one before is done.
+      expect(find.text('Micro 2/2'), findsOneWidget);
+      expect(find.text('Microcycle Done'), findsNothing);
+      await tester.tap(find.text('Micro 2/2'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Microcycle 1').last, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(find.text('2/2'), findsOneWidget);
+      expect(find.text('Microcycle Done'), findsOneWidget);
     });
 
     testWidgets('picks another microcycle, and a day there is a preview', (
@@ -228,7 +277,7 @@ void main() {
         ],
         ['m2'],
       );
-      expect(find.text('No Active Mesocycle'), findsOneWidget);
+      expect(find.text('NO ACTIVE MESOCYCLE'), findsOneWidget);
       await tester.tap(find.text('Choose Mesocycle'));
       await tester.pumpAndSettle();
       expect(find.byType(MesocycleLibraryPage), findsOneWidget);
@@ -419,9 +468,9 @@ void main() {
       tester,
     ) async {
       final world = await pump(tester, '/today');
-      expect(find.text("Today's Workout"), findsOneWidget);
+      expect(find.text("TODAY'S WORKOUT"), findsOneWidget);
       expect(find.text('Upper'), findsOneWidget);
-      expect(find.textContaining('Week 1 of 2 · Day 1'), findsOneWidget);
+      expect(find.textContaining('WEEK 1 OF 2 · DAY 1'), findsOneWidget);
       expect(find.textContaining('Bench'), findsWidgets);
 
       await tester.tap(find.text('Skip Workout'));
@@ -431,6 +480,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Lower'), findsOneWidget);
       expect(world.analytics.names, contains('TodaysWorkoutCard_Skip_Success'));
+    });
+
+    testWidgets('fits a phone at 200% text, Start over Skip', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await pump(tester, '/today', size: const Size(393, 3000));
+      expect(tester.takeException(), isNull);
+      expect(
+        tester.getTopLeft(find.text('Skip Workout')).dy,
+        greaterThan(tester.getBottomLeft(find.text('Start Workout')).dy),
+      );
     });
 
     testWidgets("starts today's workout into the tracker", (tester) async {

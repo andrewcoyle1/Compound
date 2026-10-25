@@ -627,6 +627,8 @@ void main() {
       );
       final card = find.text('Your weekly review is ready');
       await tester.scrollUntilVisible(card, 200, scrollable: _list);
+      await tester.ensureVisible(card);
+      await tester.pumpAndSettle();
       await tester.tap(card);
       await tester.pump();
       verify(() => router.goNamed(WeeklyReviewPage.name)).called(1);

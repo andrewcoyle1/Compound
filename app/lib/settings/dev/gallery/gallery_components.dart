@@ -1230,6 +1230,22 @@ List<Widget> galleryContent(BuildContext context) {
           ),
         ),
       ),
+      galleryBlock(
+        'size: large, onTap, actions',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          icon: AppSymbols.workout,
+          tint: colors.workouts,
+          value: l10n.devGallerySampleSubtitle,
+          size: AppSummaryCardSize.large,
+          onTap: () {},
+          actions: AppCtaButton(
+            label: l10n.devGallerySampleShortAction,
+            size: AppCtaSize.compact,
+            onPressed: () {},
+          ),
+        ),
+      ),
     ]),
     galleryEntry('AppChip', [
       galleryInline('label', AppChip(label: l10n.devGallerySampleTextAction)),

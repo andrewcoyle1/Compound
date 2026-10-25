@@ -744,7 +744,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(barWidth('Training'), 1366);
-      expect(columnWidth('Training'), AppContentWidth.readable);
+      // Training is a dashboard, in two columns at this width.
+      expect(columnWidth('Training'), AppContentWidth.dashboard);
       // The dock spans the window; its tabs keep to the readable column.
       expect(tester.getSize(find.byType(AppTabBar)).width, 1366);
       expect(

@@ -485,6 +485,9 @@ class _CoachConversationState extends State<CoachConversation> {
                                   AppIconButton(
                                     icon: AppSymbols.send,
                                     semanticLabel: l10n.coachSend,
+                                    // The one action: volt once there is
+                                    // something to send.
+                                    isProminent: true,
                                     onPressed: state.canSend ? send : null,
                                   ),
                               ],

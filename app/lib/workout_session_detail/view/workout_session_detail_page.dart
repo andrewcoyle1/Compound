@@ -11,6 +11,7 @@ import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/sharing/session_web_link.dart';
+import 'package:compound/sharing/share_card/share_card_content.dart';
 import 'package:compound/sharing/share_card/share_workout_card.dart';
 import 'package:compound/sharing/share_card/workout_share_card.dart';
 import 'package:compound/shell/app_tab.dart';
@@ -19,6 +20,7 @@ import 'package:compound/social/social_routes.dart' show SocialNavigation;
 import 'package:compound/social/view/people_widgets.dart' show AuthorHeader;
 import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/exercise_picker_page.dart';
+import 'package:compound/workout_history/models/workout_session_highlights.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_session_detail/bloc/workout_session_detail_bloc.dart';
 import 'package:compound/workout_session_detail/cubit/session_edit_cubit.dart';
@@ -122,11 +124,7 @@ class WorkoutSessionDetailPage extends StatelessWidget {
           )..started(),
         ),
       ],
-      // A workout just finished is celebrated once, as its summary opens.
-      child: AppConfetti(
-        playsOnMount: isWorkoutSummary,
-        child: WorkoutSessionDetailView(isWorkoutSummary: isWorkoutSummary),
-      ),
+      child: WorkoutSessionDetailView(isWorkoutSummary: isWorkoutSummary),
     );
   }
 }
@@ -323,7 +321,7 @@ class _LoadedView extends StatelessWidget {
               if (!edit.isEditing && cubit.state.isAuthor) const _MoreMenu(),
             ],
           ),
-          body: _Detail(state: state),
+          body: _Detail(state: state, isWorkoutSummary: isWorkoutSummary),
           bottomNavigationBar: edit.keypad == null
               ? null
               : _Keypad(state: edit, keypad: edit.keypad!),
@@ -483,10 +481,13 @@ String _started(BuildContext context, WorkoutSessionModel session) =>
     );
 
 class _Detail extends StatefulWidget {
-  const new({required this.state});
+  const new({required this.state, required this.isWorkoutSummary});
 
   /// The workout as read, for the profile's units.
   final WorkoutSessionDetailLoaded state;
+
+  /// The summary of the workout just finished: its hero celebrates.
+  final bool isWorkoutSummary;
 
   @override
   State<_Detail> createState() => _DetailState();
@@ -514,11 +515,29 @@ class _DetailState extends State<_Detail> {
     final author = context.select<CircleBloc, UserModel?>(
       (bloc) => bloc.state.authorOf(session),
     );
+    // The author's earlier workouts the circle holds, for the records and
+    // the week's count, as the share card reads them.
+    final history = context.select<CircleBloc, List<WorkoutSessionModel>>(
+      (bloc) => [
+        for (final other in bloc.state.sessions)
+          if (other.authorId == session.authorId) other,
+      ],
+    );
+    final records = session.endedAt == null
+        ? const <PersonalRecord>[]
+        : WorkoutSessionHighlights.personalRecords(
+            session,
+            priorSessions: history,
+          );
+    // The hero shows the volume unless a record takes its place.
+    final showsHero = session.endedAt != null && !edit.isEditing;
+    final volumeInHero = showsHero && records.isEmpty && volume > 0;
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [
-          if (author != null) ...[
+          // The summary is the user's own: no need to say whose it is.
+          if (author != null && !widget.isWorkoutSummary) ...[
             AppSection(
               children: [
                 Padding(
@@ -537,33 +556,42 @@ class _DetailState extends State<_Detail> {
             ),
             const SizedBox(height: AppSpacing.xl),
           ],
+          if (showsHero)
+            _Hero(
+              session: session,
+              records: records,
+              history: history,
+              weightUnit: WorkoutText.preferredWeightUnit(state.weightUnit),
+              celebrates: widget.isWorkoutSummary,
+            ),
           AppSection(
             header: l10n.workoutDetailsHeader,
             children: [
-              AppListRow(
-                title: l10n.statVolume,
-                icon: AppSymbols.volume,
-                accessory: AppListRowCustom(
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        volume > 0
-                            ? AppFormat.weight(
-                                volume,
-                                WorkoutText.preferredWeightUnit(
-                                  state.weightUnit,
-                                ),
-                                locale: locale,
-                              )
-                            : AppFormat.placeholder,
-                        style: AppTextStyles.rowTitle.secondary(context),
-                      ),
-                      MethodInfoButton(MethodInfo.tonnage(l10n)),
-                    ],
+              if (!volumeInHero)
+                AppListRow(
+                  title: l10n.statVolume,
+                  icon: AppSymbols.volume,
+                  accessory: AppListRowCustom(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          volume > 0
+                              ? AppFormat.weight(
+                                  volume,
+                                  WorkoutText.preferredWeightUnit(
+                                    state.weightUnit,
+                                  ),
+                                  locale: locale,
+                                )
+                              : AppFormat.placeholder,
+                          style: AppTextStyles.rowTitle.secondary(context),
+                        ),
+                        MethodInfoButton(MethodInfo.tonnage(l10n)),
+                      ],
+                    ),
                   ),
                 ),
-              ),
               // The author's own finished workouts only: the coach reads
               // the asker's data, never someone else's.
               if (session.endedAt != null && isAuthor && !edit.isEditing)
@@ -633,6 +661,23 @@ class _DetailState extends State<_Detail> {
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
+          if (showsHero && records.isNotEmpty) ...[
+            AppSection(
+              header: l10n.weeklyReviewPersonalRecords,
+              children: [
+                for (final record in records)
+                  AppListRow(
+                    title: record.exerciseName,
+                    icon: AppSymbols.personalRecord,
+                    tint: context.appColors.personalRecord,
+                    accessory: AppListRowValue(
+                      WorkoutText.recordDetail(l10n, record, locale: locale),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+          ],
           if (edit.isEditing) ...[
             Padding(
               padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
@@ -735,6 +780,100 @@ class _DetailState extends State<_Detail> {
     final cubit = context.read<SessionEditCubit>();
     final picked = await ExercisePickerPage.show(context);
     if (picked != null) cubit.addExercises(picked);
+  }
+}
+
+/// The workout's hero (design-language.md, "Moment"): its first personal
+/// record when it set one, else the volume lifted, else the sets; then
+/// how long it took, its sets and exercises. As the summary of a workout
+/// just finished it celebrates; read later it only shows.
+class _Hero extends StatelessWidget {
+  const new({
+    required this.session,
+    required this.records,
+    required this.history,
+    required this.weightUnit,
+    required this.celebrates,
+  });
+
+  final WorkoutSessionModel session;
+  final List<PersonalRecord> records;
+  final List<WorkoutSessionModel> history;
+  final AppWeightUnit weightUnit;
+  final bool celebrates;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final volume = session.loggedVolumeKg;
+    final sets = session.loggedSetCount;
+    final weekly = WorkoutText.weeklyWorkout(
+      l10n,
+      WorkoutSessionHighlights.weeklyWorkoutNumber(
+        session,
+        history: history,
+        firstDayOfWeek: firstDayOfWeekIndex(context),
+      ),
+    );
+    final stats = <AppMomentStat>[
+      if (ShareCardContent.formatDuration(l10n, session.activeDuration)
+          case final duration?)
+        (value: duration, label: l10n.statDuration),
+      // Unless the sets are the hero themselves.
+      if (volume > 0 || records.isNotEmpty)
+        (value: AppFormat.number(sets, locale: locale), label: l10n.statSets),
+      (
+        value: AppFormat.number(session.exercises.length, locale: locale),
+        label: l10n.statExercises,
+      ),
+    ];
+    final celebration = celebrates
+        ? AppMomentCelebration.confetti
+        : AppMomentCelebration.none;
+    if (records.firstOrNull case final record?) {
+      final caption = [
+        if (records.length > 1) l10n.momentMoreRecords(records.length - 1),
+        ?weekly,
+      ].join(' · ');
+      return AppMomentHero(
+        value: record.value,
+        format: (value) => WorkoutText.recordDetail(
+          l10n,
+          PersonalRecord(
+            exerciseName: record.exerciseName,
+            trackingMode: record.trackingMode,
+            value: value.toDouble(),
+            reps: record.reps,
+            weightUnit: record.weightUnit,
+          ),
+          locale: locale,
+        ),
+        label: record.exerciseName,
+        badge: l10n.momentNewRecord,
+        badgeIcon: AppSymbols.personalRecord,
+        caption: caption.isEmpty ? null : caption,
+        stats: stats,
+        celebration: celebration,
+      );
+    }
+    return AppMomentHero(
+      value: volume > 0 ? volume : sets,
+      format: (value) => volume > 0
+          ? AppFormat.weight(
+              value,
+              weightUnit,
+              maxFractionDigits: 0,
+              locale: locale,
+            )
+          : AppFormat.number(value, locale: locale),
+      label: volume > 0 ? l10n.statVolume : l10n.statSets,
+      info: volume > 0 ? MethodInfoButton(MethodInfo.tonnage(l10n)) : null,
+      badge: celebrates ? l10n.momentWorkoutComplete : null,
+      caption: weekly,
+      stats: stats,
+      celebration: celebration,
+    );
   }
 }
 

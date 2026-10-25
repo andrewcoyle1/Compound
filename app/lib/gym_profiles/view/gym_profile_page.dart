@@ -531,7 +531,8 @@ class _EquipmentRow extends StatelessWidget {
           ),
       ],
       trailingFullSwipe: false,
-      child: InkWell(
+      child: AppPressable(
+        onTap: null,
         onLongPress: () => unawaited(_machineActions(context)),
         child: row,
       ),

@@ -70,6 +70,9 @@ RULES = {
     # Rule 1: a box drawn by hand. Cards, badges, swatches and selection rings are app_ui's.
     'box-decoration': (_ + r'BoxDecoration\(',
                        'AppCard, AppIconBadge, AppSwatch or AppSelectionRing (or add one to app_ui)'),
+    # Rule 3: a tap goes through AppPressable (pressed state, 44 pt target, button semantics). A
+    # drag or a swipe keeps its GestureDetector, allowed below.
+    'raw-tap': (_ + r'(InkWell|InkResponse|GestureDetector)\(', 'AppPressable'),
 }
 
 # What a text style's copyWith may not set in app/lib.
@@ -91,6 +94,19 @@ ALLOWED = {
     },
     'box-decoration': {
         'app/lib/today/': None,  # design/today removes
+    },
+    'raw-tap': {
+        'app/lib/today/': None,  # design/today removes
+        # A tap or a horizontal swipe flips consumed and remaining.
+        'app/lib/nutrition/view/widgets/macro_header.dart': 1,
+        # A horizontal swipe moves the week.
+        'app/lib/widgets/calendar/calendar_header.dart': 1,
+        # Swiping the banner up dismisses it; its tap is an AppPressable.
+        'app/lib/notifications/inbox/view/activity_banner.dart': 1,
+        # The target chart's week grid: cells and weekday letters narrower and shorter than 44 pt,
+        # in a fixed-height carousel page, that a 44 pt target would push out of it. Each column's
+        # cells are also reachable by screen readers as buttons.
+        'app/lib/progress/view/progress_carousel.dart': 2,
     },
 }
 
@@ -269,6 +285,10 @@ def self_test():
         "decoration: BoxDecoration(": ['box-decoration'],
         "decoration: const BoxDecoration(color: c),": ['box-decoration'],
         "child: AppSwatch(color: c, selected: true),": [],
+        "child: InkWell(onTap: open, child: row),": ['raw-tap'],
+        "child: InkResponse(onTap: pick,": ['raw-tap'],
+        "return GestureDetector(onTap: open,": ['raw-tap'],
+        "child: AppPressable(onTap: open, child: row),": [],
     }
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]

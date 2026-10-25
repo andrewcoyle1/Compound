@@ -176,8 +176,10 @@ class _Tile extends StatelessWidget {
         ),
       ),
       excludeSemantics: true,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.l),
+      child: AppPressable(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.l)),
+        ),
         onTap: () => context.read<TrainingAnalyticsBloc>().add(
           TrainingAnalyticsMuscleToggled(muscle),
         ),

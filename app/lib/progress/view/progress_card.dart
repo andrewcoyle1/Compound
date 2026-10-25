@@ -110,7 +110,7 @@ class ProgressCard extends StatelessWidget {
           style: AppCardStyle.tile,
           child: onTap == null
               ? content
-              : InkWell(onTap: onTap, child: content),
+              : AppPressable(onTap: onTap, child: content),
         ),
       ),
     );

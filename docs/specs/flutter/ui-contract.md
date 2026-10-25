@@ -63,6 +63,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A low-emphasis text action (See All, Not now) | `AppTextButton`, `isDestructive` for a removal |
 | An app bar button | `AppToolbarButton`; `.close` at a modal's leading edge, `.confirm` (with `isSaving`) at its trailing edge, `.avatar` for the profile button |
 | An icon-only button in content (a row's edit pencil) | `AppIconButton` |
+| Anything else that responds to a tap or long press (a tile, a cell, a photo, a custom row) | `AppPressable`: one pressed state, an optional `haptic`, button semantics and a 44 pt target; `color:` and `shape:` for a key or tile that draws its own surface. Never `InkWell`, `InkResponse` or a `GestureDetector` for a tap. A drag or swipe keeps its `GestureDetector` |
 | A row | `AppListRow`, `AppListRowButton`, `AppListRowToggle`, `AppSelectableRow` in an `AppSection` |
 | A picker row | `AppListRowMenu(value)` as the row's accessory: the value with an up-and-down chevron |
 | A destructive row | `AppListRowButton(destructive: true)`: the title in `appColors.danger` |
@@ -197,7 +198,8 @@ and 3 on `app/lib/` and `compound_charts/lib/` (and `framework-import` on `app/t
 spinners to `AppSpinner` in `app/lib/` and `app_ui/lib/`: an indeterminate
 `CircularProgressIndicator`, `LinearProgressIndicator` or `CupertinoActivityIndicator` fails, and
 one given its own `value:` (the progress rings and macro bars) is allowed. Its `style-copywith` rule
-holds text styles in `app/lib` to those tokens, `alpha-literal` its colours' opacities, and `box-decoration` its boxes to app_ui's widgets; its `ALLOWED` list names each file a rule lets
+holds text styles in `app/lib` to those tokens, `alpha-literal` its colours' opacities, and `box-decoration` its boxes to app_ui's widgets, and `raw-tap` its taps to `AppPressable` (`InkWell`,
+`InkResponse` and `GestureDetector` fail; a drag or swipe is allowed); its `ALLOWED` list names each file a rule lets
 through, and why. Every screen was moved onto
 `app_ui` by 19 Oct 2026 (#212–#217), so there is no baseline: any match fails CI.
 

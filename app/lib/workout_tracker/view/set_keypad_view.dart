@@ -368,8 +368,8 @@ class _Key extends StatelessWidget {
         shape: const RoundedSuperellipseBorder(
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
         ),
-        child: InkWell(
-          customBorder: const RoundedSuperellipseBorder(
+        child: AppPressable(
+          shape: const RoundedSuperellipseBorder(
             borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
           ),
           onTap: () {
@@ -441,8 +441,8 @@ class _KeyChip extends StatelessWidget {
         shape: const RoundedSuperellipseBorder(
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
         ),
-        child: InkWell(
-          customBorder: const RoundedSuperellipseBorder(
+        child: AppPressable(
+          shape: const RoundedSuperellipseBorder(
             borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
           ),
           onTap: onPressed,
@@ -523,7 +523,7 @@ class _LoadingBar extends StatelessWidget {
             Semantics(
               button: true,
               hint: l10n.keypadPlatesHint,
-              child: InkWell(
+              child: AppPressable(
                 key: const ValueKey('keypad-loading'),
                 onTap: () => unawaited(_openPlateCalculator(context)),
                 child: ConstrainedBox(

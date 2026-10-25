@@ -111,6 +111,25 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppPressable', [
+      galleryInline(
+        'icon, 44 pt target',
+        const AppPressable(onTap: galleryNoop, child: Icon(AppSymbols.add)),
+      ),
+      galleryInline(
+        'own surface, haptic',
+        AppPressable(
+          onTap: galleryNoop,
+          haptic: AppHaptic.selection,
+          color: context.appColors.raised,
+          shape: const StadiumBorder(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: Text(l10n.devGallerySampleTextAction),
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('AppDoneMark', [
       galleryInline('medium', const AppDoneMark()),
       galleryInline('small', const AppDoneMark(size: AppIconSize.small)),

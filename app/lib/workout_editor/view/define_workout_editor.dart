@@ -344,7 +344,7 @@ class const _ExerciseRow({
       selected: state.isSelectingSuperset ? selected : null,
       child: Material(
         color: scheme.surface,
-        child: InkWell(
+        child: AppPressable(
           onTap: state.isEditing
               ? null
               : state.isSelectingSuperset

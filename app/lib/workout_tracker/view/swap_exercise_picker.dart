@@ -119,7 +119,7 @@ class _Row extends StatelessWidget {
       label: exercise.name,
       onTap: choose,
       excludeSemantics: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: choose,
         child: AppListRow(
           title: exercise.name,

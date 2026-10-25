@@ -550,7 +550,7 @@ class _Banner extends StatelessWidget {
           Expanded(
             child: onPressed == null
                 ? content
-                : InkWell(onTap: onPressed, child: content),
+                : AppPressable(onTap: onPressed, child: content),
           ),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.s),
@@ -623,7 +623,7 @@ class _Leaderboard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadius.m),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: InkWell(
+                    child: AppPressable(
                       onTap: () => onPressed(standing.user),
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.s),

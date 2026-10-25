@@ -292,7 +292,7 @@ class _StandingRow extends StatelessWidget {
       button: onPressed != null,
       label: l10n.challengeRowLabel(rank, name, entry.sessions, target),
       excludeSemantics: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: onPressed,
         child: Padding(
           padding: const EdgeInsets.symmetric(

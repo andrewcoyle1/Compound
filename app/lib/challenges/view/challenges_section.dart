@@ -81,7 +81,7 @@ class _Card extends StatelessWidget {
       hint: l10n.challengeOpensStandings,
       child: MergeSemantics(
         child: AppCard(
-          child: InkWell(
+          child: AppPressable(
             onTap: onPressed,
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.l),

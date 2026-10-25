@@ -631,7 +631,7 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
                     button: true,
                     label: l10n.recipePreparationSelectPhoto,
                     excludeSemantics: true,
-                    child: InkWell(
+                    child: AppPressable(
                       key: const Key('RecipePreparation.photo'),
                       onTap: () => unawaited(cubit.photoPressed()),
                       child: Padding(

@@ -171,7 +171,7 @@ class StravaActivityRow extends StatelessWidget {
     ].join(' · ');
     return Semantics(
       link: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: () =>
             unawaited(context.read<LinkOpener>().open(activity.stravaUri)),
         child: ConstrainedBox(

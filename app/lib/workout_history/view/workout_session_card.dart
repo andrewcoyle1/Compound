@@ -56,7 +56,7 @@ class WorkoutSessionCard extends StatelessWidget {
     final content = MergeSemantics(
       child: Semantics(
         button: true,
-        child: InkWell(
+        child: AppPressable(
           onTap:
               onPressed ??
               () => context.goNamed(

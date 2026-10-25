@@ -387,9 +387,9 @@ class _NamePhoto extends StatelessWidget {
               ? l10n.onboardingChangePhoto
               : l10n.onboardingAddPhoto,
           excludeSemantics: true,
-          child: InkWell(
+          child: AppPressable(
             key: const Key('NamePhoto.photo'),
-            customBorder: const CircleBorder(),
+            shape: const CircleBorder(),
             onTap: () => unawaited(cubit.photoPressed()),
             child: picked != null || stored != null
                 ? ClipOval(

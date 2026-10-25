@@ -36,6 +36,7 @@ export 'src/widgets/app_markdown_text.dart';
 export 'src/widgets/app_menu_item.dart';
 export 'src/widgets/app_number_field.dart';
 export 'src/widgets/app_onboarding_step_scaffold.dart';
+export 'src/widgets/app_pressable.dart';
 export 'src/widgets/app_readable_width.dart';
 export 'src/widgets/app_search_field.dart';
 export 'src/widgets/app_section.dart';

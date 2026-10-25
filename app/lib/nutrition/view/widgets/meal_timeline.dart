@@ -256,7 +256,7 @@ class MealCard extends StatelessWidget {
       ],
       leadingFullSwipe: false,
       trailingFullSwipe: false,
-      child: InkWell(
+      child: AppPressable(
         onTap: onOpen,
         onLongPress: () => unawaited(_showMenu(context, item)),
         child: child,

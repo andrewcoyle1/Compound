@@ -572,7 +572,7 @@ class _CountButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: onPressed != null,
-      child: InkWell(
+      child: AppPressable(
         onTap: onPressed,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: AppControlSize.row),

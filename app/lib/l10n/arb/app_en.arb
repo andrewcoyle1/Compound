@@ -6874,6 +6874,21 @@
     "@summaryDone": {
         "description": "Workout summary: close it"
     },
+    "momentWorkoutComplete": "Workout Complete",
+    "@momentWorkoutComplete": {
+        "description": "Workout summary: the badge over the hero number when a workout is finished"
+    },
+    "momentNewRecord": "New PR",
+    "@momentNewRecord": {
+        "description": "Workout summary: the badge over a personal record shown as the hero"
+    },
+    "momentMoreRecords": "{count, plural, =1{+1 more PR} other{+{count} more PRs}}",
+    "@momentMoreRecords": {
+        "description": "Workout summary: under the hero record, how many other personal records the workout set",
+        "placeholders": {
+            "count": {"type": "int"}
+        }
+    },
     "trackerAddRound": "Add Round",
     "@trackerAddRound": {
         "description": "Superset card: one more set for every member"

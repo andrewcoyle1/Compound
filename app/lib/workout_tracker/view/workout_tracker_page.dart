@@ -120,7 +120,8 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
               current.finishedSession != null,
           listener: (context, state) {
             final session = state.finishedSession!;
-            unawaited(AppHaptics.success());
+            // The summary's hero plays the success haptic as its count
+            // lands, so the finish is felt once.
             _cubit.summaryShown();
             context.pushReplacementNamed(
               WorkoutSessionDetailPage.summaryName,

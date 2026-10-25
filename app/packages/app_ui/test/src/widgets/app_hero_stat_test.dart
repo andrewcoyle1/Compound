@@ -64,6 +64,10 @@ void main() {
       ),
       ('Number only', const AppHeroStat(value: '6,240')),
       (
+        'Long number shrinks to fit',
+        const AppHeroStat(value: '12,450,000', unit: 'steps'),
+      ),
+      (
         'Unit and caption',
         const AppHeroStat(
           value: '2,512',

@@ -12,8 +12,9 @@ import 'package:app_ui/app_ui.dart';
 ///   covers.
 ///
 /// Screen readers read it as one element, "label, value unit, delta,
-/// caption". The number stops growing at 150%, as a large title does, and
-/// the delta wraps under it when there is no room beside it.
+/// caption". The number stops growing at 150%, as a large title does,
+/// shrinks to fit rather than break when it is still too wide, and the
+/// delta wraps under it when there is no room beside it.
 /// {@endtemplate}
 class AppHeroStat extends StatelessWidget {
   /// {@macro app_hero_stat}
@@ -84,9 +85,15 @@ class AppHeroStat extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  MediaQuery.withClampedTextScaling(
-                    maxScaleFactor: AppScaffold.largeTitleMaxTextScale,
-                    child: Text(value, style: AppTextStyles.hero),
+                  // Shrinks rather than breaks a long number ("12,450") at
+                  // large text.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: AppScaffold.largeTitleMaxTextScale,
+                      child: Text(value, style: AppTextStyles.hero),
+                    ),
                   ),
                   if (unit != null) Text(unit.toUpperCase(), style: overline),
                 ],

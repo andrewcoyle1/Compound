@@ -126,34 +126,34 @@ List<Widget> subscriptionFeatureRows(BuildContext context) {
     _ => false,
   };
   return [
-    AppListRow(
+    AppFeatureRow(
       icon: AppSymbols.mesocycle,
       title: l10n.subscriptionFeaturePlans,
-      subtitle: l10n.subscriptionFeaturePlansDetail,
+      detail: l10n.subscriptionFeaturePlansDetail,
     ),
-    AppListRow(
+    AppFeatureRow(
       icon: AppSymbols.knowledgeBase,
       title: l10n.subscriptionFeatureCoaching,
-      subtitle: l10n.subscriptionFeatureCoachingDetail,
+      detail: l10n.subscriptionFeatureCoachingDetail,
     ),
-    AppListRow(
+    AppFeatureRow(
       icon: AppSymbols.analytics,
       title: l10n.subscriptionFeatureProgress,
-      subtitle: l10n.subscriptionFeatureProgressDetail,
+      detail: l10n.subscriptionFeatureProgressDetail,
     ),
-    AppListRow(
+    AppFeatureRow(
       icon: AppSymbols.heart,
       title: isApple
           ? l10n.subscriptionFeatureHealthApple
           : l10n.subscriptionFeatureHealthAndroid,
-      subtitle: isApple
+      detail: isApple
           ? l10n.subscriptionFeatureHealthAppleDetail
           : l10n.subscriptionFeatureHealthAndroidDetail,
     ),
-    AppListRow(
+    AppFeatureRow(
       icon: AppSymbols.notifications,
       title: l10n.subscriptionFeatureAccountability,
-      subtitle: l10n.subscriptionFeatureAccountabilityDetail,
+      detail: l10n.subscriptionFeatureAccountabilityDetail,
     ),
   ];
 }

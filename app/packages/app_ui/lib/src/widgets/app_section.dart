@@ -50,6 +50,7 @@ class AppSection extends StatelessWidget {
       :final thumbnail,
     ) => AppListRow.textInset(scaler, icon: icon, thumbnail: thumbnail),
     AppListRowToggle(:final icon) => AppListRow.textInset(scaler, icon: icon),
+    AppFeatureRow() => AppFeatureRow.textInset(scaler),
     _ => AppSpacing.l,
   };
 

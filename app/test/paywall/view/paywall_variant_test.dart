@@ -1,6 +1,5 @@
-import 'dart:ui';
-
 import 'package:ab_test_repository/ab_test_repository.dart';
+import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/paywall/paywall.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -61,8 +60,13 @@ void main() {
     final l10n = tester.element(find.byType(PaywallView)).l10n;
     expect(find.text(l10n.paywallTitle), findsOneWidget);
     expect(find.text(l10n.paywallSubscribe), findsOneWidget);
+    // Each plan's billed price, biggest, with its period beside it.
+    expect(find.text('£29.99'), findsOneWidget);
+    expect(find.text('/ 1 year'), findsOneWidget);
+    expect(find.text('/ 1 month'), findsOneWidget);
     // The custom arm's feature list is not part of the store's screen.
     expect(find.text(l10n.paywallIncluded), findsNothing);
+    expect(find.byType(AppFeatureRow), findsNothing);
     expect(
       analytics.parameters('PaywallView_Load_Success')?['paywallVariant'],
       'storeKit',
@@ -79,5 +83,7 @@ void main() {
     await tester.pumpAndSettle();
     final l10n = tester.element(find.byType(PaywallView)).l10n;
     expect(find.text(l10n.paywallIncluded), findsOneWidget);
+    expect(find.byType(AppFeatureRow), findsNWidgets(5));
+    expect(find.byType(AppPlanCard), findsNWidgets(2));
   });
 }

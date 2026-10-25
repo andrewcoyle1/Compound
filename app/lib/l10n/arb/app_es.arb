@@ -2619,6 +2619,7 @@
     "paywallSubtitle": "Una suscripción para entrenamiento, nutrición y progreso.",
     "paywallIncluded": "Incluido",
     "paywallPricePeriod": "{price} / {period}",
+    "paywallPerPeriod": "/ {period}",
     "paywallPeriodYear": "1 año",
     "paywallPeriodMonth": "1 mes",
     "paywallPeriodWeek": "1 semana",

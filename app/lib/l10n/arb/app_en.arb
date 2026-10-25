@@ -11175,6 +11175,15 @@
             }
         }
     },
+    "paywallPerPeriod": "/ {period}",
+    "@paywallPerPeriod": {
+        "description": "Paywall plan card: the billing period after the price, e.g. / 1 month",
+        "placeholders": {
+            "period": {
+                "type": "String"
+            }
+        }
+    },
     "paywallPeriodYear": "1 year",
     "@paywallPeriodYear": {
         "description": "Paywall billing period"

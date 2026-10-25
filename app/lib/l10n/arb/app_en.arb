@@ -4001,6 +4001,18 @@
     "@onboardingUnableToUpdate": {
         "description": "Onboarding: title of the alert when the diet plan could not be saved"
     },
+    "trainingWorkoutsDoneUnit": "workouts done",
+    "@trainingWorkoutsDoneUnit": {
+        "description": "The unit under the Training tab hero number: the workouts done out of those planned in the microcycle shown, as in 2/6 WORKOUTS DONE (shown upper-cased)."
+    },
+    "trainingMicrocycleDone": "Microcycle Done",
+    "@trainingMicrocycleDone": {
+        "description": "The chip beside the Training tab hero number once every workout in the microcycle shown is done."
+    },
+    "trainingLastWorkout": "Last Workout",
+    "@trainingLastWorkout": {
+        "description": "Title of the Training tab card for the most recent finished workout (shown upper-cased)."
+    },
     "trainingSearchHint": "Exercises and workouts",
     "@trainingSearchHint": {
         "description": "Training tab: placeholder of the search field"

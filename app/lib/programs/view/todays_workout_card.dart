@@ -11,7 +11,6 @@ import 'package:compound/programs/view/mesocycle_library_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/training_library/training_library.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
-import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/workout_history/models/workout_session_highlights.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
@@ -22,10 +21,11 @@ import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
 
 /// Today's workout on the Today tab (Swift `TodaysWorkoutCard` and the
-/// Today view's workout section): the active mesocycle's next workout to
-/// start or skip, today's rest day, or what today's finished workout came
-/// to. Without a plan for today it offers an empty workout; after a
-/// macrocycle's last mesocycle, a repeat.
+/// Today view's workout section), as a summary card with its buttons at
+/// the foot: the active mesocycle's next workout to start or skip, today's
+/// rest day, or what today's finished workout came to, each named in the
+/// display face. Without a plan for today it offers an empty workout;
+/// after a macrocycle's last mesocycle, a repeat.
 class const TodaysWorkoutCard({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,6 @@ class const TodaysWorkoutCard({super.key}) extends StatelessWidget {
       final macrocycle = state.currentMacrocycle;
       child = macrocycle?.status == MacrocycleStatus.completed
           ? _Unscheduled(
-              icon: AppSymbols.success,
               title: l10n.programMacrocycleComplete(macrocycle!.name),
               message: l10n.programMacrocycleCompleteMessage,
               primary: l10n.programRepeatMacrocycle,
@@ -47,9 +46,6 @@ class const TodaysWorkoutCard({super.key}) extends StatelessWidget {
               onSecondary: () => _choose(context),
             )
           : _Unscheduled(
-              icon: state.activeMesocycle == null
-                  ? AppSymbols.mesocycle
-                  : AppSymbols.rest,
               title: state.activeMesocycle == null
                   ? l10n.programNoActiveMesocycle
                   : l10n.programNothingScheduled,
@@ -109,7 +105,7 @@ class const TodaysWorkoutCard({super.key}) extends StatelessWidget {
         child: _Start(workout: workout, plan: today.dayPlan),
       );
     }
-    return AppSection(header: l10n.programTodaysWorkout, children: [child]);
+    return child;
   }
 
   static void _choose(BuildContext context) {
@@ -145,9 +141,36 @@ Future<void> _startSlot(
   );
 }
 
-/// No plan for today, or a macrocycle finished: a message and its actions.
+/// The card's overline header: what it is, in the workouts colour.
+class const _Card({
+  required final String value,
+  final AppSummaryCardSize size = AppSummaryCardSize.large,
+  final String? unit,
+  final AppChip? delta,
+  final Widget? chart,
+  final String? footer,
+  final VoidCallback? onTap,
+  final Widget? actions,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => AppSummaryCard(
+    title: context.l10n.programTodaysWorkout,
+    icon: AppSymbols.workout,
+    tint: context.appColors.workouts,
+    value: value,
+    size: size,
+    unit: unit,
+    delta: delta,
+    chart: chart,
+    footer: footer,
+    onTap: onTap,
+    actions: actions,
+  );
+}
+
+/// No plan for today, or a macrocycle finished: what is the case, a line
+/// on it and its actions.
 class const _Unscheduled({
-  required final IconData icon,
   required final String title,
   required final String message,
   required final String primary,
@@ -158,68 +181,25 @@ class const _Unscheduled({
   @override
   Widget build(BuildContext context) {
     final secondary = this.secondary;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.l),
-      child: Column(
+    return _Card(
+      value: title,
+      size: AppSummaryCardSize.regular,
+      footer: message,
+      actions: Wrap(
+        spacing: AppSpacing.s,
+        runSpacing: AppSpacing.s,
         children: [
-          LibraryEmptyState(icon: icon, title: title, message: message),
-          Wrap(
-            spacing: AppSpacing.s,
-            runSpacing: AppSpacing.s,
-            alignment: WrapAlignment.center,
-            children: [
-              AppCtaButton(
-                label: primary,
-                size: AppCtaSize.compact,
-                onPressed: onPrimary,
-              ),
-              if (secondary != null)
-                AppCtaButton(
-                  label: secondary,
-                  size: AppCtaSize.compact,
-                  variant: AppCtaVariant.secondary,
-                  onPressed: onSecondary,
-                ),
-            ],
+          AppCtaButton(
+            label: primary,
+            size: AppCtaSize.compact,
+            onPressed: onPrimary,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The glyph, title and subtitle each card ends on.
-class const _Footer({
-  required final IconData icon,
-  required final Color tint,
-  required final String title,
-  required final String subtitle,
-  final bool chevron = false,
-}) extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return MergeSemantics(
-      child: Row(
-        spacing: AppSpacing.m,
-        children: [
-          ExcludeSemantics(child: Icon(icon, color: tint)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: AppSpacing.xxs,
-              children: [
-                Text(title, style: AppTextStyles.sectionTitle),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.rowDetail.secondary(context),
-                ),
-              ],
-            ),
-          ),
-          if (chevron)
-            ExcludeSemantics(
-              child: Icon(AppSymbols.disclosure, color: scheme.outline),
+          if (secondary != null)
+            AppCtaButton(
+              label: secondary,
+              size: AppCtaSize.compact,
+              variant: AppCtaVariant.secondary,
+              onPressed: onSecondary,
             ),
         ],
       ),
@@ -233,20 +213,12 @@ class const _RestDay({required final TodaysWorkout workout})
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final next = workout.startableSlot;
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.l),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.m,
-        children: [
-          _Footer(
-            icon: AppSymbols.restDay,
-            tint: context.appColors.accentInk,
-            title: l10n.programRestDay,
-            subtitle: l10n.programRestDayMessage,
-          ),
-          if (next != null)
-            Semantics(
+    return _Card(
+      value: l10n.programRestDay,
+      footer: l10n.programRestDayMessage,
+      actions: next == null
+          ? null
+          : Semantics(
               hint: l10n.programStartInsteadHint,
               child: AppCtaButton(
                 label: l10n.programStartInstead(next.dayPlan.name),
@@ -255,12 +227,12 @@ class const _RestDay({required final TodaysWorkout workout})
                 onPressed: () => unawaited(_startSlot(context, workout, next)),
               ),
             ),
-        ],
-      ),
     );
   }
 }
 
+/// Today's workout, done: its name with a volt Completed, then what it
+/// came to and its records. Opens the session.
 class const _Completed({
   required final TodaysWorkout workout,
   required final WorkoutTemplateModel plan,
@@ -270,17 +242,17 @@ class const _Completed({
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final session = workout.completedSession;
-    // Done is the accent, not success green.
-    final done = context.appColors.accentInk;
+    // Done is the user's own progress: the accent, as a fill.
+    final done = AppChip(
+      label: l10n.programDayCompleted,
+      icon: AppSymbols.success,
+      selected: true,
+    );
     if (session == null) {
-      return Padding(
-        padding: const EdgeInsets.all(AppSpacing.l),
-        child: _Footer(
-          icon: AppSymbols.success,
-          tint: done,
-          title: plan.name,
-          subtitle: l10n.programCompletedToday,
-        ),
+      return _Card(
+        value: plan.name,
+        delta: done,
+        footer: l10n.programCompletedToday,
       );
     }
     final duration = session.activeDuration;
@@ -296,58 +268,29 @@ class const _Completed({
       limit: 1 << 20,
     );
     final first = records.firstOrNull;
-    final recordDetail = first == null
-        ? ''
-        : WorkoutText.recordDetail(l10n, first, locale: locale);
-    return Semantics(
-      button: true,
-      hint: l10n.programOpensTodaysWorkout,
-      child: AppPressable(
-        onTap: () {
-          context.read<ProgramsCubit>().pressed(
-            'TodaysWorkoutCard_CompletedSession_Pressed',
-          );
-          context.goNamed(
-            WorkoutSessionDetailPage.name,
-            pathParameters: {
-              WorkoutSessionDetailPage.sessionIdParameter: session.id,
-            },
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: AppSpacing.xs,
-            children: [
-              _Footer(
-                icon: AppSymbols.success,
-                tint: done,
-                title: plan.name,
-                subtitle: figures,
-                chevron: true,
-              ),
-              if (first != null)
-                Row(
-                  spacing: AppSpacing.s,
-                  children: [
-                    Icon(
-                      AppSymbols.personalRecord,
-                      color: context.appColors.personalRecord,
-                    ),
-                    Expanded(
-                      child: Text(
-                        '${l10n.programPrCount(records.length)} · '
-                        '${first.exerciseName} $recordDetail',
-                        style: AppTextStyles.rowDetail,
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      ),
+    return _Card(
+      value: plan.name,
+      delta: done,
+      footer: [
+        figures,
+        if (first != null)
+          [
+            l10n.programPrCount(records.length),
+            first.exerciseName,
+            WorkoutText.recordDetail(l10n, first, locale: locale),
+          ].join(' · '),
+      ].join('\n'),
+      onTap: () {
+        context.read<ProgramsCubit>().pressed(
+          'TodaysWorkoutCard_CompletedSession_Pressed',
+        );
+        context.goNamed(
+          WorkoutSessionDetailPage.name,
+          pathParameters: {
+            WorkoutSessionDetailPage.sessionIdParameter: session.id,
+          },
+        );
+      },
     );
   }
 }
@@ -372,78 +315,39 @@ class const _Start({
       if (minutes != null) l10n.programMinutesEstimate(minutes),
     ].join(' · ');
     final targets = _targets(context);
-    final side = MediaQuery.textScalerOf(context).scale(64);
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.l),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.m,
+    final side = MediaQuery.textScalerOf(context).scale(56);
+    return _Card(
+      value: plan.name,
+      unit: subtitle.isEmpty
+          ? l10n.exerciseCount(plan.exercises.length)
+          : subtitle,
+      // Wraps at large text sizes rather than overflowing.
+      chart: Wrap(
+        spacing: AppSpacing.s,
+        runSpacing: AppSpacing.s,
         children: [
-          Semantics(
-            button: true,
-            hint: l10n.programOpensTodaysWorkout,
-            child: AppPressable(
-              onTap: () => unawaited(
-                WorkoutTemplateDetailPage.open(
-                  context,
-                  plan.workoutId,
-                  mesocycleId: run?.mesocycle.id,
-                  microcycleIndex: workout.today?.cycleIndex,
-                  isDeload: workout.isDeload,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: AppSpacing.s,
-                children: [
-                  ExcludeSemantics(
-                    // Wraps at large text sizes rather than overflowing.
-                    child: Wrap(
-                      spacing: AppSpacing.s,
-                      runSpacing: AppSpacing.s,
-                      children: [
-                        for (final exercise in plan.exercises.take(4))
-                          ClipOval(
-                            child: SizedBox.square(
-                              dimension: side,
-                              child: ExerciseImage(exercise.exercise),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  _Footer(
-                    icon: AppSymbols.workout,
-                    tint: context.appColors.accentInk,
-                    title: plan.name,
-                    subtitle: subtitle.isEmpty
-                        ? l10n.exerciseCount(plan.exercises.length)
-                        : subtitle,
-                    chevron: true,
-                  ),
-                  if (targets.isNotEmpty)
-                    Semantics(
-                      label: l10n.programTargets(targets.join(', ')),
-                      excludeSemantics: true,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: AppSpacing.xxs,
-                        children: [
-                          for (final target in targets)
-                            Text(
-                              target,
-                              style: AppTextStyles.rowDetail.secondary(context),
-                            ),
-                        ],
-                      ),
-                    ),
-                ],
+          for (final exercise in plan.exercises.take(4))
+            ClipOval(
+              child: SizedBox.square(
+                dimension: side,
+                child: ExerciseImage(exercise.exercise),
               ),
             ),
-          ),
-          if (slot != null)
-            Row(
+        ],
+      ),
+      footer: targets.isEmpty ? null : targets.join('\n'),
+      onTap: () => unawaited(
+        WorkoutTemplateDetailPage.open(
+          context,
+          plan.workoutId,
+          mesocycleId: run?.mesocycle.id,
+          microcycleIndex: workout.today?.cycleIndex,
+          isDeload: workout.isDeload,
+        ),
+      ),
+      actions: slot == null
+          ? null
+          : Row(
               spacing: AppSpacing.m,
               children: [
                 Expanded(
@@ -463,8 +367,6 @@ class const _Start({
                 ),
               ],
             ),
-        ],
-      ),
     );
   }
 

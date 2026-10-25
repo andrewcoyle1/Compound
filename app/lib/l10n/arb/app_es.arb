@@ -1539,6 +1539,7 @@
     "weeklyReviewSessions": "Sesiones",
     "weeklyReviewOfGoal": "{sessions} de {goal}",
     "weeklyReviewVolumeChange": "{change} vs. la semana pasada",
+    "weeklyReviewVsLastWeek": "vs. semana pasada",
     "weeklyReviewAverageRpe": "RPE promedio",
     "weeklyReviewSetsPerMuscle": "Series por músculo",
     "weeklyReviewPersonalRecords": "Récords personales",

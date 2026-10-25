@@ -7353,6 +7353,10 @@
             }
         }
     },
+    "weeklyReviewVsLastWeek": "vs Last Week",
+    "@weeklyReviewVsLastWeek": {
+        "description": "Weekly review: label under the volume's change from last week, such as +7% (shown upper-cased)"
+    },
     "weeklyReviewAverageRpe": "Average RPE",
     "@weeklyReviewAverageRpe": {
         "description": "Weekly Review row: the mean RPE of the week's sets"

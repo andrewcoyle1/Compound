@@ -13,7 +13,7 @@ List<MealLogModel> sampleMealLogs({
 }) {
   final meals = <MealLogModel>[];
   for (final (daysAgo, day) in _week.indexed) {
-    final date = now.subtract(Duration(days: daysAgo));
+    final date = DateTime(now.year, now.month, now.day - daysAgo);
     final dayKey = _dayKey(date);
     for (final (index, meal) in day.indexed) {
       final at = DateTime(
@@ -40,7 +40,7 @@ List<MealLogModel> sampleMealLogs({
     }
   }
   for (final (daysAgo, kcal) in [(6, 2310.5), (2, 1180.25)]) {
-    final date = now.subtract(Duration(days: daysAgo));
+    final date = DateTime(now.year, now.month, now.day - daysAgo);
     final dayKey = _dayKey(date);
     meals.add(
       MealLogModel(

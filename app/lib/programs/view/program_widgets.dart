@@ -46,7 +46,6 @@ class const MesocycleHeader({
     final scheme = Theme.of(context).colorScheme;
     final colour =
         AppColors.fromHex(mesocycle.colour) ?? context.appColors.accentInk;
-    final side = MediaQuery.textScalerOf(context).scale(AppControlSize.row);
     final phase = this.phase;
     final trailing = this.trailing;
     return MergeSemantics(
@@ -59,15 +58,9 @@ class const MesocycleHeader({
           spacing: AppSpacing.m,
           children: [
             ExcludeSemantics(
-              child: SizedBox.square(
-                dimension: side,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.tintedSurface(colour),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(mesocycleGlyph(mesocycle.icon), color: colour),
-                ),
+              child: AppSwatch(
+                color: colour,
+                icon: mesocycleGlyph(mesocycle.icon),
               ),
             ),
             Expanded(

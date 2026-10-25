@@ -156,14 +156,14 @@ void main() {
     expect(
       find.ancestor(
         of: find.text('Well.', findRichText: true),
-        matching: find.byType(Container),
+        matching: find.byType(AppCard),
       ),
       findsNothing,
     );
     expect(
       find.ancestor(
         of: find.text('How am I doing?', findRichText: true),
-        matching: find.byType(Container),
+        matching: find.byType(AppCard),
       ),
       findsWidgets,
     );

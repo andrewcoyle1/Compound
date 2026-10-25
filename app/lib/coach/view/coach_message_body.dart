@@ -109,17 +109,14 @@ class CoachMessageBody extends StatelessWidget {
                         Flexible(
                           child: Align(
                             alignment: AlignmentDirectional.centerEnd,
-                            child: Container(
-                              padding: const EdgeInsets.all(AppSpacing.m),
-                              decoration: BoxDecoration(
-                                color: AppColors.tintedSurface(
-                                  Theme.of(context).colorScheme.primary,
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                  AppRadius.l,
-                                ),
+                            child: AppCard(
+                              style: AppCardStyle.tinted(
+                                Theme.of(context).colorScheme.primary,
                               ),
-                              child: body,
+                              child: Padding(
+                                padding: const EdgeInsets.all(AppSpacing.m),
+                                child: body,
+                              ),
                             ),
                           ),
                         ),

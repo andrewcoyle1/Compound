@@ -520,17 +520,12 @@ class _TargetCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return AspectRatio(
       aspectRatio: 1 / 1.2,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppRadius.s),
-          border: selected
-              ? Border.all(color: context.appColors.accentInk, width: 2)
-              : null,
-        ),
+      child: AppSelectionRing(
+        selected: selected,
+        radius: AppRadius.s,
+        filled: true,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
           child: BulletBar(

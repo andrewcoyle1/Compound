@@ -371,12 +371,19 @@ class const _StackedAvatars({required final List<String?> urls})
           for (var index = urls.length - 1; index >= 0; index--)
             Positioned(
               left: step * index,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: surface, width: 2),
+              // A ring of the row's surface parts each avatar from the
+              // one under it.
+              child: ClipOval(
+                child: ColoredBox(
+                  color: surface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xxs),
+                    child: UserAvatar(
+                      imageUrl: urls[index],
+                      size: size - 2 * AppSpacing.xxs,
+                    ),
+                  ),
                 ),
-                child: UserAvatar(imageUrl: urls[index], size: size),
               ),
             ),
         ],

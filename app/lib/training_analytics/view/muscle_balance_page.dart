@@ -181,12 +181,9 @@ class _Tile extends StatelessWidget {
         onTap: () => context.read<TrainingAnalyticsBloc>().add(
           TrainingAnalyticsMuscleToggled(muscle),
         ),
-        child: DecoratedBox(
-          position: DecorationPosition.foreground,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.l),
-            border: isSelected ? Border.all(color: color, width: 2) : null,
-          ),
+        child: AppSelectionRing(
+          selected: isSelected,
+          radius: AppRadius.l,
           child: AppStatTile(
             value: value,
             label: '$name · $label',

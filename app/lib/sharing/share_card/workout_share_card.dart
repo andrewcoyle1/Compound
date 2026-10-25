@@ -18,8 +18,8 @@ enum ShareCardFormat {
 
 /// A finished session laid out as an image for Stories or a square post
 /// (`WorkoutShareCardView`). A fixed-size image, so it uses its own sizes
-/// and colours rather than the app's tokens: white on [accent] fading to
-/// black. Its strings come from [content], except the stat headers.
+/// and colours rather than the app's tokens: white on black with a glow of
+/// [accent]. Its strings come from [content], except the stat headers.
 class WorkoutShareCard extends StatelessWidget {
   const new({
     required this.content,
@@ -153,7 +153,7 @@ class WorkoutShareCard extends StatelessWidget {
 TextStyle _secondary(double size) =>
     TextStyle(fontSize: size, color: Colors.white.withValues(alpha: 0.75));
 
-/// A share card's background and layout box: [accent] fading to black,
+/// A share card's background and layout box: black with a glow of [accent],
 /// white text, [size] points (shared with the Weekly Review card). The
 /// app's mark sits at the top and [child] at the bottom, shrunk to fit if
 /// it would not.
@@ -182,14 +182,14 @@ class ShareCardFrame extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.black,
+          // Black, with the accent glowing from the top corner and gone by
+          // the middle: white text stays at least 8:1 everywhere on it.
+          // Volt at full strength behind white text was 1.3:1.
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              accent.withValues(alpha: 0.85),
-              accent.withValues(alpha: 0.35),
-              Colors.black,
-            ],
+            stops: const [0, 0.55],
+            colors: [accent.withValues(alpha: 0.35), Colors.black],
           ),
         ),
         child: Padding(

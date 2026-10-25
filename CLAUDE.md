@@ -55,7 +55,8 @@ The plan, the milestones and the parity table are in `docs/specs/flutter/`. Buil
 - **Tests:** use the very_good_cli MCP `test` tool. A hook blocks `very_good test` and
   `very_good create` in the shell. Packages are held to 100% coverage. Run the narrowest suite
   that could fail (`paths` for one file, `directory` for one package).
-- **UI:** follow `docs/specs/flutter/ui-contract.md`. Reuse an `app_ui` widget before building one,
+- **UI:** follow `docs/specs/flutter/design-language.md` (the look: volt accent, dark first,
+  Barlow Condensed numbers, screen types) and `docs/specs/flutter/ui-contract.md` (how to build it). Reuse an `app_ui` widget before building one,
   and put any new component in `app_ui`, not the screen. Feature code uses tokens only and no raw
   Material buttons, rows, cards or dialogs; `scripts/flutter-ui-check.py` (CI) blocks new ones.
   `scripts/flutter-screenshots.sh` shoots the staging screens.

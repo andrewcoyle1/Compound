@@ -10,6 +10,9 @@ The design system is the `app_ui` package (`app/packages/app_ui/`). Charts live 
 `compound_charts` (`app/packages/compound_charts/`), which draws on `app_ui`'s tokens and depends on
 nothing else. Feature code in `app/lib/` uses the two and styles nothing itself.
 
+What the app should look and feel like (the accent, type, cards, screen types, motion, voice) is
+`design-language.md`. This contract is how to build it.
+
 ## 1. Reuse before you build
 
 - **Look in `app_ui` first.** If a widget there fits, use it, even if it is not quite what you

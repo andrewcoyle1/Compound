@@ -1411,6 +1411,7 @@
     "trackerAddRestSpoken": "Añadir 15 segundos",
     "trackerRestDone": "Descanso terminado · {title}",
     "trackerRestRunning": "Descanso: {time}",
+    "trackerLiveRest": "Descanso",
     "trackerRestReady": "Lista",
     "trackerPaused": "En pausa",
     "trackerSetLogged": "Serie {number} registrada, {figures}",

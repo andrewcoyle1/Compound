@@ -122,7 +122,6 @@ class _SharedItemViewState extends State<SharedItemView> {
     final l10n = context.l10n;
     final state = context.watch<SharedItemCubit>().state;
     final share = state.share;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final senderName = widget.senderName;
     return BlocListener<SharedItemCubit, SharedItemState>(
       listenWhen: (previous, current) =>
@@ -151,7 +150,7 @@ class _SharedItemViewState extends State<SharedItemView> {
                   padding: const EdgeInsets.only(bottom: AppSpacing.l),
                   child: Text(
                     l10n.sharedItemSharedBy(senderName),
-                    style: AppTextStyles.rowDetail.copyWith(color: secondary),
+                    style: AppTextStyles.rowDetail.secondary(context),
                   ),
                 ),
               if (share.payload case MesocycleSharePayload(:final mesocycle))
@@ -191,9 +190,7 @@ class _SharedItemViewState extends State<SharedItemView> {
                                 ? l10n.sharedItemAdded
                                 : l10n.sharedItemDismissed,
                             textAlign: TextAlign.center,
-                            style: AppTextStyles.rowDetail.copyWith(
-                              color: secondary,
-                            ),
+                            style: AppTextStyles.rowDetail.secondary(context),
                           ),
                         ),
                       ]

@@ -39,9 +39,7 @@ class SetDetailRow extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final colors = context.appColors;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final value = WorkoutText.setValue(
       l10n,
       set,
@@ -80,7 +78,7 @@ class SetDetailRow extends StatelessWidget {
           l10n.setRpe(
             AppFormat.number(rpe, maxFractionDigits: 1, locale: locale),
           ),
-          style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
+          style: AppTextStyles.label.secondary(context),
         ),
       if (kind != null) AppChip(label: kind),
       if (set.isWarmup)
@@ -92,12 +90,7 @@ class SetDetailRow extends StatelessWidget {
     ];
     final valueText = value == null
         ? null
-        : Text(
-            value,
-            style: AppTextStyles.rowDetail.copyWith(
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          );
+        : Text(value, style: AppTextStyles.rowDetail.tabular);
 
     final isLargeText =
         MediaQuery.textScalerOf(context).scale(1) >=

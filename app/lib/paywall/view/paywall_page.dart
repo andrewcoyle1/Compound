@@ -252,7 +252,6 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = Theme.of(context).colorScheme;
     return AppCard(
       style: AppCardStyle.tinted(Theme.of(context).colorScheme.primary),
       child: Padding(
@@ -269,16 +268,14 @@ class _Hero extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Text(
                   l10n.paywallTitle,
-                  style: AppTextStyles.display.copyWith(
-                    color: colors.onSurface,
-                  ),
+                  style: AppTextStyles.display,
                   textAlign: TextAlign.center,
                 ),
               ),
             ),
             Text(
               l10n.paywallSubtitle,
-              style: AppTextStyles.rowDetail.copyWith(color: colors.onSurface),
+              style: AppTextStyles.rowDetail,
               textAlign: TextAlign.center,
             ),
           ],
@@ -440,9 +437,7 @@ class _PurchaseBar extends StatelessWidget {
         if (selected != null)
           Text(
             l10n.paywallRenews(priceWithPeriod(l10n, selected)),
-            style: AppTextStyles.label.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            style: AppTextStyles.label.secondary(context),
             textAlign: TextAlign.center,
           ),
         AppCtaButton(

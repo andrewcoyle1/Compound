@@ -193,9 +193,7 @@ class _StackRow extends StatelessWidget {
                 Text(stack.name, style: AppTextStyles.rowTitle),
                 Text(
                   GymText.stack(l10n, stack),
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
                 AppTextButton(
                   label: l10n.gymEditRange,

@@ -344,9 +344,7 @@ class _Photos extends StatelessWidget {
             children: [
               Text(
                 l10n.progressPhotosSelectHint,
-                style: AppTextStyles.rowDetail.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                style: AppTextStyles.rowDetail.secondary(context),
               ),
               for (final (day, photos) in state.sections) ...[
                 const SizedBox(height: AppSpacing.xl),
@@ -419,14 +417,9 @@ class _PhotoCell extends StatelessWidget {
         onLongPress: onDelete,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.m),
-          child: DecoratedBox(
-            position: DecorationPosition.foreground,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.m),
-              border: isSelected
-                  ? Border.all(color: context.appColors.accentInk, width: 3)
-                  : null,
-            ),
+          child: AppSelectionRing(
+            selected: isSelected,
+            radius: AppRadius.m,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -438,7 +431,7 @@ class _PhotoCell extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: ShapeDecoration(
                       shape: const StadiumBorder(),
-                      color: scheme.surface.withValues(alpha: 0.8),
+                      color: context.appColors.surface,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

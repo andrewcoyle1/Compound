@@ -146,6 +146,29 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppSwatch', [
+      galleryInline('colour', AppSwatch(color: context.appColors.scaleWeight)),
+      galleryInline(
+        'glyph, selected',
+        AppSwatch(
+          color: context.appColors.workouts,
+          icon: AppSymbols.streak,
+          selected: true,
+        ),
+      ),
+    ]),
+    galleryEntry('AppSelectionRing', [
+      for (final selected in [false, true])
+        galleryInline(
+          selected ? 'ring on' : 'ring off',
+          AppSelectionRing(
+            selected: selected,
+            radius: AppRadius.m,
+            filled: true,
+            child: const SizedBox.square(dimension: AppControlSize.row),
+          ),
+        ),
+    ]),
     galleryEntry('AppIconButton', [
       galleryInline(
         'enabled',

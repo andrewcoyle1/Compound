@@ -19,7 +19,6 @@ class CorrectionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final cubit = context.read<ActiveWorkoutCubit>();
     final exercise = state.exercise(correction.exerciseId);
     final set = state.set(correction.setId);
@@ -78,12 +77,7 @@ class CorrectionBar extends StatelessWidget {
             size: AppIconSize.small.of(context),
           ),
           Flexible(
-            child: Text(
-              title,
-              style: AppTextStyles.label.semibold.copyWith(
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
+            child: Text(title, style: AppTextStyles.label.semibold.tabular),
           ),
         ],
       ),
@@ -123,9 +117,7 @@ class CorrectionBar extends StatelessWidget {
                     ExcludeSemantics(
                       child: Text(
                         l10n.trackerRirTitle,
-                        style: AppTextStyles.label.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.label.secondary(context),
                       ),
                     ),
                     Expanded(

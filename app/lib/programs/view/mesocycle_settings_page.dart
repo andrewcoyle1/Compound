@@ -71,7 +71,6 @@ class _MesocycleSettingsPageState extends State<MesocycleSettingsPage> {
     final l10n = context.l10n;
     final state = context.watch<MesocycleDesignCubit>().state;
     final mesocycle = state.mesocycle;
-    final scheme = Theme.of(context).colorScheme;
     return BlocListener<MesocycleDesignCubit, MesocycleDesignState>(
       listenWhen: (previous, current) =>
           previous.status != current.status &&
@@ -89,9 +88,7 @@ class _MesocycleSettingsPageState extends State<MesocycleSettingsPage> {
                 mesocycle.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.rowDetail.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+                style: AppTextStyles.rowDetail.secondary(context),
               ),
             ],
           ),

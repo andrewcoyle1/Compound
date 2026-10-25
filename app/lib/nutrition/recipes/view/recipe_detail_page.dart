@@ -205,12 +205,7 @@ class _Details extends StatelessWidget {
           const SizedBox(height: AppSpacing.l),
         ],
         if (description != null && description.isNotEmpty) ...[
-          Text(
-            description,
-            style: AppTextStyles.rowDetail.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
+          Text(description, style: AppTextStyles.rowDetail.secondary(context)),
           const SizedBox(height: AppSpacing.l),
         ],
         AppSection(

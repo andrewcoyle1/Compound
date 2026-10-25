@@ -58,7 +58,6 @@ class _NotesSheetState extends State<_NotesSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     return AppScaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -84,9 +83,7 @@ class _NotesSheetState extends State<_NotesSheet> {
               if (field.hint case final hint?)
                 Text(
                   l10n.trackerLastTimeNote(hint),
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
               AppTextField(
                 label: field.label,

@@ -159,9 +159,7 @@ class _Header extends StatelessWidget {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final exercise = member.exercise;
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final notes = [
       if (member.exerciseNote case final note?) (AppSymbols.pinnedNote, note),
       if (exercise.planNotes?.trim() case final note? when note.isNotEmpty)
@@ -188,9 +186,7 @@ class _Header extends StatelessWidget {
                   header: true,
                   child: Text(
                     label == null ? exercise.name : '$label  ${exercise.name}',
-                    style: AppTextStyles.sectionTitle.copyWith(
-                      color: scheme.onSurface,
-                    ),
+                    style: AppTextStyles.sectionTitle,
                   ),
                 ),
                 if (targets.isNotEmpty) Text(targets, style: secondary),
@@ -490,9 +486,7 @@ class _ProgressionNote extends StatelessWidget {
                   ),
                   Text(
                     l10n.workoutSettingsSmartProgression,
-                    style: AppTextStyles.label.semibold.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    style: AppTextStyles.label.semibold.secondary(context),
                   ),
                   MethodInfoButton(MethodInfo.smartProgression(l10n)),
                 ],
@@ -520,15 +514,11 @@ class _ProgressionNote extends StatelessWidget {
                       Text(
                         text,
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.rowTitle.copyWith(
-                          color: scheme.onSurface,
-                        ),
+                        style: AppTextStyles.rowTitle,
                       ),
                       Text(
                         l10n.trackerTapToDismiss,
-                        style: AppTextStyles.label.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.label.secondary(context),
                       ),
                     ],
                   ),
@@ -594,10 +584,7 @@ class _RestLine extends StatelessWidget {
                 ),
                 Text(
                   text,
-                  style: AppTextStyles.label.semibold.copyWith(
-                    color: context.appColors.accentInk,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+                  style: AppTextStyles.label.semibold.tabular.accent(context),
                 ),
                 Expanded(
                   child: ExcludeSemantics(

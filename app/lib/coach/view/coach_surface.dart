@@ -86,9 +86,7 @@ class CoachSurface extends StatelessWidget {
                   l10n.coachBlockAsOf(
                     AppFormat.date(asOf, locale: context.dateLocale),
                   ),
-                  style: AppTextStyles.label.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.label.secondary(context),
                 ),
             ],
           ),
@@ -164,7 +162,7 @@ class _TrendChart extends StatelessWidget {
         Text(title, style: AppTextStyles.sectionTitle),
         Text(
           _quantity(context, latest, chart.unit),
-          style: AppTextStyles.metric.copyWith(color: color),
+          style: AppTextStyles.metric,
         ),
         CartesianChart(
           // Taller with the text, so its labels leave room for the plot.

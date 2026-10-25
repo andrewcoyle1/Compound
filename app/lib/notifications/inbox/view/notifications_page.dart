@@ -266,7 +266,6 @@ class const _GroupRow({
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final bloc = context.read<InboxBloc>();
-    final scheme = Theme.of(context).colorScheme;
     final date = AppFormat.dateTime(
       group.newest.dateCreated.toLocal(),
       use24HourFormat: context.use24HourFormat,
@@ -330,16 +329,12 @@ class const _GroupRow({
                               Text(
                                 notificationGroupTitle(l10n, group),
                                 style: group.isRead
-                                    ? AppTextStyles.rowTitle.copyWith(
-                                        color: scheme.onSurfaceVariant,
-                                      )
+                                    ? AppTextStyles.rowTitle.secondary(context)
                                     : AppTextStyles.sectionTitle,
                               ),
                               Text(
                                 date,
-                                style: AppTextStyles.label.copyWith(
-                                  color: scheme.onSurfaceVariant,
-                                ),
+                                style: AppTextStyles.label.secondary(context),
                               ),
                             ],
                           ),
@@ -376,12 +371,19 @@ class const _StackedAvatars({required final List<String?> urls})
           for (var index = urls.length - 1; index >= 0; index--)
             Positioned(
               left: step * index,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: surface, width: 2),
+              // A ring of the row's surface parts each avatar from the
+              // one under it.
+              child: ClipOval(
+                child: ColoredBox(
+                  color: surface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xxs),
+                    child: UserAvatar(
+                      imageUrl: urls[index],
+                      size: size - 2 * AppSpacing.xxs,
+                    ),
+                  ),
                 ),
-                child: UserAvatar(imageUrl: urls[index], size: size),
               ),
             ),
         ],

@@ -273,9 +273,7 @@ class _DescribeView extends StatelessWidget {
             trailing: Text(
               '${AppFormat.number(state.text.characters.length)}/'
               '${AppFormat.number(MealDescribeCubit.characterLimit)}',
-              style: AppTextStyles.label.copyWith(
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
+              style: AppTextStyles.label.tabular,
             ),
             footer: l10n.describeFooter,
             children: [

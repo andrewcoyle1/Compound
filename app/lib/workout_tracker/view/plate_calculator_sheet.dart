@@ -36,7 +36,6 @@ class PlateCalculatorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final scheme = Theme.of(context).colorScheme;
     final cubit = context.read<PlateCalculatorCubit>();
     final state = context.watch<PlateCalculatorCubit>().state;
     final unit = TrackerText.unit(state.unit);
@@ -67,7 +66,7 @@ class PlateCalculatorView extends StatelessWidget {
               child: Text(
                 weight(load),
                 textAlign: TextAlign.center,
-                style: AppTextStyles.metric.copyWith(color: scheme.onSurface),
+                style: AppTextStyles.metric,
               ),
             ),
           if (loading != null)
@@ -89,9 +88,7 @@ class PlateCalculatorView extends StatelessWidget {
                       state.unit,
                       locale: locale,
                     ),
-                    style: AppTextStyles.rowDetail.copyWith(
-                      color: context.appColors.danger,
-                    ),
+                    style: AppTextStyles.rowDetail,
                   ),
                 ),
               ],

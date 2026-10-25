@@ -469,7 +469,6 @@ class _FoodDefinitionViewState extends State<FoodDefinitionView>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<CreateFoodCubit>().state;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final portionSize = state.portionSize;
     Widget group(NutrientGroup group, {List<Widget> leading = const []}) =>
         AppCard(
@@ -519,9 +518,7 @@ class _FoodDefinitionViewState extends State<FoodDefinitionView>
                     l10n.createFoodFactsHeader(
                       l10n.createFoodServing.toLowerCase(),
                     ),
-                    style: AppTextStyles.sectionTitle.copyWith(
-                      color: secondary,
-                    ),
+                    style: AppTextStyles.sectionTitle.secondary(context),
                   ),
                   if (portionSize != null && state.portionName.isNotEmpty)
                     Text(
@@ -529,7 +526,7 @@ class _FoodDefinitionViewState extends State<FoodDefinitionView>
                         AppFormat.number(portionSize, maxFractionDigits: 2),
                         state.portionName,
                       ),
-                      style: AppTextStyles.label.copyWith(color: secondary),
+                      style: AppTextStyles.label.secondary(context),
                     ),
                 ],
               ),

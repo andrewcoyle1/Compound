@@ -340,11 +340,8 @@ class _SetStopwatchState extends State<SetStopwatch> {
                         children: [
                           Text(
                             AppFormat.duration(Duration(seconds: elapsed)),
-                            style: AppTextStyles.rowTitle.copyWith(
-                              color: scheme.onPrimary,
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
+                            style: AppTextStyles.rowTitle.tabular.onAccent(
+                              context,
                             ),
                           ),
                           if (target != null && target > 0)

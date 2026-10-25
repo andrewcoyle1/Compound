@@ -45,7 +45,6 @@ class MethodInfoSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final formula = info.formula;
     final limitations = info.limitations;
     final ownChoices = info.ownChoices;
@@ -79,13 +78,7 @@ class MethodInfoSheet extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.l),
-                child: SelectableText(
-                  formula,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    fontFamily: 'monospace',
-                    fontFamilyFallback: const ['Menlo', 'Courier'],
-                  ),
-                ),
+                child: SelectableText(formula, style: AppTextStyles.formula),
               ),
             ],
           ),
@@ -119,14 +112,12 @@ class MethodInfoSheet extends StatelessWidget {
                     if (!citation.isPeerReviewed)
                       Text(
                         l10n.methodInfoNotPeerReviewed,
-                        style: AppTextStyles.label.copyWith(color: secondary),
+                        style: AppTextStyles.label.secondary(context),
                       ),
                     if (citation.linkText case final link?)
                       SelectableText(
                         link,
-                        style: AppTextStyles.label.copyWith(
-                          color: context.appColors.accentInk,
-                        ),
+                        style: AppTextStyles.label.accent(context),
                       ),
                   ],
                 ),
@@ -159,9 +150,7 @@ class MethodInfoHeader extends StatelessWidget {
             header: true,
             child: Text(
               title,
-              style: AppTextStyles.sectionTitle.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: AppTextStyles.sectionTitle.secondary(context),
             ),
           ),
         ),

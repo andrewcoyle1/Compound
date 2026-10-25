@@ -73,6 +73,8 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A bar above the tab bar (the workout under way, the unlogged meal) | `AppTabAccessory` |
 | A colour the user stored as `#RRGGBB` | `AppColors.fromHex` |
 | A card | `AppCard`, `AppStatTile` |
+| A colour or a mesocycle's glyph in a circle, as a picker or a row's thumbnail | `AppSwatch` |
+| A grid cell's selected state (a photo, a muscle, a day) | `AppSelectionRing` |
 | A value | `AppStat` |
 | A tag or filter | `AppChip` |
 | A number entry | `AppNumberField` |
@@ -195,7 +197,7 @@ and 3 on `app/lib/` and `compound_charts/lib/` (and `framework-import` on `app/t
 spinners to `AppSpinner` in `app/lib/` and `app_ui/lib/`: an indeterminate
 `CircularProgressIndicator`, `LinearProgressIndicator` or `CupertinoActivityIndicator` fails, and
 one given its own `value:` (the progress rings and macro bars) is allowed. Its `style-copywith` rule
-holds text styles in `app/lib` to those tokens, and `alpha-literal` its colours' opacities; its `ALLOWED` list names each file a rule lets
+holds text styles in `app/lib` to those tokens, `alpha-literal` its colours' opacities, and `box-decoration` its boxes to app_ui's widgets; its `ALLOWED` list names each file a rule lets
 through, and why. Every screen was moved onto
 `app_ui` by 19 Oct 2026 (#212–#217), so there is no baseline: any match fails CI.
 

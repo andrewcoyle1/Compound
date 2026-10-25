@@ -202,13 +202,7 @@ class _WeightRow extends StatelessWidget {
               : null,
           thumbnail: colour == null
               ? null
-              : DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colour,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const SizedBox.square(dimension: 20),
-                ),
+              : AppSwatch(color: colour, size: AppIconSize.medium),
           accessory: AppListRowCustom(
             Switch.adaptive(
               value: weight.isActive,
@@ -381,21 +375,11 @@ class EquipmentColourPicker extends StatelessWidget {
                 excludeSemantics: true,
                 child: InkResponse(
                   onTap: () => onSelected(colour),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: colour == EquipmentColour.standard
-                          ? scheme.onSurface
-                          : AppColors.fromHex(colour.hex),
-                      border: Border.all(
-                        color: colour == selected
-                            ? context.appColors.accentInk
-                            : Colors.transparent,
-                        width: 4,
-                      ),
-                    ),
+                  child: AppSwatch(
+                    color: colour == EquipmentColour.standard
+                        ? scheme.onSurface
+                        : AppColors.fromHex(colour.hex) ?? scheme.onSurface,
+                    selected: colour == selected,
                   ),
                 ),
               ),

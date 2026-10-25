@@ -417,14 +417,9 @@ class _PhotoCell extends StatelessWidget {
         onLongPress: onDelete,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.m),
-          child: DecoratedBox(
-            position: DecorationPosition.foreground,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.m),
-              border: isSelected
-                  ? Border.all(color: context.appColors.accentInk, width: 3)
-                  : null,
-            ),
+          child: AppSelectionRing(
+            selected: isSelected,
+            radius: AppRadius.m,
             child: Stack(
               fit: StackFit.expand,
               children: [

@@ -98,7 +98,6 @@ class const _Swatch({
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final tint = AppColors.fromHex(colour) ?? scheme.onSurface;
-    final side = MediaQuery.textScalerOf(context).scale(AppControlSize.row);
     return Semantics(
       button: true,
       selected: selected,
@@ -110,21 +109,7 @@ class const _Swatch({
             unawaited(AppHaptics.selection());
             onPressed();
           },
-          child: Container(
-            width: side,
-            height: side,
-            decoration: BoxDecoration(
-              color: AppColors.tintedSurface(tint),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: selected
-                    ? context.appColors.accentInk
-                    : Colors.transparent,
-                width: 3,
-              ),
-            ),
-            child: Icon(glyph, color: tint),
-          ),
+          child: AppSwatch(color: tint, icon: glyph, selected: selected),
         ),
       ),
     );

@@ -67,6 +67,9 @@ RULES = {
     # Rule 2: an opacity typed in by hand. The greys, separator and tinted fills are tokens.
     'alpha-literal': (r'\.(withValues\(\s*alpha\s*:|withOpacity\(|withAlpha\()',
                       'secondaryLabel, tertiaryLabel, separator, AppColors.tintedSurface or AppColors.muted'),
+    # Rule 1: a box drawn by hand. Cards, badges, swatches and selection rings are app_ui's.
+    'box-decoration': (_ + r'BoxDecoration\(',
+                       'AppCard, AppIconBadge, AppSwatch or AppSelectionRing (or add one to app_ui)'),
 }
 
 # What a text style's copyWith may not set in app/lib.
@@ -84,6 +87,9 @@ ALLOWED = {
         'app/lib/workout_tracker/view/set_row_parts.dart': 2,
     },
     'alpha-literal': {
+        'app/lib/today/': None,  # design/today removes
+    },
+    'box-decoration': {
         'app/lib/today/': None,  # design/today removes
     },
 }
@@ -260,6 +266,9 @@ def self_test():
         "color.withAlpha(128)": ['alpha-literal'],
         "color: AppColors.tintedSurface(color),": [],
         "color.withValues(red: 1)": [],
+        "decoration: BoxDecoration(": ['box-decoration'],
+        "decoration: const BoxDecoration(color: c),": ['box-decoration'],
+        "child: AppSwatch(color: c, selected: true),": [],
     }
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]

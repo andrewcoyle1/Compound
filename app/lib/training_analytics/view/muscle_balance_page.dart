@@ -47,7 +47,6 @@ class MuscleBalanceView extends StatelessWidget {
         title: l10n.muscleBalanceTitle,
         loaded: (state) {
           final weekly = state.weeklySetsByMuscle;
-          final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
           Widget region(String header, {required bool upper}) {
             final muscles = [
               for (final muscle in Muscles.values)
@@ -88,9 +87,7 @@ class MuscleBalanceView extends StatelessWidget {
                           Expanded(
                             child: Text(
                               l10n.muscleBalanceFooter,
-                              style: AppTextStyles.label.copyWith(
-                                color: secondary,
-                              ),
+                              style: AppTextStyles.label.secondary(context),
                             ),
                           ),
                           MethodInfoButton(MethodInfo.weeklyHardSets(l10n)),
@@ -215,7 +212,6 @@ class _Trend extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final tier = VolumeTier.of(weeks.last);
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final name = l10n.muscleName(muscle);
     return AppCard(
       style: AppCardStyle.tile,
@@ -249,7 +245,7 @@ class _Trend extends StatelessWidget {
             ),
             Text(
               tierExplanation(l10n, tier),
-              style: AppTextStyles.label.copyWith(color: secondary),
+              style: AppTextStyles.label.secondary(context),
             ),
           ],
         ),

@@ -479,9 +479,7 @@ class _EquipmentRow extends StatelessWidget {
                 if (detail != null && detail.isNotEmpty)
                   Text(
                     detail,
-                    style: AppTextStyles.rowDetail.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    style: AppTextStyles.rowDetail.secondary(context),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

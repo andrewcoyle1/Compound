@@ -39,12 +39,7 @@ class MealDraftBar extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  l10n.mealDraftTitle,
-                  style: AppTextStyles.sectionTitle.copyWith(
-                    color: scheme.onSurface,
-                  ),
-                ),
+                Text(l10n.mealDraftTitle, style: AppTextStyles.sectionTitle),
                 Text(
                   l10n.mealDraftDetail(
                     count,
@@ -55,9 +50,7 @@ class MealDraftBar extends StatelessWidget {
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
               ],
             ),

@@ -164,9 +164,7 @@ class AnalyticsSectionHeader extends StatelessWidget {
               header: true,
               child: Text(
                 title,
-                style: AppTextStyles.sectionTitle.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                style: AppTextStyles.sectionTitle.secondary(context),
               ),
             ),
           ),

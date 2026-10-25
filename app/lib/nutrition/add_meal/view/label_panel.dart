@@ -55,7 +55,6 @@ class _LabelViewState extends State<_LabelView> {
     final l10n = context.l10n;
     final cubit = _cubit;
     final state = context.watch<LabelScannerCubit>().state;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final food = switch (state.status) {
       LabelStatus.parsed ||
       LabelStatus.saving ||
@@ -205,7 +204,7 @@ class _LabelViewState extends State<_LabelView> {
               state.status == LabelStatus.read
                   ? l10n.labelCaptured
                   : l10n.labelScanHint,
-              style: AppTextStyles.label.copyWith(color: secondary),
+              style: AppTextStyles.label.secondary(context),
             ),
             const SizedBox(height: AppSpacing.l),
             ValueListenableBuilder(
@@ -255,7 +254,6 @@ class _LabelFoodSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final values = food.nutrients.values;
     final macros = [
       if (values[NutrientKey.calories] case final kcal?)
@@ -288,16 +286,13 @@ class _LabelFoodSummary extends StatelessWidget {
               food.measurementMethod == MeasurementMethod.volume
                   ? l10n.labelPer100ml
                   : l10n.labelPer100g,
-              style: AppTextStyles.label.copyWith(color: secondary),
+              style: AppTextStyles.label.secondary(context),
             ),
           ],
         ),
         if (macros.isNotEmpty) Text(macros, style: AppTextStyles.rowDetail),
         if (others.isNotEmpty)
-          Text(
-            others,
-            style: AppTextStyles.rowDetail.copyWith(color: secondary),
-          ),
+          Text(others, style: AppTextStyles.rowDetail.secondary(context)),
       ],
     );
   }

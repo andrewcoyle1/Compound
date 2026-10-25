@@ -117,9 +117,7 @@ class _Title extends StatelessWidget {
             header: true,
             child: Text(
               title,
-              style: AppTextStyles.sectionTitle.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: AppTextStyles.sectionTitle.secondary(context),
             ),
           ),
         ),
@@ -265,9 +263,7 @@ class NutritionTargetChart extends StatelessWidget {
                   ExcludeSemantics(
                     child: Text(
                       l10n.targetChartKey,
-                      style: AppTextStyles.label.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                      style: AppTextStyles.label.secondary(context),
                     ),
                   ),
                 ],
@@ -303,15 +299,12 @@ class _Grid extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.appColors;
-    final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final logged = state.loggedWeek;
     final days = [for (final key in state.weekDayKeys) localMidnight(key)];
     final selected = state.targetDay;
     final today = (state.now.weekday - state.firstWeekday + 7) % 7;
-    final secondary = AppTextStyles.label.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.label.secondary(context);
     final iconSize = AppIconSize.small.of(context);
     String names(DateTime date) => AppFormat.date(
       date,
@@ -451,6 +444,15 @@ class _Grid extends StatelessWidget {
           selected == null ? l10n.targetChartWeek : '',
           style: secondary,
         );
+        TextStyle letter(int day) {
+          final style = day == selected
+              ? AppTextStyles.label.semibold
+              : AppTextStyles.label;
+          return day == today
+              ? style.accent(context)
+              : style.secondary(context);
+        }
+
         final weekdays = ExcludeSemantics(
           child: Row(
             spacing: AppSpacing.s,
@@ -462,15 +464,7 @@ class _Grid extends StatelessWidget {
                     child: Text(
                       letters(days[day]),
                       textAlign: TextAlign.center,
-                      style:
-                          (day == selected
-                                  ? AppTextStyles.label.semibold
-                                  : AppTextStyles.label)
-                              .copyWith(
-                                color: day == today
-                                    ? context.appColors.accentInk
-                                    : scheme.onSurfaceVariant,
-                              ),
+                      style: letter(day),
                     ),
                   ),
                 ),
@@ -692,7 +686,6 @@ class _MacroBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final scheme = Theme.of(context).colorScheme;
     final target = this.target;
     final fraction = target == null || target <= 0
         ? 0.0
@@ -711,12 +704,7 @@ class _MacroBar extends StatelessWidget {
         child: Column(
           spacing: AppSpacing.xs,
           children: [
-            Text(
-              title,
-              style: AppTextStyles.label.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
+            Text(title, style: AppTextStyles.label.secondary(context)),
             // What is left runs from what was eaten to the end.
             BulletBar(
               from: showsRemaining ? fraction : 0,
@@ -765,12 +753,7 @@ class _CalorieGauge extends StatelessWidget {
       child: Column(
         children: [
           Text(value, style: AppTextStyles.display),
-          Text(
-            label,
-            style: AppTextStyles.label.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
+          Text(label, style: AppTextStyles.label.secondary(context)),
         ],
       ),
     );
@@ -903,7 +886,6 @@ class _EnergyBalance extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.appColors;
-    final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final days = state.energyDays;
     double? comparison(EnergyDay day) =>
@@ -917,10 +899,7 @@ class _EnergyBalance extends StatelessWidget {
     String figure(double Function(({double intake, double comparison})) of) =>
         averages == null ? AppFormat.placeholder : _whole(of(averages), locale);
     Widget sign(String text) => ExcludeSemantics(
-      child: Text(
-        text,
-        style: AppTextStyles.metric.copyWith(color: scheme.onSurfaceVariant),
-      ),
+      child: Text(text, style: AppTextStyles.metric.secondary(context)),
     );
     return _Page(
       title: l10n.energyBalanceTitle,
@@ -951,7 +930,7 @@ class _EnergyBalance extends StatelessWidget {
           ),
           Text(
             l10n.carouselLastDays(energyDayCount),
-            style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
+            style: AppTextStyles.label.secondary(context),
           ),
           const SizedBox(height: AppSpacing.m),
           Row(
@@ -1117,13 +1096,10 @@ class _Ring extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final text = _whole(value, locale);
     final target = this.target;
-    final secondary = AppTextStyles.label.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.label.secondary(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -1142,10 +1118,7 @@ class _Ring extends StatelessWidget {
                 : l10n.progressOfTarget(text, _whole(target, locale)),
             child: Column(
               children: [
-                Text(
-                  text,
-                  style: AppTextStyles.metricLarge.copyWith(color: colour),
-                ),
+                Text(text, style: AppTextStyles.metricLarge),
                 if (target != null)
                   Text(
                     l10n.carouselLeft(math.max(target - value, 0)),

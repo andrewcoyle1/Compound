@@ -74,8 +74,6 @@ class _MemberCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
-    final colors = context.appColors;
     final name = commonNameOf(member.user) ?? l10n.socialUnknown;
     final toGo = member.sessionsToGo;
     final onSetGoalPressed = this.onSetGoalPressed;
@@ -108,17 +106,11 @@ class _MemberCell extends StatelessWidget {
                   toGo != null
                       ? l10n.socialToGo(toGo)
                       : firstNameOf(member.user) ?? name,
-                  style:
-                      (toGo != null
-                              ? AppTextStyles.label.semibold
-                              : AppTextStyles.label)
-                          .copyWith(
-                            color: toGo != null
-                                ? colors.warning
-                                : member.trainedToday
-                                ? scheme.onSurface
-                                : scheme.onSurfaceVariant,
-                          ),
+                  style: toGo != null
+                      ? AppTextStyles.label.semibold
+                      : member.trainedToday
+                      ? AppTextStyles.label
+                      : AppTextStyles.label.secondary(context),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

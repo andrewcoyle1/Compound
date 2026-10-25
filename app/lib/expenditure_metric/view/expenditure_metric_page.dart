@@ -281,10 +281,7 @@ class ExpenditureEstimateSummary extends StatelessWidget {
                 AppChip(label: label, tint: tint),
               ],
             ),
-            Text(
-              detail,
-              style: AppTextStyles.rowDetail.copyWith(color: secondary),
-            ),
+            Text(detail, style: AppTextStyles.rowDetail.secondary(context)),
           ],
         ),
       ),

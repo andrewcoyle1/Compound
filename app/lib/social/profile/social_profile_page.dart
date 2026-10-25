@@ -308,16 +308,13 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final colors = context.appColors;
     final cubit = context.read<SocialProfileCubit>();
     final locale = Localizations.localeOf(context).toLanguageTag();
     final user = summary.user;
     final viewer = summary.viewer!;
     final name = fullNameOf(user);
-    final secondary = AppTextStyles.label.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.label.secondary(context);
     final count = summary.workoutCount;
     final streak = summary.latestStreak;
     // Only the reader's own mesocycle is known without reading someone
@@ -346,10 +343,7 @@ class _Header extends StatelessWidget {
                 size: AppIconSize.small.of(context),
                 color: colors.workouts,
               ),
-              Text(
-                l10n.highlightStreak(streak),
-                style: AppTextStyles.label.copyWith(color: colors.workouts),
-              ),
+              Text(l10n.highlightStreak(streak), style: secondary),
             ],
           ),
         if (summary.isOwn && mesocycle != null)
@@ -560,10 +554,7 @@ class _IconLine extends StatelessWidget {
       children: [
         Icon(icon, size: AppIconSize.small.of(context), color: secondary),
         Expanded(
-          child: Text(
-            text,
-            style: AppTextStyles.rowDetail.copyWith(color: secondary),
-          ),
+          child: Text(text, style: AppTextStyles.rowDetail.secondary(context)),
         ),
       ],
     );

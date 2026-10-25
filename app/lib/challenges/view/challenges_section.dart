@@ -24,7 +24,6 @@ class ChallengesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.l,
@@ -47,7 +46,7 @@ class ChallengesSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
               child: Text(
                 l10n.challengesEmpty,
-                style: AppTextStyles.rowDetail.copyWith(color: secondary),
+                style: AppTextStyles.rowDetail.secondary(context),
               ),
             ),
           for (final card in cards)
@@ -104,9 +103,7 @@ class _Card extends StatelessWidget {
                         ),
                         Text(
                           l10n.challengeDaysLeft(card.daysLeft),
-                          style: AppTextStyles.rowDetail.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
+                          style: AppTextStyles.rowDetail.secondary(context),
                         ),
                         for (final (index, entry) in card.topThree.indexed)
                           Row(

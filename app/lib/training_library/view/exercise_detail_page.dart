@@ -284,9 +284,7 @@ class _PerformedSubtitle extends StatelessWidget {
               state.stats.performances.length,
               AppFormat.date(latest.date.toLocal(), locale: context.dateLocale),
             ),
-      style: AppTextStyles.rowDetail.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      style: AppTextStyles.rowDetail.secondary(context),
     );
   }
 }
@@ -498,7 +496,6 @@ class _TextRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return MergeSemantics(
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -509,16 +506,8 @@ class _TextRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: AppSpacing.xxs,
           children: [
-            Text(
-              title,
-              style: AppTextStyles.label.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-            Text(
-              text,
-              style: AppTextStyles.rowTitle.copyWith(color: scheme.onSurface),
-            ),
+            Text(title, style: AppTextStyles.label.secondary(context)),
+            Text(text, style: AppTextStyles.rowTitle),
           ],
         ),
       ),
@@ -733,9 +722,7 @@ class _ChartSection extends StatelessWidget {
         header: true,
         child: Text(
           title,
-          style: AppTextStyles.sectionTitle.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: AppTextStyles.sectionTitle.secondary(context),
         ),
       ),
       AppCard(
@@ -761,9 +748,7 @@ class _Records extends StatelessWidget {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final colors = context.appColors;
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     String weight(double kg) =>
         AppFormat.weight(kg, weightUnit, locale: locale);
     String date(DateTime at) =>

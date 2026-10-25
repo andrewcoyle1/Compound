@@ -105,9 +105,7 @@ class SetTableHeadings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final style = AppTextStyles.label.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final style = AppTextStyles.label.secondary(context);
     final mode = member.exercise.trackingMode;
     // A heading that opens its unit's menu is underlined.
     Widget heading(SetField field, {bool menu = false}) => Text(
@@ -324,9 +322,7 @@ class SetTableRow extends StatelessWidget {
                 distanceUnit: member.distanceUnit,
               ) ??
               AppFormat.placeholder;
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final logLabel = TrackerText.logTitle(l10n, set, exercise, locale: locale);
     final fields = SetField.of(set, exercise.trackingMode);
     Widget cell(SetField field) => _Cell(
@@ -591,7 +587,6 @@ class _Cell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
       selected: isActive,
@@ -620,10 +615,7 @@ class _Cell extends StatelessWidget {
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: AppTextStyles.rowTitle.copyWith(
-              fontFeatures: const [FontFeature.tabularFigures()],
-              color: scheme.onSurface,
-            ),
+            style: AppTextStyles.rowTitle.tabular,
           ),
         ),
       ),

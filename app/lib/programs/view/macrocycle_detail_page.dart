@@ -170,10 +170,7 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
     );
     cubit.mesocyclesChanged(mesocycles);
     final existing = widget.existing;
-    final scheme = Theme.of(context).colorScheme;
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final entries = [
       for (final (index, id) in draft.mesocycleIds.indexed)
         if (mesocycles.where((m) => m.id == id).firstOrNull case final m?)
@@ -269,9 +266,7 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                                 ),
                                 child: Text(
                                   l10n.programMesocycleNumber(index + 1),
-                                  style: AppTextStyles.label.copyWith(
-                                    color: scheme.onSurfaceVariant,
-                                  ),
+                                  style: AppTextStyles.label.secondary(context),
                                 ),
                               ),
                               MesocycleHeader(mesocycle: mesocycle),

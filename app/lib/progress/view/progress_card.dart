@@ -60,10 +60,7 @@ class ProgressCard extends StatelessWidget {
               overflow: overflow,
             ),
             const SizedBox(height: AppSpacing.xxs),
-            Text(
-              subtitle,
-              style: AppTextStyles.label.copyWith(color: secondary),
-            ),
+            Text(subtitle, style: AppTextStyles.label.secondary(context)),
             const SizedBox(height: AppSpacing.xs),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
@@ -83,7 +80,7 @@ class ProgressCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       unit,
-                      style: AppTextStyles.label.copyWith(color: secondary),
+                      style: AppTextStyles.label.secondary(context),
                       maxLines: maxLines,
                       overflow: overflow,
                     ),

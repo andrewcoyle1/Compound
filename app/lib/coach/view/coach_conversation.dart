@@ -151,7 +151,6 @@ class _CoachConversationState extends State<CoachConversation> {
     final l10n = context.l10n;
     final cubit = context.read<CoachCubit>();
     final state = context.watch<CoachCubit>().state;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final streaming = state.streamingText;
     final remaining = state.remainingShown;
     final messages = state.messages;
@@ -189,7 +188,7 @@ class _CoachConversationState extends State<CoachConversation> {
       padding: const EdgeInsets.only(top: AppSpacing.s),
       child: Text(
         l10n.coachDisclaimer,
-        style: AppTextStyles.label.copyWith(color: secondary),
+        style: AppTextStyles.label.secondary(context),
         textAlign: TextAlign.center,
       ),
     );
@@ -430,9 +429,7 @@ class _CoachConversationState extends State<CoachConversation> {
                         ? [
                             Text(
                               l10n.coachDayEnded,
-                              style: AppTextStyles.label.copyWith(
-                                color: secondary,
-                              ),
+                              style: AppTextStyles.label.secondary(context),
                               textAlign: TextAlign.center,
                             ),
                             AppCtaButton(
@@ -458,9 +455,7 @@ class _CoachConversationState extends State<CoachConversation> {
                             if (remaining != null)
                               Text(
                                 l10n.coachMessagesLeft(remaining),
-                                style: AppTextStyles.label.copyWith(
-                                  color: secondary,
-                                ),
+                                style: AppTextStyles.label.secondary(context),
                               ),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
@@ -576,9 +571,7 @@ class _Answering extends StatelessWidget {
                   Flexible(
                     child: Text(
                       l10n.coachReading(reading),
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                      style: AppTextStyles.rowDetail.secondary(context),
                     ),
                   ),
                 ],

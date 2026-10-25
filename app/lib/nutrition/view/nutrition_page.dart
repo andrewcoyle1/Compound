@@ -229,7 +229,6 @@ class _Day extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final settings = state.settings!;
     final target = state.target;
     final timeline = state.timeline;
@@ -253,9 +252,7 @@ class _Day extends StatelessWidget {
               Expanded(
                 child: Text(
                   AppFormat.date(state.selectedDay, locale: context.dateLocale),
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
               ),
               if (state.selectedDay != state.today)

@@ -142,7 +142,6 @@ class _Tile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final letter = item.supersetLetter;
     final names = item.names.join(', ');
     return Semantics(
@@ -206,8 +205,8 @@ class _Tile extends StatelessWidget {
                                 ),
                                 child: Text(
                                   letter,
-                                  style: AppTextStyles.label.semibold.copyWith(
-                                    color: scheme.onPrimary,
+                                  style: AppTextStyles.label.semibold.onAccent(
+                                    context,
                                   ),
                                 ),
                               ),

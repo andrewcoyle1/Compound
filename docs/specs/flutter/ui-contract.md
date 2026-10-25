@@ -30,7 +30,7 @@ What the app should look and feel like (the accent, type, cards, screen types, m
 | Instead of | Use |
 |---|---|
 | `Colors.white`, `Color(0x…)` | `context.appColors.*` (`canvas`, `surface`, `raised`, `secondaryLabel`, `tertiaryLabel`, `separator`, `accentInk`, `tintedSurface`, the macro, metric and status colours) or the `ColorScheme` (`primary` is the accent as a fill, `onPrimary` the text on it) |
-| `TextStyle(…)`, `fontSize:`, `fontWeight:` | `AppTextStyles.largeTitle`, `display`, `metricLarge`, `metric`, `metricSmall`, `sectionTitle`, `rowTitle`, `rowDetail`, `label`, `overline`; `.secondary(context)` for secondary text |
+| `TextStyle(…)`, `fontSize:`, `fontWeight:`, a text style's `copyWith(color:, fontFeatures:, …)` | `AppTextStyles.largeTitle`, `display`, `metricLarge`, `metric`, `metricSmall`, `sectionTitle`, `rowTitle`, `rowDetail`, `label`, `overline`, `formula`; `.secondary(context)` for secondary text, `.accent(context)` for the accent as text, `.onAccent(context)` on a volt fill, `.semibold`, `.tabular` for a number in a reading style. A data or status colour goes on the icon beside the text, not the text |
 | A number in `EdgeInsets` or `SizedBox` | `AppSpacing.xxs` … `xxl` (2–32); `AppControlSize`, `AppChartHeight`, `AppContentWidth` for sizes |
 | `BorderRadius.circular(12)` | `AppRadius.s` … `xl` |
 | `Duration(…)` on an animation | `AppMotion.quick` / `standard` / `emphasis` / `progress`, through `durationOf` so reduced motion is honoured |
@@ -194,7 +194,9 @@ and 3 on `app/lib/` and `compound_charts/lib/` (and `framework-import` on `app/t
 `showcaseview` inside `app_ui`. Its `raw-spinner` rule holds
 spinners to `AppSpinner` in `app/lib/` and `app_ui/lib/`: an indeterminate
 `CircularProgressIndicator`, `LinearProgressIndicator` or `CupertinoActivityIndicator` fails, and
-one given its own `value:` (the progress rings and macro bars) is allowed. Every screen was moved onto
+one given its own `value:` (the progress rings and macro bars) is allowed. Its `style-copywith` rule
+holds text styles in `app/lib` to those tokens; its `ALLOWED` list names each file a rule lets
+through, and why. Every screen was moved onto
 `app_ui` by 19 Oct 2026 (#212–#217), so there is no baseline: any match fails CI.
 
 ```bash

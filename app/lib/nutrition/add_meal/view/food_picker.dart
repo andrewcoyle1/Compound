@@ -53,9 +53,7 @@ class FoodPickerView extends StatelessWidget {
             Text(l10n.addMealPickerTitle),
             Text(
               l10n.addMealOnPlate(count),
-              style: AppTextStyles.label.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: AppTextStyles.label.secondary(context),
             ),
           ],
         ),
@@ -281,7 +279,6 @@ class _PickerRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     return AppListRowButton(
       title: title,
       subtitle: detail.isEmpty ? null : detail,
@@ -296,7 +293,7 @@ class _PickerRow extends StatelessWidget {
             if (count > 0)
               Text(
                 AppFormat.number(count),
-                style: AppTextStyles.label.copyWith(color: secondary),
+                style: AppTextStyles.label.secondary(context),
                 semanticsLabel: l10n.addMealOnPlate(count),
               ),
             AppIconButton(

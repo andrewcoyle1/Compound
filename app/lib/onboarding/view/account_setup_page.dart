@@ -212,7 +212,6 @@ class AccountSetupView extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     String kcal(num value) => AppFormat.kcal(value, locale: locale);
     final multiplier = NumberFormat('0.00', locale);
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final parts = [
       (l10n.onboardingRestingCalories, figures.restingKcal),
       (l10n.onboardingActivityCalories, figures.activityKcal),
@@ -238,7 +237,7 @@ class AccountSetupView extends StatelessWidget {
                 ),
                 Text(
                   l10n.onboardingKcalPerDay,
-                  style: AppTextStyles.sectionTitle.copyWith(color: secondary),
+                  style: AppTextStyles.sectionTitle.secondary(context),
                 ),
               ],
             ),
@@ -264,9 +263,7 @@ class AccountSetupView extends StatelessWidget {
                         Expanded(child: Text(name)),
                         Text(
                           kcal(value),
-                          style: AppTextStyles.rowTitle.copyWith(
-                            color: secondary,
-                          ),
+                          style: AppTextStyles.rowTitle.secondary(context),
                         ),
                       ],
                     ),
@@ -362,7 +359,6 @@ class _NamePhoto extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<AccountSetupCubit>();
-    final scheme = Theme.of(context).colorScheme;
     final side = MediaQuery.textScalerOf(context)
         .scale(AppIconSize.hero.points + AppSpacing.xl);
     final picked = state.photo;
@@ -378,7 +374,7 @@ class _NamePhoto extends StatelessWidget {
         glyph,
         Text(
           l10n.onboardingAddPhoto,
-          style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
+          style: AppTextStyles.label.secondary(context),
         ),
       ],
     );

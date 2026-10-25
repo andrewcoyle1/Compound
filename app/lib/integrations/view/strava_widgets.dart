@@ -163,7 +163,6 @@ class StravaActivityRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final theme = Theme.of(context);
     final detail = [
       AppFormat.date(activity.startDate.toLocal(), locale: context.dateLocale),
       if (activity.distance > 0)
@@ -182,17 +181,10 @@ class StravaActivityRow extends StatelessWidget {
             spacing: AppSpacing.xxs,
             children: [
               Text(activity.name, style: AppTextStyles.rowTitle),
-              Text(
-                detail,
-                style: AppTextStyles.rowDetail.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
+              Text(detail, style: AppTextStyles.rowDetail.secondary(context)),
               Text(
                 l10n.stravaViewOn,
-                style: AppTextStyles.label.copyWith(
-                  color: context.appColors.accentInk,
-                ),
+                style: AppTextStyles.label.accent(context),
               ),
             ],
           ),

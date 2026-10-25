@@ -96,7 +96,6 @@ class _EditUsernameViewState extends State<EditUsernameView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<EditUsernameBloc>().state;
-    final scheme = Theme.of(context).colorScheme;
     return MultiBlocListener(
       listeners: [
         BlocListener<EditUsernameBloc, EditUsernameState>(
@@ -156,10 +155,7 @@ class _EditUsernameViewState extends State<EditUsernameView> {
                   AppSpacing.l,
                   0,
                 ),
-                child: _Status(
-                  state: state,
-                  secondary: scheme.onSurfaceVariant,
-                ),
+                child: _Status(state: state),
               ),
             ],
           ),
@@ -170,15 +166,14 @@ class _EditUsernameViewState extends State<EditUsernameView> {
 }
 
 class _Status extends StatelessWidget {
-  const new({required this.state, required this.secondary});
+  const new({required this.state});
 
   final EditUsernameState state;
-  final Color secondary;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final style = AppTextStyles.label.copyWith(color: secondary);
+    final style = AppTextStyles.label.secondary(context);
     return switch (state.status) {
       UsernameStatus.idle => Text(l10n.usernameIdle, style: style),
       UsernameStatus.current => Text(l10n.usernameCurrent, style: style),
@@ -211,10 +206,8 @@ class _Status extends StatelessWidget {
             color: context.appColors.success,
             size: AppIconSize.small.of(context),
           ),
-          Text(
-            l10n.usernameAvailable,
-            style: style.copyWith(color: context.appColors.success),
-          ),
+          // The icon carries the colour, as in AppInlineMessage.
+          Text(l10n.usernameAvailable, style: AppTextStyles.label),
         ],
       ),
       UsernameStatus.taken => AppInlineMessage(

@@ -127,7 +127,6 @@ class _Meal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final totals = totalsOf([meal]);
     final date = meal.date.toLocal();
     return ListView(
@@ -139,7 +138,7 @@ class _Meal extends StatelessWidget {
             use24HourFormat: context.use24HourFormat,
             locale: context.dateLocale,
           ),
-          style: AppTextStyles.rowTitle.copyWith(color: secondary),
+          style: AppTextStyles.rowTitle.secondary(context),
         ),
         const SizedBox(height: AppSpacing.s),
         // Item nutrients are stored at the amount logged, so the totals are

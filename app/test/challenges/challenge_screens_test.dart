@@ -109,7 +109,7 @@ void main() {
       await tester.tap(find.text('OCTOBER GRIND'));
       await settle(tester);
       expect(find.byType(ChallengeDetailPage), findsOneWidget);
-      expect(find.text('Train 12 times'), findsOneWidget);
+      expect(find.text('TRAIN 12 TIMES'), findsOneWidget);
       expect(find.text('Standings'), findsOneWidget);
       expect(analytics.names, contains('SocialView_Challenge_Press'));
       expect(analytics.names, contains('ChallengeDetailView_Appear'));

@@ -215,13 +215,13 @@ void main() {
       expect(find.text('Follows you'), findsOneWidget);
       expect(find.text('Following'), findsWidgets);
       expect(find.text('People you both follow'), findsOneWidget);
-      expect(find.text('Consistency'), findsOneWidget);
+      expect(find.text('CONSISTENCY'), findsOneWidget);
 
       await tester.tap(find.text('Activities'));
       await tester.pump();
       expect(find.text('Recent Workouts'), findsOneWidget);
 
-      await tester.tap(find.text('See All'));
+      await tester.tap(find.text('People you both follow'));
       await settle(tester);
       expect(find.byType(PeopleListPage), findsOneWidget);
       expect(find.text('People You Both Follow'), findsOneWidget);

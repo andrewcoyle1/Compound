@@ -95,6 +95,7 @@
     "socialWorkouts": "Entrenamientos",
     "socialTime": "Tiempo",
     "socialConsistency": "Constancia",
+    "socialTrainingDaysUnit": "{count, plural, =1{día entrenado en 12 semanas} other{días entrenados en 12 semanas}}",
     "socialTrainingDays": "{count, plural, =1{1 día de entrenamiento en las últimas 12 semanas} other{{count} días de entrenamiento en las últimas 12 semanas}}",
     "socialRecentWorkouts": "Entrenamientos recientes",
     "socialSessionsLoadFailed": "No se pudieron cargar los entrenamientos",

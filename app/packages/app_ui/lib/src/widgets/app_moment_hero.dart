@@ -122,7 +122,9 @@ class _AppMomentHeroState extends State<AppMomentHero> {
         child: Text(
           widget.format(shown == value ? widget.value : shown.round()),
           maxLines: 1,
-          style: AppTextStyles.hero,
+          // A taller line than a dashboard's hero: a unit's descender
+          // ("kg") must clear the label under it.
+          style: AppTextStyles.hero.copyWith(height: 1.2),
         ),
       ),
     );

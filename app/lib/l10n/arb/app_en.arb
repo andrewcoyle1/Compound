@@ -6718,6 +6718,10 @@
             }
         }
     },
+    "trackerLiveRest": "Rest",
+    "@trackerLiveRest": {
+        "description": "Workout tracker: over the big rest countdown at the top of the screen (shown upper-cased)"
+    },
     "trackerRestReady": "Ready",
     "@trackerRestReady": {
         "description": "Inline rest timer once the rest is over"

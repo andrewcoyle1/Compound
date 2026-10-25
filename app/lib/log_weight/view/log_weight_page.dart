@@ -14,9 +14,9 @@ import 'package:go_router/go_router.dart';
 import 'package:health_repository/health_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
-/// Log Weight (Swift `LogWeightView`): the day, the unit, and the weight on
-/// a whole-number wheel and a tenths wheel. Opened over the tabs from Scale
-/// Weight, Weight Trend and Today.
+/// Log Weight (Swift `LogWeightView`): the day, and the weight typed with
+/// its unit, kept to the span Swift's wheels offered. Opened over the tabs
+/// from Scale Weight, Weight Trend and Today.
 class LogWeightPage extends StatelessWidget {
   const new({super.key});
 
@@ -41,13 +41,44 @@ class LogWeightPage extends StatelessWidget {
   }
 }
 
-class LogWeightView extends StatelessWidget {
+class LogWeightView extends StatefulWidget {
   const new({super.key});
+
+  @override
+  State<LogWeightView> createState() => _LogWeightViewState();
+}
+
+class _LogWeightViewState extends State<LogWeightView> {
+  /// Whether anything has been typed: until then the field shows the
+  /// bloc's weight.
+  var _edited = false;
+
+  /// What was typed; null when it does not read as a number.
+  double? _typed;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<LogWeightBloc>().state;
+    final bloc = context.read<LogWeightBloc>();
+    final kilograms = state.unit == WeightUnitPreference.kilograms;
+    final range = kilograms
+        ? WeightWheelRange.kilograms
+        : WeightWheelRange.pounds;
+    final weight = _edited
+        ? _typed
+        : kilograms
+        ? DecimalWheelValue.combine(
+            whole: state.kilograms,
+            tenths: state.kilogramsTenths,
+          )
+        : DecimalWheelValue.combine(
+            whole: state.pounds,
+            tenths: state.poundsTenths,
+          );
+    // Kept to the span the wheels offered.
+    final valid =
+        weight != null && weight >= range.min && weight < range.max + 1;
     return BlocListener<LogWeightBloc, LogWeightState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
@@ -87,17 +118,37 @@ class LogWeightView extends StatelessWidget {
             AppToolbarButton.confirm(
               semanticLabel: l10n.logWeightSave,
               isSaving: state.status == LogWeightStatus.saving,
-              onPressed: state.isEditable
-                  ? () => context.read<LogWeightBloc>().add(
-                      const LogWeightSaveRequested(),
-                    )
+              onPressed: state.isEditable && valid
+                  ? () => bloc.add(const LogWeightSaveRequested())
                   : null,
             ),
           ],
         ),
         body: state.status == LogWeightStatus.loading
             ? AppLoadingView(label: l10n.launchLoading)
-            : _Form(state: state),
+            : _Form(
+                state: state,
+                weight: weight,
+                onWeightChanged: (value) {
+                  setState(() {
+                    _edited = true;
+                    _typed = value;
+                  });
+                  if (value == null ||
+                      value < range.min ||
+                      value >= range.max + 1) {
+                    return;
+                  }
+                  final (:whole, :tenths) = DecimalWheelValue.split(value);
+                  bloc
+                    ..add(LogWeightWholeChanged(whole))
+                    ..add(LogWeightTenthsChanged(tenths));
+                },
+                onUnitChanged: (unit) {
+                  setState(() => _edited = false);
+                  bloc.add(LogWeightUnitChanged(unit));
+                },
+              ),
       ),
     );
   }
@@ -113,14 +164,27 @@ class LogWeightView extends StatelessWidget {
 }
 
 class _Form extends StatelessWidget {
-  const new({required this.state});
+  const new({
+    required this.state,
+    required this.weight,
+    required this.onWeightChanged,
+    required this.onUnitChanged,
+  });
 
   final LogWeightState state;
+  final double? weight;
+  final ValueChanged<double?> onWeightChanged;
+  final ValueChanged<WeightUnitPreference> onUnitChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final bloc = context.read<LogWeightBloc>();
+    // Unit symbols read the same in every language.
+    const units = {
+      WeightUnitPreference.kilograms: 'kg',
+      WeightUnitPreference.pounds: 'lb',
+    };
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
@@ -142,14 +206,20 @@ class _Form extends StatelessWidget {
                 if (picked != null) bloc.add(LogWeightDateChanged(picked));
               },
             ),
+            AppNumberField.units(
+              key: const Key('LogWeight.weight'),
+              label: l10n.logWeightWeight,
+              value: weight,
+              prompt: '0',
+              unit: units[state.unit]!,
+              units: units.values.toList(),
+              unitsLabel: l10n.logWeightUnits,
+              onUnitChanged: (symbol) => onUnitChanged(
+                units.entries.firstWhere((e) => e.value == symbol).key,
+              ),
+              onChanged: onWeightChanged,
+            ),
           ],
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        WeightWheels(
-          state: state,
-          onUnitChanged: (unit) => bloc.add(LogWeightUnitChanged(unit)),
-          onWholeChanged: (whole) => bloc.add(LogWeightWholeChanged(whole)),
-          onTenthsChanged: (tenths) => bloc.add(LogWeightTenthsChanged(tenths)),
         ),
       ],
     );

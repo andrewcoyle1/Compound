@@ -83,7 +83,7 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(LogWeightView), findsOneWidget);
-      expect(find.text('82 kg'), findsOneWidget);
+      expect(find.text('82.4'), findsOneWidget);
     });
 
     testWidgets('shows nothing when signed out', (tester) async {
@@ -104,20 +104,16 @@ void main() {
       expect(save.onPressed, isNull);
     });
 
-    testWidgets('shows the day, the unit and the kilogram wheels', (
-      tester,
-    ) async {
+    testWidgets('shows the day and the weight in kilograms', (tester) async {
       when(() => bloc.state)
           .thenReturn(ready().copyWith(kilograms: 82, kilogramsTenths: 4));
       await pumpView(tester);
       expect(find.text('Log Weight'), findsOneWidget);
       expect(find.text('Date'), findsOneWidget);
       expect(find.text('Oct 15, 2026'), findsOneWidget);
-      expect(find.text('Metric (kg)'), findsOneWidget);
-      expect(find.text('Imperial (lb)'), findsOneWidget);
-      expect(find.text('82 kg'), findsOneWidget);
-      expect(find.text('.4'), findsOneWidget);
-      expect(find.text('180 lb'), findsNothing);
+      expect(find.text('Weight'), findsOneWidget);
+      expect(find.text('82.4'), findsOneWidget);
+      expect(find.text('kg'), findsOneWidget);
     });
 
     testWidgets('writes the date in the device region', (tester) async {
@@ -128,7 +124,7 @@ void main() {
       expect(find.text('15 Oct 2026'), findsOneWidget);
     });
 
-    testWidgets('shows the pound wheels in pounds', (tester) async {
+    testWidgets('shows the weight in pounds', (tester) async {
       when(() => bloc.state).thenReturn(
         ready().copyWith(
           unit: WeightUnitPreference.pounds,
@@ -137,64 +133,43 @@ void main() {
         ),
       );
       await pumpView(tester);
-      expect(find.text('181 lb'), findsOneWidget);
-      expect(find.text('.7'), findsOneWidget);
-      expect(find.text('70 kg'), findsNothing);
-    });
-
-    testWidgets('the wheels are adjustable for screen readers', (tester) async {
-      final semantics = tester.ensureSemantics();
-      await pumpView(tester);
-      expect(
-        tester.getSemantics(find.byType(CupertinoPicker).first),
-        matchesSemantics(
-          label: 'Weight',
-          value: '70 kg',
-          increasedValue: '71 kg',
-          decreasedValue: '69 kg',
-          hasIncreaseAction: true,
-          hasDecreaseAction: true,
-          textDirection: TextDirection.ltr,
-        ),
-      );
-      expect(
-        tester.getSemantics(find.byType(CupertinoPicker).last),
-        matchesSemantics(
-          label: 'Tenths',
-          value: '.0',
-          increasedValue: '.1',
-          hasIncreaseAction: true,
-          textDirection: TextDirection.ltr,
-        ),
-      );
-      semantics.dispose();
+      expect(find.text('181.7'), findsOneWidget);
+      expect(find.text('lb'), findsOneWidget);
     });
 
     testWidgets('sends what the user changes', (tester) async {
       await pumpView(tester);
 
-      await tester.drag(
-        find.byType(CupertinoPicker).first,
-        const Offset(0, -32),
-      );
-      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '71.2');
+      await tester.pump();
       verify(() => bloc.add(const LogWeightWholeChanged(71))).called(1);
-
-      await tester.drag(
-        find.byType(CupertinoPicker).last,
-        const Offset(0, -64),
-      );
-      await tester.pumpAndSettle();
-      verify(() => bloc.add(const LogWeightTenthsChanged(1))).called(1);
       verify(() => bloc.add(const LogWeightTenthsChanged(2))).called(1);
 
-      await tester.tap(find.text('Imperial (lb)'));
+      await tester.tap(find.text('kg'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('lb').last);
+      await tester.pumpAndSettle();
       verify(
         () => bloc.add(const LogWeightUnitChanged(WeightUnitPreference.pounds)),
       ).called(1);
 
       await tester.tap(find.byTooltip('Save'));
       verify(() => bloc.add(const LogWeightSaveRequested())).called(1);
+    });
+
+    testWidgets('keeps a weight outside the span from being saved', (
+      tester,
+    ) async {
+      await pumpView(tester);
+      for (final text in ['25', '']) {
+        await tester.enterText(find.byType(TextField), text);
+        await tester.pump();
+        final save = tester.widget<IconButton>(
+          find.widgetWithIcon(IconButton, AppSymbols.selected),
+        );
+        expect(save.onPressed, isNull);
+      }
+      verifyNever(() => bloc.add(any(that: isA<LogWeightWholeChanged>())));
     });
 
     testWidgets('picks the day from a calendar up to today', (tester) async {
@@ -289,11 +264,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Unable to Save Weight'), findsNothing);
       expect(find.byType(LogWeightView), findsOneWidget);
-    });
-
-    testWidgets('the wheels grow with the text', (tester) async {
-      await pumpView(tester, textScale: 2);
-      expect(tester.getSize(find.byType(CupertinoPicker).first).height, 300);
     });
   });
 }

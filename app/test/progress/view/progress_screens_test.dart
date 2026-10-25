@@ -639,9 +639,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Neck Circumference'), findsWidgets);
 
-      await tester.tap(find.text('Imperial (in)'));
+      await tester.tap(find.text('cm'));
       await tester.pumpAndSettle();
-      expect(find.text('16 in'), findsOneWidget);
+      await tester.tap(find.text('in').last);
+      await tester.pumpAndSettle();
+      expect(find.text('16'), findsOneWidget);
       await tester.tap(find.byTooltip('Save'));
       await tester.pumpAndSettle();
 

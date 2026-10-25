@@ -19,7 +19,6 @@ import 'package:compound/sign_in/sign_in.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
-import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -921,7 +920,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(LogWeightView),
-          matching: find.text('80 kg'),
+          matching: find.text('80'),
         ),
         findsOneWidget,
       );
@@ -929,9 +928,12 @@ void main() {
       // The test window is short: drag the sheet up to full height.
       await tester.drag(find.text('Date'), const Offset(0, -400));
       await tester.pumpAndSettle();
-      await tester.drag(
-        find.byType(CupertinoPicker).first,
-        const Offset(0, -64),
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(LogWeightView),
+          matching: find.byType(TextField),
+        ),
+        '82',
       );
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Save'));

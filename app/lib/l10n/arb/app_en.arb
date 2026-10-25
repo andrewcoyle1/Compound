@@ -1056,12 +1056,15 @@
     "@metricShowAllData": {
         "description": "Metric screen: row opening every recorded entry"
     },
-    "metricShowMoreData": "Show More {title} Data",
-    "@metricShowMoreData": {
-        "description": "Metric screen: text button opening Latest, Highest, Lowest and Average in a sheet (QuickCharts' Show More); title is the metric's name",
+    "metricChangeFromPrevious": "{change} vs. previous {days} days",
+    "@metricChangeFromPrevious": {
+        "description": "Metric chart hero: chip with the change in the average from the window before; change is signed with its unit, such as −0.4 kg; days is the window's length",
         "placeholders": {
-            "title": {
+            "change": {
                 "type": "String"
+            },
+            "days": {
+                "type": "int"
             }
         }
     },

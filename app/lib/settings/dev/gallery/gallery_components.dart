@@ -1071,8 +1071,9 @@ List<Widget> galleryStates(BuildContext context) {
   ];
 }
 
-/// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppSummaryCard],
-/// [AppChip], [AppConfetti], [AppFootnote], [AppInlineMessage],
+/// [AppCard], [AppCarousel], [AppHeroStat], [AppStat], [AppStatTile],
+/// [AppSummaryCard], [AppChip], [AppConfetti], [AppFootnote],
+/// [AppInlineMessage],
 /// [AppMarkdownText] and [AppViewfinder].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
@@ -1153,6 +1154,21 @@ List<Widget> galleryContent(BuildContext context) {
         ),
       ],
     ),
+    galleryEntry('AppHeroStat', [
+      galleryBlock(
+        'label, unit, delta, caption',
+        AppHeroStat(
+          label: l10n.devGallerySampleTitle,
+          value: AppFormat.number(82.4, maxFractionDigits: 1, locale: locale),
+          unit: 'kg',
+          delta: AppChip(
+            label: l10n.devGallerySampleShortAction,
+            icon: AppSymbols.reduce,
+          ),
+          caption: l10n.devGallerySampleSubtitle,
+        ),
+      ),
+    ]),
     galleryEntry('AppSummaryCard', [
       galleryBlock(
         'value, unit, delta, footer, onTap',

@@ -282,8 +282,8 @@ void main() {
         await pump(tester, '/training/exercises/plank', sessions: sessions);
         await tester.tap(find.text('Charts'));
         await tester.pumpAndSettle();
-        // The section's title and the series' label.
-        expect(find.text('Top Set'), findsNWidgets(2));
+        // The section's title; a lone series is not keyed.
+        expect(find.text('Top Set'), findsOneWidget);
         expect(find.text('Reps Per Session'), findsOneWidget);
         expect(find.byType(CartesianChart), findsNWidgets(2));
         // Month, six months and year only.

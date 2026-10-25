@@ -491,6 +491,15 @@
     "@socialConsistency": {
         "description": "Training days over twelve weeks"
     },
+    "socialTrainingDaysUnit": "{count, plural, =1{day trained in 12 weeks} other{days trained in 12 weeks}}",
+    "@socialTrainingDaysUnit": {
+        "description": "Under the profile's consistency count",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "socialTrainingDays": "{count, plural, =1{1 training day in the last 12 weeks} other{{count} training days in the last 12 weeks}}",
     "@socialTrainingDays": {
         "description": "Screen reader label for the consistency grid",

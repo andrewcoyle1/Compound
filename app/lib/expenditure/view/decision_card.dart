@@ -43,12 +43,7 @@ class DecisionCard extends StatelessWidget {
                 if (info != null) MethodInfoButton(info),
               ],
             ),
-            Text(
-              message,
-              style: AppTextStyles.rowDetail.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
+            Text(message, style: AppTextStyles.rowDetail.secondary(context)),
             Wrap(
               spacing: AppSpacing.m,
               runSpacing: AppSpacing.s,

@@ -315,9 +315,7 @@ class _AllNutrients extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
       child: AppCard(

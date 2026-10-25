@@ -214,9 +214,7 @@ class _CommentRow extends StatelessWidget {
     final isOwn = comment.authorId == viewerId;
     final isLiked = comment.likedByUserIds.contains(viewerId);
     final likes = comment.likedByUserIds.length;
-    final secondary = AppTextStyles.label.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.label.secondary(context);
     final ranges = CommentThread.mentionRanges(comment, known);
     var cursor = 0;
     final spans = <TextSpan>[];
@@ -226,9 +224,7 @@ class _CommentRow extends StatelessWidget {
         ..add(
           TextSpan(
             text: comment.text.substring(start, end),
-            style: AppTextStyles.rowDetail.copyWith(
-              color: context.appColors.accentInk,
-            ),
+            style: AppTextStyles.rowDetail.accent(context),
           ),
         );
       cursor = end;
@@ -390,7 +386,6 @@ class _InputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final cubit = context.read<CommentsCubit>();
     final state = context.watch<CommentsCubit>().state;
     final viewer = context.select<CircleBloc, UserModel?>(
@@ -426,9 +421,7 @@ class _InputBar extends StatelessWidget {
                         l10n.commentsReplyingTo(
                           parent.authorName ?? l10n.commentsCommentFallback,
                         ),
-                        style: AppTextStyles.label.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.label.secondary(context),
                       ),
                     ),
                     AppIconButton.plain(

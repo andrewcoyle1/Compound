@@ -63,7 +63,6 @@ class _List extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final header = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
@@ -75,12 +74,12 @@ class _List extends StatelessWidget {
             Expanded(
               child: Text(
                 context.l10n.workoutHistoryCompletedHeader,
-                style: AppTextStyles.sectionTitle.copyWith(color: secondary),
+                style: AppTextStyles.sectionTitle.secondary(context),
               ),
             ),
             Text(
               AppFormat.number(entries.length, locale: locale),
-              style: AppTextStyles.metricSmall.copyWith(color: secondary),
+              style: AppTextStyles.metricSmall.secondary(context),
             ),
           ],
         ),

@@ -344,7 +344,6 @@ class _ChartState extends State<_Chart> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final series = widget.series;
     final range = widget.range;
     final value = widget.value;
@@ -387,9 +386,7 @@ class _ChartState extends State<_Chart> {
                 l10n.chartSemanticSeries(a.series.label, value(a.average)),
             ].join(' '),
     );
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final selected = _selected;
     // Swift's chart header: each series' name in its colour over its
     // figure, then what the figure is and the dates.
@@ -560,7 +557,6 @@ class _SeriesLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     // The unit is the last word, when there is one.
     final split = value.lastIndexOf(' ');
     final (figure, unit) = split < 0
@@ -576,7 +572,7 @@ class _SeriesLine extends StatelessWidget {
             Flexible(
               child: Text(
                 series.label,
-                style: AppTextStyles.rowDetail.copyWith(color: series.color),
+                style: AppTextStyles.rowDetail.secondary(context),
               ),
             ),
           ],
@@ -588,7 +584,7 @@ class _SeriesLine extends StatelessWidget {
               if (unit != null)
                 TextSpan(
                   text: unit,
-                  style: AppTextStyles.rowDetail.copyWith(color: secondary),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
             ],
           ),

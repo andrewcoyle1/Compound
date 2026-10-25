@@ -64,6 +64,9 @@ RULES = {
     'style-copywith': (r'\.copyWith\(',
                        'an AppTextStyles style or .secondary(context), .accent(context), '
                        '.onAccent(context), .semibold, .tabular'),
+    # Rule 2: an opacity typed in by hand. The greys, separator and tinted fills are tokens.
+    'alpha-literal': (r'\.(withValues\(\s*alpha\s*:|withOpacity\(|withAlpha\()',
+                      'secondaryLabel, tertiaryLabel, separator, AppColors.tintedSurface or AppColors.muted'),
 }
 
 # What a text style's copyWith may not set in app/lib.
@@ -79,6 +82,9 @@ ALLOWED = {
         'app/lib/workout_tracker/view/set_keypad_view.dart': 1,
         # A warm-up set's number and kind chip are in the warm-up colour, the set type's own.
         'app/lib/workout_tracker/view/set_row_parts.dart': 2,
+    },
+    'alpha-literal': {
+        'app/lib/today/': None,  # design/today removes
     },
 }
 
@@ -249,6 +255,11 @@ def self_test():
         "state.copyWith(status: s, items: [a, b], color: c)": ['style-copywith'],
         "state.copyWith(status: s, items: f(color: c))": [],
         "style.copyWith(decoration: TextDecoration.underline)": [],
+        "color: scheme.surface.withValues(alpha: 0.8),": ['alpha-literal'],
+        "color.withOpacity(0.5)": ['alpha-literal'],
+        "color.withAlpha(128)": ['alpha-literal'],
+        "color: AppColors.tintedSurface(color),": [],
+        "color.withValues(red: 1)": [],
     }
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]

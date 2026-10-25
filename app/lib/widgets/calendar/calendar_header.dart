@@ -319,13 +319,9 @@ List<Color> ringColours(
   SessionsMarker(:final colours) => [
     for (final hex in colours) AppColors.fromHex(hex) ?? colors.accentInk,
   ],
-  GoalProgressMarker(isOverGoal: true) => [
-    colors.danger.withValues(alpha: 0.5),
-  ],
+  GoalProgressMarker(isOverGoal: true) => [colors.danger],
   // A goal met is done, so the accent, not success green.
-  GoalProgressMarker(isGoalMet: true) => [
-    colors.accentInk.withValues(alpha: 0.5),
-  ],
+  GoalProgressMarker(isGoalMet: true) => [colors.accentInk],
   GoalProgressMarker() => [colors.calories],
   CountMarker() => [colors.accentInk],
 };

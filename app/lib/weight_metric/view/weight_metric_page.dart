@@ -150,7 +150,7 @@ class _Detail extends StatelessWidget {
         MetricChartSeries(
           label: l10n.scaleWeightTitle,
           points: state.scalePoints,
-          color: trend.isEmpty ? color : color.withValues(alpha: 0.45),
+          color: trend.isEmpty ? color : AppColors.muted(color),
           isLine: state.metric == WeightMetric.scaleWeight,
         ),
         if (trend.isNotEmpty)

@@ -93,7 +93,13 @@ class _WeightListEditorPageState extends State<WeightListEditorPage>
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+          // Cards inset from the edges, as every grouped list is.
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            0,
+            AppSpacing.l,
+            AppSpacing.xl,
+          ),
           children: [
             GymListHeader(
               title: l10n.gymWeights,

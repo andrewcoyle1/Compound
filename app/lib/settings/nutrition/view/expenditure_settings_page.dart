@@ -90,11 +90,9 @@ class ExpenditureSettingsView extends StatelessWidget {
         final start = s.calculationStartDate;
         return [
           const _EstimateSection(),
-          MethodInfoHeader(
-            title: l10n.expenditureSettingsInitialHeader,
-            info: MethodInfo.restingMetabolicRate(l10n),
-          ),
           AppSection(
+            header: l10n.expenditureSettingsInitialHeader,
+            trailing: MethodInfoButton(MethodInfo.restingMetabolicRate(l10n)),
             children: [
               picker(
                 NutritionStrategySettingsKeys.estimationMethod,
@@ -244,67 +242,37 @@ class _EstimateSection extends StatelessWidget {
         .select<ExpenditureEstimateBloc, maths.ExpenditureEstimate?>(
           (bloc) => bloc.state.estimate,
         );
-    Text detail(String text, TextStyle style) =>
-        Text(text, style: style.secondary(context));
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        MethodInfoHeader(
-          title: l10n.expenditureSettingsTodayHeader,
-          info: MethodInfo.adaptiveExpenditure(l10n),
-        ),
-        AppSection(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.l),
-              child: estimate == null
-                  ? const Center(child: AppSpinner())
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: AppSpacing.xs,
-                      children: [
-                        Text(
-                          l10n.expenditureSettingsKcal(estimate.kcal.round()),
-                          style: AppTextStyles.metricLarge,
-                        ),
-                        if (likelyRange(estimate) case final range?)
-                          detail(
-                            l10n.expenditureSettingsLikely(
-                              range.low,
-                              range.high,
-                            ),
-                            AppTextStyles.rowDetail,
-                          ),
-                        detail(switch (ExpenditureStatus.of(estimate)) {
-                          ExpenditureFixed() => l10n.expenditureSettingsFixed,
-                          ExpenditureCalibrating() =>
-                            l10n.expenditureSettingsCalibrating(
-                              ExpenditureCalibrating.minDays,
-                              ExpenditureCalibrating.minWeighIns,
-                            ),
-                          ExpenditureAdaptive(
-                            :final loggedDays,
-                            :final windowDays,
-                          ) =>
-                            l10n.expenditureSettingsAdaptive(
-                              loggedDays,
-                              windowDays,
-                            ),
-                        }, AppTextStyles.rowDetail),
-                        if (stepAdjustment(estimate) case final kcal?)
-                          detail(
-                            l10n.expenditureSettingsSteps(
-                              kcal > 0 ? '+' : '−',
-                              kcal.abs(),
-                            ),
-                            AppTextStyles.label,
-                          ),
-                      ],
-                    ),
-            ),
-          ],
-        ),
-      ],
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final footer = estimate == null
+        ? null
+        : [
+            if (likelyRange(estimate) case final range?)
+              l10n.expenditureSettingsLikely(range.low, range.high),
+            switch (ExpenditureStatus.of(estimate)) {
+              ExpenditureFixed() => l10n.expenditureSettingsFixed,
+              ExpenditureCalibrating() => l10n.expenditureSettingsCalibrating(
+                ExpenditureCalibrating.minDays,
+                ExpenditureCalibrating.minWeighIns,
+              ),
+              ExpenditureAdaptive(:final loggedDays, :final windowDays) =>
+                l10n.expenditureSettingsAdaptive(loggedDays, windowDays),
+            },
+            if (stepAdjustment(estimate) case final kcal?)
+              l10n.expenditureSettingsSteps(kcal > 0 ? '+' : '−', kcal.abs()),
+          ].join('\n');
+    // Today's figure as a summary, as the dashboards show it: the number,
+    // its likely range and how it was reached.
+    return AppSummaryCard(
+      title: l10n.expenditureSettingsTodayHeader,
+      icon: AppSymbols.expenditure,
+      tint: context.appColors.expenditure,
+      value: estimate == null
+          ? null
+          : AppFormat.number(estimate.kcal.round(), locale: locale),
+      unit: estimate == null ? null : l10n.nutritionOverviewKcal,
+      chart: estimate == null ? const AppSpinner() : null,
+      footer: footer,
+      trailing: MethodInfoButton(MethodInfo.adaptiveExpenditure(l10n)),
     );
   }
 }

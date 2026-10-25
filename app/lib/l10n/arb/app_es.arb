@@ -1340,7 +1340,6 @@
     "strategySettingsLoggingBreak": "Pausa en el registro",
     "expenditureSettingsTitle": "Gasto",
     "expenditureSettingsTodayHeader": "Gasto de hoy",
-    "expenditureSettingsKcal": "{kcal} kcal",
     "expenditureSettingsFixed": "Fijo",
     "expenditureSettingsCalibrating": "Calibrando: estimado a partir de tu perfil hasta que haya {days} días y {weighIns} pesajes registrados",
     "expenditureSettingsAdaptive": "Adaptativo · {logged} de {window} días registrados",
@@ -3164,5 +3163,6 @@
     "tipSetFillLastTitle": "Repite la última vez",
     "tipSetFillLastMessage": "Toca las cifras de la última vez para copiarlas en esta serie.",
     "devSettingsResetTips": "Restablecer consejos",
-    "devSettingsTipsReset": "Los consejos se volverán a mostrar."
+    "devSettingsTipsReset": "Los consejos se volverán a mostrar.",
+    "settingsAccountFree": "Gratis"
 }

@@ -104,10 +104,13 @@ class _NotificationSettingsViewState extends State<NotificationSettingsView> {
                   PermissionPrompt.askFirst => [
                     AppSection(
                       children: [
-                        AppInlineMessage(
-                          kind: AppInlineMessageKind.info,
-                          kindLabel: l10n.infoLabel,
-                          text: l10n.notificationSettingsAskFirst,
+                        Padding(
+                          padding: const EdgeInsets.all(AppSpacing.l),
+                          child: AppInlineMessage(
+                            kind: AppInlineMessageKind.info,
+                            kindLabel: l10n.infoLabel,
+                            text: l10n.notificationSettingsAskFirst,
+                          ),
                         ),
                         AppListRowButton(
                           title: l10n.notificationSettingsTurnOn,
@@ -121,10 +124,13 @@ class _NotificationSettingsViewState extends State<NotificationSettingsView> {
                   PermissionPrompt.denied => [
                     AppSection(
                       children: [
-                        AppInlineMessage(
-                          kind: AppInlineMessageKind.warning,
-                          kindLabel: l10n.warningLabel,
-                          text: l10n.notificationSettingsDenied,
+                        Padding(
+                          padding: const EdgeInsets.all(AppSpacing.l),
+                          child: AppInlineMessage(
+                            kind: AppInlineMessageKind.warning,
+                            kindLabel: l10n.warningLabel,
+                            text: l10n.notificationSettingsDenied,
+                          ),
                         ),
                         AppListRowButton(
                           title: l10n.notificationSettingsOpenSettings,

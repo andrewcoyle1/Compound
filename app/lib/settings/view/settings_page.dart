@@ -16,6 +16,7 @@ import 'package:compound/onboarding/view/onboarding_labels.dart';
 import 'package:compound/paywall/paywall.dart';
 import 'package:compound/review/review_moment.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
+import 'package:compound/settings/account/view/edit_profile_page.dart';
 import 'package:compound/settings/account/view/save_account_page.dart';
 import 'package:compound/settings/cubit/settings_cubit.dart';
 import 'package:compound/settings/dev/dev_settings_page.dart';
@@ -31,9 +32,11 @@ import 'package:compound/settings/nutrition/view/food_log_settings_page.dart';
 import 'package:compound/settings/nutrition/view/strategy_settings_page.dart';
 import 'package:compound/settings/training/view/workout_settings_page.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
+import 'package:compound/social/view/people_widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:social_repository/social_repository.dart';
 
 /// Where the Support row sends people (Swift `Constants.supportEmail`).
 const supportEmail = 'andrewcoyle.1@outlook.com';
@@ -101,11 +104,13 @@ class _SettingsViewState extends State<SettingsView> {
         );
       },
       child: AppScaffold(
-        appBar: AppBar(title: Text(l10n.settingsTitle)),
+        largeTitle: l10n.settingsTitle,
         body: SafeArea(
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
+              _AccountCard(state: state),
+              const SizedBox(height: AppSpacing.xl),
               AppSection(
                 header: l10n.settingsGeneralHeader,
                 children: [
@@ -296,6 +301,40 @@ class _SettingsViewState extends State<SettingsView> {
   }
 }
 
+/// Who is signed in, at the top as iOS Settings puts the account: the
+/// photo, the name in the display face, the handle and whether they have
+/// Premium. Opens Edit Profile.
+class _AccountCard extends StatelessWidget {
+  const new({required this.state});
+
+  final AppAuthenticated state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final profile = state.profile;
+    final username = profile?.username;
+    return AppSummaryCard(
+      title: l10n.profileTitle,
+      icon: AppSymbols.profile,
+      value: profile == null ? null : fullNameOf(profile),
+      trailing: AppChip(
+        label: state.isPremium
+            ? l10n.settingsCoachPremium
+            : l10n.settingsAccountFree,
+        icon: AppSymbols.subscription,
+      ),
+      chart: UserAvatar(
+        imageUrl: profile == null ? null : profileImageOf(profile),
+        size: AppControlSize.cta,
+      ),
+      chartBeside: true,
+      footer: username == null || username.isEmpty ? null : '@$username',
+      onTap: () => unawaited(context.pushNamed(EditProfilePage.name)),
+    );
+  }
+}
+
 /// The weight goal's objective, or "Not Set", which is the cue to set one
 /// (`SettingsPresenter.weightGoalStatus`); pressing it edits or replaces
 /// the goal. Follows the goal the profile names.
@@ -386,7 +425,7 @@ class _SecuritySection extends StatelessWidget {
         AppListRowButton(
           title: l10n.settingsDeleteAccount,
           accessory: null,
-          tint: Theme.of(context).colorScheme.error,
+          destructive: true,
           onPressed: () {
             cubit.deleteAccountPressed();
             unawaited(context.pushNamed(DeleteAccountPage.name));

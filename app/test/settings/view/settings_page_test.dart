@@ -10,6 +10,7 @@ import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/paywall/paywall.dart';
 import 'package:compound/review/review_moment.dart';
 import 'package:compound/settings/account/view/delete_account_page.dart';
+import 'package:compound/settings/account/view/edit_profile_page.dart';
 import 'package:compound/settings/account/view/save_account_page.dart';
 import 'package:compound/settings/general/view/about_page.dart';
 import 'package:compound/settings/general/view/customise_analytics_page.dart';
@@ -119,6 +120,23 @@ void main() {
       expect(find.text('Apple'), findsOneWidget);
       expect(find.text('ada@example.com'), findsOneWidget);
       expect(find.text('Sign Out'), findsOneWidget);
+    });
+
+    testWidgets('the account card says the plan and opens Edit Profile', (
+      tester,
+    ) async {
+      await pumpSettings(tester);
+      expect(find.text('PROFILE'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AppSummaryCard),
+          matching: find.text('Premium'),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('PROFILE'));
+      await tester.pumpAndSettle();
+      expect(find.byType(EditProfilePage), findsOneWidget);
     });
 
     // SettingsPresenterTests: "an anonymous account is offered the upgrade
@@ -288,7 +306,10 @@ void main() {
         await pumpSettings(tester, coach: coach);
 
         expect(find.byType(AppListRowToggle), findsNothing);
-        expect(find.text('Premium'), findsOneWidget);
+        expect(
+          find.widgetWithText(AppListRowButton, 'Premium'),
+          findsOneWidget,
+        );
         expect(find.text('Chats'), findsNothing);
 
         await tester.tap(find.text('AI Coach'));

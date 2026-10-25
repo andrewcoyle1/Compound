@@ -132,7 +132,8 @@ class MetricDetailView extends StatelessWidget {
           ),
           if (rows.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.xl),
-            AppSection(children: rows),
+            // Every entry, not the chart's window: say so beside its hero.
+            AppSection(header: l10n.metricAllTime, children: rows),
           ],
           if (summary case final summary?) ...[
             const SizedBox(height: AppSpacing.xl),

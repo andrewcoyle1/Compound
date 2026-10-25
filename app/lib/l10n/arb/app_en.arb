@@ -1056,6 +1056,10 @@
     "@metricShowAllData": {
         "description": "Metric screen: row opening every recorded entry"
     },
+    "metricAllTime": "All Time",
+    "@metricAllTime": {
+        "description": "Metric screen: header over Latest, Highest, Lowest and Average, which cover every entry, not just the chart's window"
+    },
     "metricChangeFromPrevious": "{change} vs. previous {days} days",
     "@metricChangeFromPrevious": {
         "description": "Metric chart hero: chip with the change in the average from the window before; change is signed with its unit, such as −0.4 kg; days is the window's length",

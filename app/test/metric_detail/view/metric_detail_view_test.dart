@@ -73,8 +73,9 @@ void main() {
       ]);
       expect(find.text('Latest: Today'), findsOneWidget);
       expect(find.text('72.4 kg'), findsWidgets);
-      // The rest under it, as grouped rows.
+      // The rest under it, as grouped rows over every entry.
       await reveal(tester, find.text('Highest: Oct 13'));
+      expect(find.text('All Time'), findsOneWidget);
       expect(find.text('Highest: Oct 13'), findsOneWidget);
       expect(find.text('Lowest: Yesterday'), findsOneWidget);
       expect(find.text('Average'), findsOneWidget);

@@ -123,9 +123,17 @@ class _AppMomentHeroState extends State<AppMomentHero> {
         mainAxisSize: MainAxisSize.min,
         spacing: AppSpacing.xxs,
         children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(stat.value, style: AppTextStyles.metricLarge),
+          // A full line's height even when shrunk, so the labels of a
+          // row line up.
+          SizedBox(
+            height: scaler.scale(
+              AppTextStyles.metricLarge.fontSize! *
+                  AppTextStyles.metricLarge.height!,
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(stat.value, style: AppTextStyles.metricLarge),
+            ),
           ),
           Text(
             stat.label.toUpperCase(),

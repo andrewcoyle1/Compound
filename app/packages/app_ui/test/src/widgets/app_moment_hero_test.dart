@@ -178,6 +178,19 @@ void main() {
         ),
       ),
       (
+        'a stat shrunk to fit',
+        _hero(
+          badge: null,
+          caption: null,
+          celebration: AppMomentCelebration.none,
+          stats: const [
+            (value: '15,013 kg', label: 'Volume'),
+            (value: '+7%', label: 'vs Last Week'),
+            (value: '8.1', label: 'Average RPE'),
+          ],
+        ),
+      ),
+      (
         'long value',
         const AppMomentHero(
           value: 1234567,

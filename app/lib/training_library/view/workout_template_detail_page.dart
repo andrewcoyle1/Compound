@@ -573,7 +573,7 @@ class _ExerciseRow extends StatelessWidget {
     final side = MediaQuery.textScalerOf(context).scale(60);
     return Semantics(
       button: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: () => unawaited(
           context.pushNamed(
             ExerciseDetailPage.name,

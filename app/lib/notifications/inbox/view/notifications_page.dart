@@ -299,7 +299,7 @@ class const _GroupRow({
               child: Semantics(
                 value: group.isRead ? null : l10n.inboxUnread,
                 button: true,
-                child: InkWell(
+                child: AppPressable(
                   onTap: opening == null
                       ? () => bloc.add(InboxGroupPressed(group))
                       : null,

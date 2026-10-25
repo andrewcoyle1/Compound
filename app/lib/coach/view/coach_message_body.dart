@@ -97,8 +97,8 @@ class CoachMessageBody extends StatelessWidget {
               for (final (_, label, run) in actions)
                 CustomSemanticsAction(label: label): run,
             },
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
+            child: AppPressable(
+              onTap: null,
               onLongPress: actions.isEmpty
                   ? null
                   : () => unawaited(_showActions(context)),

@@ -505,7 +505,7 @@ class _ProgressionNote extends StatelessWidget {
               hint: l10n.trackerDismissesNote,
               excludeSemantics: true,
               onTap: acknowledge,
-              child: InkWell(
+              child: AppPressable(
                 onTap: acknowledge,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(

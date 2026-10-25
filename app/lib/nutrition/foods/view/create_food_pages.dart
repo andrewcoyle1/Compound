@@ -94,9 +94,9 @@ class _FoodImageButton extends StatelessWidget {
         button: true,
         label: context.l10n.createFoodChooseImage,
         excludeSemantics: true,
-        child: InkWell(
+        child: AppPressable(
           key: const Key('CreateFood.image'),
-          customBorder: const CircleBorder(),
+          shape: const CircleBorder(),
           onTap: () =>
               unawaited(context.read<CreateFoodCubit>().photoPressed()),
           child: SizedBox.square(

@@ -309,7 +309,7 @@ class const _Completed({
     return Semantics(
       button: true,
       hint: l10n.programOpensTodaysWorkout,
-      child: InkWell(
+      child: AppPressable(
         onTap: () {
           context.read<ProgramsCubit>().pressed(
             'TodaysWorkoutCard_CompletedSession_Pressed',
@@ -390,7 +390,7 @@ class const _Start({
           Semantics(
             button: true,
             hint: l10n.programOpensTodaysWorkout,
-            child: InkWell(
+            child: AppPressable(
               onTap: () => unawaited(
                 WorkoutTemplateDetailPage.open(
                   context,

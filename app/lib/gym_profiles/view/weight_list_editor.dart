@@ -379,7 +379,8 @@ class EquipmentColourPicker extends StatelessWidget {
                 selected: colour == selected,
                 label: colour.label(l10n),
                 excludeSemantics: true,
-                child: InkResponse(
+                child: AppPressable(
+                  shape: const CircleBorder(),
                   onTap: () => onSelected(colour),
                   child: Container(
                     width: 44,

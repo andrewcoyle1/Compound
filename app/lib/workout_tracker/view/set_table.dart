@@ -359,7 +359,7 @@ class SetTableRow extends StatelessWidget {
           button: canFill,
           excludeSemantics: true,
           onTap: canFill ? () => fill(set.id) : null,
-          child: InkWell(
+          child: AppPressable(
             key: ValueKey('last-${set.id}'),
             onTap: canFill ? () => fill(set.id) : null,
             child: ConstrainedBox(
@@ -404,7 +404,8 @@ class SetTableRow extends StatelessWidget {
         label: isLogged ? l10n.trackerLoggedValue : logLabel,
         excludeSemantics: true,
         // A bare glyph, as Swift's circle: a 44 pt target with no fill.
-        child: InkResponse(
+        child: AppPressable(
+          shape: const CircleBorder(),
           key: ValueKey('done-${set.id}'),
           onTap: () => cubit.toggleSet(set.id),
           child: SizedBox.square(
@@ -443,7 +444,8 @@ class SetTableRow extends StatelessWidget {
       ],
       leadingFullSwipe: false,
       trailingFullSwipe: false,
-      child: GestureDetector(
+      child: AppPressable(
+        onTap: null,
         onLongPress: () => unawaited(_menu(context, badge)),
         child: ColoredBox(
           color: isNext
@@ -598,9 +600,11 @@ class _Cell extends StatelessWidget {
       label: label,
       value: text,
       excludeSemantics: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: onTap,
-        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.s)),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.s)),
+        ),
         child: Container(
           constraints: const BoxConstraints(minHeight: AppControlSize.row - 8),
           alignment: Alignment.center,

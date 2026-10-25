@@ -184,7 +184,7 @@ class _MuscleTile extends StatelessWidget {
                 ),
         ),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
+        child: AppPressable(
           onTap: onPressed,
           child: Container(
             constraints: const BoxConstraints(minHeight: 88),

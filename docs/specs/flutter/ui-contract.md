@@ -63,6 +63,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A low-emphasis text action (See All, Not now) | `AppTextButton`, `isDestructive` for a removal |
 | An app bar button | `AppToolbarButton`; `.close` at a modal's leading edge, `.confirm` (with `isSaving`) at its trailing edge, `.avatar` for the profile button |
 | An icon-only button in content (a row's edit pencil) | `AppIconButton` |
+| Anything else that responds to a tap or long press (a tile, a cell, a photo, a custom row) | `AppPressable`: one pressed state, an optional `haptic`, button semantics and a 44 pt target; `color:` and `shape:` for a key or tile that draws its own surface. Never `InkWell`, `InkResponse` or a `GestureDetector` for a tap. A drag or swipe keeps its `GestureDetector` |
 | A row | `AppListRow`, `AppListRowButton`, `AppListRowToggle`, `AppSelectableRow` in an `AppSection` |
 | A picker row | `AppListRowMenu(value)` as the row's accessory: the value with an up-and-down chevron |
 | A destructive row | `AppListRowButton(destructive: true)`: the title in `appColors.danger` |
@@ -194,7 +195,9 @@ and 3 on `app/lib/` and `compound_charts/lib/` (and `framework-import` on `app/t
 `showcaseview` inside `app_ui`. Its `raw-spinner` rule holds
 spinners to `AppSpinner` in `app/lib/` and `app_ui/lib/`: an indeterminate
 `CircularProgressIndicator`, `LinearProgressIndicator` or `CupertinoActivityIndicator` fails, and
-one given its own `value:` (the progress rings and macro bars) is allowed. Every screen was moved onto
+one given its own `value:` (the progress rings and macro bars) is allowed. Its `raw-tap` rule holds taps in `app/lib/` to `AppPressable`: `InkWell`, `InkResponse` and
+`GestureDetector` fail, except the drags, swipes and few others listed with their reasons in the script's
+`ALLOWED`. Every screen was moved onto
 `app_ui` by 19 Oct 2026 (#212–#217), so there is no baseline: any match fails CI.
 
 ```bash

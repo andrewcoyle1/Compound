@@ -59,6 +59,27 @@ RULES = {
     # (a ring or bar filling), so it is not a spinner and does not count.
     'raw-spinner': (_ + r'(CircularProgressIndicator|LinearProgressIndicator)(\.adaptive)?\(|'
                     + _ + r'CupertinoActivityIndicator\(', 'AppSpinner, or AppLoadingView for a first load'),
+    # Rule 3: a tap goes through AppPressable (pressed state, 44 pt target, button semantics), in
+    # app/lib only. A drag or a swipe keeps its GestureDetector, allowed below.
+    'raw-tap': (_ + r'(InkWell|InkResponse|GestureDetector)\(', 'AppPressable'),
+}
+
+# Matches a rule allows, as {rule: {file: how many}}, each with its reason. One more in the file fails.
+ALLOWED = {
+    'raw-tap': {
+        # design/today removes
+        'app/lib/today/view/day_checklist_card.dart': 1,
+        # A tap or a horizontal swipe flips consumed and remaining.
+        'app/lib/nutrition/view/widgets/macro_header.dart': 1,
+        # A horizontal swipe moves the week.
+        'app/lib/widgets/calendar/calendar_header.dart': 1,
+        # Swiping the banner up dismisses it; its tap is an AppPressable.
+        'app/lib/notifications/inbox/view/activity_banner.dart': 1,
+        # The target chart's week grid: cells and weekday letters narrower and shorter than 44 pt,
+        # in a fixed-height carousel page, that a 44 pt target would push out of it. Each column's
+        # cells are also reachable by screen readers as buttons.
+        'app/lib/progress/view/progress_carousel.dart': 2,
+    },
 }
 
 # Generated strings, and share cards, which render to fixed-size images like the Swift app's.
@@ -112,6 +133,8 @@ def scan():
     for path in sorted([*LIB.rglob('*.dart'), *(CHARTS / 'lib').rglob('*.dart')]):
         exempt = any(part in path.as_posix() for part in EXEMPT)
         for rule, number, line in matches(path.read_text()):
+            if rule == 'raw-tap' and CHARTS in path.parents:
+                continue
             # A share card's snack bar is still a screen's.
             if not exempt or rule == 'raw-snackbar':
                 found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
@@ -121,6 +144,11 @@ def scan():
         for rule, number, line in matches(path.read_text()):
             if rule in ('raw-haptic', 'raw-spinner'):
                 found[rule].append(f'{path.relative_to(ROOT)}:{number}: {line}')
+    for rule, files in ALLOWED.items():
+        for file, count in files.items():
+            here = [m for m in found[rule] if m.startswith(f'{file}:')]
+            if len(here) <= count:
+                found[rule] = [m for m in found[rule] if m not in here]
     return found
 
 
@@ -188,6 +216,10 @@ def self_test():
         "LinearProgressIndicator(value: progress, color: f(value: 1))": [],
         "CircularProgressIndicator(color: f(value: 1))": ['raw-spinner'],
         "child: AppSpinner(size: AppSpinnerSize.small),": [],
+        "child: InkWell(onTap: open, child: row),": ['raw-tap'],
+        "child: InkResponse(onTap: pick,": ['raw-tap'],
+        "return GestureDetector(onTap: open,": ['raw-tap'],
+        "child: AppPressable(onTap: open, child: row),": [],
     }
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]

@@ -326,9 +326,9 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                   Semantics(
                     button: true,
                     hint: l10n.programAddMesocycleHint,
-                    child: InkWell(
+                    child: AppPressable(
+                      haptic: AppHaptic.selection,
                       onTap: () {
-                        unawaited(AppHaptics.selection());
                         cubit.added(mesocycle);
                         if (_name.text.isEmpty) _name.text = mesocycle.name;
                       },

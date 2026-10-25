@@ -412,7 +412,7 @@ class _PhotoCell extends StatelessWidget {
         CustomSemanticsAction(label: l10n.progressPhotosDelete): onDelete,
       },
       excludeSemantics: true,
-      child: GestureDetector(
+      child: AppPressable(
         onTap: () => context.read<ProgressPhotosCubit>().photoPressed(photo),
         // Swift's context menu; the toolbar's Delete does the same for one
         // chosen photo.

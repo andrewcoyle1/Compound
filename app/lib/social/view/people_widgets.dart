@@ -77,7 +77,7 @@ class UserRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final trailing = this.trailing;
-    return InkWell(
+    return AppPressable(
       onTap: onPressed,
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -161,7 +161,7 @@ class AuthorHeader extends StatelessWidget {
     return Semantics(
       button: true,
       hint: context.l10n.socialOpensProfile,
-      child: InkWell(
+      child: AppPressable(
         onTap: onPressed,
         child: Row(
           spacing: AppSpacing.m,
@@ -257,7 +257,7 @@ class SelectablePersonRow extends StatelessWidget {
       child: Semantics(
         button: true,
         selected: selected,
-        child: InkWell(
+        child: AppPressable(
           onTap: onPressed,
           child: AppListRow(
             title: fullNameOf(user) ?? context.l10n.socialUser,

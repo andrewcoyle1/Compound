@@ -380,7 +380,7 @@ class const _DayRow({
                   ? l10n.programRestUntickHint
                   : l10n.programRestTickHint)
             : null,
-        child: InkWell(
+        child: AppPressable(
           onTap: onPressed,
           onLongPress: onSkip == null
               ? null

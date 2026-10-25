@@ -97,9 +97,9 @@ class _MemberCell extends StatelessWidget {
                   member.weeklyGoal,
                 ),
           excludeSemantics: true,
-          child: InkWell(
+          child: AppPressable(
             onTap: onPressed,
-            customBorder: const CircleBorder(),
+            shape: const CircleBorder(),
             child: Column(
               spacing: AppSpacing.xs,
               children: [

@@ -476,14 +476,18 @@ void main() {
     tester,
   ) async {
     final handle = tester.ensureSemantics();
+    // A Material, as the conversation's screen gives it: the long press
+    // draws its pressed state on one.
     await tester.pumpApp(
-      SingleChildScrollView(
-        child: CoachMessageBody(
-          role: CoachMessageRole.assistant,
-          text: 'About **0.1 kg a week**.',
-          blocks: _weight,
-          saved: true,
-          onFollowUp: followUps.add,
+      Material(
+        child: SingleChildScrollView(
+          child: CoachMessageBody(
+            role: CoachMessageRole.assistant,
+            text: 'About **0.1 kg a week**.',
+            blocks: _weight,
+            saved: true,
+            onFollowUp: followUps.add,
+          ),
         ),
       ),
     );

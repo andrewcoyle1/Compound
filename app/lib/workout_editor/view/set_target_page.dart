@@ -363,7 +363,7 @@ class const _PlanButton({
       ),
       value: summary ?? '',
       excludeSemantics: true,
-      child: InkWell(
+      child: AppPressable(
         key: Key('SetTarget.plan.${target.id}'),
         onTap: () => unawaited(
           showSetPlanDetail(

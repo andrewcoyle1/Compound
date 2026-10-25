@@ -227,7 +227,7 @@ class WorkoutRow extends StatelessWidget {
         .join(', ');
     return Semantics(
       button: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: () {
           context.read<LibrarySearchCubit>().workoutSelected(
             workout,

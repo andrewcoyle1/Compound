@@ -180,7 +180,7 @@ class _ReturnToToday extends StatelessWidget {
           color: scheme.onSurface,
           shape: const StadiumBorder(),
           clipBehavior: Clip.antiAlias,
-          child: InkWell(
+          child: AppPressable(
             onTap: onPressed,
             child: Center(
               child: Icon(
@@ -238,8 +238,7 @@ class CalendarDayCell extends StatelessWidget {
         ?marker?.describe(l10n),
       ].join(', '),
       excludeSemantics: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: AppPressable(
         onTap: () => onPressed(day),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),

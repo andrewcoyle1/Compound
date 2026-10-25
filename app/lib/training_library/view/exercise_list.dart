@@ -219,7 +219,7 @@ class _ExerciseRow extends StatelessWidget {
       value: exercise.description,
       onTap: onPressed,
       excludeSemantics: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: onPressed,
         child: AppListRow(
           title: exercise.name,

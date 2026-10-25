@@ -158,10 +158,12 @@ class _Tile extends StatelessWidget {
         for (final (_, label, action) in actions)
           CustomSemanticsAction(label: label): action,
       },
-      child: InkWell(
+      child: AppPressable(
         onTap: onTap,
         onLongPress: actions.isEmpty ? null : () => _menu(context),
-        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.s)),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.s)),
+        ),
         child: SizedBox(
           width: side,
           child: Column(

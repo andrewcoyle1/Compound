@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:program_repository/program_repository.dart';
@@ -105,11 +103,10 @@ class const _Swatch({
       label: label,
       excludeSemantics: true,
       child: Center(
-        child: InkResponse(
-          onTap: () {
-            unawaited(AppHaptics.selection());
-            onPressed();
-          },
+        child: AppPressable(
+          shape: const CircleBorder(),
+          haptic: AppHaptic.selection,
+          onTap: onPressed,
           child: Container(
             width: side,
             height: side,

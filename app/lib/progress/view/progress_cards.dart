@@ -1,5 +1,4 @@
 import 'package:app_ui/app_ui.dart';
-import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/expenditure_metric/expenditure_metric.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/progress/bloc/progress_bloc.dart';
@@ -50,6 +49,7 @@ class ProgressCards {
     required List<ProgressPoint> points,
     required String unit,
     required Color color,
+    required IconData icon,
     int decimals = 1,
     VoidCallback? onTap,
     String? value,
@@ -64,6 +64,8 @@ class ProgressCards {
               ? AppFormat.placeholder
               : _number(points.last.value, decimals)),
       unit: unit,
+      icon: icon,
+      tint: color,
       onTap: onTap,
       chart: Sparkline(
         points: points,
@@ -84,6 +86,8 @@ class ProgressCards {
     final most = values.fold<double>(0, (a, b) => a > b ? a : b);
     return ProgressCard(
       title: l10n.progressWorkouts,
+      icon: AppSymbols.workout,
+      tint: colors.workouts,
       subtitle: values.isEmpty
           ? l10n.progressNoWorkouts
           : l10n.progressLast7Workouts,
@@ -115,6 +119,7 @@ class ProgressCards {
       points: figures?.week ?? const [],
       unit: 'kcal',
       color: colors.expenditure,
+      icon: AppSymbols.expenditure,
       decimals: 0,
       value: today > 0 ? _number(today) : AppFormat.placeholder,
       onTap: () => router?.goNamed(ExpenditureMetric.expenditure.name),
@@ -128,6 +133,10 @@ class ProgressCards {
     final figures = state.expenditure;
     final average = loggedAverage(intake);
     final week = figures?.week ?? const <ProgressPoint>[];
+    // Expenditure less intake, as `ExpenditureText.balance` rounds it.
+    final balance = average == null || figures == null
+        ? null
+        : (figures.today - average.meanKcal).round();
     String kcal(Iterable<double> values) => values.isEmpty
         ? AppFormat.placeholder
         : AppFormat.kcal(
@@ -136,17 +145,18 @@ class ProgressCards {
           );
     return ProgressCard(
       title: l10n.energyBalanceTitle,
+      icon: AppSymbols.calories,
+      tint: colors.calories,
       subtitle: average == null
           ? l10n.progressLast7Days
           : l10n.energyBalanceLoggedDays(average.days),
-      value: average == null || figures == null
-          ? AppFormat.placeholder
-          : ExpenditureText.balance(
-              l10n,
-              expenditureKcal: figures.today,
-              intakeKcal: average.meanKcal,
-              locale: locale,
-            ),
+      // The number in the display face, deficit or surplus as its unit.
+      value: balance == null ? AppFormat.placeholder : _number(balance.abs()),
+      unit: switch (balance) {
+        null || 0 => 'kcal',
+        > 0 => l10n.progressKcalDeficitUnit,
+        _ => l10n.progressKcalSurplusUnit,
+      },
       onTap: () => router?.goNamed(ExpenditureMetric.energyBalance.name),
       chart: StackedBars(
         stacks: [
@@ -172,14 +182,93 @@ class ProgressCards {
     points: state.trendWeights,
     unit: state.unit.symbol,
     color: colors.scaleWeight,
+    icon: AppSymbols.scaleWeight,
     onTap: () => router?.goNamed(WeightMetric.weightTrend.name),
   );
+
+  /// The tab's hero (design-language.md, "Dashboard"): the trend weight
+  /// as the loudest number on the screen, its change over the last seven
+  /// days, the trend's line and, with a goal set, how far toward it in the
+  /// accent, since that progress is the user's own.
+  Widget hero() {
+    final points = state.trendWeights;
+    final unit = state.unit.symbol;
+    final progress = state.goalProgress;
+    final measured = progress.state == GoalProgressState.measured;
+    String text(double v) => '${_number(v, 1)} $unit';
+    final change = points.length < 2
+        ? null
+        : points.last.value - points.first.value;
+    final changeText = change == null ? null : _number(change.abs(), 1);
+    final steady = changeText == _number(0);
+    return AppSummaryCard(
+      title: l10n.weightTrendTitle,
+      icon: AppSymbols.scaleWeight,
+      tint: colors.scaleWeight,
+      size: AppSummaryCardSize.hero,
+      value: points.isEmpty
+          ? AppFormat.placeholder
+          : _number(points.last.value, 1),
+      unit: unit,
+      delta: change == null
+          ? null
+          : AppChip(
+              label: l10n.progressChangeInSevenDays(
+                '${steady
+                    ? ''
+                    : change > 0
+                    ? '+'
+                    : '\u2212'}$changeText $unit',
+              ),
+              icon: steady
+                  ? AppSymbols.steady
+                  : change > 0
+                  ? AppSymbols.increase
+                  : AppSymbols.reduce,
+            ),
+      chart: Column(
+        spacing: AppSpacing.m,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 2 * ProgressCard.chartHeight,
+            child: Sparkline(points: points, color: colors.scaleWeight),
+          ),
+          if (measured)
+            SizedBox(
+              width: double.infinity,
+              child: BulletBar(
+                value: progress.percent,
+                maximum: 100,
+                color: accent,
+              ),
+            ),
+        ],
+      ),
+      semanticValue: points.isEmpty
+          ? null
+          : l10n.progressTrendChartValue(
+              text(points.first.value),
+              text(points.last.value),
+            ),
+      footer: measured
+          ? l10n.progressHeroGoal(
+              AppFormat.percent(progress.percent / 100, locale: locale),
+            )
+          : points.isEmpty
+          ? l10n.progressHeroEmpty
+          : l10n.progressLast7Days,
+      onTap: () => router?.goNamed(WeightMetric.weightTrend.name),
+    );
+  }
 
   Widget goalProgress() {
     final progress = state.goalProgress;
     final measured = progress.state == GoalProgressState.measured;
     return ProgressCard(
       title: l10n.progressGoalProgress,
+      icon: AppSymbols.goal,
+      tint: accent,
       subtitle: switch (progress.state) {
         GoalProgressState.noGoal => l10n.progressNoGoalSet,
         GoalProgressState.noEntries => l10n.progressNoEntries,
@@ -197,11 +286,14 @@ class ProgressCards {
 
   Widget _habit(
     String title,
+    IconData icon,
     List<bool> days,
     int thisWeek, {
     VoidCallback? onTap,
   }) => ProgressCard(
     title: title,
+    icon: icon,
+    tint: colors.habits,
     subtitle: l10n.progressLast30Days,
     value: _number(thisWeek),
     unit: l10n.progressThisWeek,
@@ -217,6 +309,7 @@ class ProgressCards {
 
   Widget weighInHabit() => _habit(
     l10n.progressWeighIn,
+    AppSymbols.scaleWeight,
     state.weighInGrid,
     state.weighInsThisWeek,
     onTap: () => router?.goNamed(WeighInConsistencyPage.name),
@@ -226,6 +319,8 @@ class ProgressCards {
   /// week's count out of seven.
   Widget foodLoggingHabit() => ProgressCard(
     title: l10n.progressFoodLogging,
+    icon: AppSymbols.meal,
+    tint: colors.habits,
     subtitle: l10n.progressLast30Days,
     value: l10n.progressOutOfSeven(_number(state.foodLoggedThisWeek)),
     unit: l10n.progressThisWeek,
@@ -241,6 +336,7 @@ class ProgressCards {
 
   Widget workoutHabit() => _habit(
     l10n.progressWorkouts,
+    AppSymbols.workout,
     state.workoutGrid,
     state.workoutsThisWeek,
     onTap: () => router?.goNamed(WorkoutConsistencyPage.name),
@@ -255,6 +351,8 @@ class ProgressCards {
         AppFormat.grams(average(of), locale: locale);
     return ProgressCard(
       title: l10n.progressMacros,
+      icon: AppSymbols.nutrition,
+      tint: colors.nutrition,
       subtitle: logged ? l10n.progressLast7Days : l10n.progressNoData,
       value: logged
           ? _number(average((day) => day.calories))
@@ -286,6 +384,8 @@ class ProgressCards {
     String grams(double value) => AppFormat.grams(value, locale: locale);
     return ProgressCard(
       title: l10n.progressProtein,
+      icon: AppSymbols.protein,
+      tint: colors.protein,
       subtitle: logged ? l10n.progressToday : l10n.progressNoData,
       value: logged ? _number(eaten, 1) : AppFormat.placeholder,
       unit: 'g',
@@ -310,6 +410,7 @@ class ProgressCards {
     points: state.scaleWeights,
     unit: state.unit.symbol,
     color: colors.scaleWeight,
+    icon: AppSymbols.scaleWeight,
     onTap: () => router?.goNamed(WeightMetric.scaleWeight.name),
   );
 
@@ -321,6 +422,7 @@ class ProgressCards {
     points: state.bodyFat,
     unit: '%',
     color: colors.bodyFat,
+    icon: AppSymbols.bodyFat,
     onTap: () => router?.goNamed(
       BodyMetricDetailPage.name,
       pathParameters: {
@@ -337,9 +439,19 @@ class ProgressCards {
     points: state.stepsWeek,
     unit: l10n.progressStepsUnit,
     color: colors.steps,
+    icon: AppSymbols.steps,
     decimals: 0,
     onTap: () => router?.goNamed(StepsPage.name),
   );
+
+  /// A nutrient's glyph: the macros their own, the rest Nutrition's.
+  static IconData _nutritionIcon(NutritionMetric metric) => switch (metric) {
+    NutritionMetric.calories => AppSymbols.calories,
+    NutritionMetric.protein => AppSymbols.protein,
+    NutritionMetric.carbs => AppSymbols.carbs,
+    NutritionMetric.fat => AppSymbols.fat,
+    _ => AppSymbols.nutrition,
+  };
 
   static bool _isLogged(Macros day) =>
       day.calories > 0 ||
@@ -365,6 +477,7 @@ class ProgressCards {
       points: [for (final r in readings) (date: r.date, value: r.value)],
       unit: state.lengthSymbol,
       color: colors.measurements,
+      icon: AppSymbols.measurement,
       onTap: () => _bodyDetail(kind.name),
     );
   }
@@ -374,6 +487,8 @@ class ProgressCards {
     final readings = lastReadings(state.ratioReadings(kind));
     return ProgressCard(
       title: bodyRatioName(l10n, kind),
+      icon: AppSymbols.measurement,
+      tint: colors.measurements,
       subtitle: readings.isEmpty
           ? l10n.progressNoEntries
           : l10n.progressLastEntries(readings.length),
@@ -405,6 +520,8 @@ class ProgressCards {
     final decimals = metric == NutritionMetric.calories ? 0 : 1;
     return ProgressCard(
       title: nutritionMetricName(l10n, metric),
+      icon: _nutritionIcon(metric),
+      tint: nutritionMetricColor(colors, metric),
       subtitle: eaten == null ? l10n.progressNoData : l10n.progressToday,
       value: eaten == null ? AppFormat.placeholder : _number(current, decimals),
       unit: metric.unit,
@@ -426,6 +543,8 @@ class ProgressCards {
     final figure = breakdownFigure(value);
     return ProgressCard(
       title: nutritionMetricName(l10n, metric),
+      icon: _nutritionIcon(metric),
+      tint: nutritionMetricColor(colors, metric),
       subtitle: l10n.progressToday,
       value: figure == null
           ? AppFormat.placeholder

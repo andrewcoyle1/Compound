@@ -113,14 +113,14 @@ void main() {
 
       expect(find.text('Exercises'), findsWidgets);
       final card = find.ancestor(
-        of: find.text('Press'),
+        of: find.text('PRESS'),
         matching: find.byType(ExerciseOneRepMaxCard),
       );
       await tester.ensureVisible(card);
       await tester.pumpAndSettle();
       // 100 kg × (1 + (5 + 2) / 30).
       expect(
-        find.descendant(of: card, matching: find.text('123.3')),
+        find.descendant(of: card, matching: find.text('123.3 KG')),
         findsOneWidget,
       );
       await tester.tap(card);
@@ -164,10 +164,13 @@ void main() {
       expect(find.text('Lower'), findsOneWidget);
       expect(find.byType(MuscleSetsCard), findsNWidgets(Muscles.values.length));
       final card = find.ancestor(
-        of: find.text('Side Delts'),
+        of: find.text('SIDE DELTS'),
         matching: find.byType(MuscleSetsCard),
       );
-      expect(find.descendant(of: card, matching: find.text('4')), findsOne);
+      expect(
+        find.descendant(of: card, matching: find.text('4 SETS')),
+        findsOne,
+      );
       await tester.tap(card);
       await tester.pumpAndSettle();
 

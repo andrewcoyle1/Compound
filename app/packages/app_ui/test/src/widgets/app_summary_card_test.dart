@@ -69,6 +69,24 @@ void main() {
       );
     });
 
+    testWidgets('reads a chart under a number after the number', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const AppSummaryCard(
+          title: 'Steps',
+          value: '6,240',
+          chart: _ring,
+          semanticValue: 'Up from 5,100',
+          footer: 'Today',
+        ),
+      );
+      expect(
+        tester.getSemantics(_card),
+        matchesSemantics(label: 'Steps', value: '6,240, Up from 5,100, Today'),
+      );
+    });
+
     testWidgets('as a button: one tap target, a haptic and a chevron', (
       tester,
     ) async {

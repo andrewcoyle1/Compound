@@ -104,7 +104,13 @@ class _StackMachineEditorState extends State<StackMachineEditorPage>
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+          // Cards inset from the edges, as every grouped list is.
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            0,
+            AppSpacing.l,
+            AppSpacing.xl,
+          ),
           children: [
             if (GymEditorRules.isCustom(widget.list, machine))
               MachineNameField(list: widget.list, machine: machine),

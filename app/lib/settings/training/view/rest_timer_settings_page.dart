@@ -29,11 +29,9 @@ class RestTimerSettingsPage extends StatelessWidget {
           String subtitle,
           String key, {
           required bool value,
-          IconData? icon,
         }) => AppListRowToggle(
           title: title,
           subtitle: subtitle,
-          icon: icon,
           value: value,
           onChanged: (value) => change({key: value}),
         );
@@ -46,12 +44,10 @@ class RestTimerSettingsPage extends StatelessWidget {
                 l10n.restTimerUseRestTimersSubtitle,
                 WorkoutSettingsKeys.useRestTimers,
                 value: settings.useRestTimers,
-                icon: AppSymbols.rest,
               ),
               AppListRowButton(
                 title: l10n.restTimerDuration,
                 subtitle: l10n.restTimerDurationSubtitle,
-                icon: AppSymbols.duration,
                 onPressed: () => context.pushNamed(TimerDurationPage.name),
               ),
               toggle(
@@ -59,7 +55,6 @@ class RestTimerSettingsPage extends StatelessWidget {
                 l10n.restTimerAfterLastWarmUpSubtitle,
                 WorkoutSettingsKeys.restAfterLastWarmUp,
                 value: settings.restAfterLastWarmUp,
-                icon: AppSymbols.warmup,
               ),
               toggle(
                 l10n.restTimerBetweenExercises,
@@ -72,7 +67,6 @@ class RestTimerSettingsPage extends StatelessWidget {
                 l10n.restTimerBetweenSidesSubtitle,
                 WorkoutSettingsKeys.restBetweenSideSets,
                 value: settings.restBetweenSideSets,
-                icon: AppSymbols.splitSides,
               ),
             ],
           ),
@@ -211,7 +205,6 @@ class _AmrapSection extends StatelessWidget {
         AppListRowToggle(
           title: l10n.restTimerRaiseTarget,
           subtitle: l10n.restTimerRaiseTargetSubtitle,
-          icon: AppSymbols.doNext,
           value: raises,
           onChanged: (value) =>
               change({WorkoutSettingsKeys.amrapRaisesTarget: value}),
@@ -222,7 +215,6 @@ class _AmrapSection extends StatelessWidget {
           subtitle: addsWeight
               ? l10n.restTimerAddWeightAt(ceiling)
               : l10n.restTimerAddWeightOff,
-          icon: AppSymbols.add,
           value: addsWeight,
           onChanged: raises
               ? (value) => change({WorkoutSettingsKeys.amrapAddsWeight: value})

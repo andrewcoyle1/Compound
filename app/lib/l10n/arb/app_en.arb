@@ -6422,15 +6422,6 @@
     "@expenditureSettingsTodayHeader": {
         "description": "Expenditure settings: header over the estimate"
     },
-    "expenditureSettingsKcal": "{kcal} kcal",
-    "@expenditureSettingsKcal": {
-        "description": "Today's expenditure figure",
-        "placeholders": {
-            "kcal": {
-                "type": "int"
-            }
-        }
-    },
     "expenditureSettingsFixed": "Fixed",
     "@expenditureSettingsFixed": {
         "description": "Expenditure source: held fixed; also the Fixed calculation mode"
@@ -13962,5 +13953,9 @@
     "devSettingsTipsReset": "Tips will show again.",
     "@devSettingsTipsReset": {
         "description": "Developer tools: notice after Reset Tips"
+    },
+    "settingsAccountFree": "Free",
+    "@settingsAccountFree": {
+        "description": "Settings: the account card's chip for someone without Premium"
     }
 }

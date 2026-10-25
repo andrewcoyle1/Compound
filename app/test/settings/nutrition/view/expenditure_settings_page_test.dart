@@ -30,9 +30,9 @@ void main() {
   group(ExpenditureSettingsPage, () {
     testWidgets("shows today's figure and where it came from", (tester) async {
       await pump(tester);
-      expect(find.textContaining(' kcal'), findsOneWidget);
+      expect(find.textContaining(' KCAL', findRichText: true), findsOneWidget);
       expect(
-        find.text(
+        find.textContaining(
           'Calibrating: estimated from your profile until 21 days and 14 '
           'weigh-ins are logged',
         ),

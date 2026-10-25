@@ -44,23 +44,19 @@ class AboutView extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
-              Text(
-                version == null
+              AppSection(
+                footer: version == null
                     ? l10n.aboutBody
                     : l10n.aboutBodyVersion(version.version, version.build),
-                style: AppTextStyles.rowTitle,
+                children: [
+                  AppListRowButton(
+                    title: l10n.aboutViewLicences,
+                    onPressed: () => context.pushNamed(LicencesPage.name),
+                  ),
+                ],
               ),
             ],
           ),
-        ),
-        bottomNavigationBar: AppBottomCta(
-          children: [
-            AppCtaButton(
-              label: l10n.aboutViewLicences,
-              variant: AppCtaVariant.secondary,
-              onPressed: () => context.pushNamed(LicencesPage.name),
-            ),
-          ],
         ),
       ),
     );

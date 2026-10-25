@@ -30,11 +30,9 @@ class WorkoutSettingsPage extends StatelessWidget {
           String subtitle,
           String key, {
           required bool value,
-          IconData? icon,
         }) => AppListRowToggle(
           title: title,
           subtitle: subtitle,
-          icon: icon,
           value: value,
           onChanged: (value) => change({key: value}),
         );
@@ -45,13 +43,11 @@ class WorkoutSettingsPage extends StatelessWidget {
               AppListRowButton(
                 title: l10n.workoutSettingsRestTimer,
                 subtitle: l10n.workoutSettingsRestTimerSubtitle,
-                icon: AppSymbols.rest,
                 onPressed: () => context.pushNamed(RestTimerSettingsPage.name),
               ),
               AppListRowButton(
                 title: l10n.workoutSettingsSmartProgression,
                 subtitle: l10n.workoutSettingsSmartProgressionSubtitle,
-                icon: AppSymbols.smartProgression,
                 onPressed: () =>
                     context.pushNamed(SmartProgressionSettingsPage.name),
               ),
@@ -72,11 +68,9 @@ class WorkoutSettingsPage extends StatelessWidget {
                 l10n.workoutSettingsSupersetAutoScrollSubtitle,
                 WorkoutSettingsKeys.supersetAutoScroll,
                 value: settings.supersetAutoScroll,
-                icon: AppSymbols.superset,
               ),
               SettingsMenuRow<int?>(
                 title: l10n.workoutSettingsSupersetRest,
-                icon: AppSymbols.rest,
                 value: settings.supersetTransitionRestSeconds,
                 options: [
                   for (final seconds in supersetTransitionRestOptions)
@@ -142,14 +136,12 @@ class WorkoutSettingsPage extends StatelessWidget {
                 l10n.workoutSettingsWorkoutTimerSubtitle,
                 WorkoutSettingsKeys.showWorkoutTimer,
                 value: settings.showWorkoutTimer,
-                icon: AppSymbols.duration,
               ),
               toggle(
                 l10n.workoutSettingsBodyweight,
                 l10n.workoutSettingsBodyweightSubtitle,
                 WorkoutSettingsKeys.showBodyweightContribution,
                 value: settings.showBodyweightContribution,
-                icon: AppSymbols.scaleWeight,
               ),
               toggle(
                 l10n.workoutSettingsLockScreen,
@@ -162,7 +154,6 @@ class WorkoutSettingsPage extends StatelessWidget {
                 l10n.workoutSettingsSetPlanSubtitle,
                 WorkoutSettingsKeys.setPlanning,
                 value: settings.plansSets,
-                icon: AppSymbols.set,
               ),
             ],
           ),
@@ -174,7 +165,6 @@ class WorkoutSettingsPage extends StatelessWidget {
                 l10n.workoutSettingsSmartWarmUpsSubtitle,
                 WorkoutSettingsKeys.addSmartWarmUps,
                 value: settings.addSmartWarmUps,
-                icon: AppSymbols.warmup,
               ),
             ],
           ),

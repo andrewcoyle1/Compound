@@ -26,6 +26,19 @@ void main() {
       );
     });
 
+    testWidgets('can be held', (tester) async {
+      var holds = 0;
+      await tester.pumpApp(
+        AppListRowButton(
+          title: 'Steps',
+          onPressed: () {},
+          onLongPress: () => holds++,
+        ),
+      );
+      await tester.longPress(find.text('Steps'));
+      expect(holds, 1);
+    });
+
     testWidgets('passes a thumbnail to the row', (tester) async {
       await tester.pumpApp(
         AppListRowButton(

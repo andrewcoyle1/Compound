@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/today/logic/today_checklist.dart';
 import 'package:compound/today/view/day_checklist_card.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -28,6 +29,69 @@ void main() {
       expect(find.text('176.4\u00a0lb'), findsOneWidget);
       expect(find.textContaining('Step goal'), findsNothing);
       expect(find.bySemanticsLabel(RegExp('Weigh In')), findsOneWidget);
+    });
+
+    testWidgets('as the hero: done out of all, a ring and the next item', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const SingleChildScrollView(
+          child: DayChecklistCard(
+            showsHero: true,
+            checklist: TodayChecklist([
+              WeighInItem(isToday: true, latestKg: 80),
+              TrainingItem(),
+              StepsItem(today: 100, goal: 8000),
+            ]),
+            stepGoal: 8000,
+            unit: AppWeightUnit.kilograms,
+          ),
+        ),
+      );
+      expect(find.text('YOUR DAY'), findsOneWidget);
+      expect(find.text('Your Day'), findsNothing);
+      expect(find.text('1/3 DONE'), findsOneWidget);
+      expect(find.text('Next: Train'), findsOneWidget);
+      expect(tester.widget<ProgressArc>(find.byType(ProgressArc)).value, 1 / 3);
+      expect(find.text('Day Complete'), findsNothing);
+    });
+
+    testWidgets('as the hero, complete: the ring closes and the day is '
+        'marked in the accent', (tester) async {
+      await tester.pumpApp(
+        const SingleChildScrollView(
+          child: DayChecklistCard(
+            showsHero: true,
+            checklist: TodayChecklist([
+              WeighInItem(isToday: true, latestKg: 80),
+            ]),
+            stepGoal: 8000,
+            unit: AppWeightUnit.kilograms,
+          ),
+        ),
+      );
+      expect(tester.widget<ProgressArc>(find.byType(ProgressArc)).value, 1);
+      final chip = tester.widget<AppChip>(
+        find.widgetWithText(AppChip, 'Day Complete'),
+      );
+      expect(chip.selected, isTrue);
+      expect(find.textContaining('Next:'), findsNothing);
+    });
+
+    testWidgets('as the hero with nothing to do, the ring is empty', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const SingleChildScrollView(
+          child: DayChecklistCard(
+            showsHero: true,
+            checklist: TodayChecklist([]),
+            stepGoal: 8000,
+            unit: AppWeightUnit.kilograms,
+          ),
+        ),
+      );
+      expect(tester.widget<ProgressArc>(find.byType(ProgressArc)).value, 0);
     });
 
     testWidgets('shows the weigh-in slot under the weigh-in until it is '

@@ -150,6 +150,9 @@ void main() {
     expect(find.text('Connect Strava'), findsOneWidget);
 
     health.steps.add((date: now, steps: 4321));
+    // Getting started sits under the day's hero and checklist.
+    await tester.ensureVisible(find.text('Connect Health Connect'));
+    await settle(tester);
     await tester.tap(find.text('Connect Health Connect'));
     await settle(tester);
     expect(health.requested, contains(HealthScope.steps));

@@ -248,7 +248,7 @@ class const _RestDay({required final TodaysWorkout workout})
         children: [
           _Footer(
             icon: AppSymbols.restDay,
-            tint: Theme.of(context).colorScheme.primary,
+            tint: context.appColors.accentInk,
             title: l10n.programRestDay,
             subtitle: l10n.programRestDayMessage,
           ),
@@ -277,13 +277,14 @@ class const _Completed({
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final session = workout.completedSession;
-    final success = context.appColors.success;
+    // Done is the accent, not success green.
+    final done = context.appColors.accentInk;
     if (session == null) {
       return Padding(
         padding: const EdgeInsets.all(AppSpacing.l),
         child: _Footer(
           icon: AppSymbols.success,
-          tint: success,
+          tint: done,
           title: plan.name,
           subtitle: l10n.programCompletedToday,
         ),
@@ -328,7 +329,7 @@ class const _Completed({
             children: [
               _Footer(
                 icon: AppSymbols.success,
-                tint: success,
+                tint: done,
                 title: plan.name,
                 subtitle: figures,
                 chevron: true,
@@ -422,7 +423,7 @@ class const _Start({
                   const Divider(height: 1),
                   _Footer(
                     icon: AppSymbols.workout,
-                    tint: scheme.primary,
+                    tint: context.appColors.accentInk,
                     title: plan.name,
                     subtitle: subtitle.isEmpty
                         ? l10n.exerciseCount(plan.exercises.length)

@@ -250,7 +250,7 @@ class _ConsentGate extends StatelessWidget {
           child: Icon(
             AppSymbols.coach,
             size: AppIconSize.large.of(context),
-            color: Theme.of(context).colorScheme.primary,
+            color: context.appColors.accentInk,
           ),
         ),
         const SizedBox(height: AppSpacing.s),

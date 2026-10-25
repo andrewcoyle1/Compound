@@ -410,11 +410,13 @@ class SetTableRow extends StatelessWidget {
           onTap: () => cubit.toggleSet(set.id),
           child: SizedBox.square(
             dimension: AppControlSize.row,
-            child: Icon(
-              isLogged ? AppSymbols.success : AppSymbols.choiceUnselected,
-              size: AppIconSize.medium.of(context),
-              color: isLogged ? colors.success : scheme.onSurfaceVariant,
-            ),
+            child: isLogged
+                ? const AppDoneMark()
+                : Icon(
+                    AppSymbols.choiceUnselected,
+                    size: AppIconSize.medium.of(context),
+                    color: scheme.onSurfaceVariant,
+                  ),
           ),
         ),
       ),
@@ -446,7 +448,7 @@ class SetTableRow extends StatelessWidget {
         onLongPress: () => unawaited(_menu(context, badge)),
         child: ColoredBox(
           color: isNext
-              ? AppColors.tintedSurface(scheme.primary)
+              ? AppColors.tintedSurface(colors.accentInk)
               : Colors.transparent,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AppControlSize.row),
@@ -612,7 +614,7 @@ class _Cell extends StatelessWidget {
                 Radius.circular(AppRadius.s),
               ),
               side: isActive
-                  ? BorderSide(color: scheme.primary, width: 2)
+                  ? BorderSide(color: context.appColors.accentInk, width: 2)
                   : BorderSide.none,
             ),
           ),

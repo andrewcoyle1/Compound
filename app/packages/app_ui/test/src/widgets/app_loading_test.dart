@@ -14,7 +14,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpApp(const Center(child: AppSpinner()));
-      expect(dots(tester).color, AppTheme.light.colorScheme.primary);
+      expect(dots(tester).color, AppColors.light.accentInk);
       expect(dots(tester).size, AppIconSize.medium.points);
       expect(
         tester.getSize(find.byType(AppSpinner)),

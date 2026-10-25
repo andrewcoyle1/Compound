@@ -144,7 +144,7 @@ class AppListRow extends StatelessWidget {
         ? Icon(
             icon,
             size: scaler.scale(AppControlSize.icon),
-            color: tint ?? danger ?? scheme.primary,
+            color: tint ?? danger ?? context.appColors.accentInk,
           )
         : thumbnail != null
         ? ClipRSuperellipse(
@@ -220,7 +220,7 @@ class AppListRow extends StatelessWidget {
       AppListRowCheckmark(:final selected) => Icon(
         selected ? AppSymbols.choiceSelected : AppSymbols.choiceUnselected,
         size: glyphSize,
-        color: selected ? scheme.primary : scheme.outline,
+        color: selected ? context.appColors.accentInk : scheme.outline,
       ),
       AppListRowCustom(pinned: true, :final child) => child,
       _ => null,

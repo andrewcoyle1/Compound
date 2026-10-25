@@ -100,11 +100,22 @@ Two faces, each with one job.
 
 | Face | For | Styles |
 |---|---|---|
-| **Barlow Condensed** (Google Fonts, Open Font License, bundled in `app_ui`), weights 700 and 800, tabular figures | Large titles, hero numbers, stats, celebration text | `largeTitle` (new), `display`, `metricLarge`, `metric` |
+| **Barlow Condensed** (Google Fonts, Open Font License, bundled in `app_ui`), weights 700 and 800 (900 bundled too), tabular figures | Large titles, hero numbers, stats, celebration text | `largeTitle` (new), `display`, `metricLarge`, `metric` |
 | **System** (San Francisco on iOS, Roboto on Android) | Everything you read: rows, body, buttons, labels | `sectionTitle`, `rowTitle`, `rowDetail`, `label`, `overline` (new), and `metricSmall`, which moves to the system face with tabular figures because it sits inline with row text |
 
 - Barlow Condensed replaces Nunito. It is narrow, so its styles sit one step above the iOS size
-  they replace. Large titles are 34 pt → 40 pt; the exact ramp is set in the preview PR by eye.
+  they replace. The ramp, set in the preview PR:
+
+  | Style | Face | Size / line | Weight |
+  |---|---|---|---|
+  | `largeTitle` | Barlow Condensed | 40 / 44 | 800 |
+  | `display` | Barlow Condensed | 44 / 48 | 800 |
+  | `metricLarge` | Barlow Condensed | 34 / 38 | 800 |
+  | `metric` | Barlow Condensed | 24 / 28 | 700 |
+  | `metricSmall` | System | 15 / 20 | 600 |
+  | `overline` | System | 12 / 16, +0.6 | 600 |
+
+  The system styles (`sectionTitle`, `rowTitle`, `rowDetail`, `label`) keep iOS's sizes.
 - **A stat is a number over an overline.** The number is in `metric` or bigger, and the overline
   is the unit or name, in `overline`: 12 pt semibold system, all caps, tracked +0.6. For example,
   "1,842" over "KCAL LEFT", or "101 KG" over "EST. 1RM". All caps is for overlines only, never
@@ -113,8 +124,10 @@ Two faces, each with one job.
   adds `fontFeatures` itself.
 - **Secondary text uses its token.** A style comes with a `.secondary` variant
   (`AppTextStyles.rowDetail.secondary`) instead of `copyWith(color: …)` on each screen.
-- **Bold Text** (`MediaQuery.boldTextOf`) moves every style up one weight; Barlow Condensed goes
-  to 900. Every style scales with the user's text size, up to 200%.
+- **Bold Text** (`MediaQuery.boldTextOf`) moves the system styles to bold (Flutter sets every
+  style to 700). Barlow Condensed keeps its weight: Flutter cannot make it heavier without a
+  variable font, so `app_ui` only makes sure Bold Text never draws it lighter. Every style
+  scales with the user's text size, up to 200%.
 
 ## Shape and space
 

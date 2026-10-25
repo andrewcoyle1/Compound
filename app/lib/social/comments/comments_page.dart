@@ -226,7 +226,9 @@ class _CommentRow extends StatelessWidget {
         ..add(
           TextSpan(
             text: comment.text.substring(start, end),
-            style: AppTextStyles.rowDetail.copyWith(color: scheme.primary),
+            style: AppTextStyles.rowDetail.copyWith(
+              color: context.appColors.accentInk,
+            ),
           ),
         );
       cursor = end;

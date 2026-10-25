@@ -2,8 +2,8 @@ import 'package:app_ui/app_ui.dart';
 
 /// {@template app_text_button}
 /// A low-emphasis action drawn as text: See All, Not now, Skip. The label is
-/// in the accent, or `danger` when [isDestructive]. Its tap target is at
-/// least 44 pt.
+/// in the accent's ink ([AppColors.accentInk]), or `danger` when
+/// [isDestructive]. Its tap target is at least 44 pt.
 ///
 /// An [inline] one is a link inside content, such as "Edit Weights" under a
 /// row's detail: it has no side padding, so it lines up with the text
@@ -45,7 +45,7 @@ class AppTextButton extends StatelessWidget {
     style: TextButton.styleFrom(
       foregroundColor: isDestructive
           ? context.appColors.danger
-          : Theme.of(context).colorScheme.primary,
+          : context.appColors.accentInk,
       padding: inline
           ? EdgeInsets.zero
           : const EdgeInsets.symmetric(horizontal: AppSpacing.s),

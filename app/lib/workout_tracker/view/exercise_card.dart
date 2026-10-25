@@ -470,7 +470,7 @@ class _ProgressionNote extends StatelessWidget {
         0,
       ),
       child: Material(
-        color: AppColors.tintedSurface(scheme.primary),
+        color: AppColors.tintedSurface(context.appColors.accentInk),
         shape: shape,
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -563,7 +563,6 @@ class _RestLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     return Tick(
       builder: (context, now) {
         final end = state.restEnd;
@@ -591,12 +590,12 @@ class _RestLine extends StatelessWidget {
                 Icon(
                   AppSymbols.rest,
                   size: AppIconSize.small.of(context),
-                  color: scheme.primary,
+                  color: context.appColors.accentInk,
                 ),
                 Text(
                   text,
                   style: AppTextStyles.label.semibold.copyWith(
-                    color: scheme.primary,
+                    color: context.appColors.accentInk,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),

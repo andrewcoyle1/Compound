@@ -184,7 +184,8 @@ class _RingedAvatar extends StatelessWidget {
               strokeWidth: ring,
               strokeCap: StrokeCap.round,
               backgroundColor: scheme.surfaceContainerHighest,
-              color: progress >= 1 ? colors.success : scheme.primary,
+              // Done is the accent: a closed ring stays in it.
+              color: colors.accentInk,
             ),
           ),
           if (member.trainedToday)
@@ -206,11 +207,7 @@ class _RingedAvatar extends StatelessWidget {
                   shape: const CircleBorder(),
                   color: colors.canvas,
                 ),
-                child: Icon(
-                  AppSymbols.success,
-                  size: AppIconSize.small.of(context),
-                  color: colors.success,
-                ),
+                child: const AppDoneMark(size: AppIconSize.small),
               ),
             ),
         ],

@@ -70,7 +70,7 @@ class VolumeRecommendationSection extends StatelessWidget {
               title: headline,
               subtitle: detail,
               icon: icon,
-              tint: tint ?? Theme.of(context).colorScheme.primary,
+              tint: tint ?? context.appColors.accentInk,
             ),
             AppListRow(
               title: l10n.volumeRecentWeeks,

@@ -41,7 +41,8 @@ class AppChip extends StatelessWidget {
   /// An icon before the text.
   final IconData? icon;
 
-  /// The chip's colour. Defaults to the accent.
+  /// The chip's colour. Defaults to the accent: volt when [selected],
+  /// [AppColors.accentInk] otherwise.
   final Color? tint;
 
   /// Whether the chip is selected: filled, and announced as selected.
@@ -56,7 +57,10 @@ class AppChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final tint = this.tint ?? scheme.primary;
+    // Unselected, the default tint is text on a tint, so it takes the
+    // accent's ink; selected, it is a volt fill.
+    final tint =
+        this.tint ?? (selected ? scheme.primary : context.appColors.accentInk);
     final large = size == AppChipSize.large;
     final foreground = selected
         ? scheme.onPrimary

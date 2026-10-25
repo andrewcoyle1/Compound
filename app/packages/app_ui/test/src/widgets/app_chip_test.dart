@@ -11,7 +11,7 @@ void main() {
   group('AppChip', () {
     testWidgets('unselected is the tint on its tinted surface', (tester) async {
       await tester.pumpApp(const AppChip(label: 'All'));
-      final accent = AppTheme.light.colorScheme.primary;
+      final accent = AppColors.light.accentInk;
       expect(_decoration(tester).color, AppColors.tintedSurface(accent));
       expect(tester.widget<Text>(find.text('All')).style?.color, accent);
       expect(tester.getSize(find.byType(AppChip)).height, lessThan(44));

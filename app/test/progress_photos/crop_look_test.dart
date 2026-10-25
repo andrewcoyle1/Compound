@@ -24,7 +24,7 @@ void main() {
     expect(look.cancel, 'Cancel');
     expect(look.toolbar, AppTheme.light.colorScheme.surface);
     expect(look.onToolbar, AppTheme.light.colorScheme.onSurface);
-    expect(look.accent, AppTheme.light.colorScheme.primary);
+    expect(look.accent, AppColors.light.accentInk);
     expect(look.background, AppColors.light.canvas);
     expect(look.brightness, Brightness.light);
   });

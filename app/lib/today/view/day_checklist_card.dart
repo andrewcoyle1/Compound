@@ -79,7 +79,7 @@ class DayChecklistCard extends StatelessWidget {
               ? AppChip(
                   label: l10n.todayDayComplete,
                   icon: AppSymbols.success,
-                  tint: colors.success,
+                  tint: colors.accentInk,
                 )
               : Text(
                   l10n.todayDoneCount(
@@ -180,15 +180,13 @@ class _ItemRow extends StatelessWidget {
               ExcludeSemantics(
                 child: AppConfetti(
                   play: celebrate,
-                  child: Icon(
-                    item.isDone
-                        ? AppSymbols.success
-                        : AppSymbols.choiceUnselected,
-                    size: AppIconSize.medium.of(context),
-                    color: item.isDone
-                        ? context.appColors.success
-                        : scheme.outline,
-                  ),
+                  child: item.isDone
+                      ? const AppDoneMark()
+                      : Icon(
+                          AppSymbols.choiceUnselected,
+                          size: AppIconSize.medium.of(context),
+                          color: scheme.outline,
+                        ),
                 ),
               ),
               pinned: true,
@@ -332,7 +330,7 @@ class _FooterState extends State<_Footer> {
               style: style.copyWith(
                 fontFamily: glyph.fontFamily,
                 package: glyph.fontPackage,
-                color: scheme.primary,
+                color: context.appColors.accentInk,
               ),
             ),
           ],

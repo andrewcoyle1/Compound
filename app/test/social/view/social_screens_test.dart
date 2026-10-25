@@ -68,13 +68,22 @@ void main() {
 
       expect(find.text('Charlie'), findsOneWidget);
       expect(find.text('Nudge'), findsWidgets);
-      expect(find.text('This Week'), findsOneWidget);
+      expect(find.text('THIS WEEK'), findsOneWidget);
       expect(find.text('Workout Feed'), findsOneWidget);
       expect(find.text('Find People'), findsOneWidget);
 
-      await tester.tap(find.text('This Week'));
+      // The hero: the reader's place, the top three, and the whole table
+      // from See All.
+      expect(find.text('OF 5 IN YOUR CIRCLE'), findsOneWidget);
+      expect(find.textContaining('. You'), findsOneWidget);
+      await tester.tap(find.text('See All').first);
       await tester.pumpAndSettle();
-      expect(find.text('You'), findsOneWidget);
+      expect(find.textContaining('. You'), findsNWidgets(2));
+      await tester.tap(find.textContaining('. Charlie').last);
+      await settle(tester);
+      expect(find.byType(SocialProfilePage), findsOneWidget);
+      await tester.pageBack();
+      await settle(tester);
 
       await tester.tap(find.text('Nudge').first);
       await settle(tester);

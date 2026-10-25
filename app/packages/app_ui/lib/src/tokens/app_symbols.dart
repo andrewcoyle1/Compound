@@ -440,6 +440,9 @@ abstract final class AppSymbols {
   /// The leader of the week.
   static const IconData leader = Icons.workspace_premium_outlined;
 
+  /// A challenge among the circle (`flag.pattern.checkered`).
+  static const IconData challenge = Icons.sports_score_outlined;
+
   // Status
 
   /// Information.

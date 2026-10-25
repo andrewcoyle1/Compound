@@ -21,6 +21,7 @@ import 'package:compound/social/social_routes.dart';
 import 'package:compound/social/view/circle_strip.dart';
 import 'package:compound/social/view/people_widgets.dart';
 import 'package:compound/social/weekly_goal/weekly_goal_sheet.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -120,6 +121,7 @@ class _SocialViewState extends State<SocialView> {
           previous.isFeedLoading != current.isFeedLoading,
       listener: (_, circle) => _maybeLoadSuggestions(circle),
       child: AppScaffold(
+        maxWidth: AppContentWidth.dashboard,
         largeTitle: l10n.tabSocial,
         actions: const [_NotificationsButton(), ProfileButton()],
         body: SafeArea(
@@ -249,6 +251,9 @@ class _SearchResults extends StatelessWidget {
   }
 }
 
+/// The tab as a dashboard: the week's standings as the hero, the circle's
+/// faces, the prompts, the challenges, then the feed. Wide, the summaries
+/// sit in a column beside the feed.
 class _Dashboard extends StatelessWidget {
   const new({required this.onFindPeople});
 
@@ -291,220 +296,224 @@ class _Dashboard extends StatelessWidget {
       for (final user in context.watch<SocialCubit>().state)
         if (!(viewer.followingIds?.contains(user.userId) ?? false)) user,
     ];
-    const gutter = EdgeInsets.fromLTRB(
-      AppSpacing.l,
-      0,
-      AppSpacing.l,
-      AppSpacing.m,
-    );
-    return ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-      children: [
-        if (members.isNotEmpty)
-          CircleStrip(
-            members: members,
-            onMemberPressed: (member) {
-              cubit.pressed('CircleMember_Press');
-              SocialNavigation.openProfile(context, member.user);
-            },
-            onNudgePressed: (member) {
-              unawaited(AppHaptics.light());
-              context.read<CircleBloc>().add(CircleNudgePressed(member));
-            },
-            onSetGoalPressed: viewer.weeklySessionGoal == null
-                ? () {
-                    cubit.pressed('SetWeeklyGoal_Press');
-                    unawaited(showWeeklyGoalSheet(context, viewer));
-                  }
-                : null,
+    void openStanding(UserModel user) {
+      cubit.pressed('LeaderboardRow_Press');
+      SocialNavigation.openProfile(context, user);
+    }
+
+    final summaries = <Widget>[
+      // The hero: where the reader stands in the circle this week.
+      if (members.isNotEmpty)
+        _WeekHero(
+          standings: CircleWeek.standings(
+            users: [for (final member in members) member.user],
+            sessions: sessions,
+            now: now,
+            firstDayOfWeek: firstDay,
           ),
-        if (viewer.username == null && !circle.usernameBannerDismissed)
-          Padding(
-            padding: gutter,
-            child: _Banner(
-              icon: AppSymbols.username,
-              iconColor: context.appColors.accentInk,
-              text: l10n.socialPickUsername,
-              dismissLabel: l10n.socialDismiss,
-              onPressed: () {
-                cubit.pressed('PickUsername_Press');
-                SocialNavigation.openUsername(context);
-              },
-              onDismissed: () => context.read<CircleBloc>().add(
-                const CircleUsernameBannerDismissed(),
-              ),
-            ),
-          ),
-        if (summary != null)
-          Padding(
-            padding: gutter,
-            child: _Banner(
-              icon: AppSymbols.streak,
-              iconColor: context.appColors.accentInk,
-              text: l10n.socialWeeklySummary(
-                summary.circleSessions,
-                summary.ownSessions,
-                summary.ownGoal,
-              ),
-              dismissLabel: l10n.socialDismissSummary,
-              onDismissed: () => context.read<CircleBloc>().add(
-                CircleWeeklySummaryDismissed(summary.weekStart),
-              ),
-            ),
-          ),
-        if (circle.showsInviteCard)
-          Padding(
-            padding: gutter,
-            child: _Banner(
-              icon: AppSymbols.invite,
-              iconColor: context.appColors.accentInk,
-              text: l10n.inviteCardTitle,
-              detail: l10n.inviteCardMessage,
-              dismissLabel: l10n.socialDismiss,
-              onPressed: () {
-                context.read<CircleBloc>().add(
-                  const CircleInviteCardDismissed(),
-                );
-                unawaited(
-                  context.read<InviteCubit>().shareRequested(
-                    viewer.userId,
-                    pressedEvent: 'SocialView_InviteCard_Press',
-                  ),
-                );
-              },
-              onDismissed: () {
-                cubit.pressed('InviteCard_Dismiss');
-                context.read<CircleBloc>().add(
-                  const CircleInviteCardDismissed(),
-                );
-              },
-            ),
-          ),
-        if (members.isNotEmpty)
-          Padding(
-            padding: gutter,
-            child: _Leaderboard(
-              standings: CircleWeek.standings(
-                users: [for (final member in members) member.user],
-                sessions: sessions,
-                now: now,
-                firstDayOfWeek: firstDay,
-              ),
-              viewerId: viewer.userId,
-              onPressed: (user) {
-                cubit.pressed('LeaderboardRow_Press');
-                SocialNavigation.openProfile(context, user);
-              },
-            ),
-          ),
-        if (challenges.isNotEmpty || members.isNotEmpty)
-          ChallengesSection(
-            cards: challenges,
-            viewerId: viewer.userId,
-            onCardPressed: (card) {
-              cubit.pressed('Challenge_Press');
-              ChallengeNavigation.open(context, card.challenge);
-            },
-            onCreatePressed: () {
-              cubit.pressed('CreateChallenge_Press');
-              ChallengeNavigation.openNew(context);
-            },
-          ),
-        Padding(
-          padding: gutter,
-          child: AppSection(
-            header: l10n.socialWorkoutFeed,
-            trailing: feed.isEmpty
-                ? null
-                : AppChip(
-                    label: l10n.socialFindPeople,
-                    onPressed: onFindPeople,
-                  ),
-            grouped: false,
-            children: [
-              if (circle.isFeedLoading)
-                AppCard(
-                  child: Column(
-                    children: [
-                      AppPlaceholderRow(
-                        hasLeading: true,
-                        semanticLabel: l10n.launchLoading,
-                      ),
-                      const AppPlaceholderRow(),
-                    ],
-                  ),
-                )
-              else if (feed.isEmpty)
-                AppEmptyState(
-                  icon: AppSymbols.friends,
-                  title: l10n.socialNoActivityTitle,
-                  description: l10n.socialNoActivityMessage,
-                  actionLabel: l10n.socialFindPeople,
-                  onAction: onFindPeople,
-                )
-              else
-                for (final session in feed)
-                  if (circle.authorOf(session) case final author?)
-                    FeedSessionCard(
-                      key: ValueKey(session.id),
-                      entry: feedEntry(
-                        session,
-                        sessions,
-                        firstDayOfWeek: firstDay,
-                      ),
-                      author: author,
-                      viewer: viewer,
-                    ),
-            ],
+          viewerId: viewer.userId,
+          onPressed: openStanding,
+        ),
+      if (members.isNotEmpty)
+        CircleStrip(
+          members: members,
+          onMemberPressed: (member) {
+            cubit.pressed('CircleMember_Press');
+            SocialNavigation.openProfile(context, member.user);
+          },
+          onNudgePressed: (member) {
+            unawaited(AppHaptics.light());
+            context.read<CircleBloc>().add(CircleNudgePressed(member));
+          },
+          onSetGoalPressed: viewer.weeklySessionGoal == null
+              ? () {
+                  cubit.pressed('SetWeeklyGoal_Press');
+                  unawaited(showWeeklyGoalSheet(context, viewer));
+                }
+              : null,
+        ),
+      if (viewer.username == null && !circle.usernameBannerDismissed)
+        _Banner(
+          icon: AppSymbols.username,
+          text: l10n.socialPickUsername,
+          dismissLabel: l10n.socialDismiss,
+          onPressed: () {
+            cubit.pressed('PickUsername_Press');
+            SocialNavigation.openUsername(context);
+          },
+          onDismissed: () => context.read<CircleBloc>().add(
+            const CircleUsernameBannerDismissed(),
           ),
         ),
-        if (!circle.isFeedLoading && feed.isEmpty && suggestions.isNotEmpty)
-          Padding(
-            padding: gutter,
-            child: AppSection(
-              children: [
-                for (final user in suggestions)
-                  UserRow(
-                    user: user,
-                    onPressed: () =>
-                        SocialNavigation.openProfile(context, user),
-                    trailing: FollowButton(
-                      state: circle.followState(user.userId),
-                      onPressed: () {
-                        cubit.pressed('SuggestedFollow_Press');
-                        context.read<CircleBloc>().add(
-                          CircleFollowPressed(user),
-                        );
-                      },
-                    ),
-                  ),
-              ],
+      // Last week's recap: the circle's total, the reader's own count.
+      if (summary != null)
+        AppSummaryCard(
+          title: l10n.socialLastWeek,
+          icon: AppSymbols.streak,
+          tint: context.appColors.workouts,
+          value: AppFormat.number(summary.circleSessions),
+          unit: l10n.socialCircleSessionsUnit(summary.circleSessions),
+          footer: l10n.socialLastWeekYou(summary.ownSessions, summary.ownGoal),
+          trailing: AppChip(
+            label: l10n.todayStarterHide,
+            onPressed: () => context.read<CircleBloc>().add(
+              CircleWeeklySummaryDismissed(summary.weekStart),
             ),
           ),
+        ),
+      if (circle.showsInviteCard)
+        _Banner(
+          icon: AppSymbols.invite,
+          text: l10n.inviteCardTitle,
+          detail: l10n.inviteCardMessage,
+          dismissLabel: l10n.socialDismiss,
+          onPressed: () {
+            context.read<CircleBloc>().add(const CircleInviteCardDismissed());
+            unawaited(
+              context.read<InviteCubit>().shareRequested(
+                viewer.userId,
+                pressedEvent: 'SocialView_InviteCard_Press',
+              ),
+            );
+          },
+          onDismissed: () {
+            cubit.pressed('InviteCard_Dismiss');
+            context.read<CircleBloc>().add(const CircleInviteCardDismissed());
+          },
+        ),
+      if (challenges.isNotEmpty || members.isNotEmpty)
+        ChallengesSection(
+          cards: challenges,
+          viewerId: viewer.userId,
+          onCardPressed: (card) {
+            cubit.pressed('Challenge_Press');
+            ChallengeNavigation.open(context, card.challenge);
+          },
+          onCreatePressed: () {
+            cubit.pressed('CreateChallenge_Press');
+            ChallengeNavigation.openNew(context);
+          },
+        ),
+    ];
+    final workouts = AppSection(
+      header: l10n.socialWorkoutFeed,
+      trailing: feed.isEmpty
+          ? null
+          : AppChip(label: l10n.socialFindPeople, onPressed: onFindPeople),
+      grouped: false,
+      children: [
+        if (circle.isFeedLoading)
+          AppCard(
+            child: Column(
+              children: [
+                AppPlaceholderRow(
+                  hasLeading: true,
+                  semanticLabel: l10n.launchLoading,
+                ),
+                const AppPlaceholderRow(),
+              ],
+            ),
+          )
+        else if (feed.isEmpty)
+          AppEmptyState(
+            icon: AppSymbols.friends,
+            title: l10n.socialNoActivityTitle,
+            description: l10n.socialNoActivityMessage,
+            actionLabel: l10n.socialFindPeople,
+            onAction: onFindPeople,
+          )
+        else
+          for (final session in feed)
+            if (circle.authorOf(session) case final author?)
+              FeedSessionCard(
+                key: ValueKey(session.id),
+                entry: feedEntry(session, sessions, firstDayOfWeek: firstDay),
+                author: author,
+                viewer: viewer,
+              ),
       ],
+    );
+    final feedSections = [
+      workouts,
+      if (!circle.isFeedLoading && feed.isEmpty && suggestions.isNotEmpty)
+        AppSection(
+          children: [
+            for (final user in suggestions)
+              UserRow(
+                user: user,
+                onPressed: () => SocialNavigation.openProfile(context, user),
+                trailing: FollowButton(
+                  state: circle.followState(user.userId),
+                  onPressed: () {
+                    cubit.pressed('SuggestedFollow_Press');
+                    context.read<CircleBloc>().add(CircleFollowPressed(user));
+                  },
+                ),
+              ),
+          ],
+        ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The strip of faces scrolls to the screen's edges; everything
+        // else keeps the margins.
+        Widget column(List<Widget> children) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.xl,
+          children: [
+            for (final child in children)
+              if (child is CircleStrip)
+                child
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                  child: child,
+                ),
+          ],
+        );
+        const padding = EdgeInsets.only(
+          top: AppSpacing.s,
+          bottom: AppSpacing.xl,
+        );
+        if (constraints.maxWidth < AppContentWidth.twoColumns) {
+          return ListView(
+            padding: padding,
+            children: [
+              column([...summaries, ...feedSections]),
+            ],
+          );
+        }
+        return SingleChildScrollView(
+          padding: padding,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: column(summaries)),
+              Expanded(child: column(feedSections)),
+            ],
+          ),
+        );
+      },
     );
   }
 }
 
-/// A one-line card with a close button: the username prompt and the
-/// Monday recap.
+/// A prompt with a close button: the username prompt and the invite.
 class _Banner extends StatelessWidget {
   const new({
     required this.icon,
-    required this.iconColor,
     required this.text,
     required this.dismissLabel,
     required this.onDismissed,
-    this.onPressed,
+    required this.onPressed,
     this.detail,
   });
 
   final IconData icon;
-  final Color iconColor;
   final String text;
   final String dismissLabel;
   final VoidCallback onDismissed;
-  final VoidCallback? onPressed;
+  final VoidCallback onPressed;
 
   /// A second line, under [text].
   final String? detail;
@@ -512,45 +521,47 @@ class _Banner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final detail = this.detail;
-    final content = Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.l,
-        AppSpacing.s,
-        0,
-        AppSpacing.s,
-      ),
-      child: Row(
-        spacing: AppSpacing.m,
-        children: [
-          ExcludeSemantics(
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: AppIconSize.medium.of(context),
-            ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: AppSpacing.xxs,
-              children: [
-                Text(text, style: AppTextStyles.rowTitle),
-                if (detail != null)
-                  Text(detail, style: AppTextStyles.label.secondary(context)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-    final onPressed = this.onPressed;
     return AppCard(
       child: Row(
         children: [
           Expanded(
-            child: onPressed == null
-                ? content
-                : AppPressable(onTap: onPressed, child: content),
+            child: AppPressable(
+              onTap: onPressed,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.l,
+                  AppSpacing.m,
+                  0,
+                  AppSpacing.m,
+                ),
+                child: Row(
+                  spacing: AppSpacing.m,
+                  children: [
+                    ExcludeSemantics(
+                      child: Icon(
+                        icon,
+                        color: context.appColors.accentInk,
+                        size: AppIconSize.medium.of(context),
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: AppSpacing.xxs,
+                        children: [
+                          Text(text, style: AppTextStyles.rowTitle.semibold),
+                          if (detail != null)
+                            Text(
+                              detail,
+                              style: AppTextStyles.label.secondary(context),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.s),
@@ -566,116 +577,139 @@ class _Banner extends StatelessWidget {
   }
 }
 
-/// "This Week": everyone in the circle ranked by sessions, collapsed by
-/// default (`CircleLeaderboardView`).
-class _Leaderboard extends StatelessWidget {
+/// The hero: the reader's place in the circle this week, in the largest
+/// number on the screen, beside a ring filling in the accent toward their
+/// weekly goal; the top of the standings under it, the reader always
+/// among them; and the whole table from See All
+/// (`CircleLeaderboardView`).
+class _WeekHero extends StatelessWidget {
   const new({
     required this.standings,
     required this.viewerId,
     required this.onPressed,
   });
 
+  /// Most sessions first.
   final List<CircleStanding> standings;
   final String viewerId;
   final ValueChanged<UserModel> onPressed;
 
+  /// How many rows the card holds (design-language.md: no more than
+  /// three).
+  static const shown = 3;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final colors = context.appColors;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    return AppCard(
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          title: Text(l10n.socialThisWeek, style: AppTextStyles.rowTitle),
-          childrenPadding: const EdgeInsets.fromLTRB(
-            AppSpacing.s,
-            0,
-            AppSpacing.s,
-            AppSpacing.s,
+    final index = standings.indexWhere((s) => s.user.userId == viewerId);
+    if (index < 0) return const SizedBox.shrink();
+    final own = standings[index];
+    final met = own.sessions >= own.goal;
+    final rows = [
+      for (final (rank, standing) in standings.indexed)
+        // The top three, or the top two and the reader below them.
+        if (index < shown ? rank < shown : rank < shown - 1 || rank == index)
+          _StandingRow(
+            rank: rank + 1,
+            standing: standing,
+            isOwn: rank == index,
+            onPressed: () => onPressed(standing.user),
           ),
-          children: [
-            for (final (index, standing) in standings.indexed)
-              () {
-                final rank = index + 1;
-                final isOwn = standing.user.userId == viewerId;
-                final name = isOwn
-                    ? l10n.socialYou
-                    : commonNameOf(standing.user) ?? l10n.socialUnknown;
-                final met = standing.sessions >= standing.goal;
-                return Semantics(
-                  button: true,
-                  hint: l10n.socialOpensProfile,
-                  label: l10n.socialStandingLabel(
-                    rank,
-                    name,
-                    standing.sessions,
-                    standing.goal,
-                  ),
-                  excludeSemantics: true,
-                  child: Material(
-                    color: isOwn
-                        ? AppColors.tintedSurface(scheme.primary)
-                        : Colors.transparent,
-                    shape: RoundedSuperellipseBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.m),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: AppPressable(
-                      onTap: () => onPressed(standing.user),
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.s),
-                        child: Row(
-                          spacing: AppSpacing.m,
-                          children: [
-                            SizedBox(
-                              width: MediaQuery.textScalerOf(context).scale(20),
-                              child: Text(
-                                AppFormat.number(rank, locale: locale),
-                                style: AppTextStyles.rowDetail.secondary(
-                                  context,
-                                ),
-                              ),
-                            ),
-                            UserAvatar(
-                              imageUrl: profileImageOf(standing.user),
-                              size: AppControlSize.compact,
-                            ),
-                            Flexible(
-                              child: Text(
-                                name,
-                                style: isOwn
-                                    ? AppTextStyles.rowDetail.semibold
-                                    : AppTextStyles.rowDetail,
-                              ),
-                            ),
-                            if (rank == 1 && standing.sessions > 0)
-                              Icon(
-                                AppSymbols.leader,
-                                color: colors.personalRecord,
-                                size: AppIconSize.small.of(context),
-                              ),
-                            const Spacer(),
-                            Text(
-                              '${standing.sessions}/${standing.goal}',
-                              style: met
-                                  ? AppTextStyles.metricSmall.accent(context)
-                                  : AppTextStyles.metricSmall.secondary(
-                                      context,
-                                    ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }(),
-          ],
+    ];
+    return AppSummaryCard(
+      title: l10n.socialThisWeek,
+      icon: AppSymbols.leader,
+      tint: colors.workouts,
+      size: AppSummaryCardSize.hero,
+      value: l10n.socialRankValue(index + 1),
+      unit: l10n.socialRankUnit(standings.length),
+      delta: met
+          ? AppChip(
+              label: l10n.streakGoalMet,
+              icon: AppSymbols.success,
+              selected: true,
+            )
+          : null,
+      // The ring is the reader's own week toward their goal: the accent
+      // as ink. It keeps its size at large text, as Today's does.
+      chart: MediaQuery.withNoTextScaling(
+        child: ProgressArc(
+          value: CircleWeek.progress(own.sessions, own.goal),
+          color: colors.accentInk,
+          diameter: 2 * AppControlSize.cta,
+          strokeWidth: AppChartMark.arcWidthHero,
         ),
       ),
+      chartBeside: true,
+      footer: l10n.streakThisWeek(own.sessions, own.goal),
+      trailing: standings.length > shown
+          ? AppChip(
+              label: l10n.socialSeeAll,
+              onPressed: () => unawaited(_showAll(context)),
+            )
+          : null,
+      rows: rows,
+    );
+  }
+
+  Future<void> _showAll(BuildContext context) => showAppSheet<void>(
+    context: context,
+    builder: (sheet) => ListView(
+      padding: const EdgeInsets.all(AppSpacing.l),
+      children: [
+        AppSection(
+          header: sheet.l10n.socialThisWeek,
+          children: [
+            for (final (rank, standing) in standings.indexed)
+              _StandingRow(
+                rank: rank + 1,
+                standing: standing,
+                isOwn: standing.user.userId == viewerId,
+                onPressed: () {
+                  Navigator.of(sheet).pop();
+                  onPressed(standing.user);
+                },
+              ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+/// One place in the week's standings: rank and name, face, and sessions
+/// out of the goal. Opens the profile.
+class _StandingRow extends StatelessWidget {
+  const new({
+    required this.rank,
+    required this.standing,
+    required this.isOwn,
+    required this.onPressed,
+  });
+
+  final int rank;
+  final CircleStanding standing;
+  final bool isOwn;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final name = isOwn
+        ? l10n.socialYou
+        : commonNameOf(standing.user) ?? l10n.socialUnknown;
+    return AppListRowButton(
+      title: l10n.socialStandingTitle(rank, name),
+      thumbnail: UserAvatar(
+        imageUrl: profileImageOf(standing.user),
+        size: AppControlSize.thumbnail,
+      ),
+      accessory: AppListRowValue(
+        '${AppFormat.number(standing.sessions)}/'
+        '${AppFormat.number(standing.goal)}',
+      ),
+      onPressed: onPressed,
     );
   }
 }

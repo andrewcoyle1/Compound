@@ -30,12 +30,7 @@ class CircleStrip extends StatelessWidget {
     final width = MediaQuery.textScalerOf(context).scale(76);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.l,
-        AppSpacing.s,
-        AppSpacing.l,
-        AppSpacing.m,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: AppSpacing.l,

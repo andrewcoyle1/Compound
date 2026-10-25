@@ -25,6 +25,7 @@ const _displayBold = 'BarlowCondensedBold';
 /// - **Barlow Condensed**, bundled with this package, for large titles, hero
 ///   numbers and stats: [largeTitle], [display], [metricLarge] and [metric].
 ///   It is narrow, so each style sits a step above the iOS size it replaces.
+///   [hero] is the one number a dashboard leads with.
 /// - **The system font** (San Francisco on iOS, Roboto on Android) for
 ///   everything read: rows, body, buttons, labels and [overline], and
 ///   [metricSmall], which sits inline with row text.
@@ -46,6 +47,7 @@ const _displayBold = 'BarlowCondensedBold';
 /// | Token | Use |
 /// |---|---|
 /// | [largeTitle] | A tab root's or onboarding step's large title |
+/// | [hero] | A dashboard's one hero number |
 /// | [display] | Hero numbers, a moment's achievement |
 /// | [metricLarge] | A card's headline number |
 /// | [metric] | A stat value |
@@ -67,6 +69,18 @@ abstract final class AppTextStyles {
     package: 'app_ui',
     fontSize: 40,
     height: 44 / 40,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 0,
+    fontFeatures: _tabular,
+  );
+
+  /// 80, extra-bold, condensed, tabular: a dashboard's one hero number,
+  /// the loudest thing on its screen ("3/4" on Today).
+  static const hero = TextStyle(
+    fontFamily: _display,
+    package: 'app_ui',
+    fontSize: 80,
+    height: 1,
     fontWeight: FontWeight.w800,
     letterSpacing: 0,
     fontFeatures: _tabular,

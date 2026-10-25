@@ -72,9 +72,20 @@ class AppChip extends StatelessWidget {
     final style = large
         ? AppTextStyles.rowTitle.copyWith(color: foreground)
         : AppTextStyles.label.semibold.copyWith(color: foreground);
+    // Increase Contrast outlines a volt fill in light mode, where volt on
+    // white is 1.3:1 (design-language.md).
+    final outlined =
+        selected &&
+        tint == null &&
+        scheme.brightness == Brightness.light &&
+        MediaQuery.highContrastOf(context);
     final chip = DecoratedBox(
       decoration: ShapeDecoration(
-        shape: const StadiumBorder(),
+        shape: StadiumBorder(
+          side: outlined
+              ? BorderSide(color: scheme.onPrimary)
+              : BorderSide.none,
+        ),
         color: selected
             ? tint ?? scheme.primary
             : large

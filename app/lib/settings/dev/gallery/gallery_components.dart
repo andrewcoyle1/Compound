@@ -1071,8 +1071,9 @@ List<Widget> galleryStates(BuildContext context) {
   ];
 }
 
-/// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppChip],
-/// [AppConfetti], [AppInlineMessage], [AppMarkdownText] and [AppViewfinder].
+/// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppSummaryCard],
+/// [AppChip], [AppConfetti], [AppInlineMessage], [AppMarkdownText] and
+/// [AppViewfinder].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
   final colors = context.appColors;
@@ -1152,6 +1153,68 @@ List<Widget> galleryContent(BuildContext context) {
         ),
       ],
     ),
+    galleryEntry('AppSummaryCard', [
+      galleryBlock(
+        'value, unit, delta, footer, onTap',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          icon: AppSymbols.calories,
+          tint: colors.calories,
+          value: AppFormat.number(1850, locale: locale),
+          unit: 'kcal',
+          delta: AppChip(label: l10n.devGallerySampleShortAction),
+          footer: l10n.devGallerySampleSubtitle,
+          onTap: () {},
+        ),
+      ),
+      galleryBlock(
+        'size: hero, chart beside, goal met',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          icon: AppSymbols.today,
+          tint: colors.accentInk,
+          value: '4/4',
+          size: AppSummaryCardSize.hero,
+          delta: AppChip(
+            label: l10n.devGallerySampleShortAction,
+            icon: AppSymbols.success,
+            selected: true,
+          ),
+          chart: const SizedBox.square(
+            dimension: 72,
+            child: CircularProgressIndicator(value: 1),
+          ),
+          chartBeside: true,
+        ),
+      ),
+      galleryBlock(
+        'size: large, rows',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          value: '6',
+          unit: 'weeks',
+          size: AppSummaryCardSize.large,
+          rows: [
+            AppListRowButton(
+              title: l10n.devGallerySampleSubtitle,
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+      galleryBlock(
+        'chart only, trailing chip',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          chart: const LinearProgressIndicator(value: 0.6),
+          semanticValue: '60%',
+          trailing: AppChip(
+            label: l10n.devGallerySampleShortAction,
+            onPressed: () {},
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('AppChip', [
       galleryInline('label', AppChip(label: l10n.devGallerySampleTextAction)),
       galleryInline(

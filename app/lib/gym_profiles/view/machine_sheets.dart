@@ -279,10 +279,10 @@ class _AddGymMachineSheetState extends State<AddGymMachineSheet>
             _worksAs = null;
           }),
         ),
-        TextField(
+        AppTextField(
+          label: l10n.gymName,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          decoration: InputDecoration(labelText: l10n.gymName),
           onChanged: (name) => setState(() => _name = name),
         ),
         DropdownButtonFormField<String?>(

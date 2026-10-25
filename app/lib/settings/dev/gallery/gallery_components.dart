@@ -111,6 +111,25 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppPressable', [
+      galleryInline(
+        'icon, 44 pt target',
+        const AppPressable(onTap: galleryNoop, child: Icon(AppSymbols.add)),
+      ),
+      galleryInline(
+        'own surface, haptic',
+        AppPressable(
+          onTap: galleryNoop,
+          haptic: AppHaptic.selection,
+          color: context.appColors.raised,
+          shape: const StadiumBorder(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: Text(l10n.devGallerySampleTextAction),
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('AppDoneMark', [
       galleryInline('medium', const AppDoneMark()),
       galleryInline('small', const AppDoneMark(size: AppIconSize.small)),
@@ -126,6 +145,29 @@ List<Widget> galleryButtons(BuildContext context) {
           badge: AppSymbols.edit,
         ),
       ),
+    ]),
+    galleryEntry('AppSwatch', [
+      galleryInline('colour', AppSwatch(color: context.appColors.scaleWeight)),
+      galleryInline(
+        'glyph, selected',
+        AppSwatch(
+          color: context.appColors.workouts,
+          icon: AppSymbols.streak,
+          selected: true,
+        ),
+      ),
+    ]),
+    galleryEntry('AppSelectionRing', [
+      for (final selected in [false, true])
+        galleryInline(
+          selected ? 'ring on' : 'ring off',
+          AppSelectionRing(
+            selected: selected,
+            radius: AppRadius.m,
+            filled: true,
+            child: const SizedBox.square(dimension: AppControlSize.row),
+          ),
+        ),
     ]),
     galleryEntry('AppIconButton', [
       galleryInline(
@@ -470,7 +512,7 @@ List<Widget> galleryRows(BuildContext context) {
   ];
 }
 
-/// [AppSearchField], [AppNumberField], [AppTextFieldRow] and
+/// [AppSearchField], [AppNumberField], [AppTextFieldRow], [AppTextField] and
 /// [AppSegmentedControl].
 List<Widget> galleryInputs(BuildContext context) {
   final l10n = context.l10n;
@@ -575,6 +617,46 @@ List<Widget> galleryInputs(BuildContext context) {
               onChanged: (_) {},
             ),
           ],
+        ),
+      ),
+      galleryBlock(
+        'prefixText, suffixText',
+        AppSection(
+          children: [
+            AppTextFieldRow(
+              label: l10n.devGallerySampleTitle,
+              initialValue: '50',
+              keyboardType: TextInputType.number,
+              prefixText: '@',
+              suffixText: '%',
+              onChanged: (_) {},
+            ),
+          ],
+        ),
+      ),
+    ]),
+    galleryEntry('AppTextField', [
+      galleryBlock(
+        'boxed: label, helper',
+        AppTextField(
+          label: l10n.devGallerySampleTitle,
+          helper: l10n.devGallerySampleSubtitle,
+        ),
+      ),
+      galleryBlock(
+        'composer',
+        AppTextField(
+          hint: l10n.devGallerySampleTitle,
+          style: AppTextFieldStyle.composer,
+          minLines: 1,
+          maxLines: 5,
+        ),
+      ),
+      galleryBlock(
+        'plain',
+        AppTextField(
+          hint: l10n.devGallerySampleTitle,
+          style: AppTextFieldStyle.plain,
         ),
       ),
     ]),

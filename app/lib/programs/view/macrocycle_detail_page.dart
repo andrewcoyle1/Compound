@@ -170,10 +170,7 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
     );
     cubit.mesocyclesChanged(mesocycles);
     final existing = widget.existing;
-    final scheme = Theme.of(context).colorScheme;
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final entries = [
       for (final (index, id) in draft.mesocycleIds.indexed)
         if (mesocycles.where((m) => m.id == id).firstOrNull case final m?)
@@ -216,18 +213,11 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
             AppSection(
               header: l10n.onboardingGymName,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    controller: _name,
-                    onChanged: cubit.nameChanged,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      hintText: l10n.programMacrocycleNameHint,
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                  ),
+                AppTextFieldRow(
+                  label: l10n.programMacrocycleNameHint,
+                  controller: _name,
+                  textCapitalization: TextCapitalization.words,
+                  onChanged: cubit.nameChanged,
                 ),
               ],
             ),
@@ -269,9 +259,7 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                                 ),
                                 child: Text(
                                   l10n.programMesocycleNumber(index + 1),
-                                  style: AppTextStyles.label.copyWith(
-                                    color: scheme.onSurfaceVariant,
-                                  ),
+                                  style: AppTextStyles.label.secondary(context),
                                 ),
                               ),
                               MesocycleHeader(mesocycle: mesocycle),
@@ -326,9 +314,9 @@ class _MacrocycleDetailViewState extends State<_MacrocycleDetailView> {
                   Semantics(
                     button: true,
                     hint: l10n.programAddMesocycleHint,
-                    child: InkWell(
+                    child: AppPressable(
+                      haptic: AppHaptic.selection,
                       onTap: () {
-                        unawaited(AppHaptics.selection());
                         cubit.added(mesocycle);
                         if (_name.text.isEmpty) _name.text = mesocycle.name;
                       },

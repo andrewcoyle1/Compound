@@ -202,13 +202,7 @@ class _WeightRow extends StatelessWidget {
               : null,
           thumbnail: colour == null
               ? null
-              : DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colour,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const SizedBox.square(dimension: 20),
-                ),
+              : AppSwatch(color: colour, size: AppIconSize.medium),
           accessory: AppListRowCustom(
             Switch.adaptive(
               value: weight.isActive,
@@ -314,10 +308,10 @@ class _AddWeightSheetState extends State<AddWeightSheet> with ScreenAnalytics {
             onSelected: (colour) => setState(() => _colour = colour),
           ),
         if (_isBands)
-          TextField(
+          AppTextField(
+            label: l10n.gymLabel,
             autofocus: true,
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(labelText: l10n.gymLabel),
             onChanged: (name) => setState(() => _name = name),
           ),
         AppNumberField(
@@ -379,23 +373,14 @@ class EquipmentColourPicker extends StatelessWidget {
                 selected: colour == selected,
                 label: colour.label(l10n),
                 excludeSemantics: true,
-                child: InkResponse(
+                child: AppPressable(
+                  shape: const CircleBorder(),
                   onTap: () => onSelected(colour),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: colour == EquipmentColour.standard
-                          ? scheme.onSurface
-                          : AppColors.fromHex(colour.hex),
-                      border: Border.all(
-                        color: colour == selected
-                            ? context.appColors.accentInk
-                            : Colors.transparent,
-                        width: 4,
-                      ),
-                    ),
+                  child: AppSwatch(
+                    color: colour == EquipmentColour.standard
+                        ? scheme.onSurface
+                        : AppColors.fromHex(colour.hex) ?? scheme.onSurface,
+                    selected: colour == selected,
                   ),
                 ),
               ),

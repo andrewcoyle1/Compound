@@ -172,16 +172,13 @@ class _GymProfileViewState extends State<GymProfileView> {
         appBar: AppBar(
           title: switch (widget.title) {
             final title? => Text(title),
-            null => TextField(
+            null => AppTextField(
               key: const Key('GymProfile.name'),
+              hint: l10n.onboardingUntitledGym,
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                hintText: l10n.onboardingUntitledGym,
-                border: InputBorder.none,
-                filled: false,
-              ),
               onChanged: _cubit.renamed,
+              style: AppTextFieldStyle.plain,
             ),
           },
           actions: [
@@ -479,9 +476,7 @@ class _EquipmentRow extends StatelessWidget {
                 if (detail != null && detail.isNotEmpty)
                   Text(
                     detail,
-                    style: AppTextStyles.rowDetail.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    style: AppTextStyles.rowDetail.secondary(context),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -533,7 +528,8 @@ class _EquipmentRow extends StatelessWidget {
           ),
       ],
       trailingFullSwipe: false,
-      child: InkWell(
+      child: AppPressable(
+        onTap: null,
         onLongPress: () => unawaited(_machineActions(context)),
         child: row,
       ),

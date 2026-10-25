@@ -415,12 +415,7 @@ class _Title extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.sectionTitle,
               ),
-              Text(
-                '$date · $clock',
-                style: AppTextStyles.label.copyWith(
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
+              Text('$date · $clock', style: AppTextStyles.label.tabular),
             ],
           ),
         );

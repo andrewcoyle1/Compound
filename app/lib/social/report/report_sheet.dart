@@ -118,17 +118,14 @@ class ReportView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          TextField(
-            onChanged: cubit.noteChanged,
+          AppTextField(
+            label: l10n.reportNote,
+            helper: state.reason == ReportReason.other
+                ? l10n.reportNoteRequired
+                : l10n.reportNoteOptional,
             minLines: 3,
             maxLines: 6,
-            decoration: InputDecoration(
-              labelText: l10n.reportNote,
-              helperText: state.reason == ReportReason.other
-                  ? l10n.reportNoteRequired
-                  : l10n.reportNoteOptional,
-              helperMaxLines: 2,
-            ),
+            onChanged: cubit.noteChanged,
           ),
           if (problem != null) ...[
             const SizedBox(height: AppSpacing.s),

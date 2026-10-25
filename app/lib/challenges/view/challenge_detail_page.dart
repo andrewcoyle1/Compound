@@ -197,7 +197,6 @@ class _Standings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     String dates(DateTime date) =>
         AppFormat.date(date, locale: context.dateLocale);
     final daysLeft = ChallengeStandings.daysLeft(challenge, DateTime.now());
@@ -230,16 +229,12 @@ class _Standings extends StatelessWidget {
                         daysLeft == 0
                             ? l10n.challengeEnded
                             : l10n.challengeDaysLeft(daysLeft),
-                        style: AppTextStyles.rowDetail.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.rowDetail.secondary(context),
                       ),
                       Text(
                         '${dates(challenge.startsAt.toLocal())} – '
                         '${dates(challenge.endsAt.toLocal())}',
-                        style: AppTextStyles.label.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.label.secondary(context),
                       ),
                     ],
                   ),
@@ -291,14 +286,13 @@ class _StandingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final name = isOwn ? l10n.socialYou : entry.name ?? l10n.challengeMember;
     return Semantics(
       button: onPressed != null,
       label: l10n.challengeRowLabel(rank, name, entry.sessions, target),
       excludeSemantics: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: onPressed,
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -312,9 +306,7 @@ class _StandingRow extends StatelessWidget {
                 width: MediaQuery.textScalerOf(context).scale(24),
                 child: Text(
                   AppFormat.number(rank, locale: locale),
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
               ),
               UserAvatar(
@@ -336,9 +328,7 @@ class _StandingRow extends StatelessWidget {
                 ),
               Text(
                 '${entry.sessions}/$target',
-                style: AppTextStyles.metricSmall.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+                style: AppTextStyles.metricSmall.secondary(context),
               ),
             ],
           ),

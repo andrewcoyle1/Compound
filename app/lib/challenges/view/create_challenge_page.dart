@@ -136,20 +136,11 @@ class _CreateChallengeViewState extends State<CreateChallengeView> {
                   header: l10n.createChallengeSetup,
                   footer: _validationText(l10n, state.validation),
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.l,
-                      ),
-                      child: TextField(
-                        autofocus: true,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: InputDecoration(
-                          hintText: l10n.createChallengeName,
-                          border: InputBorder.none,
-                          filled: false,
-                        ),
-                        onChanged: _cubit.titleChanged,
-                      ),
+                    AppTextFieldRow(
+                      label: l10n.createChallengeName,
+                      autofocus: true,
+                      textCapitalization: TextCapitalization.words,
+                      onChanged: _cubit.titleChanged,
                     ),
                     _TargetStepper(target: state.targetSessions),
                     Padding(

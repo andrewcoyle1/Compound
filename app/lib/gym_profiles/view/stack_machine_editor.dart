@@ -193,9 +193,7 @@ class _StackRow extends StatelessWidget {
                 Text(stack.name, style: AppTextStyles.rowTitle),
                 Text(
                   GymText.stack(l10n, stack),
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
                 AppTextButton(
                   label: l10n.gymEditRange,
@@ -248,23 +246,16 @@ class _MachineNameFieldState extends State<MachineNameField> {
     return AppSection(
       header: l10n.gymName,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-          child: TextField(
-            controller: _controller,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              hintText: l10n.gymName,
-              border: InputBorder.none,
-              filled: false,
-            ),
-            onChanged: (name) => cubit.edit(
-              (gym) => GymEditorRules.updatingItem(
-                gym,
-                widget.list,
-                widget.machine.id,
-                (data) => {...data, GymEquipmentKeys.name: name},
-              ),
+        AppTextFieldRow(
+          label: l10n.gymName,
+          controller: _controller,
+          textCapitalization: TextCapitalization.words,
+          onChanged: (name) => cubit.edit(
+            (gym) => GymEditorRules.updatingItem(
+              gym,
+              widget.list,
+              widget.machine.id,
+              (data) => {...data, GymEquipmentKeys.name: name},
             ),
           ),
         ),
@@ -350,10 +341,10 @@ class _AddWeightStackSheetState extends State<AddWeightStackSheet>
             }
           : null,
       children: [
-        TextField(
+        AppTextField(
+          label: l10n.gymLabel,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          decoration: InputDecoration(labelText: l10n.gymLabel),
           onChanged: (name) => setState(
             () => _stack = GymEditorRules.editedStack(
               _stack,

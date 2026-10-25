@@ -162,21 +162,12 @@ class CreateExerciseView extends StatelessWidget {
                 header: l10n.exerciseNameRow,
                 trailing: Text(l10n.createExerciseRequired),
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.l,
-                    ),
-                    child: TextFormField(
-                      key: const Key('CreateExercise.name'),
-                      initialValue: state.name,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: InputDecoration(
-                        hintText: l10n.createExerciseAddName,
-                        border: InputBorder.none,
-                        filled: false,
-                      ),
-                      onChanged: cubit.nameChanged,
-                    ),
+                  AppTextFieldRow(
+                    key: const Key('CreateExercise.name'),
+                    label: l10n.createExerciseAddName,
+                    initialValue: state.name,
+                    textCapitalization: TextCapitalization.words,
+                    onChanged: cubit.nameChanged,
                   ),
                 ],
               ),

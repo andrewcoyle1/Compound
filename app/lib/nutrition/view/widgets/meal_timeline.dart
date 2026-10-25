@@ -68,10 +68,7 @@ class MealHourHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final style = AppTextStyles.label.semibold.copyWith(
-      fontFeatures: const [FontFeature.tabularFigures()],
-      color: scheme.onSurfaceVariant,
-    );
+    final style = AppTextStyles.label.semibold.tabular.secondary(context);
     final totals = totalsOf(meals);
     final onAdd = this.onAdd;
     return Row(
@@ -167,8 +164,7 @@ class MealCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final style = AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant);
+    final style = AppTextStyles.label.secondary(context);
     final first = meal.items.isEmpty ? null : meal.items.first;
     final time = first == null ? null : itemTimestamp(first, meal);
     final gutter = settings.showsFoodTimestamps
@@ -260,7 +256,7 @@ class MealCard extends StatelessWidget {
       ],
       leadingFullSwipe: false,
       trailingFullSwipe: false,
-      child: InkWell(
+      child: AppPressable(
         onTap: onOpen,
         onLongPress: () => unawaited(_showMenu(context, item)),
         child: child,
@@ -324,7 +320,6 @@ class _MealItemLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     // Hide Food Details wins over the individual toggles.
     final details = !settings.hideFoodDetails;
     final macros = item.macros;
@@ -373,12 +368,7 @@ class _MealItemLabel extends StatelessWidget {
                   overflow: large ? null : TextOverflow.ellipsis,
                 ),
                 // Wraps rather than truncating, so the figures always show.
-                Text(
-                  detail,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
+                Text(detail, style: AppTextStyles.rowDetail.secondary(context)),
                 if (large) ?edit,
               ],
             ),

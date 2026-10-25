@@ -314,62 +314,54 @@ class _SetStopwatchState extends State<SetStopwatch> {
       label: running ? l10n.trackerStopTimer : l10n.trackerStartTimer,
       hint: running ? l10n.trackerStopTimerHint : null,
       excludeSemantics: true,
-      child: Material(
+      child: AppPressable(
         color: running ? scheme.primary : scheme.surfaceContainerHighest,
         shape: const RoundedSuperellipseBorder(
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.s)),
         ),
-        child: InkWell(
-          key: ValueKey('stopwatch-${widget.setId}'),
-          customBorder: const RoundedSuperellipseBorder(
-            borderRadius: BorderRadius.all(Radius.circular(AppRadius.s)),
+        key: ValueKey('stopwatch-${widget.setId}'),
+        onTap: _toggle,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: AppControlSize.row,
+            minHeight: AppControlSize.row - 8,
           ),
-          onTap: _toggle,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minWidth: AppControlSize.row,
-              minHeight: AppControlSize.row - 8,
-            ),
-            child: running
-                ? Tick(
-                    builder: (context, now) {
-                      final elapsed = _stopwatch.elapsed(now);
-                      final target = _stopwatch.targetSeconds;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              AppFormat.duration(Duration(seconds: elapsed)),
-                              style: AppTextStyles.rowTitle.copyWith(
-                                color: scheme.onPrimary,
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures(),
-                                ],
+          child: running
+              ? Tick(
+                  builder: (context, now) {
+                    final elapsed = _stopwatch.elapsed(now);
+                    final target = _stopwatch.targetSeconds;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xs,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            AppFormat.duration(Duration(seconds: elapsed)),
+                            style: AppTextStyles.rowTitle.tabular.onAccent(
+                              context,
+                            ),
+                          ),
+                          if (target != null && target > 0)
+                            LinearProgressIndicator(
+                              value: (elapsed / target).clamp(0, 1),
+                              color: scheme.onPrimary,
+                              backgroundColor: scheme.onPrimary.withValues(
+                                alpha: 0.3,
                               ),
                             ),
-                            if (target != null && target > 0)
-                              LinearProgressIndicator(
-                                value: (elapsed / target).clamp(0, 1),
-                                color: scheme.onPrimary,
-                                backgroundColor: scheme.onPrimary.withValues(
-                                  alpha: 0.3,
-                                ),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  )
-                : Icon(
-                    AppSymbols.start,
-                    size: AppIconSize.small.of(context),
-                    color: context.appColors.accentInk,
-                  ),
-          ),
+                        ],
+                      ),
+                    );
+                  },
+                )
+              : Icon(
+                  AppSymbols.start,
+                  size: AppIconSize.small.of(context),
+                  color: context.appColors.accentInk,
+                ),
         ),
       ),
     );

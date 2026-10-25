@@ -39,7 +39,7 @@ class TabPlaceholderPage extends StatelessWidget {
               ),
               Text(
                 l10n.tabComingSoonMessage,
-                style: AppTextStyles.rowDetail.copyWith(color: secondary),
+                style: AppTextStyles.rowDetail.secondary(context),
                 textAlign: TextAlign.center,
               ),
             ],

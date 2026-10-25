@@ -536,12 +536,7 @@ class _Banner extends StatelessWidget {
               children: [
                 Text(text, style: AppTextStyles.rowTitle),
                 if (detail != null)
-                  Text(
-                    detail,
-                    style: AppTextStyles.label.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+                  Text(detail, style: AppTextStyles.label.secondary(context)),
               ],
             ),
           ),
@@ -555,7 +550,7 @@ class _Banner extends StatelessWidget {
           Expanded(
             child: onPressed == null
                 ? content
-                : InkWell(onTap: onPressed, child: content),
+                : AppPressable(onTap: onPressed, child: content),
           ),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.s),
@@ -628,7 +623,7 @@ class _Leaderboard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadius.m),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: InkWell(
+                    child: AppPressable(
                       onTap: () => onPressed(standing.user),
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.s),
@@ -639,8 +634,8 @@ class _Leaderboard extends StatelessWidget {
                               width: MediaQuery.textScalerOf(context).scale(20),
                               child: Text(
                                 AppFormat.number(rank, locale: locale),
-                                style: AppTextStyles.rowDetail.copyWith(
-                                  color: scheme.onSurfaceVariant,
+                                style: AppTextStyles.rowDetail.secondary(
+                                  context,
                                 ),
                               ),
                             ),
@@ -665,11 +660,11 @@ class _Leaderboard extends StatelessWidget {
                             const Spacer(),
                             Text(
                               '${standing.sessions}/${standing.goal}',
-                              style: AppTextStyles.metricSmall.copyWith(
-                                color: met
-                                    ? colors.accentInk
-                                    : scheme.onSurfaceVariant,
-                              ),
+                              style: met
+                                  ? AppTextStyles.metricSmall.accent(context)
+                                  : AppTextStyles.metricSmall.secondary(
+                                      context,
+                                    ),
                             ),
                           ],
                         ),

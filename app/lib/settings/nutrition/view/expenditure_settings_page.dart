@@ -244,9 +244,8 @@ class _EstimateSection extends StatelessWidget {
         .select<ExpenditureEstimateBloc, maths.ExpenditureEstimate?>(
           (bloc) => bloc.state.estimate,
         );
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     Text detail(String text, TextStyle style) =>
-        Text(text, style: style.copyWith(color: secondary));
+        Text(text, style: style.secondary(context));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

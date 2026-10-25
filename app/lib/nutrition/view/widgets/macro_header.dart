@@ -192,12 +192,7 @@ class _MacroBar extends StatelessWidget {
                   size: MediaQuery.textScalerOf(context)
                       .scale(AppTextStyles.label.fontSize!),
                 ),
-                Text(
-                  figure,
-                  style: AppTextStyles.label.copyWith(
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
+                Text(figure, style: AppTextStyles.label.tabular),
               ],
             ),
           ),

@@ -276,11 +276,7 @@ class _Review extends StatelessWidget {
                             child: Text(
                               weightText,
                               textAlign: TextAlign.end,
-                              style: AppTextStyles.rowDetail.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
+                              style: AppTextStyles.rowDetail.secondary(context),
                             ),
                           ),
                           MethodInfoButton(MethodInfo.weightTrend(l10n)),

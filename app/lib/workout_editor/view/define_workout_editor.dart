@@ -173,9 +173,7 @@ class const _Header({
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<DefineWorkoutCubit>();
-    final style = AppTextStyles.sectionTitle.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final style = AppTextStyles.sectionTitle.secondary(context);
     if (state.isSelectingSuperset) {
       return Row(
         children: [
@@ -245,9 +243,7 @@ class const _ExerciseRow({
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final cubit = context.read<DefineWorkoutCubit>();
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final selected = state.supersetSelection.contains(exercise.id);
     final side = MediaQuery.textScalerOf(context).scale(AppControlSize.row);
     final letter = this.letter;
@@ -280,12 +276,7 @@ class const _ExerciseRow({
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: AppSpacing.xxs,
               children: [
-                Text(
-                  exercise.exercise.name,
-                  style: AppTextStyles.sectionTitle.copyWith(
-                    color: scheme.onSurface,
-                  ),
-                ),
+                Text(exercise.exercise.name, style: AppTextStyles.sectionTitle),
                 Text(
                   templateTargetsText(context, exercise.setTargets),
                   style: secondary,
@@ -353,7 +344,7 @@ class const _ExerciseRow({
       selected: state.isSelectingSuperset ? selected : null,
       child: Material(
         color: scheme.surface,
-        child: InkWell(
+        child: AppPressable(
           onTap: state.isEditing
               ? null
               : state.isSelectingSuperset

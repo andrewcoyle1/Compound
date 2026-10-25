@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:program_repository/program_repository.dart';
@@ -98,33 +96,17 @@ class const _Swatch({
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final tint = AppColors.fromHex(colour) ?? scheme.onSurface;
-    final side = MediaQuery.textScalerOf(context).scale(AppControlSize.row);
     return Semantics(
       button: true,
       selected: selected,
       label: label,
       excludeSemantics: true,
       child: Center(
-        child: InkResponse(
-          onTap: () {
-            unawaited(AppHaptics.selection());
-            onPressed();
-          },
-          child: Container(
-            width: side,
-            height: side,
-            decoration: BoxDecoration(
-              color: AppColors.tintedSurface(tint),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: selected
-                    ? context.appColors.accentInk
-                    : Colors.transparent,
-                width: 3,
-              ),
-            ),
-            child: Icon(glyph, color: tint),
-          ),
+        child: AppPressable(
+          shape: const CircleBorder(),
+          haptic: AppHaptic.selection,
+          onTap: onPressed,
+          child: AppSwatch(color: tint, icon: glyph, selected: selected),
         ),
       ),
     );

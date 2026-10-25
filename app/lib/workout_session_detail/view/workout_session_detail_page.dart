@@ -465,9 +465,7 @@ class _Title extends StatelessWidget {
             _started(context, session),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.label.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            style: AppTextStyles.label.secondary(context),
           ),
         ],
       ),
@@ -516,7 +514,6 @@ class _DetailState extends State<_Detail> {
     final author = context.select<CircleBloc, UserModel?>(
       (bloc) => bloc.state.authorOf(session),
     );
-    final scheme = Theme.of(context).colorScheme;
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
@@ -560,9 +557,7 @@ class _DetailState extends State<_Detail> {
                                 locale: locale,
                               )
                             : AppFormat.placeholder,
-                        style: AppTextStyles.rowTitle.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.rowTitle.secondary(context),
                       ),
                       MethodInfoButton(MethodInfo.tonnage(l10n)),
                     ],
@@ -648,9 +643,7 @@ class _DetailState extends State<_Detail> {
                       header: true,
                       child: Text(
                         l10n.exerciseDetailsHeader,
-                        style: AppTextStyles.sectionTitle.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.sectionTitle.secondary(context),
                       ),
                     ),
                   ),
@@ -840,16 +833,14 @@ class _NotesFieldState extends State<_NotesField> {
     final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.l),
-      child: TextField(
+      child: AppTextField(
         key: const ValueKey('session-notes'),
+        label: l10n.sessionNotesLabel,
+        hint: l10n.sessionNotesPrompt,
         controller: _controller,
+        textCapitalization: TextCapitalization.sentences,
         minLines: 3,
         maxLines: null,
-        textCapitalization: TextCapitalization.sentences,
-        decoration: InputDecoration(
-          labelText: l10n.sessionNotesLabel,
-          hintText: l10n.sessionNotesPrompt,
-        ),
         onChanged: context.read<SessionEditCubit>().setNotes,
       ),
     );

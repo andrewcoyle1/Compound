@@ -213,6 +213,7 @@ List<Widget> galleryTokens(BuildContext context) {
         ('rowTitle', AppTextStyles.rowTitle),
         ('rowDetail', AppTextStyles.rowDetail),
         ('label', AppTextStyles.label),
+        ('formula', AppTextStyles.formula),
       ])
         galleryBlock(name, Text(l10n.devGallerySampleTitle, style: style)),
       galleryBlock(

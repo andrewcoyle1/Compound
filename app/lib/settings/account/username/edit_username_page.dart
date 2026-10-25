@@ -96,7 +96,6 @@ class _EditUsernameViewState extends State<EditUsernameView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<EditUsernameBloc>().state;
-    final scheme = Theme.of(context).colorScheme;
     return MultiBlocListener(
       listeners: [
         BlocListener<EditUsernameBloc, EditUsernameState>(
@@ -126,27 +125,21 @@ class _EditUsernameViewState extends State<EditUsernameView> {
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
               AppCard(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    controller: _controller,
-                    autofocus: true,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    textInputAction: TextInputAction.done,
-                    autofillHints: const [AutofillHints.username],
-                    decoration: InputDecoration(
-                      prefixText: '@',
-                      hintText: l10n.usernamePlaceholder,
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                    onChanged: (text) =>
-                        _bloc.add(EditUsernameTextChanged(text, widget.viewer)),
-                    onSubmitted: (_) {
-                      if (state.canSave) _save();
-                    },
-                  ),
+                child: AppTextFieldRow(
+                  label: l10n.usernamePlaceholder,
+                  controller: _controller,
+                  autofocus: true,
+                  textInputAction: TextInputAction.done,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  autofillHints: const [AutofillHints.username],
+                  onChanged: (text) =>
+                      _bloc.add(EditUsernameTextChanged(text, widget.viewer)),
+                  textCapitalization: TextCapitalization.none,
+                  prefixText: '@',
+                  onSubmitted: (_) {
+                    if (state.canSave) _save();
+                  },
                 ),
               ),
               Padding(
@@ -156,10 +149,7 @@ class _EditUsernameViewState extends State<EditUsernameView> {
                   AppSpacing.l,
                   0,
                 ),
-                child: _Status(
-                  state: state,
-                  secondary: scheme.onSurfaceVariant,
-                ),
+                child: _Status(state: state),
               ),
             ],
           ),
@@ -170,15 +160,14 @@ class _EditUsernameViewState extends State<EditUsernameView> {
 }
 
 class _Status extends StatelessWidget {
-  const new({required this.state, required this.secondary});
+  const new({required this.state});
 
   final EditUsernameState state;
-  final Color secondary;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final style = AppTextStyles.label.copyWith(color: secondary);
+    final style = AppTextStyles.label.secondary(context);
     return switch (state.status) {
       UsernameStatus.idle => Text(l10n.usernameIdle, style: style),
       UsernameStatus.current => Text(l10n.usernameCurrent, style: style),
@@ -211,10 +200,8 @@ class _Status extends StatelessWidget {
             color: context.appColors.success,
             size: AppIconSize.small.of(context),
           ),
-          Text(
-            l10n.usernameAvailable,
-            style: style.copyWith(color: context.appColors.success),
-          ),
+          // The icon carries the colour, as in AppInlineMessage.
+          Text(l10n.usernameAvailable, style: AppTextStyles.label),
         ],
       ),
       UsernameStatus.taken => AppInlineMessage(

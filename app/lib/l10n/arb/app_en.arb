@@ -2377,6 +2377,36 @@
             }
         }
     },
+    "progressChangeInSevenDays": "{change} in 7 days",
+    "@progressChangeInSevenDays": {
+        "description": "Progress tab hero: chip with the trend weight's change over the last 7 days; change is signed with its unit, such as −0.6 kg",
+        "placeholders": {
+            "change": {
+                "type": "String"
+            }
+        }
+    },
+    "progressHeroGoal": "{percent} of the way to your goal",
+    "@progressHeroGoal": {
+        "description": "Progress tab hero footer: how far the user is toward their weight goal; percent is formatted, such as 33%",
+        "placeholders": {
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "progressHeroEmpty": "Log a weigh-in to see your trend.",
+    "@progressHeroEmpty": {
+        "description": "Progress tab hero footer when there are no weigh-ins yet"
+    },
+    "progressKcalDeficitUnit": "kcal deficit",
+    "@progressKcalDeficitUnit": {
+        "description": "Progress tab Energy Balance card: the unit after the number when intake is under expenditure, shown as an overline"
+    },
+    "progressKcalSurplusUnit": "kcal surplus",
+    "@progressKcalSurplusUnit": {
+        "description": "Progress tab Energy Balance card: the unit after the number when intake is over expenditure, shown as an overline"
+    },
     "progressTrendChartValue": "From {first} to {last}",
     "@progressTrendChartValue": {
         "description": "Accessibility value of a card's line chart: its first and last readings",

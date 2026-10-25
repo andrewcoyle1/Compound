@@ -124,6 +124,7 @@ void main() {
       ]) {
         expect(find.text(header), findsOneWidget);
       }
+      // Each card's title is an overline; Weight Trend is the hero's.
       for (final title in [
         'Weight Trend',
         'Goal Progress',
@@ -136,10 +137,10 @@ void main() {
         'Visual Body Fat',
         'Steps',
       ]) {
-        expect(find.text(title), findsOneWidget);
+        expect(find.text(title.toUpperCase()), findsOneWidget);
       }
       // One in Insights, one in Habits.
-      expect(find.text('Workouts'), findsNWidgets(2));
+      expect(find.text('WORKOUTS'), findsNWidgets(2));
       // The workouts card and two exercise cards.
       expect(find.text('Last 7 Workouts'), findsNWidgets(3));
       expect(find.text('Last 30 Days'), findsNWidgets(2));
@@ -147,7 +148,7 @@ void main() {
       expect(find.text('Today'), findsOneWidget);
       expect(find.byType(MuscleSetsCard), findsNWidgets(2));
       expect(find.byType(ExerciseOneRepMaxCard), findsNWidgets(2));
-      expect(find.byType(ProgressCard), findsNWidgets(16));
+      expect(find.byType(ProgressCard), findsNWidgets(15));
       expect(find.byType(Sparkline), findsNWidgets(7));
       expect(find.byType(HabitGridChart), findsNWidgets(2));
       expect(find.byType(StackedBars), findsNWidgets(5));
@@ -161,17 +162,48 @@ void main() {
       );
     });
 
+    testWidgets('leads with the trend weight, its change and the goal', (
+      tester,
+    ) async {
+      await pumpView(tester);
+
+      final hero = find.ancestor(
+        of: find.text('WEIGHT TREND'),
+        matching: find.byType(AppSummaryCard),
+      );
+      expect(
+        find.descendant(of: hero, matching: find.textContaining(' in 7 days')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: hero,
+          matching: find.textContaining('of the way to your goal'),
+        ),
+        findsOneWidget,
+      );
+      // The goal's bar is the accent: the user's own progress.
+      expect(
+        find.descendant(of: hero, matching: find.byType(BulletBar)),
+        findsOneWidget,
+      );
+      // Energy Balance's number stands alone, deficit or surplus its unit.
+      expect(find.textContaining(RegExp('KCAL (DEFICIT|SURPLUS)')), findsOne);
+    });
+
     testWidgets('an empty tab reads as absent, not zero', (tester) async {
       await pumpView(tester, empty: true);
 
       expect(find.text('No Workouts'), findsOneWidget);
-      expect(find.text('No Entries'), findsNWidgets(3));
+      expect(find.text('No Entries'), findsNWidgets(2));
+      expect(find.text('Log a weigh-in to see your trend.'), findsOneWidget);
       expect(find.text('No Goal Set'), findsOneWidget);
       expect(find.text('No Data'), findsNWidgets(3));
-      // Workouts, trend, goal, energy balance, macros, protein, weight,
-      // body fat, steps and the two exercises; the muscles show 0 sets.
+      // Workouts, the trend hero, goal, energy balance, macros, protein,
+      // weight, body fat, steps and the two exercises; the muscles show 0
+      // sets.
       // Expenditure still has the profile's formula.
-      expect(find.text(AppFormat.placeholder), findsNWidgets(11));
+      expect(find.textContaining(AppFormat.placeholder), findsNWidgets(11));
     });
 
     testWidgets('leaves out hidden sections', (tester) async {
@@ -191,12 +223,12 @@ void main() {
     testWidgets('opens the weight screens', (tester) async {
       await pumpView(tester);
 
-      await tester.tap(find.text('Weight Trend'));
+      await tester.tap(find.text('WEIGHT TREND'));
       verify(() => router.goNamed(WeightMetric.weightTrend.name)).called(1);
-      await tester.tap(find.text('Scale Weight'));
+      await tester.tap(find.text('SCALE WEIGHT'));
       verify(() => router.goNamed(WeightMetric.scaleWeight.name)).called(1);
-      await tester.ensureVisible(find.text('Steps'));
-      await tester.tap(find.text('Steps'));
+      await tester.ensureVisible(find.text('STEPS'));
+      await tester.tap(find.text('STEPS'));
       verify(() => router.goNamed(StepsPage.name)).called(1);
     });
 
@@ -225,32 +257,41 @@ void main() {
       final handle = tester.ensureSemantics();
       await pumpView(tester);
 
-      // The workouts card and two muscles.
-      expect(find.bySemanticsLabel(RegExp('Working sets')), findsNWidgets(3));
-      expect(
-        find.bySemanticsLabel(RegExp('Macros, last 7 days')),
-        findsOneWidget,
+      // Each card reads its chart's summary after its figure: the workouts
+      // card and two muscles.
+      Finder heard(String text) => find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            (widget.properties.value?.contains(text) ?? false),
       );
+      expect(heard('Working sets'), findsNWidgets(3));
+      expect(heard('Macros, last 7 days'), findsOneWidget);
       handle.dispose();
     });
 
     testWidgets('adds columns with width', (tester) async {
       await pumpView(tester, width: 1000);
 
-      final trend = tester.getTopLeft(find.text('Weight Trend'));
-      final goal = tester.getTopLeft(find.text('Goal Progress'));
-      // Three across: Goal Progress sits beside Weight Trend.
-      expect(goal.dy, trend.dy);
-      expect(goal.dx, greaterThan(trend.dx));
+      final workouts = tester.getTopLeft(find.text('WORKOUTS').first);
+      final balance = tester.getTopLeft(find.text('ENERGY BALANCE'));
+      // Four across: Energy Balance sits beside Workouts.
+      expect(balance.dy, workouts.dy);
+      expect(balance.dx, greaterThan(workouts.dx));
+      // The hero beside the carousel.
+      expect(
+        tester.getTopLeft(find.byType(AppCarousel)).dx,
+        greaterThan(tester.getTopRight(find.text('WEIGHT TREND')).dx),
+      );
     });
 
     testWidgets('goes to one column at large text sizes', (tester) async {
       await pumpView(tester, textScale: 2);
 
       final workouts = tester.getTopLeft(find.text('Last 7 Workouts').first);
-      final trend = tester.getTopLeft(find.text('Weight Trend'));
-      expect(trend.dx, workouts.dx);
-      expect(trend.dy, greaterThan(workouts.dy));
+      // Expenditure's footer.
+      final expenditure = tester.getTopLeft(find.text('Last 7 Days').first);
+      expect(expenditure.dx, workouts.dx);
+      expect(expenditure.dy, greaterThan(workouts.dy));
     });
 
     testWidgets('says so when the data cannot be read', (tester) async {
@@ -280,7 +321,7 @@ void main() {
 
     testWidgets('the week against its targets selects a day', (tester) async {
       await pumpView(tester);
-      expect(find.text('This Week Against Your Targets'), findsOneWidget);
+      expect(find.text('THIS WEEK AGAINST YOUR TARGETS'), findsOneWidget);
       // Opens on today; the week's label shows only with no day picked.
       expect(find.text('Week'), findsNothing);
       final bloc = tester
@@ -353,7 +394,7 @@ void main() {
       await pumpView(tester);
 
       await nextPage(tester);
-      expect(find.text('Daily Nutrition'), findsOneWidget);
+      expect(find.text('DAILY NUTRITION'), findsOneWidget);
       expect(find.text('Consumed'), findsWidgets);
       await tester.tap(find.text('Remaining').last);
       await tester.pumpAndSettle();
@@ -367,11 +408,11 @@ void main() {
       expect(find.text('Targets'), findsWidgets);
 
       await nextPage(tester);
-      expect(find.text('Weekly Workouts'), findsOneWidget);
+      expect(find.text('WEEKLY WORKOUTS'), findsOneWidget);
       expect(find.text('Muscles'), findsOneWidget);
 
       await nextPage(tester);
-      expect(find.text('Recent Records'), findsOneWidget);
+      expect(find.text('RECENT RECORDS'), findsOneWidget);
       await tester.tap(find.text('Reps'));
       await tester.pumpAndSettle();
       expect(find.textContaining('reps'), findsWidgets);
@@ -419,7 +460,7 @@ void main() {
           .getSemanticsData()
           .value;
 
-      expect(find.text('Weekly Workouts'), findsOneWidget);
+      expect(find.text('WEEKLY WORKOUTS'), findsOneWidget);
       expect(find.text('7 target'), findsOneWidget);
       expect(find.text('2 target'), findsNWidgets(2));
       // The sample's sessions are not the program's.

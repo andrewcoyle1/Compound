@@ -32,9 +32,10 @@ import 'package:training_session/training_session.dart'
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
-/// The Progress tab (Swift `AnalyticsView`): the header carousel, then the
-/// cards in the Swift sections, honouring the sections the user has hidden,
-/// each section's See All opening its own screen, and the More list.
+/// The Progress tab (Swift `AnalyticsView`): the trend weight as its hero,
+/// the header carousel, then the cards in the Swift sections, honouring the
+/// sections the user has hidden, each section's See All opening its own
+/// screen, and the More list.
 class ProgressPage extends StatelessWidget {
   const new({super.key});
 
@@ -107,8 +108,33 @@ class _Overview extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.l),
             children: [
-              // Not hideable: the summary at the top.
-              ProgressCarousel(state: state),
+              // Not hideable: the hero, then the summary carousel; side by
+              // side in a wide window, where the carousel's grids would
+              // otherwise outgrow its height.
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final hero = Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.l,
+                    ),
+                    child: cards.hero(),
+                  );
+                  final carousel = ProgressCarousel(state: state);
+                  return constraints.maxWidth < AppContentWidth.twoColumns
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          spacing: AppSpacing.xl,
+                          children: [hero, carousel],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(child: hero),
+                            Expanded(child: carousel),
+                          ],
+                        );
+                },
+              ),
               const SizedBox(height: AppSpacing.xl),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
@@ -125,7 +151,7 @@ class _Overview extends StatelessWidget {
                               cards: [
                                 cards.workouts(),
                                 cards.expenditure(),
-                                cards.weightTrend(),
+                                // The hero leads with the trend.
                                 cards.goalProgress(),
                                 cards.energyBalance(),
                               ],

@@ -118,6 +118,12 @@ void main() {
     expect(find.text('Back'), findsOneWidget);
     expect(images.images, hasLength(2));
 
+    // Compare is the screen's one action, waiting for two photos.
+    AppCtaButton compareButton() => tester.widget<AppCtaButton>(
+      find.widgetWithText(AppCtaButton, 'Compare'),
+    );
+    expect(compareButton().onPressed, isNull);
+
     // Two chosen: Compare opens them side by side, or with the slider.
     await tap(tester, find.text('Side'));
     await tap(tester, find.text('Back'));

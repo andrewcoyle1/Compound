@@ -148,7 +148,7 @@ void main() {
           find.byType(ExpenditureEstimateSummary),
           300,
         );
-        expect(find.text('Today'), findsWidgets);
+        expect(find.text('TODAY'), findsOneWidget);
         expect(find.textContaining('based on what you logged'), findsOneWidget);
         await tester.scrollUntilVisible(find.text('Show All Data'), 300);
         await tester.tap(find.text('Show All Data'));

@@ -2,9 +2,9 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 
-/// A card asking for a decision: a title, a line, and two buttons
-/// (`decisionCard`). Used by the check-in and target proposal cards here
-/// and by Today's check-in card.
+/// A card asking for a decision (`decisionCard`): the summary card's
+/// header, a line, and two buttons. The Nutrition Overview's target
+/// proposal; it has buttons, so it is not an `AppSummaryCard`.
 class DecisionCard extends StatelessWidget {
   const new({
     required this.title,
@@ -37,9 +37,30 @@ class DecisionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: AppSpacing.s,
           children: [
+            // The summary card's header: a glyph and an overline.
             Row(
+              spacing: AppSpacing.s,
               children: [
-                Expanded(child: Text(title, style: AppTextStyles.sectionTitle)),
+                ExcludeSemantics(
+                  child: Icon(
+                    AppSymbols.goal,
+                    size: MediaQuery.textScalerOf(context).scale(
+                      AppTextStyles.overline.fontSize! *
+                          AppTextStyles.overline.height!,
+                    ),
+                    color: context.appColors.calories,
+                  ),
+                ),
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      title.toUpperCase(),
+                      semanticsLabel: title,
+                      style: AppTextStyles.overline.secondary(context),
+                    ),
+                  ),
+                ),
                 if (info != null) MethodInfoButton(info),
               ],
             ),

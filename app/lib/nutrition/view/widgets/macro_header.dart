@@ -100,17 +100,16 @@ class _NutritionHeroState extends State<NutritionHero> {
         : left < 0
         ? l10n.nutritionHeroKcalOver
         : l10n.nutritionHeroKcalLeft;
-    final rings = [
-      for (final macro in [Macro.protein, Macro.carbs, Macro.fat])
-        if (macro.isShown(settings))
-          _MacroRing(
-            macro: macro,
-            total: macro.of(widget.totals),
-            target: macro.of(widget.target),
-            remaining: _remaining,
-            showOverages: settings.showOverages,
-          ),
-    ];
+    final rings = MacroRings(
+      totals: widget.totals,
+      target: widget.target,
+      macros: [
+        for (final macro in MacroRings.order)
+          if (macro.isShown(settings)) macro,
+      ],
+      remaining: _remaining,
+      showOverages: settings.showOverages,
+    );
     return GestureDetector(
       onHorizontalDragEnd: (details) {
         if ((details.primaryVelocity ?? 0) != 0) _toggle();
@@ -130,7 +129,7 @@ class _NutritionHeroState extends State<NutritionHero> {
           onPressed: _toggle,
         ),
         // The rings' figures are drawn, not read: the card reads them.
-        semanticValue: [for (final ring in rings) ring.spoken(l10n)].join(', '),
+        semanticValue: rings.spoken(l10n),
         chart: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: AppSpacing.xl,
@@ -142,17 +141,68 @@ class _NutritionHeroState extends State<NutritionHero> {
                 value: macroProgress(_remaining ? left : eaten, target),
                 color: colors.calories,
               ),
-            if (rings.isNotEmpty)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [for (final ring in rings) Expanded(child: ring)],
-              ),
+            if (rings.macros.isNotEmpty) rings,
           ],
         ),
         onTap: widget.onTap,
       ),
     );
   }
+}
+
+/// The macros' rings side by side, each in its macro's colour: what has
+/// been eaten (or, with [remaining], is left) in its middle, filling toward
+/// the target, and its name and target under it. The Nutrition tab's hero
+/// and the day's overview draw the same rings.
+class MacroRings extends StatelessWidget {
+  const new({
+    required this.totals,
+    required this.target,
+    this.macros = order,
+    this.remaining = false,
+    this.showOverages = false,
+    super.key,
+  });
+
+  /// The macros with grams, in the order they are drawn.
+  static const List<Macro> order = [Macro.protein, Macro.carbs, Macro.fat];
+
+  /// What the day's meals add up to.
+  final Macros totals;
+
+  /// The plan's target for the day.
+  final Macros target;
+
+  /// The rings to draw, from [order].
+  final List<Macro> macros;
+
+  /// Whether the rings show what is left rather than what has been eaten.
+  final bool remaining;
+
+  /// Whether what is left goes below zero.
+  final bool showOverages;
+
+  List<_MacroRing> get _rings => [
+    for (final macro in macros)
+      _MacroRing(
+        macro: macro,
+        total: macro.of(totals),
+        target: macro.of(target),
+        remaining: remaining,
+        showOverages: showOverages,
+      ),
+  ];
+
+  /// What a screen reader hears for the rings, which are drawn rather
+  /// than read: "Protein, 104 of 165 g, Carbs, …".
+  String spoken(AppLocalizations l10n) =>
+      [for (final ring in _rings) ring.spoken(l10n)].join(', ');
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [for (final ring in _rings) Expanded(child: ring)],
+  );
 }
 
 /// A macro's ring: what has been eaten (or is left) in its middle, filling

@@ -1614,14 +1614,6 @@
     "@nutritionOverviewTitle": {
         "description": "Nutrition Overview screen title and the Nutrition tab's link to it"
     },
-    "nutritionOverviewCheckInReady": "Weekly check-in ready",
-    "@nutritionOverviewCheckInReady": {
-        "description": "Nutrition Overview card: the weekly check-in is waiting"
-    },
-    "nutritionOverviewCheckInMessage": "Review the week and update your program.",
-    "@nutritionOverviewCheckInMessage": {
-        "description": "Nutrition Overview card: what the check-in does"
-    },
     "nutritionOverviewNotNow": "Not now",
     "@nutritionOverviewNotNow": {
         "description": "Nutrition Overview: dismiss the target proposal"
@@ -1634,6 +1626,10 @@
     "@nutritionOverviewCalories": {
         "description": "Nutrition Overview: calories section header"
     },
+    "nutritionOverviewKcal": "kcal",
+    "@nutritionOverviewKcal": {
+        "description": "Nutrition Overview: the unit under the calories eaten on a day with no target"
+    },
     "nutritionOverviewContributors": "Contributors",
     "@nutritionOverviewContributors": {
         "description": "Nutrition Overview: switch showing the foods that contributed most"
@@ -1641,24 +1637,6 @@
     "nutritionOverviewTopContributors": "Top Contributors",
     "@nutritionOverviewTopContributors": {
         "description": "Nutrition Overview: header of the foods that contributed most"
-    },
-    "nutritionOverviewConsumed": "{kcal} consumed",
-    "@nutritionOverviewConsumed": {
-        "description": "Nutrition Overview: calories eaten today",
-        "placeholders": {
-            "kcal": {
-                "type": "String"
-            }
-        }
-    },
-    "nutritionOverviewOfTarget": "/ {target}",
-    "@nutritionOverviewOfTarget": {
-        "description": "Nutrition Overview: the target after an amount",
-        "placeholders": {
-            "target": {
-                "type": "String"
-            }
-        }
     },
     "nutritionOverviewProtein": "{grams}\u00a0P",
     "@nutritionOverviewProtein": {

@@ -213,17 +213,14 @@ class _Detail extends StatelessWidget {
       onShowAllData: () => context.goNamed(state.metric.dataRouteName),
       summary: balance != null || current == null
           ? null
-          : AppSection(
-              header: l10n.expenditureToday,
-              children: [ExpenditureEstimateSummary(estimate: current)],
-            ),
+          : ExpenditureEstimateSummary(estimate: current),
     );
   }
 }
 
-/// Today's expenditure with how sure the app is of it: the 80% interval and
-/// a confidence badge once adaptive, or why it is still the formula's
-/// (Swift `ExpenditureEstimateSummary`).
+/// Today's expenditure as a summary card, with how sure the app is of it:
+/// the 80% interval and a confidence chip once adaptive, or why it is
+/// still the formula's (Swift `ExpenditureEstimateSummary`).
 class ExpenditureEstimateSummary extends StatelessWidget {
   const new({required this.estimate, super.key});
 
@@ -262,29 +259,15 @@ class ExpenditureEstimateSummary extends StatelessWidget {
         colors.success,
       ),
     };
-    return MergeSemantics(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.l),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: AppSpacing.xs,
-          children: [
-            Wrap(
-              spacing: AppSpacing.s,
-              runSpacing: AppSpacing.xs,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  AppFormat.kcal(estimate.kcal.round(), locale: locale),
-                  style: AppTextStyles.metricLarge,
-                ),
-                AppChip(label: label, tint: tint),
-              ],
-            ),
-            Text(detail, style: AppTextStyles.rowDetail.secondary(context)),
-          ],
-        ),
-      ),
+    return AppSummaryCard(
+      title: l10n.expenditureToday,
+      icon: AppSymbols.expenditure,
+      tint: colors.expenditure,
+      // A summary under the chart's own hero, so a step quieter.
+      value: AppFormat.number(estimate.kcal.round(), locale: locale),
+      unit: 'kcal',
+      delta: AppChip(label: label, tint: tint),
+      footer: detail,
     );
   }
 }

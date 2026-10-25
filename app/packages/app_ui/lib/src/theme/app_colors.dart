@@ -15,7 +15,8 @@ import 'package:material_ui/material_ui.dart';
 ///   it, [raised] a control on a surface.
 /// - [secondaryLabel], [tertiaryLabel] and [separator] are the text and line
 ///   greys.
-/// - [tintedSurface] is the one fill for tinted tiles, chips and badges.
+/// - [tintedSurface] is the one fill for tinted tiles, chips and badges, and
+///   [muted] the one faded data colour, for a series behind its own trend.
 /// - Macro, nutrient and metric colours are data: use each for its own data
 ///   only. No two metrics share a hue, and none uses a macro colour.
 /// - Status colours are never the only signal: pair them with an icon or text.
@@ -130,6 +131,10 @@ class AppColors extends ThemeExtension<AppColors> {
   /// The fill for tinted tiles, chips and badges: [color] at 15% opacity.
   static Color tintedSurface(Color color) =>
       color.withValues(alpha: color.a * 0.15);
+
+  /// [color] stepped back behind more of the same data: the scale readings
+  /// behind the trend drawn through them. 45% opacity.
+  static Color muted(Color color) => color.withValues(alpha: color.a * 0.45);
 
   /// A colour the user chose, stored as `#RRGGBB` (the `#` optional), such
   /// as a gym plate's or a mesocycle's. User data, so not a token. Null when

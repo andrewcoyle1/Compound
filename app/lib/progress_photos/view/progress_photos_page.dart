@@ -436,7 +436,7 @@ class _PhotoCell extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: ShapeDecoration(
                       shape: const StadiumBorder(),
-                      color: scheme.surface.withValues(alpha: 0.8),
+                      color: context.appColors.surface,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

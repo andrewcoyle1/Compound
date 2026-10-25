@@ -521,8 +521,10 @@ class ExerciseRatingRow extends StatelessWidget {
                   height: AppSpacing.s,
                   decoration: ShapeDecoration(
                     shape: const StadiumBorder(),
+                    // An attribute of the exercise, not the user's own
+                    // progress: neutral, not the accent.
                     color: value <= rating
-                        ? context.appColors.accentInk
+                        ? scheme.onSurface
                         : scheme.surfaceContainerHighest,
                   ),
                 ),

@@ -4355,11 +4355,11 @@
             }
         }
     },
-    "exerciseResistanceLabel": "Resistance:",
+    "exerciseResistanceLabel": "Resistance",
     "@exerciseResistanceLabel": {
         "description": "Exercise detail: label before resistance equipment"
     },
-    "exerciseSupportLabel": "Support:",
+    "exerciseSupportLabel": "Support",
     "@exerciseSupportLabel": {
         "description": "Exercise detail: label before support equipment"
     },

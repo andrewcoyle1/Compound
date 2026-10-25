@@ -130,9 +130,7 @@ class _Overview extends StatelessWidget {
                   Expanded(child: Text(title)),
                   Text(
                     eaten > 0 ? grams(eaten) : AppFormat.placeholder,
-                    style: AppTextStyles.rowDetail.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    style: AppTextStyles.rowDetail.secondary(context),
                   ),
                   if (goal != null)
                     Text(
@@ -187,9 +185,7 @@ class _Overview extends StatelessWidget {
                     header: true,
                     child: Text(
                       l10n.nutritionOverviewCalories,
-                      style: AppTextStyles.sectionTitle.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                      style: AppTextStyles.sectionTitle.secondary(context),
                     ),
                   ),
                 ),

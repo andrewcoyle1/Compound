@@ -84,9 +84,7 @@ class _NotesSheetState extends State<_NotesSheet> {
               if (field.hint case final hint?)
                 Text(
                   l10n.trackerLastTimeNote(hint),
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
               TextField(
                 controller: _controllers[index],

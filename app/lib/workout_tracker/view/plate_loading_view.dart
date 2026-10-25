@@ -33,7 +33,6 @@ class PlateLoadingView extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final scheme = Theme.of(context).colorScheme;
     final scale = MediaQuery.textScalerOf(context);
-    const figures = [FontFeature.tabularFigures()];
     return MergeSemantics(
       child: Row(
         spacing: AppSpacing.m,
@@ -62,9 +61,7 @@ class PlateLoadingView extends StatelessWidget {
                 if (loading.perSide.isNotEmpty)
                   Text(
                     TrackerText.plateCounts(loading, locale: locale),
-                    style: AppTextStyles.rowTitle.copyWith(
-                      fontFeatures: figures,
-                    ),
+                    style: AppTextStyles.rowTitle.tabular,
                   ),
                 if (showsEquation)
                   Text(
@@ -74,10 +71,7 @@ class PlateLoadingView extends StatelessWidget {
                       unit,
                       locale: locale,
                     ),
-                    style: AppTextStyles.rowDetail.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      fontFeatures: figures,
-                    ),
+                    style: AppTextStyles.rowDetail.tabular.secondary(context),
                   ),
               ],
             ),

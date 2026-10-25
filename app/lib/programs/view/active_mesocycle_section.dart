@@ -40,7 +40,6 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
     final l10n = context.l10n;
     final state = context.watch<ProgramsCubit>().state;
     final mesocycle = widget.mesocycle;
-    final scheme = Theme.of(context).colorScheme;
     final view = mesocycle.workoutTemplates.isEmpty
         ? null
         : MicrocycleView.build(
@@ -69,9 +68,7 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
                         header: true,
                         child: Text(
                           l10n.programActiveMesocycle,
-                          style: AppTextStyles.sectionTitle.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
+                          style: AppTextStyles.sectionTitle.secondary(context),
                         ),
                       ),
                     ),
@@ -81,12 +78,7 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
                 ),
               ),
               if (view == null)
-                Text(
-                  header,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                )
+                Text(header, style: AppTextStyles.rowDetail.secondary(context))
               else
                 _MicrocycleMenu(
                   view: view,
@@ -322,10 +314,7 @@ class const _MicrocycleMenu({
             children: [
               Text(
                 label,
-                style: AppTextStyles.rowDetail.copyWith(
-                  color: secondary,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+                style: AppTextStyles.rowDetail.tabular.secondary(context),
               ),
               Icon(AppSymbols.choose, color: secondary, size: 16),
             ],

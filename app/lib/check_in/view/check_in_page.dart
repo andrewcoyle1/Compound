@@ -196,9 +196,7 @@ class _Step extends StatelessWidget {
     final bloc = context.read<WeeklyCheckInBloc>();
     final flow = state.flow!;
     final figures = state.figures;
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final trend =
         ExpenditureText.trendChange(
           l10n,

@@ -251,9 +251,7 @@ class WorkoutTemplateDetailView extends StatelessWidget {
                         description,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.rowDetail.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.rowDetail.secondary(context),
                       ),
                   ],
                 ),
@@ -481,9 +479,7 @@ class _HeaderWithInfo extends StatelessWidget {
               header: true,
               child: Text(
                 title,
-                style: AppTextStyles.sectionTitle.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                style: AppTextStyles.sectionTitle.secondary(context),
               ),
             ),
           ),
@@ -522,11 +518,11 @@ class _MuscleTile extends StatelessWidget {
                 l10n.targetSetsValue(
                   _sets(l10n, summary.weightedTargetSets, locale),
                 ),
-                style: AppTextStyles.label.copyWith(color: secondary),
+                style: AppTextStyles.label.secondary(context),
               ),
               Text(
                 l10n.exerciseCount(summary.exerciseCount),
-                style: AppTextStyles.label.copyWith(color: secondary),
+                style: AppTextStyles.label.secondary(context),
               ),
             ],
           ),
@@ -559,10 +555,7 @@ class _ExerciseRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final notes = exercise.notes?.trim() ?? '';
     final setup = [
       if (exercise.warmupSetCount case final count?) l10n.warmupCount(count),
@@ -609,9 +602,7 @@ class _ExerciseRow extends StatelessWidget {
                   children: [
                     Text(
                       exercise.exercise.name,
-                      style: AppTextStyles.sectionTitle.copyWith(
-                        color: scheme.onSurface,
-                      ),
+                      style: AppTextStyles.sectionTitle,
                     ),
                     if (exercise.setTargets.isNotEmpty)
                       Wrap(
@@ -729,10 +720,7 @@ class SetTargetLabel extends StatelessWidget {
             label: AppFormat.number(target.setNumber),
             tint: scheme.onSurfaceVariant,
           ),
-          Text(
-            description,
-            style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
-          ),
+          Text(description, style: AppTextStyles.label.secondary(context)),
         ],
       ),
     );
@@ -747,20 +735,13 @@ class _Labelled extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return MergeSemantics(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: AppSpacing.xxs,
         children: [
-          Text(
-            title,
-            style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
-          ),
-          Text(
-            value,
-            style: AppTextStyles.rowDetail.copyWith(color: scheme.onSurface),
-          ),
+          Text(title, style: AppTextStyles.label.secondary(context)),
+          Text(value, style: AppTextStyles.rowDetail),
         ],
       ),
     );

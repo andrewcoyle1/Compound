@@ -75,12 +75,7 @@ class const MesocycleHeader({
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: AppSpacing.xxs,
                 children: [
-                  Text(
-                    mesocycle.name,
-                    style: AppTextStyles.sectionTitle.copyWith(
-                      color: scheme.onSurface,
-                    ),
-                  ),
+                  Text(mesocycle.name, style: AppTextStyles.sectionTitle),
                   Wrap(
                     spacing: AppSpacing.xs,
                     runSpacing: AppSpacing.xxs,
@@ -98,9 +93,7 @@ class const MesocycleHeader({
                         ),
                       Text(
                         l10n.workoutsCount(workoutCount(mesocycle)),
-                        style: AppTextStyles.label.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.label.secondary(context),
                       ),
                     ],
                   ),
@@ -127,7 +120,6 @@ class const DayPlanRow({
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final names = [for (final e in plan.exercises) e.exercise.name].join(', ');
     final badge = this.badge;
     return Padding(
@@ -148,12 +140,7 @@ class const DayPlanRow({
                   spacing: AppSpacing.s,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Text(
-                      plan.name,
-                      style: AppTextStyles.sectionTitle.copyWith(
-                        color: scheme.onSurface,
-                      ),
-                    ),
+                    Text(plan.name, style: AppTextStyles.sectionTitle),
                     if (badge != null) AppChip(label: badge),
                   ],
                 ),
@@ -161,9 +148,7 @@ class const DayPlanRow({
                   plan.exercises.isEmpty ? l10n.programRest : names,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
                 if (plan.exercises.isNotEmpty)
                   MuscleChips(

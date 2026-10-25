@@ -344,9 +344,7 @@ class _Photos extends StatelessWidget {
             children: [
               Text(
                 l10n.progressPhotosSelectHint,
-                style: AppTextStyles.rowDetail.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                style: AppTextStyles.rowDetail.secondary(context),
               ),
               for (final (day, photos) in state.sections) ...[
                 const SizedBox(height: AppSpacing.xl),

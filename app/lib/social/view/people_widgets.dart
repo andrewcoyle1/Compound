@@ -51,9 +51,7 @@ class UsernameLabel extends StatelessWidget {
     if (username == null || username.isEmpty) return const SizedBox.shrink();
     return Text(
       '@$username',
-      style: AppTextStyles.label.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      style: AppTextStyles.label.secondary(context),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
@@ -190,9 +188,7 @@ class AuthorHeader extends StatelessWidget {
                       use24HourFormat: context.use24HourFormat,
                       locale: context.dateLocale,
                     ),
-                    style: AppTextStyles.label.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    style: AppTextStyles.label.secondary(context),
                   ),
                 ],
               ),

@@ -49,9 +49,7 @@ class SwapExercisePickerView extends StatelessWidget {
     final l10n = context.l10n;
     final state = context.watch<SwapExercisePickerCubit>().state;
     final planned = state.plannedAlternatives;
-    final header = AppTextStyles.sectionTitle.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final header = AppTextStyles.sectionTitle.secondary(context);
     return AppScaffold(
       appBar: AppBar(
         leading: const CloseButton(),

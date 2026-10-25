@@ -89,12 +89,9 @@ class ActiveWorkoutBar extends StatelessWidget {
     final session = state.session;
     if (!state.isActive || session == null) return const SizedBox.shrink();
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final progress = state.setProgress;
     final fraction = progress.total == 0 ? 0.0 : progress.done / progress.total;
-    final digits = AppTextStyles.metricSmall.copyWith(
-      fontFeatures: const [FontFeature.tabularFigures()],
-    );
+    final digits = AppTextStyles.metricSmall.tabular;
     return Tick(
       builder: (context, now) {
         final restEnd = state.restEnd;
@@ -126,18 +123,14 @@ class ActiveWorkoutBar extends StatelessWidget {
                       session.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.rowDetail.semibold.copyWith(
-                        color: scheme.onSurface,
-                      ),
+                      style: AppTextStyles.rowDetail.semibold,
                     ),
                     Text(
                       '${progress.done}/'
                       '${l10n.setCount(progress.total)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      style: AppTextStyles.rowDetail.secondary(context),
                     ),
                   ],
                 ),
@@ -153,11 +146,9 @@ class ActiveWorkoutBar extends StatelessWidget {
                     : state.isPaused
                     ? l10n.trackerPaused
                     : AppFormat.duration(state.elapsedAt(now)),
-                style: digits.copyWith(
-                  color: resting
-                      ? context.appColors.accentInk
-                      : scheme.onSurfaceVariant,
-                ),
+                style: resting
+                    ? digits.accent(context)
+                    : digits.secondary(context),
               ),
             ],
           ),

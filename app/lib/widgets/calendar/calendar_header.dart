@@ -266,14 +266,10 @@ class CalendarDayCell extends StatelessWidget {
                               style: AppDateStyle.day,
                               locale: context.dateLocale,
                             ),
-                            style: weighted(AppTextStyles.rowTitle).copyWith(
-                              color: isToday
-                                  ? context.appColors.accentInk
-                                  : null,
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                            ),
+                            style: isToday
+                                ? weighted(AppTextStyles.rowTitle.tabular)
+                                      .accent(context)
+                                : AppTextStyles.rowTitle.tabular,
                           ),
                           Text(
                             AppFormat.date(
@@ -282,7 +278,7 @@ class CalendarDayCell extends StatelessWidget {
                               locale: context.dateLocale,
                             ),
                             style: weighted(AppTextStyles.rowDetail)
-                                .copyWith(color: scheme.onSurfaceVariant),
+                                .secondary(context),
                           ),
                           // Always laid out, so today's cell is no taller.
                           DecoratedBox(
@@ -351,7 +347,7 @@ class _Badge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
         child: Text(
           count > 9 ? '9+' : '$count',
-          style: AppTextStyles.label.copyWith(color: scheme.onPrimary),
+          style: AppTextStyles.label.onAccent(context),
         ),
       ),
     );

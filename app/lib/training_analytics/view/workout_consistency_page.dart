@@ -164,7 +164,6 @@ class _ContributionGridState extends State<ContributionGrid> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final counts = <DateTime, int>{};
     for (final date in widget.dates) {
@@ -255,17 +254,13 @@ class _ContributionGridState extends State<ContributionGrid> {
                               ),
                             ],
                           ),
-                          style: AppTextStyles.rowDetail.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
+                          style: AppTextStyles.rowDetail.secondary(context),
                         ),
                         Text(
                           l10n.contributionDaysLogged(
                             '${date(first)} – ${date(today)}',
                           ),
-                          style: AppTextStyles.label.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
+                          style: AppTextStyles.label.secondary(context),
                         ),
                       ],
                     ),

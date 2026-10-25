@@ -184,9 +184,7 @@ class _Targets extends StatelessWidget {
     final targets = context.select<SetTargetCubit, List<SetTarget>>(
       (cubit) => cubit.state.exercise.setTargets,
     );
-    final label = AppTextStyles.label.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final label = AppTextStyles.label.secondary(context);
     return AppSection(
       children: [
         // Each field names its own column and set.
@@ -350,9 +348,7 @@ class const _PlanButton({
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<SetTargetCubit>();
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final chip = text.chip(target);
     final summary = text.summary(target, cubit.state.settings);
     return Semantics(

@@ -22,9 +22,7 @@ class const EditorTitle({
           subtitle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.rowDetail.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: AppTextStyles.rowDetail.secondary(context),
         ),
       ],
     );
@@ -48,12 +46,7 @@ class const NumberBadge(final String text, {super.key})
             horizontal: AppSpacing.s,
             vertical: AppSpacing.xs,
           ),
-          child: Text(
-            text,
-            style: AppTextStyles.rowDetail.copyWith(
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
+          child: Text(text, style: AppTextStyles.rowDetail.tabular),
         ),
       ),
     );

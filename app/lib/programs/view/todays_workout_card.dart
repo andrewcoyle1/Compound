@@ -315,7 +315,10 @@ class const _Start({
       if (minutes != null) l10n.programMinutesEstimate(minutes),
     ].join(' · ');
     final targets = _targets(context);
-    final side = MediaQuery.textScalerOf(context).scale(56);
+    // Pictures, not text: they grow with it only so far.
+    final side = MediaQuery.textScalerOf(context)
+        .clamp(maxScaleFactor: AppScaffold.largeTitleMaxTextScale)
+        .scale(56);
     return _Card(
       value: plan.name,
       unit: subtitle.isEmpty
@@ -345,28 +348,7 @@ class const _Start({
           isDeload: workout.isDeload,
         ),
       ),
-      actions: slot == null
-          ? null
-          : Row(
-              spacing: AppSpacing.m,
-              children: [
-                Expanded(
-                  child: AppCtaButton(
-                    label: l10n.startWorkout,
-                    size: AppCtaSize.compact,
-                    onPressed: () =>
-                        unawaited(_startSlot(context, workout, slot)),
-                  ),
-                ),
-                Semantics(
-                  hint: l10n.programSkipHint,
-                  child: AppTextButton(
-                    label: l10n.programSkipWorkout,
-                    onPressed: () => unawaited(_skip(context, slot)),
-                  ),
-                ),
-              ],
-            ),
+      actions: slot == null ? null : _Actions(workout: workout, slot: slot),
     );
   }
 
@@ -427,7 +409,7 @@ class const _Start({
     }
   }
 
-  Future<void> _skip(BuildContext context, ScheduleSlot slot) async {
+  static Future<void> _skip(BuildContext context, ScheduleSlot slot) async {
     final l10n = context.l10n;
     final cubit = context.read<ProgramsCubit>()
       ..pressed('TodaysWorkoutCard_Skip_Pressed');
@@ -445,5 +427,46 @@ class const _Start({
     if (!ok && context.mounted) {
       await showFailureAlert(context, l10n.programSkipFailed);
     }
+  }
+}
+
+/// Start (volt) and Skip, side by side; stacked at accessibility text
+/// sizes, where they no longer fit across the card.
+class const _Actions({
+  required final TodaysWorkout workout,
+  required final ScheduleSlot slot,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final start = AppCtaButton(
+      label: l10n.startWorkout,
+      size: AppCtaSize.compact,
+      onPressed: () => unawaited(_startSlot(context, workout, slot)),
+    );
+    final skip = Semantics(
+      hint: l10n.programSkipHint,
+      child: AppTextButton(
+        label: l10n.programSkipWorkout,
+        onPressed: () => unawaited(_Start._skip(context, slot)),
+      ),
+    );
+    final size = AppTextStyles.rowTitle.fontSize!;
+    final stacked =
+        MediaQuery.textScalerOf(context).scale(size) >=
+        size * AppListRow.accessibilityTextScale;
+    return stacked
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: AppSpacing.s,
+            children: [start, skip],
+          )
+        : Row(
+            spacing: AppSpacing.m,
+            children: [
+              Expanded(child: start),
+              skip,
+            ],
+          );
   }
 }

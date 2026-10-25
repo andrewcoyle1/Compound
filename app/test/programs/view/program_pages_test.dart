@@ -106,9 +106,10 @@ void main() {
     List<Macrocycle>? macrocycles,
     List<WorkoutSessionModel> history = const [],
     String? active = 'm1',
+    Size size = const Size(1200, 3000),
   }) async {
     tester.view
-      ..physicalSize = const Size(1200, 3000)
+      ..physicalSize = size
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final world = ProgramWorld.seeded(
@@ -479,6 +480,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Lower'), findsOneWidget);
       expect(world.analytics.names, contains('TodaysWorkoutCard_Skip_Success'));
+    });
+
+    testWidgets('fits a phone at 200% text, Start over Skip', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await pump(tester, '/today', size: const Size(393, 3000));
+      expect(tester.takeException(), isNull);
+      expect(
+        tester.getTopLeft(find.text('Skip Workout')).dy,
+        greaterThan(tester.getBottomLeft(find.text('Start Workout')).dy),
+      );
     });
 
     testWidgets("starts today's workout into the tracker", (tester) async {

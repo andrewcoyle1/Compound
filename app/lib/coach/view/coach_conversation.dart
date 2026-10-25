@@ -467,25 +467,16 @@ class _CoachConversationState extends State<CoachConversation> {
                               spacing: AppSpacing.s,
                               children: [
                                 Expanded(
-                                  child: TextField(
+                                  child: AppTextField(
                                     key: const Key('Coach.draft'),
+                                    hint: l10n.coachInputHint,
                                     controller: widget.draft,
+                                    textInputAction: TextInputAction.send,
                                     minLines: 1,
                                     maxLines: 5,
-                                    textInputAction: TextInputAction.send,
                                     onChanged: cubit.draftChanged,
+                                    style: AppTextFieldStyle.composer,
                                     onSubmitted: (_) => send(),
-                                    decoration: InputDecoration(
-                                      hintText: l10n.coachInputHint,
-                                      filled: true,
-                                      fillColor: context.appColors.surface,
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          AppRadius.l,
-                                        ),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                    ),
                                   ),
                                 ),
                                 // While the coach answers, Send becomes Stop.

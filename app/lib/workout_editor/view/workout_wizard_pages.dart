@@ -151,23 +151,16 @@ class _NameWorkoutViewState extends State<NameWorkoutView> {
             AppSection(
               header: l10n.editorWorkoutName,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    key: const Key('NameWorkout.name'),
-                    controller: _name,
-                    // A new workout's first job is its name.
-                    autofocus: !state.isEditing,
-                    textInputAction: TextInputAction.next,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      hintText: l10n.editorEnterName,
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                    onChanged: _cubit.nameChanged,
-                    onSubmitted: (_) => _continue(),
-                  ),
+                AppTextFieldRow(
+                  key: const Key('NameWorkout.name'),
+                  label: l10n.editorEnterName,
+                  controller: _name,
+                  // A new workout's first job is its name.
+                  autofocus: !state.isEditing,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.next,
+                  onChanged: _cubit.nameChanged,
+                  onSubmitted: (_) => _continue(),
                 ),
               ],
             ),

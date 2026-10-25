@@ -258,21 +258,14 @@ class CreateGymProfileView extends StatelessWidget {
             AppSection(
               header: l10n.onboardingGymHeader,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    key: const Key('CreateGymProfile.name'),
-                    autofocus: true,
-                    textCapitalization: TextCapitalization.words,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      labelText: l10n.onboardingGymName,
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                    onChanged: cubit.nameChanged,
-                    onSubmitted: (_) => unawaited(_continue(context)),
-                  ),
+                AppTextFieldRow(
+                  key: const Key('CreateGymProfile.name'),
+                  label: l10n.onboardingGymName,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.done,
+                  onChanged: cubit.nameChanged,
+                  onSubmitted: (_) => unawaited(_continue(context)),
                 ),
               ],
             ),

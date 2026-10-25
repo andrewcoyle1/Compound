@@ -314,10 +314,10 @@ class _AddWeightSheetState extends State<AddWeightSheet> with ScreenAnalytics {
             onSelected: (colour) => setState(() => _colour = colour),
           ),
         if (_isBands)
-          TextField(
+          AppTextField(
+            label: l10n.gymLabel,
             autofocus: true,
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(labelText: l10n.gymLabel),
             onChanged: (name) => setState(() => _name = name),
           ),
         AppNumberField(

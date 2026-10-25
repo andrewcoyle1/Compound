@@ -88,25 +88,14 @@ class _NotesSheetState extends State<_NotesSheet> {
                     color: scheme.onSurfaceVariant,
                   ),
                 ),
-              TextField(
+              AppTextField(
+                label: field.label,
+                helper: field.footer,
                 controller: _controllers[index],
                 autofocus: index == 0,
+                textCapitalization: TextCapitalization.sentences,
                 minLines: 3,
                 maxLines: 8,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  labelText: field.label,
-                  helperText: field.footer,
-                  helperMaxLines: 3,
-                  filled: true,
-                  fillColor: scheme.surfaceContainerHighest,
-                  border: const OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(AppRadius.m),
-                    ),
-                  ),
-                ),
               ),
             ],
           ],

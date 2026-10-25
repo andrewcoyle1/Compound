@@ -77,6 +77,28 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('takes its keyboard, corrections and affixes', (tester) async {
+      await tester.pumpApp(
+        AppTextFieldRow(
+          label: 'Username',
+          initialValue: 'alice',
+          keyboardType: TextInputType.url,
+          autocorrect: false,
+          enableSuggestions: false,
+          prefixText: '@',
+          suffixText: '%',
+          onChanged: (_) {},
+        ),
+      );
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.keyboardType, TextInputType.url);
+      expect(field.autocorrect, isFalse);
+      expect(field.enableSuggestions, isFalse);
+      expect(field.decoration!.prefixText, '@');
+      expect(field.decoration!.suffixText, '%');
+      expect(find.text('@'), findsOneWidget);
+    });
+
     testWidgets('is named by its label with text in it', (tester) async {
       await tester.pumpApp(
         AppTextFieldRow(
@@ -104,6 +126,18 @@ void main() {
           const AppTextFieldRow(
             label: 'First name',
             initialValue: 'Alice',
+            onChanged: _goldenChanged,
+          ),
+        ),
+      ),
+      (
+        'Prefix and suffix',
+        card(
+          const AppTextFieldRow(
+            label: 'Contribution',
+            initialValue: '50',
+            prefixText: '@',
+            suffixText: '%',
             onChanged: _goldenChanged,
           ),
         ),

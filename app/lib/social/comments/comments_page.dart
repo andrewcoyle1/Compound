@@ -460,20 +460,17 @@ class _InputBar extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
+                    child: AppTextField(
+                      hint: parent == null
+                          ? l10n.commentsAddComment
+                          : l10n.commentsAddReply,
                       controller: controller,
                       focusNode: focus,
+                      textCapitalization: TextCapitalization.sentences,
                       minLines: 1,
                       maxLines: 4,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecoration(
-                        hintText: parent == null
-                            ? l10n.commentsAddComment
-                            : l10n.commentsAddReply,
-                        border: InputBorder.none,
-                        filled: false,
-                      ),
                       onChanged: cubit.draftChanged,
+                      style: AppTextFieldStyle.plain,
                     ),
                   ),
                   AppIconButton(

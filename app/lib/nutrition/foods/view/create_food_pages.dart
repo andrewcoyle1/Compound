@@ -182,11 +182,6 @@ class _CreateFoodViewState extends State<CreateFoodView>
     final l10n = context.l10n;
     final state = context.watch<CreateFoodCubit>().state;
     final barcode = state.barcode;
-    InputDecoration field(String hint) => InputDecoration(
-      hintText: hint,
-      border: InputBorder.none,
-      filled: false,
-    );
     return PopScope(
       canPop: !state.hasUnsavedChanges,
       onPopInvokedWithResult: (didPop, _) {
@@ -209,16 +204,13 @@ class _CreateFoodViewState extends State<CreateFoodView>
               header: l10n.createFoodName,
               trailing: Text(l10n.createFoodRequired),
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  // Not focused on opening, so the keyboard does not hide
-                  // the form (as Swift).
-                  child: TextField(
-                    key: const Key('CreateFood.name'),
-                    textCapitalization: TextCapitalization.words,
-                    decoration: field(l10n.createFoodNamePrompt),
-                    onChanged: cubit.nameChanged,
-                  ),
+                // Not focused on opening, so the keyboard does not hide
+                // the form (as Swift).
+                AppTextFieldRow(
+                  key: const Key('CreateFood.name'),
+                  label: l10n.createFoodNamePrompt,
+                  textCapitalization: TextCapitalization.words,
+                  onChanged: cubit.nameChanged,
                 ),
               ],
             ),
@@ -226,14 +218,11 @@ class _CreateFoodViewState extends State<CreateFoodView>
             AppSection(
               header: l10n.createFoodBrand,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    key: const Key('CreateFood.brand'),
-                    textCapitalization: TextCapitalization.words,
-                    decoration: field(l10n.createFoodNamePrompt),
-                    onChanged: cubit.brandChanged,
-                  ),
+                AppTextFieldRow(
+                  key: const Key('CreateFood.brand'),
+                  label: l10n.createFoodNamePrompt,
+                  textCapitalization: TextCapitalization.words,
+                  onChanged: cubit.brandChanged,
                 ),
               ],
             ),
@@ -398,16 +387,13 @@ class _PortionDefinitionViewState extends State<PortionDefinitionView>
                       style: AppTextStyles.rowTitle,
                     ),
                     Expanded(
-                      child: TextField(
+                      child: AppTextField(
                         key: const Key('PortionDefinition.name'),
+                        hint: 'portion',
                         controller: _portionName,
                         textAlign: TextAlign.end,
-                        decoration: const InputDecoration(
-                          hintText: 'portion',
-                          border: InputBorder.none,
-                          filled: false,
-                        ),
                         onChanged: cubit.portionNameChanged,
+                        style: AppTextFieldStyle.plain,
                       ),
                     ),
                   ],

@@ -58,20 +58,13 @@ class GymSetupView extends StatelessWidget {
           header: l10n.onboardingGymHeader,
           footer: l10n.onboardingGymFooter,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: TextField(
-                autofocus: true,
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.done,
-                decoration: InputDecoration(
-                  labelText: l10n.onboardingGymName,
-                  border: InputBorder.none,
-                  filled: false,
-                ),
-                onChanged: cubit.nameChanged,
-                onSubmitted: (_) => _continue(context),
-              ),
+            AppTextFieldRow(
+              label: l10n.onboardingGymName,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.done,
+              onChanged: cubit.nameChanged,
+              onSubmitted: (_) => _continue(context),
             ),
           ],
         ),

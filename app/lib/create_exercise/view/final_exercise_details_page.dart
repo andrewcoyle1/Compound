@@ -69,26 +69,17 @@ class FinalExerciseDetailsView extends StatelessWidget {
                 header: l10n.exerciseBodyWeightContributionRow,
                 footer: _contributionFooter(context, state),
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.l,
-                    ),
-                    child: TextFormField(
-                      key: const Key('FinalExerciseDetails.contribution'),
-                      initialValue: '${state.contribution ?? ''}',
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp('[0-9-]')),
-                      ],
-                      decoration: InputDecoration(
-                        labelText: l10n.createExerciseContributionLabel,
-                        hintText: '0',
-                        suffixText: '%',
-                        border: InputBorder.none,
-                        filled: false,
-                      ),
-                      onChanged: cubit.contributionChanged,
-                    ),
+                  AppTextFieldRow(
+                    key: const Key('FinalExerciseDetails.contribution'),
+                    label: l10n.createExerciseContributionLabel,
+                    initialValue: '${state.contribution ?? ''}',
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp('[0-9-]')),
+                    ],
+                    onChanged: cubit.contributionChanged,
+                    textCapitalization: TextCapitalization.none,
+                    suffixText: '%',
                   ),
                   if (!state.isContributionInRange)
                     Padding(
@@ -117,48 +108,32 @@ class FinalExerciseDetailsView extends StatelessWidget {
                     '${ExerciseDefinitionRules.alternateNamesLimit}',
                 footer: l10n.createExerciseAlternateNamesFooter,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.l,
-                    ),
-                    child: TextFormField(
-                      key: const Key('FinalExerciseDetails.alternateNames'),
-                      initialValue: state.alternateNames,
-                      maxLength: ExerciseDefinitionRules.alternateNamesLimit,
-                      maxLines: 2,
-                      minLines: 1,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: InputDecoration(
-                        hintText: l10n.createExerciseAlternateNamesHint,
-                        counterText: '',
-                        border: InputBorder.none,
-                        filled: false,
+                  AppTextFieldRow(
+                    key: const Key('FinalExerciseDetails.alternateNames'),
+                    label: l10n.createExerciseAlternateNamesHint,
+                    initialValue: state.alternateNames,
+                    textCapitalization: TextCapitalization.words,
+                    minLines: 1,
+                    maxLines: 2,
+                    onChanged: cubit.alternateNamesChanged,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(
+                        ExerciseDefinitionRules.alternateNamesLimit,
                       ),
-                      onChanged: cubit.alternateNamesChanged,
-                    ),
+                    ],
                   ),
                 ],
               ),
               AppSection(
                 header: l10n.exerciseDescriptionRow,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.l,
-                    ),
-                    child: TextFormField(
-                      key: const Key('FinalExerciseDetails.description'),
-                      initialValue: state.draft.description,
-                      maxLines: 6,
-                      minLines: 2,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecoration(
-                        hintText: l10n.createExerciseDescriptionHint,
-                        border: InputBorder.none,
-                        filled: false,
-                      ),
-                      onChanged: cubit.descriptionChanged,
-                    ),
+                  AppTextFieldRow(
+                    key: const Key('FinalExerciseDetails.description'),
+                    label: l10n.createExerciseDescriptionHint,
+                    initialValue: state.draft.description,
+                    minLines: 2,
+                    maxLines: 6,
+                    onChanged: cubit.descriptionChanged,
                   ),
                 ],
               ),

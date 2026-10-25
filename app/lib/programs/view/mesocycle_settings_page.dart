@@ -294,12 +294,10 @@ class _RenameSheetState extends State<_RenameSheet> {
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [
-          TextField(
+          AppTextField(
+            hint: context.l10n.programDayNameHint,
             controller: _name,
             autofocus: true,
-            decoration: InputDecoration(
-              hintText: context.l10n.programDayNameHint,
-            ),
             onChanged: (_) => setState(() {}),
             onSubmitted: (_) => _save(),
           ),

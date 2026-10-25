@@ -28,6 +28,11 @@ class AppTextFieldRow extends StatelessWidget {
     this.textInputAction,
     this.onSubmitted,
     this.autofocus = false,
+    this.keyboardType,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    this.prefixText,
+    this.suffixText,
     super.key,
   });
 
@@ -68,6 +73,23 @@ class AppTextFieldRow extends StatelessWidget {
   /// Whether the field takes focus when it first appears.
   final bool autofocus;
 
+  /// The keyboard, such as [TextInputType.url]; text by default.
+  final TextInputType? keyboardType;
+
+  /// Whether the keyboard corrects spelling; off for a code or a link.
+  final bool autocorrect;
+
+  /// Whether the keyboard suggests words; off for a username.
+  final bool enableSuggestions;
+
+  /// Text before the typed text once the field has focus or text, such as
+  /// `@`.
+  final String? prefixText;
+
+  /// Text after the typed text once the field has focus or text, such as
+  /// `%`.
+  final String? suffixText;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -94,14 +116,25 @@ class AppTextFieldRow extends StatelessWidget {
                   autofillHints: autofillHints,
                   textCapitalization: textCapitalization,
                   textInputAction: textInputAction,
+                  keyboardType: keyboardType,
+                  autocorrect: autocorrect,
+                  enableSuggestions: enableSuggestions,
                   style: AppTextStyles.rowTitle.copyWith(
                     color: scheme.onSurface,
                   ),
-                  decoration: InputDecoration.collapsed(
+                  // Collapsed, as `InputDecoration.collapsed`, which has no
+                  // prefix or suffix.
+                  decoration: InputDecoration(
                     hintText: label,
                     hintStyle: AppTextStyles.rowTitle.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
+                    prefixText: prefixText,
+                    suffixText: suffixText,
+                    isCollapsed: true,
+                    contentPadding: EdgeInsets.zero,
+                    filled: false,
+                    border: InputBorder.none,
                   ),
                   onChanged: onChanged,
                   onFieldSubmitted: onSubmitted,

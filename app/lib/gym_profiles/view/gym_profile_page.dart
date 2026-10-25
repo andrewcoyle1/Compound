@@ -172,16 +172,13 @@ class _GymProfileViewState extends State<GymProfileView> {
         appBar: AppBar(
           title: switch (widget.title) {
             final title? => Text(title),
-            null => TextField(
+            null => AppTextField(
               key: const Key('GymProfile.name'),
+              hint: l10n.onboardingUntitledGym,
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                hintText: l10n.onboardingUntitledGym,
-                border: InputBorder.none,
-                filled: false,
-              ),
               onChanged: _cubit.renamed,
+              style: AppTextFieldStyle.plain,
             ),
           },
           actions: [

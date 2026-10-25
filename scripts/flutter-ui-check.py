@@ -62,6 +62,9 @@ RULES = {
     # Rule 3: a tap goes through AppPressable (pressed state, 44 pt target, button semantics), in
     # app/lib only. A drag or a swipe keeps its GestureDetector, allowed below.
     'raw-tap': (_ + r'(InkWell|InkResponse|GestureDetector)\(', 'AppPressable'),
+    # Rule 3: text entry is app_ui's, so every field types in the same style.
+    'raw-text-field': (_ + r'(TextField|TextFormField|CupertinoTextField)(\.\w+)?\(',
+                       'AppTextFieldRow, AppTextField, AppSearchField or AppNumberField'),
 }
 
 # Matches a rule allows, as {rule: {file: how many}}, each with its reason. One more in the file fails.
@@ -220,6 +223,11 @@ def self_test():
         "child: InkResponse(onTap: pick,": ['raw-tap'],
         "return GestureDetector(onTap: open,": ['raw-tap'],
         "child: AppPressable(onTap: open, child: row),": [],
+        "child: TextField(controller: c),": ['raw-text-field'],
+        "child: TextFormField(initialValue: v,": ['raw-text-field'],
+        "CupertinoTextField.borderless(": ['raw-text-field'],
+        "AppTextField(hint: h, style: AppTextFieldStyle.plain),": [],
+        "maxLength: TextField.noMaxLength,": [],
     }
     for line, expected in cases.items():
         got = [rule for rule, _n, _l in matches(line)]

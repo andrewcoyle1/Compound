@@ -100,7 +100,8 @@ class AppListRow extends StatelessWidget {
   /// Ignored when [icon] is set.
   final Widget? thumbnail;
 
-  /// The icon's colour. Defaults to the accent.
+  /// The icon's colour. Defaults to the text colour: a row's icon is plain
+  /// information, which the accent never marks (design-language.md).
   final Color? tint;
 
   /// The trailing accessory, or none.
@@ -144,7 +145,7 @@ class AppListRow extends StatelessWidget {
         ? Icon(
             icon,
             size: scaler.scale(AppControlSize.icon),
-            color: tint ?? danger ?? context.appColors.accentInk,
+            color: tint ?? danger ?? scheme.onSurface,
           )
         : thumbnail != null
         ? ClipRSuperellipse(

@@ -99,6 +99,7 @@ void main() {
         expect(theme.dividerTheme.color, colors.separator);
         expect(theme.inputDecorationTheme.fillColor, colors.raised);
         expect(theme.progressIndicatorTheme.color, colors.accentInk);
+        expect(theme.textSelectionTheme.cursorColor, colors.accentInk);
         expect(
           theme.textButtonTheme.style?.foregroundColor?.resolve({}),
           colors.accentInk,

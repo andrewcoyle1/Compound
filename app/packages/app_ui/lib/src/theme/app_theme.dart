@@ -225,6 +225,13 @@ abstract final class AppTheme {
         linearTrackColor: scheme.surfaceContainerHighest,
         circularTrackColor: scheme.surfaceContainerHighest,
       ),
+      // The caret and selection are the accent drawn on a field, so its ink:
+      // a volt caret vanishes on white.
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: colors.accentInk,
+        selectionHandleColor: colors.accentInk,
+        selectionColor: colors.accentInk.withValues(alpha: 0.3),
+      ),
       inputDecorationTheme: InputDecorationThemeData(
         filled: true,
         fillColor: colors.raised,

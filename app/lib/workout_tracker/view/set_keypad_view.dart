@@ -275,10 +275,7 @@ class SetKeypadView extends StatelessWidget {
                   child: Center(
                     child: Text(
                       stackSummary,
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
+                      style: AppTextStyles.rowDetail.tabular.secondary(context),
                     ),
                   ),
                 ),
@@ -371,8 +368,8 @@ class _Key extends StatelessWidget {
         shape: const RoundedSuperellipseBorder(
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
         ),
-        child: InkWell(
-          customBorder: const RoundedSuperellipseBorder(
+        child: AppPressable(
+          shape: const RoundedSuperellipseBorder(
             borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
           ),
           onTap: () {
@@ -444,8 +441,8 @@ class _KeyChip extends StatelessWidget {
         shape: const RoundedSuperellipseBorder(
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
         ),
-        child: InkWell(
-          customBorder: const RoundedSuperellipseBorder(
+        child: AppPressable(
+          shape: const RoundedSuperellipseBorder(
             borderRadius: BorderRadius.all(Radius.circular(AppRadius.m)),
           ),
           onTap: onPressed,
@@ -457,16 +454,11 @@ class _KeyChip extends StatelessWidget {
                 widthFactor: 1,
                 child: Text(
                   title,
-                  style:
-                      (selected
-                              ? AppTextStyles.rowDetail.semibold
-                              : AppTextStyles.rowDetail)
-                          .copyWith(
-                            color: selected
-                                ? scheme.onPrimary
-                                : scheme.onSurface,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
+                  style: selected
+                      ? AppTextStyles.rowDetail.semibold.tabular.onAccent(
+                          context,
+                        )
+                      : AppTextStyles.rowDetail.tabular,
                 ),
               ),
             ),
@@ -484,12 +476,8 @@ class _Heading extends StatelessWidget {
   final String title;
 
   @override
-  Widget build(BuildContext context) => Text(
-    title,
-    style: AppTextStyles.label.semibold.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    ),
-  );
+  Widget build(BuildContext context) =>
+      Text(title, style: AppTextStyles.label.semibold.secondary(context));
 }
 
 /// The bar and plates for the weight being typed (`SetKeyboardView`'s
@@ -524,7 +512,6 @@ class _LoadingBar extends StatelessWidget {
     final cubit = actions;
     final loading = this.loading;
     final shown = this.shown;
-    final scheme = Theme.of(context).colorScheme;
     final danger = context.appColors.danger;
     if (loading != null) {
       return Padding(
@@ -536,7 +523,7 @@ class _LoadingBar extends StatelessWidget {
             Semantics(
               button: true,
               hint: l10n.keypadPlatesHint,
-              child: InkWell(
+              child: AppPressable(
                 key: const ValueKey('keypad-loading'),
                 onTap: () => unawaited(_openPlateCalculator(context)),
                 child: ConstrainedBox(
@@ -554,10 +541,7 @@ class _LoadingBar extends StatelessWidget {
               TrackerText.plateEquation(l10n, loading, unit, locale: locale),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.rowDetail.copyWith(
-                color: scheme.onSurfaceVariant,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
+              style: AppTextStyles.rowDetail.tabular.secondary(context),
             ),
           ],
         ),
@@ -581,10 +565,7 @@ class _LoadingBar extends StatelessWidget {
           spacing: AppSpacing.s,
           children: [
             Icon(AppSymbols.warning, color: danger),
-            Text(
-              l10n.keypadNotLoadable,
-              style: AppTextStyles.rowDetail.copyWith(color: danger),
-            ),
+            Text(l10n.keypadNotLoadable, style: AppTextStyles.rowDetail),
             if (result case r.NotLoadable(:final below, :final above))
               for (final value in [?below, ?above])
                 Semantics(

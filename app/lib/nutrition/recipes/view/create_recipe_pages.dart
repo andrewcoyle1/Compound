@@ -80,9 +80,6 @@ Future<void> _push(
   );
 }
 
-InputDecoration _plain(String hint) =>
-    InputDecoration(hintText: hint, border: InputBorder.none, filled: false);
-
 /// The name, servings, weight and ingredients.
 class CreateRecipeView extends StatefulWidget {
   const new({super.key});
@@ -137,16 +134,13 @@ class _CreateRecipeViewState extends State<CreateRecipeView>
               header: l10n.createRecipeName,
               trailing: Text(l10n.createRecipeRequired),
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  // Not focused on opening, so the keyboard does not hide
-                  // the form.
-                  child: TextField(
-                    key: const Key('CreateRecipe.name'),
-                    textCapitalization: TextCapitalization.words,
-                    decoration: _plain(l10n.createRecipeNamePrompt),
-                    onChanged: cubit.nameChanged,
-                  ),
+                // Not focused on opening, so the keyboard does not hide
+                // the form.
+                AppTextFieldRow(
+                  key: const Key('CreateRecipe.name'),
+                  label: l10n.createRecipeNamePrompt,
+                  textCapitalization: TextCapitalization.words,
+                  onChanged: cubit.nameChanged,
                 ),
               ],
             ),
@@ -550,15 +544,13 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
             AppSection(
               header: l10n.recipePreparationLink,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    key: const Key('RecipePreparation.link'),
-                    keyboardType: TextInputType.url,
-                    autocorrect: false,
-                    decoration: _plain(l10n.recipePreparationLinkPrompt),
-                    onChanged: cubit.sourceUrlChanged,
-                  ),
+                AppTextFieldRow(
+                  key: const Key('RecipePreparation.link'),
+                  label: l10n.recipePreparationLinkPrompt,
+                  keyboardType: TextInputType.url,
+                  autocorrect: false,
+                  onChanged: cubit.sourceUrlChanged,
+                  textCapitalization: TextCapitalization.none,
                 ),
               ],
             ),
@@ -584,17 +576,16 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
                             ),
                           ),
                           Expanded(
-                            child: TextFormField(
+                            child: AppTextField(
                               key: Key('RecipePreparation.step.$index'),
+                              hint: l10n.recipePreparationStep(index + 1),
                               initialValue: step,
+                              textCapitalization: TextCapitalization.sentences,
                               minLines: 2,
                               maxLines: null,
-                              textCapitalization: TextCapitalization.sentences,
-                              decoration: _plain(
-                                l10n.recipePreparationStep(index + 1),
-                              ),
                               onChanged: (text) =>
                                   cubit.stepChanged(index, text),
+                              style: AppTextFieldStyle.plain,
                             ),
                           ),
                           Padding(
@@ -631,7 +622,7 @@ class _RecipePreparationViewState extends State<RecipePreparationView>
                     button: true,
                     label: l10n.recipePreparationSelectPhoto,
                     excludeSemantics: true,
-                    child: InkWell(
+                    child: AppPressable(
                       key: const Key('RecipePreparation.photo'),
                       onTap: () => unawaited(cubit.photoPressed()),
                       child: Padding(

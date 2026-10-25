@@ -238,7 +238,6 @@ class _ConsentGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final isApple = switch (Theme.of(context).platform) {
       TargetPlatform.iOS || TargetPlatform.macOS => true,
       _ => false,
@@ -261,7 +260,7 @@ class _ConsentGate extends StatelessWidget {
         const SizedBox(height: AppSpacing.s),
         Text(
           l10n.coachConsentBody,
-          style: AppTextStyles.rowDetail.copyWith(color: secondary),
+          style: AppTextStyles.rowDetail.secondary(context),
         ),
         const SizedBox(height: AppSpacing.xl),
         AppSection(

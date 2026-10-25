@@ -347,13 +347,11 @@ class _SessionLookupState extends State<_SessionLookup> {
     return AppSection(
       header: l10n.devSettingsFetchSession,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: TextField(
-            controller: _id,
-            decoration: InputDecoration(labelText: l10n.devSettingsSessionId),
-            onChanged: (_) => setState(() {}),
-          ),
+        AppTextFieldRow(
+          label: l10n.devSettingsSessionId,
+          controller: _id,
+          onChanged: (_) => setState(() {}),
+          textCapitalization: TextCapitalization.none,
         ),
         AppListRowButton(
           title: l10n.devSettingsFetch,

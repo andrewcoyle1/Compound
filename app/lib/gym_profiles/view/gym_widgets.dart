@@ -202,9 +202,7 @@ class GymSheet extends StatelessWidget {
                 Text(
                   subtitle,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
             ],
           ),

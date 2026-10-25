@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:app_ui/app_ui.dart';
 
 /// How loud an [AppSummaryCard]'s number is.
@@ -271,23 +269,16 @@ class AppSummaryCard extends StatelessWidget {
       ?delta?.label,
       ?footer,
     ].where((part) => part.isNotEmpty).join(', ');
-    final summary = Semantics(
-      container: true,
-      button: onTap != null,
-      label: title,
-      value: heard,
-      // Everything but the trailing chip or button is read from here;
-      // that keeps its own node, so it stays reachable.
-      child: onTap == null
-          ? content
-          : InkWell(
-              onTap: () {
-                unawaited(AppHaptics.light());
-                onTap();
-              },
-              child: content,
-            ),
-    );
+    // Everything but the trailing chip or button is read from one node;
+    // that keeps its own, so it stays reachable. As a button, the node is
+    // the pressable's, which carries the tap.
+    final summary = onTap == null
+        ? Semantics(container: true, label: title, value: heard, child: content)
+        : AppPressable(
+            onTap: onTap,
+            haptic: AppHaptic.light,
+            child: Semantics(label: title, value: heard, child: content),
+          );
     return AppCard(
       child: rows.isEmpty
           ? summary

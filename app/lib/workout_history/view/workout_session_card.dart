@@ -49,16 +49,14 @@ class WorkoutSessionCard extends StatelessWidget {
     final volume = WorkoutText.sessionVolume(session, locale: locale);
     final duration = session.activeDuration;
     final note = session.notes?.trim();
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
 
     final header = this.header;
     final footer = this.footer;
     final content = MergeSemantics(
       child: Semantics(
         button: true,
-        child: InkWell(
+        child: AppPressable(
           onTap:
               onPressed ??
               () => context.goNamed(
@@ -164,9 +162,7 @@ class WorkoutSessionCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           note,
-                          style: AppTextStyles.label.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
+                          style: AppTextStyles.label.secondary(context),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -262,9 +258,7 @@ class _Capsule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = AppTextStyles.label.copyWith(
-      color: Theme.of(context).colorScheme.onSurface,
-    );
+    final style = AppTextStyles.label;
     return DecoratedBox(
       decoration: ShapeDecoration(
         shape: const StadiumBorder(),
@@ -316,9 +310,7 @@ class _ExerciseLine extends StatelessWidget {
     );
     final setsText = Text(
       sets,
-      style: AppTextStyles.rowDetail.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      style: AppTextStyles.rowDetail.secondary(context),
     );
     if (isLargeText) {
       return Column(

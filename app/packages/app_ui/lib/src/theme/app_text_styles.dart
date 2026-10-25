@@ -57,6 +57,7 @@ const _displayBold = 'BarlowCondensedBold';
 /// | [rowDetail] | Row subtitle, in secondary text |
 /// | [label] | Stat labels and chips, in secondary text |
 /// | [overline] | A stat's unit or name over its number, all caps |
+/// | [formula] | A formula, monospaced |
 ///
 /// Every number style has tabular figures, so changing numbers don't
 /// jitter and columns line up. Barlow's own figures are proportional; its
@@ -151,6 +152,13 @@ abstract final class AppTextStyles {
     sfTracking: 0,
   ).copyWith(letterSpacing: 0.6);
 
+  /// 15, regular, monospaced: a formula as the code computes it (a
+  /// calculation's method sheet).
+  static TextStyle get formula => rowDetail.copyWith(
+    fontFamily: 'monospace',
+    fontFamilyFallback: const ['Menlo', 'Courier'],
+  );
+
   /// [style] in semibold, as Swift's `.fontWeight(.semibold)`: a token
   /// picked out from the text around it, such as today's date in a strip.
   static TextStyle emphasized(TextStyle style) =>
@@ -224,6 +232,24 @@ extension AppTextStyleColor on TextStyle {
   /// This style in secondary text ([AppColors.secondaryLabel]).
   TextStyle secondary(BuildContext context) =>
       copyWith(color: context.appColors.secondaryLabel);
+
+  /// This style in the accent as text ([AppColors.accentInk]): your own
+  /// progress or the thing to do, on the canvas or a surface.
+  TextStyle accent(BuildContext context) =>
+      copyWith(color: context.appColors.accentInk);
+
+  /// This style on an accent fill ([ColorScheme.onPrimary]): a selected
+  /// day, key or set number drawn on volt.
+  TextStyle onAccent(BuildContext context) =>
+      copyWith(color: Theme.of(context).colorScheme.onPrimary);
+}
+
+/// Tabular figures for a number set in a reading style (a set's "3 × 8" in
+/// [AppTextStyles.rowDetail]), so it lines up and doesn't jitter. The number
+/// styles have them already.
+extension AppTextStyleFigures on TextStyle {
+  /// This style with tabular figures.
+  TextStyle get tabular => copyWith(fontFeatures: _tabular);
 }
 
 /// Icon sizes at the default text size. [of] scales them with the user's

@@ -74,7 +74,6 @@ class _WeeklyGoalViewState extends State<WeeklyGoalView> {
     final l10n = context.l10n;
     final state = context.watch<WeeklyGoalCubit>().state;
     final selected = state.selected;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     return BlocListener<WeeklyGoalCubit, WeeklyGoalState>(
       listenWhen: (previous, current) =>
           previous.status != current.status ||
@@ -120,7 +119,7 @@ class _WeeklyGoalViewState extends State<WeeklyGoalView> {
             const SizedBox(height: AppSpacing.l),
             Text(
               l10n.weeklyGoalFooter,
-              style: AppTextStyles.label.copyWith(color: secondary),
+              style: AppTextStyles.label.secondary(context),
             ),
           ],
         ),

@@ -317,14 +317,13 @@ class GoalProgressHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final trend = trendKg;
     final fraction = trend == null ? 0.0 : goalFraction(goal, trend);
     Widget label(String title, double kg) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: AppSpacing.xxs,
       children: [
-        Text(title, style: AppTextStyles.label.copyWith(color: secondary)),
+        Text(title, style: AppTextStyles.label.secondary(context)),
         Text(weight(kg), style: AppTextStyles.rowDetail),
       ],
     );
@@ -334,7 +333,7 @@ class GoalProgressHeader extends StatelessWidget {
       children: [
         Text(
           goal.objective.label(l10n),
-          style: AppTextStyles.rowDetail.copyWith(color: secondary),
+          style: AppTextStyles.rowDetail.secondary(context),
         ),
         Text(
           AppFormat.percent(fraction, locale: locale),

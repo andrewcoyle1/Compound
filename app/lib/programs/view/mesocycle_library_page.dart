@@ -119,7 +119,7 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
                   for (final template in templates)
                     Semantics(
                       button: true,
-                      child: InkWell(
+                      child: AppPressable(
                         onTap: () => unawaited(
                           context.pushNamed(
                             PrebuiltMesocycleDetailPage.name,
@@ -211,7 +211,7 @@ class _DisclosureState extends State<_Disclosure> {
           child: Semantics(
             button: true,
             expanded: _expanded,
-            child: InkWell(
+            child: AppPressable(
               onTap: () => setState(() => _expanded = !_expanded),
               child: MesocycleHeader(
                 mesocycle: widget.mesocycle,

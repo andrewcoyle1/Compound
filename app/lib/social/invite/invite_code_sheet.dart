@@ -60,21 +60,14 @@ class _InviteCodeSheetState extends State<InviteCodeSheet> {
           AppSection(
             footer: l10n.inviteCodeFooter,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                child: TextField(
-                  controller: _code,
-                  autofocus: true,
-                  autocorrect: false,
-                  textCapitalization: TextCapitalization.characters,
-                  textInputAction: TextInputAction.join,
-                  decoration: InputDecoration(
-                    hintText: l10n.inviteCode,
-                    border: InputBorder.none,
-                    filled: false,
-                  ),
-                  onSubmitted: (_) => _join(),
-                ),
+              AppTextFieldRow(
+                label: l10n.inviteCode,
+                controller: _code,
+                autofocus: true,
+                textCapitalization: TextCapitalization.characters,
+                textInputAction: TextInputAction.join,
+                autocorrect: false,
+                onSubmitted: (_) => _join(),
               ),
             ],
           ),

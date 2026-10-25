@@ -180,7 +180,7 @@ class _ReturnToToday extends StatelessWidget {
           color: scheme.onSurface,
           shape: const StadiumBorder(),
           clipBehavior: Clip.antiAlias,
-          child: InkWell(
+          child: AppPressable(
             onTap: onPressed,
             child: Center(
               child: Icon(
@@ -238,8 +238,7 @@ class CalendarDayCell extends StatelessWidget {
         ?marker?.describe(l10n),
       ].join(', '),
       excludeSemantics: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: AppPressable(
         onTap: () => onPressed(day),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
@@ -266,14 +265,10 @@ class CalendarDayCell extends StatelessWidget {
                               style: AppDateStyle.day,
                               locale: context.dateLocale,
                             ),
-                            style: weighted(AppTextStyles.rowTitle).copyWith(
-                              color: isToday
-                                  ? context.appColors.accentInk
-                                  : null,
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                            ),
+                            style: isToday
+                                ? weighted(AppTextStyles.rowTitle.tabular)
+                                      .accent(context)
+                                : AppTextStyles.rowTitle.tabular,
                           ),
                           Text(
                             AppFormat.date(
@@ -282,7 +277,7 @@ class CalendarDayCell extends StatelessWidget {
                               locale: context.dateLocale,
                             ),
                             style: weighted(AppTextStyles.rowDetail)
-                                .copyWith(color: scheme.onSurfaceVariant),
+                                .secondary(context),
                           ),
                           // Always laid out, so today's cell is no taller.
                           DecoratedBox(
@@ -323,13 +318,9 @@ List<Color> ringColours(
   SessionsMarker(:final colours) => [
     for (final hex in colours) AppColors.fromHex(hex) ?? colors.accentInk,
   ],
-  GoalProgressMarker(isOverGoal: true) => [
-    colors.danger.withValues(alpha: 0.5),
-  ],
+  GoalProgressMarker(isOverGoal: true) => [colors.danger],
   // A goal met is done, so the accent, not success green.
-  GoalProgressMarker(isGoalMet: true) => [
-    colors.accentInk.withValues(alpha: 0.5),
-  ],
+  GoalProgressMarker(isGoalMet: true) => [colors.accentInk],
   GoalProgressMarker() => [colors.calories],
   CountMarker() => [colors.accentInk],
 };
@@ -351,7 +342,7 @@ class _Badge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
         child: Text(
           count > 9 ? '9+' : '$count',
-          style: AppTextStyles.label.copyWith(color: scheme.onPrimary),
+          style: AppTextStyles.label.onAccent(context),
         ),
       ),
     );

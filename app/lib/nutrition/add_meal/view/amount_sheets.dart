@@ -305,7 +305,6 @@ class _SheetBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     String grams(double? value) =>
         value == null ? AppFormat.placeholder : AppFormat.grams(value);
     final subtitle = this.subtitle;
@@ -330,12 +329,12 @@ class _SheetBody extends StatelessWidget {
                   if (subtitle != null)
                     Text(
                       subtitle,
-                      style: AppTextStyles.rowDetail.copyWith(color: secondary),
+                      style: AppTextStyles.rowDetail.secondary(context),
                     ),
                   field,
                   Text(
                     l10n.addMealEstimatedMacros,
-                    style: AppTextStyles.label.copyWith(color: secondary),
+                    style: AppTextStyles.label.secondary(context),
                   ),
                   Wrap(
                     spacing: AppSpacing.xl,
@@ -420,7 +419,8 @@ class _AmountFieldState extends State<_AmountField> {
         spacing: AppSpacing.m,
         children: [
           Expanded(
-            child: TextField(
+            child: AppTextField(
+              label: widget.label ?? context.l10n.addMealAmount,
               controller: _controller,
               autofocus: true,
               keyboardType: const TextInputType.numberWithOptions(
@@ -429,11 +429,8 @@ class _AmountFieldState extends State<_AmountField> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
               ],
-              decoration: InputDecoration(
-                labelText: widget.label ?? context.l10n.addMealAmount,
-              ),
-              style: AppTextStyles.metric,
               onChanged: context.read<AmountCubit>().textChanged,
+              textStyle: AppTextStyles.metric,
             ),
           ),
           ?widget.unit,

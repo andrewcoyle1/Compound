@@ -115,7 +115,7 @@ class _ActivityBannerOverlayState extends State<ActivityBannerOverlay> {
                                   ),
                                 ),
                                 clipBehavior: Clip.antiAlias,
-                                child: InkWell(
+                                child: AppPressable(
                                   key: const Key('ActivityBanner'),
                                   onTap: () => _open(banner.id),
                                   child: Padding(

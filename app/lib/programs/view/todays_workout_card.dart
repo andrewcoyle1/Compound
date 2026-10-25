@@ -209,17 +209,10 @@ class const _Footer({
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: AppSpacing.xxs,
               children: [
-                Text(
-                  title,
-                  style: AppTextStyles.sectionTitle.copyWith(
-                    color: scheme.onSurface,
-                  ),
-                ),
+                Text(title, style: AppTextStyles.sectionTitle),
                 Text(
                   subtitle,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
               ],
             ),
@@ -309,7 +302,7 @@ class const _Completed({
     return Semantics(
       button: true,
       hint: l10n.programOpensTodaysWorkout,
-      child: InkWell(
+      child: AppPressable(
         onTap: () {
           context.read<ProgramsCubit>().pressed(
             'TodaysWorkoutCard_CompletedSession_Pressed',
@@ -366,7 +359,6 @@ class const _Start({
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final slot = workout.openSlot;
     final run = workout.run;
     final minutes = workout.estimatedMinutes;
@@ -390,7 +382,7 @@ class const _Start({
           Semantics(
             button: true,
             hint: l10n.programOpensTodaysWorkout,
-            child: InkWell(
+            child: AppPressable(
               onTap: () => unawaited(
                 WorkoutTemplateDetailPage.open(
                   context,
@@ -441,9 +433,7 @@ class const _Start({
                           for (final target in targets)
                             Text(
                               target,
-                              style: AppTextStyles.rowDetail.copyWith(
-                                color: scheme.onSurfaceVariant,
-                              ),
+                              style: AppTextStyles.rowDetail.secondary(context),
                             ),
                         ],
                       ),

@@ -110,6 +110,31 @@ class _AppMomentHeroState extends State<AppMomentHero> {
         ? AppMotion.emphasis.durationOf(context)
         : Duration.zero;
     final secondaryOverline = AppTextStyles.overline.secondary(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    final stacked =
+        scaler.scale(AppTextStyles.rowTitle.fontSize!) >=
+        AppTextStyles.rowTitle.fontSize! * AppListRow.accessibilityTextScale;
+    Widget figure(AppMomentStat stat) => Semantics(
+      container: true,
+      label: stat.label,
+      value: stat.value,
+      excludeSemantics: true,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        spacing: AppSpacing.xxs,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(stat.value, style: AppTextStyles.metricLarge),
+          ),
+          Text(
+            stat.label.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: secondaryOverline,
+          ),
+        ],
+      ),
+    );
 
     final number = TweenAnimationBuilder<double>(
       tween: Tween(begin: _celebrates ? 0 : value, end: value),
@@ -210,30 +235,22 @@ class _AppMomentHeroState extends State<AppMomentHero> {
         spacing: AppSpacing.l,
         children: [
           hero,
-          if (widget.stats.isNotEmpty)
+          // Side by side in equal columns, each number shrinking to fit
+          // its own; at accessibility sizes they wrap instead, at full
+          // size.
+          if (widget.stats.isNotEmpty && stacked)
             Wrap(
               alignment: WrapAlignment.center,
-              spacing: AppSpacing.xxl,
+              spacing: AppSpacing.xl,
               runSpacing: AppSpacing.m,
+              children: [for (final stat in widget.stats) figure(stat)],
+            )
+          else if (widget.stats.isNotEmpty)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: AppSpacing.s,
               children: [
-                for (final stat in widget.stats)
-                  Semantics(
-                    container: true,
-                    label: stat.label,
-                    value: stat.value,
-                    excludeSemantics: true,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: AppSpacing.xxs,
-                      children: [
-                        Text(stat.value, style: AppTextStyles.metricLarge),
-                        Text(
-                          stat.label.toUpperCase(),
-                          style: secondaryOverline,
-                        ),
-                      ],
-                    ),
-                  ),
+                for (final stat in widget.stats) Expanded(child: figure(stat)),
               ],
             ),
         ],

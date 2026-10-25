@@ -1072,7 +1072,8 @@ List<Widget> galleryStates(BuildContext context) {
 }
 
 /// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppSummaryCard],
-/// [AppChip], [AppConfetti], [AppFootnote], [AppInlineMessage],
+/// [AppChip], [AppConfetti], [AppMomentHero], [AppFootnote],
+/// [AppInlineMessage],
 /// [AppMarkdownText] and [AppViewfinder].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
@@ -1265,6 +1266,43 @@ List<Widget> galleryContent(BuildContext context) {
               onPressed: () => update(bursts + 1),
             ),
           ),
+        ),
+      ),
+    ]),
+    galleryEntry('AppMomentHero', [
+      // Plays again on each tap: the count keys a fresh one.
+      galleryBlock(
+        'badge, caption, stats, confetti',
+        GalleryLive(
+          initial: 0,
+          builder: (shows, update) => AppPressable(
+            onTap: () => update(shows + 1),
+            child: AppMomentHero(
+              key: ValueKey(shows),
+              value: 12450,
+              format: (value) => AppFormat.number(value, locale: locale),
+              label: l10n.devGallerySampleWeight,
+              badge: l10n.devGallerySampleShortAction,
+              caption: l10n.devGallerySampleSubtitle,
+              stats: [(value: weight, label: l10n.devGallerySampleTitle)],
+              celebration: AppMomentCelebration.confetti,
+            ),
+          ),
+        ),
+      ),
+      galleryBlock(
+        'celebration: none, info',
+        AppMomentHero(
+          value: 82.5,
+          format: (value) =>
+              AppFormat.weight(value, AppWeightUnit.kilograms, locale: locale),
+          label: l10n.devGallerySampleWeight,
+          info: AppIconButton(
+            icon: AppSymbols.info,
+            semanticLabel: l10n.infoLabel,
+            onPressed: () {},
+          ),
+          celebration: AppMomentCelebration.none,
         ),
       ),
     ]),

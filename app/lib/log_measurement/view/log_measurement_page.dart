@@ -10,14 +10,13 @@ import 'package:compound/log_weight/logic/decimal_wheel_value.dart';
 import 'package:compound/progress/logic/body_metrics.dart';
 import 'package:compound/progress/view/progress_names.dart';
 import 'package:compound/shell/app_tab.dart';
-import 'package:compound/widgets/number_wheel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:user_repository/user_repository.dart';
 
 /// Log Measurement (Swift `LogMeasurementView`): one view for all eighteen
-/// circumferences, driven by [kind]: the day, the unit, and the reading on
-/// a whole-number wheel and a tenths wheel. Opened over the tabs.
+/// circumferences, driven by [kind]: the day, and the reading typed with
+/// its unit, kept to the span Swift's wheels offered. Opened over the tabs.
 class LogMeasurementPage extends StatelessWidget {
   const new({required this.kind, super.key});
 
@@ -53,13 +52,42 @@ class LogMeasurementPage extends StatelessWidget {
   }
 }
 
-class LogMeasurementView extends StatelessWidget {
+class LogMeasurementView extends StatefulWidget {
   const new({super.key});
+
+  @override
+  State<LogMeasurementView> createState() => _LogMeasurementViewState();
+}
+
+class _LogMeasurementViewState extends State<LogMeasurementView> {
+  /// Whether anything has been typed: until then the field shows the
+  /// bloc's reading.
+  var _edited = false;
+
+  /// What was typed; null when it does not read as a number.
+  double? _typed;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = context.watch<LogMeasurementBloc>().state;
+    final bloc = context.read<LogMeasurementBloc>();
+    final metric = state.unit == LengthUnitPreference.centimeters;
+    final range = metric ? state.kind.centimetres : state.kind.inches;
+    final reading = _edited
+        ? _typed
+        : metric
+        ? DecimalWheelValue.combine(
+            whole: state.centimetres,
+            tenths: state.centimetresTenths,
+          )
+        : DecimalWheelValue.combine(
+            whole: state.inches,
+            tenths: state.inchesTenths,
+          );
+    // Kept to the span the wheels offered.
+    bool inRange(double? value) =>
+        value != null && value >= range.min && value < range.max + 1;
     return BlocListener<LogMeasurementBloc, LogMeasurementState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
@@ -100,17 +128,33 @@ class LogMeasurementView extends StatelessWidget {
             AppToolbarButton.confirm(
               semanticLabel: l10n.logWeightSave,
               isSaving: state.status == LogMeasurementStatus.saving,
-              onPressed: state.isEditable
-                  ? () => context.read<LogMeasurementBloc>().add(
-                      const LogMeasurementSaveRequested(),
-                    )
+              onPressed: state.isEditable && inRange(reading)
+                  ? () => bloc.add(const LogMeasurementSaveRequested())
                   : null,
             ),
           ],
         ),
         body: state.status == LogMeasurementStatus.loading
             ? AppLoadingView(label: l10n.launchLoading)
-            : _Form(state: state),
+            : _Form(
+                state: state,
+                reading: reading,
+                onReadingChanged: (value) {
+                  setState(() {
+                    _edited = true;
+                    _typed = value;
+                  });
+                  if (!inRange(value)) return;
+                  final (:whole, :tenths) = DecimalWheelValue.split(value!);
+                  bloc
+                    ..add(LogMeasurementWholeChanged(whole))
+                    ..add(LogMeasurementTenthsChanged(tenths));
+                },
+                onUnitChanged: (unit) {
+                  setState(() => _edited = false);
+                  bloc.add(LogMeasurementUnitChanged(unit));
+                },
+              ),
       ),
     );
   }
@@ -126,20 +170,27 @@ class LogMeasurementView extends StatelessWidget {
 }
 
 class _Form extends StatelessWidget {
-  const new({required this.state});
+  const new({
+    required this.state,
+    required this.reading,
+    required this.onReadingChanged,
+    required this.onUnitChanged,
+  });
 
   final LogMeasurementState state;
+  final double? reading;
+  final ValueChanged<double?> onReadingChanged;
+  final ValueChanged<LengthUnitPreference> onUnitChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final bloc = context.read<LogMeasurementBloc>();
-    final scaler = MediaQuery.textScalerOf(context);
-    final metric = state.unit == LengthUnitPreference.centimeters;
-    final range = metric ? state.kind.centimetres : state.kind.inches;
-    final label = l10n.measurementCircumference(
-      bodyMeasurementName(l10n, state.kind),
-    );
+    // Unit symbols read the same in every language.
+    const units = {
+      LengthUnitPreference.centimeters: 'cm',
+      LengthUnitPreference.inches: 'in',
+    };
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
@@ -160,65 +211,20 @@ class _Form extends StatelessWidget {
                 if (picked != null) bloc.add(LogMeasurementDateChanged(picked));
               },
             ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        Semantics(
-          label: l10n.logWeightUnits,
-          container: true,
-          child: AppSegmentedControl<LengthUnitPreference>(
-            segments: [
-              AppSegment(
-                value: LengthUnitPreference.centimeters,
-                label: l10n.logMeasurementMetric,
+            AppNumberField.units(
+              key: const Key('LogMeasurement.reading'),
+              label: l10n.measurementCircumference(
+                bodyMeasurementName(l10n, state.kind),
               ),
-              AppSegment(
-                value: LengthUnitPreference.inches,
-                label: l10n.logMeasurementImperial,
+              value: reading,
+              prompt: '0',
+              unit: units[state.unit]!,
+              units: units.values.toList(),
+              unitsLabel: l10n.logWeightUnits,
+              onUnitChanged: (symbol) => onUnitChanged(
+                units.entries.firstWhere((e) => e.value == symbol).key,
               ),
-            ],
-            selected: state.unit,
-            onChanged: (unit) => bloc.add(LogMeasurementUnitChanged(unit)),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        AppSection(
-          header: label,
-          children: [
-            // About five rows, growing with the text so none is clipped.
-            SizedBox(
-              height: scaler.scale(150),
-              child: Row(
-                // Keyed by unit, so switching unit builds wheels that open
-                // on the other unit's values.
-                key: ValueKey(state.unit),
-                children: [
-                  Expanded(
-                    child: NumberWheel(
-                      label: label,
-                      values: [for (var v = range.min; v <= range.max; v++) v],
-                      selected: metric ? state.centimetres : state.inches,
-                      itemLabel: metric
-                          ? l10n.logMeasurementWholeCentimetres
-                          : l10n.logMeasurementWholeInches,
-                      onChanged: (whole) =>
-                          bloc.add(LogMeasurementWholeChanged(whole)),
-                    ),
-                  ),
-                  Expanded(
-                    child: NumberWheel(
-                      label: l10n.logWeightTenths,
-                      values: DecimalWheelValue.tenths,
-                      selected: metric
-                          ? state.centimetresTenths
-                          : state.inchesTenths,
-                      itemLabel: l10n.logWeightTenthsValue,
-                      onChanged: (tenths) =>
-                          bloc.add(LogMeasurementTenthsChanged(tenths)),
-                    ),
-                  ),
-                ],
-              ),
+              onChanged: onReadingChanged,
             ),
           ],
         ),

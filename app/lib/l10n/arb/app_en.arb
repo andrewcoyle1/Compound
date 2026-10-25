@@ -2791,32 +2791,6 @@
     "@logMeasurementSaveFailure": {
         "description": "Alert title when saving a body measurement fails"
     },
-    "logMeasurementMetric": "Metric (cm)",
-    "@logMeasurementMetric": {
-        "description": "Unit choice on the measurement logger"
-    },
-    "logMeasurementImperial": "Imperial (in)",
-    "@logMeasurementImperial": {
-        "description": "Unit choice on the measurement logger"
-    },
-    "logMeasurementWholeCentimetres": "{value} cm",
-    "@logMeasurementWholeCentimetres": {
-        "description": "Log Measurement: a row of the whole-number wheel in centimetres",
-        "placeholders": {
-            "value": {
-                "type": "int"
-            }
-        }
-    },
-    "logMeasurementWholeInches": "{value} in",
-    "@logMeasurementWholeInches": {
-        "description": "Log Measurement: a row of the whole-number wheel in inches",
-        "placeholders": {
-            "value": {
-                "type": "int"
-            }
-        }
-    },
     "metricAdd": "Add",
     "@metricAdd": {
         "description": "App bar action adding an entry on a metric screen"

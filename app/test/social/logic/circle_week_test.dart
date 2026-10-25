@@ -179,6 +179,24 @@ void main() {
       expect(standings.map((s) => s.user.userId), ['c', 'b', 'a']);
       expect(standings.first.sessions, 2);
       expect(standings.first.goal, 3);
+      // A tie on sessions shares its place; volume only orders the rows.
+      expect(
+        [for (final s in standings) CircleWeek.place(standings, s)],
+        [1, 2, 2],
+      );
+    });
+
+    test('gives no place without a session', () {
+      final standings = CircleWeek.standings(
+        users: [user('a'), user('b')],
+        sessions: [session('1', 'a', DateTime(2026, 10, 12, 9))],
+        now: now,
+        firstDayOfWeek: monday,
+      );
+      expect(
+        [for (final s in standings) CircleWeek.place(standings, s)],
+        [1, null],
+      );
     });
 
     group('summary', () {

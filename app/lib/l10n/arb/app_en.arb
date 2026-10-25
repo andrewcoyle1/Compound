@@ -171,6 +171,23 @@
             }
         }
     },
+    "socialSessionsThisWeekUnit": "{count, plural, =1{session this week} other{sessions this week}}",
+    "@socialSessionsThisWeekUnit": {
+        "description": "Under the Social hero's own count, before the reader's first session of the week; count is the goal",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialNoOneTrained": "No one's trained yet this week.",
+    "@socialNoOneTrained": {
+        "description": "The Social hero's footer while nobody in the circle has a session this week"
+    },
+    "socialTrainToRank": "Train to get on the board.",
+    "@socialTrainToRank": {
+        "description": "The Social hero's footer while others have trained this week and the reader has not"
+    },
     "socialYou": "You",
     "@socialYou": {
         "description": "The reader in the leaderboard"

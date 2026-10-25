@@ -304,7 +304,7 @@ class _Dashboard extends StatelessWidget {
     final summaries = <Widget>[
       // The hero: where the reader stands in the circle this week.
       if (members.isNotEmpty)
-        _WeekHero(
+        CircleWeekHero(
           standings: CircleWeek.standings(
             users: [for (final member in members) member.user],
             sessions: sessions,
@@ -577,21 +577,27 @@ class _Banner extends StatelessWidget {
   }
 }
 
-/// The hero: the reader's place in the circle this week, in the largest
-/// number on the screen, beside a ring filling in the accent toward their
-/// weekly goal; the top of the standings under it, the reader always
-/// among them; and the whole table from See All
-/// (`CircleLeaderboardView`).
-class _WeekHero extends StatelessWidget {
+/// Social's hero: the reader's place in the circle this week, in the
+/// largest number on the screen, beside a ring filling in the accent
+/// toward their weekly goal; the top of the standings under it, the reader
+/// always among them; and the whole table from See All
+/// (`CircleLeaderboardView`). Before the reader's first session of the
+/// week there is no place to show: the hero is their own count instead.
+class CircleWeekHero extends StatelessWidget {
   const new({
     required this.standings,
     required this.viewerId,
     required this.onPressed,
+    super.key,
   });
 
   /// Most sessions first.
   final List<CircleStanding> standings;
+
+  /// The reader.
   final String viewerId;
+
+  /// Opens a member's profile.
   final ValueChanged<UserModel> onPressed;
 
   /// How many rows the card holds (design-language.md: no more than
@@ -607,23 +613,32 @@ class _WeekHero extends StatelessWidget {
     final own = standings[index];
     final met = own.sessions >= own.goal;
     final rows = [
-      for (final (rank, standing) in standings.indexed)
+      for (final (position, standing) in standings.indexed)
         // The top three, or the top two and the reader below them.
-        if (index < shown ? rank < shown : rank < shown - 1 || rank == index)
+        if (index < shown
+            ? position < shown
+            : position < shown - 1 || position == index)
           _StandingRow(
-            rank: rank + 1,
+            place: CircleWeek.place(standings, standing),
             standing: standing,
-            isOwn: rank == index,
+            isOwn: position == index,
             onPressed: () => onPressed(standing.user),
           ),
     ];
+    final place = CircleWeek.place(standings, own);
+    final goal =
+        '${AppFormat.number(own.sessions)}/${AppFormat.number(own.goal)}';
     return AppSummaryCard(
       title: l10n.socialThisWeek,
       icon: AppSymbols.leader,
       tint: colors.workouts,
       size: AppSummaryCardSize.hero,
-      value: l10n.socialRankValue(index + 1),
-      unit: l10n.socialRankUnit(standings.length),
+      // A place is earned: until the reader trains this week, the hero is
+      // their own count, and the footer says what puts them on the board.
+      value: place == null ? goal : l10n.socialRankValue(place),
+      unit: place == null
+          ? l10n.socialSessionsThisWeekUnit(own.goal)
+          : l10n.socialRankUnit(standings.length),
       delta: met
           ? AppChip(
               label: l10n.streakGoalMet,
@@ -642,7 +657,11 @@ class _WeekHero extends StatelessWidget {
         ),
       ),
       chartBeside: true,
-      footer: l10n.streakThisWeek(own.sessions, own.goal),
+      footer: place != null
+          ? l10n.streakThisWeek(own.sessions, own.goal)
+          : standings.every((s) => s.sessions == 0)
+          ? l10n.socialNoOneTrained
+          : l10n.socialTrainToRank,
       trailing: standings.length > shown
           ? AppChip(
               label: l10n.socialSeeAll,
@@ -661,9 +680,9 @@ class _WeekHero extends StatelessWidget {
         AppSection(
           header: sheet.l10n.socialThisWeek,
           children: [
-            for (final (rank, standing) in standings.indexed)
+            for (final standing in standings)
               _StandingRow(
-                rank: rank + 1,
+                place: CircleWeek.place(standings, standing),
                 standing: standing,
                 isOwn: standing.user.userId == viewerId,
                 onPressed: () {
@@ -678,17 +697,18 @@ class _WeekHero extends StatelessWidget {
   );
 }
 
-/// One place in the week's standings: rank and name, face, and sessions
-/// out of the goal. Opens the profile.
+/// One row of the week's standings: place and name (the name alone
+/// before a first session), face, and sessions out of the goal. Opens the
+/// profile.
 class _StandingRow extends StatelessWidget {
   const new({
-    required this.rank,
+    required this.place,
     required this.standing,
     required this.isOwn,
     required this.onPressed,
   });
 
-  final int rank;
+  final int? place;
   final CircleStanding standing;
   final bool isOwn;
   final VoidCallback onPressed;
@@ -700,7 +720,10 @@ class _StandingRow extends StatelessWidget {
         ? l10n.socialYou
         : commonNameOf(standing.user) ?? l10n.socialUnknown;
     return AppListRowButton(
-      title: l10n.socialStandingTitle(rank, name),
+      title: switch (place) {
+        final place? => l10n.socialStandingTitle(place, name),
+        null => name,
+      },
       thumbnail: UserAvatar(
         imageUrl: profileImageOf(standing.user),
         size: AppControlSize.thumbnail,

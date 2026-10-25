@@ -42,6 +42,7 @@ class StreakCard extends StatelessWidget {
       title: l10n.streakTitle,
       icon: AppSymbols.streak,
       tint: colors.workouts,
+      size: AppSummaryCardSize.large,
       trailing: MethodInfoButton(MethodInfo.weeklySessionGoal(l10n)),
       value: AppFormat.number(streak.weeks),
       unit: l10n.streakWeeksUnit(streak.weeks),
@@ -59,18 +60,23 @@ class StreakCard extends StatelessWidget {
         ),
         _ => null,
       },
-      chart: Row(
-        children: [
-          for (final day in weekDays)
-            Expanded(
-              child: _Day(
-                day: day,
-                hasWorkout: workoutDays.contains(dayKeyOf(day)),
-                isToday: dayKeyOf(day) == dayKeyOf(today),
-                isFuture: day.isAfter(today),
+      // Graphics, not text: they grow with it only so far, so seven still
+      // fit across the card.
+      chart: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: AppScaffold.largeTitleMaxTextScale,
+        child: Row(
+          children: [
+            for (final day in weekDays)
+              Expanded(
+                child: _Day(
+                  day: day,
+                  hasWorkout: workoutDays.contains(dayKeyOf(day)),
+                  isToday: dayKeyOf(day) == dayKeyOf(today),
+                  isFuture: day.isAfter(today),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
       footer: [
         l10n.streakThisWeek(streak.sessionsThisWeek, streak.goal),
@@ -80,9 +86,9 @@ class StreakCard extends StatelessWidget {
   }
 }
 
-/// One day of the week: its letter over a done mark when a workout was
-/// logged, an empty circle when not: in the text colour today, faint in
-/// the future.
+/// One day of the week: its letter over a solid volt mark when a workout
+/// was logged, an empty circle when not: outlined in the text colour
+/// today, faint in the future.
 class _Day extends StatelessWidget {
   const new({
     required this.day,
@@ -114,11 +120,11 @@ class _Day extends StatelessWidget {
               : AppTextStyles.label.secondary(context),
         ),
         if (hasWorkout)
-          const AppDoneMark(size: AppIconSize.small)
+          const AppDoneMark()
         else
           Icon(
             AppSymbols.choiceUnselected,
-            size: AppIconSize.small.of(context),
+            size: AppIconSize.medium.of(context),
             color: isToday
                 ? scheme.onSurface
                 : isFuture

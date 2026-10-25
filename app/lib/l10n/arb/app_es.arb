@@ -414,7 +414,6 @@
     "streakWeeksUnit": "{weeks, plural, =1{semana} other{semanas}}",
     "streakRecord": "Mejor racha: {best} · {count, plural, =1{1 entrenamiento} other{{count} entrenamientos}}",
     "todayDoneUnit": "hechas",
-    "todayNextUp": "Siguiente: {item}",
     "todayProteinToGo": "g por comer",
     "streakAtRisk": "En riesgo",
     "streakGoalMet": "Objetivo cumplido",

@@ -233,7 +233,7 @@ void main() {
       await tester.pump();
       expect(find.text('Train'), findsOneWidget);
       expect(find.text('Push Day'), findsWidgets);
-      expect(find.text('1/4 DONE'), findsOneWidget);
+      expect(find.text('1/4'), findsOneWidget);
       await tester.tap(find.text('Train'));
       verify(
         () => router.pushNamed<Object?>(
@@ -260,7 +260,7 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Rest day'), findsOneWidget);
-      expect(find.text('2/4 DONE'), findsOneWidget);
+      expect(find.text('2/4'), findsOneWidget);
     });
 
     testWidgets('marks a complete day once, with a haptic', (tester) async {
@@ -384,10 +384,9 @@ void main() {
     ) async {
       await pumpView(tester);
 
-      // The hero: the day's items done, and the next one.
+      // The hero: the day's items done, over the items.
       expect(find.text('YOUR DAY'), findsOneWidget);
-      expect(find.text('1/3 DONE'), findsOneWidget);
-      expect(find.text('Next: Eat to Target'), findsOneWidget);
+      expect(find.text('1/3'), findsOneWidget);
       expect(find.text('Eat to Target'), findsOneWidget);
       expect(find.text('Weigh In'), findsOneWidget);
       expect(find.text('Steps'), findsOneWidget);
@@ -415,7 +414,7 @@ void main() {
         200,
         scrollable: _list,
       );
-      expect(find.textContaining(RegExp(r'^\d+ WEEKS?$')), findsOneWidget);
+      expect(find.textContaining(RegExp(r'^WEEKS?$')), findsOneWidget);
       expect(find.textContaining('· 5 workouts'), findsOneWidget);
       expect(find.textContaining('3 of 3 this week · Best'), findsOneWidget);
       expect(find.text('Goal Met'), findsOneWidget);
@@ -582,10 +581,12 @@ void main() {
 
     testWidgets('offers the weekly check-in while it is due', (tester) async {
       await pumpView(tester, checkInDue: true);
-      expect(find.text('Weekly Check-In Ready'), findsOneWidget);
-      await tester.ensureVisible(find.text('Start'));
+      // A summary card: tapping it starts the check-in.
+      final card = find.text('WEEKLY CHECK-IN READY');
+      expect(card, findsOneWidget);
+      await tester.ensureVisible(card);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Start'));
+      await tester.tap(card);
       verify(
         () => router.pushNamed<Object?>(
           'checkIn',
@@ -595,7 +596,7 @@ void main() {
 
       await tester.tap(find.text('Skip This Week'));
       await tester.pump();
-      expect(find.text('Weekly Check-In Ready'), findsNothing);
+      expect(find.text('WEEKLY CHECK-IN READY'), findsNothing);
     });
 
     testWidgets('shows a failure when the sessions cannot be read', (

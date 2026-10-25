@@ -8,7 +8,6 @@ import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart';
 import 'package:compound/coach/coach.dart';
-import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
@@ -447,18 +446,23 @@ class _Day extends StatelessWidget {
                     ),
               ],
             ),
+          // The check-in as a summary card: the card starts it, and the
+          // header's chip skips the week.
           if (state.dueCheckInWeekStart case final weekStart?)
-            DecisionCard(
+            AppSummaryCard(
               title: l10n.checkInReadyTitle,
-              message: l10n.checkInReadyMessage,
-              primary: l10n.checkInStart,
-              onPrimary: () {
+              icon: AppSymbols.goal,
+              tint: context.appColors.calories,
+              footer: l10n.checkInReadyMessage,
+              trailing: AppChip(
+                label: l10n.checkInSkipWeek,
+                onPressed: () =>
+                    context.read<TodayBloc>().add(const TodayCheckInSkipped()),
+              ),
+              onTap: () {
                 context.read<TodayBloc>().add(const TodayCheckInStarted());
                 unawaited(CheckInPage.show(context, weekStart));
               },
-              secondary: l10n.checkInSkipWeek,
-              onSecondary: () =>
-                  context.read<TodayBloc>().add(const TodayCheckInSkipped()),
             ),
           // Swift's order: the workout before the evening protein.
           const TodaysWorkoutCard(),

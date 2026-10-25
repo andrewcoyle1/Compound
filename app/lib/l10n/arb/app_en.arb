@@ -2154,15 +2154,6 @@
     "@todayDoneUnit": {
         "description": "Today's hero card: the unit after the day's done items, e.g. '3/4' then 'done'. Shown upper-cased"
     },
-    "todayNextUp": "Next: {item}",
-    "@todayNextUp": {
-        "description": "Today's hero card footer: the first checklist item not yet done, e.g. 'Next: Weigh In'",
-        "placeholders": {
-            "item": {
-                "type": "String"
-            }
-        }
-    },
     "todayProteinToGo": "g to go",
     "@todayProteinToGo": {
         "description": "Today's evening protein card: the unit after the grams of protein still to eat today, e.g. '45' then 'g to go'. Shown upper-cased"

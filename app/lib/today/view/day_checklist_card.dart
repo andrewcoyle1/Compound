@@ -102,10 +102,9 @@ class DayChecklistCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.s,
       children: [
-        if (showsHero) ...[
-          _Hero(checklist: checklist),
-          AppSection(children: rows),
-        ] else
+        if (showsHero)
+          _Hero(checklist: checklist, rows: rows)
+        else
           AppSection(
             header: l10n.todayYourDay,
             trailing: checklist.isComplete
@@ -149,25 +148,26 @@ class DayChecklistCard extends StatelessWidget {
   }
 }
 
-/// Today's hero: the items done out of all of them, beside a ring that
-/// fills in the accent, and the next item to do. Complete, the ring closes
-/// and a volt "Day Complete" takes the next item's place.
+/// Today's hero, one card: the items done out of all of them in the
+/// largest number on the screen, beside a heavy ring filling in the
+/// accent, and the items themselves under it. Complete, the ring closes
+/// and a volt "Day Complete" shows by the number.
 class _Hero extends StatelessWidget {
-  const new({required this.checklist});
+  const new({required this.checklist, required this.rows});
 
   final TodayChecklist checklist;
+  final List<Widget> rows;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.appColors;
     final total = checklist.items.length;
-    final next = checklist.items.where((item) => !item.isDone).firstOrNull;
     return AppSummaryCard(
       title: l10n.todayYourDay,
       icon: AppSymbols.today,
       tint: colors.accentInk,
-      prominent: true,
+      size: AppSummaryCardSize.hero,
       value:
           '${AppFormat.number(checklist.doneCount)}/'
           '${AppFormat.number(total)}',
@@ -180,17 +180,20 @@ class _Hero extends StatelessWidget {
             )
           : null,
       // The ring is a line on the card: the accent as ink, volt in dark
-      // mode and olive in light, where volt on white is 1.3:1.
-      chart: ProgressArc(
-        value: total == 0 ? 0 : checklist.doneCount / total,
-        color: colors.accentInk,
-        // About the height of the number beside it and its unit.
-        diameter: 2 * AppControlSize.row,
+      // mode and olive in light, where volt on white is 1.3:1. The number
+      // carries the figure, so the ring keeps its size at large text
+      // rather than pushing the items down.
+      chart: MediaQuery.withNoTextScaling(
+        child: ProgressArc(
+          value: total == 0 ? 0 : checklist.doneCount / total,
+          color: colors.accentInk,
+          // As tall as the number and its unit beside it.
+          diameter: 2 * AppControlSize.cta,
+          strokeWidth: AppChartMark.arcWidthHero,
+        ),
       ),
       chartBeside: true,
-      footer: next == null
-          ? null
-          : l10n.todayNextUp(TodayText.title(l10n, next)),
+      rows: rows,
     );
   }
 }

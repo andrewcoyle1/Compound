@@ -116,6 +116,78 @@
     "@socialThisWeek": {
         "description": "The weekly leaderboard, and the profile section"
     },
+    "socialStandingTitle": "{rank}. {name}",
+    "@socialStandingTitle": {
+        "description": "A leaderboard row's title: the place and the name",
+        "placeholders": {
+            "rank": {
+                "type": "int"
+            },
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "socialRankValue": "#{rank}",
+    "@socialRankValue": {
+        "description": "The reader's place in the circle this week, the Social hero's number",
+        "placeholders": {
+            "rank": {
+                "type": "int"
+            }
+        }
+    },
+    "socialRankUnit": "{count, plural, =1{in your circle} other{of {count} in your circle}}",
+    "@socialRankUnit": {
+        "description": "Under the Social hero's place: how many are in the circle",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialLastWeek": "Last Week",
+    "@socialLastWeek": {
+        "description": "The title of Monday's recap card"
+    },
+    "socialCircleSessionsUnit": "{count, plural, =1{session in your circle} other{sessions in your circle}}",
+    "@socialCircleSessionsUnit": {
+        "description": "After the circle's total sessions last week",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialLastWeekYou": "You: {own} of {goal}",
+    "@socialLastWeekYou": {
+        "description": "Monday's recap: the user's own sessions against their goal",
+        "placeholders": {
+            "own": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "socialSessionsThisWeekUnit": "{count, plural, =1{session this week} other{sessions this week}}",
+    "@socialSessionsThisWeekUnit": {
+        "description": "Under the Social hero's own count, before the reader's first session of the week; count is the goal",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialNoOneTrained": "No one's trained yet this week.",
+    "@socialNoOneTrained": {
+        "description": "The Social hero's footer while nobody in the circle has a session this week"
+    },
+    "socialTrainToRank": "Train to get on the board.",
+    "@socialTrainToRank": {
+        "description": "The Social hero's footer while others have trained this week and the reader has not"
+    },
     "socialYou": "You",
     "@socialYou": {
         "description": "The reader in the leaderboard"
@@ -9677,6 +9749,15 @@
     "challengesEmpty": "Challenge your circle to train a set number of times.",
     "@challengesEmpty": {
         "description": "Social: challenges section with none running"
+    },
+    "challengeSessionsUnit": "{count, plural, =1{session} other{sessions}}",
+    "@challengeSessionsUnit": {
+        "description": "After a challenge's sessions out of its target",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
     },
     "challengeDaysLeft": "{count, plural, =1{1 day left} other{{count} days left}}",
     "@challengeDaysLeft": {

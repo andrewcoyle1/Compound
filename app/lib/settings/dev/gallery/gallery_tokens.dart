@@ -181,6 +181,7 @@ final gallerySymbols = <(String, IconData)>[
   ('report', AppSymbols.report),
   ('saveAsTemplate', AppSymbols.saveAsTemplate),
   ('leader', AppSymbols.leader),
+  ('challenge', AppSymbols.challenge),
   ('info', AppSymbols.info),
   ('success', AppSymbols.success),
   ('previous', AppSymbols.previous),

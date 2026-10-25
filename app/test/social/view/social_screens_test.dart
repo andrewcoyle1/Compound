@@ -68,13 +68,26 @@ void main() {
 
       expect(find.text('Charlie'), findsOneWidget);
       expect(find.text('Nudge'), findsWidgets);
-      expect(find.text('This Week'), findsOneWidget);
+      expect(find.text('THIS WEEK'), findsOneWidget);
       expect(find.text('Workout Feed'), findsOneWidget);
       expect(find.text('Find People'), findsOneWidget);
 
-      await tester.tap(find.text('This Week'));
+      // The hero (its place or count is CircleWeekHero's test), the top
+      // three with the reader among them, and the whole table from See All.
+      final you = find.byWidgetPredicate(
+        (widget) =>
+            widget is Text &&
+            RegExp(r'^(\d+\. )?You$').hasMatch(widget.data ?? ''),
+      );
+      expect(you, findsOneWidget);
+      await tester.tap(find.text('See All').first);
       await tester.pumpAndSettle();
-      expect(find.text('You'), findsOneWidget);
+      expect(you, findsNWidgets(2));
+      await tester.tap(find.textContaining('Charlie Nguyen').last);
+      await settle(tester);
+      expect(find.byType(SocialProfilePage), findsOneWidget);
+      await tester.pageBack();
+      await settle(tester);
 
       await tester.tap(find.text('Nudge').first);
       await settle(tester);

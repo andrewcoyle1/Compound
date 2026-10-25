@@ -164,7 +164,8 @@ void main() {
     ) async {
       await pumpPage(tester, ExpenditureMetric.energyBalance);
       expect(find.text('Energy Balance'), findsOneWidget);
-      expect(find.text('Intake'), findsOneWidget);
+      // Intake leads the chart's header, keyed as an overline.
+      expect(find.text('INTAKE'), findsOneWidget);
       // Swift's combo chart: intake as bars that average, under the
       // expenditure line.
       final series = tester

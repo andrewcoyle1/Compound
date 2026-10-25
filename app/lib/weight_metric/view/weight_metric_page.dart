@@ -161,6 +161,8 @@ class _Detail extends StatelessWidget {
             isLine: true,
           ),
       ],
+      // Weight Trend leads with its trend, not the readings under it.
+      hero: trend.isEmpty ? 0 : 1,
       range: state.range,
       today: state.today,
       onRangeSelected: (range) => context.read<WeightMetricBloc>().add(

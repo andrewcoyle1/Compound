@@ -361,7 +361,8 @@ void main() {
 
     testWidgets('Macros stacks the three and lists each day', (tester) async {
       await pumpAt(tester, '/progress/nutrition-analytics/macros');
-      expect(find.text('Protein'), findsWidgets);
+      // Protein leads the header; the others follow it.
+      expect(find.text('PROTEIN'), findsOneWidget);
       expect(find.text('Carbs'), findsWidgets);
       expect(find.text('Fat'), findsWidgets);
       await tapText(tester, 'Show All Data');

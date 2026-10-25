@@ -37,35 +37,56 @@ class SignInView extends StatelessWidget {
       ),
       child: AppScaffold(
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: AppSpacing.m,
-              children: [
-                const Spacer(),
-                Text(
-                  l10n.signInTitle,
-                  style: AppTextStyles.display,
-                  textAlign: TextAlign.center,
+          // Scrolls only when the text is too large for one screen.
+          child: CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: AppSpacing.m,
+                    children: [
+                      const Spacer(),
+                      // Capped as a large title is, so a long word is
+                      // never broken across lines.
+                      MediaQuery.withClampedTextScaling(
+                        maxScaleFactor: AppScaffold.largeTitleMaxTextScale,
+                        child: Semantics(
+                          header: true,
+                          child: Text(
+                            l10n.signInTitle,
+                            style: AppTextStyles.display,
+                          ),
+                        ),
+                      ),
+                      // What signing in gives (HIG, Sign in with Apple).
+                      Text(
+                        l10n.signInSubtitle,
+                        style: AppTextStyles.rowTitle.secondary(context),
+                      ),
+                      const Spacer(flex: 2),
+                      // Native on iOS, Firebase's web flow on Android. Both
+                      // keep their makers' required look, so no volt here.
+                      AppSignInWithAppleButton(
+                        label: l10n.signInWithAppleButton,
+                        onPressed: enabled ? cubit.signInWithApple : null,
+                      ),
+                      AppSignInWithGoogleButton(
+                        label: l10n.signInWithGoogleButton,
+                        onPressed: enabled ? cubit.signInWithGoogle : null,
+                      ),
+                      AppCtaButton(
+                        label: l10n.signInAnonymouslyButton,
+                        variant: AppCtaVariant.plain,
+                        onPressed: enabled ? cubit.signInAnonymously : null,
+                      ),
+                    ],
+                  ),
                 ),
-                const Spacer(),
-                // Native on iOS, Firebase's web flow on Android.
-                AppSignInWithAppleButton(
-                  label: l10n.signInWithAppleButton,
-                  onPressed: enabled ? cubit.signInWithApple : null,
-                ),
-                AppSignInWithGoogleButton(
-                  label: l10n.signInWithGoogleButton,
-                  onPressed: enabled ? cubit.signInWithGoogle : null,
-                ),
-                AppCtaButton(
-                  label: l10n.signInAnonymouslyButton,
-                  variant: AppCtaVariant.plain,
-                  onPressed: enabled ? cubit.signInAnonymously : null,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

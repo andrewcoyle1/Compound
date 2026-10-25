@@ -45,6 +45,7 @@ class ProgramSetupView extends StatelessWidget {
     final recommended = state.recommended;
 
     Widget row(Mesocycle program) => AppSelectableRow(
+      tile: true,
       title: program.name,
       subtitle: l10n.onboardingProgramSummary(
         workoutsPerMicrocycle(program),
@@ -93,6 +94,7 @@ class ProgramSetupView extends StatelessWidget {
             AppSection(
               header: l10n.onboardingRecommended,
               footer: l10n.onboardingRecommendedFooter,
+              grouped: false,
               children: [row(recommended)],
             ),
           if (state.others.isNotEmpty)
@@ -100,6 +102,7 @@ class ProgramSetupView extends StatelessWidget {
               header: recommended == null
                   ? l10n.onboardingPrograms
                   : l10n.onboardingMorePrograms,
+              grouped: false,
               children: [for (final program in state.others) row(program)],
             ),
         ],

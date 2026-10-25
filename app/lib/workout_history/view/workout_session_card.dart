@@ -49,7 +49,6 @@ class WorkoutSessionCard extends StatelessWidget {
     final volume = WorkoutText.sessionVolume(session, locale: locale);
     final duration = session.activeDuration;
     final note = session.notes?.trim();
-    final secondary = AppTextStyles.rowDetail.secondary(context);
 
     final header = this.header;
     final footer = this.footer;
@@ -80,19 +79,39 @@ class WorkoutSessionCard extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: AppSpacing.xxs,
+                  spacing: AppSpacing.xs,
                   children: [
-                    Text(session.name, style: AppTextStyles.sectionTitle),
+                    // On its own, the summary card's header: the workout
+                    // glyph in its colour and the day as an overline.
                     if (header == null)
-                      Text(
-                        AppFormat.dateTime(
-                          session.dateCreated.toLocal(),
-                          use24HourFormat: context.use24HourFormat,
-                          style: AppDateStyle.weekdayMedium,
-                          locale: context.dateLocale,
-                        ),
-                        style: secondary,
+                      Row(
+                        spacing: AppSpacing.s,
+                        children: [
+                          ExcludeSemantics(
+                            child: Icon(
+                              AppSymbols.workout,
+                              size: MediaQuery.textScalerOf(context).scale(
+                                AppTextStyles.overline.fontSize! *
+                                    AppTextStyles.overline.height!,
+                              ),
+                              color: context.appColors.workouts,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              AppFormat.dateTime(
+                                session.dateCreated.toLocal(),
+                                use24HourFormat: context.use24HourFormat,
+                                style: AppDateStyle.weekdayMedium,
+                                locale: context.dateLocale,
+                              ).toUpperCase(),
+                              style: AppTextStyles.overline.secondary(context),
+                            ),
+                          ),
+                        ],
                       ),
+                    // The workout's name in the display face.
+                    Text(session.name, style: AppTextStyles.metricLarge),
                   ],
                 ),
                 _Highlights(entry: entry),
@@ -106,7 +125,6 @@ class WorkoutSessionCard extends StatelessWidget {
                         locale: locale,
                       ),
                       label: l10n.statExercises,
-                      size: AppStatSize.small,
                     ),
                     AppStat(
                       value: AppFormat.number(
@@ -114,19 +132,13 @@ class WorkoutSessionCard extends StatelessWidget {
                         locale: locale,
                       ),
                       label: l10n.statSets,
-                      size: AppStatSize.small,
                     ),
                     if (volume != null)
-                      AppStat(
-                        value: volume,
-                        label: l10n.statVolume,
-                        size: AppStatSize.small,
-                      ),
+                      AppStat(value: volume, label: l10n.statVolume),
                     if (duration != null)
                       AppStat(
                         value: AppFormat.duration(duration),
                         label: l10n.statDuration,
-                        size: AppStatSize.small,
                       ),
                   ],
                 ),

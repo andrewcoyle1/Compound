@@ -64,25 +64,12 @@ class _List extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).toLanguageTag();
+    // The hero: every workout finished.
     final header = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-      child: Semantics(
-        header: true,
-        child: Row(
-          spacing: AppSpacing.s,
-          children: [
-            Expanded(
-              child: Text(
-                context.l10n.workoutHistoryCompletedHeader,
-                style: AppTextStyles.sectionTitle.secondary(context),
-              ),
-            ),
-            Text(
-              AppFormat.number(entries.length, locale: locale),
-              style: AppTextStyles.metricSmall.secondary(context),
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.only(bottom: AppSpacing.m),
+      child: AppHeroStat(
+        value: AppFormat.number(entries.length, locale: locale),
+        unit: context.l10n.workoutHistoryCompletedHeader,
       ),
     );
     return SafeArea(

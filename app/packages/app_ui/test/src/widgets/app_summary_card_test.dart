@@ -96,6 +96,34 @@ void main() {
       expect(haptics, [AppHaptic.light]);
     });
 
+    testWidgets('moves a trailing chip under the title at large text', (
+      tester,
+    ) async {
+      final card = AppSummaryCard(
+        title: 'Weekly Check-In Ready',
+        footer: 'Review the week and update your nutrition targets.',
+        trailing: AppChip(label: 'Skip This Week', onPressed: () {}),
+        onTap: () {},
+      );
+      await tester.pumpApp(card);
+      expect(
+        tester.getCenter(find.text('Skip This Week')).dy,
+        moreOrLessEquals(
+          tester.getCenter(find.text('WEEKLY CHECK-IN READY')).dy,
+          epsilon: 1,
+        ),
+      );
+
+      await tester.pumpApp(card, textScale: 2);
+      expect(tester.takeException(), isNull);
+      expect(
+        tester.getTopLeft(find.text('Skip This Week')).dy,
+        greaterThan(
+          tester.getBottomLeft(find.text('WEEKLY CHECK-IN READY')).dy,
+        ),
+      );
+    });
+
     testWidgets('keeps a trailing button reachable', (tester) async {
       var taps = 0;
       await tester.pumpApp(
@@ -326,6 +354,16 @@ void main() {
               onPressed: () {},
             ),
           ],
+        ),
+      ),
+      (
+        'Chip trailing, button, no hero',
+        AppSummaryCard(
+          title: 'Weekly Check-In Ready',
+          icon: AppSymbols.goal,
+          footer: 'Review the week and update your nutrition targets.',
+          trailing: AppChip(label: 'Skip This Week', onPressed: () {}),
+          onTap: () {},
         ),
       ),
       (

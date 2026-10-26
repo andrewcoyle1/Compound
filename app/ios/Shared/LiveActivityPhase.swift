@@ -220,16 +220,19 @@ struct LoggedSet: Equatable, Hashable, Sendable {
     var setId: String
     var reps: Int?
     var weightKg: Double?
+    /// Its own exercise's unit; nil uses the one the view passes, the target's.
+    var weightUnit: LiveActivityWeightUnit?
 
-    init(setId: String, reps: Int? = nil, weightKg: Double? = nil) {
+    init(setId: String, reps: Int? = nil, weightKg: Double? = nil, weightUnit: LiveActivityWeightUnit? = nil) {
         self.setId = setId
         self.reps = reps
         self.weightKg = weightKg
+        self.weightUnit = weightUnit
     }
 
-    /// The logged set rendered the same way a target is.
-    func label(weightUnit: LiveActivityWeightUnit) -> String? {
-        LiveActivitySetTarget(weightKg: weightKg, reps: reps).label(weightUnit: weightUnit)
+    /// The logged set rendered the same way a target is, in its own unit when it has one.
+    func label(weightUnit fallback: LiveActivityWeightUnit) -> String? {
+        LiveActivitySetTarget(weightKg: weightKg, reps: reps).label(weightUnit: weightUnit ?? fallback)
     }
 }
 
@@ -361,7 +364,12 @@ extension LiveActivityPhase {
                     return .breathing(until: restEndsAt, next: target.isEmpty ? nil : target, position: position(state))
                 }
                 let logged = state.lastLoggedSetId.map {
-                    LoggedSet(setId: $0, reps: state.lastLoggedReps, weightKg: state.lastLoggedWeightKg)
+                    LoggedSet(
+                        setId: $0,
+                        reps: state.lastLoggedReps,
+                        weightKg: state.lastLoggedWeightKg,
+                        weightUnit: state.lastLoggedWeightUnit
+                    )
                 }
                 return .resting(
                     until: restEndsAt,

@@ -948,6 +948,7 @@ void main() {
           duration: Duration(minutes: 31),
           completedSetsCount: 1,
           volumeKg: 480,
+          weightUnit: LiveActivityWeightUnit.kilograms,
         ),
       );
 

@@ -134,6 +134,10 @@ class const LiveActivityState({
   final String? lastLoggedSetId,
   final int? lastLoggedReps,
   final double? lastLoggedWeightKg,
+
+  /// The unit of the exercise the logged set belongs to, which is not
+  /// [weightUnit] when the rest leads into an exercise kept in the other.
+  final LiveActivityWeightUnit? lastLoggedWeightUnit,
   final bool restLeadsToNewExercise = false,
 
   /// "L" or "R" for one side of a split pair.
@@ -174,6 +178,7 @@ class const LiveActivityState({
     'lastLoggedSetId': ?lastLoggedSetId,
     'lastLoggedReps': ?lastLoggedReps,
     'lastLoggedWeightKg': ?lastLoggedWeightKg,
+    'lastLoggedWeightUnit': ?lastLoggedWeightUnit?.name,
     'restLeadsToNewExercise': restLeadsToNewExercise,
     'distanceUnit': ?distanceUnit?.name,
     'targetSide': ?targetSide,
@@ -207,6 +212,7 @@ class const LiveActivityState({
     lastLoggedSetId,
     lastLoggedReps,
     lastLoggedWeightKg,
+    lastLoggedWeightUnit,
     restLeadsToNewExercise,
     targetSide,
     canComplete,
@@ -225,6 +231,9 @@ class const OngoingWorkoutSummary({
   final Duration? duration,
   final int? completedSetsCount,
   final double? volumeKg,
+
+  /// The unit the volume is shown in: the one most sets were logged in.
+  final LiveActivityWeightUnit? weightUnit,
 }) extends Equatable {
   /// {@macro ongoing_workout_summary}
   this;
@@ -236,10 +245,16 @@ class const OngoingWorkoutSummary({
         : duration!.inMicroseconds / 1e6,
     'completedSetsCount': ?completedSetsCount,
     'volumeKg': ?volumeKg,
+    'weightUnit': ?weightUnit?.name,
   };
 
   @override
-  List<Object?> get props => [duration, completedSetsCount, volumeKg];
+  List<Object?> get props => [
+    duration,
+    completedSetsCount,
+    volumeKg,
+    weightUnit,
+  ];
 }
 
 /// A button tapped on the Live Activity (`LiveActivityIntentHandling`).

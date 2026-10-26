@@ -56,6 +56,10 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var lastLoggedSetId: String?
         var lastLoggedReps: Int?
         var lastLoggedWeightKg: Double?
+        // The unit of the exercise the logged set belongs to, which differs from `weightUnit` when
+        // the rest leads into an exercise kept in the other. Optional so an older state decodes;
+        // nil reads as `weightUnit`.
+        var lastLoggedWeightUnit: LiveActivityWeightUnit?
         // True when the set just logged was the last of its exercise, so the rest leads into a
         // different exercise from the one the set belonged to
         var restLeadsToNewExercise: Bool = false

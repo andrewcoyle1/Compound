@@ -1627,6 +1627,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
               duration: finished.activeDuration,
               completedSetsCount: finished.loggedSetCount,
               volumeKg: volume > 0 ? volume : null,
+              weightUnit: liveActivityWeightUnit(finished.authorWeightUnit),
             ),
     );
   }

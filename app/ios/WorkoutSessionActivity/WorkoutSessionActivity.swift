@@ -7,7 +7,8 @@
 //
 //  The Dynamic Island (spec: docs/specs/live-activity.md §5). Every region switches on the
 //  same `LiveActivityPhase` the banner uses. The island always renders on black, so it uses
-//  semantic colours and never reads the colour scheme.
+//  semantic colours and never reads the colour scheme: volt for the keyline, the rest ring and
+//  done, Barlow Condensed for the set and the countdown.
 //
 
 import SwiftUI
@@ -17,10 +18,6 @@ import AppIntents
 
 #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
 struct WorkoutSessionActivity: Widget {
-
-    /// The widget's accent is `labelColor`; on the island's black background that resolves
-    /// light, so a label on a `.borderedProminent` button is drawn dark.
-    private static let islandProminentLabelColor = Color.black
 
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: WorkoutActivityAttributes.self) { context in
@@ -56,7 +53,6 @@ struct WorkoutSessionActivity: Widget {
             phase: phase(context),
             state: context.state,
             workoutName: context.attributes.workoutName,
-            prominentLabelColor: Self.islandProminentLabelColor,
             showsEnded: false
         )
         .padding(.horizontal, 4)
@@ -92,14 +88,14 @@ struct WorkoutSessionActivity: Widget {
             compactTargetLabel(next, unit: context.state.weightUnit)
         case let .resting(until, _, _, _), let .breathing(until, _, _):
             Text(timerInterval: Date()...max(until, Date()), countsDown: true)
+                .font(.barlow(17, relativeTo: .headline, extraBold: false))
                 .monospacedDigit()
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.accentInk)
                 .frame(maxWidth: 44)
         case .allSetsDone:
             Text("Done")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.accentInk)
         default:
             EmptyView()
         }
@@ -109,7 +105,7 @@ struct WorkoutSessionActivity: Widget {
     private func compactTargetLabel(_ target: LiveActivitySetTarget, unit: LiveActivityWeightUnit) -> some View {
         if let label = target.label(weightUnit: unit) {
             Text(label)
-                .font(.caption.weight(.semibold))
+                .font(.barlow(17, relativeTo: .headline, extraBold: false))
                 .monospacedDigit()
                 .foregroundStyle(.primary)
                 .lineLimit(1)
@@ -123,8 +119,7 @@ struct WorkoutSessionActivity: Widget {
             RestRing(until: until, size: 18, showsCountdown: false)
                 .accessibilityLabel("Resting")
         case .allSetsDone:
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(.green)
+            VoltDisc(systemName: "checkmark.circle.fill")
                 .accessibilityLabel("All sets complete")
         default:
             ExerciseImage(imageName: context.state.currentExerciseImageName, size: 18)

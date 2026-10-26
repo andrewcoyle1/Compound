@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C0FFEE0000000000000000B1 /* BarlowCondensed-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE0000000000000000A1 /* BarlowCondensed-Bold.ttf */; };
+		C0FFEE0000000000000000B2 /* BarlowCondensed-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE0000000000000000A2 /* BarlowCondensed-ExtraBold.ttf */; };
+		C0FFEE0000000000000000B3 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE0000000000000000A3 /* OFL.txt */; };
+		C0FFEE0000000000000000B4 /* CompoundStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE0000000000000000A4 /* CompoundStyle.swift */; };
 		0D04C51B27C6C50574123DC8 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1989393050C7B016D99C61 /* WidgetSnapshot.swift */; };
 		1411FFB4DB2FCC01BD946EF9 /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BAF0AF8473DFA2439D21C82 /* WorkoutActivityAttributes.swift */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
@@ -88,6 +92,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C0FFEE0000000000000000A1 /* BarlowCondensed-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = BarlowCondensed-Bold.ttf; path = ../packages/app_ui/assets/fonts/BarlowCondensed-Bold.ttf; sourceTree = SOURCE_ROOT; };
+		C0FFEE0000000000000000A2 /* BarlowCondensed-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = BarlowCondensed-ExtraBold.ttf; path = ../packages/app_ui/assets/fonts/BarlowCondensed-ExtraBold.ttf; sourceTree = SOURCE_ROOT; };
+		C0FFEE0000000000000000A3 /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = OFL.txt; path = ../packages/app_ui/assets/fonts/OFL.txt; sourceTree = SOURCE_ROOT; };
+		C0FFEE0000000000000000A4 /* CompoundStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompoundStyle.swift; sourceTree = "<group>"; };
 		0A4B594DE8825267FF19C27A /* WorkoutSessionActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; name = WorkoutSessionActivityExtension.appex; path = WorkoutSessionActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BAF0AF8473DFA2439D21C82 /* WorkoutActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutActivityAttributes.swift; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
@@ -166,6 +174,10 @@
 				D33099E2CA3C52E18CB03FEA /* LiveActivityView.swift */,
 				A4F6A70DE3949E93340FFA0D /* LiveActivityPhaseViews.swift */,
 				BBA190A27A98BCCDAEFEED24 /* HomeWidgets.swift */,
+				C0FFEE0000000000000000A4 /* CompoundStyle.swift */,
+				C0FFEE0000000000000000A1 /* BarlowCondensed-Bold.ttf */,
+				C0FFEE0000000000000000A2 /* BarlowCondensed-ExtraBold.ttf */,
+				C0FFEE0000000000000000A3 /* OFL.txt */,
 				93DA235B2A27D84685C435CE /* Assets.xcassets */,
 				B0817118418213482D122F37 /* Localizable.xcstrings */,
 				1D070155E783284D59699159 /* PrivacyInfo.xcprivacy */,
@@ -421,6 +433,9 @@
 				256C6C781CC9C7892182D396 /* Assets.xcassets in Resources */,
 				C2A864950043CA3756AB4558 /* Localizable.xcstrings in Resources */,
 				1CF90C6D55AD895D8BF239EB /* PrivacyInfo.xcprivacy in Resources */,
+				C0FFEE0000000000000000B1 /* BarlowCondensed-Bold.ttf in Resources */,
+				C0FFEE0000000000000000B2 /* BarlowCondensed-ExtraBold.ttf in Resources */,
+				C0FFEE0000000000000000B3 /* OFL.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -497,6 +512,7 @@
 				44095D610B57FE141F0DE641 /* LiveActivityView.swift in Sources */,
 				26A5093CC7DC3B9AE1AD7CEC /* LiveActivityPhaseViews.swift in Sources */,
 				B18CB5D84565C11ED7133561 /* HomeWidgets.swift in Sources */,
+				C0FFEE0000000000000000B4 /* CompoundStyle.swift in Sources */,
 				8939EC3A6524EC69760E9B1D /* LiveActivityIntentHandling.swift in Sources */,
 				49BF9F55AAEC76F900C10661 /* LiveActivityPhase.swift in Sources */,
 				0D04C51B27C6C50574123DC8 /* WidgetSnapshot.swift in Sources */,

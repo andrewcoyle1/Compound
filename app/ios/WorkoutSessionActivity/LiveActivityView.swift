@@ -19,8 +19,6 @@ import AppIntents
 #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
 struct LiveActivityView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     let context: ActivityViewContext<WorkoutActivityAttributes>
 
     private var phase: LiveActivityPhase {
@@ -32,30 +30,34 @@ struct LiveActivityView: View {
             LiveActivityPhaseContent(
                 phase: phase,
                 state: context.state,
-                workoutName: context.attributes.workoutName,
-                // The widget's accent is `labelColor`, so a prominent label needs the inverse.
-                prominentLabelColor: colorScheme.inverseLabel
+                workoutName: context.attributes.workoutName
             )
             .liveActivityContentHeight()
             // The system's standard Lock Screen margin for Live Activities.
             .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.top, 12)
+            .padding(.bottom, 6)
 
+            // Inset to the content margins, inside the card's rounded corners: at the very edge
+            // the corner clipped a short bar to a sliver.
             progressLine
+                .padding(.horizontal, 14)
+                .padding(.bottom, 6)
         }
         .dynamicTypeSize(...LiveActivityLayout.maxDynamicTypeSize)
         // A tap opens the tracker, as the Today widget's does.
         .widgetURL(WidgetSnapshotStore.workoutURL)
     }
 
-    /// The only whole-workout indicator: a 1-pt line along the bottom edge.
+    /// The only whole-workout indicator: a 2-pt bar along the bottom, on its track.
     private var progressLine: some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Rectangle()
                     .fill(Color.secondary.opacity(0.25))
+                // Your progress, so the accent (as a line: `AccentInk`).
                 Rectangle()
-                    .fill(Color.primary)
+                    .fill(Color.accentInk)
                     .frame(width: proxy.size.width * progressFraction)
                 // With the set plan on, the set under way is split into its pieces: a break
                 // cut through the line between each.
@@ -68,7 +70,8 @@ struct LiveActivityView: View {
             }
             .compositingGroup()
         }
-        .frame(height: 1)
+        .frame(height: 2)
+        .clipShape(Capsule())
         .accessibilityElement()
         .accessibilityLabel("Workout progress")
         .accessibilityValue("\(context.state.completedSetsCount) of \(context.state.totalSetsCount) sets")
@@ -99,11 +102,3 @@ struct LiveActivityView: View {
     WorkoutActivityAttributes.ContentState.preview(.breathing)
 }
 #endif
-
-/// The Swift app's `ColorScheme+EXT.swift`, which its extension compiles: the opposite of the label
-/// colour, white in light mode and black in dark.
-extension ColorScheme {
-    var inverseLabel: Color {
-        self == .dark ? Color.black : Color.white
-    }
-}

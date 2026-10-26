@@ -115,19 +115,19 @@ class AppOnboardingStepScaffold extends StatelessWidget {
                 spacing: AppSpacing.m,
                 children: [
                   if (progress != null)
+                    // A bold capsule in the accent: the user's own progress.
                     LinearProgressIndicator(
                       value: progress,
                       semanticsLabel: progressLabel,
+                      minHeight: AppSpacing.s,
                       borderRadius: const BorderRadius.all(
-                        Radius.circular(AppRadius.s),
+                        Radius.circular(AppSpacing.xs),
                       ),
                     ),
                   if (subtitle != null)
                     Text(
                       subtitle,
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                      style: AppTextStyles.rowTitle.secondary(context),
                     ),
                 ],
               ),

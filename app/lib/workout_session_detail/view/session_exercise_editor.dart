@@ -97,7 +97,6 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final exercise = member.exercise;
     final rules = rulesExercise(exercise);
     final logged = rules.loggedSetCount;
@@ -108,9 +107,6 @@ class _Header extends StatelessWidget {
       final note? when note.isNotEmpty => note,
       _ => null,
     };
-    final progressColor = isDone
-        ? context.appColors.accentInk
-        : scheme.onSurfaceVariant;
     return Row(
       spacing: AppSpacing.m,
       children: [
@@ -144,7 +140,9 @@ class _Header extends StatelessWidget {
                         logged + 1 < total ? logged + 1 : total,
                         total,
                       ),
-                      style: AppTextStyles.label.copyWith(color: progressColor),
+                      style: isDone
+                          ? AppTextStyles.label.accent(context)
+                          : AppTextStyles.label.secondary(context),
                     ),
                   ],
                 ),
@@ -154,9 +152,7 @@ class _Header extends StatelessWidget {
                   note,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.label.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.label.secondary(context),
                 ),
               if (sessionNote != null)
                 Row(

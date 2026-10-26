@@ -138,6 +138,10 @@ void main() {
       await tapText(tester, 'High');
       await tapText(tester, 'Continue');
       expect(find.text('Happy With This?'), findsWidgets);
+      // The Moment: the plan's average daily calories, then the details.
+      expect(find.text('Your Plan'), findsOneWidget);
+      expect(find.text('KCAL A DAY, ON AVERAGE'), findsOneWidget);
+      expect(find.text('PROTEIN A DAY'), findsOneWidget);
       expect(find.text('Preferred diet: Keto'), findsOneWidget);
       expect(find.text('Day 7'), findsOneWidget);
       await tapText(tester, 'Continue');

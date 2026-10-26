@@ -8,7 +8,8 @@ import 'package:compound/today/view/day_checklist_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// The top of today's chat, built by the app rather than the coach: the
-/// date, then the day's checklist as Today shows it, live all day. Each
+/// date as the chat's title, then the day's checklist as Today's hero card
+/// shows it, live all day. Each
 /// item opens its screen as on Today; the weigh-in, until it is done, can
 /// also be logged in place. Celebrating a finished item stays Today's.
 class CoachDayCard extends StatelessWidget {
@@ -27,15 +28,20 @@ class CoachDayCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpacing.m,
         children: [
+          // The chat's own title: the day, in the display face, held at
+          // 150% as a large title is.
           Semantics(
             header: true,
-            child: Text(
-              AppFormat.date(
-                state.now,
-                style: AppDateStyle.weekdayDayMonthLong,
-                locale: context.dateLocale,
+            child: MediaQuery.withClampedTextScaling(
+              maxScaleFactor: AppScaffold.largeTitleMaxTextScale,
+              child: Text(
+                AppFormat.date(
+                  state.now,
+                  style: AppDateStyle.weekdayDayMonthLong,
+                  locale: context.dateLocale,
+                ),
+                style: AppTextStyles.largeTitle,
               ),
-              style: AppTextStyles.sectionTitle,
             ),
           ),
           switch (state.status) {
@@ -55,6 +61,7 @@ class CoachDayCard extends StatelessWidget {
                   : AppWeightUnit.kilograms,
               workout: workout,
               weighIn: const QuickWeighIn(),
+              showsHero: true,
             ),
           },
         ],

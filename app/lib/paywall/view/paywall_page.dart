@@ -244,100 +244,90 @@ class _LoadFailed extends StatelessWidget {
   }
 }
 
-/// The product name and its line on a card tinted with the accent (Swift's
-/// hero card, in the app's own neutral look).
+/// The product name in the display face, and its line. No card: the plans
+/// below are the cards, and the price is the one thing to compare.
 class _Hero extends StatelessWidget {
   const new();
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = Theme.of(context).colorScheme;
-    return AppCard(
-      style: AppCardStyle.tinted(Theme.of(context).colorScheme.primary),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          spacing: AppSpacing.s,
-          children: [
-            // One product name everywhere, and no trial wording: there is
-            // no trial.
-            // One word: shrunk to fit at large text sizes rather than broken.
-            Semantics(
-              header: true,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  l10n.paywallTitle,
-                  style: AppTextStyles.display.copyWith(
-                    color: colors.onSurface,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            Text(
-              l10n.paywallSubtitle,
-              style: AppTextStyles.rowDetail.copyWith(color: colors.onSurface),
-              textAlign: TextAlign.center,
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: AppSpacing.xs,
+      children: [
+        // One product name everywhere, and no trial wording: there is no
+        // trial.
+        // One word: shrunk to fit at large text sizes rather than broken.
+        Semantics(
+          header: true,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(l10n.paywallTitle, style: AppTextStyles.display),
+          ),
         ),
-      ),
+        Text(
+          l10n.paywallSubtitle,
+          style: AppTextStyles.rowTitle.secondary(context),
+        ),
+      ],
     );
   }
 }
 
-/// The plans, one card each; the chosen one is tinted with the accent as
-/// well as ticked (Swift outlines it).
+/// The plans, one card each, the billed price biggest; the chosen one is
+/// outlined in the accent and ticked.
 class _PlanCards extends StatelessWidget {
-  const new({required this.state, required this.subtitle});
+  const new({required this.state, this.showsDetail = true});
 
   final PaywallState state;
-  final String Function(SubscriptionProduct) subtitle;
+
+  /// Whether each card carries the product's own line.
+  final bool showsDetail;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cubit = context.read<PaywallCubit>();
-    final accent = Theme.of(context).colorScheme.primary;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.m,
       children: [
         for (final product in state.products)
-          AppCard(
-            style: product == state.selected
-                ? AppCardStyle.tinted(accent)
-                : AppCardStyle.tile,
-            child: AppSelectableRow(
-              title: product.title,
-              subtitle: subtitle(product),
-              selected: product == state.selected,
-              onPressed: () {
-                unawaited(AppHaptics.selection());
-                cubit.productSelected(product);
-              },
-            ),
+          AppPlanCard(
+            title: product.title,
+            price: product.priceString,
+            period: switch (periodOf(l10n, product)) {
+              final period? => l10n.paywallPerPeriod(period),
+              null => null,
+            },
+            detail: showsDetail ? product.subtitle : null,
+            selected: product == state.selected,
+            onPressed: () => cubit.productSelected(product),
           ),
       ],
     );
   }
 }
 
+/// "1 month": a product's billing period, or `null` for a one-off.
+String? periodOf(AppLocalizations l10n, SubscriptionProduct product) =>
+    switch (product.duration) {
+      ProductDuration.year => l10n.paywallPeriodYear,
+      ProductDuration.month => l10n.paywallPeriodMonth,
+      ProductDuration.week => l10n.paywallPeriodWeek,
+      ProductDuration.day => l10n.paywallPeriodDay,
+      null => null,
+    };
+
 /// "£4.99 / 1 month": the price with the billing period, as Swift's
 /// `localizedPriceWithPeriod`.
-String priceWithPeriod(AppLocalizations l10n, SubscriptionProduct product) {
-  final period = switch (product.duration) {
-    ProductDuration.year => l10n.paywallPeriodYear,
-    ProductDuration.month => l10n.paywallPeriodMonth,
-    ProductDuration.week => l10n.paywallPeriodWeek,
-    ProductDuration.day => l10n.paywallPeriodDay,
-    null => null,
-  };
-  return period == null
-      ? product.priceString
-      : l10n.paywallPricePeriod(product.priceString, period);
-}
+String priceWithPeriod(AppLocalizations l10n, SubscriptionProduct product) =>
+    switch (periodOf(l10n, product)) {
+      final period? => l10n.paywallPricePeriod(product.priceString, period),
+      null => product.priceString,
+    };
 
 class _Plans extends StatelessWidget {
   const new({required this.state});
@@ -353,12 +343,8 @@ class _Plans extends StatelessWidget {
         const _Hero(),
         const SizedBox(height: AppSpacing.xl),
         // The plans first, so the price and the choice need no scrolling.
-        _PlanCards(
-          state: state,
-          subtitle: (product) =>
-              '${priceWithPeriod(l10n, product)}\n${product.subtitle}',
-        ),
-        const SizedBox(height: AppSpacing.xl),
+        _PlanCards(state: state),
+        const SizedBox(height: AppSpacing.xxl),
         AppSection(
           header: l10n.paywallIncluded,
           children: subscriptionFeatureRows(context),
@@ -379,16 +365,12 @@ class _StorePlans extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
         const _Hero(),
         const SizedBox(height: AppSpacing.xl),
-        _PlanCards(
-          state: state,
-          subtitle: (product) => priceWithPeriod(l10n, product),
-        ),
+        _PlanCards(state: state, showsDetail: false),
       ],
     );
   }
@@ -440,9 +422,8 @@ class _PurchaseBar extends StatelessWidget {
         if (selected != null)
           Text(
             l10n.paywallRenews(priceWithPeriod(l10n, selected)),
-            style: AppTextStyles.label.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            // The renewal terms in reading size, not a footnote's.
+            style: AppTextStyles.rowDetail.secondary(context),
             textAlign: TextAlign.center,
           ),
         AppCtaButton(

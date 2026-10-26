@@ -8,7 +8,6 @@ import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart';
 import 'package:compound/coach/coach.dart';
-import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/integrations/integrations.dart';
 import 'package:compound/l10n/first_weekday.dart';
 import 'package:compound/l10n/l10n.dart';
@@ -140,18 +139,17 @@ class TodayView extends StatelessWidget {
       // With the coach on, the day is the top of the coach's day chat.
       child: coachOn
           ? const _CoachToday()
-          // A standard title, as the coach's Today has: a large one could
+          // A dashboard: the large title, as the other tab roots have. The
+          // coach's Today keeps a standard one, which a large title could
           // not collapse over the chat's own scrolling list.
           : AppScaffold(
               maxWidth: AppContentWidth.dashboard,
-              appBar: AppBar(
-                title: Text(l10n.tabToday),
-                actions: [
-                  if (DevSettingsPage.isAvailable) const _DevButton(),
-                  const _LogMenu(),
-                  const ProfileButton(),
-                ],
-              ),
+              largeTitle: l10n.tabToday,
+              actions: [
+                if (DevSettingsPage.isAvailable) const _DevButton(),
+                const _LogMenu(),
+                const ProfileButton(),
+              ],
               body: switch (state.status) {
                 TodayStatus.loading => AppLoadingView(
                   label: l10n.launchLoading,
@@ -397,6 +395,21 @@ class _Day extends StatelessWidget {
       child: _Sections(
         asColumn: asOpener,
         sections: [
+          // The hero first: the day's progress, then its items.
+          DayChecklistCard(
+            showsHero: true,
+            checklist: checklist,
+            stepGoal: state.stepGoal,
+            celebrated: state.celebrated,
+            unit: state.usesPounds
+                ? AppWeightUnit.pounds
+                : AppWeightUnit.kilograms,
+            workout: workout,
+            onItemPressed: (item) =>
+                context.read<TodayBloc>().add(TodayChecklistItemPressed(item)),
+            onStepGoalSelected: (goal) =>
+                context.read<TodayBloc>().add(TodayStepGoalSelected(goal)),
+          ),
           if (starter.isNotEmpty && !state.starterDismissed)
             AppSection(
               header: l10n.todayGetStarted(
@@ -433,44 +446,41 @@ class _Day extends StatelessWidget {
                     ),
               ],
             ),
-          DayChecklistCard(
-            checklist: checklist,
-            stepGoal: state.stepGoal,
-            celebrated: state.celebrated,
-            unit: state.usesPounds
-                ? AppWeightUnit.pounds
-                : AppWeightUnit.kilograms,
-            workout: workout,
-            onItemPressed: (item) =>
-                context.read<TodayBloc>().add(TodayChecklistItemPressed(item)),
-            onStepGoalSelected: (goal) =>
-                context.read<TodayBloc>().add(TodayStepGoalSelected(goal)),
-          ),
+          // The check-in as a summary card: the card starts it, and the
+          // header's chip skips the week.
           if (state.dueCheckInWeekStart case final weekStart?)
-            DecisionCard(
+            AppSummaryCard(
               title: l10n.checkInReadyTitle,
-              message: l10n.checkInReadyMessage,
-              primary: l10n.checkInStart,
-              onPrimary: () {
+              icon: AppSymbols.goal,
+              tint: context.appColors.calories,
+              footer: l10n.checkInReadyMessage,
+              trailing: AppChip(
+                label: l10n.checkInSkipWeek,
+                onPressed: () =>
+                    context.read<TodayBloc>().add(const TodayCheckInSkipped()),
+              ),
+              onTap: () {
                 context.read<TodayBloc>().add(const TodayCheckInStarted());
                 unawaited(CheckInPage.show(context, weekStart));
               },
-              secondary: l10n.checkInSkipWeek,
-              onSecondary: () =>
-                  context.read<TodayBloc>().add(const TodayCheckInSkipped()),
             ),
           // Swift's order: the workout before the evening protein.
           const TodaysWorkoutCard(),
           if (gap != null)
-            AppSection(
-              children: [
-                AppListRow(
-                  title: l10n.todayProteinGap(AppFormat.grams(gap)),
-                  icon: AppSymbols.protein,
-                  tint: context.appColors.protein,
-                ),
-              ],
+            AppSummaryCard(
+              title: l10n.nutritionMacroProtein,
+              icon: AppSymbols.protein,
+              tint: context.appColors.protein,
+              value: AppFormat.number(gap.round()),
+              unit: l10n.todayProteinToGo,
             ),
+          StreakCard(
+            streak: state.streak,
+            weekDays: state.weekDays,
+            workoutDays: state.workoutDaysThisWeek,
+            totalWorkouts: state.totalWorkouts,
+            today: state.now,
+          ),
           if (state.showsWeeklyReviewCard)
             AppSection(
               children: [
@@ -486,13 +496,6 @@ class _Day extends StatelessWidget {
                 ),
               ],
             ),
-          StreakCard(
-            streak: state.streak,
-            weekDays: state.weekDays,
-            workoutDays: state.workoutDaysThisWeek,
-            totalWorkouts: state.totalWorkouts,
-            today: state.now,
-          ),
           if (pulse != null)
             AppSection(
               children: [

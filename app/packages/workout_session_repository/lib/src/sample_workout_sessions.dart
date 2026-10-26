@@ -8,10 +8,8 @@ List<WorkoutSessionModel> sampleWorkoutSessions({
   required String uid,
   required DateTime now,
 }) {
-  DateTime at(int daysAgo, int hour, [int minute = 0]) {
-    final day = now.subtract(Duration(days: daysAgo));
-    return DateTime(day.year, day.month, day.day, hour, minute);
-  }
+  DateTime at(int daysAgo, int hour, [int minute = 0]) =>
+      DateTime(now.year, now.month, now.day - daysAgo, hour, minute);
 
   return [
     _session(
@@ -276,10 +274,8 @@ List<WorkoutSessionModel> sampleEarlierWorkoutSessions({
   required DateTime now,
   int weeks = 5,
 }) {
-  DateTime at(int daysAgo, int hour) {
-    final day = now.subtract(Duration(days: daysAgo));
-    return DateTime(day.year, day.month, day.day, hour);
-  }
+  DateTime at(int daysAgo, int hour) =>
+      DateTime(now.year, now.month, now.day - daysAgo, hour);
 
   List<SetTarget> targets(String id, int count, int min, int max) => [
     for (var i = 1; i <= count; i++)

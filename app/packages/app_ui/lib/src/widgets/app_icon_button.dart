@@ -7,6 +7,10 @@ import 'package:app_ui/app_ui.dart';
 /// is [AppControlSize.compact] across and grows with the text size; its tap
 /// target is at least 44 pt.
 ///
+/// With [isProminent] it is the screen's one action, such as a composer's
+/// Send: the glyph in `onPrimary` on a volt fill, outlined in light mode
+/// under Increase Contrast, as a selected chip is.
+///
 /// [AppIconButton.plain] is a quieter glyph with no circle, for a row of
 /// actions such as a feed card's Like, Comment, Share and More.
 ///
@@ -19,8 +23,13 @@ class AppIconButton extends StatelessWidget {
     required this.semanticLabel,
     required this.onPressed,
     this.isDestructive = false,
+    this.isProminent = false,
     super.key,
-  }) : label = null,
+  }) : assert(
+         !isDestructive || !isProminent,
+         'A destructive button is never the prominent one',
+       ),
+       label = null,
        selected = false,
        _plain = false;
 
@@ -37,6 +46,7 @@ class AppIconButton extends StatelessWidget {
     this.selected = false,
     super.key,
   }) : isDestructive = false,
+       isProminent = false,
        _plain = true;
 
   /// The glyph, from [AppSymbols].
@@ -62,6 +72,9 @@ class AppIconButton extends StatelessWidget {
   /// Whether the button deletes or removes something.
   final bool isDestructive;
 
+  /// Whether the button is the screen's one action: a volt fill.
+  final bool isProminent;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -71,8 +84,19 @@ class AppIconButton extends StatelessWidget {
     final colors = context.appColors;
     final background = isDestructive
         ? AppColors.tintedSurface(colors.danger)
+        : isProminent
+        ? scheme.primary
         : colors.raised;
-    final foreground = isDestructive ? colors.danger : scheme.onSurface;
+    final foreground = isDestructive
+        ? colors.danger
+        : isProminent
+        ? scheme.onPrimary
+        : scheme.onSurface;
+    final outlined =
+        isProminent &&
+        onPressed != null &&
+        scheme.brightness == Brightness.light &&
+        MediaQuery.highContrastOf(context);
     final diameter = MediaQuery.textScalerOf(context)
         .scale(AppControlSize.compact);
     return IconButton(
@@ -88,6 +112,7 @@ class AppIconButton extends StatelessWidget {
         fixedSize: Size.square(diameter),
         minimumSize: Size.square(diameter),
         padding: EdgeInsets.zero,
+        side: outlined ? BorderSide(color: scheme.onPrimary) : null,
         tapTargetSize: MaterialTapTargetSize.padded,
       ),
     );

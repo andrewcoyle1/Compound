@@ -125,6 +125,21 @@ class ProgressPhotosView extends StatelessWidget {
     final state = context.watch<ProgressPhotosCubit>().state;
     final selected = state.selectedForDelete;
     final pair = state.comparePair;
+    void compare((ProgressPhotoModel, ProgressPhotoModel) pair) {
+      cubit.comparePressed();
+      unawaited(
+        context.pushNamed(
+          ProgressPhotoComparePage.name,
+          extra: ProgressPhotoComparison(
+            before: pair.$1,
+            after: pair.$2,
+            beforeCaption: photoCaption(context, pair.$1, state.weightUnit),
+            afterCaption: photoCaption(context, pair.$2, state.weightUnit),
+          ),
+        ),
+      );
+    }
+
     return MultiBlocListener(
       listeners: [
         BlocListener<ProgressPhotosCubit, ProgressPhotosState>(
@@ -155,33 +170,6 @@ class ProgressPhotosView extends StatelessWidget {
         appBar: AppBar(
           title: Text(l10n.progressPhotosTitle),
           actions: [
-            AppTextButton(
-              label: l10n.progressPhotosCompare,
-              onPressed: pair == null
-                  ? null
-                  : () {
-                      cubit.comparePressed();
-                      unawaited(
-                        context.pushNamed(
-                          ProgressPhotoComparePage.name,
-                          extra: ProgressPhotoComparison(
-                            before: pair.$1,
-                            after: pair.$2,
-                            beforeCaption: photoCaption(
-                              context,
-                              pair.$1,
-                              state.weightUnit,
-                            ),
-                            afterCaption: photoCaption(
-                              context,
-                              pair.$2,
-                              state.weightUnit,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-            ),
             AppToolbarButton(
               icon: AppSymbols.delete,
               semanticLabel: l10n.progressPhotosDelete,
@@ -190,6 +178,17 @@ class ProgressPhotosView extends StatelessWidget {
                   : () => unawaited(_confirmDelete(context, selected)),
             ),
             _AddPhotoMenu(enabled: !state.isUploading),
+          ],
+        ),
+        // Compare is the screen's one action, once there are photos to
+        // compare: two picked.
+        bottomNavigationBar: AppBottomCta(
+          children: [
+            if (state.loaded && state.photos.isNotEmpty)
+              AppCtaButton(
+                label: l10n.progressPhotosCompare,
+                onPressed: pair == null ? null : () => compare(pair),
+              ),
           ],
         ),
         body: Stack(
@@ -344,9 +343,7 @@ class _Photos extends StatelessWidget {
             children: [
               Text(
                 l10n.progressPhotosSelectHint,
-                style: AppTextStyles.rowDetail.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                style: AppTextStyles.rowDetail.secondary(context),
               ),
               for (final (day, photos) in state.sections) ...[
                 const SizedBox(height: AppSpacing.xl),
@@ -412,21 +409,16 @@ class _PhotoCell extends StatelessWidget {
         CustomSemanticsAction(label: l10n.progressPhotosDelete): onDelete,
       },
       excludeSemantics: true,
-      child: GestureDetector(
+      child: AppPressable(
         onTap: () => context.read<ProgressPhotosCubit>().photoPressed(photo),
         // Swift's context menu; the toolbar's Delete does the same for one
         // chosen photo.
         onLongPress: onDelete,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.m),
-          child: DecoratedBox(
-            position: DecorationPosition.foreground,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.m),
-              border: isSelected
-                  ? Border.all(color: context.appColors.accentInk, width: 3)
-                  : null,
-            ),
+          child: AppSelectionRing(
+            selected: isSelected,
+            radius: AppRadius.m,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -435,19 +427,7 @@ class _PhotoCell extends StatelessWidget {
                 Positioned(
                   left: AppSpacing.s,
                   bottom: AppSpacing.s,
-                  child: DecoratedBox(
-                    decoration: ShapeDecoration(
-                      shape: const StadiumBorder(),
-                      color: scheme.surface.withValues(alpha: 0.8),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.s,
-                        vertical: AppSpacing.xxs,
-                      ),
-                      child: Text(pose, style: AppTextStyles.label.semibold),
-                    ),
-                  ),
+                  child: AppChip(label: pose),
                 ),
                 if (isSelected)
                   Positioned(

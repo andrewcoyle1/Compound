@@ -150,7 +150,7 @@ class _Detail extends StatelessWidget {
         MetricChartSeries(
           label: l10n.scaleWeightTitle,
           points: state.scalePoints,
-          color: trend.isEmpty ? color : color.withValues(alpha: 0.45),
+          color: trend.isEmpty ? color : AppColors.muted(color),
           isLine: state.metric == WeightMetric.scaleWeight,
         ),
         if (trend.isNotEmpty)
@@ -161,6 +161,8 @@ class _Detail extends StatelessWidget {
             isLine: true,
           ),
       ],
+      // Weight Trend leads with its trend, not the readings under it.
+      hero: trend.isEmpty ? 0 : 1,
       range: state.range,
       today: state.today,
       onRangeSelected: (range) => context.read<WeightMetricBloc>().add(

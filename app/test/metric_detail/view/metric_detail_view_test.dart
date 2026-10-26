@@ -73,11 +73,9 @@ void main() {
       ]);
       expect(find.text('Latest: Today'), findsOneWidget);
       expect(find.text('72.4 kg'), findsWidgets);
-      // The rest are in Show More's sheet.
-      expect(find.text('Highest: Oct 13'), findsNothing);
-      await reveal(tester, find.text('Show More Weight Data'));
-      await tester.tap(find.text('Show More Weight Data'));
-      await tester.pumpAndSettle();
+      // The rest under it, as grouped rows over every entry.
+      await reveal(tester, find.text('Highest: Oct 13'));
+      expect(find.text('All Time'), findsOneWidget);
       expect(find.text('Highest: Oct 13'), findsOneWidget);
       expect(find.text('Lowest: Yesterday'), findsOneWidget);
       expect(find.text('Average'), findsOneWidget);
@@ -87,8 +85,62 @@ void main() {
           .data;
       expect(data.series.map((s) => s.mark), [ChartMark.dot, ChartMark.line]);
       expect(data.yFit, ChartYFit.tight);
-      // Each series in the header, the readings first.
+      // The readings lead the header, keyed as there are two series; the
+      // trend follows, smaller.
+      expect(find.text('SCALE'), findsOneWidget);
       expect(find.text('Trend'), findsOneWidget);
+    });
+
+    testWidgets('leads with the series asked for', (tester) async {
+      await tester.pumpApp(
+        Scaffold(
+          body: MetricDetailView(
+            title: 'Weight',
+            unit: 'kg',
+            series: [
+              scale,
+              MetricChartSeries(
+                label: 'Trend',
+                points: [at(2, 72.8), at(0, 72.4)],
+                color: const Color(0xFF000000),
+                isLine: true,
+              ),
+            ],
+            hero: 1,
+            range: MetricRange.week,
+            today: today,
+            onRangeSelected: (_) {},
+            onShowAllData: () {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('TREND'), findsOneWidget);
+      expect(find.text('Scale'), findsOneWidget);
+      // Its average in the hero face, the unit as an overline.
+      expect(find.text('72.6'), findsOneWidget);
+      expect(find.text('KG'), findsOneWidget);
+    });
+
+    testWidgets('chips the change from the window before', (tester) async {
+      await pumpDetail(tester, [
+        scale.withPoints([at(9, 74), at(2, 73), at(0, 72)]),
+      ]);
+      expect(find.text('−1.5 kg vs. previous 7 days'), findsOneWidget);
+      expect(find.byIcon(AppSymbols.reduce), findsOneWidget);
+      await pumpDetail(tester, [
+        scale.withPoints([at(9, 71), at(0, 72)]),
+      ]);
+      expect(find.text('+1 kg vs. previous 7 days'), findsOneWidget);
+      expect(find.byIcon(AppSymbols.increase), findsOneWidget);
+      await pumpDetail(tester, [
+        scale.withPoints([at(9, 72), at(0, 72)]),
+      ]);
+      expect(find.text('0 kg vs. previous 7 days'), findsOneWidget);
+      expect(find.byIcon(AppSymbols.steady), findsOneWidget);
+      // Nothing before the window: nothing to compare.
+      await pumpDetail(tester, [scale]);
+      expect(find.textContaining('vs. previous'), findsNothing);
     });
 
     testWidgets('hides Highest and Lowest for a flat metric', (tester) async {
@@ -168,8 +220,6 @@ void main() {
       expect(data.yFit, ChartYFit.zero);
       await reveal(tester, find.text('Summary'));
       expect(find.text('Summary'), findsOneWidget);
-      await tester.tap(find.text('Show More Weight Data'));
-      await tester.pumpAndSettle();
       expect(find.text('Daily Average'), findsOneWidget);
     });
 

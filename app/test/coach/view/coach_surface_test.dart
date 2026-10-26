@@ -185,7 +185,10 @@ void main() {
     CoachBlock block, {
     bool saved = false,
   }) => tester.pumpApp(
-    SingleChildScrollView(child: surface(block, saved: saved)),
+    // On a screen, as in the chat.
+    AppScaffold(
+      body: SingleChildScrollView(child: surface(block, saved: saved)),
+    ),
   );
 
   group('draws', () {
@@ -193,8 +196,8 @@ void main() {
         'trend, in kilograms', (tester) async {
       await pump(tester, _weightChart);
 
-      expect(find.text('Weight'), findsOneWidget);
-      expect(find.text('72.3 kg'), findsOneWidget);
+      expect(find.text('WEIGHT'), findsOneWidget);
+      expect(find.text('72.3 KG'), findsOneWidget);
       final data = tester
           .widget<CartesianChart>(find.byType(CartesianChart))
           .data;
@@ -208,8 +211,8 @@ void main() {
     testWidgets("an exercise's estimated 1RM as a line", (tester) async {
       await pump(tester, _oneRepMax);
 
-      expect(find.text('Barbell Bench Press Estimated 1RM'), findsOneWidget);
-      expect(find.text('101.6 kg'), findsOneWidget);
+      expect(find.text('BARBELL BENCH PRESS ESTIMATED 1RM'), findsOneWidget);
+      expect(find.text('101.6 KG'), findsOneWidget);
       final data = tester
           .widget<CartesianChart>(find.byType(CartesianChart))
           .data;
@@ -218,7 +221,7 @@ void main() {
 
     testWidgets('steps as bars from zero, and expenditure', (tester) async {
       await pump(tester, _steps);
-      expect(find.text('Steps'), findsOneWidget);
+      expect(find.text('STEPS'), findsOneWidget);
       final data = tester
           .widget<CartesianChart>(find.byType(CartesianChart))
           .data;
@@ -226,8 +229,8 @@ void main() {
       expect(data.yFit, ChartYFit.zero);
 
       await pump(tester, _expenditure);
-      expect(find.text('Expenditure'), findsOneWidget);
-      expect(find.textContaining('kcal'), findsOneWidget);
+      expect(find.text('EXPENDITURE'), findsOneWidget);
+      expect(find.textContaining('KCAL'), findsOneWidget);
     });
 
     testWidgets('an e1RM chart without its exercise, and with no points', (
@@ -247,7 +250,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Estimated 1RM'), findsOneWidget);
+      expect(find.text('ESTIMATED 1RM'), findsOneWidget);
       expect(find.text(AppFormat.placeholder), findsOneWidget);
       expect(find.byType(CartesianChart), findsOneWidget);
     });
@@ -257,7 +260,7 @@ void main() {
     ) async {
       await pump(tester, _targetBars);
 
-      expect(find.textContaining(RegExp(r'^Mon, Oct.19$')), findsOneWidget);
+      expect(find.textContaining(RegExp(r'^MON, OCT.19$')), findsOneWidget);
       expect(find.text('Cals'), findsOneWidget);
       expect(find.text('1,640 / 2,200 kcal'), findsOneWidget);
       expect(find.text('98 / 160 g'), findsOneWidget);
@@ -296,7 +299,7 @@ void main() {
       );
 
       // The day it was read stands in for "today".
-      expect(find.textContaining(RegExp(r'^Mon, Oct.19$')), findsOneWidget);
+      expect(find.textContaining(RegExp(r'^MON, OCT.19$')), findsOneWidget);
       final bars = tester
           .widgetList<BulletBar>(find.byType(BulletBar))
           .toList();
@@ -310,30 +313,30 @@ void main() {
       tester,
     ) async {
       await pump(tester, _weightStats);
-      expect(find.text('Trend Weight'), findsOneWidget);
-      expect(find.text('72.3 kg'), findsOneWidget);
-      expect(find.text('Weekly Change'), findsOneWidget);
-      expect(find.text('-0.1 kg a week'), findsOneWidget);
-      expect(find.text('2,290 kcal'), findsOneWidget);
+      expect(find.text('TREND WEIGHT'), findsOneWidget);
+      expect(find.text('72.3 KG'), findsOneWidget);
+      expect(find.text('WEEKLY CHANGE'), findsOneWidget);
+      expect(find.text('-0.1 KG A WEEK'), findsOneWidget);
+      expect(find.text('2,290 KCAL'), findsOneWidget);
 
       await pump(tester, _nutritionStats);
-      expect(find.text('Protein Target'), findsOneWidget);
-      expect(find.text('160 g'), findsOneWidget);
-      expect(find.text('Protein Today'), findsOneWidget);
+      expect(find.text('PROTEIN TARGET'), findsOneWidget);
+      expect(find.text('160 G'), findsOneWidget);
+      expect(find.text('PROTEIN TODAY'), findsOneWidget);
       expect(find.text(AppFormat.placeholder), findsOneWidget);
-      expect(find.text('Barbell Bench Press 1RM'), findsOneWidget);
+      expect(find.text('BARBELL BENCH PRESS 1RM'), findsOneWidget);
 
       await pump(tester, _poundStats);
-      expect(find.text('Goal Weight'), findsOneWidget);
-      expect(find.text('160 lb'), findsOneWidget);
-      expect(find.text('-0.5 lb a week'), findsOneWidget);
-      expect(find.text('Estimated 1RM'), findsOneWidget);
+      expect(find.text('GOAL WEIGHT'), findsOneWidget);
+      expect(find.text('160 LB'), findsOneWidget);
+      expect(find.text('-0.5 LB A WEEK'), findsOneWidget);
+      expect(find.text('ESTIMATED 1RM'), findsOneWidget);
 
       await pump(tester, _morePoundStats);
-      expect(find.text('Calorie Target'), findsOneWidget);
-      expect(find.text('Calories Today'), findsOneWidget);
-      expect(find.text('Average Steps'), findsOneWidget);
-      expect(find.text('8,420 steps'), findsOneWidget);
+      expect(find.text('CALORIE TARGET'), findsOneWidget);
+      expect(find.text('CALORIES TODAY'), findsOneWidget);
+      expect(find.text('AVERAGE STEPS'), findsOneWidget);
+      expect(find.text('8,420 STEPS'), findsOneWidget);
     });
 
     testWidgets('the fallback for a block it cannot draw', (tester) async {
@@ -381,7 +384,7 @@ void main() {
 
   testWidgets('a follow-up sends its question', (tester) async {
     await pump(tester, _followUps);
-    expect(find.text('Ask Next'), findsOneWidget);
+    expect(find.text('ASK NEXT'), findsOneWidget);
 
     await tester.tap(find.text('Is my protein high enough?'));
 
@@ -476,14 +479,18 @@ void main() {
     tester,
   ) async {
     final handle = tester.ensureSemantics();
+    // A Material, as the conversation's screen gives it: the long press
+    // draws its pressed state on one.
     await tester.pumpApp(
-      SingleChildScrollView(
-        child: CoachMessageBody(
-          role: CoachMessageRole.assistant,
-          text: 'About **0.1 kg a week**.',
-          blocks: _weight,
-          saved: true,
-          onFollowUp: followUps.add,
+      Material(
+        child: SingleChildScrollView(
+          child: CoachMessageBody(
+            role: CoachMessageRole.assistant,
+            text: 'About **0.1 kg a week**.',
+            blocks: _weight,
+            saved: true,
+            onFollowUp: followUps.add,
+          ),
         ),
       ),
     );

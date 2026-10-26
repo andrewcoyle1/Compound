@@ -286,6 +286,8 @@ class GoalSetupView extends StatelessWidget {
       distanceKg: state.targetKg - current,
       weeklyRateKg: rate,
     );
+    // Calendar days, not 24-hour ones, so a clock change keeps the date.
+    final today = DateTime.now();
     final steps = ((rules.maximum - rules.minimum) / GoalTimeline.rateStep)
         .round();
     return [
@@ -365,7 +367,7 @@ class GoalSetupView extends StatelessWidget {
             title: weeks > 0
                 ? l10n.onboardingEndDate(
                     AppFormat.date(
-                      DateTime.now().add(Duration(days: weeks * 7)),
+                      DateTime(today.year, today.month, today.day + weeks * 7),
                       locale: context.dateLocale,
                     ),
                   )

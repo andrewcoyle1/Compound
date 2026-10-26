@@ -151,7 +151,6 @@ class _CoachConversationState extends State<CoachConversation> {
     final l10n = context.l10n;
     final cubit = context.read<CoachCubit>();
     final state = context.watch<CoachCubit>().state;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final streaming = state.streamingText;
     final remaining = state.remainingShown;
     final messages = state.messages;
@@ -189,7 +188,7 @@ class _CoachConversationState extends State<CoachConversation> {
       padding: const EdgeInsets.only(top: AppSpacing.s),
       child: Text(
         l10n.coachDisclaimer,
-        style: AppTextStyles.label.copyWith(color: secondary),
+        style: AppTextStyles.label.secondary(context),
         textAlign: TextAlign.center,
       ),
     );
@@ -430,9 +429,7 @@ class _CoachConversationState extends State<CoachConversation> {
                         ? [
                             Text(
                               l10n.coachDayEnded,
-                              style: AppTextStyles.label.copyWith(
-                                color: secondary,
-                              ),
+                              style: AppTextStyles.label.secondary(context),
                               textAlign: TextAlign.center,
                             ),
                             AppCtaButton(
@@ -458,34 +455,23 @@ class _CoachConversationState extends State<CoachConversation> {
                             if (remaining != null)
                               Text(
                                 l10n.coachMessagesLeft(remaining),
-                                style: AppTextStyles.label.copyWith(
-                                  color: secondary,
-                                ),
+                                style: AppTextStyles.label.secondary(context),
                               ),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               spacing: AppSpacing.s,
                               children: [
                                 Expanded(
-                                  child: TextField(
+                                  child: AppTextField(
                                     key: const Key('Coach.draft'),
+                                    hint: l10n.coachInputHint,
                                     controller: widget.draft,
+                                    textInputAction: TextInputAction.send,
                                     minLines: 1,
                                     maxLines: 5,
-                                    textInputAction: TextInputAction.send,
                                     onChanged: cubit.draftChanged,
+                                    style: AppTextFieldStyle.composer,
                                     onSubmitted: (_) => send(),
-                                    decoration: InputDecoration(
-                                      hintText: l10n.coachInputHint,
-                                      filled: true,
-                                      fillColor: context.appColors.surface,
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          AppRadius.l,
-                                        ),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                    ),
                                   ),
                                 ),
                                 // While the coach answers, Send becomes Stop.
@@ -499,6 +485,9 @@ class _CoachConversationState extends State<CoachConversation> {
                                   AppIconButton(
                                     icon: AppSymbols.send,
                                     semanticLabel: l10n.coachSend,
+                                    // The one action: volt once there is
+                                    // something to send.
+                                    isProminent: true,
                                     onPressed: state.canSend ? send : null,
                                   ),
                               ],
@@ -576,9 +565,7 @@ class _Answering extends StatelessWidget {
                   Flexible(
                     child: Text(
                       l10n.coachReading(reading),
-                      style: AppTextStyles.rowDetail.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                      style: AppTextStyles.rowDetail.secondary(context),
                     ),
                   ),
                 ],

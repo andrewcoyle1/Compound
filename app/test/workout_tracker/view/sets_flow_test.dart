@@ -239,6 +239,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(cubit.state.set(setId)!.durationSec, 42);
     expect(cubit.state.set(setId)!.completedAt, isNull);
-    expect(find.text('0:42'), findsOneWidget);
+    // In the set's cell, and up top as the set to log next.
+    expect(find.text('0:42'), findsNWidgets(2));
   });
 }

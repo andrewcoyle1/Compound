@@ -117,6 +117,7 @@ class _DefineWorkoutViewState extends State<DefineWorkoutView> {
           final exercise = exercises[index];
           final row = _ExerciseRow(
             index: index,
+            count: exercises.length,
             exercise: exercise,
             letter: letters[exercise.supersetGroupId],
             summary: text.planSummary(exercise),
@@ -173,9 +174,7 @@ class const _Header({
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<DefineWorkoutCubit>();
-    final style = AppTextStyles.sectionTitle.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final style = AppTextStyles.sectionTitle.secondary(context);
     if (state.isSelectingSuperset) {
       return Row(
         children: [
@@ -235,6 +234,7 @@ class const _Header({
 /// has a handle, delete, and leave-the-superset.
 class const _ExerciseRow({
   required final int index,
+  required final int count,
   required final WorkoutTemplateExercise exercise,
   required final String? letter,
   required final String? summary,
@@ -245,9 +245,7 @@ class const _ExerciseRow({
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final cubit = context.read<DefineWorkoutCubit>();
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final selected = state.supersetSelection.contains(exercise.id);
     final side = MediaQuery.textScalerOf(context).scale(AppControlSize.row);
     final letter = this.letter;
@@ -280,12 +278,7 @@ class const _ExerciseRow({
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: AppSpacing.xxs,
               children: [
-                Text(
-                  exercise.exercise.name,
-                  style: AppTextStyles.sectionTitle.copyWith(
-                    color: scheme.onSurface,
-                  ),
-                ),
+                Text(exercise.exercise.name, style: AppTextStyles.sectionTitle),
                 Text(
                   templateTargetsText(context, exercise.setTargets),
                   style: secondary,
@@ -351,9 +344,20 @@ class const _ExerciseRow({
     return Semantics(
       button: !state.isEditing,
       selected: state.isSelectingSuperset ? selected : null,
+      // The rows read as one grouped card: round at its ends, hairlines
+      // between, as an AppSection draws them.
       child: Material(
         color: scheme.surface,
-        child: InkWell(
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: index == 0 ? const Radius.circular(AppRadius.l) : Radius.zero,
+            bottom: index == count - 1
+                ? const Radius.circular(AppRadius.l)
+                : Radius.zero,
+          ),
+        ),
+        child: AppPressable(
           onTap: state.isEditing
               ? null
               : state.isSelectingSuperset
@@ -362,9 +366,15 @@ class const _ExerciseRow({
                   cubit.supersetRowPressed(exercise.id);
                 }
               : () => unawaited(_open(context)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: content,
+          child: Column(
+            children: [
+              if (index > 0)
+                Divider(indent: AppSpacing.l + side + AppSpacing.m),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: content,
+              ),
+            ],
           ),
         ),
       ),

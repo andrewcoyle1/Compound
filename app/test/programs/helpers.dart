@@ -51,19 +51,17 @@ Mesocycle programMesocycle(
 }
 
 /// The macrocycle following [mesocycleIds] from the first, started at the
-/// midnight two days before [programNow], so sessions on the previous
-/// calendar day fall inside it whatever the hour.
+/// midnight two days before [now] ([programNow] by default), so sessions
+/// on the previous calendar day fall inside it whatever the hour.
 Macrocycle programMacrocycle(
   String id,
   List<String> mesocycleIds, {
   MacrocycleStatus status = MacrocycleStatus.active,
   int index = 0,
+  DateTime? now,
 }) {
-  final started = DateTime(
-    programNow.year,
-    programNow.month,
-    programNow.day - 2,
-  );
+  final today = now ?? programNow;
+  final started = DateTime(today.year, today.month, today.day - 2);
   return Macrocycle(
     id: id,
     authorId: programUid,

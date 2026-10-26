@@ -111,8 +111,7 @@ class _ProgressPhotoComparePageState extends State<ProgressPhotoComparePage> {
   Widget _slider(BuildContext context) {
     final l10n = context.l10n;
     final comparison = widget.comparison;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    final captionStyle = AppTextStyles.label.copyWith(color: secondary);
+    final captionStyle = AppTextStyles.label.secondary(context);
     return Column(
       spacing: AppSpacing.m,
       children: [
@@ -208,9 +207,7 @@ class _Column extends StatelessWidget {
       ),
       Text(
         caption,
-        style: AppTextStyles.label.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+        style: AppTextStyles.label.secondary(context),
         textAlign: TextAlign.center,
       ),
     ],

@@ -51,9 +51,7 @@ class UsernameLabel extends StatelessWidget {
     if (username == null || username.isEmpty) return const SizedBox.shrink();
     return Text(
       '@$username',
-      style: AppTextStyles.label.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      style: AppTextStyles.label.secondary(context),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
@@ -77,7 +75,7 @@ class UserRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final trailing = this.trailing;
-    return InkWell(
+    return AppPressable(
       onTap: onPressed,
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -161,7 +159,7 @@ class AuthorHeader extends StatelessWidget {
     return Semantics(
       button: true,
       hint: context.l10n.socialOpensProfile,
-      child: InkWell(
+      child: AppPressable(
         onTap: onPressed,
         child: Row(
           spacing: AppSpacing.m,
@@ -190,9 +188,7 @@ class AuthorHeader extends StatelessWidget {
                       use24HourFormat: context.use24HourFormat,
                       locale: context.dateLocale,
                     ),
-                    style: AppTextStyles.label.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    style: AppTextStyles.label.secondary(context),
                   ),
                 ],
               ),
@@ -257,7 +253,7 @@ class SelectablePersonRow extends StatelessWidget {
       child: Semantics(
         button: true,
         selected: selected,
-        child: InkWell(
+        child: AppPressable(
           onTap: onPressed,
           child: AppListRow(
             title: fullNameOf(user) ?? context.l10n.socialUser,

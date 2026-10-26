@@ -1,8 +1,13 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:compound/progress/view/card_charts.dart';
+import 'package:compound_charts/compound_charts.dart' show BulletBar;
 
-/// A Progress tile (Swift `AnalyticsCard`): title and subtitle, a small
-/// chart, then the headline value and its unit. With [onTap] it opens a
-/// screen and shows a chevron; without, it is display only.
+/// A Progress tile (Swift `AnalyticsCard`) as a summary card
+/// ([AppSummaryCard]): [icon] in its data colour and the title as an
+/// overline, the headline value and its unit over a small chart, and what
+/// the chart covers under it. With [onTap] the whole card opens the
+/// metric's screen; without, it is display only. Screen readers hear the
+/// chart's own summary after the value.
 class ProgressCard extends StatelessWidget {
   const new({
     required this.title,
@@ -10,6 +15,8 @@ class ProgressCard extends StatelessWidget {
     required this.value,
     required this.chart,
     this.unit,
+    this.icon,
+    this.tint,
     this.onTap,
     super.key,
   });
@@ -26,96 +33,45 @@ class ProgressCard extends StatelessWidget {
   /// Shown after [value], such as `kg` or "sets".
   final String? unit;
 
+  /// The metric's glyph, from [AppSymbols].
+  final IconData? icon;
+
+  /// The metric's data colour, for [icon].
+  final Color? tint;
+
   /// The chart.
   final Widget chart;
 
   /// Opens the metric's screen; null when it has none yet.
   final VoidCallback? onTap;
 
-  /// The smallest a tile is, before larger text grows it.
-  static const minHeight = 120.0;
-
   /// The chart's height inside a tile.
   static const chartHeight = 36.0;
 
   @override
   Widget build(BuildContext context) {
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
-    // One line while the tiles sit side by side; as many as needed once the
-    // grid is one column, where a cut-off value is worse than a tall tile.
-    final maxLines = ProgressCardGrid.isSingleColumn(context) ? null : 1;
-    final overflow = maxLines == null ? null : TextOverflow.ellipsis;
-    final unit = this.unit;
-    final content = ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: minHeight),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.l),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              title,
-              style: AppTextStyles.sectionTitle,
-              maxLines: maxLines,
-              overflow: overflow,
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              subtitle,
-              style: AppTextStyles.label.copyWith(color: secondary),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
-              child: SizedBox(height: chartHeight, child: chart),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              spacing: AppSpacing.xs,
-              children: [
-                // A headline number is short; the unit takes what is left.
-                // Without a unit the value is words (Energy Balance's
-                // "582 kcal deficit"), which wrap.
-                if (unit != null) ...[
-                  Text(value, style: AppTextStyles.metricSmall),
-                  Expanded(
-                    child: Text(
-                      unit,
-                      style: AppTextStyles.label.copyWith(color: secondary),
-                      maxLines: maxLines,
-                      overflow: overflow,
-                    ),
-                  ),
-                ] else
-                  Expanded(
-                    child: Text(value, style: AppTextStyles.metricSmall),
-                  ),
-                if (onTap != null)
-                  ExcludeSemantics(
-                    child: Icon(
-                      AppSymbols.disclosure,
-                      size: AppIconSize.small.of(context),
-                      color: secondary,
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
+    final chart = this.chart;
+    return AppSummaryCard(
+      title: title,
+      icon: icon,
+      tint: tint,
+      value: value,
+      unit: unit,
+      chart: SizedBox(
+        width: double.infinity,
+        height: chartHeight,
+        child: chart,
       ),
-    );
-    return MergeSemantics(
-      child: Semantics(
-        button: onTap != null,
-        child: AppCard(
-          style: AppCardStyle.tile,
-          child: onTap == null
-              ? content
-              : InkWell(onTap: onTap, child: content),
-        ),
-      ),
+      footer: subtitle,
+      onTap: onTap,
+      semanticValue: switch (chart) {
+        CardChart(:final semanticsLabel, :final semanticsValue) => [
+          ?semanticsLabel,
+          ?semanticsValue,
+        ].join(', '),
+        BulletBar(:final semanticValue) => semanticValue,
+        _ => null,
+      },
     );
   }
 }

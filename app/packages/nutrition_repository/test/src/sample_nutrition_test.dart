@@ -12,7 +12,7 @@ void main() {
       final days = mealsByDay(meals);
       expect(days.keys, [
         for (var daysAgo = 6; daysAgo >= 0; daysAgo--)
-          _dayKey(now.subtract(Duration(days: daysAgo))),
+          _dayKey(DateTime(now.year, now.month, now.day - daysAgo)),
       ]);
       for (final meal in meals) {
         expect(meal.authorId, 'me');
@@ -21,6 +21,15 @@ void main() {
       }
       // Today: breakfast and lunch, not yet the snack or dinner.
       expect(days['2026-10-14'], hasLength(2));
+    });
+
+    test('keeps seven calendar days across a clock change', () {
+      // 25 Oct 2026 is 25 hours long in Europe/London: a day back in
+      // elapsed hours from 23:30 is still the 25th there.
+      final days = mealsByDay(
+        sampleMealLogs(uid: 'me', now: DateTime(2026, 10, 25, 23, 30)),
+      );
+      expect(days.keys, [for (var day = 19; day <= 25; day++) '2026-10-$day']);
     });
 
     test('are documents the Swift app can read', () {
@@ -70,7 +79,7 @@ void main() {
     final days = mealsByDay(meals);
     final week = {
       for (var daysAgo = 0; daysAgo < 7; daysAgo++)
-        _dayKey(now.subtract(Duration(days: daysAgo))),
+        _dayKey(DateTime(now.year, now.month, now.day - daysAgo)),
     };
     expect(days.keys.toSet().intersection(week), isEmpty);
     expect(days.length, inInclusiveRange(48, 56));

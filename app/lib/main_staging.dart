@@ -358,10 +358,8 @@ Future<WorkoutSessionModel?> _seedWorkout(
 List<WorkoutSessionModel> _programSessions(DateTime now) {
   final mesocycle = sampleMesocycles(now: now).first;
   final days = mesocycle.workoutTemplates;
-  DateTime at(int daysAgo) {
-    final day = now.subtract(Duration(days: daysAgo));
-    return DateTime(day.year, day.month, day.day, 18);
-  }
+  DateTime at(int daysAgo) =>
+      DateTime(now.year, now.month, now.day - daysAgo, 18);
 
   WorkoutSessionModel done(int position, int daysAgo, int microcycle) {
     final start = at(daysAgo);

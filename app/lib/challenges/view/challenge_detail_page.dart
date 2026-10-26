@@ -5,11 +5,11 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/challenges/cubit/challenge_detail_cubit.dart';
 import 'package:compound/challenges/cubit/challenges_cubit.dart';
 import 'package:compound/challenges/logic/challenge_standings.dart';
-import 'package:compound/challenges/view/challenge_ring.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/social_routes.dart';
 import 'package:compound/social/view/people_widgets.dart';
+import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_repository/social_repository.dart';
@@ -197,7 +197,6 @@ class _Standings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     String dates(DateTime date) =>
         AppFormat.date(date, locale: context.dateLocale);
     final daysLeft = ChallengeStandings.daysLeft(challenge, DateTime.now());
@@ -206,47 +205,43 @@ class _Standings extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
-        AppCard(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: Row(
-              spacing: AppSpacing.l,
-              children: [
-                ChallengeRing(
-                  sessions: mySessions,
-                  target: challenge.targetSessions,
-                  size: 88,
+        // The hero: the reader's sessions out of the target beside their
+        // ring, filling in the accent.
+        AppSummaryCard(
+          title: l10n.challengeTrainTimes(challenge.targetSessions),
+          icon: AppSymbols.challenge,
+          tint: context.appColors.workouts,
+          size: AppSummaryCardSize.hero,
+          value:
+              '${AppFormat.number(mySessions)}/'
+              '${AppFormat.number(challenge.targetSessions)}',
+          unit: l10n.challengeSessionsUnit(challenge.targetSessions),
+          delta: mySessions >= challenge.targetSessions
+              ? AppChip(
+                  label: l10n.streakGoalMet,
+                  icon: AppSymbols.success,
+                  selected: true,
+                )
+              : AppChip(
+                  label: daysLeft == 0
+                      ? l10n.challengeEnded
+                      : l10n.challengeDaysLeft(daysLeft),
                 ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: AppSpacing.xs,
-                    children: [
-                      Text(
-                        l10n.challengeTrainTimes(challenge.targetSessions),
-                        style: AppTextStyles.sectionTitle,
-                      ),
-                      Text(
-                        daysLeft == 0
-                            ? l10n.challengeEnded
-                            : l10n.challengeDaysLeft(daysLeft),
-                        style: AppTextStyles.rowDetail.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        '${dates(challenge.startsAt.toLocal())} – '
-                        '${dates(challenge.endsAt.toLocal())}',
-                        style: AppTextStyles.label.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          chart: MediaQuery.withNoTextScaling(
+            child: ProgressArc(
+              value: ChallengeStandings.ringProgress(
+                sessions: mySessions,
+                target: challenge.targetSessions,
+              ),
+              color: context.appColors.accentInk,
+              diameter: 2 * AppControlSize.cta,
+              strokeWidth: AppChartMark.arcWidthHero,
             ),
           ),
+          chartBeside: true,
+          footer:
+              '${dates(challenge.startsAt.toLocal())} – '
+              '${dates(challenge.endsAt.toLocal())}',
         ),
         const SizedBox(height: AppSpacing.xl),
         AppSection(
@@ -291,14 +286,13 @@ class _StandingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final name = isOwn ? l10n.socialYou : entry.name ?? l10n.challengeMember;
     return Semantics(
       button: onPressed != null,
       label: l10n.challengeRowLabel(rank, name, entry.sessions, target),
       excludeSemantics: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: onPressed,
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -312,9 +306,7 @@ class _StandingRow extends StatelessWidget {
                 width: MediaQuery.textScalerOf(context).scale(24),
                 child: Text(
                   AppFormat.number(rank, locale: locale),
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: AppTextStyles.rowDetail.secondary(context),
                 ),
               ),
               UserAvatar(
@@ -336,9 +328,7 @@ class _StandingRow extends StatelessWidget {
                 ),
               Text(
                 '${entry.sessions}/$target',
-                style: AppTextStyles.metricSmall.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+                style: AppTextStyles.metricSmall.secondary(context),
               ),
             ],
           ),

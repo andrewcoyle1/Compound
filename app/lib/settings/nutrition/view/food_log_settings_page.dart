@@ -69,11 +69,9 @@ class FoodLogSettingsView extends StatelessWidget {
       String title, {
       required bool value,
       String? subtitle,
-      IconData? icon,
     }) => AppListRowToggle(
       title: title,
       subtitle: subtitle,
-      icon: icon,
       value: value,
       onChanged: (value) => unawaited(cubit.set(key, value)),
     );
@@ -133,14 +131,12 @@ class FoodLogSettingsView extends StatelessWidget {
               l10n.foodLogSettingsAddFoods,
               value: s.showAddFoodsButton,
               subtitle: l10n.foodLogSettingsAddFoodsDetail,
-              icon: AppSymbols.add,
             ),
             toggle(
               FoodLogSettingsKeys.showsFoodTimestamps,
               l10n.foodLogSettingsTimestamps,
               value: s.showsFoodTimestamps,
               subtitle: l10n.foodLogSettingsTimestampsDetail,
-              icon: AppSymbols.duration,
             ),
             toggle(
               FoodLogSettingsKeys.showHourlyMacroTotals,

@@ -111,6 +111,25 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppPressable', [
+      galleryInline(
+        'icon, 44 pt target',
+        const AppPressable(onTap: galleryNoop, child: Icon(AppSymbols.add)),
+      ),
+      galleryInline(
+        'own surface, haptic',
+        AppPressable(
+          onTap: galleryNoop,
+          haptic: AppHaptic.selection,
+          color: context.appColors.raised,
+          shape: const StadiumBorder(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: Text(l10n.devGallerySampleTextAction),
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('AppDoneMark', [
       galleryInline('medium', const AppDoneMark()),
       galleryInline('small', const AppDoneMark(size: AppIconSize.small)),
@@ -127,6 +146,29 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppSwatch', [
+      galleryInline('colour', AppSwatch(color: context.appColors.scaleWeight)),
+      galleryInline(
+        'glyph, selected',
+        AppSwatch(
+          color: context.appColors.workouts,
+          icon: AppSymbols.streak,
+          selected: true,
+        ),
+      ),
+    ]),
+    galleryEntry('AppSelectionRing', [
+      for (final selected in [false, true])
+        galleryInline(
+          selected ? 'ring on' : 'ring off',
+          AppSelectionRing(
+            selected: selected,
+            radius: AppRadius.m,
+            filled: true,
+            child: const SizedBox.square(dimension: AppControlSize.row),
+          ),
+        ),
+    ]),
     galleryEntry('AppIconButton', [
       galleryInline(
         'enabled',
@@ -142,6 +184,15 @@ List<Widget> galleryButtons(BuildContext context) {
           icon: AppSymbols.delete,
           semanticLabel: l10n.devGallerySampleDelete,
           isDestructive: true,
+          onPressed: galleryNoop,
+        ),
+      ),
+      galleryInline(
+        'isProminent',
+        AppIconButton(
+          icon: AppSymbols.send,
+          semanticLabel: l10n.devGallerySampleEdit,
+          isProminent: true,
           onPressed: galleryNoop,
         ),
       ),
@@ -394,6 +445,46 @@ List<Widget> galleryRows(BuildContext context) {
         ),
       const AppListRowToggle(title: 'disabled', value: true, onChanged: null),
     ]),
+    galleryEntry('AppPlanCard', [
+      GalleryLive(
+        initial: 0,
+        builder: (selected, update) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.m,
+          children: [
+            AppPlanCard(
+              title: 'plan, selected',
+              price: AppFormat.number(29.99, maxFractionDigits: 2),
+              period: '/ 1 year',
+              detail: l10n.devGallerySampleSubtitle,
+              selected: selected == 0,
+              onPressed: () => update(0),
+            ),
+            AppPlanCard(
+              title: 'plan, not selected',
+              price: AppFormat.number(4.99, maxFractionDigits: 2),
+              period: '/ 1 month',
+              selected: selected == 1,
+              onPressed: () => update(1),
+            ),
+          ],
+        ),
+      ),
+    ]),
+    AppSection(
+      header: 'AppFeatureRow',
+      children: [
+        AppFeatureRow(
+          icon: AppSymbols.analytics,
+          title: l10n.devGallerySampleTitle,
+          detail: l10n.devGallerySampleSubtitle,
+        ),
+        AppFeatureRow(
+          icon: AppSymbols.notifications,
+          title: l10n.devGallerySampleTitle,
+        ),
+      ],
+    ),
     galleryEntry('AppSelectableRow', [
       GalleryLive(
         initial: 0,
@@ -418,6 +509,27 @@ List<Widget> galleryRows(BuildContext context) {
         title: 'disabled',
         selected: false,
         onPressed: null,
+      ),
+    ]),
+    galleryEntry('AppSelectableRow (tile)', [
+      GalleryLive(
+        initial: 0,
+        builder: (selected, update) => AppSection(
+          grouped: false,
+          children: [
+            for (final (index, caption) in [
+              'tile, selected',
+              'tile, not selected',
+            ].indexed)
+              AppSelectableRow(
+                tile: true,
+                title: caption,
+                subtitle: index == 0 ? l10n.devGallerySampleSubtitle : null,
+                selected: selected == index,
+                onPressed: () => update(index),
+              ),
+          ],
+        ),
       ),
     ]),
     AppSection(
@@ -470,7 +582,7 @@ List<Widget> galleryRows(BuildContext context) {
   ];
 }
 
-/// [AppSearchField], [AppNumberField], [AppTextFieldRow] and
+/// [AppSearchField], [AppNumberField], [AppTextFieldRow], [AppTextField] and
 /// [AppSegmentedControl].
 List<Widget> galleryInputs(BuildContext context) {
   final l10n = context.l10n;
@@ -575,6 +687,46 @@ List<Widget> galleryInputs(BuildContext context) {
               onChanged: (_) {},
             ),
           ],
+        ),
+      ),
+      galleryBlock(
+        'prefixText, suffixText',
+        AppSection(
+          children: [
+            AppTextFieldRow(
+              label: l10n.devGallerySampleTitle,
+              initialValue: '50',
+              keyboardType: TextInputType.number,
+              prefixText: '@',
+              suffixText: '%',
+              onChanged: (_) {},
+            ),
+          ],
+        ),
+      ),
+    ]),
+    galleryEntry('AppTextField', [
+      galleryBlock(
+        'boxed: label, helper',
+        AppTextField(
+          label: l10n.devGallerySampleTitle,
+          helper: l10n.devGallerySampleSubtitle,
+        ),
+      ),
+      galleryBlock(
+        'composer',
+        AppTextField(
+          hint: l10n.devGallerySampleTitle,
+          style: AppTextFieldStyle.composer,
+          minLines: 1,
+          maxLines: 5,
+        ),
+      ),
+      galleryBlock(
+        'plain',
+        AppTextField(
+          hint: l10n.devGallerySampleTitle,
+          style: AppTextFieldStyle.plain,
         ),
       ),
     ]),
@@ -989,8 +1141,10 @@ List<Widget> galleryStates(BuildContext context) {
   ];
 }
 
-/// [AppCard], [AppCarousel], [AppStat], [AppStatTile], [AppChip],
-/// [AppConfetti], [AppInlineMessage], [AppMarkdownText] and [AppViewfinder].
+/// [AppCard], [AppCarousel], [AppHeroStat], [AppStat], [AppStatTile],
+/// [AppSummaryCard], [AppChip], [AppConfetti], [AppMomentHero], [AppFootnote],
+/// [AppInlineMessage],
+/// [AppMarkdownText] and [AppViewfinder].
 List<Widget> galleryContent(BuildContext context) {
   final l10n = context.l10n;
   final colors = context.appColors;
@@ -1070,6 +1224,99 @@ List<Widget> galleryContent(BuildContext context) {
         ),
       ],
     ),
+    galleryEntry('AppHeroStat', [
+      galleryBlock(
+        'label, unit, delta, caption',
+        AppHeroStat(
+          label: l10n.devGallerySampleTitle,
+          value: AppFormat.number(82.4, maxFractionDigits: 1, locale: locale),
+          unit: 'kg',
+          delta: AppChip(
+            label: l10n.devGallerySampleShortAction,
+            icon: AppSymbols.reduce,
+          ),
+          caption: l10n.devGallerySampleSubtitle,
+        ),
+      ),
+    ]),
+    galleryEntry('AppSummaryCard', [
+      galleryBlock(
+        'value, unit, delta, footer, onTap',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          icon: AppSymbols.calories,
+          tint: colors.calories,
+          value: AppFormat.number(1850, locale: locale),
+          unit: 'kcal',
+          delta: AppChip(label: l10n.devGallerySampleShortAction),
+          footer: l10n.devGallerySampleSubtitle,
+          onTap: () {},
+        ),
+      ),
+      galleryBlock(
+        'size: hero, chart beside, goal met',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          icon: AppSymbols.today,
+          tint: colors.accentInk,
+          value: '4/4',
+          size: AppSummaryCardSize.hero,
+          delta: AppChip(
+            label: l10n.devGallerySampleShortAction,
+            icon: AppSymbols.success,
+            selected: true,
+          ),
+          chart: const SizedBox.square(
+            dimension: 72,
+            child: CircularProgressIndicator(value: 1),
+          ),
+          chartBeside: true,
+        ),
+      ),
+      galleryBlock(
+        'size: large, rows',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          value: '6',
+          unit: 'weeks',
+          size: AppSummaryCardSize.large,
+          rows: [
+            AppListRowButton(
+              title: l10n.devGallerySampleSubtitle,
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+      galleryBlock(
+        'chart only, trailing chip',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          chart: const LinearProgressIndicator(value: 0.6),
+          semanticValue: '60%',
+          trailing: AppChip(
+            label: l10n.devGallerySampleShortAction,
+            onPressed: () {},
+          ),
+        ),
+      ),
+      galleryBlock(
+        'size: large, onTap, actions',
+        AppSummaryCard(
+          title: l10n.devGallerySampleTitle,
+          icon: AppSymbols.workout,
+          tint: colors.workouts,
+          value: l10n.devGallerySampleSubtitle,
+          size: AppSummaryCardSize.large,
+          onTap: () {},
+          actions: AppCtaButton(
+            label: l10n.devGallerySampleShortAction,
+            size: AppCtaSize.compact,
+            onPressed: () {},
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('AppChip', [
       galleryInline('label', AppChip(label: l10n.devGallerySampleTextAction)),
       galleryInline(
@@ -1120,6 +1367,58 @@ List<Widget> galleryContent(BuildContext context) {
               onPressed: () => update(bursts + 1),
             ),
           ),
+        ),
+      ),
+    ]),
+    galleryEntry('AppMomentHero', [
+      // Plays again on each tap: the count keys a fresh one.
+      galleryBlock(
+        'badge, caption, stats, confetti',
+        GalleryLive(
+          initial: 0,
+          builder: (shows, update) => AppPressable(
+            onTap: () => update(shows + 1),
+            child: AppMomentHero(
+              key: ValueKey(shows),
+              value: 12450,
+              format: (value) => AppFormat.number(value, locale: locale),
+              label: l10n.devGallerySampleWeight,
+              badge: l10n.devGallerySampleShortAction,
+              caption: l10n.devGallerySampleSubtitle,
+              stats: [(value: weight, label: l10n.devGallerySampleTitle)],
+              celebration: AppMomentCelebration.confetti,
+            ),
+          ),
+        ),
+      ),
+      galleryBlock(
+        'celebration: none, info',
+        AppMomentHero(
+          value: 82.5,
+          format: (value) =>
+              AppFormat.weight(value, AppWeightUnit.kilograms, locale: locale),
+          label: l10n.devGallerySampleWeight,
+          info: AppIconButton(
+            icon: AppSymbols.info,
+            semanticLabel: l10n.infoLabel,
+            onPressed: () {},
+          ),
+          celebration: AppMomentCelebration.none,
+        ),
+      ),
+    ]),
+    galleryEntry('AppFootnote', [
+      galleryBlock(
+        'lines, one with ⓘ',
+        AppFootnote(
+          lines: [
+            AppFootnoteLine(
+              l10n.devGallerySampleMessage,
+              infoLabel: l10n.infoLabel,
+              onInfo: () {},
+            ),
+            AppFootnoteLine(l10n.devGallerySampleSubtitle),
+          ],
         ),
       ),
     ]),

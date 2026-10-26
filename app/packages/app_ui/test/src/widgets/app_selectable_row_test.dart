@@ -35,6 +35,33 @@ void main() {
       );
     });
 
+    testWidgets('as a tile is the same selected button', (tester) async {
+      var taps = 0;
+      await tester.pumpApp(
+        AppSelectableRow(
+          title: 'Maintain',
+          selected: true,
+          tile: true,
+          onPressed: () => taps++,
+        ),
+      );
+      await tester.tap(find.byType(AppSelectableRow));
+      expect(taps, 1);
+      expect(find.byIcon(AppSymbols.choiceSelected), findsOneWidget);
+      expect(
+        tester.getSemantics(find.byType(AppSelectableRow)),
+        isSemantics(
+          label: 'Maintain',
+          isButton: true,
+          isSelected: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          hasSelectedState: true,
+          hasTapAction: true,
+        ),
+      );
+    });
+
     testWidgets('is one node, still after a route above it pops', (
       tester,
     ) async {
@@ -123,6 +150,25 @@ void main() {
             selected: false,
             onPressed: null,
           ),
+        ),
+      ),
+      (
+        'Tile, selected',
+        const AppSelectableRow(
+          title: 'Lose weight',
+          subtitle: 'Goal of losing weight',
+          selected: true,
+          tile: true,
+          onPressed: _goldenTap,
+        ),
+      ),
+      (
+        'Tile',
+        const AppSelectableRow(
+          title: 'Maintain',
+          selected: false,
+          tile: true,
+          onPressed: _goldenTap,
         ),
       ),
     ]);

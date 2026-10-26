@@ -159,52 +159,41 @@ class _Review extends StatelessWidget {
     final nutrition = review.nutrition;
     final rpe = review.averageRpe;
     const gap = SizedBox(height: AppSpacing.xl);
+    final goalMet = review.sessionCount >= review.goal;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
         _WeekHeader(state: state, review: review),
-        const SizedBox(height: AppSpacing.s),
-        AppSection(
-          children: [
-            AppListRow(
-              title: WeeklyReviewView.takeawayText(
-                l10n,
-                review.takeaway,
-                locale,
+        // The week's sessions against its goal; met, it is a moment.
+        AppMomentHero(
+          value: review.sessionCount,
+          // "3/4", as Today's hero counts the day.
+          format: (sessions) => '${number(sessions)}/${number(review.goal)}',
+          label: l10n.weeklyReviewSessions,
+          badge: goalMet ? l10n.streakGoalMet : null,
+          caption: WeeklyReviewView.takeawayText(l10n, review.takeaway, locale),
+          info: MethodInfoButton(MethodInfo.weeklySessionGoal(l10n)),
+          stats: [
+            (
+              value: AppFormat.weight(
+                review.volumeKg,
+                volumeUnit,
+                maxFractionDigits: 0,
+                locale: locale,
               ),
-              accessory: AppListRowCustom(
-                MethodInfoButton(MethodInfo.weeklySessionGoal(l10n)),
-              ),
+              label: l10n.statVolume,
             ),
-          ],
-        ),
-        gap,
-        AppSection(
-          header: l10n.tabTraining,
-          children: [
-            AppListRow(
-              title: l10n.weeklyReviewSessions,
-              accessory: AppListRowValue(
-                l10n.weeklyReviewOfGoal(review.sessionCount, review.goal),
+            if (change != null)
+              (
+                value: '${change >= 0 ? '+' : ''}${percent(change)}',
+                label: l10n.weeklyReviewVsLastWeek,
               ),
-            ),
-            AppListRow(
-              title: l10n.statVolume,
-              subtitle: change == null
-                  ? null
-                  : l10n.weeklyReviewVolumeChange(
-                      '${change >= 0 ? '+' : ''}${percent(change)}',
-                    ),
-              accessory: AppListRowValue(
-                AppFormat.weight(review.volumeKg, volumeUnit, locale: locale),
-              ),
-            ),
             if (rpe != null)
-              AppListRow(
-                title: l10n.weeklyReviewAverageRpe,
-                accessory: AppListRowValue(number(rpe, 1)),
-              ),
+              (value: number(rpe, 1), label: l10n.weeklyReviewAverageRpe),
           ],
+          celebration: goalMet
+              ? AppMomentCelebration.confetti
+              : AppMomentCelebration.none,
         ),
         if (review.setsPerMuscle.isNotEmpty) ...[
           gap,
@@ -276,11 +265,7 @@ class _Review extends StatelessWidget {
                             child: Text(
                               weightText,
                               textAlign: TextAlign.end,
-                              style: AppTextStyles.rowDetail.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
+                              style: AppTextStyles.rowDetail.secondary(context),
                             ),
                           ),
                           MethodInfoButton(MethodInfo.weightTrend(l10n)),

@@ -184,9 +184,7 @@ class _Targets extends StatelessWidget {
     final targets = context.select<SetTargetCubit, List<SetTarget>>(
       (cubit) => cubit.state.exercise.setTargets,
     );
-    final label = AppTextStyles.label.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final label = AppTextStyles.label.secondary(context);
     return AppSection(
       children: [
         // Each field names its own column and set.
@@ -350,9 +348,7 @@ class const _PlanButton({
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<SetTargetCubit>();
-    final secondary = AppTextStyles.rowDetail.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.rowDetail.secondary(context);
     final chip = text.chip(target);
     final summary = text.summary(target, cubit.state.settings);
     return Semantics(
@@ -363,7 +359,7 @@ class const _PlanButton({
       ),
       value: summary ?? '',
       excludeSemantics: true,
-      child: InkWell(
+      child: AppPressable(
         key: Key('SetTarget.plan.${target.id}'),
         onTap: () => unawaited(
           showSetPlanDetail(
@@ -461,20 +457,14 @@ class _ExercisePlan extends StatelessWidget {
                 accessory: AppListRowMenu(text.restTitle(exercise.restSeconds)),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: TextFormField(
-                key: const Key('SetTarget.notes'),
-                initialValue: exercise.notes ?? '',
-                minLines: 2,
-                maxLines: 6,
-                decoration: InputDecoration(
-                  hintText: l10n.editorNotes,
-                  border: InputBorder.none,
-                  filled: false,
-                ),
-                onChanged: cubit.notesChanged,
-              ),
+            AppTextFieldRow(
+              key: const Key('SetTarget.notes'),
+              label: l10n.editorNotes,
+              initialValue: exercise.notes ?? '',
+              minLines: 2,
+              maxLines: 6,
+              onChanged: cubit.notesChanged,
+              textCapitalization: TextCapitalization.none,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
@@ -485,18 +475,15 @@ class _ExercisePlan extends StatelessWidget {
                     onFocusChange: (focused) {
                       if (!focused) cubit.linkSubmitted();
                     },
-                    child: TextFormField(
+                    child: AppTextField(
                       key: const Key('SetTarget.link'),
+                      hint: l10n.editorLink,
                       initialValue: state.linkText,
                       keyboardType: TextInputType.url,
                       autocorrect: false,
-                      decoration: InputDecoration(
-                        hintText: l10n.editorLink,
-                        border: InputBorder.none,
-                        filled: false,
-                      ),
                       onChanged: cubit.linkChanged,
-                      onFieldSubmitted: (_) => cubit.linkSubmitted(),
+                      style: AppTextFieldStyle.plain,
+                      onSubmitted: (_) => cubit.linkSubmitted(),
                     ),
                   ),
                   if (state.showsLinkError)

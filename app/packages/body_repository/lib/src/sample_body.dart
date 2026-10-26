@@ -70,7 +70,9 @@ StepsModel _steps(String uid, DateTime now, DateTime day, int daysAgo) {
   final number = daysAgo == 0
       ? wholeDay * (now.hour * 60 + now.minute) ~/ (24 * 60)
       : wholeDay;
-  final counted = daysAgo == 0 ? now : day.add(const Duration(hours: 23));
+  final counted = daysAgo == 0
+      ? now
+      : DateTime(day.year, day.month, day.day, 23);
   return StepsModel(
     id: 'sample-steps-${_dayKey(day)}',
     authorId: uid,

@@ -15,7 +15,7 @@ import 'package:compound/training_library/view/workout_template_detail_page.dart
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
-import 'package:flutter/gestures.dart' show TapGestureRecognizer;
+import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +24,10 @@ import 'package:go_router/go_router.dart';
 /// each item says whether it is done, and opens the screen behind it. The
 /// Steps item, held, offers the step goals. The footer says how "on
 /// target" and the step goal are judged, each with its sources.
+///
+/// With [showsHero] it opens with Today's hero card: the items done out of
+/// all of them, a ring filling in the accent, and the next item to do, or
+/// "Day Complete" once all are.
 class DayChecklistCard extends StatelessWidget {
   const new({
     required this.checklist,
@@ -34,8 +38,13 @@ class DayChecklistCard extends StatelessWidget {
     this.onItemPressed,
     this.onStepGoalSelected,
     this.weighIn,
+    this.showsHero = false,
     super.key,
   });
+
+  /// Whether the day's progress leads as Today's hero card, in place of
+  /// the section's header.
+  final bool showsHero;
 
   /// Shown under the weigh-in item while it is not done, such as the
   /// coach's quick weigh-in.
@@ -68,54 +77,123 @@ class DayChecklistCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final hasSteps = checklist.items.any((item) => item is StepsItem);
+    final rows = [
+      for (final item in checklist.items) ...[
+        _ItemRow(
+          key: ValueKey(item.kind),
+          item: item,
+          celebrate: celebrated.contains(item.kind),
+          unit: unit,
+          workout: workout,
+          stepGoal: stepGoal,
+          onPressed: onItemPressed,
+          onStepGoalSelected: onStepGoalSelected,
+        ),
+        if ((item, weighIn) case (WeighInItem(isDone: false), final row?)) row,
+      ],
+    ];
+    void explain(MethodInfo info) => unawaited(
+      showAppSheet<void>(
+        context: context,
+        builder: (_) => MethodInfoSheet(info: info),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.s,
       children: [
-        AppSection(
-          header: l10n.todayYourDay,
-          trailing: checklist.isComplete
-              ? AppChip(label: l10n.todayDayComplete, icon: AppSymbols.success)
-              : Text(
-                  l10n.todayDoneCount(
-                    checklist.doneCount,
-                    checklist.items.length,
+        if (showsHero)
+          _Hero(checklist: checklist, rows: rows)
+        else
+          AppSection(
+            header: l10n.todayYourDay,
+            trailing: checklist.isComplete
+                ? AppChip(
+                    label: l10n.todayDayComplete,
+                    icon: AppSymbols.success,
+                  )
+                : Text(
+                    l10n.todayDoneCount(
+                      checklist.doneCount,
+                      checklist.items.length,
+                    ),
                   ),
-                ),
-          children: [
-            for (final item in checklist.items) ...[
-              _ItemRow(
-                key: ValueKey(item.kind),
-                item: item,
-                celebrate: celebrated.contains(item.kind),
-                unit: unit,
-                workout: workout,
-                stepGoal: stepGoal,
-                onPressed: onItemPressed,
-                onStepGoalSelected: onStepGoalSelected,
-              ),
-              if ((item, weighIn) case (WeighInItem(isDone: false), final row?))
-                row,
-            ],
-          ],
-        ),
+            children: rows,
+          ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-          child: _Footer(
+          child: AppFootnote(
             lines: [
-              (
-                l10n.todayCalorieBandFooter,
-                MethodInfo.calorieAdherenceBand(l10n),
-              ),
-              if (hasSteps)
+              for (final (text, info) in [
                 (
-                  l10n.todayStepGoalFooter(AppFormat.number(stepGoal)),
-                  MethodInfo.dailyStepGoal(l10n),
+                  l10n.todayCalorieBandFooter,
+                  MethodInfo.calorieAdherenceBand(l10n),
+                ),
+                if (hasSteps)
+                  (
+                    l10n.todayStepGoalFooter(AppFormat.number(stepGoal)),
+                    MethodInfo.dailyStepGoal(l10n),
+                  ),
+              ])
+                AppFootnoteLine(
+                  text,
+                  infoLabel: l10n.methodInfoButtonLabel(info.title),
+                  onInfo: () => explain(info),
                 ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Today's hero, one card: the items done out of all of them in the
+/// largest number on the screen, beside a heavy ring filling in the
+/// accent, and the items themselves under it. Complete, the ring closes
+/// and a volt "Day Complete" shows by the number.
+class _Hero extends StatelessWidget {
+  const new({required this.checklist, required this.rows});
+
+  final TodayChecklist checklist;
+  final List<Widget> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.appColors;
+    final total = checklist.items.length;
+    return AppSummaryCard(
+      title: l10n.todayYourDay,
+      icon: AppSymbols.today,
+      tint: colors.accentInk,
+      size: AppSummaryCardSize.hero,
+      value:
+          '${AppFormat.number(checklist.doneCount)}/'
+          '${AppFormat.number(total)}',
+      unit: l10n.todayDoneUnit,
+      delta: checklist.isComplete
+          ? AppChip(
+              label: l10n.todayDayComplete,
+              icon: AppSymbols.success,
+              selected: true,
+            )
+          : null,
+      // The ring is a line on the card: the accent as ink, volt in dark
+      // mode and olive in light, where volt on white is 1.3:1. The number
+      // carries the figure, so the ring keeps its size at large text
+      // rather than pushing the items down.
+      chart: MediaQuery.withNoTextScaling(
+        child: ProgressArc(
+          value: total == 0 ? 0 : checklist.doneCount / total,
+          color: colors.accentInk,
+          // As tall as the number and its unit beside it.
+          diameter: 2 * AppControlSize.cta,
+          strokeWidth: AppChartMark.arcWidthHero,
+        ),
+      ),
+      chartBeside: true,
+      rows: rows,
     );
   }
 }
@@ -164,28 +242,26 @@ class _ItemRow extends StatelessWidget {
         customSemanticsActions: {
           CustomSemanticsAction(label: l10n.todayStepGoal): ?chooseGoal,
         },
-        child: InkWell(
-          onTap: onTap,
+        child: AppListRowButton(
+          onPressed: onTap,
           onLongPress: chooseGoal,
-          child: AppListRow(
-            title: TodayText.title(l10n, item),
-            subtitle: TodayText.detail(l10n, item, unit),
-            icon: TodayText.icon(item),
-            accessory: AppListRowCustom(
-              ExcludeSemantics(
-                child: AppConfetti(
-                  play: celebrate,
-                  child: item.isDone
-                      ? const AppDoneMark()
-                      : Icon(
-                          AppSymbols.choiceUnselected,
-                          size: AppIconSize.medium.of(context),
-                          color: scheme.outline,
-                        ),
-                ),
+          title: TodayText.title(l10n, item),
+          subtitle: TodayText.detail(l10n, item, unit),
+          icon: TodayText.icon(item),
+          accessory: AppListRowCustom(
+            ExcludeSemantics(
+              child: AppConfetti(
+                play: celebrate,
+                child: item.isDone
+                    ? const AppDoneMark()
+                    : Icon(
+                        AppSymbols.choiceUnselected,
+                        size: AppIconSize.medium.of(context),
+                        color: scheme.outline,
+                      ),
               ),
-              pinned: true,
             ),
+            pinned: true,
           ),
         ),
       ),
@@ -266,71 +342,4 @@ class _ItemRow extends StatelessWidget {
     NutritionItem() => () => context.go(AppTab.nutrition.path),
     StepsItem() => () => context.goNamed(StepsPage.name),
   };
-}
-
-/// The footnotes, one line each, set close as one footer, each sentence
-/// ending in an inline ⓘ that opens its method's sources (Swift's footer
-/// of `Text`s with a `MethodInfoButton`). The ⓘ is a link within the
-/// text, so it keeps the text's size.
-class _Footer extends StatefulWidget {
-  const new({required this.lines});
-
-  final List<(String, MethodInfo)> lines;
-
-  @override
-  State<_Footer> createState() => _FooterState();
-}
-
-class _FooterState extends State<_Footer> {
-  final _taps = <TapGestureRecognizer>[];
-
-  @override
-  void dispose() {
-    for (final tap in _taps) {
-      tap.dispose();
-    }
-    super.dispose();
-  }
-
-  TapGestureRecognizer _tap(int index, MethodInfo info) {
-    while (_taps.length <= index) {
-      _taps.add(TapGestureRecognizer());
-    }
-    return _taps[index]
-      ..onTap = () => unawaited(
-        showAppSheet<void>(
-          context: context,
-          builder: (_) => MethodInfoSheet(info: info),
-        ),
-      );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
-    final style = AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant);
-    const glyph = AppSymbols.info;
-    return Text.rich(
-      TextSpan(
-        style: style,
-        children: [
-          for (final (index, (text, info)) in widget.lines.indexed) ...[
-            if (index > 0) const TextSpan(text: '\n'),
-            TextSpan(text: '$text '),
-            TextSpan(
-              text: String.fromCharCode(glyph.codePoint),
-              semanticsLabel: l10n.methodInfoButtonLabel(info.title),
-              recognizer: _tap(index, info),
-              style: style.copyWith(
-                fontFamily: glyph.fontFamily,
-                package: glyph.fontPackage,
-                color: context.appColors.accentInk,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
 }

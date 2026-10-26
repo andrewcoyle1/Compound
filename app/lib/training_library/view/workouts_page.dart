@@ -77,9 +77,7 @@ class WorkoutsView extends StatelessWidget {
             if (library != null)
               Text(
                 l10n.workoutsCount(_count(library)),
-                style: AppTextStyles.rowDetail.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                style: AppTextStyles.rowDetail.secondary(context),
               ),
           ],
         ),
@@ -227,7 +225,7 @@ class WorkoutRow extends StatelessWidget {
         .join(', ');
     return Semantics(
       button: true,
-      child: InkWell(
+      child: AppPressable(
         onTap: () {
           context.read<LibrarySearchCubit>().workoutSelected(
             workout,
@@ -257,20 +255,13 @@ class WorkoutRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: AppSpacing.xs,
                   children: [
-                    Text(
-                      workout.name,
-                      style: AppTextStyles.sectionTitle.copyWith(
-                        color: scheme.onSurface,
-                      ),
-                    ),
+                    Text(workout.name, style: AppTextStyles.sectionTitle),
                     if (caption.isNotEmpty)
                       Text(
                         caption,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.rowDetail.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: AppTextStyles.rowDetail.secondary(context),
                       ),
                     if (workout.exercises.isNotEmpty)
                       MuscleChips(

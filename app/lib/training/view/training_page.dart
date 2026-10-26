@@ -14,7 +14,9 @@ import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
 import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:compound/workout_editor/view/workout_wizard_pages.dart';
+import 'package:compound/workout_history/models/workout_session_highlights.dart';
 import 'package:compound/workout_history/view/workout_history_page.dart';
+import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
@@ -86,6 +88,7 @@ class TrainingView extends StatelessWidget {
     final today = startOfDay(DateTime.now());
     void open(DateTime day) => unawaited(openWorkoutsOn(context, day));
     return AppScaffold(
+      maxWidth: AppContentWidth.dashboard,
       largeTitle: l10n.tabTraining,
       actions: [
         AppToolbarButton(
@@ -244,31 +247,33 @@ class _AddMenu extends StatelessWidget {
   }
 }
 
-/// Everything the user has built or done.
-class _Library extends StatelessWidget {
-  const new();
-
+/// The dashboard: the active mesocycle's microcycle as the hero (or a way
+/// to choose one), the last workout, then Start Empty Workout and the
+/// Library.
+class const _Library() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final programs = context.watch<ProgramsCubit>().state;
     final active = programs.activeMesocycle;
-    return LibrarySections(
-      children: [
+    final last = latestLoggedWorkout(programs.sessions);
+    return AppDashboard(
+      sections: [
         if (active != null)
           ActiveMesocycleSection(mesocycle: active)
         else if (programs.status == ProgramsStatus.loaded)
-          AppSection(
-            children: [
-              AppEmptyState(
-                icon: AppSymbols.mesocycle,
-                title: l10n.programNoActiveMesocycle,
-                description: l10n.programAddMesocycleMessage,
-                actionLabel: l10n.programChooseMesocycle,
-                onAction: () => context.goNamed(MesocycleLibraryPage.name),
-              ),
-            ],
+          AppSummaryCard(
+            title: l10n.programNoActiveMesocycle,
+            icon: AppSymbols.mesocycle,
+            footer: l10n.programAddMesocycleMessage,
+            actions: AppCtaButton(
+              label: l10n.programChooseMesocycle,
+              size: AppCtaSize.compact,
+              onPressed: () => context.goNamed(MesocycleLibraryPage.name),
+            ),
           ),
+        if (last != null)
+          _LastWorkoutCard(session: last, sessions: programs.sessions),
         AppSection(
           children: [
             AppListRowButton(
@@ -311,6 +316,57 @@ class _Library extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// The most recent finished workout: its name in the display face over
+/// its day, a personal-record chip when it set any, and what it came to.
+/// Opens the session; See All opens the history.
+class const _LastWorkoutCard({
+  required final WorkoutSessionModel session,
+  required final List<WorkoutSessionModel> sessions,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.appColors;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final duration = session.activeDuration;
+    final records = WorkoutSessionHighlights.personalRecords(
+      session,
+      priorSessions: sessions,
+      limit: 1 << 20,
+    );
+    return AppSummaryCard(
+      title: l10n.trainingLastWorkout,
+      icon: AppSymbols.history,
+      tint: colors.workouts,
+      size: AppSummaryCardSize.large,
+      value: session.name,
+      unit: AppFormat.date(
+        session.dateCreated.toLocal(),
+        style: AppDateStyle.weekdayMedium,
+        locale: context.dateLocale,
+      ),
+      delta: records.isEmpty
+          ? null
+          : AppChip(
+              label: l10n.programPrCount(records.length),
+              icon: AppSymbols.personalRecord,
+              tint: colors.personalRecord,
+            ),
+      footer: [
+        l10n.exerciseCount(session.doneExercises.length),
+        l10n.setCount(session.loggedSetCount),
+        ?WorkoutText.sessionVolume(session, locale: locale),
+        if (duration != null) AppFormat.duration(duration),
+      ].join(' · '),
+      trailing: AppChip(
+        label: l10n.seeAll,
+        onPressed: () => context.goNamed(WorkoutHistoryPage.name),
+      ),
+      onTap: () => _openCompletedSession(context, session.id),
     );
   }
 }

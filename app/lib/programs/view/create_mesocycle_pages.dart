@@ -113,21 +113,15 @@ class _NameMesocyclePageState extends State<NameMesocyclePage> {
               header: l10n.programMesocycleNameHeader,
               footer: l10n.programMesocycleNameFooter,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: TextField(
-                    key: const Key('NameProgram.name'),
-                    controller: _name,
-                    autofocus: true,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      hintText: l10n.programMesocycleNameHint,
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                    onChanged: (_) => setState(() {}),
-                    onSubmitted: (_) => _continue(),
-                  ),
+                AppTextFieldRow(
+                  key: const Key('NameProgram.name'),
+                  label: l10n.programMesocycleNameHint,
+                  controller: _name,
+                  autofocus: true,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) => setState(() {}),
+                  textCapitalization: TextCapitalization.none,
+                  onSubmitted: (_) => _continue(),
                 ),
               ],
             ),

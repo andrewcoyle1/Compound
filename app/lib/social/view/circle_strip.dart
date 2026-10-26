@@ -30,12 +30,7 @@ class CircleStrip extends StatelessWidget {
     final width = MediaQuery.textScalerOf(context).scale(76);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.l,
-        AppSpacing.s,
-        AppSpacing.l,
-        AppSpacing.m,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: AppSpacing.l,
@@ -74,8 +69,6 @@ class _MemberCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
-    final colors = context.appColors;
     final name = commonNameOf(member.user) ?? l10n.socialUnknown;
     final toGo = member.sessionsToGo;
     final onSetGoalPressed = this.onSetGoalPressed;
@@ -97,9 +90,9 @@ class _MemberCell extends StatelessWidget {
                   member.weeklyGoal,
                 ),
           excludeSemantics: true,
-          child: InkWell(
+          child: AppPressable(
             onTap: onPressed,
-            customBorder: const CircleBorder(),
+            shape: const CircleBorder(),
             child: Column(
               spacing: AppSpacing.xs,
               children: [
@@ -108,17 +101,11 @@ class _MemberCell extends StatelessWidget {
                   toGo != null
                       ? l10n.socialToGo(toGo)
                       : firstNameOf(member.user) ?? name,
-                  style:
-                      (toGo != null
-                              ? AppTextStyles.label.semibold
-                              : AppTextStyles.label)
-                          .copyWith(
-                            color: toGo != null
-                                ? colors.warning
-                                : member.trainedToday
-                                ? scheme.onSurface
-                                : scheme.onSurfaceVariant,
-                          ),
+                  style: toGo != null
+                      ? AppTextStyles.label.semibold
+                      : member.trainedToday
+                      ? AppTextStyles.label
+                      : AppTextStyles.label.secondary(context),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

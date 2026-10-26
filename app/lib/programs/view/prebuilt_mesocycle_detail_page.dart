@@ -79,10 +79,7 @@ class _PrebuiltMesocycleDetailPageState
     final mesocycle = PrebuiltCatalogue.instance.mesocycles
         .where((mesocycle) => mesocycle.id == widget.mesocycleId)
         .firstOrNull;
-    final scheme = Theme.of(context).colorScheme;
-    final secondary = AppTextStyles.label.copyWith(
-      color: scheme.onSurfaceVariant,
-    );
+    final secondary = AppTextStyles.label.secondary(context);
     return AppScaffold(
       appBar: AppBar(title: mesocycle == null ? null : Text(mesocycle.name)),
       body: SafeArea(
@@ -96,17 +93,17 @@ class _PrebuiltMesocycleDetailPageState
               )
             : LibrarySections(
                 children: [
-                  AppSection(children: [MesocycleHeader(mesocycle: mesocycle)]),
+                  // The hero: how many workouts a microcycle asks for.
+                  AppHeroStat(
+                    value: AppFormat.number(workoutCount(mesocycle)),
+                    unit: l10n.programWorkoutsPerMicrocycle,
+                  ),
                   AppSection(
                     header: l10n.onboardingOverview,
                     children: [
                       _value(
                         l10n.programDaysPerMicrocycle,
                         mesocycle.workoutTemplates.length,
-                      ),
-                      _value(
-                        l10n.programWorkoutsPerMicrocycle,
-                        workoutCount(mesocycle),
                       ),
                       _value(l10n.programMicrocycles, mesocycle.numMicrocycles),
                       AppListRow(
@@ -148,11 +145,11 @@ class _PrebuiltMesocycleDetailPageState
                                   day.exercises.isEmpty
                                       ? l10n.programRest
                                       : day.name,
-                                  style: AppTextStyles.rowTitle.copyWith(
-                                    color: day.exercises.isEmpty
-                                        ? scheme.onSurfaceVariant
-                                        : scheme.onSurface,
-                                  ),
+                                  style: day.exercises.isEmpty
+                                      ? AppTextStyles.rowTitle.secondary(
+                                          context,
+                                        )
+                                      : AppTextStyles.rowTitle,
                                 ),
                                 for (final exercise in day.exercises)
                                   MergeSemantics(
@@ -162,10 +159,7 @@ class _PrebuiltMesocycleDetailPageState
                                       children: [
                                         Text(
                                           exercise.exercise.name,
-                                          style: AppTextStyles.rowDetail
-                                              .copyWith(
-                                                color: scheme.onSurface,
-                                              ),
+                                          style: AppTextStyles.rowDetail,
                                         ),
                                         Text(
                                           templateTargetsText(

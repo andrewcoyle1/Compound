@@ -8,11 +8,13 @@ import 'package:compound/app/app.dart';
 import 'package:compound/check_in/check_in.dart';
 import 'package:compound/expenditure/expenditure.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition_overview/bloc/nutrition_overview_bloc.dart';
 import 'package:compound/nutrition_overview/logic/nutrition_overview.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound_charts/compound_charts.dart';
+import 'package:compound_maths/compound_maths.dart' show macroProgress;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:program_repository/program_repository.dart';
@@ -111,57 +113,65 @@ class _Overview extends StatelessWidget {
         : const <Contributor>[];
     final breakdown = nutrientBreakdown(state.meals);
     String grams(double value) => AppFormat.grams(value, locale: locale);
-    double progress(double eaten, double? goal) =>
-        goal == null || goal <= 0 ? 0 : (eaten / goal).clamp(0, 1);
-
-    Widget macro(String title, double eaten, double? goal, Color color) =>
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.l,
-            vertical: AppSpacing.s,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: AppSpacing.xs,
-            children: [
-              Row(
-                spacing: AppSpacing.xs,
-                children: [
-                  Expanded(child: Text(title)),
-                  Text(
-                    eaten > 0 ? grams(eaten) : AppFormat.placeholder,
-                    style: AppTextStyles.rowDetail.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  if (goal != null)
-                    Text(
-                      l10n.nutritionOverviewOfTarget(grams(goal)),
-                      style: AppTextStyles.label,
-                    ),
-                ],
-              ),
-              BulletBar(
-                value: progress(eaten, goal),
-                thickness: AppChartMark.bulletWidthSmall,
-                color: color,
-              ),
-            ],
-          ),
-        );
+    final rings = target == null
+        ? null
+        : MacroRings(totals: totals, target: target);
 
     final sections = <Widget>[
+      // The hero first: the day's calories against the target, and the
+      // same macro rings as the Nutrition tab's. The check-in and the
+      // target proposal follow it, as Today's check-in does its hero.
+      AppSummaryCard(
+        title: l10n.nutritionOverviewCalories,
+        icon: AppSymbols.calories,
+        tint: colors.calories,
+        size: AppSummaryCardSize.large,
+        value: AppFormat.number(totals.calories.round(), locale: locale),
+        unit: target == null
+            ? l10n.nutritionOverviewKcal
+            : l10n.nutritionHeroOf(
+                AppFormat.kcal(target.calories.round(), locale: locale),
+              ),
+        trailing: MethodInfoButton(MethodInfo.macroSplit(l10n)),
+        semanticValue: rings?.spoken(l10n),
+        chart: target == null || rings == null
+            ? null
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppSpacing.xl,
+                children: [
+                  BulletBar(
+                    value: macroProgress(totals.calories, target.calories),
+                    color: colors.calories,
+                  ),
+                  rings,
+                ],
+              ),
+        // Without a plan there is nothing to fill: the grams in a line.
+        footer: target != null
+            ? null
+            : [
+                l10n.nutritionOverviewProtein(grams(totals.proteinGrams)),
+                l10n.nutritionOverviewFat(grams(totals.fatGrams)),
+                l10n.nutritionOverviewCarbs(grams(totals.carbGrams)),
+              ].join(' · '),
+      ),
+      // The check-in as Today shows it: the card starts it, and the
+      // header's chip skips the week.
       if (weekStart != null)
-        DecisionCard(
-          title: l10n.nutritionOverviewCheckInReady,
-          message: l10n.nutritionOverviewCheckInMessage,
-          primary: l10n.checkInStart,
-          onPrimary: () {
+        AppSummaryCard(
+          title: l10n.checkInReadyTitle,
+          icon: AppSymbols.goal,
+          tint: colors.calories,
+          footer: l10n.checkInReadyMessage,
+          trailing: AppChip(
+            label: l10n.checkInSkipWeek,
+            onPressed: () => bloc.add(const NutritionOverviewCheckInSkipped()),
+          ),
+          onTap: () {
             bloc.add(const NutritionOverviewCheckInStarted());
             unawaited(CheckInPage.show(context, weekStart));
           },
-          secondary: l10n.checkInSkipWeek,
-          onSecondary: () => bloc.add(const NutritionOverviewCheckInSkipped()),
         ),
       if (proposal != null)
         DecisionCard(
@@ -174,131 +184,27 @@ class _Overview extends StatelessWidget {
               bloc.add(const NutritionOverviewProposalDismissed()),
           info: MethodInfo.targetProposal(l10n),
         ),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.s,
+      AppSection(
+        header: l10n.nutritionOverviewTopContributors,
         children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      l10n.nutritionOverviewCalories,
-                      style: AppTextStyles.sectionTitle.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ),
-                Text(
-                  l10n.nutritionOverviewContributors,
-                  style: AppTextStyles.rowDetail,
-                ),
-                Switch.adaptive(
-                  value: state.showsContributors,
-                  onChanged: (on) =>
-                      bloc.add(NutritionOverviewContributorsToggled(on: on)),
-                ),
-              ],
+          AppListRowToggle(
+            title: l10n.nutritionOverviewContributors,
+            value: state.showsContributors,
+            onChanged: (on) =>
+                bloc.add(NutritionOverviewContributorsToggled(on: on)),
+          ),
+          for (final food in top)
+            AppListRow(
+              title: food.name,
+              subtitle: [
+                l10n.nutritionOverviewProtein(grams(food.macros.proteinGrams)),
+                l10n.nutritionOverviewFat(grams(food.macros.fatGrams)),
+                l10n.nutritionOverviewCarbs(grams(food.macros.carbGrams)),
+              ].join(' · '),
+              accessory: AppListRowValue(
+                AppFormat.kcal(food.macros.calories.round(), locale: locale),
+              ),
             ),
-          ),
-          AppSection(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.l),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  spacing: AppSpacing.s,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            l10n.nutritionOverviewConsumed(
-                              AppFormat.kcal(
-                                totals.calories.round(),
-                                locale: locale,
-                              ),
-                            ),
-                            style: AppTextStyles.sectionTitle,
-                          ),
-                        ),
-                        if (target != null)
-                          Text(
-                            l10n.nutritionOverviewOfTarget(
-                              AppFormat.kcal(
-                                target.calories.round(),
-                                locale: locale,
-                              ),
-                            ),
-                            style: AppTextStyles.rowDetail,
-                          ),
-                      ],
-                    ),
-                    BulletBar(
-                      value: progress(totals.calories, target?.calories),
-                      color: colors.calories,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      if (top.isNotEmpty)
-        AppSection(
-          header: l10n.nutritionOverviewTopContributors,
-          children: [
-            for (final food in top)
-              AppListRow(
-                title: food.name,
-                subtitle: [
-                  l10n.nutritionOverviewProtein(
-                    grams(food.macros.proteinGrams),
-                  ),
-                  l10n.nutritionOverviewFat(grams(food.macros.fatGrams)),
-                  l10n.nutritionOverviewCarbs(grams(food.macros.carbGrams)),
-                ].join(' · '),
-                accessory: AppListRowValue(
-                  AppFormat.kcal(food.macros.calories.round(), locale: locale),
-                ),
-              ),
-          ],
-        ),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.s,
-        children: [
-          MethodInfoHeader(
-            title: l10n.progressMacros,
-            info: MethodInfo.macroSplit(l10n),
-          ),
-          AppSection(
-            children: [
-              macro(
-                l10n.nutritionMacroProtein,
-                totals.proteinGrams,
-                target?.proteinGrams,
-                colors.protein,
-              ),
-              macro(
-                l10n.nutritionMacroCarbs,
-                totals.carbGrams,
-                target?.carbGrams,
-                colors.carbs,
-              ),
-              macro(
-                l10n.nutritionMacroFat,
-                totals.fatGrams,
-                target?.fatGrams,
-                colors.fat,
-              ),
-            ],
-          ),
         ],
       ),
       for (final section in NutrientSection.values)

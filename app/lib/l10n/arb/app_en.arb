@@ -4,6 +4,10 @@
     "@signInTitle": {
         "description": "Heading on the sign-in screen"
     },
+    "signInSubtitle": "Your training, nutrition and body in one place. Sign in to keep them on every device.",
+    "@signInSubtitle": {
+        "description": "Sign-in screen: the line under the heading saying what signing in gives"
+    },
     "signInWithAppleButton": "Continue with Apple",
     "@signInWithAppleButton": {
         "description": "Button that signs in with an Apple account (iOS only)"
@@ -115,6 +119,78 @@
     "socialThisWeek": "This Week",
     "@socialThisWeek": {
         "description": "The weekly leaderboard, and the profile section"
+    },
+    "socialStandingTitle": "{rank}. {name}",
+    "@socialStandingTitle": {
+        "description": "A leaderboard row's title: the place and the name",
+        "placeholders": {
+            "rank": {
+                "type": "int"
+            },
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "socialRankValue": "#{rank}",
+    "@socialRankValue": {
+        "description": "The reader's place in the circle this week, the Social hero's number",
+        "placeholders": {
+            "rank": {
+                "type": "int"
+            }
+        }
+    },
+    "socialRankUnit": "{count, plural, =1{in your circle} other{of {count} in your circle}}",
+    "@socialRankUnit": {
+        "description": "Under the Social hero's place: how many are in the circle",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialLastWeek": "Last Week",
+    "@socialLastWeek": {
+        "description": "The title of Monday's recap card"
+    },
+    "socialCircleSessionsUnit": "{count, plural, =1{session in your circle} other{sessions in your circle}}",
+    "@socialCircleSessionsUnit": {
+        "description": "After the circle's total sessions last week",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialLastWeekYou": "You: {own} of {goal}",
+    "@socialLastWeekYou": {
+        "description": "Monday's recap: the user's own sessions against their goal",
+        "placeholders": {
+            "own": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "socialSessionsThisWeekUnit": "{count, plural, =1{session this week} other{sessions this week}}",
+    "@socialSessionsThisWeekUnit": {
+        "description": "Under the Social hero's own count, before the reader's first session of the week; count is the goal",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "socialNoOneTrained": "No one's trained yet this week.",
+    "@socialNoOneTrained": {
+        "description": "The Social hero's footer while nobody in the circle has a session this week"
+    },
+    "socialTrainToRank": "Train to get on the board.",
+    "@socialTrainToRank": {
+        "description": "The Social hero's footer while others have trained this week and the reader has not"
     },
     "socialYou": "You",
     "@socialYou": {
@@ -435,6 +511,15 @@
     "socialConsistency": "Consistency",
     "@socialConsistency": {
         "description": "Training days over twelve weeks"
+    },
+    "socialTrainingDaysUnit": "{count, plural, =1{day trained in 12 weeks} other{days trained in 12 weeks}}",
+    "@socialTrainingDaysUnit": {
+        "description": "Under the profile's consistency count",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
     },
     "socialTrainingDays": "{count, plural, =1{1 training day in the last 12 weeks} other{{count} training days in the last 12 weeks}}",
     "@socialTrainingDays": {
@@ -984,22 +1069,38 @@
             }
         }
     },
-    "nutritionMacroLeft": "{amount} left",
-    "@nutritionMacroLeft": {
-        "description": "Macro header: how much of the day's target is left",
+    "nutritionHeroOf": "of {amount}",
+    "@nutritionHeroOf": {
+        "description": "Nutrition tab's hero: the day's target under what has been eaten, e.g. of 2,250 kcal or of 165 g",
         "placeholders": {
             "amount": {
                 "type": "String"
             }
         }
     },
-    "nutritionMacroHeaderShowRemaining": "Show what's left",
-    "@nutritionMacroHeaderShowRemaining": {
-        "description": "Macro header: accessibility hint for switching to the remaining figures"
+    "nutritionHeroKcalLeft": "kcal left",
+    "@nutritionHeroKcalLeft": {
+        "description": "Nutrition tab's hero: the unit under the calories left today"
     },
-    "nutritionMacroHeaderShowConsumed": "Show what's eaten",
-    "@nutritionMacroHeaderShowConsumed": {
-        "description": "Macro header: accessibility hint for switching back to the eaten figures"
+    "nutritionHeroKcalOver": "kcal over",
+    "@nutritionHeroKcalOver": {
+        "description": "Nutrition tab's hero: the unit under the calories eaten past the target"
+    },
+    "nutritionHeroGramsLeft": "g left",
+    "@nutritionHeroGramsLeft": {
+        "description": "Nutrition tab's hero: under a macro's grams left today"
+    },
+    "nutritionHeroGramsOver": "g over",
+    "@nutritionHeroGramsOver": {
+        "description": "Nutrition tab's hero: under a macro's grams eaten past its target"
+    },
+    "nutritionHeroShowLeft": "Show Left",
+    "@nutritionHeroShowLeft": {
+        "description": "Nutrition tab's hero: chip that switches the figures to what is left"
+    },
+    "nutritionHeroShowEaten": "Show Eaten",
+    "@nutritionHeroShowEaten": {
+        "description": "Nutrition tab's hero: chip that switches the figures back to what has been eaten"
     },
     "nutritionItemProtein": "{grams}\u00a0P",
     "@nutritionItemProtein": {
@@ -1056,12 +1157,19 @@
     "@metricShowAllData": {
         "description": "Metric screen: row opening every recorded entry"
     },
-    "metricShowMoreData": "Show More {title} Data",
-    "@metricShowMoreData": {
-        "description": "Metric screen: text button opening Latest, Highest, Lowest and Average in a sheet (QuickCharts' Show More); title is the metric's name",
+    "metricAllTime": "All Time",
+    "@metricAllTime": {
+        "description": "Metric screen: header over Latest, Highest, Lowest and Average, which cover every entry, not just the chart's window"
+    },
+    "metricChangeFromPrevious": "{change} vs. previous {days} days",
+    "@metricChangeFromPrevious": {
+        "description": "Metric chart hero: chip with the change in the average from the window before; change is signed with its unit, such as −0.4 kg; days is the window's length",
         "placeholders": {
-            "title": {
+            "change": {
                 "type": "String"
+            },
+            "days": {
+                "type": "int"
             }
         }
     },
@@ -1598,14 +1706,6 @@
     "@nutritionOverviewTitle": {
         "description": "Nutrition Overview screen title and the Nutrition tab's link to it"
     },
-    "nutritionOverviewCheckInReady": "Weekly check-in ready",
-    "@nutritionOverviewCheckInReady": {
-        "description": "Nutrition Overview card: the weekly check-in is waiting"
-    },
-    "nutritionOverviewCheckInMessage": "Review the week and update your program.",
-    "@nutritionOverviewCheckInMessage": {
-        "description": "Nutrition Overview card: what the check-in does"
-    },
     "nutritionOverviewNotNow": "Not now",
     "@nutritionOverviewNotNow": {
         "description": "Nutrition Overview: dismiss the target proposal"
@@ -1618,6 +1718,10 @@
     "@nutritionOverviewCalories": {
         "description": "Nutrition Overview: calories section header"
     },
+    "nutritionOverviewKcal": "kcal",
+    "@nutritionOverviewKcal": {
+        "description": "Nutrition Overview: the unit under the calories eaten on a day with no target"
+    },
     "nutritionOverviewContributors": "Contributors",
     "@nutritionOverviewContributors": {
         "description": "Nutrition Overview: switch showing the foods that contributed most"
@@ -1625,24 +1729,6 @@
     "nutritionOverviewTopContributors": "Top Contributors",
     "@nutritionOverviewTopContributors": {
         "description": "Nutrition Overview: header of the foods that contributed most"
-    },
-    "nutritionOverviewConsumed": "{kcal} consumed",
-    "@nutritionOverviewConsumed": {
-        "description": "Nutrition Overview: calories eaten today",
-        "placeholders": {
-            "kcal": {
-                "type": "String"
-            }
-        }
-    },
-    "nutritionOverviewOfTarget": "/ {target}",
-    "@nutritionOverviewOfTarget": {
-        "description": "Nutrition Overview: the target after an amount",
-        "placeholders": {
-            "target": {
-                "type": "String"
-            }
-        }
     },
     "nutritionOverviewProtein": "{grams}\u00a0P",
     "@nutritionOverviewProtein": {
@@ -2104,15 +2190,6 @@
     "@todayFirstWeighIn": {
         "description": "Getting-started step"
     },
-    "todayProteinGap": "{grams} protein to go today",
-    "@todayProteinGap": {
-        "description": "Evening reminder: protein still to eat today, e.g. '45 g protein to go today'",
-        "placeholders": {
-            "grams": {
-                "type": "String"
-            }
-        }
-    },
     "streakTitle": "Weekly Streak",
     "@streakTitle": {
         "description": "Streak card heading"
@@ -2138,6 +2215,35 @@
             }
         }
     },
+    "streakWeeksUnit": "{weeks, plural, =1{week} other{weeks}}",
+    "@streakWeeksUnit": {
+        "description": "Streak card: the unit after the number of weeks in a row, e.g. '6' then 'weeks'. Shown upper-cased",
+        "placeholders": {
+            "weeks": {
+                "type": "int"
+            }
+        }
+    },
+    "streakRecord": "Best {best} · {count, plural, =1{1 workout} other{{count} workouts}}",
+    "@streakRecord": {
+        "description": "Streak card footer: the longest streak and every workout ever finished, e.g. 'Best 6 weeks · 20 workouts'",
+        "placeholders": {
+            "best": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayDoneUnit": "done",
+    "@todayDoneUnit": {
+        "description": "Today's hero card: the unit after the day's done items, e.g. '3/4' then 'done'. Shown upper-cased"
+    },
+    "todayProteinToGo": "g to go",
+    "@todayProteinToGo": {
+        "description": "Today's evening protein card: the unit after the grams of protein still to eat today, e.g. '45' then 'g to go'. Shown upper-cased"
+    },
     "streakAtRisk": "At Risk",
     "@streakAtRisk": {
         "description": "Streak card badge: the streak will be lost unless every remaining day is trained"
@@ -2145,22 +2251,6 @@
     "streakGoalMet": "Goal Met",
     "@streakGoalMet": {
         "description": "Streak card badge: this week's goal is met"
-    },
-    "streakBest": "Best streak",
-    "@streakBest": {
-        "description": "Streak card stat label"
-    },
-    "streakTotalWorkouts": "Total workouts",
-    "@streakTotalWorkouts": {
-        "description": "Streak card stat label"
-    },
-    "streakWorkoutLogged": "Workout logged",
-    "@streakWorkoutLogged": {
-        "description": "Accessibility value of a day with a workout on the streak card"
-    },
-    "streakNoWorkout": "No workout",
-    "@streakNoWorkout": {
-        "description": "Accessibility value of a day without a workout on the streak card"
     },
     "weeklyGoalMethodTitle": "Weekly Goal and Streak",
     "@weeklyGoalMethodTitle": {
@@ -2365,6 +2455,36 @@
                 "type": "String"
             }
         }
+    },
+    "progressChangeInSevenDays": "{change} in 7 days",
+    "@progressChangeInSevenDays": {
+        "description": "Progress tab hero: chip with the trend weight's change over the last 7 days; change is signed with its unit, such as −0.6 kg",
+        "placeholders": {
+            "change": {
+                "type": "String"
+            }
+        }
+    },
+    "progressHeroGoal": "{percent} of the way to your goal",
+    "@progressHeroGoal": {
+        "description": "Progress tab hero footer: how far the user is toward their weight goal; percent is formatted, such as 33%",
+        "placeholders": {
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "progressHeroEmpty": "Log a weigh-in to see your trend.",
+    "@progressHeroEmpty": {
+        "description": "Progress tab hero footer when there are no weigh-ins yet"
+    },
+    "progressKcalDeficitUnit": "kcal deficit",
+    "@progressKcalDeficitUnit": {
+        "description": "Progress tab Energy Balance card: the unit after the number when intake is under expenditure, shown as an overline"
+    },
+    "progressKcalSurplusUnit": "kcal surplus",
+    "@progressKcalSurplusUnit": {
+        "description": "Progress tab Energy Balance card: the unit after the number when intake is over expenditure, shown as an overline"
     },
     "progressTrendChartValue": "From {first} to {last}",
     "@progressTrendChartValue": {
@@ -2670,32 +2790,6 @@
     "logMeasurementSaveFailure": "Unable to Save Measurement",
     "@logMeasurementSaveFailure": {
         "description": "Alert title when saving a body measurement fails"
-    },
-    "logMeasurementMetric": "Metric (cm)",
-    "@logMeasurementMetric": {
-        "description": "Unit choice on the measurement logger"
-    },
-    "logMeasurementImperial": "Imperial (in)",
-    "@logMeasurementImperial": {
-        "description": "Unit choice on the measurement logger"
-    },
-    "logMeasurementWholeCentimetres": "{value} cm",
-    "@logMeasurementWholeCentimetres": {
-        "description": "Log Measurement: a row of the whole-number wheel in centimetres",
-        "placeholders": {
-            "value": {
-                "type": "int"
-            }
-        }
-    },
-    "logMeasurementWholeInches": "{value} in",
-    "@logMeasurementWholeInches": {
-        "description": "Log Measurement: a row of the whole-number wheel in inches",
-        "placeholders": {
-            "value": {
-                "type": "int"
-            }
-        }
     },
     "metricAdd": "Add",
     "@metricAdd": {
@@ -3892,26 +3986,25 @@
     "@onboardingOverview": {
         "description": "Diet plan: header"
     },
-    "onboardingPlanMesocycle": "Mesocycle: {name}, {days} days/week",
-    "@onboardingPlanMesocycle": {
-        "description": "Diet plan: the mesocycle it was built for",
-        "placeholders": {
-            "name": {
-                "type": "String"
-            },
-            "days": {
-                "type": "int"
-            }
-        }
+    "onboardingPlanBadge": "Your Plan",
+    "@onboardingPlanBadge": {
+        "description": "Diet plan step at the end of onboarding: the badge over the daily calorie figure"
     },
-    "onboardingPlanTdee": "Estimated TDEE: {kcal} kcal/day",
-    "@onboardingPlanTdee": {
-        "description": "Diet plan: the expenditure it was built on",
-        "placeholders": {
-            "kcal": {
-                "type": "int"
-            }
-        }
+    "onboardingPlanAverageCalories": "kcal a day, on average",
+    "@onboardingPlanAverageCalories": {
+        "description": "Diet plan step: the label under the plan's average daily calorie target"
+    },
+    "onboardingPlanProteinStat": "Protein a day",
+    "@onboardingPlanProteinStat": {
+        "description": "Diet plan step: the label under the daily protein target, e.g. 144 g"
+    },
+    "onboardingPlanTrainingDaysStat": "Workouts a week",
+    "@onboardingPlanTrainingDaysStat": {
+        "description": "Diet plan step: the label under the number of workouts a week in the user's program"
+    },
+    "onboardingPlanBurnStat": "Est. burn a day",
+    "@onboardingPlanBurnStat": {
+        "description": "Diet plan step: the label under the estimated calories burned a day (TDEE), in kcal; Est. abbreviates Estimated"
     },
     "onboardingPlanDiet": "Preferred diet: {diet}",
     "@onboardingPlanDiet": {
@@ -3996,6 +4089,18 @@
     "onboardingUnableToUpdate": "Unable to update your profile",
     "@onboardingUnableToUpdate": {
         "description": "Onboarding: title of the alert when the diet plan could not be saved"
+    },
+    "trainingWorkoutsDoneUnit": "workouts done",
+    "@trainingWorkoutsDoneUnit": {
+        "description": "The unit under the Training tab hero number: the workouts done out of those planned in the microcycle shown, as in 2/6 WORKOUTS DONE (shown upper-cased)."
+    },
+    "trainingMicrocycleDone": "Microcycle Done",
+    "@trainingMicrocycleDone": {
+        "description": "The chip beside the Training tab hero number once every workout in the microcycle shown is done."
+    },
+    "trainingLastWorkout": "Last Workout",
+    "@trainingLastWorkout": {
+        "description": "Title of the Training tab card for the most recent finished workout (shown upper-cased)."
     },
     "trainingSearchHint": "Exercises and workouts",
     "@trainingSearchHint": {
@@ -4171,6 +4276,14 @@
     "@exerciseNoHistory": {
         "description": "Exercise detail: subtitle when the exercise has never been logged"
     },
+    "exerciseEstimatedOneRepMax": "Est. 1RM",
+    "@exerciseEstimatedOneRepMax": {
+        "description": "Exercise detail: the label over its hero number, the best estimated one-rep max (shown upper-cased)."
+    },
+    "exerciseNewRecord": "New PR",
+    "@exerciseNewRecord": {
+        "description": "Exercise detail: the chip beside the hero number when the latest session set a new best estimated one-rep max."
+    },
     "exercisePerformed": "{count, plural, =1{Performed 1 time · last {date}} other{Performed {count} times · last {date}}}",
     "@exercisePerformed": {
         "description": "Exercise detail: subtitle with how often and when the exercise was last done",
@@ -4310,11 +4423,11 @@
             }
         }
     },
-    "exerciseResistanceLabel": "Resistance:",
+    "exerciseResistanceLabel": "Resistance",
     "@exerciseResistanceLabel": {
         "description": "Exercise detail: label before resistance equipment"
     },
-    "exerciseSupportLabel": "Support:",
+    "exerciseSupportLabel": "Support",
     "@exerciseSupportLabel": {
         "description": "Exercise detail: label before support equipment"
     },
@@ -4382,6 +4495,13 @@
     "workoutNotFound": "This workout is no longer in your library.",
     "@workoutNotFound": {
         "description": "Workout detail: opened for a workout that doesn't exist"
+    },
+    "workoutExercisesUnit": "{count, plural, =1{exercise} other{exercises}}",
+    "@workoutExercisesUnit": {
+        "description": "Workout detail: the unit under its hero number, the exercises the workout holds (shown upper-cased).",
+        "placeholders": {
+            "count": {"type": "int"}
+        }
     },
     "workoutExercisesHeader": "{count, plural, =1{1 Exercise} other{{count} Exercises}}",
     "@workoutExercisesHeader": {
@@ -6276,15 +6396,6 @@
     "@expenditureSettingsTodayHeader": {
         "description": "Expenditure settings: header over the estimate"
     },
-    "expenditureSettingsKcal": "{kcal} kcal",
-    "@expenditureSettingsKcal": {
-        "description": "Today's expenditure figure",
-        "placeholders": {
-            "kcal": {
-                "type": "int"
-            }
-        }
-    },
     "expenditureSettingsFixed": "Fixed",
     "@expenditureSettingsFixed": {
         "description": "Expenditure source: held fixed; also the Fixed calculation mode"
@@ -6714,6 +6825,10 @@
             }
         }
     },
+    "trackerLiveRest": "Rest",
+    "@trackerLiveRest": {
+        "description": "Workout tracker: over the big rest countdown at the top of the screen (shown upper-cased)"
+    },
     "trackerRestReady": "Ready",
     "@trackerRestReady": {
         "description": "Inline rest timer once the rest is over"
@@ -6869,6 +6984,21 @@
     "summaryDone": "Done",
     "@summaryDone": {
         "description": "Workout summary: close it"
+    },
+    "momentWorkoutComplete": "Workout Complete",
+    "@momentWorkoutComplete": {
+        "description": "Workout summary: the badge over the hero number when a workout is finished"
+    },
+    "momentNewRecord": "New PR",
+    "@momentNewRecord": {
+        "description": "Workout summary: the badge over a personal record shown as the hero"
+    },
+    "momentMoreRecords": "{count, plural, =1{+1 more PR} other{+{count} more PRs}}",
+    "@momentMoreRecords": {
+        "description": "Workout summary: under the hero record, how many other personal records the workout set",
+        "placeholders": {
+            "count": {"type": "int"}
+        }
     },
     "trackerAddRound": "Add Round",
     "@trackerAddRound": {
@@ -7091,6 +7221,14 @@
     "muscleBalanceTitle": "Muscle Balance",
     "@muscleBalanceTitle": {
         "description": "Screen and button: every muscle's weekly sets against the volume tiers"
+    },
+    "trainingMusclesTrainedUnit": "muscles trained",
+    "@trainingMusclesTrainedUnit": {
+        "description": "Muscle Groups: the unit under its hero, the muscles with any hard sets in the last 7 days out of all, as in 14/21 MUSCLES TRAINED (shown upper-cased)."
+    },
+    "trainingMusclesProductiveUnit": "muscles productive",
+    "@trainingMusclesProductiveUnit": {
+        "description": "Muscle Balance: the unit under its hero, the muscles with a productive week of hard sets out of all, as in 3/21 MUSCLES PRODUCTIVE (shown upper-cased)."
     },
     "muscleBalanceFooter": "Hard sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend.",
     "@muscleBalanceFooter": {
@@ -7333,6 +7471,10 @@
                 "type": "String"
             }
         }
+    },
+    "weeklyReviewVsLastWeek": "vs Last Week",
+    "@weeklyReviewVsLastWeek": {
+        "description": "Weekly review: label under the volume's change from last week, such as +7% (shown upper-cased)"
     },
     "weeklyReviewAverageRpe": "Average RPE",
     "@weeklyReviewAverageRpe": {
@@ -9585,6 +9727,15 @@
     "@challengesEmpty": {
         "description": "Social: challenges section with none running"
     },
+    "challengeSessionsUnit": "{count, plural, =1{session} other{sessions}}",
+    "@challengeSessionsUnit": {
+        "description": "After a challenge's sessions out of its target",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "challengeDaysLeft": "{count, plural, =1{1 day left} other{{count} days left}}",
     "@challengeDaysLeft": {
         "description": "A challenge's days left",
@@ -10987,6 +11138,15 @@
             "price": {
                 "type": "String"
             },
+            "period": {
+                "type": "String"
+            }
+        }
+    },
+    "paywallPerPeriod": "/ {period}",
+    "@paywallPerPeriod": {
+        "description": "Paywall plan card: the billing period after the price, e.g. / 1 month",
+        "placeholders": {
             "period": {
                 "type": "String"
             }
@@ -13767,5 +13927,9 @@
     "devSettingsTipsReset": "Tips will show again.",
     "@devSettingsTipsReset": {
         "description": "Developer tools: notice after Reset Tips"
+    },
+    "settingsAccountFree": "Free",
+    "@settingsAccountFree": {
+        "description": "Settings: the account card's chip for someone without Premium"
     }
 }

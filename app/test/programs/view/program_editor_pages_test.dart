@@ -203,7 +203,7 @@ void main() {
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Mesocycle Name'), findsNothing);
-      expect(find.text('Active Mesocycle'), findsOneWidget);
+      expect(find.text('WORKOUTS DONE'), findsOneWidget);
     });
   });
 

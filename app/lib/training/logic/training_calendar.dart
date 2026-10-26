@@ -50,3 +50,17 @@ List<WorkoutSessionModel> loggedWorkoutsOn(
         session,
   ]..sort((a, b) => a.dateCreated.compareTo(b.dateCreated));
 }
+
+/// The finished workout started last, or null before the first (the
+/// Training tab's Last Workout).
+WorkoutSessionModel? latestLoggedWorkout(
+  Iterable<WorkoutSessionModel> sessions,
+) => sessions
+    .where(_isLoggedWorkout)
+    .fold<WorkoutSessionModel?>(
+      null,
+      (latest, session) =>
+          latest == null || session.dateCreated.isAfter(latest.dateCreated)
+          ? session
+          : latest,
+    );

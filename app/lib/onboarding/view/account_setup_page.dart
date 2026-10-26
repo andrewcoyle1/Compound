@@ -212,7 +212,6 @@ class AccountSetupView extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     String kcal(num value) => AppFormat.kcal(value, locale: locale);
     final multiplier = NumberFormat('0.00', locale);
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final parts = [
       (l10n.onboardingRestingCalories, figures.restingKcal),
       (l10n.onboardingActivityCalories, figures.activityKcal),
@@ -223,27 +222,22 @@ class AccountSetupView extends StatelessWidget {
         title: l10n.onboardingExpenditureHeader,
         info: MethodInfo.formulaExpenditure(l10n),
       ),
-      AppSection(
-        footer: l10n.onboardingExpenditureFooter,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.end,
-              spacing: AppSpacing.s,
-              children: [
-                Text(
-                  AppFormat.number(figures.totalKcal, locale: locale),
-                  style: AppTextStyles.display,
-                ),
-                Text(
-                  l10n.onboardingKcalPerDay,
-                  style: AppTextStyles.sectionTitle.copyWith(color: secondary),
-                ),
-              ],
+      // The step's one number, as a Detail screen's hero.
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.m,
+          children: [
+            AppHeroStat(
+              value: AppFormat.number(figures.totalKcal, locale: locale),
+              unit: l10n.onboardingKcalPerDay,
             ),
-          ),
-        ],
+            AppFootnote(
+              lines: [AppFootnoteLine(l10n.onboardingExpenditureFooter)],
+            ),
+          ],
+        ),
       ),
       MethodInfoHeader(
         title: l10n.onboardingBreakdown,
@@ -264,9 +258,7 @@ class AccountSetupView extends StatelessWidget {
                         Expanded(child: Text(name)),
                         Text(
                           kcal(value),
-                          style: AppTextStyles.rowTitle.copyWith(
-                            color: secondary,
-                          ),
+                          style: AppTextStyles.rowTitle.secondary(context),
                         ),
                       ],
                     ),
@@ -362,7 +354,6 @@ class _NamePhoto extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<AccountSetupCubit>();
-    final scheme = Theme.of(context).colorScheme;
     final side = MediaQuery.textScalerOf(context)
         .scale(AppIconSize.hero.points + AppSpacing.xl);
     final picked = state.photo;
@@ -378,7 +369,7 @@ class _NamePhoto extends StatelessWidget {
         glyph,
         Text(
           l10n.onboardingAddPhoto,
-          style: AppTextStyles.label.copyWith(color: scheme.onSurfaceVariant),
+          style: AppTextStyles.label.secondary(context),
         ),
       ],
     );
@@ -391,9 +382,9 @@ class _NamePhoto extends StatelessWidget {
               ? l10n.onboardingChangePhoto
               : l10n.onboardingAddPhoto,
           excludeSemantics: true,
-          child: InkWell(
+          child: AppPressable(
             key: const Key('NamePhoto.photo'),
-            customBorder: const CircleBorder(),
+            shape: const CircleBorder(),
             onTap: () => unawaited(cubit.photoPressed()),
             child: picked != null || stored != null
                 ? ClipOval(

@@ -47,7 +47,6 @@ class MuscleBalanceView extends StatelessWidget {
         title: l10n.muscleBalanceTitle,
         loaded: (state) {
           final weekly = state.weeklySetsByMuscle;
-          final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
           Widget region(String header, {required bool upper}) {
             final muscles = [
               for (final muscle in Muscles.values)
@@ -88,9 +87,7 @@ class MuscleBalanceView extends StatelessWidget {
                           Expanded(
                             child: Text(
                               l10n.muscleBalanceFooter,
-                              style: AppTextStyles.label.copyWith(
-                                color: secondary,
-                              ),
+                              style: AppTextStyles.label.secondary(context),
                             ),
                           ),
                           MethodInfoButton(MethodInfo.weeklyHardSets(l10n)),
@@ -102,9 +99,25 @@ class MuscleBalanceView extends StatelessWidget {
             );
           }
 
+          final productive = weekly.values
+              .where(
+                (weeks) => VolumeTier.of(weeks.last) == VolumeTier.productive,
+              )
+              .length;
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
+              // The hero: how many muscles get a productive week's sets.
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+                child: AppHeroStat(
+                  label: l10n.progressLast7Days,
+                  value:
+                      '${AppFormat.number(productive)}/'
+                      '${AppFormat.number(weekly.length)}',
+                  unit: l10n.trainingMusclesProductiveUnit,
+                ),
+              ),
               region(l10n.muscleRegionUpper, upper: true),
               region(l10n.muscleRegionLower, upper: false),
             ],
@@ -179,22 +192,32 @@ class _Tile extends StatelessWidget {
         ),
       ),
       excludeSemantics: true,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.l),
+      child: AppPressable(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.l)),
+        ),
         onTap: () => context.read<TrainingAnalyticsBloc>().add(
           TrainingAnalyticsMuscleToggled(muscle),
         ),
-        child: DecoratedBox(
-          position: DecorationPosition.foreground,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.l),
-            border: isSelected ? Border.all(color: color, width: 2) : null,
-          ),
-          child: AppStatTile(
-            value: value,
-            label: '$name · $label',
-            icon: _icon(tier),
-            tint: color,
+        child: AppSelectionRing(
+          selected: isSelected,
+          radius: AppRadius.l,
+          // A plain tile: the tier's colour marks its glyph only, beside
+          // the word, so status never tints a whole surface.
+          child: AppCard(
+            style: AppCardStyle.tile,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.l),
+              child: SizedBox(
+                width: double.infinity,
+                child: AppStat(
+                  value: value,
+                  label: '$name · $label',
+                  icon: _icon(tier),
+                  tint: color,
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -215,7 +238,6 @@ class _Trend extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final tier = VolumeTier.of(weeks.last);
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     final name = l10n.muscleName(muscle);
     return AppCard(
       style: AppCardStyle.tile,
@@ -249,7 +271,7 @@ class _Trend extends StatelessWidget {
             ),
             Text(
               tierExplanation(l10n, tier),
-              style: AppTextStyles.label.copyWith(color: secondary),
+              style: AppTextStyles.label.secondary(context),
             ),
           ],
         ),

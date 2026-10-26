@@ -181,6 +181,7 @@ final gallerySymbols = <(String, IconData)>[
   ('report', AppSymbols.report),
   ('saveAsTemplate', AppSymbols.saveAsTemplate),
   ('leader', AppSymbols.leader),
+  ('challenge', AppSymbols.challenge),
   ('info', AppSymbols.info),
   ('success', AppSymbols.success),
   ('previous', AppSymbols.previous),
@@ -213,6 +214,7 @@ List<Widget> galleryTokens(BuildContext context) {
         ('rowTitle', AppTextStyles.rowTitle),
         ('rowDetail', AppTextStyles.rowDetail),
         ('label', AppTextStyles.label),
+        ('formula', AppTextStyles.formula),
       ])
         galleryBlock(name, Text(l10n.devGallerySampleTitle, style: style)),
       galleryBlock(
@@ -223,6 +225,7 @@ List<Widget> galleryTokens(BuildContext context) {
         ),
       ),
       for (final (name, style) in [
+        ('hero', AppTextStyles.hero),
         ('display', AppTextStyles.display),
         ('metricLarge', AppTextStyles.metricLarge),
         ('metric', AppTextStyles.metric),
@@ -296,6 +299,7 @@ List<Widget> galleryTokens(BuildContext context) {
         ('areaOpacity', AppChartMark.areaOpacity),
         ('arcWidth', AppChartMark.arcWidth),
         ('arcWidthSmall', AppChartMark.arcWidthSmall),
+        ('arcWidthHero', AppChartMark.arcWidthHero),
         ('lapShadowOpacity', AppChartMark.lapShadowOpacity),
         ('bulletWidth', AppChartMark.bulletWidth),
         ('bulletWidthSmall', AppChartMark.bulletWidthSmall),

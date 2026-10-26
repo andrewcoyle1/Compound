@@ -172,16 +172,13 @@ class _GymProfileViewState extends State<GymProfileView> {
         appBar: AppBar(
           title: switch (widget.title) {
             final title? => Text(title),
-            null => TextField(
+            null => AppTextField(
               key: const Key('GymProfile.name'),
+              hint: l10n.onboardingUntitledGym,
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                hintText: l10n.onboardingUntitledGym,
-                border: InputBorder.none,
-                filled: false,
-              ),
               onChanged: _cubit.renamed,
+              style: AppTextFieldStyle.plain,
             ),
           },
           actions: [
@@ -215,18 +212,19 @@ class _GymProfileViewState extends State<GymProfileView> {
         body: SafeArea(
           bottom: !widget.continues,
           child: ListView(
-            padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+            // Cards inset from the edges, as every grouped list is.
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.l,
+              0,
+              AppSpacing.l,
+              AppSpacing.xl,
+            ),
             children: [
               // Swift's header falls back to the splash artwork, which the
               // Flutter app does not have; without a photo there is none.
               if (state.gym.imageUrl case final url? when widget.title == null)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.l,
-                    AppSpacing.s,
-                    AppSpacing.l,
-                    0,
-                  ),
+                  padding: const EdgeInsets.only(top: AppSpacing.s),
                   child: StoredHeroImage(
                     url,
                     height: 300,
@@ -234,12 +232,7 @@ class _GymProfileViewState extends State<GymProfileView> {
                   ),
                 ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.l,
-                  AppSpacing.s,
-                  AppSpacing.l,
-                  0,
-                ),
+                padding: const EdgeInsets.only(top: AppSpacing.s),
                 child: AppSearchField(
                   key: const Key('GymProfile.search'),
                   hint: l10n.gymFilterByName,
@@ -479,9 +472,7 @@ class _EquipmentRow extends StatelessWidget {
                 if (detail != null && detail.isNotEmpty)
                   Text(
                     detail,
-                    style: AppTextStyles.rowDetail.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    style: AppTextStyles.rowDetail.secondary(context),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -533,7 +524,8 @@ class _EquipmentRow extends StatelessWidget {
           ),
       ],
       trailingFullSwipe: false,
-      child: InkWell(
+      child: AppPressable(
+        onTap: null,
         onLongPress: () => unawaited(_machineActions(context)),
         child: row,
       ),

@@ -38,7 +38,6 @@ class MuscleGroupPickerView extends StatelessWidget {
     final l10n = context.l10n;
     final cubit = context.read<MuscleGroupPickerCubit>();
     final state = context.watch<MuscleGroupPickerCubit>().state;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     // Fewer, wider tiles at large text, so names wrap rather than clip.
     final scale = MediaQuery.textScalerOf(context).scale(1);
     final columns = scale >= 2 ? 1 : (scale >= 1.3 ? 2 : 3);
@@ -84,7 +83,7 @@ class MuscleGroupPickerView extends StatelessWidget {
                   state.primaryCount,
                   state.secondaryCount,
                 ),
-                style: AppTextStyles.rowDetail.copyWith(color: secondary),
+                style: AppTextStyles.rowDetail.secondary(context),
               ),
             ],
           ),
@@ -103,7 +102,7 @@ class MuscleGroupPickerView extends StatelessWidget {
             children: [
               Text(
                 l10n.createExerciseMuscleInstruction,
-                style: AppTextStyles.rowDetail.copyWith(color: secondary),
+                style: AppTextStyles.rowDetail.secondary(context),
               ),
               AppSection(
                 header: l10n.muscleRegionUpper,
@@ -184,7 +183,7 @@ class _MuscleTile extends StatelessWidget {
                 ),
         ),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
+        child: AppPressable(
           onTap: onPressed,
           child: Container(
             constraints: const BoxConstraints(minHeight: 88),

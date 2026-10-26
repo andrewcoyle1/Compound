@@ -45,8 +45,13 @@ class _MockCircleBloc extends MockBloc<CircleEvent, CircleState>
 class _MockCoachAccessCubit extends MockCubit<CoachAccess>
     implements CoachAccessCubit;
 
-/// The Today list.
-final Finder _list = find.byType(Scrollable).last;
+/// The Today list, under the large title.
+final Finder _list = find
+    .descendant(
+      of: find.byType(AppDashboard),
+      matching: find.byType(Scrollable),
+    )
+    .first;
 
 void main() {
   const uid = 'mock_user_123';
@@ -228,7 +233,7 @@ void main() {
       await tester.pump();
       expect(find.text('Train'), findsOneWidget);
       expect(find.text('Push Day'), findsWidgets);
-      expect(find.text('1\u00a0of\u00a04 done'), findsOneWidget);
+      expect(find.text('1/4'), findsOneWidget);
       await tester.tap(find.text('Train'));
       verify(
         () => router.pushNamed<Object?>(
@@ -255,7 +260,7 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Rest day'), findsOneWidget);
-      expect(find.text('2\u00a0of\u00a04 done'), findsOneWidget);
+      expect(find.text('2/4'), findsOneWidget);
     });
 
     testWidgets('marks a complete day once, with a haptic', (tester) async {
@@ -379,19 +384,20 @@ void main() {
     ) async {
       await pumpView(tester);
 
-      expect(find.text('Your Day'), findsOneWidget);
-      expect(find.text('1\u00a0of\u00a03 done'), findsOneWidget);
+      // The hero: the day's items done, over the items.
+      expect(find.text('YOUR DAY'), findsOneWidget);
+      expect(find.text('1/3'), findsOneWidget);
       expect(find.text('Eat to Target'), findsOneWidget);
       expect(find.text('Weigh In'), findsOneWidget);
       expect(find.text('Steps'), findsOneWidget);
       expect(find.text('Train'), findsNothing);
       expect(find.textContaining('Step goal: 8,000 a day.'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.textContaining('protein to go today'),
+        find.textContaining('G TO GO'),
         200,
         scrollable: _list,
       );
-      expect(find.textContaining('protein to go today'), findsOneWidget);
+      expect(find.text('PROTEIN'), findsOneWidget);
       // With the coach off, nothing here offers it: on, Today is its chat.
       expect(find.byType(AskCoachButton), findsNothing);
       await tester.scrollUntilVisible(
@@ -404,15 +410,23 @@ void main() {
       expect(find.text('Log your first meal'), findsOneWidget);
 
       await tester.scrollUntilVisible(
-        find.text('Total workouts'),
+        find.text('WEEKLY STREAK'),
         200,
         scrollable: _list,
       );
-      expect(find.text('Weekly Streak'), findsOneWidget);
-      expect(find.text('3 of 3 this week'), findsOneWidget);
+      expect(find.textContaining(RegExp(r'^WEEKS?$')), findsOneWidget);
+      expect(find.textContaining('· 5 workouts'), findsOneWidget);
+      expect(find.textContaining('3 of 3 this week · Best'), findsOneWidget);
       expect(find.text('Goal Met'), findsOneWidget);
-      expect(find.text('5'), findsOneWidget);
-      expect(find.bySemanticsLabel('Wednesday'), findsOneWidget);
+      // A done mark for each day trained this week, and a letter for each.
+      expect(
+        find.descendant(
+          of: find.byType(StreakCard),
+          matching: find.byType(AppDoneMark),
+        ),
+        findsNWidgets(3),
+      );
+      expect(find.text('W'), findsOneWidget);
     });
 
     testWidgets('opens the screens behind the items', (tester) async {
@@ -542,7 +556,7 @@ void main() {
           firstWeekday: DateTime.sunday,
           meals: [_meal(uid, now, calories: 2550, protein: 165)],
         );
-        expect(find.textContaining('protein to go'), findsNothing);
+        expect(find.textContaining('G TO GO'), findsNothing);
         await tester.scrollUntilVisible(
           find.text('At Risk'),
           200,
@@ -557,8 +571,8 @@ void main() {
     ) async {
       await pumpView(tester, size: tabletSize);
       final lefts = {
-        for (final type in [DayChecklistCard, TodaysWorkoutCard, StreakCard])
-          tester.getTopLeft(find.byType(type)).dx,
+        tester.getTopLeft(find.byType(DayChecklistCard)).dx,
+        tester.getTopLeft(find.text('Log your first meal')).dx,
       };
       // The sections alternate between the two columns.
       expect(lefts, hasLength(2));
@@ -567,10 +581,12 @@ void main() {
 
     testWidgets('offers the weekly check-in while it is due', (tester) async {
       await pumpView(tester, checkInDue: true);
-      expect(find.text('Weekly Check-In Ready'), findsOneWidget);
-      await tester.ensureVisible(find.text('Start'));
+      // A summary card: tapping it starts the check-in.
+      final card = find.text('WEEKLY CHECK-IN READY');
+      expect(card, findsOneWidget);
+      await tester.ensureVisible(card);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Start'));
+      await tester.tap(card);
       verify(
         () => router.pushNamed<Object?>(
           'checkIn',
@@ -580,7 +596,7 @@ void main() {
 
       await tester.tap(find.text('Skip This Week'));
       await tester.pump();
-      expect(find.text('Weekly Check-In Ready'), findsNothing);
+      expect(find.text('WEEKLY CHECK-IN READY'), findsNothing);
     });
 
     testWidgets('shows a failure when the sessions cannot be read', (
@@ -611,6 +627,8 @@ void main() {
       );
       final card = find.text('Your weekly review is ready');
       await tester.scrollUntilVisible(card, 200, scrollable: _list);
+      await tester.ensureVisible(card);
+      await tester.pumpAndSettle();
       await tester.tap(card);
       await tester.pump();
       verify(() => router.goNamed(WeeklyReviewPage.name)).called(1);
@@ -698,7 +716,7 @@ void main() {
       await pumpView(tester, coach: const CoachAccess());
       await settle(tester);
 
-      expect(find.text('Your Day'), findsOneWidget);
+      expect(find.text('YOUR DAY'), findsOneWidget);
       expect(find.byKey(const Key('Coach.draft')), findsOneWidget);
       expect(position(tester).pixels, 0);
       expect(
@@ -779,7 +797,7 @@ void main() {
       await settle(tester);
 
       expect(find.byKey(const Key('Coach.draft')), findsNothing);
-      expect(find.text('Your Day'), findsOneWidget);
+      expect(find.text('YOUR DAY'), findsOneWidget);
       // Permission given on the coach's own screen.
       final users = tester
           .element(find.byType(TodayView))
@@ -805,12 +823,11 @@ void main() {
       await settle(tester);
 
       expect(find.byKey(const Key('Coach.draft')), findsNothing);
-      // The same standard title as the coach's Today.
+      // A dashboard, under the large title the other tab roots have.
       expect(
         tester.widget<AppScaffold>(find.byType(AppScaffold)).largeTitle,
-        isNull,
+        'Today',
       );
-      expect(find.widgetWithText(AppBar, 'Today'), findsOneWidget);
     });
 
     testWidgets('without premium, Today is the classic day, with no way to '

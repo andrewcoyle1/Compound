@@ -39,6 +39,12 @@ void main() {
       expect(tinted.r, AppColors.light.protein.r);
     });
 
+    test('muted is the colour at 45%', () {
+      final muted = AppColors.muted(AppColors.light.scaleWeight);
+      expect(muted.a, closeTo(0.45, 0.001));
+      expect(muted.r, AppColors.light.scaleWeight.r);
+    });
+
     test('fromHex reads a stored #RRGGBB, and nothing else', () {
       expect(AppColors.fromHex('#FF9500'), const Color(0xFFFF9500));
       expect(AppColors.fromHex('0000ff'), const Color(0xFF0000FF));

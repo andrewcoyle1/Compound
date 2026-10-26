@@ -164,7 +164,6 @@ class _ContributionGridState extends State<ContributionGrid> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final counts = <DateTime, int>{};
     for (final date in widget.dates) {
@@ -236,38 +235,13 @@ class _ContributionGridState extends State<ContributionGrid> {
                 child: ExcludeSemantics(
                   child: Opacity(
                     opacity: selected == null ? 1 : 0,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: AppSpacing.xs,
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: AppFormat.number(
-                                  daysLogged,
-                                  locale: locale,
-                                ),
-                                style: AppTextStyles.metric,
-                              ),
-                              TextSpan(
-                                text: ' ${l10n.contributionOfDays(span)}',
-                              ),
-                            ],
-                          ),
-                          style: AppTextStyles.rowDetail.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                        Text(
-                          l10n.contributionDaysLogged(
-                            '${date(first)} – ${date(today)}',
-                          ),
-                          style: AppTextStyles.label.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+                    // The screen's hero: the days logged, loudest.
+                    child: AppHeroStat(
+                      value: AppFormat.number(daysLogged, locale: locale),
+                      unit: l10n.contributionOfDays(span),
+                      caption: l10n.contributionDaysLogged(
+                        '${date(first)} – ${date(today)}',
+                      ),
                     ),
                   ),
                 ),

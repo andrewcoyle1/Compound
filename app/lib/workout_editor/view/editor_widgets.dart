@@ -22,9 +22,7 @@ class const EditorTitle({
           subtitle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.rowDetail.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: AppTextStyles.rowDetail.secondary(context),
         ),
       ],
     );
@@ -48,12 +46,7 @@ class const NumberBadge(final String text, {super.key})
             horizontal: AppSpacing.s,
             vertical: AppSpacing.xs,
           ),
-          child: Text(
-            text,
-            style: AppTextStyles.rowDetail.copyWith(
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
+          child: Text(text, style: AppTextStyles.rowDetail.tabular),
         ),
       ),
     );
@@ -94,12 +87,13 @@ class _RepsFieldState extends State<RepsField> {
   Widget build(BuildContext context) {
     return Semantics(
       label: widget.label,
-      child: TextField(
+      child: AppTextField(
+        hint: widget.hint,
+        dense: true,
         controller: _controller,
-        textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(hintText: widget.hint, isDense: true),
+        textAlign: TextAlign.center,
         onChanged: (text) =>
             widget.onChanged(WorkoutEditorRules.typedReps(text)),
       ),

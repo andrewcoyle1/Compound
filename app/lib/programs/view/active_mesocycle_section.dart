@@ -7,20 +7,27 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/logic/microcycle_view.dart';
 import 'package:compound/programs/view/mesocycle_design_page.dart';
+import 'package:compound/programs/view/mesocycle_style.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/training_library/training_library.dart';
+import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
+import 'package:compound_charts/compound_charts.dart';
+import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:program_repository/program_repository.dart';
 
-/// The Training tab's active mesocycle (Swift `ActiveMesocycleView`): its
-/// header, a picker for the microcycle shown, and that microcycle's days.
-/// A day opens its workout, a finished one its session, a rest day ticks;
-/// an open workout can be skipped, and the mesocycle opened (Info), asked
-/// about (Ask Coach) or deleted.
+/// The Training tab's hero (Swift `ActiveMesocycleView`): the active
+/// mesocycle's microcycle as one card. The workouts done out of those
+/// planned lead in the largest number on the screen, beside a ring
+/// filling in the accent, with the microcycle's days under it. The
+/// header's chip picks the microcycle shown, and its menu opens the
+/// mesocycle (Info), asks about it (Ask Coach) or deletes it. A day opens
+/// its workout, a finished one its session, a rest day ticks; an open
+/// workout can be skipped.
 class const ActiveMesocycleSection({
   required final Mesocycle mesocycle,
   super.key,
@@ -38,9 +45,9 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final colors = context.appColors;
     final state = context.watch<ProgramsCubit>().state;
     final mesocycle = widget.mesocycle;
-    final scheme = Theme.of(context).colorScheme;
     final view = mesocycle.workoutTemplates.isEmpty
         ? null
         : MicrocycleView.build(
@@ -52,129 +59,92 @@ class _ActiveMesocycleSectionState extends State<ActiveMesocycleSection> {
     final header = view == null
         ? l10n.programCurrentMicrocycle
         : _headerText(l10n, state.currentMacrocycle, view);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppSpacing.s,
-      children: [
-        Padding(
-          padding: const EdgeInsetsDirectional.only(start: AppSpacing.l),
-          child: Row(
-            children: [
-              // Wraps at large text rather than pushing the menu off.
-              Expanded(
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: Semantics(
-                        header: true,
-                        child: Text(
-                          l10n.programActiveMesocycle,
-                          style: AppTextStyles.sectionTitle.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (view?.isDeload ?? false)
-                      MethodInfoButton(MethodInfo.mesocycleDeload(l10n)),
-                  ],
-                ),
-              ),
-              if (view == null)
-                Text(
-                  header,
-                  style: AppTextStyles.rowDetail.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                )
-              else
-                _MicrocycleMenu(
-                  view: view,
-                  label: header,
-                  onSelected: (index) => setState(
-                    () => _viewed = index == view.currentCycleIndex
-                        ? null
-                        : index,
-                  ),
-                ),
-            ],
-          ),
+    final items = view?.items ?? const <MicrocycleItem>[];
+    final workouts = items.where((item) => !item.isRest);
+    final total = workouts.length;
+    final done = workouts.where((item) => item.isCompleted).length;
+    final isDeload = view?.isDeload ?? false;
+    final phase = view?.phase;
+    return AppSummaryCard(
+      title: mesocycle.name,
+      icon: mesocycleGlyph(mesocycle.icon),
+      tint: AppColors.fromHex(mesocycle.colour) ?? colors.accentInk,
+      size: AppSummaryCardSize.hero,
+      value: '${AppFormat.number(done)}/${AppFormat.number(total)}',
+      unit: l10n.trainingWorkoutsDoneUnit,
+      // The microcycle finished is the user's own progress: the accent.
+      delta: total > 0 && done == total
+          ? AppChip(
+              label: l10n.trainingMicrocycleDone,
+              icon: AppSymbols.success,
+              selected: true,
+            )
+          : isDeload
+          ? AppChip(label: l10n.programDeloadWeek)
+          : null,
+      // A line on the card: volt in dark mode, olive in light. The number
+      // carries the figure, so the ring keeps its size at large text.
+      chart: MediaQuery.withNoTextScaling(
+        child: ProgressArc(
+          value: total == 0 ? 0 : done / total,
+          color: colors.accentInk,
+          diameter: 2 * AppControlSize.cta,
+          strokeWidth: AppChartMark.arcWidthHero,
         ),
-        AppSection(
-          children: [
-            // Swift's swipe actions on the header, as its menu offers.
-            AppSwipeActions(
-              trailing: [
-                AppSwipeAction(
-                  label: l10n.programDelete,
-                  isDestructive: true,
-                  onPressed: () => unawaited(_delete(context)),
-                ),
-                AppSwipeAction(
-                  label: l10n.programInfo,
-                  icon: AppSymbols.info,
-                  onPressed: () => unawaited(
-                    MesocycleDesignPage.edit(context, mesocycle.id),
-                  ),
-                ),
-                AppSwipeAction(
-                  label: l10n.coachAskCoach,
-                  icon: AppSymbols.coach,
-                  onPressed: () => CoachPage.open(
-                    context,
-                    CoachContext(
-                      kind: CoachContextKind.mesocycle,
-                      id: mesocycle.id,
-                      title: mesocycle.name,
-                    ),
-                  ),
-                ),
-              ],
-              child: MesocycleHeader(
-                mesocycle: mesocycle,
-                isDeload: view?.isDeload ?? false,
-                phase: view?.phase,
-                trailing: PopupMenuButton<VoidCallback>(
-                  onSelected: (action) => action(),
-                  icon: Icon(AppSymbols.more),
-                  tooltip: l10n.programMesocycleOptions,
-                  itemBuilder: (_) => [
-                    AppMenuItem(
-                      value: () => unawaited(
-                        MesocycleDesignPage.edit(context, mesocycle.id),
-                      ),
-                      label: l10n.programInfo,
-                    ),
-                    AppMenuItem(
-                      value: () => CoachPage.open(
-                        context,
-                        CoachContext(
-                          kind: CoachContextKind.mesocycle,
-                          id: mesocycle.id,
-                          title: mesocycle.name,
-                        ),
-                      ),
-                      label: l10n.coachAskCoach,
-                    ),
-                    AppMenuItem(
-                      value: () => unawaited(_delete(context)),
-                      label: l10n.programDeleteMesocycle,
-                      isDestructive: true,
-                    ),
-                  ],
-                ),
+      ),
+      chartBeside: true,
+      footer: phase == null ? null : phaseLabel(l10n, phase),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isDeload) MethodInfoButton(MethodInfo.mesocycleDeload(l10n)),
+          if (view == null)
+            AppChip(label: header)
+          else
+            _MicrocycleMenu(
+              view: view,
+              label: header,
+              onSelected: (index) => setState(
+                () => _viewed = index == view.currentCycleIndex ? null : index,
               ),
             ),
-            for (final item in view?.items ?? const <MicrocycleItem>[])
-              _DayRow(
-                item: item,
-                onPressed: () => unawaited(_pressed(context, item, view!)),
-                onSkip: item.canSkip
-                    ? () => unawaited(_skip(context, item))
-                    : null,
+          PopupMenuButton<VoidCallback>(
+            onSelected: (action) => action(),
+            icon: Icon(AppSymbols.more),
+            tooltip: l10n.programMesocycleOptions,
+            itemBuilder: (_) => [
+              AppMenuItem(
+                value: () =>
+                    unawaited(MesocycleDesignPage.edit(context, mesocycle.id)),
+                label: l10n.programInfo,
               ),
-          ],
-        ),
+              AppMenuItem(
+                value: () => CoachPage.open(
+                  context,
+                  CoachContext(
+                    kind: CoachContextKind.mesocycle,
+                    id: mesocycle.id,
+                    title: mesocycle.name,
+                  ),
+                ),
+                label: l10n.coachAskCoach,
+              ),
+              AppMenuItem(
+                value: () => unawaited(_delete(context)),
+                label: l10n.programDeleteMesocycle,
+                isDestructive: true,
+              ),
+            ],
+          ),
+        ],
+      ),
+      rows: [
+        for (final item in items)
+          _DayRow(
+            item: item,
+            onPressed: () => unawaited(_pressed(context, item, view!)),
+            onSkip: item.canSkip ? () => unawaited(_skip(context, item)) : null,
+          ),
       ],
     );
   }
@@ -290,7 +260,6 @@ class const _MicrocycleMenu({
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
     return Semantics(
       label: l10n.programChooseMicrocycle,
       value: label,
@@ -311,33 +280,17 @@ class const _MicrocycleMenu({
               ),
             ),
         ],
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.l,
-            vertical: AppSpacing.s,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: AppSpacing.xxs,
-            children: [
-              Text(
-                label,
-                style: AppTextStyles.rowDetail.copyWith(
-                  color: secondary,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-              Icon(AppSymbols.choose, color: secondary, size: 16),
-            ],
-          ),
-        ),
+        // The chip is the menu's face; the menu takes the tap.
+        child: AppChip(label: label, icon: AppSymbols.choose),
       ),
     );
   }
 }
 
-/// A day of the microcycle (Swift `MicrocycleItemRow`): the same circle on
-/// every day, filled when done. A swipe or a long press offers Skip.
+/// A day of the microcycle (Swift `MicrocycleItemRow`): its name, what it
+/// holds, and a mark at the trailing edge: volt and ticked when done, an
+/// empty circle when not. The day the schedule puts on today leads with
+/// the start glyph in the accent. A swipe or a long press offers Skip.
 class const _DayRow({
   required final MicrocycleItem item,
   required final VoidCallback onPressed,
@@ -362,6 +315,23 @@ class const _DayRow({
         : item.timing == MicrocycleTiming.future
         ? l10n.programDayUpcoming
         : l10n.programDayNotStarted;
+    final plan = item.slot.dayPlan;
+    final muscles = [
+      for (final (muscle, target) in TemplateSummary.muscleTags(
+        plan,
+        l10n.muscleName,
+      ))
+        if (target == MuscleTargetType.primary) l10n.muscleName(muscle),
+    ];
+    final subtitle = [
+      ?badge,
+      if (plan.exercises.isEmpty)
+        l10n.programRest
+      else ...[
+        l10n.exerciseCount(plan.exercises.length),
+        if (muscles.isNotEmpty) muscles.take(3).join(', '),
+      ],
+    ].join(' · ');
     // Swift's swipe action, which the long press also offers.
     return AppSwipeActions(
       trailing: [
@@ -372,33 +342,41 @@ class const _DayRow({
             onPressed: onSkip,
           ),
       ],
-      child: Semantics(
-        button: true,
-        value: value,
-        hint: item.canToggleRest
-            ? (item.isCompleted
-                  ? l10n.programRestUntickHint
-                  : l10n.programRestTickHint)
-            : null,
-        child: InkWell(
-          onTap: onPressed,
-          onLongPress: onSkip == null
-              ? null
-              : () => unawaited(_offerSkip(context, onSkip)),
-          child: DayPlanRow(
-            plan: item.slot.dayPlan,
-            badge: badge,
-            trailing: item.isCompleted
-                ? const AppDoneMark(size: AppIconSize.small)
-                : ExcludeSemantics(
-                    child: Icon(
-                      item.isSkipped
-                          ? AppSymbols.skip
-                          : AppSymbols.choiceUnselected,
-                      size: AppIconSize.small.of(context),
-                      color: scheme.outline,
+      child: MergeSemantics(
+        child: Semantics(
+          value: value,
+          hint: item.canToggleRest
+              ? (item.isCompleted
+                    ? l10n.programRestUntickHint
+                    : l10n.programRestTickHint)
+              : null,
+          child: AppListRowButton(
+            title: plan.name,
+            subtitle: subtitle,
+            icon: item.isToday
+                ? AppSymbols.start
+                : plan.exercises.isEmpty
+                ? AppSymbols.restDay
+                : AppSymbols.workout,
+            tint: item.isToday ? context.appColors.accentInk : null,
+            onPressed: onPressed,
+            onLongPress: onSkip == null
+                ? null
+                : () => unawaited(_offerSkip(context, onSkip)),
+            accessory: AppListRowCustom(
+              item.isCompleted
+                  ? const AppDoneMark()
+                  : ExcludeSemantics(
+                      child: Icon(
+                        item.isSkipped
+                            ? AppSymbols.skip
+                            : AppSymbols.choiceUnselected,
+                        size: AppIconSize.medium.of(context),
+                        color: scheme.outline,
+                      ),
                     ),
-                  ),
+              pinned: true,
+            ),
           ),
         ),
       ),

@@ -51,6 +51,30 @@ void main() {
       });
     }
 
+    testWidgets('says what signing in gives, under a heading, and fits at '
+        'the largest text size', (tester) async {
+      await tester.pumpApp(
+        BlocProvider.value(value: cubit, child: const SignInView()),
+        textScale: 3.1,
+      );
+      expect(tester.takeException(), isNull);
+      expect(
+        find.text(
+          'Your training, nutrition and body in one place. Sign in to keep '
+          'them on every device.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.getSemantics(find.text('Welcome to Compound.')),
+        isSemantics(label: 'Welcome to Compound.', isHeader: true),
+      );
+      await tester.ensureVisible(find.text('Continue without an account'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue without an account'));
+      verify(cubit.signInAnonymously).called(1);
+    });
+
     testWidgets('disables the buttons while signing in', (tester) async {
       when(() => cubit.state).thenReturn(SignInStatus.inProgress);
       await pump(tester);

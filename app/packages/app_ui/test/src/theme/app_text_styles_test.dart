@@ -11,6 +11,7 @@ void main() {
     test('number styles use tabular figures', () {
       for (final style in [
         AppTextStyles.largeTitle,
+        AppTextStyles.hero,
         AppTextStyles.display,
         AppTextStyles.metricLarge,
         AppTextStyles.metric,
@@ -32,6 +33,7 @@ void main() {
     test('titles and numbers are set in Barlow Condensed, a step up', () {
       for (final (style, size, weight) in [
         (AppTextStyles.largeTitle, 40, FontWeight.w800),
+        (AppTextStyles.hero, 80, FontWeight.w800),
         (AppTextStyles.display, 44, FontWeight.w800),
         (AppTextStyles.metricLarge, 34, FontWeight.w800),
         (AppTextStyles.metric, 24, FontWeight.w700),
@@ -107,6 +109,12 @@ void main() {
       expect(style.fontSize, AppTextStyles.rowDetail.fontSize);
     });
 
+    test('a formula is rowDetail in a monospaced face', () {
+      expect(AppTextStyles.formula.fontSize, AppTextStyles.rowDetail.fontSize);
+      expect(AppTextStyles.formula.fontFamily, 'monospace');
+      expect(AppTextStyles.formula.fontFamilyFallback, contains('Menlo'));
+    });
+
     test('carry no colour, so text takes the theme', () {
       expect(AppTextStyles.textTheme.bodyMedium?.color, isNull);
     });
@@ -133,6 +141,33 @@ void main() {
         ),
       );
       expect(style.color, AppColors.light.secondaryLabel);
+      expect(style.fontSize, AppTextStyles.rowDetail.fontSize);
+    });
+
+    testWidgets('accent is the accent as text, onAccent text on its fill', (
+      tester,
+    ) async {
+      late TextStyle accent;
+      late TextStyle onAccent;
+      await tester.pumpApp(
+        Builder(
+          builder: (context) {
+            accent = AppTextStyles.label.accent(context);
+            onAccent = AppTextStyles.label.onAccent(context);
+            return const SizedBox();
+          },
+        ),
+      );
+      expect(accent.color, AppColors.light.accentInk);
+      expect(onAccent.color, AppTheme.light.colorScheme.onPrimary);
+      expect(accent.fontSize, AppTextStyles.label.fontSize);
+    });
+  });
+
+  group('AppTextStyleFigures', () {
+    test('tabular adds tabular figures and keeps the style', () {
+      final style = AppTextStyles.rowDetail.tabular;
+      expect(style.fontFeatures, contains(const FontFeature.tabularFigures()));
       expect(style.fontSize, AppTextStyles.rowDetail.fontSize);
     });
   });

@@ -75,72 +75,86 @@ class IntegrationsView extends StatelessWidget {
             children: [
               AppSection(
                 header: l10n.integrationsAvailable,
+                grouped: false,
                 children: [
-                  AppListRow(
+                  // Strava's connection as a summary: the status, who it is
+                  // connected as, Connect, and the rows that act on it.
+                  AppSummaryCard(
                     title: l10n.stravaTitle,
-                    subtitle: !state.available
-                        ? l10n.stravaUnavailable
-                        : athlete == null
-                        ? l10n.stravaNotConnected
-                        : athlete.name.isEmpty
-                        ? l10n.stravaConnected
-                        : l10n.stravaConnectedAs(athlete.name),
                     icon: AppSymbols.cardio,
                     tint: context.appColors.workouts,
-                    accessory: state.isConnecting
-                        ? const AppListRowCustom(
-                            AppSpinner(size: AppSpinnerSize.small),
-                          )
-                        : state.available && athlete == null
-                        ? AppListRowCustom(
-                            AppCtaButton(
+                    value: !state.available
+                        ? null
+                        : athlete == null
+                        ? l10n.stravaNotConnected
+                        : l10n.stravaConnected,
+                    footer: !state.available
+                        ? l10n.stravaUnavailable
+                        : athlete == null || athlete.name.isEmpty
+                        ? null
+                        : l10n.stravaConnectedAs(athlete.name),
+                    trailing: state.isConnecting
+                        ? const AppSpinner(size: AppSpinnerSize.small)
+                        : null,
+                    actions:
+                        state.available &&
+                            athlete == null &&
+                            !state.isConnecting
+                        ? Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: AppCtaButton(
                               label: l10n.stravaConnect,
                               size: AppCtaSize.compact,
                               onPressed: () => unawaited(cubit.connect()),
                             ),
                           )
                         : null,
-                  ),
-                  if (athlete != null) ...[
-                    if (state.backfillCount > 0)
-                      AppListRowButton(
-                        title: l10n.stravaUploadPastWorkouts,
-                        subtitle: l10n.stravaNotOnStrava(state.backfillCount),
-                        icon: AppSymbols.history,
-                        accessory: null,
-                        onPressed: () => unawaited(cubit.backfill()),
-                      ),
-                    if (state.pendingCount > 0)
-                      AppListRow(
-                        title: l10n.stravaWaiting(state.pendingCount),
-                        icon: AppSymbols.duration,
-                      ),
-                    if (showsTestUpload)
-                      AppListRow(
-                        title: l10n.stravaTestUpload,
-                        icon: AppSymbols.start,
-                        accessory: AppListRowCustom(
-                          state.isTestingUpload
-                              ? const AppSpinner(size: AppSpinnerSize.small)
-                              : AppCtaButton(
-                                  label: l10n.stravaTestUpload,
-                                  size: AppCtaSize.compact,
-                                  variant: AppCtaVariant.secondary,
-                                  onPressed: () =>
-                                      unawaited(cubit.testUpload()),
-                                ),
+                    rows: [
+                      if (athlete != null) ...[
+                        if (state.backfillCount > 0)
+                          AppListRowButton(
+                            title: l10n.stravaUploadPastWorkouts,
+                            subtitle: l10n.stravaNotOnStrava(
+                              state.backfillCount,
+                            ),
+                            icon: AppSymbols.history,
+                            accessory: null,
+                            onPressed: () => unawaited(cubit.backfill()),
+                          ),
+                        if (state.pendingCount > 0)
+                          AppListRow(
+                            title: l10n.stravaWaiting(state.pendingCount),
+                            icon: AppSymbols.duration,
+                          ),
+                        if (showsTestUpload)
+                          AppListRow(
+                            title: l10n.stravaTestUpload,
+                            icon: AppSymbols.start,
+                            accessory: AppListRowCustom(
+                              state.isTestingUpload
+                                  ? const AppSpinner(size: AppSpinnerSize.small)
+                                  : AppCtaButton(
+                                      label: l10n.stravaTestUpload,
+                                      size: AppCtaSize.compact,
+                                      variant: AppCtaVariant.secondary,
+                                      onPressed: () =>
+                                          unawaited(cubit.testUpload()),
+                                    ),
+                            ),
+                          ),
+                        AppListRowButton(
+                          title: l10n.stravaDisconnect,
+                          icon: AppSymbols.leave,
+                          tint: context.appColors.danger,
+                          accessory: null,
+                          destructive: true,
+                          onPressed: state.isDisconnecting
+                              ? () {}
+                              : () => unawaited(_disconnect(context)),
                         ),
-                      ),
-                    AppListRowButton(
-                      title: l10n.stravaDisconnect,
-                      icon: AppSymbols.leave,
-                      tint: context.appColors.danger,
-                      accessory: null,
-                      onPressed: state.isDisconnecting
-                          ? () {}
-                          : () => unawaited(_disconnect(context)),
-                    ),
-                  ],
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ],

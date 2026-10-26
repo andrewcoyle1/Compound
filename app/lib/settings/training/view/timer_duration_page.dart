@@ -46,11 +46,9 @@ class TimerDurationPage extends StatelessWidget {
           screen: 'TimerDurationView',
           title: l10n.restTimerDuration,
           sections: (context, settings, change) => [
-            MethodInfoHeader(
-              title: l10n.timerDurationDefaultsHeader,
-              info: MethodInfo.restIntervals(l10n),
-            ),
             AppSection(
+              header: l10n.timerDurationDefaultsHeader,
+              trailing: MethodInfoButton(MethodInfo.restIntervals(l10n)),
               footer: l10n.timerDurationDefaultsFooter,
               children: [
                 for (final type in ExerciseType.values)

@@ -188,6 +188,15 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
       galleryInline(
+        'isProminent',
+        AppIconButton(
+          icon: AppSymbols.send,
+          semanticLabel: l10n.devGallerySampleEdit,
+          isProminent: true,
+          onPressed: galleryNoop,
+        ),
+      ),
+      galleryInline(
         'disabled',
         AppIconButton(
           icon: AppSymbols.edit,
@@ -436,6 +445,46 @@ List<Widget> galleryRows(BuildContext context) {
         ),
       const AppListRowToggle(title: 'disabled', value: true, onChanged: null),
     ]),
+    galleryEntry('AppPlanCard', [
+      GalleryLive(
+        initial: 0,
+        builder: (selected, update) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.m,
+          children: [
+            AppPlanCard(
+              title: 'plan, selected',
+              price: AppFormat.number(29.99, maxFractionDigits: 2),
+              period: '/ 1 year',
+              detail: l10n.devGallerySampleSubtitle,
+              selected: selected == 0,
+              onPressed: () => update(0),
+            ),
+            AppPlanCard(
+              title: 'plan, not selected',
+              price: AppFormat.number(4.99, maxFractionDigits: 2),
+              period: '/ 1 month',
+              selected: selected == 1,
+              onPressed: () => update(1),
+            ),
+          ],
+        ),
+      ),
+    ]),
+    AppSection(
+      header: 'AppFeatureRow',
+      children: [
+        AppFeatureRow(
+          icon: AppSymbols.analytics,
+          title: l10n.devGallerySampleTitle,
+          detail: l10n.devGallerySampleSubtitle,
+        ),
+        AppFeatureRow(
+          icon: AppSymbols.notifications,
+          title: l10n.devGallerySampleTitle,
+        ),
+      ],
+    ),
     galleryEntry('AppSelectableRow', [
       GalleryLive(
         initial: 0,
@@ -460,6 +509,27 @@ List<Widget> galleryRows(BuildContext context) {
         title: 'disabled',
         selected: false,
         onPressed: null,
+      ),
+    ]),
+    galleryEntry('AppSelectableRow (tile)', [
+      GalleryLive(
+        initial: 0,
+        builder: (selected, update) => AppSection(
+          grouped: false,
+          children: [
+            for (final (index, caption) in [
+              'tile, selected',
+              'tile, not selected',
+            ].indexed)
+              AppSelectableRow(
+                tile: true,
+                title: caption,
+                subtitle: index == 0 ? l10n.devGallerySampleSubtitle : null,
+                selected: selected == index,
+                onPressed: () => update(index),
+              ),
+          ],
+        ),
       ),
     ]),
     AppSection(

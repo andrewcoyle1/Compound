@@ -222,27 +222,22 @@ class AccountSetupView extends StatelessWidget {
         title: l10n.onboardingExpenditureHeader,
         info: MethodInfo.formulaExpenditure(l10n),
       ),
-      AppSection(
-        footer: l10n.onboardingExpenditureFooter,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.end,
-              spacing: AppSpacing.s,
-              children: [
-                Text(
-                  AppFormat.number(figures.totalKcal, locale: locale),
-                  style: AppTextStyles.display,
-                ),
-                Text(
-                  l10n.onboardingKcalPerDay,
-                  style: AppTextStyles.sectionTitle.secondary(context),
-                ),
-              ],
+      // The step's one number, as a Detail screen's hero.
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.m,
+          children: [
+            AppHeroStat(
+              value: AppFormat.number(figures.totalKcal, locale: locale),
+              unit: l10n.onboardingKcalPerDay,
             ),
-          ),
-        ],
+            AppFootnote(
+              lines: [AppFootnoteLine(l10n.onboardingExpenditureFooter)],
+            ),
+          ],
+        ),
       ),
       MethodInfoHeader(
         title: l10n.onboardingBreakdown,

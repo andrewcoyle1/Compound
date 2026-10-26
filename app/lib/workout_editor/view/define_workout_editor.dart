@@ -117,6 +117,7 @@ class _DefineWorkoutViewState extends State<DefineWorkoutView> {
           final exercise = exercises[index];
           final row = _ExerciseRow(
             index: index,
+            count: exercises.length,
             exercise: exercise,
             letter: letters[exercise.supersetGroupId],
             summary: text.planSummary(exercise),
@@ -233,6 +234,7 @@ class const _Header({
 /// has a handle, delete, and leave-the-superset.
 class const _ExerciseRow({
   required final int index,
+  required final int count,
   required final WorkoutTemplateExercise exercise,
   required final String? letter,
   required final String? summary,
@@ -342,8 +344,19 @@ class const _ExerciseRow({
     return Semantics(
       button: !state.isEditing,
       selected: state.isSelectingSuperset ? selected : null,
+      // The rows read as one grouped card: round at its ends, hairlines
+      // between, as an AppSection draws them.
       child: Material(
         color: scheme.surface,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: index == 0 ? const Radius.circular(AppRadius.l) : Radius.zero,
+            bottom: index == count - 1
+                ? const Radius.circular(AppRadius.l)
+                : Radius.zero,
+          ),
+        ),
         child: AppPressable(
           onTap: state.isEditing
               ? null
@@ -353,9 +366,15 @@ class const _ExerciseRow({
                   cubit.supersetRowPressed(exercise.id);
                 }
               : () => unawaited(_open(context)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: content,
+          child: Column(
+            children: [
+              if (index > 0)
+                Divider(indent: AppSpacing.l + side + AppSpacing.m),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: content,
+              ),
+            ],
           ),
         ),
       ),

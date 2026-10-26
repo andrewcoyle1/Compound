@@ -53,7 +53,7 @@ void main() {
     ) async {
       await tester.pumpApp(const IntegrationsPage());
       await tester.pumpAndSettle();
-      expect(find.text('Strava'), findsOneWidget);
+      expect(find.text('STRAVA'), findsOneWidget);
       expect(find.text('Not available in this build'), findsOneWidget);
       expect(find.text('Connect'), findsNothing);
     });

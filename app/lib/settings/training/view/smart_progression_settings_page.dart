@@ -22,15 +22,12 @@ class SmartProgressionSettingsPage extends StatelessWidget {
       screen: 'SmartProgressionSettingsView',
       title: l10n.workoutSettingsSmartProgression,
       sections: (context, settings, change) => [
-        MethodInfoHeader(
-          title: l10n.smartProgressionBehaviorHeader,
-          info: MethodInfo.smartProgression(l10n),
-        ),
         AppSection(
+          header: l10n.smartProgressionBehaviorHeader,
+          trailing: MethodInfoButton(MethodInfo.smartProgression(l10n)),
           children: [
             SettingsMenuRow<InitialLogFillOption>(
               title: l10n.smartProgressionInitialLogFill,
-              icon: AppSymbols.note,
               value: settings.smartProgressionInitialLogFill,
               options: [
                 for (final option in InitialLogFillOption.values)
@@ -54,7 +51,6 @@ class SmartProgressionSettingsPage extends StatelessWidget {
             AppListRowToggle(
               title: l10n.smartProgressionApplyInSession,
               subtitle: l10n.smartProgressionApplyInSessionSubtitle,
-              icon: AppSymbols.smartProgression,
               value: settings.smartProgressionApplyInSession,
               onChanged: (value) => change({
                 WorkoutSettingsKeys.smartProgressionApplyInSession: value,
@@ -62,7 +58,6 @@ class SmartProgressionSettingsPage extends StatelessWidget {
             ),
             SettingsMenuRow<ProgressionAdjustmentMode>(
               title: l10n.smartProgressionAdjustmentMode,
-              icon: AppSymbols.weight,
               value: settings.smartProgressionAdjustmentMode,
               options: [
                 for (final mode in ProgressionAdjustmentMode.values)

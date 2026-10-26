@@ -81,7 +81,8 @@ void main() {
       find.text(AppFormat.date(now, style: AppDateStyle.weekdayDayMonthLong)),
       findsOneWidget,
     );
-    expect(find.text('Your Day'), findsOneWidget);
+    // Today's hero card, under the day as the chat's title.
+    expect(find.text('YOUR DAY'), findsOneWidget);
     expect(find.text("Today's Weight"), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), '81.9');

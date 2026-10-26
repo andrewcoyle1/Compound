@@ -228,7 +228,38 @@ class DietSetupView extends StatelessWidget {
     final mesocycleName = state.mesocycleName;
     final days = state.trainingDaysPerWeek;
     final resting = state.restingKcalAboveTarget;
+    double average(num Function(DailyMacroTarget day) of) => plan.days.isEmpty
+        ? 0
+        : plan.days.map(of).reduce((a, b) => a + b) / plan.days.length;
     return [
+      // The Moment that ends onboarding: the plan's daily calories, counted
+      // up. From Settings it is a review, so it only reports.
+      AppMomentHero(
+        value: average((day) => day.calories).round(),
+        format: (value) => AppFormat.number(value, locale: locale),
+        label: l10n.onboardingPlanAverageCalories,
+        badge: state.isFromSettings ? null : l10n.onboardingPlanBadge,
+        caption: mesocycleName,
+        info: MethodInfoButton(MethodInfo.calorieCycling(l10n)),
+        celebration: state.isFromSettings
+            ? AppMomentCelebration.none
+            : AppMomentCelebration.moment,
+        stats: [
+          (
+            value: grams(average((day) => day.proteinGrams)),
+            label: l10n.onboardingPlanProteinStat,
+          ),
+          if (days != null)
+            (
+              value: AppFormat.number(days, locale: locale),
+              label: l10n.onboardingPlanTrainingDaysStat,
+            ),
+          (
+            value: AppFormat.number(plan.tdeeEstimate.round(), locale: locale),
+            label: l10n.onboardingPlanBurnStat,
+          ),
+        ],
+      ),
       MethodInfoHeader(
         title: l10n.onboardingOverview,
         info: MethodInfo.formulaExpenditure(l10n),
@@ -236,11 +267,6 @@ class DietSetupView extends StatelessWidget {
       AppSection(
         footer: l10n.onboardingPlanFooter,
         children: [
-          if (mesocycleName != null && days != null)
-            AppListRow(
-              title: l10n.onboardingPlanMesocycle(mesocycleName, days),
-            ),
-          AppListRow(title: l10n.onboardingPlanTdee(plan.tdeeEstimate.round())),
           if (diet != null)
             AppListRow(title: l10n.onboardingPlanDiet(diet.label(l10n))),
           AppListRow(

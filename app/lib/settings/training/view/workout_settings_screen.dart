@@ -126,12 +126,10 @@ class SettingsMenuRow<T> extends StatelessWidget {
     required this.value,
     required this.options,
     required this.onChanged,
-    this.icon,
     super.key,
   });
 
   final String title;
-  final IconData? icon;
   final T value;
 
   /// Each option and its name, in order.
@@ -155,7 +153,6 @@ class SettingsMenuRow<T> extends StatelessWidget {
       ],
       builder: (context, controller, _) => AppListRowButton(
         title: title,
-        icon: icon,
         accessory: AppListRowMenu(current),
         onPressed: () =>
             controller.isOpen ? controller.close() : controller.open(),

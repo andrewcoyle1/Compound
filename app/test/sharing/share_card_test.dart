@@ -232,12 +232,15 @@ void main() {
       );
       final image = (await tester.runAsync(() => _decode(png!)))!;
       expect((image.width, image.height), (width, height));
-      // The app icon's pale background, top left, over the dark gradient.
+      // The app icon's volt background (#C8F31D), top left, over the dark
+      // gradient: the icon loaded before the card was drawn.
       final inset = ((format == ShareCardFormat.story ? 28 : 20) + 4) * 3;
       final pixels = (await tester.runAsync(image.toByteData))!;
       final at = (inset * width + inset) * 4;
-      expect(pixels.getUint8(at), greaterThan(200));
-      expect(pixels.getUint8(at + 1), greaterThan(200));
+      expect(
+        [for (var i = 0; i < 3; i++) pixels.getUint8(at + i)],
+        [closeTo(0xC8, 8), closeTo(0xF3, 8), closeTo(0x1D, 8)],
+      );
     });
   }
 }

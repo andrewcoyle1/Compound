@@ -4,6 +4,12 @@
 <dict>
 	<key>AppGroupIdentifier</key>
 	<string>$(APP_GROUP_ID)</string>
+	<!-- Barlow Condensed, from app_ui (OFL.txt beside it), for the big numbers. -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>BarlowCondensed-Bold.ttf</string>
+		<string>BarlowCondensed-ExtraBold.ttf</string>
+	</array>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>

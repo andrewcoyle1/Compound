@@ -6,6 +6,10 @@
 //  The home-screen and Lock Screen widgets: Today's Workout, Streak and Weekly Ring. All three
 //  read the `WidgetSnapshot` the app writes to the App Group, through one timeline provider.
 //
+//  The design language's cards: a surface background, Barlow Condensed for the one big thing,
+//  the accent for "you" (your next workout, your streak, your week). Everything accented is
+//  `widgetAccentable`, so a tinted or clear Home Screen keeps the same emphasis.
+//
 
 import SwiftUI
 import WidgetKit
@@ -36,7 +40,7 @@ struct TodaysWorkoutWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "TodaysWorkoutWidget", provider: WidgetSnapshotProvider()) { entry in
             TodaysWorkoutWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .containerBackground(Color.surface, for: .widget)
                 .widgetURL(WidgetSnapshotStore.workoutURL)
         }
         .configurationDisplayName("Today's Workout")
@@ -58,23 +62,22 @@ struct TodaysWorkoutWidgetView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Label("Today", systemImage: "dumbbell.fill")
                     .font(.caption.bold())
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(Color.accentInk)
                     .widgetAccentable()
                 Spacer(minLength: 0)
                 (workout.map { Text(verbatim: $0.name) } ?? Text("No workout planned"))
-                    .font(.headline)
+                    .font(.barlow(24, relativeTo: .title2))
                     .lineLimit(2)
+                    .minimumScaleFactor(0.8)
                 Text(detail)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             if family == .systemMedium {
                 Spacer()
-                Image(systemName: workout?.isCompleted == true ? "checkmark.circle.fill" : "play.circle.fill")
+                VoltDisc(systemName: workout?.isCompleted == true ? "checkmark.circle.fill" : "play.circle.fill")
                     .font(.largeTitle)
                     .imageScale(.large)
-                    .foregroundStyle(.tint)
-                    .widgetAccentable()
                     .accessibilityHidden(true)
             }
         }
@@ -95,7 +98,7 @@ struct StreakWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "StreakWidget", provider: WidgetSnapshotProvider()) { entry in
             StreakWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .containerBackground(Color.surface, for: .widget)
                 .widgetURL(WidgetSnapshotStore.trainingURL)
         }
         .configurationDisplayName("Streak")
@@ -117,7 +120,8 @@ struct StreakWidgetView: View {
                         .font(.caption)
                         .widgetAccentable()
                     Text("\(entry.snapshot.currentStreak)")
-                        .font(.title3.bold())
+                        .font(.barlow(24, relativeTo: .title3))
+                        .monospacedDigit()
                         .minimumScaleFactor(0.5)
                 }
             }
@@ -125,19 +129,20 @@ struct StreakWidgetView: View {
             .accessibilityLabel("\(entry.snapshot.currentStreak) week streak")
         } else {
             VStack(alignment: .leading, spacing: 4) {
+                // A streak is yours: the accent, not a status orange.
                 Image(systemName: "flame.fill")
                     .font(.title2)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.accentInk)
                     .widgetAccentable()
                 Spacer(minLength: 0)
                 Text("\(entry.snapshot.currentStreak)")
-                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    .font(.barlow(44, relativeTo: .largeTitle))
+                    .monospacedDigit()
                     .minimumScaleFactor(0.5)
                 // Two keys so Spanish can agree with the count ("semana" / "semanas"). English reads
                 // "week streak" for both: the catalog gives "weeks streak" that English value.
                 Text(entry.snapshot.currentStreak == 1 ? "week streak" : "weeks streak")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .overline()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         }
@@ -150,7 +155,7 @@ struct WeeklyRingWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "WeeklyRingWidget", provider: WidgetSnapshotProvider()) { entry in
             WeeklyRingWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .containerBackground(Color.surface, for: .widget)
                 .widgetURL(WidgetSnapshotStore.trainingURL)
         }
         .configurationDisplayName("Weekly Goal")
@@ -166,19 +171,20 @@ struct WeeklyRingWidgetView: View {
         let sessions = entry.snapshot.sessionsThisWeek(on: entry.date)
         let goal = entry.snapshot.weeklyGoal
         ZStack {
+            // A neutral track and your progress in the accent, as the app's rings.
             Circle()
-                .stroke(.tint.opacity(0.2), lineWidth: 12)
+                .stroke(Color.secondary.opacity(0.25), lineWidth: 12)
             Circle()
                 .trim(from: 0, to: entry.snapshot.weeklyProgress(on: entry.date))
-                .stroke(.tint, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                .stroke(Color.accentInk, style: StrokeStyle(lineWidth: 12, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .widgetAccentable()
             VStack(spacing: 0) {
                 Text("\(sessions)/\(goal)")
-                    .font(.title2.bold())
+                    .font(.barlow(34, relativeTo: .title))
+                    .monospacedDigit()
                 Text("this week")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .overline()
             }
         }
         .padding(4)

@@ -61,7 +61,9 @@ group the next set belongs to: "Warmup 1 of 2" through the warm-ups, then "Set 1
 ## 3. Lock-screen banner
 
 Fixed height across phases so the banner does not jump when a set completes. Two rows plus a
-1-pt progress line along the bottom edge (`progress`), which is the only whole-workout indicator.
+2-pt progress bar along the bottom (`progress`), inset to the 14-pt content margins so the card's
+rounded corners never clip it, which is the only whole-workout indicator. Its fill is the accent
+(`AccentInk`: volt on dark, olive on light), on a neutral track.
 
 | Phase | Row 1 | Row 2 |
 |---|---|---|

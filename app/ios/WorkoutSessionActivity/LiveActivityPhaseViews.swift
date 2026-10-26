@@ -7,8 +7,8 @@
 //
 //  The lock-screen banner wraps these in a container of at least a fixed height, with a progress line;
 //  the Dynamic Island's expanded region uses them as-is. Nothing in here reads the colour
-//  scheme: the one scheme-dependent value, the label colour on a `.borderedProminent`
-//  button, is passed in, because the island always renders on black.
+//  scheme: volt fills carry black labels in both, and `AccentInk` resolves itself (volt on the
+//  island's black and the dark Lock Screen, olive on the light one).
 //
 
 import SwiftUI
@@ -64,8 +64,6 @@ struct LiveActivityPhaseContent: View {
     let phase: LiveActivityPhase
     let state: WorkoutActivityAttributes.ContentState
     let workoutName: String
-    /// Foreground for labels sitting on a `.borderedProminent` button.
-    let prominentLabelColor: Color
     var showsEnded: Bool = true
 
     var body: some View {
@@ -145,9 +143,10 @@ struct LiveActivityPhaseContent: View {
 
     private func doneRow(text: Text) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: "checkmark.circle.fill")
+            // Done is volt, not green (design language).
+            VoltDisc(systemName: "checkmark.circle.fill")
                 .font(.title3)
-                .foregroundStyle(.green)
+                .accessibilityHidden(true)
             text
                 .font(.headline)
                 .foregroundStyle(.primary)
@@ -185,7 +184,7 @@ struct LiveActivityPhaseContent: View {
         .accessibilityLabel(delta > 0 ? "Add a rep" : "Remove a rep")
         .buttonStyle(.bordered)
         .buttonBorderShape(.circle)
-        .tint(.accent)
+        .tint(.accentInk)
         .disabled(state.isProcessingIntent)
         .opacity(state.isProcessingIntent ? 0.5 : 1)
     }
@@ -199,20 +198,23 @@ struct LiveActivityPhaseContent: View {
                     .foregroundStyle(.secondary)
             }
             if let label = target.label(weightUnit: state.weightUnit) {
+                // The set to do, the banner's hero: Barlow Condensed.
                 Text(label)
-                    .font(.headline)
+                    .font(.barlow(24, relativeTo: .title2))
+                    .monospacedDigit()
                     .foregroundStyle(.primary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
             Spacer(minLength: 4)
             Button(intent: CompleteSetIntent()) {
                 Label("Complete", systemImage: "checkmark")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(prominentLabelColor)
+                    // Black on volt in both appearances.
+                    .foregroundStyle(.black)
                     .padding(2)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.accent)
+            .voltFill()
             // A set the app would refuse (no reps, no time) is entered in the app instead.
             .disabled(state.targetSetId == nil || state.isProcessingIntent || !state.canComplete)
         }
@@ -252,7 +254,7 @@ struct LiveActivityPhaseContent: View {
             }
             .buttonStyle(.bordered)
             .buttonBorderShape(.capsule)
-            .tint(.accent)
+            .tint(.accentInk)
             .disabled(state.isProcessingIntent)
             .opacity(state.isProcessingIntent ? 0.5 : 1)
             .accessibilityLabel("Add 15 seconds")
@@ -264,7 +266,7 @@ struct LiveActivityPhaseContent: View {
             }
             .buttonStyle(.bordered)
             .buttonBorderShape(.capsule)
-            .tint(.accent)
+            .tint(.accentInk)
             .disabled(state.isProcessingIntent)
             .opacity(state.isProcessingIntent ? 0.5 : 1)
         }
@@ -292,7 +294,7 @@ struct LiveActivityPhaseContent: View {
                     EmptyView()
                 }
                 .progressViewStyle(.linear)
-                .tint(.accent)
+                .tint(.accentInk)
             }
             Spacer(minLength: 4)
             Button(intent: SkipRestTimerIntent()) {
@@ -302,7 +304,7 @@ struct LiveActivityPhaseContent: View {
             }
             .buttonStyle(.bordered)
             .buttonBorderShape(.capsule)
-            .tint(.accent)
+            .tint(.accentInk)
             .disabled(state.isProcessingIntent)
             .opacity(state.isProcessingIntent ? 0.5 : 1)
         }
@@ -315,11 +317,10 @@ struct LiveActivityPhaseContent: View {
             Button(intent: CompleteWorkoutIntent()) {
                 Label("Finish", systemImage: "checkmark.circle.fill")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(prominentLabelColor)
+                    .foregroundStyle(.black)
                     .padding(2)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.accent)
+            .voltFill()
             .disabled(state.isProcessingIntent)
         }
         .liveActivityRowHeight()
@@ -357,14 +358,14 @@ struct LiveActivityPhaseContent: View {
     }
 
     private func summaryMetric(title: LocalizedStringKey, value: String) -> some View {
+        // A stat: the number in Barlow Condensed over its overline.
         VStack(alignment: .leading, spacing: 0) {
-            Text(title)
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(.secondary)
             Text(value)
-                .font(.subheadline.weight(.semibold))
+                .font(.barlow(22, relativeTo: .title3, extraBold: false))
                 .monospacedDigit()
                 .foregroundStyle(.primary)
+            Text(title)
+                .overline()
         }
     }
 }
@@ -409,9 +410,9 @@ struct RestRing: View {
     var size: CGFloat = LiveActivityLayout.rowHeight
     var showsCountdown: Bool = true
 
-    /// The countdown's font as a share of the ring: four monospaced digits and a colon at this
+    /// The countdown's font as a share of the ring: four condensed digits and a colon at this
     /// size sit inside the ring with the stroke clear on both sides.
-    private static let countdownScale: CGFloat = 0.3
+    private static let countdownScale: CGFloat = 0.4
     /// The width the countdown may use inside the ring, inside the stroke.
     private static let countdownWidthScale: CGFloat = 0.72
 
@@ -425,12 +426,12 @@ struct RestRing: View {
             EmptyView()
         }
             .progressViewStyle(.circular)
-            .tint(.accent)
+            .tint(.accentInk)
             .frame(width: size, height: size)
             .overlay {
                 if showsCountdown {
                     Text(timerInterval: Date()...max(until, Date()), countsDown: true, showsHours: false)
-                        .font(.system(size: size * Self.countdownScale, weight: .semibold, design: .rounded))
+                        .font(.custom("BarlowCondensed-Bold", fixedSize: size * Self.countdownScale))
                         .monospacedDigit()
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The Swift app's icon background. -->
-    <color name="ic_launcher_background">#F7FBFF</color>
+    <!-- Volt, behind the black Compound mark. -->
+    <color name="ic_launcher_background">#C8F31D</color>
 </resources>

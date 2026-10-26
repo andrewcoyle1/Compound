@@ -10,8 +10,33 @@ import 'package:program_repository/program_repository.dart';
 import '../helpers.dart';
 
 void main() {
-  final yesterday = programNow.subtract(const Duration(days: 1));
   final m1 = programMesocycle('m1', deload: DeloadType.end);
+
+  // An ordinary day, and either side of midnight after both 2026 clock
+  // changes: in Europe/London 29 Mar is 23 hours long and 25 Oct 25, so a
+  // day of elapsed hours back from 23:30 on the 25th is still the 25th.
+  for (final now in [
+    DateTime(2026, 10, 14, 13),
+    DateTime(2026, 3, 29, 23, 30),
+    DateTime(2026, 3, 30, 0, 30),
+    DateTime(2026, 10, 25, 23, 30),
+    DateTime(2026, 10, 26, 0, 30),
+  ]) {
+    group('at $now', () => _schedule(m1, now));
+  }
+
+  _macrocycleDraft(m1);
+}
+
+void _schedule(Mesocycle m1, DateTime programNow) {
+  // The previous calendar day at the same time.
+  final yesterday = DateTime(
+    programNow.year,
+    programNow.month,
+    programNow.day - 1,
+    programNow.hour,
+    programNow.minute,
+  );
   MesocycleRun run({int first = 0, List<CycleSkip> skips = const []}) =>
       MesocycleRun(
         mesocycle: m1,
@@ -84,7 +109,7 @@ void main() {
       status: ProgramsStatus.loaded,
       mesocycles: [m1],
       macrocycles: [
-        programMacrocycle('p', ['m1']),
+        programMacrocycle('p', ['m1'], now: programNow),
       ],
       sessions: sessions,
       activeMesocycleId: 'm1',
@@ -157,7 +182,9 @@ void main() {
       );
     });
   });
+}
 
+void _macrocycleDraft(Mesocycle m1) {
   group(MacrocycleDraftCubit, () {
     final m2 = programMesocycle('m2', cycles: 4);
     final existing = programMacrocycle('p', ['m1', 'm2']);

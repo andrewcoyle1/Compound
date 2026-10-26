@@ -90,6 +90,21 @@ void main() {
 
     test("falls back to Flutter's haptics without the plugin", () async {
       await AppHaptics.success();
+      await AppHaptics.error();
+      expect(flutterHaptics, [
+        'HapticFeedbackType.successNotification',
+        'HapticFeedbackType.errorNotification',
+      ]);
+    });
+
+    test("falls back to Flutter's haptics when the vibrator fails", () async {
+      messenger.setMockMethodCallHandler(_plugin, (call) async {
+        pluginCalls.add(call);
+        if (call.method == 'canVibrate') return true;
+        throw PlatformException(code: 'vibrator');
+      });
+      await AppHaptics.success();
+      expect(pluginCalls.map((c) => c.method), ['canVibrate', 'success']);
       expect(flutterHaptics, ['HapticFeedbackType.successNotification']);
     });
 

@@ -76,19 +76,30 @@ abstract final class AppHaptics {
   @visibleForTesting
   static void debugReset() => _canVibrate = null;
 
+  /// Whether the plugin can vibrate; false without it (a test, an
+  /// unsupported platform). The answer is cached, so it must never complete
+  /// with an error: the error would belong to the zone that first asked and
+  /// be reported there, failing a test that has already finished.
+  static Future<bool> _askCanVibrate() async {
+    try {
+      return await Haptics.canVibrate();
+    } on Exception {
+      return false;
+    }
+  }
+
   /// Plays [haptic].
   static Future<void> play(AppHaptic haptic) async {
     final fake = debugPlay;
     if (fake != null) return fake(haptic);
     try {
-      if (await (_canVibrate ??= Haptics.canVibrate())) {
+      if (await (_canVibrate ??= _askCanVibrate())) {
         // Touch usage, so Android 13 and later follow the user's touch
         // feedback setting.
         return await Haptics.vibrate(haptic._type, usage: HapticsUsage.touch);
       }
     } on Exception {
-      // No plugin (a test, an unsupported platform) or a vibrator error:
-      // Flutter's haptic below still plays.
+      // A vibrator error: Flutter's haptic below still plays.
     }
     await haptic._fallback();
   }

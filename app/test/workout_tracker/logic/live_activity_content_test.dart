@@ -113,6 +113,59 @@ void main() {
       expect(state.canComplete, isFalse);
     });
 
+    group("weights in their own exercise's unit", () {
+      LiveActivityState mixed({required bool aInPounds}) => liveActivityState(
+        session: WorkoutSessionModel(
+          id: 's',
+          authorId: 'u',
+          name: 'Push Day',
+          dateCreated: _now,
+          dateModified: _now,
+          exercises: [
+            _exercise('a', [_set('1', kg: 80, done: true)]),
+            _exercise('b', [_set('2', kg: 20.41166)]),
+          ],
+        ),
+        isActive: true,
+        currentExerciseIndex: 0,
+        now: _now,
+        restEnd: _now.add(const Duration(minutes: 2)),
+        weightUnit: (e) => (e.id == 'a') == aInPounds
+            ? ExerciseWeightUnit.pounds
+            : ExerciseWeightUnit.kilograms,
+        distanceUnit: (_) => DistanceUnit.meters,
+      );
+
+      test('kg logged set, lb target', () {
+        final state = mixed(aInPounds: false);
+        expect(state.lastLoggedWeightKg, 80);
+        expect(state.lastLoggedWeightUnit, LiveActivityWeightUnit.kilograms);
+        expect(state.targetWeightKg, 20.41166);
+        expect(state.weightUnit, LiveActivityWeightUnit.pounds);
+        expect(
+          state.toJson(),
+          containsPair('lastLoggedWeightUnit', 'kilograms'),
+        );
+        expect(state.toJson(), containsPair('weightUnit', 'pounds'));
+      });
+
+      test('lb logged set, kg target', () {
+        final state = mixed(aInPounds: true);
+        expect(state.lastLoggedWeightUnit, LiveActivityWeightUnit.pounds);
+        expect(state.weightUnit, LiveActivityWeightUnit.kilograms);
+        expect(state.toJson(), containsPair('lastLoggedWeightUnit', 'pounds'));
+        expect(state.toJson(), containsPair('weightUnit', 'kilograms'));
+      });
+
+      test('no logged unit without a logged set', () {
+        final state = _state([
+          _exercise('a', [_set('1')]),
+        ], unit: ExerciseWeightUnit.pounds);
+        expect(state.lastLoggedWeightUnit, isNull);
+        expect(state.toJson().containsKey('lastLoggedWeightUnit'), isFalse);
+      });
+    });
+
     test('has no target once every set is logged', () {
       final state = _state([
         _exercise('a', [_set('1', done: true)]),

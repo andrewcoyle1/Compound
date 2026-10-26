@@ -8,7 +8,8 @@ import 'package:training_session/training_session.dart'
 /// `LiveActivityManager.makeContentState`): the exercise at
 /// [currentExerciseIndex], or the next with work left, its target set and
 /// where it is, the whole workout's progress, the rest running to [restEnd],
-/// and the set logged last while that rest runs. [plansSets] is Workout
+/// and the set logged last while that rest runs, each weight in its own
+/// exercise's [weightUnit]. [plansSets] is Workout
 /// Settings › Set Plan: on, a set worked in pieces counts once its last
 /// piece is logged, and the target names its kind and piece.
 LiveActivityState liveActivityState({
@@ -63,10 +64,9 @@ LiveActivityState liveActivityState({
     targetReps: target?.reps,
     targetDistanceMeters: target?.distanceMeters,
     targetDurationSec: target?.durationSec,
-    weightUnit:
-        model != null && weightUnit(model) == m.ExerciseWeightUnit.pounds
-        ? LiveActivityWeightUnit.pounds
-        : LiveActivityWeightUnit.kilograms,
+    weightUnit: liveActivityWeightUnit(
+      model == null ? null : weightUnit(model),
+    ),
     distanceUnit: model == null
         ? null
         : LiveActivityDistanceUnit.values.byName(distanceUnit(model).name),
@@ -79,7 +79,10 @@ LiveActivityState liveActivityState({
     lastLoggedSetId: logged?.set.id,
     lastLoggedReps: logged?.set.reps,
     lastLoggedWeightKg: logged?.set.loadKg,
-    restLeadsToNewExercise: logged != null && logged.exerciseId != current?.id,
+    lastLoggedWeightUnit: logged == null
+        ? null
+        : liveActivityWeightUnit(weightUnit(session.exercises[logged.index])),
+    restLeadsToNewExercise: logged != null && logged.index != index,
     targetSide: side == null || side.isEmpty ? null : side,
     // Only an assisted exercise's keypad can enter a negative weight, so
     // one is read as assistance; the tracker's own rule checks the library
@@ -96,17 +99,23 @@ LiveActivityState liveActivityState({
   );
 }
 
-/// The set logged most recently anywhere, with its exercise's id.
-({String exerciseId, r.WorkoutSet set})? _lastLogged(
+/// The Live Activity's name for [unit]; kilograms when there is none.
+LiveActivityWeightUnit liveActivityWeightUnit(m.ExerciseWeightUnit? unit) =>
+    unit == m.ExerciseWeightUnit.pounds
+    ? LiveActivityWeightUnit.pounds
+    : LiveActivityWeightUnit.kilograms;
+
+/// The set logged most recently anywhere, with its exercise's index.
+({int index, r.WorkoutSet set})? _lastLogged(
   List<r.WorkoutExercise> exercises,
 ) {
-  ({String exerciseId, r.WorkoutSet set})? latest;
-  for (final exercise in exercises) {
+  ({int index, r.WorkoutSet set})? latest;
+  for (final (i, exercise) in exercises.indexed) {
     for (final set in exercise.sets) {
       final at = set.completedAt;
       if (at == null) continue;
       if (latest == null || at.isAfter(latest.set.completedAt!)) {
-        latest = (exerciseId: exercise.id, set: set);
+        latest = (index: i, set: set);
       }
     }
   }

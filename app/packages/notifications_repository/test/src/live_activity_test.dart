@@ -105,6 +105,27 @@ void main() {
       expect(json['targetPiece'], {'index': 1, 'count': 2, 'isDrop': true});
     });
 
+    test("sends the logged set's own unit", () {
+      for (final unit in LiveActivityWeightUnit.values) {
+        final json = LiveActivityState(
+          isActive: true,
+          completedSetsCount: 1,
+          totalSetsCount: 2,
+          currentExerciseIndex: 1,
+          totalExercisesCount: 2,
+          currentExerciseCompletedSetsCount: 0,
+          currentExerciseTotalSetsCount: 1,
+          progress: 0.5,
+          isAllSetsComplete: false,
+          lastLoggedSetId: 'l',
+          lastLoggedWeightKg: 80,
+          lastLoggedWeightUnit: unit,
+        ).toJson();
+        expect(json['lastLoggedWeightKg'], 80);
+        expect(json['lastLoggedWeightUnit'], unit.name);
+      }
+    });
+
     test('is a value', () {
       expect(_state, _state.copy());
     });
@@ -120,6 +141,12 @@ void main() {
         ).toJson(),
         {'durationSeconds': 3120.0, 'completedSetsCount': 12, 'volumeKg': 4250},
       );
+      for (final unit in LiveActivityWeightUnit.values) {
+        expect(
+          OngoingWorkoutSummary(volumeKg: 4250, weightUnit: unit).toJson(),
+          {'volumeKg': 4250, 'weightUnit': unit.name},
+        );
+      }
       expect(const OngoingWorkoutSummary().toJson(), isEmpty);
       expect(
         const OngoingWorkoutSummary(completedSetsCount: 1),
@@ -166,7 +193,12 @@ void main() {
       expect(const CompleteSetAction('s').props, ['s']);
       expect(const AdjustRestAction(15).props, [15]);
       expect(const SkipRestAction().props, isEmpty);
-      expect(const OngoingWorkoutSummary(volumeKg: 2).props, [null, null, 2]);
+      expect(const OngoingWorkoutSummary(volumeKg: 2).props, [
+        null,
+        null,
+        2,
+        null,
+      ]);
       expect(const LiveActivityPiece(index: 1, count: 2, isDrop: true).props, [
         1,
         2,

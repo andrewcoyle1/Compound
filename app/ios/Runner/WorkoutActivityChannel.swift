@@ -128,6 +128,10 @@ final class WorkoutActivityChannel: NSObject {
         state.finalDurationSeconds = summary["durationSeconds"] as? Double
         state.finalCompletedSetsCount = summary["completedSetsCount"] as? Int
         state.finalVolumeKg = summary["volumeKg"] as? Double
+        // The volume's unit: the one most sets were logged in, not the last exercise's.
+        if let unit = (summary["weightUnit"] as? String).flatMap(LiveActivityWeightUnit.init(rawValue:)) {
+          state.weightUnit = unit
+        }
       }
       await activity.end(
         ActivityContent(state: state, staleDate: nil),

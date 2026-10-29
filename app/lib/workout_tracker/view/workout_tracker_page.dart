@@ -607,8 +607,9 @@ Future<void> finishWorkout(BuildContext context) async {
   await cubit.finish(firstWeekday: firstDay == 0 ? DateTime.sunday : firstDay);
 }
 
-/// The foot of the screen: the set just logged while its rest runs, the
-/// button, and the keypad under them.
+/// The foot of the screen: the set just logged while its rest runs and the
+/// button, or the keypad in their place, as a keyboard covers what is
+/// under it; the keypad has its own Log Set and Hide.
 class _Foot extends StatelessWidget {
   const new({required this.state});
 
@@ -618,7 +619,7 @@ class _Foot extends StatelessWidget {
   Widget build(BuildContext context) {
     final keypad = state.keypad;
     // No panel of its own: the button floats on the screen's canvas, as
-    // Swift's does, with the correction card and keypad under it.
+    // Swift's does.
     return Material(
       type: MaterialType.transparency,
       child: SafeArea(
@@ -630,11 +631,12 @@ class _Foot extends StatelessWidget {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (slot is r.SlotSkipRest && correction != null)
-                  CorrectionBar(state: state, correction: correction),
-                if (slot != null)
-                  _PrimaryButton(state: state, slot: slot, now: now),
-                if (keypad != null)
+                if (keypad == null) ...[
+                  if (slot is r.SlotSkipRest && correction != null)
+                    CorrectionBar(state: state, correction: correction),
+                  if (slot != null)
+                    _PrimaryButton(state: state, slot: slot, now: now),
+                ] else
                   SetKeypadView(
                     keypad: keypad,
                     exercise: state.exercise(keypad.exerciseId),
@@ -808,12 +810,8 @@ class _PrimaryButton extends StatelessWidget {
         final clock = AppFormat.duration(
           left + const Duration(milliseconds: 999),
         );
-        // The countdown is already up top, at its largest, unless the
-        // keypad has taken its place.
-        title = isLarge || state.keypad == null
-            ? l10n.trackerSkipRest
-            : '${l10n.trackerSkipRest} $clock';
-        name = l10n.trackerSkipRest;
+        // The countdown is already up top, at its largest.
+        title = name = l10n.trackerSkipRest;
         value = clock;
     }
     final onPressed = inGrace

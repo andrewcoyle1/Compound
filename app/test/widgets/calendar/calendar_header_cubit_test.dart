@@ -41,7 +41,7 @@ void main() {
       'returning to today is tracked and shows its week',
       build: build,
       act: (cubit) => cubit
-        ..weekMoved(-2)
+        ..dayShown(DateTime(2026, 2, 28))
         ..returnedToToday(today),
       expect: () => [
         CalendarHeaderState(shownDay: DateTime(2026, 2, 28)),

@@ -312,24 +312,19 @@ void main() {
       expect(find.bySemanticsLabel('Today'), findsNWidgets(2));
     });
 
-    testWidgets('swipes between weeks', (tester) async {
+    testWidgets('scrolls back and forth through the days', (tester) async {
       await pumpView(tester);
-      expect(find.bySemanticsLabel('Saturday, September 19'), findsNothing);
+      final strip = find.byType(CalendarHeader);
+      // Its width is a week of days and its insets.
+      final week = Offset(tester.getSize(strip).width, 0);
+      expect(find.bySemanticsLabel('Sunday, September 13'), findsNothing);
 
-      await tester.fling(
-        find.byType(CalendarHeader),
-        const Offset(300, 0),
-        800,
-      );
-      await tester.pump();
-      expect(find.bySemanticsLabel('Saturday, September 19'), findsOneWidget);
+      await tester.drag(strip, week);
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Sunday, September 13'), findsOneWidget);
 
-      await tester.fling(
-        find.byType(CalendarHeader),
-        const Offset(-300, 0),
-        800,
-      );
-      await tester.pump();
+      await tester.drag(strip, -week);
+      await tester.pumpAndSettle();
       expect(find.bySemanticsLabel('Monday, September 21'), findsOneWidget);
     });
 

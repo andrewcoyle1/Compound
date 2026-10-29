@@ -6,7 +6,8 @@ import 'package:equatable/equatable.dart';
 /// The calendar header's week on screen and the day last chosen (Swift
 /// `CalendarHeaderPresenter` and the month picker's appear and disappear).
 final class const CalendarHeaderState({
-  /// A day in the week on screen, at local midnight.
+  /// The day at the strip's leading edge once it settles, or the day it
+  /// is asked to bring into view; at local midnight.
   required final DateTime shownDay,
 
   /// The day last tapped or picked; null until one is.
@@ -16,8 +17,8 @@ final class const CalendarHeaderState({
   List<Object?> get props => [shownDay, focusedDay];
 }
 
-/// Pages the header's week and tracks its use with Swift's event names.
-/// The host decides what a chosen day does.
+/// Tracks the header's days on screen and its use with Swift's event
+/// names. The host decides what a chosen day does.
 class CalendarHeaderCubit extends Cubit<CalendarHeaderState> {
   new({required this._analytics, required DateTime today})
     : super(CalendarHeaderState(shownDay: today));
@@ -30,15 +31,8 @@ class CalendarHeaderCubit extends Cubit<CalendarHeaderState> {
     emit(CalendarHeaderState(shownDay: state.shownDay, focusedDay: day));
   }
 
-  /// Shows the week [weeks] before (negative) or after.
-  void weekMoved(int weeks) => emit(
-    CalendarHeaderState(
-      shownDay: _addDays(state.shownDay, 7 * weeks),
-      focusedDay: state.focusedDay,
-    ),
-  );
-
-  /// Shows [day]'s week, as when the host's selection moves.
+  /// The strip settled with [day] at its leading edge, or should bring
+  /// [day] into view.
   void dayShown(DateTime day) =>
       emit(CalendarHeaderState(shownDay: day, focusedDay: state.focusedDay));
 
@@ -62,7 +56,4 @@ class CalendarHeaderCubit extends Cubit<CalendarHeaderState> {
     _analytics.info('CalendarHeader_DatePickedFromLargeCalendar');
     emit(CalendarHeaderState(shownDay: picked, focusedDay: picked));
   }
-
-  static DateTime _addDays(DateTime day, int days) =>
-      DateTime(day.year, day.month, day.day + days);
 }

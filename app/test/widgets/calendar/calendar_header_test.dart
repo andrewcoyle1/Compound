@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 
 import '../../helpers/helpers.dart';
 
@@ -63,10 +64,9 @@ void main() {
   group(CalendarHeader, () {
     testWidgets('shows the week with its markers and badges', (tester) async {
       await pump(tester, selectedDay: DateTime(2026, 3, 12));
-      expect(find.text('8'), findsOneWidget);
-      expect(find.text('14'), findsOneWidget);
+      expect(find.bySemanticsLabel('Sunday, March 8'), findsOneWidget);
+      expect(find.bySemanticsLabel('Saturday, March 14'), findsOneWidget);
       expect(find.text('9+'), findsOneWidget);
-      expect(find.bySemanticsLabel('Wednesday, March 11'), findsOneWidget);
       final semantics = tester.getSemantics(
         find.bySemanticsLabel('Saturday, March 14'),
       );
@@ -83,7 +83,7 @@ void main() {
 
     testWidgets('a tap tells the host and the cubit', (tester) async {
       await pump(tester);
-      await tester.tap(find.text('10'));
+      await tester.tap(find.bySemanticsLabel('Tuesday, March 10'));
       expect(pressed, [DateTime(2026, 3, 10)]);
       expect(cubit.state.focusedDay, DateTime(2026, 3, 10));
       expect(analytics.names, [
@@ -91,34 +91,89 @@ void main() {
       ]);
     });
 
-    testWidgets('swipes page weeks and Return to Today comes back', (
+    testWidgets('scrolls freely and settles on a day', (tester) async {
+      await pump(tester);
+      // A day is (800 - 16) / 7 = 112 wide: a drag of a day and a third
+      // settles one day back, its edge at the strip's inset.
+      await tester.drag(find.byType(CalendarHeader), const Offset(150, 0));
+      await tester.pumpAndSettle();
+      expect(cubit.state.shownDay, DateTime(2026, 3, 7));
+      expect(
+        tester.getTopLeft(find.bySemanticsLabel('Saturday, March 7')).dx,
+        AppSpacing.s,
+      );
+
+      // A fling carries on past a week.
+      await tester.fling(
+        find.byType(CalendarHeader),
+        const Offset(-300, 0),
+        3000,
+      );
+      await tester.pumpAndSettle();
+      final shown = cubit.state.shownDay;
+      expect(shown.isAfter(DateTime(2026, 3, 14)), isTrue);
+      expect(
+        tester
+            .getTopLeft(
+              find.bySemanticsLabel(DateFormat('EEEE, MMMM d').format(shown)),
+            )
+            .dx,
+        AppSpacing.s,
+      );
+    });
+
+    testWidgets('Return to Today comes back once today is off screen', (
       tester,
     ) async {
       await pump(tester);
       expect(find.bySemanticsLabel('Today'), findsNothing);
-      await tester.fling(find.text('10'), const Offset(300, 0), 800);
+      await tester.drag(find.byType(CalendarHeader), const Offset(336, 0));
       await tester.pumpAndSettle();
-      expect(find.text('1'), findsOneWidget);
+      expect(cubit.state.shownDay, DateTime(2026, 3, 5));
       // Today is ahead: the button sits at the end.
       expect(find.bySemanticsLabel('Today'), findsOneWidget);
+      expect(
+        tester.getCenter(find.bySemanticsLabel('Today')).dx,
+        greaterThan(400),
+      );
       await tester.tap(find.bySemanticsLabel('Today'));
       await tester.pumpAndSettle();
-      expect(find.text('14'), findsOneWidget);
+      expect(find.bySemanticsLabel('Today'), findsNothing);
+      expect(cubit.state.shownDay, DateTime(2026, 3, 8));
       expect(analytics.names, ['CalendarHeader_ReturnedToToday']);
 
-      await tester.fling(find.text('10'), const Offset(-300, 0), 800);
+      await tester.drag(find.byType(CalendarHeader), const Offset(-896, 0));
       await tester.pumpAndSettle();
-      expect(find.text('21'), findsOneWidget);
-      expect(find.bySemanticsLabel('Today'), findsOneWidget);
+      expect(cubit.state.shownDay, DateTime(2026, 3, 16));
+      expect(
+        tester.getCenter(find.bySemanticsLabel('Today')).dx,
+        lessThan(400),
+      );
     });
 
-    testWidgets('screen readers page with actions', (tester) async {
+    testWidgets('screen readers move a week with actions', (tester) async {
       await pump(tester);
-      final node = tester.getSemantics(find.byType(CalendarHeader));
-      expect(node.getSemanticsData().customSemanticsActionIds, hasLength(2));
-      cubit.weekMoved(1);
-      await tester.pump();
-      expect(find.text('21'), findsOneWidget);
+      final actions = tester
+          .widget<Semantics>(
+            find
+                .descendant(
+                  of: find.byType(CalendarHeader),
+                  matching: find.byType(Semantics),
+                )
+                .first,
+          )
+          .properties
+          .customSemanticsActions!;
+      void perform(String label) =>
+          actions.entries.firstWhere((e) => e.key.label == label).value();
+      perform('Next week');
+      await tester.pumpAndSettle();
+      expect(cubit.state.shownDay, DateTime(2026, 3, 15));
+      perform('Previous week');
+      await tester.pumpAndSettle();
+      perform('Previous week');
+      await tester.pumpAndSettle();
+      expect(cubit.state.shownDay, DateTime(2026, 3));
     });
 
     testWidgets('follows a selection made elsewhere when off screen', (
@@ -126,10 +181,27 @@ void main() {
     ) async {
       await pump(tester, selectedDay: today);
       await pump(tester, selectedDay: DateTime(2026, 3, 13));
+      await tester.pumpAndSettle();
       expect(cubit.state.shownDay, today);
       await pump(tester, selectedDay: DateTime(2026, 2, 2));
-      expect(cubit.state.shownDay, DateTime(2026, 2, 2));
-      expect(find.text('2'), findsOneWidget);
+      await tester.pumpAndSettle();
+      // Its week, from Sunday.
+      expect(cubit.state.shownDay, DateTime(2026, 2));
+      expect(find.bySemanticsLabel('Monday, February 2'), findsOneWidget);
+    });
+
+    testWidgets('keeps its place when it widens', (tester) async {
+      await pump(tester);
+      await tester.drag(find.byType(CalendarHeader), const Offset(336, 0));
+      await tester.pumpAndSettle();
+      tester.view.physicalSize = const Size(1200, 600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(find.bySemanticsLabel('Thursday, March 5')).dx,
+        closeTo(AppSpacing.s, 0.001),
+      );
     });
 
     testWidgets('the month picker hands back the day picked', (tester) async {
@@ -142,6 +214,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Calendar'), findsNothing);
       expect(pressed, [DateTime(2026, 3, 20)]);
+      // The strip brings the day picked into view.
+      expect(find.bySemanticsLabel('Friday, March 20'), findsOneWidget);
       expect(cubit.state.focusedDay, DateTime(2026, 3, 20));
       expect(analytics.names, [
         'CalendarHeader_OpenLargeCalendar',

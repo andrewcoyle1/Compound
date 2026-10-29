@@ -347,6 +347,30 @@ void main() {
       await cubit.close();
     });
 
+    testWidgets('the keypad covers the button and the correction bar', (
+      tester,
+    ) async {
+      await start(tester);
+      await pump(tester);
+      final setId = nextSetId();
+      await tester.tap(find.byKey(ValueKey('done-$setId')));
+      await tester.pumpAndSettle();
+      const primary = Key('WorkoutTracker.primary');
+      expect(find.byKey(primary), findsOneWidget);
+      expect(find.text('Undo'), findsOneWidget);
+
+      await tester.tap(find.byKey(ValueKey('cell-$setId-reps')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(primary), findsNothing);
+      expect(find.text('Undo'), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('keypad-hide')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(primary), findsOneWidget);
+      expect(find.text('Undo'), findsOneWidget);
+      await cubit.close();
+    });
+
     testWidgets('finishing opens the summary of the saved workout', (
       tester,
     ) async {

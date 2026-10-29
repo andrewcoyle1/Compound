@@ -67,6 +67,14 @@ import Vision
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "AppIntents") {
       AppIntentsChannel.shared = AppIntentsChannel(messenger: registrar.messenger())
     }
+    // The App Store Swift app scheduled its reminders under string ids, and iOS keeps them across
+    // the update to this app. Its meal reminders repeat daily, so beside Dart's own (ids 4–6)
+    // each arrived twice; withdraw them all (Swift `PushManager.knownPendingIDs`).
+    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [
+      "meal_reminder_breakfast", "meal_reminder_lunch", "meal_reminder_dinner",
+      "come_back_reminder_1", "come_back_reminder_3", "come_back_reminder_5",
+      "workout-rest-timer",
+    ])
     // Pushes the system displayed while the app was in the background have no integer id for
     // flutter_local_notifications, so they are cleared here by identifier, all but `keep` (the
     // app's own reminders and the ongoing workout), as Swift's `clearAllDeliveredNotifications`.

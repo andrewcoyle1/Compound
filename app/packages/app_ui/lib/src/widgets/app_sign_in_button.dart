@@ -7,7 +7,8 @@ import 'package:app_ui/app_ui.dart';
 /// the button rather than following the text size setting.
 ///
 /// [leading] and [trailing] sit either side of the title (the logo and each
-/// brand's padding). While [isLoading] a spinner takes their place.
+/// brand's padding). While [isLoading] the button is disabled, and a
+/// spinner takes their place once it has lasted [AppBusySwap.showAfter].
 /// {@endtemplate}
 class AppSignInButton extends StatelessWidget {
   /// {@macro app_sign_in_button}
@@ -54,55 +55,53 @@ class AppSignInButton extends StatelessWidget {
   static const double titleSize = height * 0.43;
 
   @override
-  Widget build(BuildContext context) {
-    final onTap = isLoading ? null : onPressed;
-    return Semantics(
-      button: true,
-      enabled: onTap != null,
-      label: label,
-      excludeSemantics: true,
-      child: Material(
-        color: background,
-        shape: StadiumBorder(side: border),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          splashColor: foreground.withValues(alpha: 0.2),
-          highlightColor: foreground.withValues(alpha: 0.1),
-          child: SizedBox(
-            height: height,
-            width: double.infinity,
-            child: isLoading
-                ? Center(
-                    child: AppSpinner(
-                      size: AppSpinnerSize.small,
-                      color: foreground,
-                    ),
-                  )
-                : FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ...leading,
-                        Text(
-                          label,
-                          textScaler: TextScaler.noScaling,
-                          style: TextStyle(
-                            fontFamily: AppTextStyles.rowTitle.fontFamily,
-                            color: foreground,
-                            fontSize: titleSize,
-                            fontWeight: FontWeight.w500,
-                            height: 1,
-                          ),
-                        ),
-                        ...trailing,
-                      ],
-                    ),
-                  ),
+  Widget build(BuildContext context) => AppBusySwap(
+    busy: isLoading,
+    idle: FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ...leading,
+          Text(
+            label,
+            textScaler: TextScaler.noScaling,
+            style: TextStyle(
+              fontFamily: AppTextStyles.rowTitle.fontFamily,
+              color: foreground,
+              fontSize: titleSize,
+              fontWeight: FontWeight.w500,
+              height: 1,
+            ),
+          ),
+          ...trailing,
+        ],
+      ),
+    ),
+    spinner: AppSpinner(size: AppSpinnerSize.small, color: foreground),
+    builder: (context, content, {required busy}) {
+      final onTap = busy ? null : onPressed;
+      return Semantics(
+        button: true,
+        enabled: onTap != null,
+        label: label,
+        excludeSemantics: true,
+        child: Material(
+          color: background,
+          shape: StadiumBorder(side: border),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            splashColor: foreground.withValues(alpha: 0.2),
+            highlightColor: foreground.withValues(alpha: 0.1),
+            child: SizedBox(
+              height: height,
+              width: double.infinity,
+              child: Center(child: content),
+            ),
           ),
         ),
-      ),
-    );
-  }
+      );
+    },
+  );
 }

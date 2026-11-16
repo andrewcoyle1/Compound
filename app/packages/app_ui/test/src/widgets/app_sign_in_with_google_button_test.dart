@@ -79,8 +79,12 @@ void main() {
           isLoading: true,
         ),
       );
-      expect(find.byType(AppSpinner), findsOneWidget);
-      expect(find.text('Continue with Google'), findsNothing);
+      // Disabled at once; the spinner shows once the wait is long enough.
+      expect(busyOpacity(tester, find.byType(AppSpinner)), 0);
+      await tester.pump(AppBusySwap.showAfter);
+      await tester.pump();
+      expect(busyOpacity(tester, find.byType(AppSpinner)), 1);
+      expect(busyOpacity(tester, find.text('Continue with Google')), 0);
       await tester.tap(find.byType(AppSignInWithGoogleButton));
       expect(taps, 0);
     });
@@ -169,3 +173,10 @@ void main() {
     ], pumpBeforeTest: pumpOnceSettled);
   });
 }
+
+/// The opacity [AppBusySwap] gives [finder]'s content.
+double busyOpacity(WidgetTester tester, Finder finder) => tester
+    .widget<AnimatedOpacity>(
+      find.ancestor(of: finder, matching: find.byType(AnimatedOpacity)).first,
+    )
+    .opacity;

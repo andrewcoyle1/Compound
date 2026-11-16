@@ -89,6 +89,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A sheet | `AppSheetPage` (a route's `pageBuilder`) or `showAppSheet`, sized `AppSheetSize.compact` / `half` / `full` |
 | Nothing to show, or a failure | `AppEmptyState`, `AppErrorState` |
 | Loading | `AppPlaceholderRow` / `AppPlaceholder` in place of the content (they shimmer, and hold still under reduced motion); `AppLoadingView` for a screen's first load |
+| A control whose action may take a while (Save, Sign in, Follow) | `AppCtaButton(isLoading:)`, `AppToolbarButton.confirm(isSaving:)` and the sign-in buttons already do this through `AppBusySwap`: disabled from the first frame, the spinner only after 300 ms and then for at least 500 ms, in the label's space. A new control that waits on something uses `AppBusySwap` too |
 | Work under way in a control or beside text (saving, connecting, looking up) | `AppSpinner`, `AppSpinnerSize.small` in a row, button or line of text; never `CircularProgressIndicator` or `CupertinoActivityIndicator`. A ring or bar showing real progress (a `value:`) is not a spinner. It keeps turning under reduced motion, the one animation that does, because a spinner holding still reads as a hang; tests hold it still with `AppSpinner.debugHoldStill` |
 | A one-time tip on a feature hidden behind a gesture | `AppTip` around the target, inside the screen's `ScreenTips` (`lib/tips/`), which remembers it per device |
 | A chart, or the readout over one | `compound_charts`: `ChartCallout` with a `ChartCalloutSummary`. A new chart piece goes there, not in `app_ui` or the screen |
@@ -103,7 +104,7 @@ Ported from the Swift contract's Patterns table.
 |---|---|
 | Primary action | One per screen, `AppCtaButton` pinned in `AppBottomCta` |
 | Dismiss | A close button at the leading edge of a modal's app bar. No "Cancel" text button. In a dialog, Cancel is an `AppDialogRole.cancel` action |
-| Confirm | A confirm button at the trailing edge, with a spinner while saving |
+| Confirm | A confirm button at the trailing edge, disabled while saving, with a spinner once the save has taken 300 ms |
 | Titles | Tab roots have a large title. Every other screen has a standard title |
 | Empty and error states | `AppEmptyState` / `AppErrorState`: icon, title, description and, where possible, the action (Try Again for an error) |
 | Loading | A list or card shows `AppPlaceholderRow`s or `AppPlaceholder`s shaped like its content. `AppLoadingView` only for a screen's first load |

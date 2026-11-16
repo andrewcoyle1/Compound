@@ -31,8 +31,9 @@ enum AppCtaSize {
 /// to the bottom of a screen in an [AppBottomCta]. A screen has one regular
 /// [AppCtaVariant.primary] at most.
 ///
-/// While [isLoading] the label gives way to a spinner at the same height, the
-/// button is disabled, and screen readers hear [loadingLabel].
+/// While [isLoading] the button is disabled and screen readers hear
+/// [loadingLabel]; if it lasts past [AppBusySwap.showAfter], the label gives
+/// way to a spinner, in the same space, for at least [AppBusySwap.holdFor].
 /// {@endtemplate}
 class AppCtaButton extends StatelessWidget {
   /// {@macro app_cta_button}
@@ -67,22 +68,6 @@ class AppCtaButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final onPressed = isLoading ? null : this.onPressed;
-    final child = isLoading
-        ? Stack(
-            alignment: Alignment.center,
-            children: [
-              Opacity(opacity: 0, child: Text(label)),
-              // Loading disables the button, so the spinner takes the
-              // disabled label colour: onPrimary would vanish on the grey
-              // fill.
-              AppSpinner(
-                size: AppSpinnerSize.small,
-                color: scheme.onSurfaceVariant,
-              ),
-            ],
-          )
-        : Text(label, textAlign: TextAlign.center);
     final compact = size == AppCtaSize.compact;
     final textStyle = compact
         ? AppTextStyles.rowDetail.copyWith(fontWeight: FontWeight.w600)
@@ -107,36 +92,51 @@ class AppCtaButton extends StatelessWidget {
           padding: padding,
           tapTargetSize: MaterialTapTargetSize.padded,
         );
-    final button = AppPressScale(
-      builder: (context, states) => switch (variant) {
-        AppCtaVariant.primary => FilledButton(
-          onPressed: onPressed,
-          statesController: states,
-          style: filled(),
-          child: child,
-        ),
-        AppCtaVariant.secondary => FilledButton(
-          onPressed: onPressed,
-          statesController: states,
-          style: filled(
-            background: context.appColors.raised,
-            foreground: scheme.onSurface,
-          ),
-          child: child,
-        ),
-        AppCtaVariant.plain => TextButton(
-          onPressed: onPressed,
-          statesController: states,
-          style: TextButton.styleFrom(
-            foregroundColor: scheme.onSurfaceVariant,
-            // A regular plain button keeps the theme's 44 pt.
-            minimumSize: compact ? const Size(0, AppControlSize.compact) : null,
-            textStyle: textStyle,
-            padding: padding,
-            tapTargetSize: MaterialTapTargetSize.padded,
-          ),
-          child: child,
-        ),
+    final button = AppBusySwap(
+      busy: isLoading,
+      idle: Text(label, textAlign: TextAlign.center),
+      // Loading disables the button, so the spinner takes the disabled label
+      // colour: onPrimary would vanish on the grey fill.
+      spinner: AppSpinner(
+        size: AppSpinnerSize.small,
+        color: scheme.onSurfaceVariant,
+      ),
+      builder: (context, child, {required busy}) {
+        final onPressed = busy ? null : this.onPressed;
+        return AppPressScale(
+          builder: (context, states) => switch (variant) {
+            AppCtaVariant.primary => FilledButton(
+              onPressed: onPressed,
+              statesController: states,
+              style: filled(),
+              child: child,
+            ),
+            AppCtaVariant.secondary => FilledButton(
+              onPressed: onPressed,
+              statesController: states,
+              style: filled(
+                background: context.appColors.raised,
+                foreground: scheme.onSurface,
+              ),
+              child: child,
+            ),
+            AppCtaVariant.plain => TextButton(
+              onPressed: onPressed,
+              statesController: states,
+              style: TextButton.styleFrom(
+                foregroundColor: scheme.onSurfaceVariant,
+                // A regular plain button keeps the theme's 44 pt.
+                minimumSize: compact
+                    ? const Size(0, AppControlSize.compact)
+                    : null,
+                textStyle: textStyle,
+                padding: padding,
+                tapTargetSize: MaterialTapTargetSize.padded,
+              ),
+              child: child,
+            ),
+          },
+        );
       },
     );
     return Semantics(

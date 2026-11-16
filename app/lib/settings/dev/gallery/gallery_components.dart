@@ -130,6 +130,34 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppBusySwap', [
+      galleryInline(
+        'tap: busy for 0.2 s, then 2 s',
+        GalleryLive(
+          initial: 0,
+          builder: (taps, update) => AppBusySwap(
+            busy: taps.isOdd,
+            idle: Text(l10n.devGallerySampleTextAction),
+            spinner: const AppSpinner(size: AppSpinnerSize.small),
+            builder: (context, content, {required busy}) => AppPressable(
+              onTap: busy
+                  ? null
+                  : () {
+                      update(taps + 1);
+                      // Every other press answers quickly: no spinner.
+                      final wait = Duration(
+                        milliseconds: taps % 4 == 0 ? 200 : 2000,
+                      );
+                      unawaited(
+                        Future<void>.delayed(wait, () => update(taps + 2)),
+                      );
+                    },
+              child: content,
+            ),
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('AppIconSwap', [
       galleryInline(
         'tap to swap',

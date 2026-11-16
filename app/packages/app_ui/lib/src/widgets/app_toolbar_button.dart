@@ -124,7 +124,6 @@ class AppToolbarButton extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final onPressed = switch (_look) {
       _Look.close => this.onPressed ?? () => Navigator.maybePop(context),
-      _Look.confirm when isSaving => null,
       _ => this.onPressed,
     };
     final glyph = AppIconSize.medium.points;
@@ -152,26 +151,29 @@ class AppToolbarButton extends StatelessWidget {
             minimumSize: const Size.square(AppControlSize.row),
           ),
         ),
-        _Look.confirm => IconButton(
-          onPressed: onPressed,
-          statesController: states,
-          tooltip: semanticLabel,
-          iconSize: AppIconSize.small.points,
-          icon: isSaving
-              // The circle keeps its size at any text size, as the icon does.
-              ? MediaQuery.withNoTextScaling(
-                  child: AppSpinner(
-                    size: AppSpinnerSize.small,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                )
-              : Icon(icon),
-          style: IconButton.styleFrom(
-            backgroundColor: scheme.primary,
-            foregroundColor: scheme.onPrimary,
-            disabledBackgroundColor: scheme.surfaceContainerHighest,
-            disabledForegroundColor: scheme.onSurfaceVariant,
-          ).merge(circle),
+        _Look.confirm => AppBusySwap(
+          busy: isSaving,
+          idle: Icon(icon),
+          // The circle keeps its size at any text size, as the icon does.
+          spinner: MediaQuery.withNoTextScaling(
+            child: AppSpinner(
+              size: AppSpinnerSize.small,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          builder: (context, content, {required busy}) => IconButton(
+            onPressed: busy ? null : onPressed,
+            statesController: states,
+            tooltip: semanticLabel,
+            iconSize: AppIconSize.small.points,
+            icon: content,
+            style: IconButton.styleFrom(
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              disabledBackgroundColor: scheme.surfaceContainerHighest,
+              disabledForegroundColor: scheme.onSurfaceVariant,
+            ).merge(circle),
+          ),
         ),
         _Look.avatar => IconButton(
           onPressed: onPressed,

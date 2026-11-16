@@ -325,6 +325,21 @@ void main() {
       cubit.undo();
       expect(cubit.state.exercise(exercise.id)!.sets, hasLength(2));
 
+      // The snack bar's Undo puts back the delete, and does nothing once
+      // there is no delete left to undo.
+      cubit.deleteSet(cubit.state.exercise(exercise.id)!.sets.last.id);
+      cubit.undoDeleteSet();
+      expect(cubit.state.exercise(exercise.id)!.sets, hasLength(2));
+      cubit.undoDeleteSet();
+      expect(cubit.state.exercise(exercise.id)!.sets, hasLength(2));
+
+      cubit.deleteExercise(exercise.id);
+      expect(cubit.state.session!.exercises, isEmpty);
+      cubit.undoDeleteExercise();
+      expect(cubit.state.session!.exercises.single.id, exercise.id);
+      cubit.undoDeleteExercise();
+      expect(cubit.state.session!.exercises, hasLength(1));
+
       cubit.deleteExercise(exercise.id);
       expect(cubit.state.session!.exercises, isEmpty);
     });

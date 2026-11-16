@@ -486,6 +486,14 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
     _emitTracker();
   }
 
+  /// The snack bar's Undo after a delete: [undo], if a delete is still the
+  /// last thing done.
+  @override
+  void undoDeleteSet() {
+    if (_controller?.undoName?.kind != UndoKind.deleteSet) return;
+    undo();
+  }
+
   /// Deletes [setId] with its pair and sub-rows; [undo] puts them back.
   @override
   void deleteSet(String setId) {
@@ -749,6 +757,13 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState>
     _track('WorkoutTracker_Exercise_Deleted');
     _restChanged();
     _emitTracker();
+  }
+
+  /// The snack bar's Undo after deleting an exercise: [undo], if that
+  /// delete is still the last thing done.
+  void undoDeleteExercise() {
+    if (_controller?.undoName?.kind != UndoKind.deleteExercise) return;
+    undo();
   }
 
   /// A busy machine: [exerciseId], with its superset, to the end; the card

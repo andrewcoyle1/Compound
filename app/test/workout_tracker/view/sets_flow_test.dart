@@ -145,20 +145,30 @@ void main() {
     await tester.pumpAndSettle();
     expect(cubit.state.set(drops.first), isNotNull);
 
-    // Deleting the set by swipe asks, as its drops go with it.
-    await tester.drag(
-      find.byKey(ValueKey('cell-$setId-weight')),
-      const Offset(-150, 0),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(AppSymbols.delete));
-    await tester.pumpAndSettle();
-    expect(find.text('Delete Set 1?'), findsOneWidget);
-    expect(find.text('This also deletes its 2 drop sets.'), findsOneWidget);
-    await tester.tap(find.text('Delete Set').last);
-    await tester.pumpAndSettle();
+    // Deleting the set by swipe takes its drops with it at once, and Undo
+    // puts them all back.
+    Future<void> swipeDelete() async {
+      await tester.drag(
+        find.byKey(ValueKey('cell-$setId-weight')),
+        const Offset(-150, 0),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(AppSymbols.delete));
+      await tester.pumpAndSettle();
+    }
+
+    await swipeDelete();
+    expect(find.text('Delete Set 1?'), findsNothing);
     expect(cubit.state.set(setId), isNull);
     expect(cubit.state.set(drops.last), isNull);
+    expect(find.text('Set deleted'), findsOneWidget);
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(cubit.state.set(setId), isNotNull);
+    expect(cubit.state.set(drops.last), isNotNull);
+
+    await swipeDelete();
+    expect(cubit.state.set(setId), isNull);
   });
 
   testWidgets('the rest picker keeps a rest for one set', (tester) async {

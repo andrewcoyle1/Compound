@@ -1,7 +1,7 @@
 part of 'active_session_controller.dart';
 
 /// What an undo or redo would do, for the app to word ("Undo Log Set 2").
-enum UndoKind { logSet, unlogSet, deleteSet, changeReps }
+enum UndoKind { logSet, unlogSet, deleteSet, deleteExercise, changeReps }
 
 /// An undo's name: its kind, and for a log or un-log the set's number as
 /// shown ("2", "1L").

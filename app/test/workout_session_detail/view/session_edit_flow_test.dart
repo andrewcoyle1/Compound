@@ -363,15 +363,22 @@ void main() {
       reason: 'nothing is saved until Save',
     );
 
-    // Two drops go with it, so it asks. A finished workout runs no rests,
-    // so the long press offers no Rest Timer.
-    await tester.longPress(find.byKey(const ValueKey('cell-s2-reps')));
-    await settle(tester);
-    expect(find.text('Rest Timer…'), findsNothing);
-    await tester.tap(find.text('Delete Set'));
-    await settle(tester);
-    expect(find.text('Delete Set 2?'), findsOneWidget);
-    await tap(tester, find.text('Delete Set').last);
+    // Two drops go with it, at once, and Undo puts them back. A finished
+    // workout runs no rests, so the long press offers no Rest Timer.
+    Future<void> delete() async {
+      await tester.longPress(find.byKey(const ValueKey('cell-s2-reps')));
+      await settle(tester);
+      expect(find.text('Rest Timer…'), findsNothing);
+      await tester.tap(find.text('Delete Set'));
+      await settle(tester);
+    }
+
+    await delete();
+    expect(find.text('Delete Set 2?'), findsNothing);
+    expect(find.byKey(const ValueKey('cell-s2-reps')), findsNothing);
+    await tap(tester, find.text('Undo'));
+    expect(find.byKey(const ValueKey('cell-s2-reps')), findsOneWidget);
+    await delete();
 
     await tap(tester, find.byKey(const ValueKey('session-save')));
     expect(
@@ -412,10 +419,16 @@ void main() {
     );
     expect(notes!.single.note, 'Elbows in');
 
+    // It goes at once; Undo brings it back, notes and all.
     await tap(tester, find.byKey(const ValueKey('exercise-menu-bench')));
     await choose(tester, 'Delete Exercise');
-    await tap(tester, find.text('Delete Exercise').last);
+    expect(find.text('Barbell Bench Press'), findsNothing);
+    await tap(tester, find.text('Undo'));
+    expect(find.text('Barbell Bench Press'), findsWidgets);
+    expect(find.text('Elbows in'), findsOneWidget);
 
+    await tap(tester, find.byKey(const ValueKey('exercise-menu-bench')));
+    await choose(tester, 'Delete Exercise');
     expect(find.text('Barbell Bench Press'), findsNothing);
     await tap(tester, find.byKey(const ValueKey('session-save')));
     expect((await stored(tester))!.exercises, isEmpty);

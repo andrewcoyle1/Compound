@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/workout_tracker/logic/set_changes.dart';
 import 'package:compound/workout_tracker/logic/tracker_clock.dart';
 import 'package:compound/workout_tracker/view/set_table.dart';
@@ -136,8 +137,8 @@ Future<bool> confirmDestructive(
   cancelLabel: context.l10n.trackerCancel,
 );
 
-/// Deletes [set], asking first when its drops or mini-sets would go with
-/// it: "Delete Set 2? This also deletes its 2 drop sets."
+/// Deletes [set] with its drops or mini-sets at once, with an Undo that
+/// puts them all back, rather than asking first.
 Future<void> deleteSet(
   BuildContext context,
   SetTableActions actions,
@@ -145,21 +146,14 @@ Future<void> deleteSet(
   WorkoutSetModel set,
   String badge,
 ) async {
-  final l10n = context.l10n;
-  final message = TrackerText.subSetsDeleted(
-    l10n,
-    exercise.subSetsRemovedBy(set.id),
-  );
-  if (message != null) {
-    final delete = await confirmDestructive(
-      context,
-      title: l10n.trackerDeleteSetTitle(TrackerText.setName(l10n, set, badge)),
-      message: message,
-      action: l10n.trackerDeleteSet,
-    );
-    if (!delete) return;
-  }
   actions.deleteSet(set.id);
+  showUndoSnackBar(
+    context,
+    message: context.l10n.trackerSetDeleted,
+    onUndo: actions.undoDeleteSet,
+    // A finished workout's editor closes with its screen.
+    owner: actions is BlocBase<Object?> ? actions as BlocBase<Object?> : null,
+  );
 }
 
 /// The rest picker (`SetRestSheet`): minutes and seconds wheels opening on

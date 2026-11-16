@@ -60,3 +60,31 @@ AppSnackBarHandle showUndoableDelete(
     },
   );
 }
+
+/// Says [message] with an Undo that calls [onUndo], after something was
+/// removed from an edit still in memory (a set, an exercise, a machine),
+/// so there is nothing to write until the edit is saved.
+///
+/// With [owner], the cubit [onUndo] works on, the snack bar closes when that
+/// cubit does, such as when its editor is left, so Undo never reaches a
+/// cubit that has gone.
+AppSnackBarHandle showUndoSnackBar(
+  BuildContext context, {
+  required String message,
+  required VoidCallback onUndo,
+  BlocBase<Object?>? owner,
+}) {
+  StreamSubscription<Object?>? ownerGone;
+  unawaited(AppHaptics.success());
+  final handle = showAppSnackBar(
+    context,
+    message,
+    action: AppSnackBarAction(label: context.l10n.undo, onPressed: onUndo),
+    duration: undoDuration(context),
+    onClosed: (_) => unawaited(ownerGone?.cancel()),
+  );
+  if (owner != null && handle.isOpen) {
+    ownerGone = owner.stream.listen(null, onDone: handle.close);
+  }
+  return handle;
+}

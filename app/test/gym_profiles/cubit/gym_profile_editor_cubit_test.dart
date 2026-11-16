@@ -257,6 +257,32 @@ void main() {
       expect(ids, isNot(contains(copy.id)));
       expect(ids, contains(latPulldown));
     });
+
+    test('Undo puts a deleted machine back, unless the gym has changed', () {
+      final cubit = build()
+        ..duplicateMachine(GymEquipmentList.cableMachines, latPulldown);
+      final copy = cubit.state.gym.cableMachines.firstWhere(
+        (m) => GymEditorRules.isCustom(GymEquipmentList.cableMachines, m),
+      );
+      bool hasCopy() =>
+          cubit.state.gym.cableMachines.any((m) => m.id == copy.id);
+
+      cubit
+        ..deleteMachine(GymEquipmentList.cableMachines, copy.id)
+        ..undoDeleteMachine();
+      expect(hasCopy(), isTrue);
+
+      // Only once.
+      cubit.undoDeleteMachine();
+      expect(hasCopy(), isTrue);
+
+      cubit
+        ..deleteMachine(GymEquipmentList.cableMachines, copy.id)
+        ..renamed('Garage')
+        ..undoDeleteMachine();
+      expect(hasCopy(), isFalse);
+      expect(cubit.state.gym.name, 'Garage');
+    });
   });
 
   // The scoped editor the tracker's equipment sheet opens

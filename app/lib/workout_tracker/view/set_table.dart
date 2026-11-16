@@ -30,6 +30,10 @@ abstract interface class SetTableActions {
   /// Deletes [setId] with its pair and sub-rows.
   void deleteSet(String setId);
 
+  /// Puts back the set [deleteSet] removed last, if nothing has been done
+  /// since.
+  void undoDeleteSet();
+
   /// The set type menu.
   void setSetType(String setId, r.SetTypeChoice choice);
 

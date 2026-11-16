@@ -5,6 +5,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/training_library/logic/template_summary.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/workout_editor/cubit/set_target_cubit.dart'
     show SessionScope;
 import 'package:compound/workout_editor/view/set_target_page.dart';
@@ -397,17 +398,16 @@ class _Header extends StatelessWidget {
     );
   }
 
+  /// Deletes the exercise at once, its sets with it, with an Undo that puts
+  /// it back where it was.
   Future<void> _delete(BuildContext context) async {
-    final l10n = context.l10n;
-    final cubit = context.read<ActiveWorkoutCubit>();
-    final delete = await AppDialog.confirmDestructive(
+    final cubit = context.read<ActiveWorkoutCubit>()
+      ..deleteExercise(member.exercise.id);
+    showUndoSnackBar(
       context,
-      title: l10n.trackerDeleteExerciseTitle,
-      message: member.exercise.name,
-      confirmLabel: l10n.trackerDeleteExercise,
-      cancelLabel: l10n.trackerCancel,
+      message: context.l10n.trackerExerciseDeleted,
+      onUndo: cubit.undoDeleteExercise,
     );
-    if (delete) cubit.deleteExercise(member.exercise.id);
   }
 }
 

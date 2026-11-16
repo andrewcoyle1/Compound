@@ -290,17 +290,6 @@ abstract final class TrackerText {
     String badge,
   ) => set.isWarmup ? l10n.trackerWarmupSetName : l10n.trackerSetName(badge);
 
-  /// "This also deletes its 2 drop sets.", or `null` when it takes none.
-  static String? subSetsDeleted(
-    AppLocalizations l10n,
-    ({int drops, int minis}) removed,
-  ) => switch (removed) {
-    (drops: 0, minis: 0) => null,
-    (:final drops, minis: 0) => l10n.trackerDeleteAlsoDrops(drops),
-    (drops: 0, :final minis) => l10n.trackerDeleteAlsoMinis(minis),
-    (:final drops, :final minis) => l10n.trackerDeleteAlsoBoth(drops + minis),
-  };
-
   // MARK: - The progression note
 
   /// Why smart progression changed today's numbers, in a sentence: "+2.5 kg

@@ -504,14 +504,24 @@ void main() {
       expect(sets(c)[0].reps, 9);
     });
 
-    test('an undo for a deleted exercise or set is skipped', () {
+    test('undoing a deleted exercise, then its deleted set, puts both '
+        'back', () {
       final c = make()
         ..logSet('set-1')
         ..deleteSet('set-2')
         ..deleteExercise('exercise-1')
-        ..undo()
         ..undo();
-      expect(c.session.exercises, isEmpty);
+      expect(sets(c).map((s) => s.id), ['set-1', 'set-3']);
+      c.undo();
+      expect(sets(c).map((s) => s.id), ['set-1', 'set-2', 'set-3']);
+    });
+
+    test('an undo for a set whose exercise has gone is skipped', () {
+      final c = make()
+        ..deleteSet('set-2')
+        ..swapExercise('exercise-1', library('row'))
+        ..undo();
+      expect(c.session.exercises.single.templateId, 'row');
     });
 
     test('clearing forgets every undo; nothing to undo or redo is fine', () {
@@ -803,6 +813,27 @@ void main() {
         ..deleteExercise('squat');
       expect(c.currentExercise?.id, 'curl');
       expect(c.currentExerciseIndex, 1);
+    });
+
+    test('undo puts a deleted exercise back where it was', () {
+      final c = make(['squat', 'press', 'curl'])..deleteExercise('press');
+      expect(c.undoName, const UndoName(UndoKind.deleteExercise));
+      c.undo();
+      expect(c.session.exercises.map((e) => e.id), ['squat', 'press', 'curl']);
+      expect(c.session.exercises.map((e) => e.index), [1, 2, 3]);
+      expect(c.session.exercises[1].sets, hasLength(2));
+    });
+
+    test('undo puts a deleted superset member back in its superset', () {
+      final c = controller(
+        session([
+          exercise('squat', group: 'g'),
+          exercise('press', index: 2, group: 'g'),
+        ]),
+      )..deleteExercise('press');
+      expect(c.session.exercises.single.supersetGroupId, isNull);
+      c.undo();
+      expect(c.session.exercises.map((e) => e.supersetGroupId), ['g', 'g']);
     });
 
     test('deleting the exercise a rest follows calls the rest off', () {

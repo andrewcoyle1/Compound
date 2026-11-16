@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/workout_editor/cubit/set_target_cubit.dart'
     show SessionScope;
 import 'package:compound/workout_editor/view/set_target_page.dart';
@@ -438,15 +439,16 @@ class _ActionChips extends StatelessWidget {
     await ExerciseSettingsPage.push(context, model);
   }
 
+  /// Deletes the exercise from the edit at once, with an Undo; nothing is
+  /// saved until Save either way.
   Future<void> _delete(BuildContext context) async {
-    final cubit = context.read<SessionEditCubit>();
-    final delete = await AppDialog.confirmDestructive(
+    final cubit = context.read<SessionEditCubit>()
+      ..deleteExercise(member.exercise.id);
+    showUndoSnackBar(
       context,
-      title: context.l10n.trackerDeleteExerciseTitle,
-      message: member.exercise.name,
-      confirmLabel: context.l10n.trackerDeleteExercise,
-      cancelLabel: context.l10n.trackerCancel,
+      message: context.l10n.trackerExerciseDeleted,
+      onUndo: cubit.undoDeleteExercise,
+      owner: cubit,
     );
-    if (delete) cubit.deleteExercise(member.exercise.id);
   }
 }

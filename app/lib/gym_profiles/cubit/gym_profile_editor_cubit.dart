@@ -181,8 +181,25 @@ class GymProfileEditorCubit extends Cubit<GymProfileEditorState> {
   }
 
   /// Removes machine [id] if the user made it.
-  void deleteMachine(GymEquipmentList list, String id) =>
-      edit((gym) => GymEditorRules.deletingMachine(gym, list, id));
+  void deleteMachine(GymEquipmentList list, String id) {
+    final before = state.gym;
+    edit((gym) => GymEditorRules.deletingMachine(gym, list, id));
+    _deleted = (before: before, after: state.gym);
+  }
+
+  /// The gym before and after the last machine deleted, for its Undo.
+  ({GymProfileModel before, GymProfileModel after})? _deleted;
+
+  /// The snack bar's Undo: puts the machine back, unless the gym has been
+  /// edited since, which the Undo would throw away.
+  void undoDeleteMachine() {
+    final deleted = _deleted;
+    _deleted = null;
+    if (isClosed || deleted == null || !identical(state.gym, deleted.after)) {
+      return;
+    }
+    edit((_) => deleted.before);
+  }
 
   /// Where a gym's photo is stored (`GymProfileManager.saveGymProfile`).
   static String photoPath(GymProfileModel gym) =>

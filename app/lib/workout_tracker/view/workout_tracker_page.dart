@@ -182,16 +182,9 @@ class _WorkoutTrackerViewState extends State<WorkoutTrackerView> {
             actions: [AppDialogAction(label: l10n.keypadDone)],
           ),
         );
+      // The delete's own snack bar, with Undo, comes from deleteSet.
       case SetDeletedEffect():
-        unawaited(AppHaptics.success());
-        showAppSnackBar(
-          context,
-          l10n.trackerSetDeleted,
-          action: AppSnackBarAction(
-            label: l10n.trackerUndo,
-            onPressed: _cubit.undo,
-          ),
-        );
+        break;
       case SelectionEffect():
         unawaited(AppHaptics.selection());
       case SavedEffect():

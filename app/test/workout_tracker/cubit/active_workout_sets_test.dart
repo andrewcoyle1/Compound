@@ -165,17 +165,13 @@ void main() {
       );
     });
 
-    test('deleting a set with drops says how many go', () async {
+    test('deleting a set with drops counts how many go', () async {
       final [s1, s2, ...] = await bench();
       cubit
         ..setSetType(s1, const r.SetTypeChoice.ofKind(r.SetKind.drop))
         ..addSubSet(s1, r.SubSetKind.drop);
       final removed = cubit.state.subSetsRemovedBy(s1);
       expect(removed, (drops: 2, minis: 0));
-      expect(
-        TrackerText.subSetsDeleted(l10n, removed),
-        'This also deletes its 2 drop sets.',
-      );
       expect(cubit.state.subSetsRemovedBy(s2), (drops: 0, minis: 0));
       expect(cubit.state.subSetsRemovedBy('missing'), (drops: 0, minis: 0));
 
@@ -350,14 +346,6 @@ void main() {
       }
       expect(TrackerText.setName(l10n, row(), '2'), 'Set 2');
       expect(TrackerText.setName(l10n, row(warmup: true), 'W'), 'Warm-up set');
-      expect(
-        TrackerText.subSetsDeleted(l10n, (drops: 0, minis: 1)),
-        'This also deletes its mini-set.',
-      );
-      expect(
-        TrackerText.subSetsDeleted(l10n, (drops: 1, minis: 2)),
-        'This also deletes its 3 drop sets and mini-sets.',
-      );
     });
 
     test('every set type has a name', () {

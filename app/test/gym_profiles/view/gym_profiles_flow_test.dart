@@ -189,12 +189,20 @@ void main() {
     await tester.pumpAndSettle();
     await tap(tester, find.byIcon(AppSymbols.duplicate));
     expect(find.text('Hammer Pulldown 2'), findsOneWidget);
-    await tester.ensureVisible(find.text('Hammer Pulldown 2'));
-    await tester.longPress(find.text('Hammer Pulldown 2'));
-    await tester.pumpAndSettle();
-    await tap(tester, find.text('Delete'));
-    expect(find.text('Delete Machine?'), findsOneWidget);
-    await tap(tester, find.text('Delete').last);
+    // Deleting goes at once; Undo brings it back.
+    Future<void> deleteCopy() async {
+      await tester.ensureVisible(find.text('Hammer Pulldown 2'));
+      await tester.longPress(find.text('Hammer Pulldown 2'));
+      await tester.pumpAndSettle();
+      await tap(tester, find.text('Delete'));
+    }
+
+    await deleteCopy();
+    expect(find.text('Delete Machine?'), findsNothing);
+    expect(find.text('Hammer Pulldown 2'), findsNothing);
+    await tap(tester, find.text('Undo'));
+    expect(find.text('Hammer Pulldown 2'), findsOneWidget);
+    await deleteCopy();
     expect(find.text('Hammer Pulldown 2'), findsNothing);
 
     // A plate-loaded machine's base weight, on one side.

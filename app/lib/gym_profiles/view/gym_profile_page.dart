@@ -11,6 +11,7 @@ import 'package:compound/gym_profiles/view/machine_sheets.dart';
 import 'package:compound/gym_profiles/view/stack_machine_editor.dart';
 import 'package:compound/gym_profiles/view/weight_list_editor.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_repository/image_repository.dart';
@@ -426,25 +427,21 @@ class _EquipmentRow extends StatelessWidget {
         cubit.duplicateMachine(list, item.id);
         unawaited(AppHaptics.success());
       case _MachineAction.delete:
-        await _confirmDelete(context, cubit);
+        _delete(context, cubit);
       case null:
         break;
     }
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    GymProfileEditorCubit cubit,
-  ) async {
-    final l10n = context.l10n;
-    final delete = await AppDialog.confirmDestructive(
+  /// Deletes the machine from the edit at once, with an Undo.
+  void _delete(BuildContext context, GymProfileEditorCubit cubit) {
+    cubit.deleteMachine(list, item.id);
+    showUndoSnackBar(
       context,
-      title: l10n.gymDeleteMachineTitle,
-      message: l10n.gymDeleteMachineMessage(GymEditorRules.nameOf(item)),
-      confirmLabel: l10n.gymDelete,
-      cancelLabel: l10n.gymCancel,
+      message: context.l10n.gymMachineDeleted,
+      onUndo: cubit.undoDeleteMachine,
+      owner: cubit,
     );
-    if (delete) cubit.deleteMachine(list, item.id);
   }
 
   @override
@@ -520,7 +517,7 @@ class _EquipmentRow extends StatelessWidget {
             label: l10n.gymDelete,
             icon: AppSymbols.delete,
             isDestructive: true,
-            onPressed: () => unawaited(_confirmDelete(context, cubit)),
+            onPressed: () => _delete(context, cubit),
           ),
       ],
       trailingFullSwipe: false,

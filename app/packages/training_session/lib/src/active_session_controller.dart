@@ -725,23 +725,36 @@ class ActiveSessionController {
 
   /// Takes [exerciseId] out: a superset partner left alone is no longer
   /// one, and a card on it moves to the next exercise in order with sets
-  /// left.
+  /// left. Undo puts it back where it was, in its superset.
   void deleteExercise(String exerciseId) {
     final index = _session.exercises.indexWhere((e) => e.id == exerciseId);
     if (index < 0) return;
     final removed = _session.exercises[index];
     var updated = [..._session.exercises]..removeAt(index);
     final group = removed.supersetGroupId;
+    String? leftAlone;
     if (group != null) {
       final partners = updated.where((e) => e.supersetGroupId == group);
       if (partners.length == 1) {
         final partner = partners.single;
+        leftAlone = partner.id;
         updated = [
           for (final e in updated)
             if (e.id == partner.id) e.copyWith(supersetGroupId: null) else e,
         ];
       }
     }
+    _register(const UndoName(UndoKind.deleteExercise), () {
+      final restored = [
+        for (final e in _session.exercises)
+          // The partner it left alone rejoins the superset.
+          if (e.id == leftAlone && e.supersetGroupId == null)
+            e.copyWith(supersetGroupId: group)
+          else
+            e,
+      ]..insert(math.min(index, _session.exercises.length), removed);
+      _setExercises(_reindexed(restored));
+    });
     updated = _reindexed(updated);
     var card = currentExercise?.id;
     if (card == exerciseId) {

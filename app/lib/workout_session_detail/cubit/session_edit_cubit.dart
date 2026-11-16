@@ -489,6 +489,17 @@ class SessionEditCubit extends Cubit<SessionEditState>
     _track('SetTrackerRow_SetDeleted');
   }
 
+  /// The snack bar's Undo: puts the deleted set back, if a delete is still
+  /// the last edit. Nothing once the editor has closed.
+  @override
+  void undoDeleteSet() {
+    if (isClosed) return;
+    _edit((c) {
+      if (c.undoName?.kind == UndoKind.deleteSet) c.undo();
+    });
+    _track('SetTrackerRow_SetDeleted_Undo');
+  }
+
   /// The set type menu.
   @override
   void setSetType(String setId, r.SetTypeChoice choice) {
@@ -572,6 +583,15 @@ class SessionEditCubit extends Cubit<SessionEditState>
   /// Delete on an exercise, once confirmed.
   void deleteExercise(String exerciseId) =>
       _edit((c) => c.deleteExercise(exerciseId));
+
+  /// The snack bar's Undo: puts the deleted exercise back, if that delete is
+  /// still the last edit. Nothing once the editor has closed.
+  void undoDeleteExercise() {
+    if (isClosed) return;
+    _edit((c) {
+      if (c.undoName?.kind == UndoKind.deleteExercise) c.undo();
+    });
+  }
 
   /// Exercises picked to add, each with one set in the default rep range.
   void addExercises(List<ExerciseModel> exercises) {

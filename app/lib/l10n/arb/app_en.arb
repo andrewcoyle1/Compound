@@ -6709,10 +6709,6 @@
     "@trackerDeleteExercise": {
         "description": "Tracker: exercise menu"
     },
-    "trackerDeleteExerciseTitle": "Delete Exercise?",
-    "@trackerDeleteExerciseTitle": {
-        "description": "Tracker: delete exercise confirmation"
-    },
     "trackerDeleteSet": "Delete Set",
     "@trackerDeleteSet": {
         "description": "Tracker: set menu"
@@ -6720,6 +6716,10 @@
     "trackerSetDeleted": "Set deleted",
     "@trackerSetDeleted": {
         "description": "Tracker: snack bar after deleting a set"
+    },
+    "trackerExerciseDeleted": "Exercise deleted",
+    "@trackerExerciseDeleted": {
+        "description": "Tracker and workout editor: snack bar after deleting an exercise, with Undo"
     },
     "trackerNotes": "Notes",
     "@trackerNotes": {
@@ -8682,15 +8682,9 @@
     "@gymAddMachine": {},
     "gymDuplicate": "Duplicate",
     "@gymDuplicate": {},
-    "gymDeleteMachineTitle": "Delete Machine?",
-    "@gymDeleteMachineTitle": {},
-    "gymDeleteMachineMessage": "{name} will be removed from this gym.",
-    "@gymDeleteMachineMessage": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
+    "gymMachineDeleted": "Machine deleted",
+    "@gymMachineDeleted": {
+        "description": "Gym editor: snack bar after deleting a machine, with Undo"
     },
     "gymNumberedName": "{name} {number}",
     "@gymNumberedName": {
@@ -11877,42 +11871,6 @@
     "trackerDeleteHold": "Delete Hold",
     "@trackerDeleteHold": {
         "description": "Row action: delete a hold after a set"
-    },
-    "trackerDeleteSetTitle": "Delete {name}?",
-    "@trackerDeleteSetTitle": {
-        "description": "Alert title: deleting a set that has drops or mini-sets, e.g. Delete Set 2?",
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "trackerDeleteAlsoDrops": "{count, plural, =1{This also deletes its drop set.} other{This also deletes its {count} drop sets.}}",
-    "@trackerDeleteAlsoDrops": {
-        "description": "Alert: deleting a set takes its drops too",
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "trackerDeleteAlsoMinis": "{count, plural, =1{This also deletes its mini-set.} other{This also deletes its {count} mini-sets.}}",
-    "@trackerDeleteAlsoMinis": {
-        "description": "Alert: deleting a set takes its mini-sets too",
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "trackerDeleteAlsoBoth": "{count, plural, =1{This also deletes its drop set and mini-set.} other{This also deletes its {count} drop sets and mini-sets.}}",
-    "@trackerDeleteAlsoBoth": {
-        "description": "Alert: deleting a set takes its drops and mini-sets too",
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
     },
     "trackerChangeTypeTitle": "Change {name} to {type}?",
     "@trackerChangeTypeTitle": {

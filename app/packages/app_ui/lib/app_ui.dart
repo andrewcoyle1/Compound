@@ -30,6 +30,7 @@ export 'src/widgets/app_footnote.dart';
 export 'src/widgets/app_hero_stat.dart';
 export 'src/widgets/app_icon_badge.dart';
 export 'src/widgets/app_icon_button.dart';
+export 'src/widgets/app_icon_swap.dart';
 export 'src/widgets/app_inline_message.dart';
 export 'src/widgets/app_list_row.dart';
 export 'src/widgets/app_list_row_button.dart';

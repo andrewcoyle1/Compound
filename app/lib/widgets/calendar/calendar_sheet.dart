@@ -68,9 +68,7 @@ class _CalendarSheetState extends State<CalendarSheet> {
     if (target == null || !mounted) return;
     Scrollable.ensureVisible(
       target,
-      duration: animate
-          ? AppMotion.move.durationOf(context)
-          : Duration.zero,
+      duration: animate ? AppMotion.move.durationOf(context) : Duration.zero,
       curve: AppMotion.move.curve,
     );
   }

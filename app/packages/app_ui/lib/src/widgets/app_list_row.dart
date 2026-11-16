@@ -218,10 +218,13 @@ class AppListRow extends StatelessWidget {
         size: glyphSize,
         color: scheme.outline,
       ),
-      AppListRowCheckmark(:final selected) => Icon(
-        selected ? AppSymbols.choiceSelected : AppSymbols.choiceUnselected,
-        size: glyphSize,
-        color: selected ? context.appColors.accentInk : scheme.outline,
+      AppListRowCheckmark(:final selected) => AppIconSwap(
+        value: selected,
+        child: Icon(
+          selected ? AppSymbols.choiceSelected : AppSymbols.choiceUnselected,
+          size: glyphSize,
+          color: selected ? context.appColors.accentInk : scheme.outline,
+        ),
       ),
       AppListRowCustom(pinned: true, :final child) => child,
       _ => null,

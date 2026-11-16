@@ -130,6 +130,23 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppIconSwap', [
+      galleryInline(
+        'tap to swap',
+        GalleryLive(
+          initial: false,
+          builder: (on, update) => AppPressable(
+            onTap: () => update(!on),
+            child: AppIconSwap(
+              value: on,
+              child: Icon(
+                on ? AppSymbols.choiceSelected : AppSymbols.choiceUnselected,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('AppPressScale', [
       galleryInline(
         'press: shrinks to 0.96',
@@ -160,6 +177,16 @@ List<Widget> galleryButtons(BuildContext context) {
     galleryEntry('AppDoneMark', [
       galleryInline('medium', const AppDoneMark()),
       galleryInline('small', const AppDoneMark(size: AppIconSize.small)),
+      galleryInline(
+        'toggle: tap to swap',
+        GalleryLive(
+          initial: false,
+          builder: (done, update) => AppPressable(
+            onTap: () => update(!done),
+            child: AppDoneMark.toggle(done: done),
+          ),
+        ),
+      ),
     ]),
     galleryEntry('AppIconBadge', [
       galleryInline('filled', const AppIconBadge(icon: AppSymbols.meal)),

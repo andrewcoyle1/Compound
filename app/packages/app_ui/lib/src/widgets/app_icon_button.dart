@@ -154,10 +154,14 @@ class AppIconButton extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     spacing: AppSpacing.xs,
                     children: [
-                      Icon(
-                        icon,
-                        size: AppIconSize.small.of(context),
-                        color: color,
+                      // A like or a bookmark swaps its glyph when toggled.
+                      AppIconSwap(
+                        value: icon,
+                        child: Icon(
+                          icon,
+                          size: AppIconSize.small.of(context),
+                          color: color,
+                        ),
                       ),
                       if (label != null)
                         Text(

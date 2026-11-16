@@ -406,13 +406,7 @@ class SetTableRow extends StatelessWidget {
           onTap: () => cubit.toggleSet(set.id),
           child: SizedBox.square(
             dimension: AppControlSize.row,
-            child: isLogged
-                ? const AppDoneMark()
-                : Icon(
-                    AppSymbols.choiceUnselected,
-                    size: AppIconSize.medium.of(context),
-                    color: scheme.onSurfaceVariant,
-                  ),
+            child: AppDoneMark.toggle(done: isLogged),
           ),
         ),
       ),

@@ -27,6 +27,38 @@ void main() {
     });
   });
 
+  group('AppDoneMark.toggle', () {
+    testWidgets('is the empty circle until done', (tester) async {
+      await tester.pumpApp(
+        const Center(child: AppDoneMark.toggle(done: false)),
+      );
+      final circle = tester.widget<Icon>(
+        find.byIcon(AppSymbols.choiceUnselected),
+      );
+      expect(circle.color, AppTheme.light.colorScheme.onSurfaceVariant);
+      expect(find.byIcon(AppSymbols.selected), findsNothing);
+
+      await tester.pumpApp(const Center(child: AppDoneMark.toggle(done: true)));
+      expect(find.byIcon(AppSymbols.selected), findsOneWidget);
+      expect(find.byIcon(AppSymbols.choiceUnselected), findsNothing);
+    });
+
+    testWidgets('draws the empty circle in undoneColor', (tester) async {
+      await tester.pumpApp(
+        const Center(
+          child: AppDoneMark.toggle(
+            done: false,
+            undoneColor: Color(0xFF00FF00),
+          ),
+        ),
+      );
+      expect(
+        tester.widget<Icon>(find.byIcon(AppSymbols.choiceUnselected)).color,
+        const Color(0xFF00FF00),
+      );
+    });
+  });
+
   group('AppDoneMark golden', () {
     goldenStates('app_done_mark', [
       ('Medium', const AppDoneMark()),

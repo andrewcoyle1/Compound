@@ -252,13 +252,10 @@ class _ItemRow extends StatelessWidget {
             ExcludeSemantics(
               child: AppConfetti(
                 play: celebrate,
-                child: item.isDone
-                    ? const AppDoneMark()
-                    : Icon(
-                        AppSymbols.choiceUnselected,
-                        size: AppIconSize.medium.of(context),
-                        color: scheme.outline,
-                      ),
+                child: AppDoneMark.toggle(
+                  done: item.isDone,
+                  undoneColor: scheme.outline,
+                ),
               ),
             ),
             pinned: true,

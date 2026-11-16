@@ -77,6 +77,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A card | `AppCard`, `AppStatTile` |
 | A colour or a mesocycle's glyph in a circle, as a picker or a row's thumbnail | `AppSwatch` |
 | A grid cell's selected state (a photo, a muscle, a day) | `AppSelectionRing` |
+| An icon that changes with state (a circle becoming a tick, a like filling in) | `AppIconSwap(value:)`: the new icon grows from 0.3 as the old one shrinks away, in the same spot. `AppDoneMark.toggle(done:)` for a set's or task's circle. Never for navigation icons or text |
 | A value | `AppStat` |
 | A tag or filter | `AppChip` |
 | A number entry | `AppNumberField` |

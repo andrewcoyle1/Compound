@@ -6,6 +6,7 @@ import 'package:app_ui/app_ui.dart' show AppWeightUnit;
 import 'package:bloc/bloc.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_repository/image_repository.dart';
@@ -30,24 +31,37 @@ class ProgressPhotosCubit extends Cubit<ProgressPhotosState> {
     required this._analytics,
     AppWeightUnit weightUnit = AppWeightUnit.kilograms,
     this._clock = DateTime.now,
+    PendingDeletes? pendingDeletes,
   }) : super(ProgressPhotosState(weightUnit: weightUnit)) {
     _analytics.appear(_screen);
-    _subscription = _body
-        .watchProgressPhotos(_uid)
-        .listen(
-          (photos) => emit(
-            state.copyWith(
-              photos: photos,
-              loaded: true,
-              // A photo deleted elsewhere is no longer chosen.
-              selectedIds: [
-                for (final id in state.selectedIds)
-                  if (photos.any((photo) => photo.id == id)) id,
-              ],
-            ),
-          ),
-          onError: (Object _) => emit(state.copyWith(loaded: true)),
-        );
+    _subscription = _body.watchProgressPhotos(_uid).listen((photos) {
+      _stored = photos;
+      _show(loaded: true);
+    }, onError: (Object _) => emit(state.copyWith(loaded: true)));
+    _pendingSubscription = pendingDeletes?.watch().listen((keys) {
+      _hidden = keys;
+      if (state.loaded) _show();
+    });
+  }
+
+  /// The photos as stored, and the ones waiting on an Undo, left out.
+  List<ProgressPhotoModel> _stored = const [];
+  Set<String> _hidden = const {};
+  StreamSubscription<Set<String>>? _pendingSubscription;
+
+  void _show({bool? loaded}) {
+    final photos = _stored.hide(_hidden, (p) => PendingKeys.photo(p.id));
+    emit(
+      state.copyWith(
+        photos: photos,
+        loaded: loaded,
+        // A photo deleted, here or elsewhere, is no longer chosen.
+        selectedIds: [
+          for (final id in state.selectedIds)
+            if (photos.any((photo) => photo.id == id)) id,
+        ],
+      ),
+    );
   }
 
   static const _screen = 'ProgressPhotosView';
@@ -98,24 +112,17 @@ class ProgressPhotosCubit extends Cubit<ProgressPhotosState> {
   /// `ProgressPhotosView_Compare`; the view opens the pair.
   void comparePressed() => _analytics.analytic('${_screen}_Compare');
 
-  /// Deletes [photo], once confirmed.
-  Future<void> deleteConfirmed(ProgressPhotoModel photo) async {
-    emit(
-      state.copyWith(
-        selectedIds: [
-          for (final id in state.selectedIds)
-            if (id != photo.id) id,
-        ],
-      ),
-    );
+  /// Deletes [photo] for good, once its Undo has gone. This cubit may have
+  /// gone by then, so it only writes and records, and rethrows a failure for
+  /// the snack bar to report.
+  Future<void> delete(ProgressPhotoModel photo) async {
     _analytics.analytic('${_screen}_Delete_Start');
     try {
       await _body.deleteProgressPhoto(_uid, photo.id);
       _analytics.analytic('${_screen}_Delete_Success');
     } on Object catch (error) {
       _analytics.severe('${_screen}_Delete_Fail', error);
-      emit(state.copyWith(deleteFailures: state.deleteFailures + 1));
-      return;
+      rethrow;
     }
     // An unreferenced image is harmless, and not worth failing over.
     try {
@@ -182,6 +189,7 @@ class ProgressPhotosCubit extends Cubit<ProgressPhotosState> {
   Future<void> close() async {
     _analytics.disappear(_screen);
     await _subscription.cancel();
+    await _pendingSubscription?.cancel();
     await super.close();
   }
 }

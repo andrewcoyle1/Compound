@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:app_ui/app_ui.dart' show AppWeightUnit;
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_repository/image_repository.dart';
 
@@ -115,16 +116,19 @@ void main() {
     analytics = AnalyticsRecorder();
   });
 
-  ProgressPhotosCubit build({ImageRepository? imageRepository}) =>
-      ProgressPhotosCubit(
-        uid: _uid,
-        body: body,
-        images: imageRepository ?? images,
-        picker: picker,
-        analytics: analytics,
-        weightUnit: AppWeightUnit.pounds,
-        clock: () => today,
-      );
+  ProgressPhotosCubit build({
+    ImageRepository? imageRepository,
+    PendingDeletes? pendingDeletes,
+  }) => ProgressPhotosCubit(
+    uid: _uid,
+    body: body,
+    images: imageRepository ?? images,
+    picker: picker,
+    analytics: analytics,
+    weightUnit: AppWeightUnit.pounds,
+    clock: () => today,
+    pendingDeletes: pendingDeletes,
+  );
 
   Future<ProgressPhotosCubit> loaded({ImageRepository? imageRepository}) async {
     final cubit = build(imageRepository: imageRepository);
@@ -305,7 +309,7 @@ void main() {
       );
       cubit.photoPressed(added);
 
-      await cubit.deleteConfirmed(added);
+      await cubit.delete(added);
       await pumpEventQueue();
 
       expect(cubit.state.photos.map((photo) => photo.id), [
@@ -320,19 +324,39 @@ void main() {
 
     test('a failed image delete is ignored', () async {
       final cubit = await loaded(imageRepository: _FailingImageDelete());
-      await cubit.deleteConfirmed(cubit.state.photos.first);
+      await cubit.delete(cubit.state.photos.first);
       await pumpEventQueue();
       expect(cubit.state.photos, hasLength(2));
-      expect(cubit.state.deleteFailures, 0);
     });
 
-    test('a delete that cannot start says so', () async {
+    test('a delete that cannot start is recorded and rethrown', () async {
       body.failDelete = true;
       final cubit = await loaded();
-      await cubit.deleteConfirmed(cubit.state.photos.first);
+      await expectLater(
+        cubit.delete(cubit.state.photos.first),
+        throwsA(anything),
+      );
       expect(cubit.state.photos, hasLength(3));
-      expect(cubit.state.deleteFailures, 1);
       expect(analytics.names.last, 'ProgressPhotosView_Delete_Fail');
+    });
+
+    test('a photo waiting on an Undo is left out, and unchosen', () async {
+      final pending = PendingDeletes();
+      addTearDown(pending.close);
+      final cubit = build(pendingDeletes: pending);
+      addTearDown(cubit.close);
+      await pumpEventQueue();
+      final photo = cubit.state.photos.first;
+      cubit.photoPressed(photo);
+
+      pending.schedule(PendingKeys.photo(photo.id), () async {});
+      await pumpEventQueue();
+      expect(cubit.state.photos, isNot(contains(photo)));
+      expect(cubit.state.selectedIds, isEmpty);
+
+      pending.undo(PendingKeys.photo(photo.id));
+      await pumpEventQueue();
+      expect(cubit.state.photos, contains(photo));
     });
   });
 }

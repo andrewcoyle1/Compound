@@ -7,6 +7,8 @@ import 'package:compound/app/app.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/progress_photos/cubit/progress_photos_cubit.dart';
 import 'package:compound/progress_photos/view/progress_photo_compare_page.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,6 +36,7 @@ class ProgressPhotosPage extends StatelessWidget {
         images: context.read<ImageRepository>(),
         picker: context.read<PhotoPicker>(),
         analytics: context.read<AnalyticsRepository>(),
+        pendingDeletes: context.read<PendingDeletes>(),
         weightUnit:
             app.profile?.submittedWeightUnitPreference ==
                 WeightUnitPreference.pounds
@@ -73,18 +76,21 @@ String photoCaption(
 class ProgressPhotosView extends StatelessWidget {
   const new({super.key});
 
+  /// Takes [photo] away at once, with an Undo; the photo and its image go
+  /// for good once the Undo has gone.
   Future<void> _confirmDelete(
     BuildContext context,
     ProgressPhotoModel photo,
   ) async {
     final l10n = context.l10n;
     final cubit = context.read<ProgressPhotosCubit>();
-    final confirmed = await AppDialog.confirmDestructive(
+    showUndoableDelete(
       context,
-      title: l10n.progressPhotosDeleteQuestion,
-      confirmLabel: l10n.progressPhotosDelete,
+      key: PendingKeys.photo(photo.id),
+      message: l10n.progressPhotosDeleted,
+      failedMessage: l10n.progressPhotosDeleteFailed,
+      commit: () => cubit.delete(photo),
     );
-    if (confirmed) await cubit.deleteConfirmed(photo);
   }
 
   Future<void> _askPose(BuildContext context) async {
@@ -152,12 +158,6 @@ class ProgressPhotosView extends StatelessWidget {
               previous.addFailures != current.addFailures,
           listener: (context, _) =>
               _alert(context, l10n.progressPhotosAddFailed),
-        ),
-        BlocListener<ProgressPhotosCubit, ProgressPhotosState>(
-          listenWhen: (previous, current) =>
-              previous.deleteFailures != current.deleteFailures,
-          listener: (context, _) =>
-              _alert(context, l10n.progressPhotosDeleteFailed),
         ),
         BlocListener<ProgressPhotosCubit, ProgressPhotosState>(
           listenWhen: (previous, current) =>

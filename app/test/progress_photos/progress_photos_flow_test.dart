@@ -6,6 +6,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
 import 'package:compound/settings/account/view/edit_profile_page.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_repository/image_repository.dart';
@@ -135,11 +136,21 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    // One chosen (Back no longer): Delete, confirmed, removes it and its
-    // image.
+    // One chosen (Back no longer): Delete takes it away at once, with an
+    // Undo; it and its image go for good once the Undo has gone.
     await tap(tester, find.text('Back'));
     await tap(tester, find.byTooltip('Delete'));
-    await tap(tester, find.widgetWithText(TextButton, 'Delete'));
+    expect(find.text('Side'), findsNothing);
+    expect(images.images, hasLength(2));
+    await tap(tester, find.text('Undo'));
+    expect(find.text('Side'), findsOneWidget);
+
+    await tap(tester, find.text('Side'));
+    await tap(tester, find.byTooltip('Delete'));
+    await tester.pump(undoWindow);
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
     expect(find.text('Side'), findsNothing);
     expect(images.images, hasLength(1));
     expect(find.text('Back'), findsOneWidget);
@@ -153,7 +164,6 @@ void main() {
     for (var i = 0; i < 2; i++) {
       await tap(tester, find.text('Front').first);
       await tap(tester, find.byTooltip('Delete'));
-      await tap(tester, find.widgetWithText(TextButton, 'Delete'));
     }
     expect(find.text('No Progress Photos'), findsOneWidget);
 

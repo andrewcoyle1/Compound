@@ -10746,10 +10746,6 @@
     "@progressPhotosPoseQuestion": {
         "description": "Progress Photos: asks the pose of a library photo"
     },
-    "progressPhotosDeleteQuestion": "Delete this photo?",
-    "@progressPhotosDeleteQuestion": {
-        "description": "Progress Photos: confirms a delete"
-    },
     "progressPhotosDelete": "Delete",
     "@progressPhotosDelete": {
         "description": "Progress Photos: deletes the chosen photo"
@@ -10797,6 +10793,10 @@
     "progressPhotosDeleteFailed": "Unable to Delete Photo",
     "@progressPhotosDeleteFailed": {
         "description": "Progress Photos: deleting failed"
+    },
+    "progressPhotosDeleted": "Photo deleted",
+    "@progressPhotosDeleted": {
+        "description": "Progress photos: snack bar after deleting a photo, with Undo"
     },
     "progressPhotosLoadFailed": "Unable to Load Photo",
     "@progressPhotosLoadFailed": {

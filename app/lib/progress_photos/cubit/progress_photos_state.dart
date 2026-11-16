@@ -26,9 +26,6 @@ final class const ProgressPhotosState({
 
   /// How many adds have failed, so each says so.
   final int addFailures = 0,
-
-  /// How many deletes have failed, so each says so.
-  final int deleteFailures = 0,
 }) extends Equatable {
   /// One section per day, newest first, each day's photos newest first
   /// (`ProgressPhotosPresenter.sections`).
@@ -71,7 +68,6 @@ final class const ProgressPhotosState({
     AppWeightUnit? weightUnit,
     int? loadFailures,
     int? addFailures,
-    int? deleteFailures,
   }) => ProgressPhotosState(
     photos: photos ?? this.photos,
     loaded: loaded ?? this.loaded,
@@ -81,7 +77,6 @@ final class const ProgressPhotosState({
     weightUnit: weightUnit ?? this.weightUnit,
     loadFailures: loadFailures ?? this.loadFailures,
     addFailures: addFailures ?? this.addFailures,
-    deleteFailures: deleteFailures ?? this.deleteFailures,
   );
 
   @override
@@ -94,6 +89,5 @@ final class const ProgressPhotosState({
     weightUnit,
     loadFailures,
     addFailures,
-    deleteFailures,
   ];
 }

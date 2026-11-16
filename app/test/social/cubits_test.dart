@@ -132,7 +132,14 @@ void main() {
             .likedByUserIds,
         [viewer.userId],
       );
-      await cubit.deleteConfirmed(posted);
+      cubit.hide(posted);
+      expect(cubit.state.comments.map((c) => c.id), isNot(contains(posted.id)));
+      cubit.restore(posted);
+      expect(cubit.state.comments.map((c) => c.id), contains(posted.id));
+      cubit
+        ..restore(posted)
+        ..hide(posted);
+      await cubit.delete(posted);
       expect(cubit.state.comments.map((c) => c.id), isNot(contains(posted.id)));
       expect((await social.comments(mayaSession)).map((c) => c.id), [
         isNot('new-comment'),
@@ -178,10 +185,10 @@ void main() {
 
       expect(await cubit.likePressed(comment, viewer.userId), isFalse);
       expect(cubit.state.comments.single.likedByUserIds, isEmpty);
-      await cubit.deleteConfirmed(comment);
+      cubit.hide(comment);
+      await expectLater(cubit.delete(comment), throwsException);
       expect(cubit.state.comments, [comment]);
-      expect(cubit.state.notice, CommentsNotice.deleteFailed);
-      expect(cubit.state.noticeId, 2);
+      expect(cubit.state.noticeId, 1);
     });
 
     test('says when the thread cannot be read', () async {

@@ -422,14 +422,6 @@
     "@commentsUnlike": {
         "description": "Takes back a like on a comment"
     },
-    "commentsDeleteTitle": "Delete Comment?",
-    "@commentsDeleteTitle": {
-        "description": "Confirms deleting a comment"
-    },
-    "commentsDeleteMessage": "Are you sure you want to delete your comment? This cannot be undone.",
-    "@commentsDeleteMessage": {
-        "description": "Confirms deleting a comment"
-    },
     "commentsCancel": "Cancel",
     "@commentsCancel": {
         "description": "Cancel button"
@@ -441,6 +433,10 @@
     "commentsDeleteFailed": "Unable to Delete Comment",
     "@commentsDeleteFailed": {
         "description": "Deleting a comment failed"
+    },
+    "commentsDeleted": "Comment deleted",
+    "@commentsDeleted": {
+        "description": "Comments: snack bar after deleting your comment, with Undo"
     },
     "socialWorkoutCount": "{count, plural, =1{1 workout} other{{count} workouts}}",
     "@socialWorkoutCount": {

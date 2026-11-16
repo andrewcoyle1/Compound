@@ -9,6 +9,8 @@ import 'package:compound/social/comments/comments_cubit.dart';
 import 'package:compound/social/report/report_cubit.dart';
 import 'package:compound/social/report/report_sheet.dart';
 import 'package:compound/social/view/people_widgets.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/widgets/relative_time.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -88,10 +90,7 @@ class _CommentsViewState extends State<CommentsView> {
     unawaited(AppHaptics.heavy());
     await showAppDialog<void>(
       context: context,
-      title: switch (state.notice) {
-        CommentsNotice.deleteFailed => l10n.commentsDeleteFailed,
-        _ => l10n.commentsPostFailed,
-      },
+      title: l10n.commentsPostFailed,
       message: l10n.socialTryAgain,
       actions: [AppDialogAction(label: l10n.settingsOk)],
     );
@@ -358,17 +357,19 @@ class _CommentRow extends StatelessWidget {
     );
   }
 
+  /// Takes the comment away at once, with an Undo; it is deleted, for its
+  /// readers too, once the Undo has gone.
   Future<void> _confirmDelete(BuildContext context) async {
     final l10n = context.l10n;
-    final cubit = context.read<CommentsCubit>();
-    final confirmed = await AppDialog.confirmDestructive(
+    final cubit = context.read<CommentsCubit>()..hide(comment);
+    showUndoableDelete(
       context,
-      title: l10n.commentsDeleteTitle,
-      message: l10n.commentsDeleteMessage,
-      confirmLabel: l10n.commentsDelete,
-      cancelLabel: l10n.commentsCancel,
+      key: PendingKeys.comment(comment.id),
+      message: l10n.commentsDeleted,
+      failedMessage: l10n.commentsDeleteFailed,
+      commit: () => cubit.delete(comment),
+      onUndo: () => cubit.restore(comment),
     );
-    if (confirmed) await cubit.deleteConfirmed(comment);
   }
 }
 

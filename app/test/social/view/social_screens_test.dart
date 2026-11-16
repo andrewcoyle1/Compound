@@ -9,6 +9,7 @@ import 'package:compound/social/followers/people_list_page.dart';
 import 'package:compound/social/profile/social_profile_page.dart';
 import 'package:compound/social/social.dart';
 import 'package:compound/social/weekly_goal/weekly_goal_sheet.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound_models/compound_models.dart' show UserModelKeys;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -302,9 +303,17 @@ void main() {
       await tester.tap(find.byIcon(AppSymbols.heart).first);
       await settle(tester);
 
+      // Your own comment goes at once, with an Undo.
       await tester.tap(find.text('Delete').last);
       await tester.pumpAndSettle();
+      expect(find.text('Hi @maya.chen'), findsNothing);
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(find.text('Hi @maya.chen'), findsOneWidget);
+
       await tester.tap(find.text('Delete').last);
+      await tester.pumpAndSettle();
+      await tester.pump(undoWindow);
       await settle(tester);
       expect(find.text('Hi @maya.chen'), findsNothing);
     });

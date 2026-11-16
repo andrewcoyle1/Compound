@@ -9,7 +9,7 @@ import 'package:social_repository/social_repository.dart';
 enum CommentsStatus { loading, loaded, failed }
 
 /// A write that failed, for the alert that says so.
-enum CommentsNotice { postFailed, deleteFailed }
+enum CommentsNotice { postFailed }
 
 final class const CommentsState({
   final CommentsStatus status = CommentsStatus.loading,
@@ -256,28 +256,39 @@ class CommentsCubit extends Cubit<CommentsState> {
     ),
   );
 
-  /// Deletes [comment] once confirmed: gone at once, back if it fails.
-  Future<void> deleteConfirmed(WorkoutSessionComment comment) async {
+  /// Takes [comment] off the thread at once, while its Undo shows.
+  void hide(WorkoutSessionComment comment) => emit(
+    state.copyWith(
+      comments: [
+        for (final other in state.comments)
+          if (other.id != comment.id) other,
+      ],
+    ),
+  );
+
+  /// Puts [comment] back: its Undo, or a delete that failed.
+  void restore(WorkoutSessionComment comment) {
+    if (isClosed || state.comments.any((other) => other.id == comment.id)) {
+      return;
+    }
     emit(
       state.copyWith(
-        comments: [
-          for (final other in state.comments)
-            if (other.id != comment.id) other,
-        ],
+        comments: CommentThread.threaded([...state.comments, comment]),
       ),
     );
+  }
+
+  /// Deletes [comment] for good, once its Undo has gone. A failure puts it
+  /// back and is rethrown for the snack bar to report.
+  Future<void> delete(WorkoutSessionComment comment) async {
     _track('DeleteComment_Start');
     try {
       await _social.deleteComment(comment.id);
       _track('DeleteComment_Success');
     } on Object catch (error) {
       _track('DeleteComment_Fail', error, LogType.severe);
-      emit(
-        state.copyWith(
-          comments: CommentThread.threaded([...state.comments, comment]),
-          notice: CommentsNotice.deleteFailed,
-        ),
-      );
+      restore(comment);
+      rethrow;
     }
   }
 }

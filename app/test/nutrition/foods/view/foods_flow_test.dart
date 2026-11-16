@@ -10,6 +10,7 @@ import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/meal_detail/meal_detail_page.dart';
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/nutrition/timeline_actions/timeline_actions_sheet.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -408,9 +409,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(await nutrition.watchMeals(uid).first, hasLength(2));
 
+      // Removed at once, with an Undo; saved once the Undo has gone.
       await tester.drag(find.text('Bread').first, const Offset(-200, 0));
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(AppSymbols.delete));
+      await tester.pumpAndSettle();
+      expect(find.text('Food removed'), findsOneWidget);
+      await tester.pump(undoWindow);
       await tester.pumpAndSettle();
       final meals = await nutrition.watchMeals(uid).first;
       expect(

@@ -30,6 +30,8 @@ import 'package:compound/settings/nutrition/view/food_log_settings_page.dart'
     show FoodLogSettingsPage;
 import 'package:compound/tips/feature_tips.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -56,6 +58,7 @@ class NutritionPage extends StatelessWidget {
             analyticsRepository: context.read<AnalyticsRepository>(),
             uid: state.user.uid,
             reviews: context.read<ReviewPrompter>(),
+            pendingDeletes: context.read<PendingDeletes>(),
           )..add(const NutritionDaySubscriptionRequested()),
         ),
         BlocProvider(
@@ -300,9 +303,16 @@ class _Day extends StatelessWidget {
                   : null,
               meal: meal,
               settings: settings,
-              onDeleteItem: (item) => context.read<NutritionDayBloc>().add(
-                NutritionDayItemDeleted(meal, item.itemId),
-              ),
+              onDeleteItem: (item) {
+                final bloc = context.read<NutritionDayBloc>();
+                showUndoableDelete(
+                  context,
+                  key: PendingKeys.mealItem(meal.mealId, item.itemId),
+                  message: context.l10n.nutritionItemRemoved,
+                  failedMessage: context.l10n.nutritionDeleteFailed,
+                  commit: () => bloc.deleteItem(meal.mealId, item.itemId),
+                );
+              },
               onOpenMeal: () => unawaited(MealDetailPage.show(context, meal)),
               onEditItem: (item) => unawaited(_edit(context, meal, item)),
               onLogAgain: () {

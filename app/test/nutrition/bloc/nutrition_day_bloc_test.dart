@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart' show withItems;
 import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/review/review_moment.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -144,6 +145,65 @@ void main() {
           bloc.add(NutritionDayItemDeleted(withItems(meal, [food('b')]), 'b')),
       verify: (_) => verify(() => repository.deleteMeal(uid, 'M')).called(1),
     );
+
+    test(
+      'hides a food waiting on an Undo, and a meal left with none',
+      () async {
+        when(() => repository.watchMeals(uid))
+            .thenAnswer((_) => Stream.value([meal]));
+        final pending = PendingDeletes();
+        addTearDown(pending.close);
+        final bloc = NutritionDayBloc(
+          nutritionRepository: repository,
+          uid: uid,
+          now: now,
+          pendingDeletes: pending,
+        )..add(const NutritionDaySubscriptionRequested());
+        addTearDown(bloc.close);
+        await pumpEventQueue();
+        expect(bloc.state.meals!.single.items, hasLength(2));
+
+        pending.schedule(PendingKeys.mealItem('M', 'a'), () async {});
+        await pumpEventQueue();
+        expect(bloc.state.meals!.single.items.map((i) => i.itemId), ['b']);
+        pending.schedule(PendingKeys.mealItem('M', 'b'), () async {});
+        await pumpEventQueue();
+        expect(bloc.state.meals, isEmpty);
+        pending
+          ..undo(PendingKeys.mealItem('M', 'a'))
+          ..undo(PendingKeys.mealItem('M', 'b'));
+        await pumpEventQueue();
+        expect(bloc.state.meals!.single.items, hasLength(2));
+      },
+    );
+
+    test('deleteItem works from the meal as last stored', () async {
+      final edited = withItems(meal, [food('a'), food('b'), food('c')]);
+      when(() => repository.watchMeals(uid))
+          .thenAnswer((_) => Stream.value([edited]));
+      when(() => repository.saveMeal(any())).thenAnswer((_) async {});
+      final bloc = build()..add(const NutritionDaySubscriptionRequested());
+      addTearDown(bloc.close);
+      await pumpEventQueue();
+
+      await bloc.deleteItem('M', 'a');
+      await bloc.deleteItem('gone', 'a');
+      final saved =
+          verify(() => repository.saveMeal(captureAny())).captured.single
+              as MealLogModel;
+      expect(saved.items.map((i) => i.itemId), ['b', 'c']);
+    });
+
+    test('deleteItem rethrows a failure', () async {
+      when(() => repository.watchMeals(uid))
+          .thenAnswer((_) => Stream.value([meal]));
+      when(() => repository.saveMeal(any()))
+          .thenAnswer((_) async => throw Exception('refused'));
+      final bloc = build()..add(const NutritionDaySubscriptionRequested());
+      addTearDown(bloc.close);
+      await pumpEventQueue();
+      await expectLater(bloc.deleteItem('M', 'a'), throwsException);
+    });
 
     blocTest<NutritionDayBloc, NutritionDayState>(
       'a failure is counted, so the screen says so',

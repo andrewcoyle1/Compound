@@ -13,6 +13,7 @@ import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/nutrition/view/widgets/meal_timeline.dart';
 import 'package:compound/nutrition_overview/nutrition_overview.dart';
 import 'package:compound/settings/nutrition/view/food_log_settings_page.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/widgets/calendar/calendar.dart';
 import 'package:compound_charts/compound_charts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -667,7 +668,12 @@ void main() {
         find.descendant(of: first, matching: find.byIcon(AppSymbols.delete)),
       );
       await tester.pumpAndSettle();
+      expect(find.text('Food removed'), findsOneWidget);
+      await tester.pump(undoWindow);
+      await tester.pumpAndSettle();
       expect(find.text('Unable to Remove Food'), findsOneWidget);
+      await tester.pump(AppSnackBarScopeState.defaultDuration);
+      await tester.pumpAndSettle();
     });
   });
 

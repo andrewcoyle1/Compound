@@ -6,6 +6,7 @@ import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart' show withItems;
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:compound/review/review_moment.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound/widgets/calendar/calendar_day_marker.dart';
 import 'package:compound_maths/compound_maths.dart';
 import 'package:compound_models/compound_models.dart';
@@ -26,6 +27,7 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
     this._now = DateTime.now,
     this._newId = newDocumentId,
     this._reviews,
+    this._pendingDeletes,
   }) : _analytics = analyticsRepository,
        super(_initialState(startOfDay(_now()))) {
     on<NutritionDaySubscriptionRequested>(_onSubscriptionRequested);
@@ -48,15 +50,49 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
   /// tests that leave it out.
   final ReviewPrompter? _reviews;
 
+  /// Foods waiting on an Undo, left out of their meals (and a meal left
+  /// with none, out of the day), so the totals drop at once.
+  final PendingDeletes? _pendingDeletes;
+
+  /// The meals as stored, and the foods hidden from them.
+  List<MealLogModel>? _stored;
+  Set<String> _hidden = const {};
+
+  List<MealLogModel> _visible() {
+    final visible = <MealLogModel>[];
+    for (final meal in _stored ?? const <MealLogModel>[]) {
+      final items = meal.items.hide(
+        _hidden,
+        (item) => PendingKeys.mealItem(meal.mealId, item.itemId),
+      );
+      if (items.isEmpty) continue;
+      visible.add(
+        items.length == meal.items.length ? meal : withItems(meal, items),
+      );
+    }
+    return visible;
+  }
+
   Future<void> _onSubscriptionRequested(
     NutritionDaySubscriptionRequested event,
     Emitter<NutritionDayState> emit,
   ) => Future.wait([
     emit.forEach(
       _nutritionRepository.watchMeals(_uid),
-      onData: (meals) => state.copyWith(meals: meals),
+      onData: (meals) {
+        _stored = meals;
+        return state.copyWith(meals: _visible());
+      },
       onError: (_, _) => state.copyWith(failed: true),
     ),
+    if (_pendingDeletes case final pending?)
+      emit.forEach(
+        pending.watch(),
+        onData: (keys) {
+          _hidden = keys;
+          return _stored == null ? state : state.copyWith(meals: _visible());
+        },
+      ),
     // The repository already falls back to no plan and to Swift's default
     // settings; these cover a stream that fails outright.
     emit.forEach(
@@ -83,21 +119,34 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
     NutritionDayItemDeleted event,
     Emitter<NutritionDayState> emit,
   ) async {
-    final meal = event.meal;
-    final items = [
-      for (final item in meal.items)
-        if (item.itemId != event.itemId) item,
-    ];
     try {
-      if (items.isEmpty) {
-        await _nutritionRepository.deleteMeal(_uid, meal.mealId);
-      } else {
-        final updated = withItems(meal, items);
-        await _nutritionRepository.saveMeal(updated);
-        _askForReview(updated);
-      }
+      await _deleteItem(event.meal, event.itemId);
     } on Object catch (_) {
       emit(state.copyWith(deleteFailures: state.deleteFailures + 1));
+    }
+  }
+
+  /// Deletes food [itemId] from meal [mealId] for good, once its Undo has
+  /// gone. It works from the meal as last stored, not as it was when the
+  /// food was swiped, so edits made meanwhile are kept. A failure is
+  /// rethrown for the snack bar to report.
+  Future<void> deleteItem(String mealId, String itemId) async {
+    final meal = _stored?.where((m) => m.mealId == mealId).firstOrNull;
+    if (meal == null) return;
+    await _deleteItem(meal, itemId);
+  }
+
+  Future<void> _deleteItem(MealLogModel meal, String itemId) async {
+    final items = [
+      for (final item in meal.items)
+        if (item.itemId != itemId) item,
+    ];
+    if (items.isEmpty) {
+      await _nutritionRepository.deleteMeal(_uid, meal.mealId);
+    } else {
+      final updated = withItems(meal, items);
+      await _nutritionRepository.saveMeal(updated);
+      _askForReview(updated);
     }
   }
 

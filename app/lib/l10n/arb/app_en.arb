@@ -5274,6 +5274,10 @@
     "@nutritionDeleteFailed": {
         "description": "A failed delete"
     },
+    "nutritionItemRemoved": "Food removed",
+    "@nutritionItemRemoved": {
+        "description": "Nutrition: snack bar after swiping a food out of a meal, with Undo"
+    },
     "settingsTitle": "Settings",
     "@settingsTitle": {
         "description": "Title of the Settings screen"

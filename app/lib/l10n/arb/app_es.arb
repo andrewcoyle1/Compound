@@ -1067,6 +1067,7 @@
     "nutritionLogMealAt": "Registrar una comida a las {time}",
     "nutritionDeleteItem": "Eliminar",
     "nutritionDeleteFailed": "No se pudo quitar el alimento",
+    "nutritionItemRemoved": "Alimento quitado",
     "settingsTitle": "Ajustes",
     "settingsGeneralHeader": "General",
     "settingsNutritionHeader": "Ajustes de nutrición",

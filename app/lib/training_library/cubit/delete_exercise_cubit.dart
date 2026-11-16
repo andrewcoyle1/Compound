@@ -1,34 +1,26 @@
 import 'package:analytics_repository/analytics_repository.dart';
-import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
 import 'package:training_library_repository/training_library_repository.dart';
 
-/// Where deleting the user's exercise is.
-enum DeleteExerciseStatus { idle, deleting, deleted, failed }
-
 /// Deletes the user's own exercise from its detail screen (Swift
-/// `ExerciseModelDetailPresenter.deleteExercise`).
-class DeleteExerciseCubit extends Cubit<DeleteExerciseStatus> {
-  new({required this._library, required this._analytics})
-    : super(DeleteExerciseStatus.idle);
-
-  final TrainingLibraryRepository _library;
-  final AnalyticsRepository _analytics;
-
+/// `ExerciseModelDetailPresenter.deleteExercise`), once the Undo the screen
+/// offered has gone. The screen has closed by then, so this holds no state
+/// to show: it writes, records, and rethrows a failure for the snack bar.
+class const ExerciseDeleter({
+  required final TrainingLibraryRepository library,
+  required final AnalyticsRepository analytics,
+}) {
   /// Deletes [exerciseId] between
   /// `ExerciseModelDetailView_DeleteExercise_Start` and `_Success` or a
   /// severe `_Fail`.
   Future<void> delete(String exerciseId) async {
-    if (state == DeleteExerciseStatus.deleting) return;
-    emit(DeleteExerciseStatus.deleting);
-    _analytics.analytic('ExerciseModelDetailView_DeleteExercise_Start');
+    analytics.analytic('ExerciseModelDetailView_DeleteExercise_Start');
     try {
-      await _library.deleteUserExercise(exerciseId);
-      _analytics.analytic('ExerciseModelDetailView_DeleteExercise_Success');
-      emit(DeleteExerciseStatus.deleted);
+      await library.deleteUserExercise(exerciseId);
+      analytics.analytic('ExerciseModelDetailView_DeleteExercise_Success');
     } on Object catch (error) {
-      _analytics.severe('ExerciseModelDetailView_DeleteExercise_Fail', error);
-      emit(DeleteExerciseStatus.failed);
+      analytics.severe('ExerciseModelDetailView_DeleteExercise_Fail', error);
+      rethrow;
     }
   }
 }

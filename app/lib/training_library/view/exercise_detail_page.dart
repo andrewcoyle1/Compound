@@ -3,14 +3,11 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
-import 'package:compound/check_in/check_in.dart' show showFailureAlert;
 import 'package:compound/coach/coach.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
 import 'package:compound/metric_detail/view/metric_detail_view.dart'
     show MetricChartPanel;
-import 'package:compound/programs/view/program_widgets.dart'
-    show confirmDestructive;
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
 import 'package:compound/training_library/bloc/exercise_history_bloc.dart';
@@ -22,6 +19,8 @@ import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/workout_history/view/workout_text.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -63,12 +62,6 @@ class ExerciseDetailPage extends StatelessWidget {
               exerciseId: exerciseId,
               analytics: context.read<AnalyticsRepository>(),
             )..add(const ExerciseHistorySubscriptionRequested()),
-          ),
-          BlocProvider(
-            create: (context) => DeleteExerciseCubit(
-              library: context.read<TrainingLibraryRepository>(),
-              analytics: context.read<AnalyticsRepository>(),
-            ),
           ),
         ],
         child: ExerciseDetailView(
@@ -141,10 +134,7 @@ class ExerciseDetailView extends StatelessWidget {
         !exercise.isSystemExercise &&
         app is AppAuthenticated &&
         exercise.authorId == app.user.uid;
-    final deleting =
-        context.watch<DeleteExerciseCubit>().state ==
-        DeleteExerciseStatus.deleting;
-    final scaffold = AppScaffold(
+    return AppScaffold(
       appBar: AppBar(
         actions: [
           if (exercise != null)
@@ -160,7 +150,6 @@ class ExerciseDetailView extends StatelessWidget {
               key: const Key('ExerciseDetail.options'),
               icon: Icon(AppSymbols.more),
               tooltip: l10n.exerciseOptions,
-              enabled: !deleting,
               onSelected: (action) => action(),
               itemBuilder: (_) => [
                 AppMenuItem(
@@ -175,10 +164,6 @@ class ExerciseDetailView extends StatelessWidget {
         title: exercise == null ? null : Text(exercise.name),
       ),
       body: SafeArea(bottom: false, child: body),
-    );
-    return BlocListener<DeleteExerciseCubit, DeleteExerciseStatus>(
-      listener: (context, status) => unawaited(_deleted(context, status)),
-      child: scaffold,
     );
   }
 }
@@ -240,36 +225,22 @@ class _TabsState extends State<_Tabs> {
   }
 }
 
-/// Asks, then deletes the user's [exercise] (Swift
-/// `showDeleteConfirmation`).
+/// Deletes the user's [exercise] at once and leaves, with an Undo that
+/// brings it back to the library; it is written once the Undo has gone.
 Future<void> _delete(BuildContext context, ExerciseModel exercise) async {
   final l10n = context.l10n;
-  final cubit = context.read<DeleteExerciseCubit>();
-  final confirmed = await confirmDestructive(
-    context,
-    title: l10n.exerciseDeleteTitle,
-    message: l10n.exerciseDeleteMessage(exercise.name),
-    confirmLabel: l10n.editorDelete,
+  final deleter = ExerciseDeleter(
+    library: context.read<TrainingLibraryRepository>(),
+    analytics: context.read<AnalyticsRepository>(),
   );
-  if (confirmed) await cubit.delete(exercise.id);
-}
-
-/// Leaves once the exercise is deleted, or says it could not be.
-Future<void> _deleted(BuildContext context, DeleteExerciseStatus status) async {
-  final l10n = context.l10n;
-  switch (status) {
-    case DeleteExerciseStatus.deleted:
-      if (context.canPop()) context.pop();
-    case DeleteExerciseStatus.failed:
-      unawaited(AppHaptics.error());
-      await showFailureAlert(
-        context,
-        l10n.exerciseDeleteFailed,
-        l10n.exerciseDeleteTryLater,
-      );
-    case DeleteExerciseStatus.idle || DeleteExerciseStatus.deleting:
-      break;
-  }
+  showUndoableDelete(
+    context,
+    key: PendingKeys.exercise(exercise.id),
+    message: l10n.exerciseDeleted,
+    failedMessage: l10n.exerciseDeleteFailed,
+    commit: () => deleter.delete(exercise.id),
+  );
+  if (context.canPop()) context.pop();
 }
 
 /// The exercise's hero (a Detail screen's stat block): its best estimated

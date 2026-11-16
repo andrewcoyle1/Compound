@@ -8570,16 +8570,12 @@
     "@editorNewWorkout": {},
     "editorDeleteWorkout": "Delete Workout",
     "@editorDeleteWorkout": {},
-    "editorDeleteMessage": "Are you sure you want to delete '{name}'? This action cannot be undone.",
-    "@editorDeleteMessage": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
     "editorDeleteFailed": "Unable to Delete Workout",
     "@editorDeleteFailed": {},
+    "editorWorkoutDeleted": "Workout deleted",
+    "@editorWorkoutDeleted": {
+        "description": "Workout detail: snack bar after deleting your workout, with Undo"
+    },
     "editorWorkoutOptions": "Workout options",
     "@editorWorkoutOptions": {},
     "editorDecrease": "Decrease",
@@ -9019,18 +9015,12 @@
     "@exerciseDeleteTitle": {
         "description": "Exercise detail: deletes the user's own exercise"
     },
-    "exerciseDeleteMessage": "Are you sure you want to delete '{name}'? This action cannot be undone.",
-    "@exerciseDeleteMessage": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
     "exerciseDeleteFailed": "Failed to delete exercise",
     "@exerciseDeleteFailed": {},
-    "exerciseDeleteTryLater": "Please try again later",
-    "@exerciseDeleteTryLater": {},
+    "exerciseDeleted": "Exercise deleted",
+    "@exerciseDeleted": {
+        "description": "Exercise detail: snack bar after deleting your exercise, with Undo"
+    },
     "nutritionLibraryHeader": "Library",
     "@nutritionLibraryHeader": {},
     "nutritionFoods": "Foods",

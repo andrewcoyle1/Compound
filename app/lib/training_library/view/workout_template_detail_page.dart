@@ -19,6 +19,8 @@ import 'package:compound/training_library/view/exercise_detail_page.dart';
 import 'package:compound/training_library/view/exercise_image.dart';
 import 'package:compound/training_library/view/library_names.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/workout_editor/cubit/delete_workout_cubit.dart';
 import 'package:compound/workout_editor/view/workout_wizard_pages.dart';
 import 'package:compound/workout_tracker/view/start_workout.dart';
@@ -113,18 +115,12 @@ class WorkoutTemplateDetailPage extends StatelessWidget {
     if (state is! AppAuthenticated) return const SizedBox.shrink();
     return TrainingLibraryProvider(
       uid: state.user.uid,
-      child: BlocProvider(
-        create: (context) => DeleteWorkoutCubit(
-          library: context.read<TrainingLibraryRepository>(),
-          analytics: context.read<AnalyticsRepository>(),
-        ),
-        child: WorkoutTemplateDetailView(
-          workoutId: workoutId,
-          mesocycleId: mesocycleId,
-          microcycleIndex: microcycleIndex,
-          isDeload: isDeload,
-          allowsStart: allowsStart,
-        ),
+      child: WorkoutTemplateDetailView(
+        workoutId: workoutId,
+        mesocycleId: mesocycleId,
+        microcycleIndex: microcycleIndex,
+        isDeload: isDeload,
+        allowsStart: allowsStart,
       ),
     );
   }
@@ -173,157 +169,132 @@ class WorkoutTemplateDetailView extends StatelessWidget {
         template,
       _ => null,
     };
-    final deleting =
-        context.watch<DeleteWorkoutCubit>().state ==
-        DeleteWorkoutStatus.deleting;
-    return BlocListener<DeleteWorkoutCubit, DeleteWorkoutStatus>(
-      listener: (context, status) => unawaited(_deleted(context, status)),
-      child: AppScaffold(
-        appBar: AppBar(
-          actions: [
-            if (ownWorkout != null)
-              PopupMenuButton<VoidCallback>(
-                key: const Key('WorkoutTemplateDetail.options'),
-                icon: Icon(AppSymbols.more),
-                tooltip: l10n.editorWorkoutOptions,
-                enabled: !deleting,
-                onSelected: (action) => action(),
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: () => unawaited(
-                      NameWorkoutPage.edit(context, ownWorkout.workoutId),
+    return AppScaffold(
+      appBar: AppBar(
+        actions: [
+          if (ownWorkout != null)
+            PopupMenuButton<VoidCallback>(
+              key: const Key('WorkoutTemplateDetail.options'),
+              icon: Icon(AppSymbols.more),
+              tooltip: l10n.editorWorkoutOptions,
+              onSelected: (action) => action(),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: () => unawaited(
+                    NameWorkoutPage.edit(context, ownWorkout.workoutId),
+                  ),
+                  child: Text(l10n.editorEditWorkout),
+                ),
+                PopupMenuItem(
+                  value: () => unawaited(
+                    showShareToFollower(
+                      context,
+                      TemplateSharePayload(ownWorkout),
                     ),
-                    child: Text(l10n.editorEditWorkout),
                   ),
-                  PopupMenuItem(
-                    value: () => unawaited(
-                      showShareToFollower(
-                        context,
-                        TemplateSharePayload(ownWorkout),
-                      ),
+                  child: Text(l10n.shareWithFriends),
+                ),
+                AppMenuItem(
+                  value: () => unawaited(_delete(context, ownWorkout)),
+                  label: l10n.editorDeleteWorkout,
+                  icon: AppSymbols.delete,
+                  isDestructive: true,
+                ),
+              ],
+            ),
+          if (owning != null && template != null)
+            PopupMenuButton<VoidCallback>(
+              icon: Icon(AppSymbols.more),
+              tooltip: l10n.programMesocycleOptions,
+              onSelected: (action) => action(),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: () =>
+                      unawaited(MesocycleDesignPage.edit(context, owning.id)),
+                  child: Text(l10n.programEditMesocycle),
+                ),
+                PopupMenuItem(
+                  value: () => unawaited(_saveCopy(context, template)),
+                  child: Text(l10n.programSaveCopy),
+                ),
+                PopupMenuItem(
+                  value: () => unawaited(
+                    showShareToFollower(
+                      context,
+                      TemplateSharePayload(template),
                     ),
-                    child: Text(l10n.shareWithFriends),
                   ),
-                  AppMenuItem(
-                    value: () => unawaited(_delete(context, ownWorkout)),
-                    label: l10n.editorDeleteWorkout,
-                    icon: AppSymbols.delete,
-                    isDestructive: true,
-                  ),
-                ],
-              ),
-            if (owning != null && template != null)
-              PopupMenuButton<VoidCallback>(
-                icon: Icon(AppSymbols.more),
-                tooltip: l10n.programMesocycleOptions,
-                onSelected: (action) => action(),
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: () =>
-                        unawaited(MesocycleDesignPage.edit(context, owning.id)),
-                    child: Text(l10n.programEditMesocycle),
-                  ),
-                  PopupMenuItem(
-                    value: () => unawaited(_saveCopy(context, template)),
-                    child: Text(l10n.programSaveCopy),
-                  ),
-                  PopupMenuItem(
-                    value: () => unawaited(
-                      showShareToFollower(
-                        context,
-                        TemplateSharePayload(template),
-                      ),
-                    ),
-                    child: Text(l10n.shareWithFriends),
-                  ),
-                ],
-              ),
-          ],
-          title: template == null ? null : Text(template.name),
-        ),
-        body: SafeArea(
-          bottom: false,
-          child: switch (state) {
-            TrainingLibraryLoading() => AppLoadingView(
-              label: context.l10n.launchLoading,
+                  child: Text(l10n.shareWithFriends),
+                ),
+              ],
             ),
-            TrainingLibraryFailure() => LibraryFailure(
-              message: l10n.workoutsLoadFailure,
-              onRetry: () => context.read<TrainingLibraryBloc>().add(
-                const TrainingLibrarySubscriptionRequested(),
-              ),
+        ],
+        title: template == null ? null : Text(template.name),
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: switch (state) {
+          TrainingLibraryLoading() => AppLoadingView(
+            label: context.l10n.launchLoading,
+          ),
+          TrainingLibraryFailure() => LibraryFailure(
+            message: l10n.workoutsLoadFailure,
+            onRetry: () => context.read<TrainingLibraryBloc>().add(
+              const TrainingLibrarySubscriptionRequested(),
             ),
-            TrainingLibraryLoaded(:final library) when template != null =>
-              _Plan(
-                template: weekOf(template, microcycleIndex),
-                library: library,
-              ),
-            TrainingLibraryLoaded() => Center(
-              child: LibraryEmptyState(
-                icon: AppSymbols.workout,
-                title: l10n.workoutNotFound,
-              ),
+          ),
+          TrainingLibraryLoaded(:final library) when template != null => _Plan(
+            template: weekOf(template, microcycleIndex),
+            library: library,
+          ),
+          TrainingLibraryLoaded() => Center(
+            child: LibraryEmptyState(
+              icon: AppSymbols.workout,
+              title: l10n.workoutNotFound,
             ),
-          },
-        ),
-        bottomNavigationBar: AppBottomCta(
-          children: [
-            if (allowsStart &&
-                template != null &&
-                template.exercises.isNotEmpty)
-              AppCtaButton(
-                label: l10n.startWorkout,
-                onPressed: () => unawaited(
-                  startWorkout(
-                    context,
-                    template: template,
-                    eventPrefix: 'WorkoutTemplateDetailView_StartWorkout',
-                    mesocycleId: mesocycleId,
-                    microcycleIndex: microcycleIndex,
-                    isDeload: isDeload,
-                  ),
+          ),
+        },
+      ),
+      bottomNavigationBar: AppBottomCta(
+        children: [
+          if (allowsStart && template != null && template.exercises.isNotEmpty)
+            AppCtaButton(
+              label: l10n.startWorkout,
+              onPressed: () => unawaited(
+                startWorkout(
+                  context,
+                  template: template,
+                  eventPrefix: 'WorkoutTemplateDetailView_StartWorkout',
+                  mesocycleId: mesocycleId,
+                  microcycleIndex: microcycleIndex,
+                  isDeload: isDeload,
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
 }
 
-/// Asks, then deletes the user's [workout] (Swift
-/// `showDeleteConfirmation`).
+/// Deletes the user's [workout] at once and leaves, with an Undo that
+/// brings it back to the library; it is written once the Undo has gone.
 Future<void> _delete(BuildContext context, WorkoutTemplateModel workout) async {
   final l10n = context.l10n;
-  final cubit = context.read<DeleteWorkoutCubit>();
   final app = context.read<AppBloc>().state;
-  final confirmed = await confirmDestructive(
-    context,
-    title: l10n.editorDeleteWorkout,
-    message: l10n.editorDeleteMessage(workout.name),
-    confirmLabel: l10n.editorDelete,
+  if (app is! AppAuthenticated) return;
+  final deleter = WorkoutDeleter(
+    library: context.read<TrainingLibraryRepository>(),
+    analytics: context.read<AnalyticsRepository>(),
   );
-  if (!confirmed || app is! AppAuthenticated) return;
-  await cubit.delete(app.user.uid, workout.workoutId);
-}
-
-/// Leaves once the workout is deleted, or says it could not be.
-Future<void> _deleted(BuildContext context, DeleteWorkoutStatus status) async {
-  final l10n = context.l10n;
-  switch (status) {
-    case DeleteWorkoutStatus.deleted:
-      unawaited(AppHaptics.success());
-      if (context.canPop()) context.pop();
-    case DeleteWorkoutStatus.failed:
-      unawaited(AppHaptics.error());
-      await showFailureAlert(
-        context,
-        l10n.editorDeleteFailed,
-        l10n.editorTryAgain,
-      );
-    case DeleteWorkoutStatus.idle || DeleteWorkoutStatus.deleting:
-      break;
-  }
+  showUndoableDelete(
+    context,
+    key: PendingKeys.template(workout.workoutId),
+    message: l10n.editorWorkoutDeleted,
+    failedMessage: l10n.editorDeleteFailed,
+    commit: () => deleter.delete(app.user.uid, workout.workoutId),
+  );
+  if (context.canPop()) context.pop();
 }
 
 /// Saves [day] as a library workout of the user's own, and says so.

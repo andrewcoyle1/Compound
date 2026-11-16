@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -393,19 +394,19 @@ void main() {
       await pump(tester, '/training/exercises/mine');
       await tap(tester, find.byKey(const Key('ExerciseDetail.options')));
       await tap(tester, find.text('Delete Exercise'));
-      expect(
-        find.text(
-          "Are you sure you want to delete 'My Curl'? This action cannot "
-          'be undone.',
-        ),
-        findsOneWidget,
-      );
     }
 
-    testWidgets('deletes the users own after asking', (tester) async {
+    testWidgets("deletes the user's own at once, with an Undo", (tester) async {
       await open(tester);
-      await tap(tester, find.text('Delete').last);
-      expect(find.text('Custom Exercises'), findsOneWidget);
+      expect(find.text('My Curl'), findsNothing);
+      expect(find.text('Exercise deleted'), findsOneWidget);
+      await tap(tester, find.text('Undo'));
+      expect(find.text('My Curl'), findsOneWidget);
+
+      await tap(tester, find.text('My Curl'));
+      await open(tester);
+      await tester.pump(undoWindow);
+      await tester.pumpAndSettle();
       expect(find.text('My Curl'), findsNothing);
       expect(
         analytics.names,
@@ -418,9 +419,14 @@ void main() {
 
     testWidgets('says when it could not be deleted', (tester) async {
       await open(tester);
+      // Refused when it is written, once the Undo has gone.
       library.failDeletes = true;
-      await tap(tester, find.text('Delete').last);
+      await tester.pump(undoWindow);
+      await tester.pumpAndSettle();
       expect(find.text('Failed to delete exercise'), findsOneWidget);
+      expect(find.text('My Curl'), findsOneWidget);
+      await tester.pump(AppSnackBarScopeState.defaultDuration);
+      await tester.pumpAndSettle();
     });
 
     testWidgets('offers nothing on a bundled exercise', (tester) async {

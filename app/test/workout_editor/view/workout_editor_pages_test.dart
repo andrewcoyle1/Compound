@@ -4,6 +4,7 @@ import 'package:compound/app/app.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_library/training_library.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/workout_editor/workout_editor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -305,20 +306,19 @@ void main() {
       expect(find.text('My Pull'), findsWidgets);
     });
 
-    testWidgets('is deleted from its detail after asking', (tester) async {
+    testWidgets('is deleted from its detail at once, with an Undo', (
+      tester,
+    ) async {
       final (world, library) = await pump(tester, '/training/workouts/mine');
       await tester.tap(find.byKey(const Key('WorkoutTemplateDetail.options')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Delete Workout'));
       await tester.pumpAndSettle();
-      expect(
-        find.text(
-          "Are you sure you want to delete 'My Push'? "
-          'This action cannot be undone.',
-        ),
-        findsOneWidget,
-      );
-      await tester.tap(find.text('Delete'));
+      // The detail closes; the library leaves it out until the Undo goes.
+      expect(find.text('Workout deleted'), findsOneWidget);
+      expect(find.text('Custom Templates'), findsNothing);
+      expect(await templates(tester, library), hasLength(1));
+      await tester.pump(undoWindow);
       await tester.pumpAndSettle();
 
       expect(await templates(tester, library), isEmpty);

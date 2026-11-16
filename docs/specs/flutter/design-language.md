@@ -177,11 +177,51 @@ Every screen is one of these. Pick the type before designing a screen.
 
 ## Motion
 
-Quick and functional everywhere, with a show only for real achievements.
+Quick and functional everywhere, with a show only for real achievements. Every interaction answers
+five questions, in order: should it move at all, where should the eye go, how should it move, can
+people find, hit and choose it, and can they finish. A later answer never rescues an earlier one.
 
-- **Interface:** push, sheet and dialog transitions are the platform's own. In-place changes
-  (a value updating, a row appearing) use `AppMotion.quick` and `standard`. No springs on cards
-  and no parallax.
+- **Should it move?** It depends on how often one person does it. Something done many times a
+  session, or from the keyboard, changes on the next frame with no transition. Something done a
+  few times a session (a sheet, a menu, a snack bar, a save) animates within the timings below.
+  Only the rare moments listed under Moments get a show. A motion that answers no question (where
+  did this come from, did my tap register, what changed) is cut. Nothing that is already on
+  screen when it first paints plays an entrance.
+- **Interface:** push, sheet and dialog transitions are the platform's own. Everything else uses
+  the `AppMotion` tokens, a duration and a curve together:
+
+  | Token | Duration | Curve | For |
+  |---|---|---|---|
+  | `press` | 120 ms | ease-out | A control shrinking under the finger |
+  | `quick` | 200 ms | ease-out | Toggles, icon swaps, small state flips |
+  | `standard` | 300 ms | ease-in-out | Moving, resizing or morphing in place |
+  | `move` | 350 ms | ease-out | Entering, or travelling to a new place (a snack bar, a scroll) |
+  | `emphasis` | 500 ms | ease-out with overshoot | Moments only |
+  | `progress` | 1 s | ease-out | Rings, bars and charts filling to a value |
+
+  The ease-out is `Cubic(0.32, 0.72, 0, 1)` and the ease-in-out `Cubic(0.77, 0, 0.175, 1)`: the
+  stock curves are too weak to read as a decision. Exits are a quarter shorter than their entrance
+  (`exitDurationOf`) and slow to start (`AppMotion.exitCurve`), because attention has moved on by
+  then. No springs on cards and no parallax. `progress` is the one response longer than 500 ms: it
+  shows data filling in, not an answer to a tap.
+- **Press:** buttons, icon buttons, chips, keys and any `AppPressable` up to 200 pt wide shrink to
+  0.96 while pressed and glide back on release (`AppPressScale`), so a tap registers before its
+  result arrives. Rows, cards and full-width buttons keep the highlight alone: 4% of a wide surface
+  is a jump. Dense cells tapped many times in a row (a calendar's days) opt out.
+- **Icon swaps:** an icon that changes with state (a set's circle becoming a tick, a like) grows in
+  from 0.3 while the old one shrinks away, in the same spot (`AppIconSwap`, `AppDoneMark.toggle`).
+- **Waiting:** a button whose action takes a while disables at once, but shows its spinner only
+  once the action has taken 300 ms, and then for at least 500 ms (`AppBusySwap`), so a quick save
+  never flashes one and a slow one never flickers.
+- **Errors:** the field that was wrong when a submit failed shakes once (`AppShake`), with the
+  message beside it and the `error` haptic. Never while typing or on leaving a field.
+- **Undo over confirm:** deleting the user's own single item (a set, an exercise, a gym, a photo,
+  a comment, a weigh-in, a food) happens at once with an Undo snack bar for six seconds, and is
+  written only when the Undo has gone. People tap through a confirmation by habit, so it prevents
+  nothing; an Undo still works after the mistake. A confirmation stays for what cannot be undone or
+  touches more than the one item: clearing a day, a workout that others see, the mesocycle being
+  followed, a program, leaving a challenge, removing a follower, blocking, withdrawing consent,
+  disconnecting Strava, and discarding unsaved input.
 - **Charts** draw in once when they first appear and morph when the range changes (already built).
 - **Moments**, the only places with a show:
   - a personal record;
@@ -193,7 +233,9 @@ Quick and functional everywhere, with a show only for real achievements.
   Each gets a count-up of its hero number (`AppMotion.emphasis`), the accent flashing on, a
   `success` haptic, and confetti in volt and the data colors for the bigger ones (workout, day,
   streak).
-- **Reduce Motion** turns every one of those off, leaving the final state and the haptic.
+- **Reduce Motion** turns every one of those off, leaving the final state and the haptic: no press
+  scale, no icon swap, no shake, and dialogs and sheets appear without a transition. The one
+  exception is a spinner, which keeps turning: a spinner that holds still reads as a hang.
 
 ## Icons and imagery
 

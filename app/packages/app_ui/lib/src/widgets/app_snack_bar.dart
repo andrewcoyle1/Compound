@@ -141,8 +141,9 @@ class AppSnackBar extends StatelessWidget {
 /// One snack bar shows at a time, centred in the readable width, clear of
 /// the safe area, the keyboard and any [AppSnackBarClearance] along the
 /// bottom edge that is on screen (the tab bar, a bottom call to action).
-/// It slides up in [AppMotion.standard], or simply appears when the user
-/// has asked for reduced motion, and swipes down to dismiss.
+/// It slides up in [AppMotion.move] and leaves a quarter quicker, or simply
+/// appears when the user has asked for reduced motion, and swipes down to
+/// dismiss.
 ///
 /// another_flushbar shows a `Flushbar` as a route, which would take the
 /// back gesture and `pop()` from the screen beneath it, so only its card
@@ -351,7 +352,8 @@ class _ToastHostState extends State<_ToastHost>
     ..addStatusListener(_statusChanged);
   late final _curve = CurvedAnimation(
     parent: _controller,
-    curve: AppMotion.standard.curve,
+    curve: AppMotion.move.curve,
+    reverseCurve: AppMotion.exitCurve,
   );
   Timer? _timer;
   var _leaving = false;
@@ -359,7 +361,9 @@ class _ToastHostState extends State<_ToastHost>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller.duration = AppMotion.standard.durationOf(context);
+    _controller
+      ..duration = AppMotion.move.durationOf(context)
+      ..reverseDuration = AppMotion.move.exitDurationOf(context);
     if (_controller.isDismissed && !_leaving) _controller.forward();
   }
 

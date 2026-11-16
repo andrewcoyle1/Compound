@@ -150,14 +150,14 @@ class _CalendarHeaderState extends State<CalendarHeader> {
 
   void _scrollTo(double offset) {
     if (!_controller.hasClients) return;
-    final duration = AppMotion.standard.durationOf(context);
+    final duration = AppMotion.move.durationOf(context);
     if (duration == Duration.zero) {
       _controller.jumpTo(offset);
     } else {
       _controller.animateTo(
         offset,
         duration: duration,
-        curve: AppMotion.standard.curve,
+        curve: AppMotion.move.curve,
       );
     }
   }

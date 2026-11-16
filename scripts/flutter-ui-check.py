@@ -35,6 +35,10 @@ RULES = {
     'radius-literal': (_ + r'(BorderRadius|Radius)\.circular\(\s*\d', 'AppRadius'),
     'animation-duration': (_ + r'(duration|reverseDuration)\s*:\s*(const\s+)?Duration\(',
                            'AppMotion.durationOf'),
+    # Rule 2: an easing curve comes with its duration, from the same AppMotion token.
+    'raw-curve': (_ + r'Curves\.\w|' + _ + r'Cubic\(', 'AppMotion.<token>.curve or AppMotion.exitCurve'),
+    # Rule 3: press feedback is app_ui's, so every control shrinks the same way.
+    'raw-scale': (_ + r'AnimatedScale\(', 'AppPressable, AppIconSwap, or a scale added to app_ui'),
     'icon-literal': (_ + r'Icons\.\w+', 'AppSymbols'),
     'date-format': (_ + r'DateFormat\b|' + _ + r'formatTimeOfDay\(',
                     'AppFormat.date, time, hour or dateTime with context.dateLocale'),
@@ -93,6 +97,7 @@ ALLOWED = {
     },
     # Listed, though nothing is let through, so they stay clean-up rules that charts skip.
     'alpha-literal': {},
+    'raw-curve': {},
     'box-decoration': {},
     'raw-tap': {
         # A tap or a horizontal swipe flips consumed and remaining.
@@ -235,6 +240,11 @@ def self_test():
         "BorderRadius.circular(12)": ['radius-literal'],
         "BorderRadius.circular(AppRadius.m)": [],
         "duration: const Duration(milliseconds: 300),": ['animation-duration'],
+        "curve: Curves.easeOutCubic,": ['raw-curve'],
+        "curve: const Cubic(0.32, 0.72, 0, 1),": ['raw-curve'],
+        "curve: AppMotion.quick.curve,": [],
+        "switchOutCurve: AppMotion.exitCurve,": [],
+        "child: AnimatedScale(scale: s,": ['raw-scale'],
         "Icon(Icons.add)": ['icon-literal'],
         "Icon(AppSymbols.add)": [],
         "DateFormat.yMMMd(locale).format(date)": ['date-format'],

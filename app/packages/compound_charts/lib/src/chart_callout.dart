@@ -34,6 +34,7 @@ class _ChartCalloutState extends State<ChartCallout>
   late final _curved = CurvedAnimation(
     parent: _controller,
     curve: AppMotion.quick.curve,
+    reverseCurve: AppMotion.exitCurve,
   );
 
   /// The last content shown, kept while it fades out.
@@ -43,7 +44,9 @@ class _ChartCalloutState extends State<ChartCallout>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller.duration = AppMotion.quick.durationOf(context);
+    _controller
+      ..duration = AppMotion.quick.durationOf(context)
+      ..reverseDuration = AppMotion.quick.exitDurationOf(context);
     _sync();
   }
 

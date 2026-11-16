@@ -83,7 +83,7 @@ class _ComponentGalleryPageState extends State<ComponentGalleryPage> {
   void _show(GallerySection section, {bool animate = true}) {
     final context = _keys[section]!.currentContext;
     if (context == null) return;
-    const motion = AppMotion.standard;
+    const motion = AppMotion.move;
     Scrollable.ensureVisible(
       context,
       duration: animate ? motion.durationOf(context) : Duration.zero,

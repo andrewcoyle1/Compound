@@ -79,9 +79,10 @@ class _ActivityBannerOverlayState extends State<ActivityBannerOverlay> {
               right: 0,
               child: SafeArea(
                 child: AnimatedSwitcher(
-                  duration: AppMotion.standard.durationOf(context),
-                  switchInCurve: AppMotion.standard.curve,
-                  switchOutCurve: AppMotion.standard.curve,
+                  duration: AppMotion.move.durationOf(context),
+                  reverseDuration: AppMotion.move.exitDurationOf(context),
+                  switchInCurve: AppMotion.move.curve,
+                  switchOutCurve: AppMotion.exitCurve,
                   child: banner == null
                       ? const SizedBox.shrink()
                       : Padding(

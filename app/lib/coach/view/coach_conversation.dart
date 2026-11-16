@@ -86,14 +86,14 @@ class _CoachConversationState extends State<CoachConversation> {
       _following = true;
       _gliding = true;
     });
-    final duration = AppMotion.standard.durationOf(context);
+    final duration = AppMotion.move.durationOf(context);
     await WidgetsBinding.instance.endOfFrame;
     if (!mounted) return;
     if (_scroll.hasClients && duration > Duration.zero) {
       await _scroll.animateTo(
         _scroll.position.maxScrollExtent,
         duration: duration,
-        curve: AppMotion.standard.curve,
+        curve: AppMotion.move.curve,
       );
     }
     _gliding = false;

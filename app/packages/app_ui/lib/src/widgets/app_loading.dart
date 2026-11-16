@@ -17,14 +17,19 @@ enum AppSpinnerSize {
 /// in the accent (or [color]), the same on both platforms. It grows with
 /// the text size.
 ///
-/// Only the dots' opacity changes, nothing moves; with reduced motion
-/// (`MediaQuery.disableAnimations`) they hold still, so it also never keeps
-/// a test from settling. It is silent: [AppLoadingView], or the text beside
+/// Only the dots' opacity changes, nothing moves, so it keeps turning with
+/// reduced motion (`MediaQuery.disableAnimations`) too: a spinner that holds
+/// still reads as a hang. It is silent: [AppLoadingView], or the text beside
 /// it, says what is loading.
 /// {@endtemplate}
 class AppSpinner extends StatelessWidget {
   /// {@macro app_spinner}
   const new({this.size = AppSpinnerSize.regular, this.color, super.key});
+
+  /// Whether spinners hold still under reduced motion, so a test that
+  /// shows one can still settle. The test configurations turn it on.
+  @visibleForTesting
+  static bool debugHoldStill = false;
 
   /// How big it is drawn.
   final AppSpinnerSize size;
@@ -49,7 +54,7 @@ class AppSpinner extends StatelessWidget {
       ),
     );
     return TickerMode(
-      enabled: !MediaQuery.disableAnimationsOf(context),
+      enabled: !(debugHoldStill && MediaQuery.disableAnimationsOf(context)),
       child: spinner,
     );
   }

@@ -83,12 +83,12 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A form or scanner message | `AppInlineMessage` |
 | A screen | `AppScaffold`, `AppDashboard` for tab roots, `AppOnboardingStepScaffold` for onboarding |
 | Swipe actions | `AppSwipeActions` |
-| An alert, confirmation or choice | `showAppDialog` with `AppDialogAction`s; `AppDialog.confirmDestructive` for an irreversible action |
+| An alert, confirmation or choice | `showAppDialog` with `AppDialogAction`s; `AppDialog.confirmDestructive` for an irreversible action. Under reduced motion it appears and goes without a transition, as sheets do |
 | A brief notice ("Saved", "Set deleted" with Undo, a failure to retry) | `showAppSnackBar(context, message, style:, action:, duration:)`, never `SnackBar` or `ScaffoldMessenger`. It shows above the tab bar, a bottom CTA and the keyboard, one at a time, and outlives the screen; to show one after an `await` that may close the screen, take `AppSnackBarScope.of(context)` first and call its `show` |
 | A sheet | `AppSheetPage` (a route's `pageBuilder`) or `showAppSheet`, sized `AppSheetSize.compact` / `half` / `full` |
 | Nothing to show, or a failure | `AppEmptyState`, `AppErrorState` |
 | Loading | `AppPlaceholderRow` / `AppPlaceholder` in place of the content (they shimmer, and hold still under reduced motion); `AppLoadingView` for a screen's first load |
-| Work under way in a control or beside text (saving, connecting, looking up) | `AppSpinner`, `AppSpinnerSize.small` in a row, button or line of text; never `CircularProgressIndicator` or `CupertinoActivityIndicator`. A ring or bar showing real progress (a `value:`) is not a spinner |
+| Work under way in a control or beside text (saving, connecting, looking up) | `AppSpinner`, `AppSpinnerSize.small` in a row, button or line of text; never `CircularProgressIndicator` or `CupertinoActivityIndicator`. A ring or bar showing real progress (a `value:`) is not a spinner. It keeps turning under reduced motion, the one animation that does, because a spinner holding still reads as a hang; tests hold it still with `AppSpinner.debugHoldStill` |
 | A one-time tip on a feature hidden behind a gesture | `AppTip` around the target, inside the screen's `ScreenTips` (`lib/tips/`), which remembers it per device |
 | A chart, or the readout over one | `compound_charts`: `ChartCallout` with a `ChartCalloutSummary`. A new chart piece goes there, not in `app_ui` or the screen |
 

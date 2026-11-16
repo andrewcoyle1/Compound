@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:alchemist/alchemist.dart';
+import 'package:app_ui/app_ui.dart' show AppSpinner;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +29,9 @@ const ciDiffThreshold = 0.005;
 ///
 /// Golden tests (`helpers/golden.dart`) run as compound_charts' do.
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
+  // A spinner turns under reduced motion, which would keep pumpAndSettle
+  // from settling wherever one shows.
+  AppSpinner.debugHoldStill = true;
   final binding = TestWidgetsFlutterBinding.ensureInitialized();
   if (binding is AutomatedTestWidgetsFlutterBinding) {
     binding.defaultTestTimeout = const Timeout(Duration(seconds: 30));

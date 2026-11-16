@@ -15,8 +15,9 @@ void main() {
   Future<({Future<T> result})> open<T>(
     WidgetTester tester,
     TargetPlatform platform,
-    Future<T> Function(BuildContext context) open,
-  ) async {
+    Future<T> Function(BuildContext context) open, {
+    bool disableAnimations = true,
+  }) async {
     late Future<T> result;
     await tester.pumpApp(
       Builder(
@@ -26,6 +27,7 @@ void main() {
         ),
       ),
       theme: on(platform),
+      disableAnimations: disableAnimations,
     );
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
@@ -131,6 +133,52 @@ void main() {
         await tester.pumpAndSettle();
         expect(await result, 1);
       });
+    }
+
+    for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+      for (final reduced in [true, false]) {
+        testWidgets(
+          'on ${platform.name} '
+          '${reduced ? 'appears at once under reduced motion' : 'fades in'}',
+          (tester) async {
+            await tester.pumpApp(
+              Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => showAppDialog<int>(
+                    context: context,
+                    title: 'Which workout?',
+                    actions: actions,
+                  ),
+                  child: const Text('Open'),
+                ),
+              ),
+              theme: on(platform),
+              disableAnimations: reduced,
+            );
+            await tester.tap(find.text('Open'));
+            await tester.pump();
+            double shown() =>
+                ModalRoute.of(tester.element(find.byType(AppDialog<int>)))!
+                    .animation!
+                    .value;
+            await tester.pump(const Duration(milliseconds: 1));
+            expect(shown(), reduced ? 1 : lessThan(1));
+
+            await tester.pumpAndSettle();
+            expect(shown(), 1);
+            await tester.tap(find.text('Push Day'));
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 1));
+            if (reduced) {
+              expect(find.byType(AppDialog<int>), findsNothing);
+            } else {
+              expect(shown(), lessThan(1));
+            }
+            await tester.pumpAndSettle();
+            expect(find.byType(AppDialog<int>), findsNothing);
+          },
+        );
+      }
     }
 
     testWidgets('on iOS a preferred action is bold and Cancel is not', (

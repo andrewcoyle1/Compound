@@ -1,6 +1,7 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart'
-    show CupertinoAlertDialog, CupertinoDialogAction;
+    show CupertinoAlertDialog, CupertinoDialogAction, CupertinoDialogRoute;
+import 'package:flutter/physics.dart' show FrictionSimulation;
 
 /// What an [AppDialogAction] does, which sets how it is drawn.
 enum AppDialogRole {
@@ -217,18 +218,47 @@ class AppDialog<T> extends StatelessWidget {
 /// Shows an [AppDialog] the platform's way (an iOS alert, which only an
 /// action closes, or a Material dialog, which a tap outside closes too) and
 /// returns the chosen action's value, or null when dismissed.
+///
+/// With reduced motion (`MediaQuery.disableAnimations`) it appears and goes
+/// without a transition, as sheets do.
 Future<T?> showAppDialog<T>({
   required BuildContext context,
   required String title,
   required List<AppDialogAction<T>> actions,
   String? message,
   Widget? content,
-}) => showAdaptiveDialog<T>(
-  context: context,
-  builder: (_) => AppDialog<T>(
+}) {
+  Widget builder(BuildContext _) => AppDialog<T>(
     title: title,
     message: message,
     content: content,
     actions: actions,
-  ),
-);
+  );
+  final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  if (!still) return showAdaptiveDialog<T>(context: context, builder: builder);
+  return switch (Theme.of(context).platform) {
+    // showAdaptiveDialog leaves the iOS alert's transition as it is, so the
+    // route is pushed here as showCupertinoDialog would, with none.
+    TargetPlatform.iOS ||
+    TargetPlatform.macOS => Navigator.of(context, rootNavigator: true).push<T>(
+      _StillCupertinoDialogRoute<T>(builder: builder, context: context),
+    ),
+    _ => showDialog<T>(
+      context: context,
+      builder: builder,
+      animationStyle: AnimationStyle.noAnimation,
+    ),
+  };
+}
+
+/// An iOS alert that appears and goes at once: the stock route springs in
+/// whatever its duration, so this one starts where the spring would stop.
+class _StillCupertinoDialogRoute<T> extends CupertinoDialogRoute<T> {
+  new({required super.builder, required super.context})
+    : super(transitionDuration: Duration.zero);
+
+  // Standing still at the end: no velocity, so it is done at once.
+  @override
+  Simulation createSimulation({required bool forward}) =>
+      FrictionSimulation(0.5, forward ? 1 : 0, 0);
+}

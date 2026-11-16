@@ -48,10 +48,22 @@ void main() {
       expect(tester.getSize(find.byType(AppSpinner)), const Size.square(10));
     });
 
-    testWidgets('holds still under reduced motion', (tester) async {
+    testWidgets('holds still under reduced motion in a test', (tester) async {
       await tester.pumpApp(const Center(child: AppSpinner()));
       await tester.pumpAndSettle();
       expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
+    testWidgets('keeps turning under reduced motion in the app', (
+      tester,
+    ) async {
+      AppSpinner.debugHoldStill = false;
+      addTearDown(() => AppSpinner.debugHoldStill = true);
+      await tester.pumpApp(const Center(child: AppSpinner()));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.binding.hasScheduledFrame, isTrue);
+      // Leave nothing ticking when the test ends.
+      await tester.pumpWidget(const SizedBox());
     });
 
     testWidgets('fades its dots in turn when animations are on', (

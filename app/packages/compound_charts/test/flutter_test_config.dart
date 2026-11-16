@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:alchemist/alchemist.dart';
+import 'package:app_ui/app_ui.dart' show AppSpinner;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +20,9 @@ const humanGoldens = bool.fromEnvironment('HUMAN_GOLDENS');
 const ciDiffThreshold = 0.005;
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
+  // A spinner turns under reduced motion, which would keep pumpAndSettle
+  // from settling wherever one shows.
+  AppSpinner.debugHoldStill = true;
   TestWidgetsFlutterBinding.ensureInitialized();
   if (humanGoldens) await _loadFonts();
   final local = goldenFileComparator;

@@ -4,6 +4,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:checkin_repository/checkin_repository.dart' show localDayKey;
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/coach/coach.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:purchases_repository/purchases_repository.dart';
@@ -1136,6 +1137,30 @@ void main() {
         'CoachChatsView_DeleteChat_Success',
         'CoachChatsView_Disappear',
       ]);
+    });
+
+    test('leaves out a chat waiting on an Undo', () async {
+      await firestore
+          .doc('users/$uid/coach_chats/chat-1')
+          .set(sampleChat.toFirestore());
+      final pending = PendingDeletes();
+      addTearDown(pending.close);
+      final cubit = CoachChatsCubit(
+        uid: uid,
+        coach: coach(),
+        analytics: analytics,
+        pendingDeletes: pending,
+      )..started();
+      addTearDown(cubit.close);
+      await pumpEventQueue();
+      expect(cubit.state.chats, hasLength(1));
+
+      pending.schedule(PendingKeys.coachChat(sampleChat.id), () async {});
+      await pumpEventQueue();
+      expect(cubit.state.chats, isEmpty);
+      pending.undo(PendingKeys.coachChat(sampleChat.id));
+      await pumpEventQueue();
+      expect(cubit.state.chats, hasLength(1));
     });
   });
 }

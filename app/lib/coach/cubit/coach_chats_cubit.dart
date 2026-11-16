@@ -4,13 +4,11 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:equatable/equatable.dart';
 
 /// What the chat list has to tell the user once.
 enum CoachChatsNotice {
-  /// A chat could not be deleted.
-  deleteFailed,
-
   /// Consent was withdrawn and the chats deleted.
   withdrawn,
 
@@ -58,23 +56,46 @@ final class const CoachChatsState({
 /// chat, as Swift does.
 class CoachChatsCubit extends Cubit<CoachChatsState> {
   /// [_uid] is the signed-in user.
-  new({required this._uid, required this._coach, required this._analytics})
-    : super(const CoachChatsState());
+  new({
+    required this._uid,
+    required this._coach,
+    required this._analytics,
+    this._pendingDeletes,
+  }) : super(const CoachChatsState());
 
   final String _uid;
   final CoachRepository _coach;
   final AnalyticsRepository _analytics;
+
+  /// Chats waiting on an Undo, left out of the list.
+  final PendingDeletes? _pendingDeletes;
   final _subscriptions = <StreamSubscription<Object?>>[];
+
+  List<CoachChat>? _stored;
+  Set<String> _hidden = const {};
+
+  void _show() {
+    final stored = _stored;
+    if (stored == null) return;
+    emit(
+      state.copyWith(
+        chats: stored.hide(_hidden, (chat) => PendingKeys.coachChat(chat.id)),
+      ),
+    );
+  }
 
   /// Follows the chats and the consent flag.
   void started() {
     _subscriptions.addAll([
-      _coach
-          .watchChats(_uid)
-          .listen(
-            (chats) => emit(state.copyWith(chats: chats)),
-            onError: (Object _) => emit(state.copyWith(chats: const [])),
-          ),
+      _coach.watchChats(_uid).listen((chats) {
+        _stored = chats;
+        _show();
+      }, onError: (Object _) => emit(state.copyWith(chats: const []))),
+      if (_pendingDeletes case final pending?)
+        pending.watch().listen((keys) {
+          _hidden = keys;
+          _show();
+        }),
       _coach
           .watchConsent(_uid)
           .listen(
@@ -93,7 +114,8 @@ class CoachChatsCubit extends Cubit<CoachChatsState> {
   /// A chat tapped; the view opens it.
   void chatPressed() => _analytics.analytic('CoachChatsView_Chat_Press');
 
-  /// Deletes [chat]; a failure is a warning and a notice.
+  /// Deletes [chat] for good, once its Undo has gone; a failure is a
+  /// warning, rethrown for the snack bar to report.
   Future<void> deleteChat(CoachChat chat) async {
     _analytics.analytic('CoachChatsView_DeleteChat_Start');
     try {
@@ -107,9 +129,7 @@ class CoachChatsCubit extends Cubit<CoachChatsState> {
           type: LogType.warning,
         ),
       );
-      if (!isClosed) {
-        emit(state.copyWith(notice: CoachChatsNotice.deleteFailed));
-      }
+      rethrow;
     }
   }
 

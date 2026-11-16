@@ -11,6 +11,8 @@ import 'package:compound/coach/cubit/coach_chats_cubit.dart';
 import 'package:compound/coach/cubit/coach_cubit.dart';
 import 'package:compound/coach/view/coach_page.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -40,6 +42,7 @@ class CoachChatsPage extends StatelessWidget {
         uid: state.user.uid,
         coach: context.read<CoachRepository>(),
         analytics: context.read<AnalyticsRepository>(),
+        pendingDeletes: context.read<PendingDeletes>(),
       )..started(),
       child: CoachChatsView(coachContext: coachContext),
     );
@@ -94,13 +97,6 @@ class _CoachChatsViewState extends State<CoachChatsView> {
       listenWhen: (previous, current) => current.noticeId != previous.noticeId,
       listener: (context, state) => switch (state.notice) {
         CoachChatsNotice.withdrawn => unawaited(AppHaptics.success()),
-        CoachChatsNotice.deleteFailed => unawaited(
-          showFailureAlert(
-            context,
-            l10n.coachDeleteFailed,
-            l10n.metricTryAgain,
-          ),
-        ),
         CoachChatsNotice.withdrawFailed => unawaited(
           showFailureAlert(
             context,
@@ -139,8 +135,13 @@ class _CoachChatsViewState extends State<CoachChatsView> {
                                   label: l10n.coachDelete,
                                   icon: AppSymbols.delete,
                                   isDestructive: true,
-                                  onPressed: () =>
-                                      unawaited(_cubit.deleteChat(chat)),
+                                  onPressed: () => showUndoableDelete(
+                                    context,
+                                    key: PendingKeys.coachChat(chat.id),
+                                    message: l10n.coachChatDeleted,
+                                    failedMessage: l10n.coachDeleteFailed,
+                                    commit: () => _cubit.deleteChat(chat),
+                                  ),
                                 ),
                               ],
                               child: AppListRowButton(

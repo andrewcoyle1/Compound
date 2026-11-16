@@ -2492,6 +2492,7 @@
     "coachCancel": "Cancelar",
     "coachDelete": "Eliminar",
     "coachDeleteFailed": "No se pudo eliminar el chat",
+    "coachChatDeleted": "Chat eliminado",
     "coachWithdrawFailed": "No se pudo retirar el permiso",
     "coachAskToday1": "¿Cómo fue mi entrenamiento esta semana?",
     "coachAskToday2": "¿Qué debería comer hoy para alcanzar mi proteína?",

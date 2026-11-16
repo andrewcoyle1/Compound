@@ -10573,6 +10573,10 @@
     "@coachDeleteFailed": {
         "description": "Coach"
     },
+    "coachChatDeleted": "Chat deleted",
+    "@coachChatDeleted": {
+        "description": "Coach chats: snack bar after deleting a chat, with Undo"
+    },
     "coachWithdrawFailed": "Unable to Withdraw Permission",
     "@coachWithdrawFailed": {
         "description": "Coach"

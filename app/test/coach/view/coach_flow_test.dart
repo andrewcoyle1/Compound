@@ -6,6 +6,7 @@ import 'package:coach_repository/coach_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/coach/coach.dart';
 import 'package:compound/log_weight/log_weight.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -147,6 +148,12 @@ void main() {
       const Offset(-600, 0),
     );
     await tester.pumpAndSettle();
+    expect(find.text('Why has my weight stalled?'), findsNothing);
+    // Gone at once, with an Undo, and deleted once the Undo has gone.
+    expect(find.text('Chat deleted'), findsOneWidget);
+    await tester.pump(undoWindow);
+    await tester.pumpAndSettle();
+    expect(find.text('Chat deleted'), findsNothing);
     expect(find.text('Why has my weight stalled?'), findsNothing);
 
     // Today's chat, from the list, is still today's.

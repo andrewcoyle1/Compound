@@ -185,6 +185,117 @@ void main() {
     });
   });
 
+  group('onClosed', () {
+    late List<AppSnackBarCloseReason> reasons;
+    late AppSnackBarHandle handle;
+
+    setUp(() => reasons = []);
+
+    Future<void> showUndo(WidgetTester tester, {Duration? duration}) async {
+      await tester.pumpApp(
+        _trigger(
+          (context) => handle = showAppSnackBar(
+            context,
+            'Deleted',
+            action: AppSnackBarAction(label: 'Undo', onPressed: () {}),
+            duration: duration,
+            onClosed: reasons.add,
+          ),
+        ),
+      );
+      await tester.tap(find.text('Show'));
+      await tester.pumpAndSettle();
+      expect(handle.isOpen, isTrue);
+    }
+
+    testWidgets('hears action when its action is tapped', (tester) async {
+      await showUndo(tester);
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(reasons, [AppSnackBarCloseReason.action]);
+      expect(handle.isOpen, isFalse);
+    });
+
+    testWidgets('hears timeout when its time runs out', (tester) async {
+      await showUndo(tester, duration: const Duration(seconds: 6));
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pumpAndSettle();
+      expect(reasons, [AppSnackBarCloseReason.timeout]);
+    });
+
+    testWidgets('hears swiped when swiped away', (tester) async {
+      await showUndo(tester);
+      await tester.fling(find.text('Deleted'), const Offset(0, 300), 1000);
+      await tester.pumpAndSettle();
+      expect(reasons, [AppSnackBarCloseReason.swiped]);
+    });
+
+    testWidgets('hears replaced when another takes its place', (tester) async {
+      await showUndo(tester);
+      tester
+          .state<AppSnackBarScopeState>(find.byType(AppSnackBarScope))
+          .show('Saved');
+      await tester.pumpAndSettle();
+      expect(reasons, [AppSnackBarCloseReason.replaced]);
+      expect(handle.isOpen, isFalse);
+      expect(find.text('Saved'), findsOneWidget);
+    });
+
+    testWidgets('hears dismissed when closed by its handle, once', (
+      tester,
+    ) async {
+      await showUndo(tester);
+      handle.close();
+      await tester.pumpAndSettle();
+      handle.close();
+      expect(reasons, [AppSnackBarCloseReason.dismissed]);
+      expect(find.text('Deleted'), findsNothing);
+    });
+
+    testWidgets('closing a replaced one does nothing more', (tester) async {
+      await showUndo(tester);
+      final first = handle;
+      tester
+          .state<AppSnackBarScopeState>(find.byType(AppSnackBarScope))
+          .show('Saved');
+      await tester.pumpAndSettle();
+      first.close();
+      await tester.pumpAndSettle();
+      expect(reasons, [AppSnackBarCloseReason.replaced]);
+      expect(find.text('Saved'), findsOneWidget);
+    });
+
+    testWidgets('closing one shown before the frame drops it', (tester) async {
+      await tester.pumpApp(const SizedBox.shrink());
+      final scope = tester.state<AppSnackBarScopeState>(
+        find.byType(AppSnackBarScope),
+      );
+      scope.show('Deleted', onClosed: reasons.add).close();
+      await tester.pumpAndSettle();
+      expect(reasons, [AppSnackBarCloseReason.dismissed]);
+      expect(find.text('Deleted'), findsNothing);
+    });
+
+    testWidgets('hears dismissed when the scope goes', (tester) async {
+      await showUndo(tester);
+      await tester.pumpWidget(const SizedBox.shrink());
+      expect(reasons, [AppSnackBarCloseReason.dismissed]);
+    });
+
+    testWidgets('hears dismissed at once when the scope has gone', (
+      tester,
+    ) async {
+      await tester.pumpApp(const SizedBox.shrink());
+      final scope = tester.state<AppSnackBarScopeState>(
+        find.byType(AppSnackBarScope),
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+      final handle = scope.show('Deleted', onClosed: reasons.add);
+      expect(reasons, [AppSnackBarCloseReason.dismissed]);
+      expect(handle.isOpen, isFalse);
+    });
+  });
+
   group('AppSnackBarClearance', () {
     double snackBarBottom(WidgetTester tester) =>
         tester.getBottomLeft(find.byType(AppSnackBar)).dy;

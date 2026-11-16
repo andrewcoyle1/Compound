@@ -16,6 +16,43 @@ enum AppSnackBarStyle {
   error,
 }
 
+/// Why a snack bar went, as its `onClosed` hears.
+enum AppSnackBarCloseReason {
+  /// Its action was tapped.
+  action,
+
+  /// Its time ran out.
+  timeout,
+
+  /// It was swiped away.
+  swiped,
+
+  /// Another snack bar took its place.
+  replaced,
+
+  /// It was closed by its [AppSnackBarHandle], by a screen reader's dismiss
+  /// action, or because its scope went.
+  dismissed,
+}
+
+/// {@template app_snack_bar_handle}
+/// A snack bar that was shown, to close it early, such as when the screen
+/// its action works on closes.
+/// {@endtemplate}
+class AppSnackBarHandle {
+  new _(this._close, this._isOpen);
+
+  final VoidCallback _close;
+  final bool Function() _isOpen;
+
+  /// Whether it is still showing: neither gone nor going.
+  bool get isOpen => _isOpen();
+
+  /// Closes it, if it is still showing; its `onClosed` hears
+  /// [AppSnackBarCloseReason.dismissed].
+  void close() => _close();
+}
+
 /// {@template app_snack_bar_action}
 /// The one button on an [AppSnackBar], such as Undo.
 /// {@endtemplate}
@@ -38,18 +75,26 @@ class AppSnackBarAction {
 /// [duration] it stays until it is swiped away, its action is tapped or
 /// another replaces it, as Material's does. Screen readers announce it.
 ///
+/// [onClosed] hears, once, why it went: an Undo commits on anything but
+/// [AppSnackBarCloseReason.action]. The returned handle closes it early.
+///
 /// The app must have an [AppSnackBarScope] above [context]. To show one
 /// once [context] may be gone, such as after a save, take
 /// `AppSnackBarScope.of(context)` first and call its `show` later.
-void showAppSnackBar(
+AppSnackBarHandle showAppSnackBar(
   BuildContext context,
   String message, {
   AppSnackBarAction? action,
   AppSnackBarStyle style = AppSnackBarStyle.info,
   Duration? duration,
-}) =>
-    AppSnackBarScope.of(context)
-        .show(message, action: action, style: style, duration: duration);
+  ValueChanged<AppSnackBarCloseReason>? onClosed,
+}) => AppSnackBarScope.of(context).show(
+  message,
+  action: action,
+  style: style,
+  duration: duration,
+  onClosed: onClosed,
+);
 
 /// {@template app_snack_bar}
 /// A snack bar's card: [style]'s icon, the [message] and an optional
@@ -184,27 +229,54 @@ class AppSnackBarScopeState extends State<AppSnackBarScope> {
 
   /// Shows [message], replacing any snack bar showing; see
   /// [showAppSnackBar].
-  void show(
+  AppSnackBarHandle show(
     String message, {
     AppSnackBarAction? action,
     AppSnackBarStyle style = AppSnackBarStyle.info,
     Duration? duration,
+    ValueChanged<AppSnackBarCloseReason>? onClosed,
   }) {
-    if (!mounted) return;
-    _clearance = _measure();
-    setState(
-      () => _toast = _Toast(
-        id: ++_serial,
-        message: message,
-        action: action,
-        style: style,
-        duration: duration ?? (action == null ? defaultDuration : null),
-      ),
+    final toast = _Toast(
+      id: ++_serial,
+      message: message,
+      action: action,
+      style: style,
+      duration: duration ?? (action == null ? defaultDuration : null),
+      onClosed: onClosed,
     );
+    final handle = AppSnackBarHandle._(
+      () => _close(toast),
+      () => !toast.closed,
+    );
+    if (!mounted) {
+      toast.close(AppSnackBarCloseReason.dismissed);
+      return handle;
+    }
+    _toast?.close(AppSnackBarCloseReason.replaced);
+    _clearance = _measure();
+    setState(() => _toast = toast);
+    return handle;
+  }
+
+  void _close(_Toast toast) {
+    if (toast.closed) return;
+    final host = toast.host.currentState;
+    if (host == null) {
+      toast.close(AppSnackBarCloseReason.dismissed);
+      _gone(toast);
+    } else {
+      host.dismiss(AppSnackBarCloseReason.dismissed);
+    }
   }
 
   void _gone(_Toast toast) {
     if (mounted && _toast?.id == toast.id) setState(() => _toast = null);
+  }
+
+  @override
+  void dispose() {
+    _toast?.close(AppSnackBarCloseReason.dismissed);
+    super.dispose();
   }
 
   /// A bar came, went, or came on or off screen: measure again once laid
@@ -255,7 +327,7 @@ class AppSnackBarScopeState extends State<AppSnackBarScope> {
                 bottom: false,
                 minimum: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
                 child: _ToastHost(
-                  key: ValueKey(toast.id),
+                  key: toast.host,
                   toast: toast,
                   onGone: () => _gone(toast),
                 ),
@@ -318,12 +390,13 @@ class _AppSnackBarClearanceState extends State<AppSnackBarClearance> {
 }
 
 class _Toast {
-  const new({
+  new({
     required this.id,
     required this.message,
     required this.action,
     required this.style,
     required this.duration,
+    required this.onClosed,
   });
 
   final int id;
@@ -333,6 +406,21 @@ class _Toast {
 
   /// Null to stay until dismissed.
   final Duration? duration;
+
+  final ValueChanged<AppSnackBarCloseReason>? onClosed;
+
+  /// Its host, to close it from a handle.
+  final host = GlobalKey<_ToastHostState>();
+
+  /// Whether it has gone or is going.
+  bool closed = false;
+
+  /// Says why it went, once.
+  void close(AppSnackBarCloseReason reason) {
+    if (closed) return;
+    closed = true;
+    onClosed?.call(reason);
+  }
 }
 
 /// One snack bar's life: in, a wait, out; or swiped away.
@@ -370,16 +458,18 @@ class _ToastHostState extends State<_ToastHost>
   void _statusChanged(AnimationStatus status) {
     final duration = widget.toast.duration;
     if (status.isCompleted && duration != null) {
-      _timer = Timer(duration, _dismiss);
+      _timer = Timer(duration, () => dismiss(AppSnackBarCloseReason.timeout));
     } else if (status.isDismissed && _leaving) {
       widget.onGone();
     }
   }
 
-  void _dismiss() {
+  /// Starts it leaving, telling its `onClosed` why.
+  void dismiss(AppSnackBarCloseReason reason) {
     if (_leaving) return;
     _leaving = true;
     _timer?.cancel();
+    widget.toast.close(reason);
     _controller.reverse();
   }
 
@@ -398,7 +488,7 @@ class _ToastHostState extends State<_ToastHost>
     return Semantics(
       container: true,
       liveRegion: true,
-      onDismiss: _dismiss,
+      onDismiss: () => dismiss(AppSnackBarCloseReason.dismissed),
       child: Dismissible(
         key: ValueKey(toast.id),
         direction: DismissDirection.down,
@@ -406,6 +496,7 @@ class _ToastHostState extends State<_ToastHost>
         resizeDuration: null,
         onDismissed: (_) {
           _timer?.cancel();
+          toast.close(AppSnackBarCloseReason.swiped);
           widget.onGone();
         },
         child: FadeTransition(
@@ -424,7 +515,7 @@ class _ToastHostState extends State<_ToastHost>
                       label: action.label,
                       onPressed: () {
                         action.onPressed();
-                        _dismiss();
+                        dismiss(AppSnackBarCloseReason.action);
                       },
                     ),
             ),

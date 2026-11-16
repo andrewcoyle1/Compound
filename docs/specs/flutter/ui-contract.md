@@ -86,7 +86,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A screen | `AppScaffold`, `AppDashboard` for tab roots, `AppOnboardingStepScaffold` for onboarding |
 | Swipe actions | `AppSwipeActions` |
 | An alert, confirmation or choice | `showAppDialog` with `AppDialogAction`s; `AppDialog.confirmDestructive` for an irreversible action. Under reduced motion it appears and goes without a transition, as sheets do |
-| A brief notice ("Saved", "Set deleted" with Undo, a failure to retry) | `showAppSnackBar(context, message, style:, action:, duration:)`, never `SnackBar` or `ScaffoldMessenger`. It shows above the tab bar, a bottom CTA and the keyboard, one at a time, and outlives the screen; to show one after an `await` that may close the screen, take `AppSnackBarScope.of(context)` first and call its `show` |
+| A brief notice ("Saved", "Set deleted" with Undo, a failure to retry) | `showAppSnackBar(context, message, style:, action:, duration:)`, never `SnackBar` or `ScaffoldMessenger`. It shows above the tab bar, a bottom CTA and the keyboard, one at a time, and outlives the screen; to show one after an `await` that may close the screen, take `AppSnackBarScope.of(context)` first and call its `show`. It returns an `AppSnackBarHandle` (`close()` it when the screen its action works on closes), and `onClosed` hears once why it went: `action`, `timeout`, `swiped`, `replaced` or `dismissed` |
 | A sheet | `AppSheetPage` (a route's `pageBuilder`) or `showAppSheet`, sized `AppSheetSize.compact` / `half` / `full` |
 | Nothing to show, or a failure | `AppEmptyState`, `AppErrorState` |
 | Loading | `AppPlaceholderRow` / `AppPlaceholder` in place of the content (they shimmer, and hold still under reduced motion); `AppLoadingView` for a screen's first load |

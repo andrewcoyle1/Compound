@@ -130,6 +130,33 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppPressScale', [
+      galleryInline(
+        'press: shrinks to 0.96',
+        AppPressable(
+          onTap: galleryNoop,
+          color: context.appColors.raised,
+          shape: const StadiumBorder(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: Text(l10n.devGallerySampleTextAction),
+          ),
+        ),
+      ),
+      galleryInline(
+        'pressScale: false',
+        AppPressable(
+          onTap: galleryNoop,
+          pressScale: false,
+          color: context.appColors.raised,
+          shape: const StadiumBorder(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: Text(l10n.devGallerySampleTextAction),
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('AppDoneMark', [
       galleryInline('medium', const AppDoneMark()),
       galleryInline('small', const AppDoneMark(size: AppIconSize.small)),

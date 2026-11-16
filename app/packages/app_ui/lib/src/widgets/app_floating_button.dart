@@ -36,35 +36,38 @@ class AppFloatingButton extends StatelessWidget {
     const shape = StadiumBorder();
     return Semantics(
       button: true,
-      child: Material(
-        color: scheme.surfaceContainerHigh,
-        shape: shape.copyWith(
-          side: BorderSide(color: scheme.outlineVariant, width: 0.5),
-        ),
-        shadowColor: scheme.shadow.withValues(alpha: 0.12),
-        elevation: AppSpacing.xs,
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: shape,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AppControlSize.row),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.l,
-                vertical: AppSpacing.xs,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: AppSpacing.xs,
-                children: [
-                  Icon(
-                    icon,
-                    color: scheme.onSurface,
-                    size: MediaQuery.textScalerOf(context)
-                        .scale(style.fontSize!),
-                  ),
-                  Flexible(child: Text(label, style: style)),
-                ],
+      child: AppPressScale(
+        builder: (context, states) => Material(
+          color: scheme.surfaceContainerHigh,
+          shape: shape.copyWith(
+            side: BorderSide(color: scheme.outlineVariant, width: 0.5),
+          ),
+          shadowColor: scheme.shadow.withValues(alpha: 0.12),
+          elevation: AppSpacing.xs,
+          child: InkWell(
+            onTap: onPressed,
+            statesController: states,
+            customBorder: shape,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: AppControlSize.row),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.l,
+                  vertical: AppSpacing.xs,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: AppSpacing.xs,
+                  children: [
+                    Icon(
+                      icon,
+                      color: scheme.onSurface,
+                      size: MediaQuery.textScalerOf(context)
+                          .scale(style.fontSize!),
+                    ),
+                    Flexible(child: Text(label, style: style)),
+                  ],
+                ),
               ),
             ),
           ),

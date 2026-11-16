@@ -41,6 +41,7 @@ export 'src/widgets/app_moment_hero.dart';
 export 'src/widgets/app_number_field.dart';
 export 'src/widgets/app_onboarding_step_scaffold.dart';
 export 'src/widgets/app_plan_card.dart';
+export 'src/widgets/app_press_scale.dart';
 export 'src/widgets/app_pressable.dart';
 export 'src/widgets/app_readable_width.dart';
 export 'src/widgets/app_search_field.dart';

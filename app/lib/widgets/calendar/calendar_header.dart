@@ -407,6 +407,8 @@ class CalendarDayCell extends StatelessWidget {
       ].join(', '),
       excludeSemantics: true,
       child: AppPressable(
+        // A strip of days is tapped many times in a row; each holds still.
+        pressScale: false,
         onTap: () => onPressed(day),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),

@@ -26,7 +26,7 @@ void main() {
         AppTextButton(label: 'Delete', onPressed: () {}, isDestructive: true),
       );
       expect(
-        tester.getSemantics(find.byType(AppTextButton)),
+        tester.getSemantics(find.byType(TextButton)),
         isSemantics(label: 'Delete', isButton: true, isEnabled: true),
       );
     });

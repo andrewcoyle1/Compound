@@ -123,15 +123,18 @@ class AppChip extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      child: InkWell(
-        onTap: onPressed,
-        customBorder: const StadiumBorder(),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: AppControlSize.row,
-            minHeight: AppControlSize.row,
+      child: AppPressScale(
+        builder: (context, states) => InkWell(
+          onTap: onPressed,
+          statesController: states,
+          customBorder: const StadiumBorder(),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: AppControlSize.row,
+              minHeight: AppControlSize.row,
+            ),
+            child: Align(widthFactor: 1, heightFactor: 1, child: chip),
           ),
-          child: Align(widthFactor: 1, heightFactor: 1, child: chip),
         ),
       ),
     );

@@ -15,6 +15,11 @@ import 'package:flutter/rendering.dart';
 /// With a [color], it draws its own surface in [shape] behind [child], such
 /// as a keypad key; without one, the ink draws on the card or sheet below.
 ///
+/// A target up to 200 pt wide also shrinks a little while pressed
+/// ([AppPressScale]); a wider one, such as a card, keeps its highlight alone.
+/// Turn [pressScale] off for dense cells pressed many times in a row, such
+/// as a calendar's days.
+///
 /// For a row, a card or a button, use the `app_ui` widget made for it. A
 /// drag, pinch or swipe is a gesture, not a press: use a `GestureDetector`
 /// for those.
@@ -28,6 +33,7 @@ class AppPressable extends StatelessWidget {
     this.haptic,
     this.shape,
     this.color,
+    this.pressScale = true,
     super.key,
   });
 
@@ -48,6 +54,9 @@ class AppPressable extends StatelessWidget {
   /// `ColorScheme`.
   final Color? color;
 
+  /// Whether a small target shrinks while pressed.
+  final bool pressScale;
+
   /// The content.
   final Widget child;
 
@@ -55,26 +64,33 @@ class AppPressable extends StatelessWidget {
   Widget build(BuildContext context) {
     final onTap = this.onTap;
     final haptic = this.haptic;
-    Widget target = InkWell(
-      onTap: onTap == null || haptic == null
-          ? onTap
-          : () {
-              unawaited(AppHaptics.play(haptic));
-              onTap();
-            },
-      onLongPress: onLongPress,
-      customBorder: shape,
-      child: child,
+    final target = AppPressScale(
+      enabled: pressScale,
+      builder: (context, states) {
+        Widget target = InkWell(
+          statesController: states,
+          onTap: onTap == null || haptic == null
+              ? onTap
+              : () {
+                  unawaited(AppHaptics.play(haptic));
+                  onTap();
+                },
+          onLongPress: onLongPress,
+          customBorder: shape,
+          child: child,
+        );
+        final color = this.color;
+        if (color != null) {
+          target = Material(
+            color: color,
+            shape: shape,
+            clipBehavior: shape == null ? Clip.none : Clip.antiAlias,
+            child: target,
+          );
+        }
+        return target;
+      },
     );
-    final color = this.color;
-    if (color != null) {
-      target = Material(
-        color: color,
-        shape: shape,
-        clipBehavior: shape == null ? Clip.none : Clip.antiAlias,
-        child: target,
-      );
-    }
     return _MinimumTarget(
       child: Semantics(button: onTap != null, child: target),
     );

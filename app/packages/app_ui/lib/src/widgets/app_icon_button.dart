@@ -99,21 +99,24 @@ class AppIconButton extends StatelessWidget {
         MediaQuery.highContrastOf(context);
     final diameter = MediaQuery.textScalerOf(context)
         .scale(AppControlSize.compact);
-    return IconButton(
-      onPressed: onPressed,
-      tooltip: semanticLabel,
-      iconSize: AppIconSize.small.of(context),
-      icon: Icon(icon),
-      style: IconButton.styleFrom(
-        backgroundColor: background,
-        foregroundColor: foreground,
-        disabledBackgroundColor: scheme.surfaceContainerHighest,
-        disabledForegroundColor: scheme.onSurfaceVariant,
-        fixedSize: Size.square(diameter),
-        minimumSize: Size.square(diameter),
-        padding: EdgeInsets.zero,
-        side: outlined ? BorderSide(color: scheme.onPrimary) : null,
-        tapTargetSize: MaterialTapTargetSize.padded,
+    return AppPressScale(
+      builder: (context, states) => IconButton(
+        onPressed: onPressed,
+        statesController: states,
+        tooltip: semanticLabel,
+        iconSize: AppIconSize.small.of(context),
+        icon: Icon(icon),
+        style: IconButton.styleFrom(
+          backgroundColor: background,
+          foregroundColor: foreground,
+          disabledBackgroundColor: scheme.surfaceContainerHighest,
+          disabledForegroundColor: scheme.onSurfaceVariant,
+          fixedSize: Size.square(diameter),
+          minimumSize: Size.square(diameter),
+          padding: EdgeInsets.zero,
+          side: outlined ? BorderSide(color: scheme.onPrimary) : null,
+          tapTargetSize: MaterialTapTargetSize.padded,
+        ),
       ),
     );
   }
@@ -132,34 +135,37 @@ class AppIconButton extends StatelessWidget {
       excludeSemantics: true,
       child: Tooltip(
         message: semanticLabel,
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const StadiumBorder(),
-          child: Opacity(
-            opacity: onPressed == null ? AppListRow.disabledOpacity : 1,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minWidth: AppControlSize.row,
-                minHeight: AppControlSize.row,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: AppSpacing.xs,
-                  children: [
-                    Icon(
-                      icon,
-                      size: AppIconSize.small.of(context),
-                      color: color,
-                    ),
-                    if (label != null)
-                      Text(
-                        label,
-                        style: AppTextStyles.rowDetail.copyWith(color: color),
+        child: AppPressScale(
+          builder: (context, states) => InkWell(
+            onTap: onPressed,
+            statesController: states,
+            customBorder: const StadiumBorder(),
+            child: Opacity(
+              opacity: onPressed == null ? AppListRow.disabledOpacity : 1,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minWidth: AppControlSize.row,
+                  minHeight: AppControlSize.row,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: AppSpacing.xs,
+                    children: [
+                      Icon(
+                        icon,
+                        size: AppIconSize.small.of(context),
+                        color: color,
                       ),
-                  ],
+                      if (label != null)
+                        Text(
+                          label,
+                          style: AppTextStyles.rowDetail.copyWith(color: color),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

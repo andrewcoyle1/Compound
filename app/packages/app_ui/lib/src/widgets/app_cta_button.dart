@@ -107,33 +107,38 @@ class AppCtaButton extends StatelessWidget {
           padding: padding,
           tapTargetSize: MaterialTapTargetSize.padded,
         );
-    final button = switch (variant) {
-      AppCtaVariant.primary => FilledButton(
-        onPressed: onPressed,
-        style: filled(),
-        child: child,
-      ),
-      AppCtaVariant.secondary => FilledButton(
-        onPressed: onPressed,
-        style: filled(
-          background: context.appColors.raised,
-          foreground: scheme.onSurface,
+    final button = AppPressScale(
+      builder: (context, states) => switch (variant) {
+        AppCtaVariant.primary => FilledButton(
+          onPressed: onPressed,
+          statesController: states,
+          style: filled(),
+          child: child,
         ),
-        child: child,
-      ),
-      AppCtaVariant.plain => TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          foregroundColor: scheme.onSurfaceVariant,
-          // A regular plain button keeps the theme's 44 pt.
-          minimumSize: compact ? const Size(0, AppControlSize.compact) : null,
-          textStyle: textStyle,
-          padding: padding,
-          tapTargetSize: MaterialTapTargetSize.padded,
+        AppCtaVariant.secondary => FilledButton(
+          onPressed: onPressed,
+          statesController: states,
+          style: filled(
+            background: context.appColors.raised,
+            foreground: scheme.onSurface,
+          ),
+          child: child,
         ),
-        child: child,
-      ),
-    };
+        AppCtaVariant.plain => TextButton(
+          onPressed: onPressed,
+          statesController: states,
+          style: TextButton.styleFrom(
+            foregroundColor: scheme.onSurfaceVariant,
+            // A regular plain button keeps the theme's 44 pt.
+            minimumSize: compact ? const Size(0, AppControlSize.compact) : null,
+            textStyle: textStyle,
+            padding: padding,
+            tapTargetSize: MaterialTapTargetSize.padded,
+          ),
+          child: child,
+        ),
+      },
+    );
     return Semantics(
       label: isLoading ? label : null,
       value: isLoading ? loadingLabel : null,

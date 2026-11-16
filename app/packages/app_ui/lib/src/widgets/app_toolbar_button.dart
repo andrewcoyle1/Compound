@@ -134,50 +134,55 @@ class AppToolbarButton extends StatelessWidget {
       padding: EdgeInsets.zero,
       tapTargetSize: MaterialTapTargetSize.padded,
     );
-    return switch (_look) {
-      _Look.glyph || _Look.close => IconButton(
-        onPressed: onPressed,
-        tooltip: semanticLabel,
-        iconSize: glyph,
-        // The badge keeps its size at large text, as the glyph does.
-        icon: Badge(
-          label: Text('$badgeCount', textScaler: TextScaler.noScaling),
-          isLabelVisible: badgeCount > 0,
-          child: Icon(icon),
+    return AppPressScale(
+      builder: (context, states) => switch (_look) {
+        _Look.glyph || _Look.close => IconButton(
+          onPressed: onPressed,
+          statesController: states,
+          tooltip: semanticLabel,
+          iconSize: glyph,
+          // The badge keeps its size at large text, as the glyph does.
+          icon: Badge(
+            label: Text('$badgeCount', textScaler: TextScaler.noScaling),
+            isLabelVisible: badgeCount > 0,
+            child: Icon(icon),
+          ),
+          style: IconButton.styleFrom(
+            foregroundColor: scheme.onSurface,
+            minimumSize: const Size.square(AppControlSize.row),
+          ),
         ),
-        style: IconButton.styleFrom(
-          foregroundColor: scheme.onSurface,
-          minimumSize: const Size.square(AppControlSize.row),
+        _Look.confirm => IconButton(
+          onPressed: onPressed,
+          statesController: states,
+          tooltip: semanticLabel,
+          iconSize: AppIconSize.small.points,
+          icon: isSaving
+              // The circle keeps its size at any text size, as the icon does.
+              ? MediaQuery.withNoTextScaling(
+                  child: AppSpinner(
+                    size: AppSpinnerSize.small,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                )
+              : Icon(icon),
+          style: IconButton.styleFrom(
+            backgroundColor: scheme.primary,
+            foregroundColor: scheme.onPrimary,
+            disabledBackgroundColor: scheme.surfaceContainerHighest,
+            disabledForegroundColor: scheme.onSurfaceVariant,
+          ).merge(circle),
         ),
-      ),
-      _Look.confirm => IconButton(
-        onPressed: onPressed,
-        tooltip: semanticLabel,
-        iconSize: AppIconSize.small.points,
-        icon: isSaving
-            // The circle keeps its size at any text size, as the icon does.
-            ? MediaQuery.withNoTextScaling(
-                child: AppSpinner(
-                  size: AppSpinnerSize.small,
-                  color: scheme.onSurfaceVariant,
-                ),
-              )
-            : Icon(icon),
-        style: IconButton.styleFrom(
-          backgroundColor: scheme.primary,
-          foregroundColor: scheme.onPrimary,
-          disabledBackgroundColor: scheme.surfaceContainerHighest,
-          disabledForegroundColor: scheme.onSurfaceVariant,
-        ).merge(circle),
-      ),
-      _Look.avatar => IconButton(
-        onPressed: onPressed,
-        tooltip: semanticLabel,
-        iconSize: AppControlSize.compact,
-        icon: _Avatar(image: image, initials: initials, glyph: icon),
-        style: circle,
-      ),
-    };
+        _Look.avatar => IconButton(
+          onPressed: onPressed,
+          statesController: states,
+          tooltip: semanticLabel,
+          iconSize: AppControlSize.compact,
+          icon: _Avatar(image: image, initials: initials, glyph: icon),
+          style: circle,
+        ),
+      },
+    );
   }
 }
 

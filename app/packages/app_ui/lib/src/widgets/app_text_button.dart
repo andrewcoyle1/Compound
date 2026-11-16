@@ -40,25 +40,29 @@ class AppTextButton extends StatelessWidget {
   final bool isSmall;
 
   @override
-  Widget build(BuildContext context) => TextButton(
-    onPressed: onPressed,
-    style: TextButton.styleFrom(
-      foregroundColor: isDestructive
-          ? context.appColors.danger
-          : context.appColors.accentInk,
-      padding: inline
-          ? EdgeInsets.zero
-          : const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-      minimumSize: inline ? const Size(0, AppControlSize.row) : null,
-      alignment: inline ? AlignmentDirectional.centerStart : null,
-      // Padding the target out to 48 would centre the text in it.
-      tapTargetSize: inline ? MaterialTapTargetSize.shrinkWrap : null,
-      textStyle: inline
-          ? AppTextStyles.rowDetail.semibold
-          : isSmall
-          ? AppTextStyles.label
-          : null,
-    ),
-    child: Text(label),
-  );
+  Widget build(BuildContext context) => AppPressScale(builder: _build);
+
+  Widget _build(BuildContext context, WidgetStatesController states) =>
+      TextButton(
+        onPressed: onPressed,
+        statesController: states,
+        style: TextButton.styleFrom(
+          foregroundColor: isDestructive
+              ? context.appColors.danger
+              : context.appColors.accentInk,
+          padding: inline
+              ? EdgeInsets.zero
+              : const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+          minimumSize: inline ? const Size(0, AppControlSize.row) : null,
+          alignment: inline ? AlignmentDirectional.centerStart : null,
+          // Padding the target out to 48 would centre the text in it.
+          tapTargetSize: inline ? MaterialTapTargetSize.shrinkWrap : null,
+          textStyle: inline
+              ? AppTextStyles.rowDetail.semibold
+              : isSmall
+              ? AppTextStyles.label
+              : null,
+        ),
+        child: Text(label),
+      );
 }

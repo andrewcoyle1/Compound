@@ -18,6 +18,12 @@ class _Programs extends InMemoryProgramRepository {
     saved.add(mesocycle);
     await super.saveMesocycle(mesocycle);
   }
+
+  @override
+  Future<void> deleteMesocycle(String uid, String id) async {
+    if (fails) throw StateError('rejected');
+    await super.deleteMesocycle(uid, id);
+  }
 }
 
 const _labels = DayNameLabels(restDay: 'Rest Day', workout: _workout);
@@ -269,6 +275,19 @@ void main() {
     expect(await programs.watchMesocycles(programUid).first, isEmpty);
     expect(cubit.state.lastAction, MesocycleDesignAction.delete);
     expect(world.analytics.names.last, 'ProgramDesignView_Delete_Success');
+  });
+
+  test('deleting for good after the Undo writes, and rethrows', () async {
+    final cubit = build(_mesocycle([_rest]));
+    await programs.saveMesocycle(cubit.state.mesocycle);
+    await cubit.deleteNow();
+    expect(await programs.watchMesocycles(programUid).first, isEmpty);
+    expect(world.analytics.names.last, 'ProgramDesignView_Delete_Success');
+
+    final failing = build(_mesocycle([_rest]));
+    programs.fails = true;
+    await expectLater(failing.deleteNow(), throwsA(anything));
+    expect(world.analytics.names.last, 'ProgramDesignView_Delete_Fail');
   });
 
   test('closing is tracked', () async {

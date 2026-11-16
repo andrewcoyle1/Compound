@@ -201,6 +201,21 @@ class MesocycleDesignCubit extends Cubit<MesocycleDesignState> {
     screen: screen,
   );
 
+  /// Deletes the mesocycle for good, once the Undo its screen offered has
+  /// gone; the screen has closed by then, so this emits nothing, and
+  /// rethrows a failure for the snack bar to report.
+  Future<void> deleteNow() async {
+    final id = state.mesocycle.id;
+    _analytics.analytic('${_screen}_Delete_Start');
+    try {
+      await _service.deleteMesocycle(_uid, id);
+      _analytics.analytic('${_screen}_Delete_Success');
+    } on Object catch (error) {
+      _analytics.severe('${_screen}_Delete_Fail', error);
+      rethrow;
+    }
+  }
+
   /// Deletes the mesocycle.
   Future<void> delete() => _write(
     MesocycleDesignAction.delete,

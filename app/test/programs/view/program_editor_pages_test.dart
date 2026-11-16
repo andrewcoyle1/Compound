@@ -10,6 +10,7 @@ import 'package:compound/programs/programs.dart';
 import 'package:compound/programs/view/import_program_page.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_library/training_library.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -278,16 +279,14 @@ void main() {
       final world = await pump(tester, '/training/edit-mesocycle/m2');
       await tester.tap(find.byTooltip('More'));
       await tester.pumpAndSettle();
+      // Not the one being followed, so it goes at once, with an Undo, and
+      // is deleted once the Undo has gone.
       await tester.tap(find.text('Delete Mesocycle'));
       await tester.pumpAndSettle();
-      expect(
-        find.text("“Block m2” will be deleted. This can't be undone."),
-        findsOneWidget,
-      );
-      await tester.tap(find.text('Delete Mesocycle').last);
-      await tester.pumpAndSettle();
-
       expect(find.text('Edit Mesocycle'), findsNothing);
+      expect(find.text('Mesocycle deleted'), findsOneWidget);
+      await tester.pump(undoWindow);
+      await tester.pumpAndSettle();
       expect([for (final m in await mesocycles(tester, world)) m.id], ['m1']);
     });
 

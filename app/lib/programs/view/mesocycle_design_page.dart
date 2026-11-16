@@ -10,6 +10,8 @@ import 'package:compound/programs/cubit/programs_cubit.dart';
 import 'package:compound/programs/view/mesocycle_settings_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/sharing/view/share_to_follower_page.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/workout_editor/view/define_workout_editor.dart';
 import 'package:compound_models/compound_models.dart'
     show MesocycleSharePayload;
@@ -120,9 +122,25 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
     if (discard && context.mounted) _close(context);
   }
 
-  Future<void> _deletePressed(BuildContext context) async {
+  Future<void> _deletePressed(
+    BuildContext context, {
+    required bool isActive,
+  }) async {
     final l10n = context.l10n;
     final cubit = context.read<MesocycleDesignCubit>();
+    // One that is not being followed goes at once, with an Undo, and the
+    // screen closes; the one being followed drives the schedule, so it asks.
+    if (!isActive) {
+      showUndoableDelete(
+        context,
+        key: PendingKeys.mesocycle(cubit.state.mesocycle.id),
+        message: l10n.programMesocycleDeleted,
+        failedMessage: l10n.programDeleteFailed,
+        commit: cubit.deleteNow,
+      );
+      _close(context);
+      return;
+    }
     final confirmed = await confirmDestructive(
       context,
       title: l10n.programDeleteMesocycle,
@@ -232,7 +250,9 @@ class const MesocycleDesignView({required final bool isEditing, super.key})
                       label: l10n.shareWithFriends,
                     ),
                     AppMenuItem(
-                      value: () => unawaited(_deletePressed(context)),
+                      value: () => unawaited(
+                        _deletePressed(context, isActive: isActive),
+                      ),
                       label: l10n.programDeleteMesocycle,
                       isDestructive: true,
                     ),

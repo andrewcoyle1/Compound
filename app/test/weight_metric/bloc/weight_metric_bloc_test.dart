@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart' show AppFormat, AppWeightUnit;
 import 'package:bloc_test/bloc_test.dart';
 import 'package:body_repository/body_repository.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound_models/compound_models.dart'
     show BodyMeasurementEntryKeys;
@@ -54,13 +55,17 @@ void main() {
         .thenAnswer((_) => Stream.value(null));
   });
 
-  WeightMetricBloc build(WeightMetric metric) => WeightMetricBloc(
+  WeightMetricBloc build(
+    WeightMetric metric, {
+    PendingDeletes? pendingDeletes,
+  }) => WeightMetricBloc(
     bodyRepository: bodyRepository,
     userRepository: userRepository,
     analyticsRepository: analytics,
     uid: uid,
     metric: metric,
     now: now,
+    pendingDeletes: pendingDeletes,
   );
 
   group(WeightMetricBloc, () {
@@ -197,7 +202,7 @@ void main() {
         }),
       ).thenAnswer((_) async {}),
       build: () => build(WeightMetric.scaleWeight),
-      act: (bloc) => bloc.add(const WeightMetricEntryDeleted('e2')),
+      act: (bloc) => bloc.deleteEntry('e2'),
       expect: () => const <WeightMetricState>[],
       verify: (_) {
         verify(
@@ -214,21 +219,15 @@ void main() {
     );
 
     blocTest<WeightMetricBloc, WeightMetricState>(
-      'a failed delete keeps the row and reports the failure',
+      'a failed delete is recorded and rethrown for the snack bar',
       setUp: () => when(
         () => bodyRepository.clearMeasurementFields(uid, 'e2', {
           BodyMeasurementEntryKeys.weightKg,
         }),
       ).thenThrow(Exception('offline')),
       build: () => build(WeightMetric.weightTrend),
-      act: (bloc) => bloc.add(const WeightMetricEntryDeleted('e2')),
-      expect: () => [
-        WeightMetricState(
-          metric: WeightMetric.weightTrend,
-          today: today,
-          deleteFailures: 1,
-        ),
-      ],
+      act: (bloc) => expectLater(bloc.deleteEntry('e2'), throwsException),
+      expect: () => const <WeightMetricState>[],
       verify: (_) {
         expect(analytics.names, contains('WeightTrendView_DeleteEntry_Fail'));
         expect(analytics.parameters('WeightTrendView_DeleteEntry_Fail'), {

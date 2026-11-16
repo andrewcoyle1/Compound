@@ -18,10 +18,3 @@ final class const WeightMetricRangeSelected(final MetricRange range)
   @override
   List<Object> get props => [range];
 }
-
-/// The user deleted the weigh-in [entryId] from All Recorded Data.
-final class const WeightMetricEntryDeleted(final String entryId)
-    extends WeightMetricEvent {
-  @override
-  List<Object> get props => [entryId];
-}

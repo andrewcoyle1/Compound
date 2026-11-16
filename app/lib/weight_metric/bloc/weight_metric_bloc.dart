@@ -5,6 +5,7 @@ import 'package:body_repository/body_repository.dart';
 import 'package:compound/metric_detail/models/metric_readings.dart';
 import 'package:compound/nutrition/logic/meal_day.dart' show startOfDay;
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound/weight_metric/models/weight_metric.dart';
 import 'package:compound_models/compound_models.dart'
     show BodyMeasurementEntryKeys;
@@ -27,16 +28,19 @@ class WeightMetricBloc extends Bloc<WeightMetricEvent, WeightMetricState> {
     required this._uid,
     required WeightMetric metric,
     DateTime Function() now = DateTime.now,
+    this._pendingDeletes,
   }) : super(WeightMetricState(metric: metric, today: startOfDay(now()))) {
     on<WeightMetricSubscriptionRequested>(_onSubscriptionRequested);
     on<WeightMetricRangeSelected>(_onRangeSelected);
-    on<WeightMetricEntryDeleted>(_onEntryDeleted);
   }
 
   final BodyRepository _bodyRepository;
   final UserRepository _userRepository;
   final AnalyticsRepository _analyticsRepository;
   final String _uid;
+
+  /// Weigh-ins waiting on an Undo, left out of the list and the trend.
+  final PendingDeletes? _pendingDeletes;
 
   String get _screen => state.metric.analyticsName;
 
@@ -45,19 +49,35 @@ class WeightMetricBloc extends Bloc<WeightMetricEvent, WeightMetricState> {
     Emitter<WeightMetricState> emit,
   ) {
     _analyticsRepository.appear(_screen);
+    List<BodyMeasurementEntry>? stored;
+    var hidden = const <String>{};
+    WeightMetricState shown() {
+      final weighIns = weighInsOf(stored!)
+          .hide(hidden, (entry) => PendingKeys.weighIn(entry.id));
+      return state.copyWith(
+        weighIns: weighIns,
+        trendKg: trendOf(weighIns),
+        failed: false,
+      );
+    }
+
     return Future.wait([
       emit.forEach(
         _bodyRepository.watchMeasurements(_uid),
         onData: (measurements) {
-          final weighIns = weighInsOf(measurements);
-          return state.copyWith(
-            weighIns: weighIns,
-            trendKg: trendOf(weighIns),
-            failed: false,
-          );
+          stored = measurements;
+          return shown();
         },
         onError: (_, _) => state.copyWith(failed: true),
       ),
+      if (_pendingDeletes case final pending?)
+        emit.forEach(
+          pending.watch(),
+          onData: (keys) {
+            hidden = keys;
+            return stored == null ? state : shown();
+          },
+        ),
       // The unit is a nicety: without the profile, kilograms.
       emit.forEach(
         _userRepository.watchUser(_uid),
@@ -74,22 +94,20 @@ class WeightMetricBloc extends Bloc<WeightMetricEvent, WeightMetricState> {
     Emitter<WeightMetricState> emit,
   ) => emit(state.copyWith(range: event.range));
 
-  /// Clears the weigh-in's weight with a delete, not Swift's merge (which
-  /// loses the clear), logging `<screen>_DeleteEntry_*`. A failure counts
-  /// in [WeightMetricState.deleteFailures] for the screen's alert.
-  Future<void> _onEntryDeleted(
-    WeightMetricEntryDeleted event,
-    Emitter<WeightMetricState> emit,
-  ) async {
-    _analyticsRepository.analytic('${_screen}_DeleteEntry_Start');
+  /// Clears weigh-in [entryId]'s weight with a delete, not Swift's merge
+  /// (which loses the clear), logging `<screen>_DeleteEntry_*`, once its
+  /// Undo has gone. A failure is rethrown for the snack bar to report.
+  Future<void> deleteEntry(String entryId) async {
+    final screen = _screen;
+    _analyticsRepository.analytic('${screen}_DeleteEntry_Start');
     try {
-      await _bodyRepository.clearMeasurementFields(_uid, event.entryId, {
+      await _bodyRepository.clearMeasurementFields(_uid, entryId, {
         BodyMeasurementEntryKeys.weightKg,
       });
-      _analyticsRepository.analytic('${_screen}_DeleteEntry_Success');
+      _analyticsRepository.analytic('${screen}_DeleteEntry_Success');
     } on Object catch (error) {
-      _analyticsRepository.severe('${_screen}_DeleteEntry_Fail', error);
-      emit(state.copyWith(deleteFailures: state.deleteFailures + 1));
+      _analyticsRepository.severe('${screen}_DeleteEntry_Fail', error);
+      rethrow;
     }
   }
 

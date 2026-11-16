@@ -567,6 +567,7 @@
     "tonnageMethodOwnChoices": "Las proporciones de peso corporal de la biblioteca de ejercicios (fondos 100%, dominadas 95%, sentadillas y zancadas 85%, bisagras de cadera 60%) y el valor inicial del 75% para un nuevo ejercicio con peso corporal son decisiones propias de Compound. Solo las cifras de las flexiones están medidas.",
     "metricDeleteEntry": "Eliminar",
     "metricDeleteFailed": "No se pudo eliminar el registro",
+    "weightEntryDeleted": "Pesaje eliminado",
     "metricTryAgain": "Inténtalo de nuevo.",
     "measurementNeck": "Cuello",
     "measurementShoulders": "Hombros",

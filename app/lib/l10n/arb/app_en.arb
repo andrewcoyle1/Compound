@@ -2937,6 +2937,10 @@
     "@metricDeleteFailed": {
         "description": "Alert title when deleting a metric entry fails"
     },
+    "weightEntryDeleted": "Weigh-in deleted",
+    "@weightEntryDeleted": {
+        "description": "Weight: snack bar after deleting a weigh-in from All Recorded Data, with Undo"
+    },
     "metricTryAgain": "Please try again.",
     "@metricTryAgain": {
         "description": "Alert message asking the user to try again"

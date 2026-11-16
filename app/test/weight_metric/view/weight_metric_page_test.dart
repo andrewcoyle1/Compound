@@ -5,6 +5,8 @@ import 'package:body_repository/body_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound_charts/compound_charts.dart';
 import 'package:compound_models/compound_models.dart'
@@ -39,6 +41,7 @@ void main() {
     List<BodyMeasurementEntry>? measurements,
     bool allData = false,
   }) async {
+    final pending = PendingDeletes();
     final bloc = WeightMetricBloc(
       bodyRepository:
           bodyRepository ??
@@ -48,12 +51,14 @@ void main() {
       uid: uid,
       metric: metric,
       now: now,
+      pendingDeletes: pending,
     )..add(const WeightMetricSubscriptionRequested());
     await tester.pumpApp(
       BlocProvider.value(
         value: bloc,
         child: WeightMetricView(allData: allData),
       ),
+      pendingDeletes: pending,
     );
     await tester.pump();
     return bloc;
@@ -212,7 +217,21 @@ void main() {
         bodyRepository: repository,
         allData: true,
       );
+      // Gone at once, with an Undo; cleared once the Undo has gone.
       await tester.drag(find.text('73 kg'), const Offset(-700, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('73 kg'), findsNothing);
+      expect(
+        (await repository.watchMeasurements(uid).first).single.weightKg,
+        73,
+      );
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(find.text('73 kg'), findsOneWidget);
+
+      await tester.drag(find.text('73 kg'), const Offset(-700, 0));
+      await tester.pumpAndSettle();
+      await tester.pump(undoWindow);
       await tester.pumpAndSettle();
       expect(find.text('73 kg'), findsNothing);
       final entry = (await repository.watchMeasurements(uid).first).single;
@@ -245,10 +264,12 @@ void main() {
       );
       await tester.drag(find.text('73 kg'), const Offset(-700, 0));
       await tester.pumpAndSettle();
-      expect(find.text('Unable to Delete Entry'), findsOneWidget);
-      await tester.tap(find.text('OK'));
+      await tester.pump(undoWindow);
       await tester.pumpAndSettle();
+      expect(find.text('Unable to Delete Entry'), findsOneWidget);
       expect(find.text('73 kg'), findsOneWidget);
+      await tester.pump(AppSnackBarScopeState.defaultDuration);
+      await tester.pumpAndSettle();
     });
   });
 }

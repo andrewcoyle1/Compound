@@ -37,9 +37,6 @@ final class const WeightMetricState({
 
   /// Whether reading the weigh-ins failed.
   final bool failed = false,
-
-  /// How many deletes have failed, so the screen alerts on each.
-  final int deleteFailures = 0,
 }) extends Equatable {
   /// Where the weigh-ins have got to.
   WeightMetricStatus get status => failed
@@ -96,7 +93,6 @@ final class const WeightMetricState({
     List<MetricPoint>? trendKg,
     WeightUnitPreference? Function()? weightUnitPreference,
     bool? failed,
-    int? deleteFailures,
   }) => WeightMetricState(
     metric: metric,
     today: today,
@@ -107,7 +103,6 @@ final class const WeightMetricState({
         ? this.weightUnitPreference
         : weightUnitPreference(),
     failed: failed ?? this.failed,
-    deleteFailures: deleteFailures ?? this.deleteFailures,
   );
 
   @override
@@ -119,6 +114,5 @@ final class const WeightMetricState({
     trendKg,
     weightUnitPreference,
     failed,
-    deleteFailures,
   ];
 }

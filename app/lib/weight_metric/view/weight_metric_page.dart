@@ -11,6 +11,8 @@ import 'package:compound/log_weight/log_weight.dart';
 import 'package:compound/metric_detail/metric_detail.dart';
 import 'package:compound/science/method_info.dart';
 import 'package:compound/science/view/method_info_button.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/weight_metric/bloc/weight_metric_bloc.dart';
 import 'package:compound/weight_metric/models/weight_metric.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,6 +43,7 @@ class WeightMetricPage extends StatelessWidget {
         analyticsRepository: context.read<AnalyticsRepository>(),
         uid: state.user.uid,
         metric: metric,
+        pendingDeletes: context.read<PendingDeletes>(),
       )..add(const WeightMetricSubscriptionRequested()),
       // Scale Weight brings Health's weigh-ins in as it appears.
       child: OnAppear(
@@ -67,64 +70,58 @@ class WeightMetricView extends StatelessWidget {
     final state = context.watch<WeightMetricBloc>().state;
     final title = state.metric.title(l10n);
     final hasEntries = state.weighIns?.isNotEmpty ?? false;
-    return BlocListener<WeightMetricBloc, WeightMetricState>(
-      listenWhen: (previous, current) =>
-          current.deleteFailures > previous.deleteFailures,
-      listener: (context, _) => showAppDialog<void>(
-        context: context,
-        title: context.l10n.metricDeleteFailed,
-        message: context.l10n.metricTryAgain,
+    return AppScaffold(
+      appBar: AppBar(
+        title: Text(allData ? l10n.metricAllRecordedData : title),
         actions: [
-          AppDialogAction(
-            label: MaterialLocalizations.of(context).okButtonLabel,
-            role: AppDialogRole.preferred,
-          ),
+          if (!allData && state.metric == WeightMetric.weightTrend)
+            MethodInfoButton(MethodInfo.weightTrend(l10n)),
+          if (!allData && state.metric == WeightMetric.weightTrend)
+            AskCoachButton(
+              CoachContext(kind: CoachContextKind.weightTrend, title: title),
+            ),
+          if (!allData)
+            AppToolbarButton(
+              icon: AppSymbols.add,
+              semanticLabel: l10n.logWeightTitle,
+              onPressed: () => context.pushNamed(LogWeightPage.name),
+            ),
         ],
       ),
-      child: AppScaffold(
-        appBar: AppBar(
-          title: Text(allData ? l10n.metricAllRecordedData : title),
-          actions: [
-            if (!allData && state.metric == WeightMetric.weightTrend)
-              MethodInfoButton(MethodInfo.weightTrend(l10n)),
-            if (!allData && state.metric == WeightMetric.weightTrend)
-              AskCoachButton(
-                CoachContext(kind: CoachContextKind.weightTrend, title: title),
-              ),
-            if (!allData)
-              AppToolbarButton(
-                icon: AppSymbols.add,
-                semanticLabel: l10n.logWeightTitle,
-                onPressed: () => context.pushNamed(LogWeightPage.name),
-              ),
-          ],
+      body: switch (state.status) {
+        WeightMetricStatus.loading => AppLoadingView(label: l10n.launchLoading),
+        WeightMetricStatus.failure => AppErrorState(
+          title: title,
+          description: l10n.weightLoadFailure,
         ),
-        body: switch (state.status) {
-          WeightMetricStatus.loading => AppLoadingView(
-            label: l10n.launchLoading,
-          ),
-          WeightMetricStatus.failure => AppErrorState(
-            title: title,
-            description: l10n.weightLoadFailure,
-          ),
-          WeightMetricStatus.loaded when !hasEntries => AppEmptyState(
-            icon: AppSymbols.analytics,
-            title: title,
-            description: l10n.weightNoEntries,
-            actionLabel: l10n.logWeightTitle,
-            onAction: () => context.pushNamed(LogWeightPage.name),
-          ),
-          WeightMetricStatus.loaded when allData => MetricAllDataView(
-            title: title,
-            unit: state.unit.symbol,
-            entries: state.entries,
-            onDelete: (index) => context.read<WeightMetricBloc>().add(
-              WeightMetricEntryDeleted(state.entryIds[index]),
-            ),
-          ),
-          WeightMetricStatus.loaded => _Detail(state: state, title: title),
-        },
-      ),
+        WeightMetricStatus.loaded when !hasEntries => AppEmptyState(
+          icon: AppSymbols.analytics,
+          title: title,
+          description: l10n.weightNoEntries,
+          actionLabel: l10n.logWeightTitle,
+          onAction: () => context.pushNamed(LogWeightPage.name),
+        ),
+        WeightMetricStatus.loaded when allData => MetricAllDataView(
+          title: title,
+          unit: state.unit.symbol,
+          entries: state.entries,
+          onDelete: (index) => _delete(context, state.entryIds[index]),
+        ),
+        WeightMetricStatus.loaded => _Detail(state: state, title: title),
+      },
+    );
+  }
+
+  /// Takes the weigh-in away at once, with an Undo; its weight is cleared
+  /// once the Undo has gone.
+  void _delete(BuildContext context, String entryId) {
+    final bloc = context.read<WeightMetricBloc>();
+    showUndoableDelete(
+      context,
+      key: PendingKeys.weighIn(entryId),
+      message: context.l10n.weightEntryDeleted,
+      failedMessage: context.l10n.metricDeleteFailed,
+      commit: () => bloc.deleteEntry(entryId),
     );
   }
 }

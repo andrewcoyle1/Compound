@@ -82,6 +82,7 @@ use the wrapper. Restyling the wrapper then restyles every screen.
 | A tag or filter | `AppChip` |
 | A number entry | `AppNumberField` |
 | A form or scanner message | `AppInlineMessage` |
+| A field that was wrong when a submit failed (a taken username) | `AppShake(trigger:)` around it, with the message beside it and `AppHaptics.error()` from the caller. Never on blur or while typing; nothing moves under reduced motion |
 | A screen | `AppScaffold`, `AppDashboard` for tab roots, `AppOnboardingStepScaffold` for onboarding |
 | Swipe actions | `AppSwipeActions` |
 | An alert, confirmation or choice | `showAppDialog` with `AppDialogAction`s; `AppDialog.confirmDestructive` for an irreversible action. Under reduced motion it appears and goes without a transition, as sheets do |

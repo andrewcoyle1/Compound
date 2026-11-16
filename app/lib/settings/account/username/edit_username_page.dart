@@ -51,6 +51,9 @@ class _EditUsernameViewState extends State<EditUsernameView> {
   late final EditUsernameBloc _bloc;
   late final _controller = TextEditingController(text: _bloc.state.text);
 
+  /// Counts failed saves; each one shakes the field.
+  var _failedSaves = 0;
+
   @override
   void initState() {
     super.initState();
@@ -79,9 +82,15 @@ class _EditUsernameViewState extends State<EditUsernameView> {
     }
   }
 
+  void _onTaken(BuildContext context, EditUsernameState state) {
+    unawaited(AppHaptics.error());
+    setState(() => _failedSaves++);
+  }
+
   void _onFailure(BuildContext context, EditUsernameState state) {
     final l10n = context.l10n;
     unawaited(AppHaptics.heavy());
+    setState(() => _failedSaves++);
     unawaited(
       showAppDialog<void>(
         context: context,
@@ -108,6 +117,14 @@ class _EditUsernameViewState extends State<EditUsernameView> {
               previous.failureId != current.failureId,
           listener: _onFailure,
         ),
+        // Someone took the name between the check and the save.
+        BlocListener<EditUsernameBloc, EditUsernameState>(
+          listenWhen: (previous, current) =>
+              previous.isSaving &&
+              !current.isSaving &&
+              current.status == UsernameStatus.taken,
+          listener: _onTaken,
+        ),
       ],
       child: AppScaffold(
         appBar: AppBar(
@@ -124,22 +141,25 @@ class _EditUsernameViewState extends State<EditUsernameView> {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
-              AppCard(
-                child: AppTextFieldRow(
-                  label: l10n.usernamePlaceholder,
-                  controller: _controller,
-                  autofocus: true,
-                  textInputAction: TextInputAction.done,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  autofillHints: const [AutofillHints.username],
-                  onChanged: (text) =>
-                      _bloc.add(EditUsernameTextChanged(text, widget.viewer)),
-                  textCapitalization: TextCapitalization.none,
-                  prefixText: '@',
-                  onSubmitted: (_) {
-                    if (state.canSave) _save();
-                  },
+              AppShake(
+                trigger: _failedSaves,
+                child: AppCard(
+                  child: AppTextFieldRow(
+                    label: l10n.usernamePlaceholder,
+                    controller: _controller,
+                    autofocus: true,
+                    textInputAction: TextInputAction.done,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    autofillHints: const [AutofillHints.username],
+                    onChanged: (text) =>
+                        _bloc.add(EditUsernameTextChanged(text, widget.viewer)),
+                    textCapitalization: TextCapitalization.none,
+                    prefixText: '@',
+                    onSubmitted: (_) {
+                      if (state.canSave) _save();
+                    },
+                  ),
                 ),
               ),
               Padding(

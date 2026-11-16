@@ -158,6 +158,26 @@ List<Widget> galleryButtons(BuildContext context) {
         ),
       ),
     ]),
+    galleryEntry('AppShake', [
+      galleryInline(
+        'tap to shake',
+        GalleryLive(
+          initial: 0,
+          builder: (shakes, update) => AppShake(
+            trigger: shakes,
+            child: AppPressable(
+              onTap: () => update(shakes + 1),
+              color: context.appColors.raised,
+              shape: const StadiumBorder(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                child: Text(l10n.devGallerySampleTextAction),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ]),
     galleryEntry('AppIconSwap', [
       galleryInline(
         'tap to swap',

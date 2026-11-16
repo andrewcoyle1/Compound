@@ -51,6 +51,7 @@ export 'src/widgets/app_section.dart';
 export 'src/widgets/app_segmented_control.dart';
 export 'src/widgets/app_selectable_row.dart';
 export 'src/widgets/app_selection_ring.dart';
+export 'src/widgets/app_shake.dart';
 export 'src/widgets/app_sheet.dart';
 export 'src/widgets/app_sign_in_with_apple_button.dart';
 export 'src/widgets/app_sign_in_with_google_button.dart';

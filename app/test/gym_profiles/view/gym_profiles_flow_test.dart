@@ -9,6 +9,7 @@ import 'package:compound/gym_profiles/view/gym_profiles_page.dart';
 import 'package:compound/gym_profiles/view/stack_machine_editor.dart';
 import 'package:compound/gym_profiles/view/weight_list_editor.dart';
 import 'package:compound/shell/shell.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/workout_editor/view/workout_wizard_pages.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -236,25 +237,38 @@ void main() {
     );
   });
 
-  testWidgets('a gym is deleted after asking, and a new one added', (
+  testWidgets('a gym is deleted at once with an Undo, and a new one added', (
     tester,
   ) async {
     await pumpGymApp(tester);
     await open(tester, GymProfilesPage.name);
+    Future<List<GymProfileModel>?> stored() =>
+        tester.runAsync(() => library.watchGymProfiles(uid).first);
 
-    await tester.drag(
-      find.text('Platinum Gym Malahide'),
-      const Offset(-200, 0),
-    );
-    await tester.pumpAndSettle();
-    await tap(tester, find.byIcon(AppSymbols.delete));
-    expect(find.text('Delete Gym Profile?'), findsOneWidget);
-    await tap(tester, find.text('Delete').last);
+    Future<void> delete() async {
+      await tester.drag(
+        find.text('Platinum Gym Malahide'),
+        const Offset(-200, 0),
+      );
+      await tester.pumpAndSettle();
+      await tap(tester, find.byIcon(AppSymbols.delete));
+    }
+
+    // Gone from the list at once, but written only once Undo has gone.
+    await delete();
+    expect(find.text('Delete Gym Profile?'), findsNothing);
     expect(find.text('No Gym Profiles'), findsOneWidget);
-    expect(
-      await tester.runAsync(() => library.watchGymProfiles(uid).first),
-      isEmpty,
-    );
+    expect(await stored(), hasLength(1));
+    await tap(tester, find.text('Undo'));
+    expect(find.text('Platinum Gym Malahide'), findsOneWidget);
+
+    await delete();
+    await tester.pump(undoWindow);
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(await stored(), isEmpty);
+    expect(find.text('No Gym Profiles'), findsOneWidget);
 
     await tap(tester, find.text('Add a Gym Profile'));
     await tester.enterText(find.byKey(const Key('GymProfile.name')), 'Garage');

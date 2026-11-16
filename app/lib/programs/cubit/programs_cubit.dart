@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:program_repository/program_repository.dart';
@@ -26,6 +27,7 @@ class ProgramsCubit extends Cubit<ProgramsState> {
     required this._service,
     required this._setup,
     required this._analytics,
+    this._pendingDeletes,
   }) : super(const ProgramsState());
 
   final ProgramRepository _programs;
@@ -34,6 +36,9 @@ class ProgramsCubit extends Cubit<ProgramsState> {
   final ProgramService _service;
   final TrainingSetupService _setup;
   final AnalyticsRepository _analytics;
+
+  /// Mesocycles waiting on an Undo, left out of [ProgramsState.mesocycles].
+  final PendingDeletes? _pendingDeletes;
 
   String? _uid;
   final List<StreamSubscription<Object?>> _subscriptions = [];
@@ -54,6 +59,7 @@ class ProgramsCubit extends Cubit<ProgramsState> {
     List<WorkoutSessionModel>? sessions;
     var userLoaded = false;
     var activeId = state.activeMesocycleId;
+    var hidden = const <String>{};
     var migrated = false;
 
     void update() {
@@ -67,7 +73,10 @@ class ProgramsCubit extends Cubit<ProgramsState> {
       emit(
         state.copyWith(
           status: ProgramsStatus.loaded,
-          mesocycles: mesocycles,
+          mesocycles: mesocycles!.hide(
+            hidden,
+            (m) => PendingKeys.mesocycle(m.id),
+          ),
           macrocycles: macrocycles,
           sessions: sessions,
           activeMesocycleId: () => activeId,
@@ -104,6 +113,11 @@ class ProgramsCubit extends Cubit<ProgramsState> {
         activeId = user?.submittedActiveMesocycleId;
         update();
       }, onError: fail),
+      if (_pendingDeletes case final pending?)
+        pending.watch().listen((data) {
+          hidden = data;
+          update();
+        }),
     ]);
   }
 
@@ -165,6 +179,26 @@ class ProgramsCubit extends Cubit<ProgramsState> {
     '${eventPrefix}_DeleteProgram',
     (uid) => _service.deleteMesocycle(uid, mesocycle.id),
   );
+
+  /// Deletes [mesocycle] for good once its Undo has gone, from the library
+  /// ([eventPrefix] names the screen). It rethrows a failure for the snack
+  /// bar to report, and bumps no `actionId`: the snack bar says it.
+  Future<void> deleteMesocycleNow(
+    Mesocycle mesocycle, {
+    required String eventPrefix,
+  }) async {
+    final uid = _uid;
+    if (uid == null) return;
+    final prefix = '${eventPrefix}_DeleteProgram';
+    _analytics.analytic('${prefix}_Start');
+    try {
+      await _service.deleteMesocycle(uid, mesocycle.id);
+      _analytics.analytic('${prefix}_Success');
+    } on Object catch (error) {
+      _analytics.severe('${prefix}_Fail', error);
+      rethrow;
+    }
+  }
 
   /// Saves [day] of a mesocycle as a library workout of the user's own,
   /// named [copyName] of it when [library] has a workout of its name

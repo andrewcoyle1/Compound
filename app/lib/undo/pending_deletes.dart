@@ -77,6 +77,38 @@ class PendingDeletes {
   }
 }
 
+/// The keys deletes wait under in [PendingDeletes], one kind of document
+/// each, so the screen deleting and the lists hiding agree.
+abstract final class PendingKeys {
+  /// A gym profile.
+  static String gym(String id) => 'gym_profiles/$id';
+
+  /// A mesocycle.
+  static String mesocycle(String id) => 'mesocycles/$id';
+
+  /// An exercise of the user's own.
+  static String exercise(String id) => 'exercises/$id';
+
+  /// A workout template.
+  static String template(String id) => 'workout_templates/$id';
+
+  /// A progress photo.
+  static String photo(String id) => 'progress_photos/$id';
+
+  /// A comment on a workout.
+  static String comment(String id) => 'comments/$id';
+
+  /// A chat with the coach.
+  static String coachChat(String id) => 'coach_chats/$id';
+
+  /// A weigh-in.
+  static String weighIn(String id) => 'weight_entries/$id';
+
+  /// One food in a meal.
+  static String mealItem(String mealId, String itemId) =>
+      'meals/$mealId/items/$itemId';
+}
+
 /// Hides the items waiting to be deleted.
 extension HidePending<T> on Iterable<T> {
   /// The items whose [keyOf] is not in [pending].

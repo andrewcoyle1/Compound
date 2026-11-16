@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/programs/view/program_widgets.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -203,6 +204,49 @@ void main() {
         'start_mesocycle_index': 1,
         'start_microcycle_index': 0,
       });
+    });
+
+    test('hides a mesocycle waiting on an Undo, and deletes it for good '
+        'later', () async {
+      final world = ProgramWorld.seeded(mesocycles: [m1, m2], active: 'm1');
+      final pending = PendingDeletes();
+      addTearDown(pending.close);
+      final cubit = world.cubit(pendingDeletes: pending)
+        ..userChanged(programUid);
+      addTearDown(cubit.close);
+      await pumpEventQueue();
+      expect(cubit.state.mesocycles.map((m) => m.id), ['m1', 'm2']);
+
+      pending.schedule(PendingKeys.mesocycle('m2'), () async {});
+      await pumpEventQueue();
+      expect(cubit.state.mesocycles.map((m) => m.id), ['m1']);
+
+      await cubit.deleteMesocycleNow(m2, eventPrefix: 'Library');
+      pending.undo(PendingKeys.mesocycle('m2'));
+      await pumpEventQueue();
+      expect(cubit.state.mesocycles.map((m) => m.id), ['m1']);
+      expect(world.analytics.names, [
+        'Library_DeleteProgram_Start',
+        'Library_DeleteProgram_Success',
+      ]);
+    });
+
+    test('a failed delete for good is recorded and rethrown', () async {
+      final world = ProgramWorld.seeded(mesocycles: [m1]);
+      final cubit = await follow(world, p: _FailingPrograms(mesocycles: [m1]));
+      await expectLater(
+        cubit.deleteMesocycleNow(m1, eventPrefix: 'Library'),
+        throwsStateError,
+      );
+      expect(world.analytics.names, contains('Library_DeleteProgram_Fail'));
+    });
+
+    test('signed out, a delete for good does nothing', () async {
+      final world = ProgramWorld.seeded(mesocycles: [m1]);
+      final cubit = world.cubit();
+      addTearDown(cubit.close);
+      await cubit.deleteMesocycleNow(m1, eventPrefix: 'Library');
+      expect(world.analytics.names, isEmpty);
     });
 
     test('a failed write answers false and logs a severe _Fail', () async {

@@ -7597,6 +7597,10 @@
     },
     "programDeleteFailed": "Unable to Delete Mesocycle",
     "@programDeleteFailed": {},
+    "programMesocycleDeleted": "Mesocycle deleted",
+    "@programMesocycleDeleted": {
+        "description": "Mesocycle library: snack bar after deleting a mesocycle, with Undo"
+    },
     "programTryAgain": "Please try again.",
     "@programTryAgain": {},
     "programSkipFailed": "Unable to Skip Workout",
@@ -8608,18 +8612,12 @@
     "@gymCancel": {},
     "gymFavourite": "Favorite",
     "@gymFavourite": {},
-    "gymDeleteProfileTitle": "Delete Gym Profile?",
-    "@gymDeleteProfileTitle": {},
-    "gymDeleteProfileMessage": "{name} and the equipment set up in it will be deleted.",
-    "@gymDeleteProfileMessage": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
     "gymUnableToDelete": "Unable to delete gym profile",
     "@gymUnableToDelete": {},
+    "gymProfileDeleted": "Gym profile deleted",
+    "@gymProfileDeleted": {
+        "description": "Gym profiles: snack bar after deleting a gym, with Undo"
+    },
     "gymUnableToFavourite": "Unable to set your usual gym",
     "@gymUnableToFavourite": {},
     "gymTryAgain": "Please try again.",

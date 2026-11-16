@@ -11,6 +11,8 @@ import 'package:compound/onboarding/training/gym_setup_cubit.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/models/training_library.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:program_repository/program_repository.dart';
@@ -60,17 +62,19 @@ class GymProfilesView extends StatelessWidget {
     ),
   );
 
+  /// Deletes [gym] from the list at once, with an Undo; it is written once
+  /// the Undo has gone.
   Future<void> _delete(BuildContext context, GymProfileModel gym) async {
     final l10n = context.l10n;
     final cubit = context.read<GymProfilesCubit>();
-    final delete = await AppDialog.confirmDestructive(
+    showUndoableDelete(
       context,
-      title: l10n.gymDeleteProfileTitle,
-      message: l10n.gymDeleteProfileMessage(gym.name),
-      confirmLabel: l10n.gymDelete,
-      cancelLabel: l10n.gymCancel,
+      key: PendingKeys.gym(gym.id),
+      message: l10n.gymProfileDeleted,
+      failedMessage: l10n.gymUnableToDelete,
+      commit: () => cubit.delete(gym),
+      onUndo: () => cubit.deleteUndone(gym),
     );
-    if (delete) await cubit.delete(gym);
   }
 
   @override
@@ -90,9 +94,6 @@ class GymProfilesView extends StatelessWidget {
     ];
     return BlocListener<GymProfilesCubit, GymProfilesStatus>(
       listener: (context, status) => switch (status) {
-        GymProfilesStatus.deleteFailure => unawaited(
-          showFailureAlert(context, l10n.gymUnableToDelete, l10n.gymTryAgain),
-        ),
         GymProfilesStatus.favouriteFailure => unawaited(
           showFailureAlert(
             context,

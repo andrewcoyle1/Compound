@@ -11,6 +11,8 @@ import 'package:compound/programs/view/prebuilt_mesocycle_detail_page.dart';
 import 'package:compound/programs/view/program_widgets.dart';
 import 'package:compound/sharing/view/share_to_follower_page.dart';
 import 'package:compound/training_library/view/library_widgets.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound_models/compound_models.dart'
     show MesocycleSharePayload;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -151,6 +153,23 @@ class _MesocycleLibraryPageState extends State<MesocycleLibraryPage> {
     final l10n = context.l10n;
     final cubit = context.read<ProgramsCubit>();
     final isActive = mesocycle.id == cubit.state.activeMesocycleId;
+    // One that is not being followed goes at once, with an Undo; the active
+    // one drives the schedule, so it still asks.
+    if (!isActive) {
+      showUndoableDelete(
+        context,
+        key: PendingKeys.mesocycle(mesocycle.id),
+        message: l10n.programMesocycleDeleted,
+        failedMessage: l10n.programDeleteFailed,
+        commit: () => cubit.deleteMesocycleNow(
+          mesocycle,
+          eventPrefix: MesocycleLibraryPage._screen,
+        ),
+        onUndo: () =>
+            cubit.pressed('${MesocycleLibraryPage._screen}_DeleteProgram_Undo'),
+      );
+      return;
+    }
     final confirmed = await confirmDestructive(
       context,
       title: l10n.programDeleteMesocycle,

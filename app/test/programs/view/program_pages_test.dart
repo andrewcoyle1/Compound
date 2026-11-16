@@ -8,6 +8,8 @@ import 'package:compound/notifications/notification_copy.dart';
 import 'package:compound/programs/programs.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_library/training_library.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:compound_models/compound_models.dart';
@@ -122,7 +124,9 @@ void main() {
       history: history,
       active: active,
     );
-    final programs = world.cubit()..userChanged(programUid);
+    final pending = PendingDeletes();
+    final programs = world.cubit(pendingDeletes: pending)
+      ..userChanged(programUid);
     final workout = ActiveWorkoutCubit(
       sessions: world.sessions,
       users: world.users,
@@ -145,6 +149,7 @@ void main() {
       analyticsRepository: world.analytics,
       programsCubit: programs,
       activeWorkoutCubit: workout,
+      pendingDeletes: pending,
     );
     await tester.pumpAndSettle();
     return world;
@@ -297,16 +302,29 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Lower'), findsOneWidget);
 
-      // The saved mesocycle's menu; the active one has Edit alone.
-      await tester.tap(find.byTooltip('Workout options').last);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Delete Mesocycle'));
-      await tester.pumpAndSettle();
+      // The saved mesocycle's menu; the active one has Edit alone. It is
+      // not being followed, so it goes at once, with an Undo.
+      Future<void> delete() async {
+        await tester.tap(find.byTooltip('Workout options').last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Delete Mesocycle'));
+        await tester.pumpAndSettle();
+      }
+
+      await delete();
       expect(
         find.text("Delete 'Block m2'? This can't be undone."),
-        findsOneWidget,
+        findsNothing,
       );
-      await tester.tap(find.text('Delete'));
+      expect(find.text('Block m2'), findsNothing);
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(find.text('Block m2'), findsOneWidget);
+
+      await delete();
+      await tester.pump(undoWindow);
+      await tester.pumpAndSettle();
+      await _read(tester, () => Future<void>.delayed(Duration.zero));
       await tester.pumpAndSettle();
       expect(
         [
@@ -322,6 +340,7 @@ void main() {
         world.analytics.names,
         containsAll([
           'TrainingProgramLibraryView_Appear',
+          'TrainingProgramLibraryView_DeleteProgram_Undo',
           'TrainingProgramLibraryView_DeleteProgram_Success',
         ]),
       );

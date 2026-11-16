@@ -403,6 +403,7 @@ class const App({
               service: context.read<ProgramService>(),
               setup: context.read<TrainingSetupService>(),
               analytics: analyticsRepository,
+              pendingDeletes: context.read<PendingDeletes>(),
             ),
           ),
           BlocProvider(

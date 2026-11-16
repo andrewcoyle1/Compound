@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/training_library/bloc/training_library_bloc.dart';
 import 'package:compound/training_library/view/library_names.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -97,6 +98,7 @@ class TrainingLibraryProvider extends StatelessWidget {
         libraryRepository: context.read<TrainingLibraryRepository>(),
         programRepository: context.read<ProgramRepository>(),
         uid: uid,
+        pendingDeletes: context.read<PendingDeletes>(),
       )..add(const TrainingLibrarySubscriptionRequested()),
       child: child,
     );

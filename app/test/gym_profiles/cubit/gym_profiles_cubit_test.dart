@@ -53,17 +53,22 @@ void main() {
     expect(cubit.state, GymProfilesStatus.idle);
   });
 
-  test('a failed delete is recorded as a failure and reported', () async {
+  test('a failed delete is recorded and rethrown for the snack bar', () async {
     when(() => library.deleteGymProfile(any(), any()))
         .thenThrow(Exception('offline'));
     final cubit = build();
-    await cubit.delete(gym);
+    await expectLater(cubit.delete(gym), throwsException);
     expect(analytics.names, contains('GymProfilesView_DeleteProfile_Fail'));
     expect(
       analytics.names,
       isNot(contains('GymProfilesView_DeleteProfile_Success')),
     );
-    expect(cubit.state, GymProfilesStatus.deleteFailure);
+    expect(cubit.state, GymProfilesStatus.idle);
+  });
+
+  test('an Undo is recorded', () {
+    build().deleteUndone(gym);
+    expect(analytics.names, contains('GymProfilesView_DeleteProfile_Undo'));
   });
 
   test('favouriting a gym records it against the user', () async {

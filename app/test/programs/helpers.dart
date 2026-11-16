@@ -1,4 +1,5 @@
 import 'package:compound/programs/programs.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:program_repository/program_repository.dart';
 import 'package:training_library_repository/training_library_repository.dart';
@@ -126,8 +127,12 @@ class const ProgramWorld({
     analytics: AnalyticsRecorder(),
   );
 
-  /// A cubit over these repositories, following nobody yet.
-  ProgramsCubit cubit({ProgramRepository? programs}) => ProgramsCubit(
+  /// A cubit over these repositories, following nobody yet, hiding what
+  /// waits in [pendingDeletes].
+  ProgramsCubit cubit({
+    ProgramRepository? programs,
+    PendingDeletes? pendingDeletes,
+  }) => ProgramsCubit(
     programs: programs ?? this.programs,
     users: users,
     sessions: sessions,
@@ -142,5 +147,6 @@ class const ProgramWorld({
       users: users,
     ),
     analytics: analytics,
+    pendingDeletes: pendingDeletes,
   );
 }

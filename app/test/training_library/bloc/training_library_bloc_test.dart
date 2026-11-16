@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/training_library/training_library.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:program_repository/program_repository.dart';
@@ -58,6 +59,30 @@ void main() {
         ),
       ],
     );
+
+    test('leaves out what waits on an Undo, and shows it again', () async {
+      final pending = PendingDeletes()
+        ..schedule(PendingKeys.exercise(exercise.id), () async {})
+        ..schedule(PendingKeys.template(template.workoutId), () async {})
+        ..schedule(PendingKeys.mesocycle(mesocycle.id), () async {});
+      addTearDown(pending.close);
+      final bloc = TrainingLibraryBloc(
+        libraryRepository: library,
+        programRepository: programs,
+        uid: 'friend',
+        pendingDeletes: pending,
+      )..add(const TrainingLibrarySubscriptionRequested());
+      addTearDown(bloc.close);
+      await pumpEventQueue();
+      expect(bloc.state, const TrainingLibraryLoaded(TrainingLibrary()));
+
+      pending.undo(PendingKeys.mesocycle(mesocycle.id));
+      await pumpEventQueue();
+      expect(
+        bloc.state,
+        TrainingLibraryLoaded(TrainingLibrary(mesocycles: [mesocycle])),
+      );
+    });
 
     blocTest<TrainingLibraryBloc, TrainingLibraryState>(
       'fails when any list cannot be read, and stays failed',

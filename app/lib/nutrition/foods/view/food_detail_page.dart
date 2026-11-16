@@ -7,6 +7,8 @@ import 'package:compound/check_in/view/check_in_page.dart'
     show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/foods/cubit/food_detail_cubit.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -50,16 +52,19 @@ class FoodDetailPage extends StatelessWidget {
 class FoodDetailView extends StatelessWidget {
   const new({super.key});
 
-  Future<void> _delete(BuildContext context, FoodModel food) async {
+  /// Deletes [food] at once and leaves, with an Undo that brings it back
+  /// to the lists; it is written once the Undo has gone.
+  void _delete(BuildContext context, FoodModel food) {
     final l10n = context.l10n;
     final cubit = context.read<FoodDetailCubit>();
-    final confirmed = await AppDialog.confirmDestructive(
+    showUndoableDelete(
       context,
-      title: l10n.foodDetailDelete,
-      message: l10n.foodDetailDeleteMessage(food.name),
-      confirmLabel: l10n.foodDetailDeleteConfirm,
+      key: PendingKeys.food(food.ingredientId),
+      message: l10n.foodDetailDeleted,
+      failedMessage: l10n.foodDetailDeleteFailed,
+      commit: cubit.deleteNow,
     );
-    if (confirmed) await cubit.deleteConfirmed();
+    if (context.canPop()) context.pop();
   }
 
   @override
@@ -68,33 +73,11 @@ class FoodDetailView extends StatelessWidget {
     final cubit = context.read<FoodDetailCubit>();
     final state = context.watch<FoodDetailCubit>().state;
     final food = state.food;
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<FoodDetailCubit, FoodDetailState>(
-          listenWhen: (previous, current) =>
-              previous.deleteStatus != current.deleteStatus &&
-              current.deleteStatus == FoodDetailDeleteStatus.deleted,
-          listener: (context, _) => context.pop(),
-        ),
-        BlocListener<FoodDetailCubit, FoodDetailState>(
-          listenWhen: (previous, current) =>
-              current.deleteFailures > previous.deleteFailures,
-          listener: (context, _) => unawaited(
-            showFailureAlert(
-              context,
-              l10n.foodDetailDeleteFailed,
-              l10n.foodDetailDeleteFailedMessage,
-            ),
-          ),
-        ),
-        BlocListener<FoodDetailCubit, FoodDetailState>(
-          listenWhen: (previous, current) =>
-              current.favouriteFailures > previous.favouriteFailures,
-          listener: (context, _) => unawaited(
-            showFailureAlert(context, l10n.foodDetailFavoriteFailed),
-          ),
-        ),
-      ],
+    return BlocListener<FoodDetailCubit, FoodDetailState>(
+      listenWhen: (previous, current) =>
+          current.favouriteFailures > previous.favouriteFailures,
+      listener: (context, _) =>
+          unawaited(showFailureAlert(context, l10n.foodDetailFavoriteFailed)),
       child: AppScaffold(
         appBar: AppBar(
           title: Text(food?.name ?? ''),
@@ -114,10 +97,9 @@ class FoodDetailView extends StatelessWidget {
                 icon: Icon(AppSymbols.more),
                 onSelected: (action) => action(),
                 tooltip: l10n.foodDetailOptions,
-                enabled: state.deleteStatus == FoodDetailDeleteStatus.idle,
                 itemBuilder: (_) => [
                   AppMenuItem(
-                    value: () => unawaited(_delete(context, food)),
+                    value: () => _delete(context, food),
                     icon: AppSymbols.delete,
                     label: l10n.foodDetailDelete,
                     isDestructive: true,

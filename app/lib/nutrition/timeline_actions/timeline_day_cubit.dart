@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -63,7 +64,9 @@ final class const TimelineDayState({
 /// Timeline Actions' Copy Day and Clear Day (Swift
 /// `TimelineActionsPresenter`), on `day`, the day the timeline shows, never
 /// today unless that is the day shown. Its toggles are a
-/// `FoodLogSettingsCubit`, which also logs the screen.
+/// `FoodLogSettingsCubit`, which also logs the screen. A meal waiting on an
+/// Undo in `pendingDeletes` is left out, so it is neither copied nor
+/// cleared.
 class TimelineDayCubit extends Cubit<TimelineDayState> {
   /// `uid` is the signed-in user, who owns the copies; signed out, nothing
   /// is copied.
@@ -73,23 +76,39 @@ class TimelineDayCubit extends Cubit<TimelineDayState> {
     required this._nutrition,
     required this._analytics,
     this._newId = newDocumentId,
+    PendingDeletes? pendingDeletes,
   }) : super(const TimelineDayState()) {
     final uid = _uid;
     if (uid == null) return;
-    _subscription = _nutrition
-        .watchMeals(uid)
-        .listen(
-          (meals) =>
-              emit(state.copyWith(meals: mealsOnDay(meals, dayKeyOf(_day)))),
-          onError: (Object error) => _analytics.trackEvent(
-            AnalyticsEvent(
-              'TimelineActionsView_GetMeals_Fail',
-              parameters: {'error_description': '$error'},
-              type: LogType.warning,
-            ),
-          ),
-        );
+    _subscription = _nutrition.watchMeals(uid).listen(
+      (meals) {
+        _stored = mealsOnDay(meals, dayKeyOf(_day));
+        _show();
+      },
+      onError: (Object error) => _analytics.trackEvent(
+        AnalyticsEvent(
+          'TimelineActionsView_GetMeals_Fail',
+          parameters: {'error_description': '$error'},
+          type: LogType.warning,
+        ),
+      ),
+    );
+    _pendingSubscription = pendingDeletes?.watch().listen((keys) {
+      _hidden = keys;
+      _show();
+    });
   }
+
+  /// The day's meals as stored, and the ones waiting on an Undo, left out.
+  List<MealLogModel> _stored = const [];
+  Set<String> _hidden = const {};
+  StreamSubscription<Set<String>>? _pendingSubscription;
+
+  void _show() => emit(
+    state.copyWith(
+      meals: _stored.hide(_hidden, (meal) => PendingKeys.meal(meal.mealId)),
+    ),
+  );
 
   /// The day acted on, at local midnight.
   final DateTime _day;
@@ -184,6 +203,7 @@ class TimelineDayCubit extends Cubit<TimelineDayState> {
   @override
   Future<void> close() async {
     await _subscription?.cancel();
+    await _pendingSubscription?.cancel();
     await super.close();
   }
 }

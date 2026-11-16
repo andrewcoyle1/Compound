@@ -4,6 +4,7 @@ import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -49,7 +50,8 @@ final class const FoodsState({
 
 /// The Foods screen (Swift `FoodsPresenter`, with the
 /// `IngredientListBuilderPresenter` it embeds): the user's food library, to
-/// open or add to.
+/// open or add to. A food waiting on an Undo in `pendingDeletes` is left
+/// out.
 class FoodsCubit extends Cubit<FoodsState> {
   new({
     required String uid,
@@ -57,15 +59,19 @@ class FoodsCubit extends Cubit<FoodsState> {
     required NutritionRepository nutrition,
     required this._analytics,
     this._screen = 'FoodsView',
+    PendingDeletes? pendingDeletes,
   }) : super(const FoodsState()) {
     _analytics.appear(_screen);
     _subscriptions = [
-      foods
-          .watchFoods(uid)
-          .listen(
-            (foods) => emit(state.copyWith(foods: foods)),
-            onError: (Object _) => emit(state.copyWith(foods: const [])),
-          ),
+      foods.watchFoods(uid).listen((foods) {
+        _stored = foods;
+        _show();
+      }, onError: (Object _) => emit(state.copyWith(foods: const []))),
+      if (pendingDeletes != null)
+        pendingDeletes.watch().listen((keys) {
+          _hidden = keys;
+          _show();
+        }),
       nutrition
           .watchFoodLogSettings(uid)
           .listen(
@@ -87,6 +93,21 @@ class FoodsCubit extends Cubit<FoodsState> {
   /// ingredients.
   final String _screen;
   late final List<StreamSubscription<Object?>> _subscriptions;
+
+  /// The foods as stored, null until they arrive, and the ones waiting on
+  /// an Undo, left out.
+  List<FoodModel>? _stored;
+  Set<String> _hidden = const {};
+
+  void _show() {
+    final stored = _stored;
+    if (stored == null) return;
+    emit(
+      state.copyWith(
+        foods: stored.hide(_hidden, (f) => PendingKeys.food(f.ingredientId)),
+      ),
+    );
+  }
 
   /// The filter as typed.
   void filterChanged(String filter) => emit(state.copyWith(filter: filter));

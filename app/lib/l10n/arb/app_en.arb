@@ -9169,20 +9169,12 @@
     "@foodDetailOptions": {},
     "foodDetailDelete": "Delete Food",
     "@foodDetailDelete": {},
-    "foodDetailDeleteMessage": "Are you sure you want to delete '{name}'? This action cannot be undone.",
-    "@foodDetailDeleteMessage": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "foodDetailDeleteConfirm": "Delete",
-    "@foodDetailDeleteConfirm": {},
     "foodDetailDeleteFailed": "Failed to delete food",
     "@foodDetailDeleteFailed": {},
-    "foodDetailDeleteFailedMessage": "Please try again later",
-    "@foodDetailDeleteFailedMessage": {},
+    "foodDetailDeleted": "Food deleted",
+    "@foodDetailDeleted": {
+        "description": "Food detail: snack bar after deleting your food, with Undo"
+    },
     "foodDetailFavoriteFailed": "Unable to Update Favorites",
     "@foodDetailFavoriteFailed": {},
     "foodDetailMissing": "This food is no longer in your library.",
@@ -9386,16 +9378,12 @@
     "@mealDetailNoItemsMessage": {},
     "mealDetailDelete": "Delete meal",
     "@mealDetailDelete": {},
-    "mealDetailDeleteTitle": "Delete this meal?",
-    "@mealDetailDeleteTitle": {},
-    "mealDetailDeleteMessage": "This cannot be undone.",
-    "@mealDetailDeleteMessage": {},
-    "mealDetailDeleteConfirm": "Delete",
-    "@mealDetailDeleteConfirm": {},
     "mealDetailDeleteFailed": "Unable to delete meal",
     "@mealDetailDeleteFailed": {},
-    "mealDetailTryAgain": "Please try again.",
-    "@mealDetailTryAgain": {},
+    "mealDetailDeleted": "Meal deleted",
+    "@mealDetailDeleted": {
+        "description": "Meal detail: snack bar after deleting a logged meal, with Undo"
+    },
     "timelineActionsTitle": "Timeline Actions",
     "@timelineActionsTitle": {},
     "timelineCopyDay": "Copy Day",
@@ -10179,22 +10167,12 @@
     "@recipeDetailOptions": {},
     "recipeDetailDelete": "Delete Recipe",
     "@recipeDetailDelete": {},
-    "recipeDetailDeleteTitle": "Delete Recipe",
-    "@recipeDetailDeleteTitle": {},
-    "recipeDetailDeleteMessage": "Are you sure you want to delete '{name}'? This action cannot be undone.",
-    "@recipeDetailDeleteMessage": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "recipeDetailDeleteConfirm": "Delete",
-    "@recipeDetailDeleteConfirm": {},
     "recipeDetailDeleteFailed": "Failed to delete recipe",
     "@recipeDetailDeleteFailed": {},
-    "recipeDetailDeleteTryLater": "Please try again later",
-    "@recipeDetailDeleteTryLater": {},
+    "recipeDetailDeleted": "Recipe deleted",
+    "@recipeDetailDeleted": {
+        "description": "Recipe detail: snack bar after deleting your recipe, with Undo"
+    },
     "recipeDetailFavouriteFailed": "Unable to Update Favorites",
     "@recipeDetailFavouriteFailed": {},
     "recipeDetailAddFavourite": "Add to favorites",

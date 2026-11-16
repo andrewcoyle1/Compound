@@ -185,17 +185,17 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Delete Food'));
       await tester.pumpAndSettle();
-      expect(
-        find.text(
-          "Are you sure you want to delete 'Oat Milk'? This action cannot be "
-          'undone.',
-        ),
-        findsOneWidget,
-      );
-      await tester.tap(find.text('Delete'));
-      await tester.pumpAndSettle();
 
+      // Gone from the list at once, with an Undo; deleted once it has gone.
       expect(find.byType(FoodsView), findsOneWidget);
+      expect(find.text('Food deleted'), findsOneWidget);
+      expect(find.text('Oat Milk'), findsNothing);
+      expect(
+        (await foods.watchFoods(uid).first).map((food) => food.name),
+        contains('Oat Milk'),
+      );
+      await tester.pump(undoWindow);
+      await tester.pumpAndSettle();
       expect(
         (await foods.watchFoods(uid).first).map((food) => food.name),
         isNot(contains('Oat Milk')),
@@ -331,7 +331,7 @@ void main() {
       notes: 'Desk lunch',
     );
 
-    testWidgets('opens from the timeline and deletes after asking', (
+    testWidgets('opens from the timeline and deletes with an Undo', (
       tester,
     ) async {
       await pumpApp(tester, meals: [meal]);
@@ -344,12 +344,32 @@ void main() {
 
       await tester.tap(find.byTooltip('Delete meal'));
       await tester.pumpAndSettle();
-      expect(find.text('Delete this meal?'), findsOneWidget);
-      await tester.tap(find.text('Delete'));
+
+      // Gone from the day at once, with an Undo; deleted once it has gone.
+      expect(find.byType(MealDetailView), findsNothing);
+      expect(find.text('Meal deleted'), findsOneWidget);
+      expect(find.text('Soup'), findsNothing);
+      expect(await nutrition.watchMeals(uid).first, hasLength(1));
+      await tester.pump(undoWindow);
+      await tester.pumpAndSettle();
+      expect(await nutrition.watchMeals(uid).first, isEmpty);
+    });
+
+    testWidgets('Undo brings a deleted meal back', (tester) async {
+      await pumpApp(tester, meals: [meal]);
+      await tapVisible(tester, find.text('Soup'));
+      await tester.tap(find.byTooltip('Delete meal'));
+      await tester.pumpAndSettle();
+      expect(find.text('Soup'), findsNothing);
+
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      await tester.pump(undoWindow);
       await tester.pumpAndSettle();
 
-      expect(find.byType(MealDetailView), findsNothing);
-      expect(await nutrition.watchMeals(uid).first, isEmpty);
+      expect(await nutrition.watchMeals(uid).first, hasLength(1));
+      await reveal(tester, find.text('Soup'));
+      expect(find.text('Soup'), findsOneWidget);
     });
 
     testWidgets("the pencil corrects a food's amount in its meal", (

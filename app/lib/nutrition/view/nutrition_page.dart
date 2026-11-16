@@ -71,6 +71,7 @@ class NutritionPage extends StatelessWidget {
           create: (context) => NutritionSearchCubit(
             uid: state.user.uid,
             foods: context.read<FoodRepository>(),
+            pendingDeletes: context.read<PendingDeletes>(),
           ),
         ),
       ],

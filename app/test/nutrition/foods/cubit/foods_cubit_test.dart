@@ -1,5 +1,6 @@
 import 'package:compound/nutrition/foods/cubit/food_detail_cubit.dart';
 import 'package:compound/nutrition/foods/cubit/foods_cubit.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -40,6 +41,7 @@ void main() {
       List<FoodModel> foods = const [],
       bool showBranded = true,
       bool showImage = true,
+      PendingDeletes? pendingDeletes,
     }) async {
       final cubit = FoodsCubit(
         uid: uid,
@@ -52,10 +54,29 @@ void main() {
           ),
         ),
         analytics: analytics,
+        pendingDeletes: pendingDeletes,
       );
       await pumpEventQueue();
       return cubit;
     }
+
+    test('a food waiting on an Undo is left out', () async {
+      final pending = PendingDeletes();
+      addTearDown(pending.close);
+      final cubit = await build(
+        foods: [food('a', 'Apple'), food('b', 'Banana')],
+        pendingDeletes: pending,
+      );
+      addTearDown(cubit.close);
+
+      pending.schedule(PendingKeys.food('a'), () async {});
+      await pumpEventQueue();
+      expect(cubit.state.visibleFoods.map((f) => f.name), ['Banana']);
+
+      pending.undo(PendingKeys.food('a'));
+      await pumpEventQueue();
+      expect(cubit.state.visibleFoods.map((f) => f.name), ['Apple', 'Banana']);
+    });
 
     test('lists the foods by name and logs the screen', () async {
       final cubit = await build(
@@ -261,30 +282,23 @@ void main() {
       verifyNever(() => silent.saveFoodLogSettings(any()));
     });
 
-    test('a confirmed delete removes the food, then leaves', () async {
+    test('deleting works once the screen has closed', () async {
       final cubit = await build();
+      // The delete is written once the Undo has gone, after the screen.
+      await cubit.close();
 
-      await cubit.deleteConfirmed();
+      await cubit.deleteNow();
 
       expect(await foods.watchFoods(uid).first, isEmpty);
-      expect(cubit.state.deleteStatus, FoodDetailDeleteStatus.deleted);
       expect(analytics.names, [
         'FoodDetailView_Appear',
+        'FoodDetailView_Disappear',
         'FoodDetailView_Delete_Start',
         'FoodDetailView_Delete_Success',
       ]);
-      // A second delete does nothing.
-      await cubit.deleteConfirmed();
-      expect(analytics.names, hasLength(3));
     });
 
-    test('someone else’s food is never deleted', () async {
-      final cubit = await build(foodId: 'shared');
-      await cubit.deleteConfirmed();
-      expect(analytics.names, ['FoodDetailView_Appear']);
-    });
-
-    test('a failed delete says so and stays', () async {
+    test('a failed delete is recorded and rethrown', () async {
       final failing = _MockFoodRepository();
       when(() => failing.watchFoods(uid))
           .thenAnswer((_) => Stream.value([food('oats', 'Oats')]));
@@ -292,10 +306,8 @@ void main() {
           .thenThrow(StateError('offline'));
       final cubit = await build(foodRepository: failing);
 
-      await cubit.deleteConfirmed();
+      await expectLater(cubit.deleteNow(), throwsStateError);
 
-      expect(cubit.state.deleteStatus, FoodDetailDeleteStatus.idle);
-      expect(cubit.state.deleteFailures, 1);
       expect(analytics.names.last, 'FoodDetailView_Delete_Fail');
     });
   });

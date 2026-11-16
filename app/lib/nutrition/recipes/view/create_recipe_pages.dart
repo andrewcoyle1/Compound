@@ -11,6 +11,7 @@ import 'package:compound/nutrition/foods/cubit/foods_cubit.dart';
 import 'package:compound/nutrition/foods/view/create_food_pages.dart';
 import 'package:compound/nutrition/recipes/cubit/create_recipe_cubit.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -299,6 +300,7 @@ class IngredientPickerPage extends StatelessWidget {
         nutrition: context.read<NutritionRepository>(),
         analytics: context.read<AnalyticsRepository>(),
         screen: 'IngredientsView',
+        pendingDeletes: context.read<PendingDeletes>(),
       ),
       child: const _IngredientPickerView(),
     );

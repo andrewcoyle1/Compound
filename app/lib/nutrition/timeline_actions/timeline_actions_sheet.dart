@@ -9,6 +9,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/timeline_actions/timeline_day_cubit.dart';
 import 'package:compound/settings/nutrition/cubit/food_log_settings_cubit.dart';
 import 'package:compound/settings/nutrition/cubit/settings_document_cubit.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -21,6 +22,7 @@ Future<void> showTimelineActions(BuildContext context, DateTime day) {
   final uid = app is AppAuthenticated ? app.user.uid : null;
   final nutrition = context.read<NutritionRepository>();
   final analytics = context.read<AnalyticsRepository>();
+  final pendingDeletes = context.read<PendingDeletes>();
   return showAppSheet<void>(
     context: context,
     size: AppSheetSize.compact,
@@ -41,6 +43,7 @@ Future<void> showTimelineActions(BuildContext context, DateTime day) {
             day: day,
             nutrition: nutrition,
             analytics: analytics,
+            pendingDeletes: pendingDeletes,
           ),
         ),
       ],

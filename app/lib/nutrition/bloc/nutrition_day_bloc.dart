@@ -50,17 +50,19 @@ class NutritionDayBloc extends Bloc<NutritionDayEvent, NutritionDayState> {
   /// tests that leave it out.
   final ReviewPrompter? _reviews;
 
-  /// Foods waiting on an Undo, left out of their meals (and a meal left
-  /// with none, out of the day), so the totals drop at once.
+  /// Meals and foods waiting on an Undo, left out of the day and of their
+  /// meals (and a meal left with no foods, out of the day), so the totals
+  /// drop at once.
   final PendingDeletes? _pendingDeletes;
 
-  /// The meals as stored, and the foods hidden from them.
+  /// The meals as stored, and the meals and foods hidden from them.
   List<MealLogModel>? _stored;
   Set<String> _hidden = const {};
 
   List<MealLogModel> _visible() {
     final visible = <MealLogModel>[];
     for (final meal in _stored ?? const <MealLogModel>[]) {
+      if (_hidden.contains(PendingKeys.meal(meal.mealId))) continue;
       final items = meal.items.hide(
         _hidden,
         (item) => PendingKeys.mealItem(meal.mealId, item.itemId),

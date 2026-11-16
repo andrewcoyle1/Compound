@@ -91,22 +91,23 @@ void main() {
       expect(cubit.state.loaded, isTrue);
     });
 
-    test('a confirmed delete removes the meal, then leaves', () async {
+    test('deleting works once the screen has closed', () async {
       final cubit = build(opened: meal);
+      // The delete is written once the Undo has gone, after the screen.
+      await cubit.close();
 
-      await cubit.deleteConfirmed();
-      await cubit.deleteConfirmed();
+      await cubit.deleteNow();
 
       expect(await nutrition.watchMeals(uid).first, isEmpty);
-      expect(cubit.state.status, MealDetailStatus.deleted);
       expect(analytics.names, [
         'MealDetailView_Appear',
+        'MealDetailView_Disappear',
         'MealDetailView_Delete_Start',
         'MealDetailView_Delete_Success',
       ]);
     });
 
-    test('a failed delete says so and stays', () async {
+    test('a failed delete is recorded and rethrown', () async {
       final failing = MockNutritionRepository();
       when(() => failing.watchMeals(uid))
           .thenAnswer((_) => Stream.value([meal]));
@@ -114,10 +115,9 @@ void main() {
           .thenThrow(StateError('offline'));
       final cubit = build(opened: meal, repo: failing);
 
-      await cubit.deleteConfirmed();
+      await expectLater(cubit.deleteNow(), throwsStateError);
 
-      expect(cubit.state.status, MealDetailStatus.idle);
-      expect(cubit.state.deleteFailures, 1);
+      expect(cubit.state.meal, meal);
       expect(analytics.names.last, 'MealDetailView_Delete_Fail');
     });
   });

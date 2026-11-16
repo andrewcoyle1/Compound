@@ -10,18 +10,6 @@ import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
-/// Where deleting the recipe is.
-enum RecipeDetailDeleteStatus {
-  /// Not deleting.
-  idle,
-
-  /// Deleting.
-  deleting,
-
-  /// Deleted; the screen closes.
-  deleted,
-}
-
 /// One recipe from the library.
 final class const RecipeDetailState({
   /// The recipe; null until the library arrives, or once it has gone.
@@ -40,13 +28,8 @@ final class const RecipeDetailState({
   /// recipe as written.
   final double? servingsOverride,
 
-  final RecipeDetailDeleteStatus deleteStatus = RecipeDetailDeleteStatus.idle,
-
   /// How many favourite changes have failed, so each says so.
   final int favouriteFailures = 0,
-
-  /// How many deletes have failed, so each says so.
-  final int deleteFailures = 0,
 }) extends Equatable {
   /// The servings shown (`RecipeDetailPresenter.servings`).
   double get servings => servingsOverride ?? recipe?.servingDivisor ?? 1;
@@ -69,18 +52,14 @@ final class const RecipeDetailState({
     FoodLogSettings? settings,
     bool? isFavourited,
     double? servingsOverride,
-    RecipeDetailDeleteStatus? deleteStatus,
     int? favouriteFailures,
-    int? deleteFailures,
   }) => RecipeDetailState(
     recipe: recipe == null ? this.recipe : recipe(),
     loaded: loaded ?? this.loaded,
     settings: settings ?? this.settings,
     isFavourited: isFavourited ?? this.isFavourited,
     servingsOverride: servingsOverride ?? this.servingsOverride,
-    deleteStatus: deleteStatus ?? this.deleteStatus,
     favouriteFailures: favouriteFailures ?? this.favouriteFailures,
-    deleteFailures: deleteFailures ?? this.deleteFailures,
   );
 
   @override
@@ -90,9 +69,7 @@ final class const RecipeDetailState({
     settings,
     isFavourited,
     servingsOverride,
-    deleteStatus,
     favouriteFailures,
-    deleteFailures,
   ];
 }
 
@@ -187,26 +164,17 @@ class RecipeDetailCubit extends Cubit<RecipeDetailState> {
     }
   }
 
-  /// Deletes the recipe, once confirmed (`RecipeDetailPresenter
-  /// .deleteRecipe`).
-  Future<void> deleteConfirmed() async {
-    if (!canDelete || state.deleteStatus != RecipeDetailDeleteStatus.idle) {
-      return;
-    }
-    emit(state.copyWith(deleteStatus: RecipeDetailDeleteStatus.deleting));
+  /// Deletes the recipe for good (`RecipeDetailPresenter.deleteRecipe`),
+  /// once the Undo its screen offered has gone. The screen has closed by
+  /// then, so this emits nothing, and rethrows a failure for the snack bar.
+  Future<void> deleteNow() async {
     _analytics.analytic('RecipeDetailView_Delete_Start');
     try {
       await _foods.deleteRecipe(_uid, _recipeId);
       _analytics.analytic('RecipeDetailView_Delete_Success');
-      emit(state.copyWith(deleteStatus: RecipeDetailDeleteStatus.deleted));
     } on Object catch (error) {
       _analytics.severe('RecipeDetailView_Delete_Fail', error);
-      emit(
-        state.copyWith(
-          deleteStatus: RecipeDetailDeleteStatus.idle,
-          deleteFailures: state.deleteFailures + 1,
-        ),
-      );
+      rethrow;
     }
   }
 

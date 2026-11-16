@@ -1,14 +1,12 @@
-import 'dart:async';
-
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:compound/app/app.dart';
-import 'package:compound/check_in/view/check_in_page.dart'
-    show showFailureAlert;
 import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/meal_detail/meal_detail_cubit.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -55,16 +53,19 @@ class MealDetailPage extends StatelessWidget {
 class MealDetailView extends StatelessWidget {
   const new({super.key});
 
-  Future<void> _delete(BuildContext context) async {
+  /// Deletes [meal] at once and leaves, with an Undo that brings it back
+  /// to the day; it is written once the Undo has gone.
+  void _delete(BuildContext context, MealLogModel meal) {
     final l10n = context.l10n;
     final cubit = context.read<MealDetailCubit>();
-    final confirmed = await AppDialog.confirmDestructive(
+    showUndoableDelete(
       context,
-      title: l10n.mealDetailDeleteTitle,
-      message: l10n.mealDetailDeleteMessage,
-      confirmLabel: l10n.mealDetailDeleteConfirm,
+      key: PendingKeys.meal(meal.mealId),
+      message: l10n.mealDetailDeleted,
+      failedMessage: l10n.mealDetailDeleteFailed,
+      commit: cubit.deleteNow,
     );
-    if (confirmed) await cubit.deleteConfirmed();
+    if (context.canPop()) context.pop();
   }
 
   @override
@@ -72,49 +73,26 @@ class MealDetailView extends StatelessWidget {
     final l10n = context.l10n;
     final state = context.watch<MealDetailCubit>().state;
     final meal = state.meal;
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<MealDetailCubit, MealDetailState>(
-          listenWhen: (previous, current) =>
-              previous.status != current.status &&
-              current.status == MealDetailStatus.deleted,
-          listener: (context, _) => context.pop(),
-        ),
-        BlocListener<MealDetailCubit, MealDetailState>(
-          listenWhen: (previous, current) =>
-              current.deleteFailures > previous.deleteFailures,
-          listener: (context, _) => unawaited(
-            showFailureAlert(
-              context,
-              l10n.mealDetailDeleteFailed,
-              l10n.mealDetailTryAgain,
+    return AppScaffold(
+      appBar: AppBar(
+        title: Text(l10n.mealDetailTitle),
+        actions: [
+          if (meal != null)
+            AppToolbarButton(
+              icon: AppSymbols.delete,
+              semanticLabel: l10n.mealDetailDelete,
+              onPressed: () => _delete(context, meal),
             ),
-          ),
-        ),
-      ],
-      child: AppScaffold(
-        appBar: AppBar(
-          title: Text(l10n.mealDetailTitle),
-          actions: [
-            if (meal != null)
-              AppToolbarButton(
-                icon: AppSymbols.delete,
-                semanticLabel: l10n.mealDetailDelete,
-                onPressed: state.status == MealDetailStatus.idle
-                    ? () => unawaited(_delete(context))
-                    : null,
-              ),
-          ],
-        ),
-        body: switch (meal) {
-          _ when !state.loaded => AppLoadingView(label: l10n.launchLoading),
-          null => AppEmptyState(
-            icon: AppSymbols.meal,
-            title: l10n.mealDetailNoItems,
-          ),
-          final meal => _Meal(meal: meal),
-        },
+        ],
       ),
+      body: switch (meal) {
+        _ when !state.loaded => AppLoadingView(label: l10n.launchLoading),
+        null => AppEmptyState(
+          icon: AppSymbols.meal,
+          title: l10n.mealDetailNoItems,
+        ),
+        final meal => _Meal(meal: meal),
+      },
     );
   }
 }

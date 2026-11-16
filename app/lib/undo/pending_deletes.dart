@@ -104,6 +104,15 @@ abstract final class PendingKeys {
   /// A weigh-in.
   static String weighIn(String id) => 'weight_entries/$id';
 
+  /// A food of the user's own.
+  static String food(String id) => 'foods/$id';
+
+  /// A recipe of the user's own.
+  static String recipe(String id) => 'recipes/$id';
+
+  /// A logged meal.
+  static String meal(String id) => 'meals/$id';
+
   /// One food in a meal.
   static String mealItem(String mealId, String itemId) =>
       'meals/$mealId/items/$itemId';

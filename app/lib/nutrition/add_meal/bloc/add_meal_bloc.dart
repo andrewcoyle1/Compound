@@ -1,6 +1,7 @@
 import 'package:analytics_repository/analytics_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_maths/compound_maths.dart' show Macros;
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
@@ -13,13 +14,15 @@ part 'add_meal_state.dart';
 /// `NutritionLibraryPickerPresenter`): the plate, the picker that fills it,
 /// and the save. Also follows everything the picker reads: the user's
 /// meals (quick add's last amount, recent foods, the day's totals), diet
-/// plan, food log settings, food library and recipes.
+/// plan, food log settings, food library and recipes. Foods and recipes
+/// waiting on an Undo in `pendingDeletes` are left out of the library.
 class AddMealBloc extends Bloc<AddMealEvent, AddMealState> {
   new({
     required this._nutritionRepository,
     required this._foodRepository,
     required this._analyticsRepository,
     required MealLogModel meal,
+    this._pendingDeletes,
   }) : super(AddMealState(meal: meal, pickerOpen: meal.items.isEmpty)) {
     on<AddMealSubscriptionRequested>(_onSubscriptionRequested);
     on<AddMealPickerOpened>(
@@ -60,8 +63,21 @@ class AddMealBloc extends Bloc<AddMealEvent, AddMealState> {
   final NutritionRepository _nutritionRepository;
   final FoodRepository _foodRepository;
   final AnalyticsRepository _analyticsRepository;
+  final PendingDeletes? _pendingDeletes;
+
+  /// The library as stored, null until it arrives, and what waits on an
+  /// Undo, left out.
+  List<FoodModel>? _foods;
+  List<RecipeTemplateModel>? _recipes;
+  Set<String> _hidden = const {};
 
   String get _uid => state.meal.authorId;
+
+  /// The state with the library as stored, less what waits on an Undo.
+  AddMealState _withLibrary() => state.copyWith(
+    foods: _foods?.hide(_hidden, (f) => PendingKeys.food(f.ingredientId)),
+    recipes: _recipes?.hide(_hidden, (r) => PendingKeys.recipe(r.recipeId)),
+  );
 
   Future<void> _onSubscriptionRequested(
     AddMealSubscriptionRequested event,
@@ -90,14 +106,28 @@ class AddMealBloc extends Bloc<AddMealEvent, AddMealState> {
       ),
       emit.forEach(
         _foodRepository.watchFoods(_uid),
-        onData: (foods) => state.copyWith(foods: foods),
+        onData: (foods) {
+          _foods = foods;
+          return _withLibrary();
+        },
         onError: (_, _) => state,
       ),
       emit.forEach(
         _foodRepository.watchRecipes(_uid),
-        onData: (recipes) => state.copyWith(recipes: recipes),
+        onData: (recipes) {
+          _recipes = recipes;
+          return _withLibrary();
+        },
         onError: (_, _) => state,
       ),
+      if (_pendingDeletes case final pending?)
+        emit.forEach(
+          pending.watch(),
+          onData: (keys) {
+            _hidden = keys;
+            return _withLibrary();
+          },
+        ),
     ]);
   }
 

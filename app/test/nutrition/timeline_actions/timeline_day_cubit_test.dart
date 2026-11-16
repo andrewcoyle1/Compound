@@ -1,5 +1,6 @@
 import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/timeline_actions/timeline_day_cubit.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
@@ -54,6 +55,7 @@ void main() {
     List<MealLogModel> meals, {
     String? uid = uid,
     NutritionRepository? repo,
+    PendingDeletes? pendingDeletes,
   }) async {
     nutrition = InMemoryNutritionRepository(meals: meals);
     final cubit = TimelineDayCubit(
@@ -62,6 +64,7 @@ void main() {
       nutrition: repo ?? nutrition,
       analytics: analytics,
       newId: () => 'copy-${ids++}',
+      pendingDeletes: pendingDeletes,
     );
     await pumpEventQueue();
     return cubit;
@@ -69,6 +72,24 @@ void main() {
 
   Future<List<MealLogModel>> copiesOn(DateTime day) async =>
       mealsOnDay(await nutrition.watchMeals(uid).first, dayKeyOf(day));
+
+  test('a meal waiting on an Undo is neither copied nor cleared', () async {
+    final pending = PendingDeletes();
+    addTearDown(pending.close);
+    final cubit = await build([
+      meal('m1', 8),
+      meal('m2', 13),
+    ], pendingDeletes: pending);
+    addTearDown(cubit.close);
+
+    pending.schedule(PendingKeys.meal('m1'), () async {});
+    await pumpEventQueue();
+    expect(cubit.state.meals.map((m) => m.mealId), ['m2']);
+
+    pending.undo(PendingKeys.meal('m1'));
+    await pumpEventQueue();
+    expect(cubit.state.meals.map((m) => m.mealId), ['m1', 'm2']);
+  });
 
   group('copy day', () {
     test('opens on the following day', () async {

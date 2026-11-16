@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
@@ -46,28 +47,45 @@ final class const NutritionSearchState({
 
 /// The search field above the Nutrition tab's day (Swift
 /// `NutritionPresenter.searchString`): its query and the library it
-/// searches.
+/// searches. Foods and recipes waiting on an Undo in `pendingDeletes` are
+/// left out.
 class NutritionSearchCubit extends Cubit<NutritionSearchState> {
-  new({required String uid, required FoodRepository foods})
-    : super(const NutritionSearchState()) {
+  new({
+    required String uid,
+    required FoodRepository foods,
+    PendingDeletes? pendingDeletes,
+  }) : super(const NutritionSearchState()) {
     // A library that fails to load searches as empty.
     _subscriptions = [
-      foods
-          .watchFoods(uid)
-          .listen(
-            (foods) => emit(state.copyWith(foods: foods)),
-            onError: (Object _) {},
-          ),
-      foods
-          .watchRecipes(uid)
-          .listen(
-            (recipes) => emit(state.copyWith(recipes: recipes)),
-            onError: (Object _) {},
-          ),
+      foods.watchFoods(uid).listen((foods) {
+        _foods = foods;
+        _show();
+      }, onError: (Object _) {}),
+      foods.watchRecipes(uid).listen((recipes) {
+        _recipes = recipes;
+        _show();
+      }, onError: (Object _) {}),
+      if (pendingDeletes != null)
+        pendingDeletes.watch().listen((keys) {
+          _hidden = keys;
+          _show();
+        }),
     ];
   }
 
   late final List<StreamSubscription<Object?>> _subscriptions;
+
+  /// The library as stored, and what waits on an Undo, left out.
+  List<FoodModel> _foods = const [];
+  List<RecipeTemplateModel> _recipes = const [];
+  Set<String> _hidden = const {};
+
+  void _show() => emit(
+    state.copyWith(
+      foods: _foods.hide(_hidden, (f) => PendingKeys.food(f.ingredientId)),
+      recipes: _recipes.hide(_hidden, (r) => PendingKeys.recipe(r.recipeId)),
+    ),
+  );
 
   void queryChanged(String query) => emit(state.copyWith(query: query));
 

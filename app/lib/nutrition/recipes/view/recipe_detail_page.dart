@@ -9,6 +9,8 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/recipes/cubit/recipe_detail_cubit.dart';
 import 'package:compound/nutrition/recipes/logic/recipe_logic.dart';
 import 'package:compound/onboarding/onboarding_analytics.dart';
+import 'package:compound/undo/pending_deletes.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -55,16 +57,19 @@ class RecipeDetailPage extends StatelessWidget {
 class RecipeDetailView extends StatelessWidget {
   const new({super.key});
 
-  Future<void> _delete(BuildContext context, RecipeTemplateModel recipe) async {
+  /// Deletes [recipe] at once and leaves, with an Undo that brings it back
+  /// to the lists; it is written once the Undo has gone.
+  void _delete(BuildContext context, RecipeTemplateModel recipe) {
     final l10n = context.l10n;
     final cubit = context.read<RecipeDetailCubit>();
-    final confirmed = await AppDialog.confirmDestructive(
+    showUndoableDelete(
       context,
-      title: l10n.recipeDetailDeleteTitle,
-      message: l10n.recipeDetailDeleteMessage(recipe.name),
-      confirmLabel: l10n.recipeDetailDeleteConfirm,
+      key: PendingKeys.recipe(recipe.recipeId),
+      message: l10n.recipeDetailDeleted,
+      failedMessage: l10n.recipeDetailDeleteFailed,
+      commit: cubit.deleteNow,
     );
-    if (confirmed) await cubit.deleteConfirmed();
+    if (context.canPop()) context.pop();
   }
 
   @override
@@ -73,40 +78,12 @@ class RecipeDetailView extends StatelessWidget {
     final cubit = context.read<RecipeDetailCubit>();
     final state = context.watch<RecipeDetailCubit>().state;
     final recipe = state.recipe;
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<RecipeDetailCubit, RecipeDetailState>(
-          listenWhen: (previous, current) =>
-              previous.deleteStatus != current.deleteStatus,
-          listener: (context, state) {
-            if (state.deleteStatus == RecipeDetailDeleteStatus.deleted) {
-              unawaited(AppHaptics.success());
-              context.pop();
-            }
-          },
-        ),
-        BlocListener<RecipeDetailCubit, RecipeDetailState>(
-          listenWhen: (previous, current) =>
-              current.deleteFailures > previous.deleteFailures,
-          listener: (context, _) {
-            unawaited(AppHaptics.error());
-            unawaited(
-              showFailureAlert(
-                context,
-                l10n.recipeDetailDeleteFailed,
-                l10n.recipeDetailDeleteTryLater,
-              ),
-            );
-          },
-        ),
-        BlocListener<RecipeDetailCubit, RecipeDetailState>(
-          listenWhen: (previous, current) =>
-              current.favouriteFailures > previous.favouriteFailures,
-          listener: (context, _) => unawaited(
-            showFailureAlert(context, l10n.recipeDetailFavouriteFailed),
-          ),
-        ),
-      ],
+    return BlocListener<RecipeDetailCubit, RecipeDetailState>(
+      listenWhen: (previous, current) =>
+          current.favouriteFailures > previous.favouriteFailures,
+      listener: (context, _) => unawaited(
+        showFailureAlert(context, l10n.recipeDetailFavouriteFailed),
+      ),
       child: AppScaffold(
         appBar: AppBar(
           title: Text(recipe?.name ?? ''),
@@ -126,10 +103,9 @@ class RecipeDetailView extends StatelessWidget {
                 icon: Icon(AppSymbols.more),
                 onSelected: (action) => action(),
                 tooltip: l10n.recipeDetailOptions,
-                enabled: state.deleteStatus == RecipeDetailDeleteStatus.idle,
                 itemBuilder: (_) => [
                   AppMenuItem(
-                    value: () => unawaited(_delete(context, recipe)),
+                    value: () => _delete(context, recipe),
                     icon: AppSymbols.delete,
                     label: l10n.recipeDetailDelete,
                     isDestructive: true,

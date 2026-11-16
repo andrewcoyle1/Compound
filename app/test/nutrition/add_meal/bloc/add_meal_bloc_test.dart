@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:compound/nutrition/add_meal/bloc/add_meal_bloc.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -136,6 +137,35 @@ void main() {
         expect(analytics.names.first, 'AddMealView_Appear');
       },
     );
+
+    test('foods and recipes waiting on an Undo are left out', () async {
+      final pending = PendingDeletes();
+      addTearDown(pending.close);
+      final bloc = AddMealBloc(
+        nutritionRepository: nutrition,
+        foodRepository: foods,
+        analyticsRepository: analytics,
+        meal: empty,
+        pendingDeletes: pending,
+      )..add(const AddMealSubscriptionRequested());
+      addTearDown(bloc.close);
+      await pumpEventQueue();
+      expect(bloc.state.foods, [oats]);
+
+      pending
+        ..schedule(PendingKeys.food('oats'), () async {})
+        ..schedule(PendingKeys.recipe('porridge'), () async {});
+      await pumpEventQueue();
+      expect(bloc.state.foods, isEmpty);
+      expect(bloc.state.recipes, isEmpty);
+
+      pending
+        ..undo(PendingKeys.food('oats'))
+        ..undo(PendingKeys.recipe('porridge'));
+      await pumpEventQueue();
+      expect(bloc.state.foods, [oats]);
+      expect(bloc.state.recipes, [porridge]);
+    });
 
     blocTest<AddMealBloc, AddMealState>(
       'a stream that fails leaves the plate usable',

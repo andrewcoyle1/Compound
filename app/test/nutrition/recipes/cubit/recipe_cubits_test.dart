@@ -6,6 +6,7 @@ import 'package:compound/nutrition/recipes/cubit/create_recipe_cubit.dart';
 import 'package:compound/nutrition/recipes/cubit/recipe_detail_cubit.dart';
 import 'package:compound/nutrition/recipes/cubit/recipes_cubit.dart';
 import 'package:compound/nutrition/search/nutrition_search_cubit.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:image_repository/image_repository.dart';
@@ -86,12 +87,16 @@ void main() {
   setUp(() => analytics = AnalyticsRecorder());
 
   group(RecipesCubit, () {
-    Future<RecipesCubit> build(List<RecipeTemplateModel> recipes) async {
+    Future<RecipesCubit> build(
+      List<RecipeTemplateModel> recipes, {
+      PendingDeletes? pendingDeletes,
+    }) async {
       final cubit = RecipesCubit(
         uid: uid,
         foods: InMemoryFoodRepository(recipes: recipes),
         nutrition: InMemoryNutritionRepository(),
         analytics: analytics,
+        pendingDeletes: pendingDeletes,
       );
       await pumpEventQueue();
       return cubit;
@@ -106,6 +111,24 @@ void main() {
           dateCreated: now,
           dateModified: now,
         );
+
+    test('a recipe waiting on an Undo is left out', () async {
+      final pending = PendingDeletes();
+      addTearDown(pending.close);
+      final cubit = await build([
+        named('a', 'Bake'),
+        named('b', 'Stew'),
+      ], pendingDeletes: pending);
+      addTearDown(cubit.close);
+
+      pending.schedule(PendingKeys.recipe('a'), () async {});
+      await pumpEventQueue();
+      expect(cubit.state.visibleRecipes.map((r) => r.name), ['Stew']);
+
+      pending.undo(PendingKeys.recipe('a'));
+      await pumpEventQueue();
+      expect(cubit.state.visibleRecipes.map((r) => r.name), ['Bake', 'Stew']);
+    });
 
     test('lists the recipes by name and logs the screen', () async {
       final cubit = await build([
@@ -363,24 +386,24 @@ void main() {
       expect((await build(recipeId: 'gone')).canDelete, isFalse);
     });
 
-    test('a confirmed delete removes the recipe, then leaves', () async {
+    test('deleting works once the screen has closed', () async {
       final cubit = await build();
+      // The delete is written once the Undo has gone, after the screen.
+      await cubit.close();
 
-      await cubit.deleteConfirmed();
+      await cubit.deleteNow();
 
       // The other author's recipe is stored under them, not this user.
       expect(await foods.watchRecipes(uid).first, isEmpty);
-      expect(cubit.state.deleteStatus, RecipeDetailDeleteStatus.deleted);
       expect(analytics.names, [
         'RecipeDetailView_Appear',
+        'RecipeDetailView_Disappear',
         'RecipeDetailView_Delete_Start',
         'RecipeDetailView_Delete_Success',
       ]);
-      await cubit.deleteConfirmed();
-      expect(analytics.names, hasLength(3));
     });
 
-    test('a failed delete says so and stays', () async {
+    test('a failed delete is recorded and rethrown', () async {
       final failing = _MockFoodRepository();
       when(() => failing.watchRecipes(uid))
           .thenAnswer((_) => Stream.value([chilli()]));
@@ -388,10 +411,8 @@ void main() {
           .thenThrow(StateError('offline'));
       final cubit = await build(foodRepository: failing);
 
-      await cubit.deleteConfirmed();
+      await expectLater(cubit.deleteNow(), throwsStateError);
 
-      expect(cubit.state.deleteStatus, RecipeDetailDeleteStatus.idle);
-      expect(cubit.state.deleteFailures, 1);
       expect(analytics.names.last, 'RecipeDetailView_Delete_Fail');
     });
   });
@@ -684,9 +705,13 @@ void main() {
   });
 
   group(NutritionSearchCubit, () {
-    Future<NutritionSearchCubit> build({FoodRepository? repository}) async {
+    Future<NutritionSearchCubit> build({
+      FoodRepository? repository,
+      PendingDeletes? pendingDeletes,
+    }) async {
       final cubit = NutritionSearchCubit(
         uid: uid,
+        pendingDeletes: pendingDeletes,
         foods:
             repository ??
             InMemoryFoodRepository(
@@ -700,6 +725,28 @@ void main() {
       await pumpEventQueue();
       return cubit;
     }
+
+    test('foods and recipes waiting on an Undo are left out', () async {
+      final pending = PendingDeletes();
+      addTearDown(pending.close);
+      final cubit = await build(pendingDeletes: pending);
+      addTearDown(cubit.close);
+      cubit.queryChanged('bean');
+
+      pending
+        ..schedule(PendingKeys.food('beans'), () async {})
+        ..schedule(PendingKeys.recipe('chilli'), () async {});
+      await pumpEventQueue();
+      expect(cubit.state.matchingFoods, isEmpty);
+      expect(cubit.state.matchingRecipes, isEmpty);
+
+      pending
+        ..undo(PendingKeys.food('beans'))
+        ..undo(PendingKeys.recipe('chilli'));
+      await pumpEventQueue();
+      expect(cubit.state.matchingFoods.map((f) => f.name), ['Beans']);
+      expect(cubit.state.matchingRecipes.map((r) => r.name), ['Chilli']);
+    });
 
     test('matches foods and recipes', () async {
       final cubit = await build();

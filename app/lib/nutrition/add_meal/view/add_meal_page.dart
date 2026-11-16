@@ -15,6 +15,7 @@ import 'package:compound/nutrition/logic/meal_day.dart';
 import 'package:compound/nutrition/logic/meal_logging.dart';
 import 'package:compound/nutrition/view/widgets/macro_header.dart';
 import 'package:compound/shell/app_tab.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_models/compound_models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -86,6 +87,7 @@ class AddMealPage extends StatelessWidget {
         nutritionRepository: context.read<NutritionRepository>(),
         foodRepository: context.read<FoodRepository>(),
         analyticsRepository: context.read<AnalyticsRepository>(),
+        pendingDeletes: context.read<PendingDeletes>(),
         meal:
             meal ??
             newMeal(

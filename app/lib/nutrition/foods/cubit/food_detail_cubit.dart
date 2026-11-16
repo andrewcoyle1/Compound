@@ -8,18 +8,6 @@ import 'package:equatable/equatable.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:nutrition_repository/nutrition_repository.dart';
 
-/// Where deleting the food is.
-enum FoodDetailDeleteStatus {
-  /// Not deleting.
-  idle,
-
-  /// Deleting.
-  deleting,
-
-  /// Deleted; the screen closes.
-  deleted,
-}
-
 /// One food from the library.
 final class const FoodDetailState({
   /// The food; null until the library arrives, or once it has gone.
@@ -34,30 +22,21 @@ final class const FoodDetailState({
   /// Whether the food is a favourite, as last chosen here or read.
   final bool isFavourited = false,
 
-  final FoodDetailDeleteStatus deleteStatus = FoodDetailDeleteStatus.idle,
-
   /// How many favourite changes have failed, so each says so.
   final int favouriteFailures = 0,
-
-  /// How many deletes have failed, so each says so.
-  final int deleteFailures = 0,
 }) extends Equatable {
   FoodDetailState copyWith({
     FoodModel? Function()? food,
     bool? loaded,
     FoodLogSettings? settings,
     bool? isFavourited,
-    FoodDetailDeleteStatus? deleteStatus,
     int? favouriteFailures,
-    int? deleteFailures,
   }) => FoodDetailState(
     food: food == null ? this.food : food(),
     loaded: loaded ?? this.loaded,
     settings: settings ?? this.settings,
     isFavourited: isFavourited ?? this.isFavourited,
-    deleteStatus: deleteStatus ?? this.deleteStatus,
     favouriteFailures: favouriteFailures ?? this.favouriteFailures,
-    deleteFailures: deleteFailures ?? this.deleteFailures,
   );
 
   @override
@@ -66,9 +45,7 @@ final class const FoodDetailState({
     loaded,
     settings,
     isFavourited,
-    deleteStatus,
     favouriteFailures,
-    deleteFailures,
   ];
 }
 
@@ -158,25 +135,17 @@ class FoodDetailCubit extends Cubit<FoodDetailState> {
     }
   }
 
-  /// Deletes the food, once confirmed (`FoodDetailPresenter.deleteFood`).
-  Future<void> deleteConfirmed() async {
-    if (!canDelete || state.deleteStatus != FoodDetailDeleteStatus.idle) {
-      return;
-    }
-    emit(state.copyWith(deleteStatus: FoodDetailDeleteStatus.deleting));
+  /// Deletes the food for good (`FoodDetailPresenter.deleteFood`), once
+  /// the Undo its screen offered has gone. The screen has closed by then,
+  /// so this emits nothing, and rethrows a failure for the snack bar.
+  Future<void> deleteNow() async {
     _analytics.analytic('FoodDetailView_Delete_Start');
     try {
       await _foods.deleteFood(_uid, _foodId);
       _analytics.analytic('FoodDetailView_Delete_Success');
-      emit(state.copyWith(deleteStatus: FoodDetailDeleteStatus.deleted));
     } on Object catch (error) {
       _analytics.severe('FoodDetailView_Delete_Fail', error);
-      emit(
-        state.copyWith(
-          deleteStatus: FoodDetailDeleteStatus.idle,
-          deleteFailures: state.deleteFailures + 1,
-        ),
-      );
+      rethrow;
     }
   }
 

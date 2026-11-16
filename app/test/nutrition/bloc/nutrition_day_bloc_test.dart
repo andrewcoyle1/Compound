@@ -177,6 +177,30 @@ void main() {
       },
     );
 
+    test('hides a meal waiting on an Undo', () async {
+      when(() => repository.watchMeals(uid))
+          .thenAnswer((_) => Stream.value([meal]));
+      final pending = PendingDeletes();
+      addTearDown(pending.close);
+      final bloc = NutritionDayBloc(
+        nutritionRepository: repository,
+        uid: uid,
+        now: now,
+        pendingDeletes: pending,
+      )..add(const NutritionDaySubscriptionRequested());
+      addTearDown(bloc.close);
+      await pumpEventQueue();
+      expect(bloc.state.meals, hasLength(1));
+
+      pending.schedule(PendingKeys.meal('M'), () async {});
+      await pumpEventQueue();
+      expect(bloc.state.meals, isEmpty);
+
+      pending.undo(PendingKeys.meal('M'));
+      await pumpEventQueue();
+      expect(bloc.state.meals, hasLength(1));
+    });
+
     test('deleteItem works from the meal as last stored', () async {
       final edited = withItems(meal, [food('a'), food('b'), food('c')]);
       when(() => repository.watchMeals(uid))

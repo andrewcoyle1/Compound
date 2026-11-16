@@ -7,6 +7,7 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/nutrition/recipes/cubit/recipes_cubit.dart';
 import 'package:compound/nutrition/recipes/view/create_recipe_pages.dart';
 import 'package:compound/nutrition/recipes/view/recipe_detail_page.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound/widgets/stored_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:food_repository/food_repository.dart';
@@ -37,6 +38,7 @@ class RecipesPage extends StatelessWidget {
         foods: context.read<FoodRepository>(),
         nutrition: context.read<NutritionRepository>(),
         analytics: context.read<AnalyticsRepository>(),
+        pendingDeletes: context.read<PendingDeletes>(),
       ),
       child: const RecipesView(),
     );

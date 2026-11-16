@@ -7,6 +7,7 @@ import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/nutrition/recipes/view/create_recipe_pages.dart';
 import 'package:compound/nutrition/recipes/view/recipe_detail_page.dart';
 import 'package:compound/nutrition/recipes/view/recipes_page.dart';
+import 'package:compound/undo/show_undoable_delete.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_repository/food_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -165,16 +166,14 @@ void main() {
 
       await tap(tester, find.byTooltip('Recipe options'));
       await tap(tester, find.text('Delete Recipe'));
-      expect(
-        find.text(
-          "Are you sure you want to delete 'Salmon Avocado Toast'? This "
-          'action cannot be undone.',
-        ),
-        findsOneWidget,
-      );
-      await tap(tester, find.text('Delete'));
 
+      // Gone from the list at once, with an Undo; deleted once it has gone.
       expect(find.byType(RecipesView), findsOneWidget);
+      expect(find.text('Recipe deleted'), findsOneWidget);
+      expect(find.text('Salmon Avocado Toast'), findsNothing);
+      expect(await stored(), hasLength(3));
+      await tester.pump(undoWindow);
+      await tester.pumpAndSettle();
       expect(find.text('Salmon Avocado Toast'), findsNothing);
       expect(await stored(), hasLength(2));
     });

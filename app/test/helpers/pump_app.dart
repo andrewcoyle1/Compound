@@ -22,6 +22,7 @@ import 'package:compound/sharing/session_web_link.dart';
 import 'package:compound/sharing/share_sheet.dart';
 import 'package:compound/social/circle/circle_bloc.dart';
 import 'package:compound/social/invite/invite_cubit.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
 import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:device_store/device_store.dart';
@@ -108,6 +109,7 @@ extension PumpApp on WidgetTester {
     ReviewPrompter? reviews,
     double textScale = 1,
     GoRouter? router,
+    PendingDeletes? pendingDeletes,
     // Off unless a test turns them on, so a shimmering placeholder or a
     // spinner never keeps pumpAndSettle from settling.
     bool disableAnimations = true,
@@ -123,6 +125,7 @@ extension PumpApp on WidgetTester {
           RepositoryProvider.value(
             value: authRepository ?? MockAuthRepository(),
           ),
+          RepositoryProvider.value(value: pendingDeletes ?? PendingDeletes()),
           RepositoryProvider.value(
             value: userRepository ?? MockUserRepository(),
           ),

@@ -16,6 +16,7 @@ import 'package:compound/profile/profile.dart';
 import 'package:compound/progress/progress.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_tracker/workout_tracker.dart';
@@ -227,54 +228,64 @@ void main() {
       expect(plan?.trainingType, 'Upper/Lower');
     });
 
-    testWidgets('writes the home-screen widgets on leaving the app, answers '
-        "the Live Activity's buttons, and clears the widgets on sign-out", (
-      tester,
-    ) async {
-      final auth = InMemoryAuthRepository(
-        user: InMemoryAuthRepository.sampleUser,
-      );
-      final widgets = FakeHomeWidgetRepository();
-      final liveActivity = FakeLiveActivityRepository();
-      await tester.pumpWidget(
-        App(
-          socialRepository: emptySocialRepository(),
-          coachRepository: silentCoachRepository(),
-          deviceStore: offersShownDevice(),
-          purchasesRepository: FakePurchasesRepository(),
-          programRepository: InMemoryProgramRepository(),
-          trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
-          authRepository: auth,
-          userRepository: seededUsers(),
-          workoutSessionRepository: seededSessions(),
-          nutritionRepository: InMemoryNutritionRepository(),
-          bodyRepository: InMemoryBodyRepository(),
-          homeWidgetRepository: widgets,
-          liveActivityRepository: liveActivity,
-        ),
-      );
-      await tester.pumpAndSettle();
-      tester.binding
-        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
-        ..handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-      expect(widgets.snapshot, isNotNull);
-      expect(widgets.snapshot!.weeklyGoal, 3);
+    testWidgets(
+      'writes the home-screen widgets and waiting deletes on leaving the '
+      "app, answers the Live Activity's buttons, and clears the widgets on "
+      'sign-out',
+      (tester) async {
+        final auth = InMemoryAuthRepository(
+          user: InMemoryAuthRepository.sampleUser,
+        );
+        final widgets = FakeHomeWidgetRepository();
+        final liveActivity = FakeLiveActivityRepository();
+        final pending = PendingDeletes();
+        await tester.pumpWidget(
+          App(
+            socialRepository: emptySocialRepository(),
+            coachRepository: silentCoachRepository(),
+            deviceStore: offersShownDevice(),
+            purchasesRepository: FakePurchasesRepository(),
+            programRepository: InMemoryProgramRepository(),
+            trainingLibraryRepository: InMemoryTrainingLibraryRepository(),
+            authRepository: auth,
+            userRepository: seededUsers(),
+            workoutSessionRepository: seededSessions(),
+            nutritionRepository: InMemoryNutritionRepository(),
+            bodyRepository: InMemoryBodyRepository(),
+            homeWidgetRepository: widgets,
+            liveActivityRepository: liveActivity,
+            pendingDeletes: pending,
+          ),
+        );
+        await tester.pumpAndSettle();
+        var deleted = false;
+        pending.schedule('gyms/a', () async => deleted = true);
+        tester.binding
+          ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+          ..handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        expect(widgets.snapshot, isNotNull);
+        expect(widgets.snapshot!.weeklyGoal, 3);
+        // A delete still waiting on its Undo is written, in case the app
+        // does not come back.
+        await tester.pump();
+        expect(deleted, isTrue);
 
-      // With no workout under way, Finish waits for one, then does nothing
-      // but bring the widgets up to date.
-      widgets.snapshot = null;
-      final tapped = liveActivity.tap(const CompleteWorkoutAction());
-      await tester.pump(const Duration(seconds: 9));
-      await tapped;
-      expect(widgets.snapshot, isNotNull);
+        // With no workout under way, Finish waits for one, then does nothing
+        // but bring the widgets up to date.
+        widgets.snapshot = null;
+        final tapped = liveActivity.tap(const CompleteWorkoutAction());
+        await tester.pump(const Duration(seconds: 9));
+        await tapped;
+        expect(widgets.snapshot, isNotNull);
 
-      tester.binding
-        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
-        ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await auth.signOut();
-      await tester.pumpAndSettle();
-      expect(widgets.snapshot, isNull);
-    });
+        tester.binding
+          ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+          ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        await auth.signOut();
+        await tester.pumpAndSettle();
+        expect(widgets.snapshot, isNull);
+      },
+    );
 
     testWidgets('answers Siri: workouts, starting one, weigh-ins, the week, '
         "today's workout and the recipes", (tester) async {

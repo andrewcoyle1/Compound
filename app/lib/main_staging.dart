@@ -12,6 +12,8 @@ import 'package:compound/onboarding/logic/onboarding_step.dart';
 import 'package:compound/onboarding/logic/staging_onboarding.dart';
 import 'package:compound/progress_photos/progress_photos.dart';
 import 'package:compound/sharing/session_web_link.dart';
+import 'package:compound/undo/flushing_auth_repository.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_models/compound_models.dart'
     show ExerciseWeightUnit, WorkoutSessionModel, WorkoutSessionModelKeys;
 // A dev dependency on purpose: only this entry point uses the in-memory
@@ -185,6 +187,7 @@ Future<void> main() async {
     ),
     onEvent: stravaEvents(analyticsRepository),
   );
+  final pendingDeletes = PendingDeletes();
   await bootstrap(
     () async => App(
       // Every launch, as staging keeps nothing on the device.
@@ -225,9 +228,13 @@ Future<void> main() async {
       ),
       // compound:// links are the device's own, as in the other flavors.
       platformLinks: AppLinksPlatformLinks(),
-      authRepository: InMemoryAuthRepository(
-        user: step == null ? InMemoryAuthRepository.sampleUser : anonymous,
+      authRepository: FlushingAuthRepository(
+        InMemoryAuthRepository(
+          user: step == null ? InMemoryAuthRepository.sampleUser : anonymous,
+        ),
+        pendingDeletes,
       ),
+      pendingDeletes: pendingDeletes,
       userRepository: userRepository,
       workoutSessionRepository: workoutSessionRepository,
       nutritionRepository: nutritionRepository,

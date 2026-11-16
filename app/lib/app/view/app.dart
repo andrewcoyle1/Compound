@@ -56,6 +56,7 @@ import 'package:compound/today/today.dart';
 import 'package:compound/training/training.dart';
 import 'package:compound/training_analytics/training_analytics_routes.dart';
 import 'package:compound/training_library/training_library.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound/weekly_review/weekly_review.dart';
 import 'package:compound/weight_metric/weight_metric.dart';
 import 'package:compound/workout_editor/workout_editor_routes.dart';
@@ -199,6 +200,10 @@ class const App({
   /// Whether the one-time feature tips show ([FeatureTips]); off for tests
   /// that leave it out, so no tip covers the screen they drive.
   final bool showsTips = false,
+
+  /// The deletes waiting on an Undo (`showUndoableDelete`); the flavors pass
+  /// the one their [authRepository] flushes before a sign-out.
+  final PendingDeletes? pendingDeletes,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -207,6 +212,10 @@ class const App({
       providers: [
         RepositoryProvider<DeviceStore>(
           create: (_) => deviceStore ?? InMemoryDeviceStore(),
+        ),
+        RepositoryProvider<PendingDeletes>(
+          create: (_) => pendingDeletes ?? PendingDeletes(),
+          dispose: (pending) => unawaited(pending.close()),
         ),
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: userRepository),
@@ -785,7 +794,11 @@ class _AppViewState extends State<AppView> {
     super.initState();
     _lifecycle = AppLifecycleListener(
       onResume: () => unawaited(context.read<NotificationsCubit>().resumed()),
-      onHide: _writeWidgetSnapshot,
+      onHide: () {
+        _writeWidgetSnapshot();
+        // The app may not come back: write what is waiting on an Undo.
+        unawaited(context.read<PendingDeletes>().flushAll());
+      },
     );
     context.read<LiveActivityRepository>().setActionHandler(
       _onLiveActivityAction,

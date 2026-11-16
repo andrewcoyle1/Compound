@@ -17,6 +17,8 @@ import 'package:compound/integrations/integrations.dart';
 import 'package:compound/notifications/notifications.dart';
 import 'package:compound/progress_photos/crop_look.dart';
 import 'package:compound/sharing/session_web_link.dart';
+import 'package:compound/undo/flushing_auth_repository.dart';
+import 'package:compound/undo/pending_deletes.dart';
 import 'package:compound_models/compound_models.dart' show logWriteError;
 import 'package:connectivity_repository/connectivity_repository.dart';
 import 'package:device_store/device_store.dart';
@@ -192,6 +194,7 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
       name: 'strava',
     );
   }
+  final pendingDeletes = PendingDeletes();
   return App(
     showsTips: true,
     appVersion: await AppVersion.load(),
@@ -251,11 +254,15 @@ Future<App> firebaseApp(FirebaseFlavor flavor) async {
     abTestRepository: await flavor.abTests(deviceStore),
     sessionWebLink: SessionWebLink(Uri.parse(flavor.sessionWebLinkBase)),
     analyticsRepository: analyticsRepository,
-    authRepository: FirebaseAuthRepository(
-      firebaseAuth: FirebaseAuth.instance,
-      googleSignIn: GoogleSignIn.instance,
-      googleClientId: options.iosClientId,
+    authRepository: FlushingAuthRepository(
+      FirebaseAuthRepository(
+        firebaseAuth: FirebaseAuth.instance,
+        googleSignIn: GoogleSignIn.instance,
+        googleClientId: options.iosClientId,
+      ),
+      pendingDeletes,
     ),
+    pendingDeletes: pendingDeletes,
     userRepository: userRepository,
     notificationsRepository: notificationsRepository,
     platformLinks: AppLinksPlatformLinks(),

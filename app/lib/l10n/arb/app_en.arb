@@ -6660,6 +6660,10 @@
     "@trackerUndo": {
         "description": "Correction bar and snack bar: undo"
     },
+    "undo": "Undo",
+    "@undo": {
+        "description": "Snack bar action: brings back what was just deleted"
+    },
     "trackerRirTitle": "Reps in reserve",
     "@trackerRirTitle": {
         "description": "Correction bar and keypad: the reps-in-reserve row"
